@@ -2,14 +2,17 @@
 
 class WC_Gateway_Vipps extends WC_Payment_Gateway {
  public $form_fields = null;
- public $id = 'vipps_gateway';
+ public $id = 'vipps';
  public $icon = ''; // IOK FIXME
  public $has_fields = false; // IOK FIXME
  public $method_title = 'Vipps';
+ public $title = 'Vipps';
  public $method_description = "";
 
  public function __construct() {
   $this->method_description = __('Offer Vipps as a payment method', 'vipps');
+  $this->method_title = __('Vipps','vipps');
+  $this->title = __('Vipps','vipps');
   $this->init_form_fields();
   $this->init_settings();
   add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -17,6 +20,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
  public function init_form_fields() { 
  $this->form_fields = array(
+     'enabled' => array(
+          'title'       => __( 'Enable/Disable', 'woocommerce' ),
+          'label'       => __( 'Enable Vipps', 'vipps' ),
+          'type'        => 'checkbox',
+          'description' => '',
+          'default'     => 'no',
+      ),
      'title' => array(
           'title' => __( 'Title', 'woocommerce' ),
           'type' => 'text',
