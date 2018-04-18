@@ -27,6 +27,42 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => '',
                     'default'     => 'no',
                     ),
+                 'merchantSerialNumber' => array(
+                    'title' => __('Merchant Serial Number', 'vipps'),
+                    'label'       => __( 'Merchant Serial Number', 'vipps' ),
+                    'type'        => 'number',
+                    'description' => __('Your merchant serial number from the Developer Portal - Applications tab, Saleunit Serial Number','vipps'),
+                    'default'     => '',
+                    ),
+                 'clientId' => array(
+                    'title' => __('Client Id', 'vipps'),
+                    'label'       => __( 'Client Id', 'vipps' ),
+                    'type'        => 'text',
+                    'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','vipps'),
+                    'default'     => '',
+                    ),
+                 'secret' => array(
+                    'title' => __('Application Secret', 'vipps'),
+                    'label'       => __( 'Application Secret', 'vipps' ),
+                    'type'        => 'text',
+                    'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','vipps'),
+                    'default'     => '',
+                    ),
+                 'Ocp_Apim_Key_AccessToken' => array(
+                    'title' => __('Subscription key for Access Token', 'vipps'),
+                    'label'       => __( 'Subscription key for Access Token', 'vipps' ),
+                    'type'        => 'text',
+                    'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','vipps'),
+                    'default'     => '',
+                    ),
+                 'Ocp_Apim_Key_eCommerce' => array(
+                    'title' => __('Subscription key for eCommerce', 'vipps'),
+                    'label'       => __( 'Subscription key for eCommerce', 'vipps' ),
+                    'type'        => 'text',
+                    'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','vipps'),
+                    'default'     => '',
+                    ),
+
                 'title' => array(
                     'title' => __( 'Title', 'woocommerce' ),
                     'type' => 'text',
@@ -76,5 +112,68 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $saved = parent::process_admin_options();
         return $saved;
     }
+
+private function http_call($url,$data,$verb='GET',$headers=[],$encoding='url'){
+    $date = gmdate('c');
+    $data_encoded = '';
+    if ($encoding == 'url' || $verb == 'GET') {
+     $data_encoded = http_build_query($data);
+    } else {
+     $data_encoded = json_encode($data);
+    }
+    $data_len = strlen ($data_encoded);
+    $http_response_header = null;
+    $sslparams = [];
+
+    if (preg_match("!\.dev\.!",$url)) {
+    //  IOK 2017-11-09 Peer certificate CN=`internal.beat.no' did not match expected CN=`api.dev.beat.no'
+     $sslparams['verify_peer'] = false;
+     $sslparams['verify_peer_name'] = false;
+    }
+
+    $headers['Connection'] = 'close';
+    if ($verb=='POST' || $verb == 'PATCH' || $verb == 'PUT') {
+     if ($encoding == 'url') {
+      $headers['Content-type'] = 'application/x-www-form-urlencoded';
+     } else {
+      $headers['Content-type'] = 'application/json';
+     }
+    }
+    $headerstring = '';
+    $hh = [];
+    foreach($headers as $key=>$value) {
+     array_push($hh,"$key: $value");
+    }
+    $headerstring = join("\r\n",$hh);
+    $headerstring .= "\r\n";
+
+    $httpparams = array('method'=>$verb,'header'=>$headerstring);
+    if ($verb == 'POST' || $verb == 'PATCH' || $verb == 'PUT') {
+     $httpparams['content'] = $data_encoded;
+    }
+    if ($verb == 'GET' && $data_encoded) {
+     $url .= "?$data_encoded";
+    }
+    $params = ['http'=>$httpparams,'ssl'=>$sslparams];
+
+    $context = stream_context_create($params);
+    $content = null;
+
+    $contenttext = @file_get_contents($url,false,$context);
+    if ($contenttext) {
+     $content = json_decode($contenttext,true);
+    }
+    $response = 0;
+    if ($http_response_header && isset($http_response_header[0])) {
+     $match = [];
+     $ok = preg_match('!^HTTP/... (...) !i',$http_response_header[0],$match);
+     if ($ok) {
+      $response = 1 * $match[1];
+     }
+    }
+    return array('response'=>$response,'headers'=>$http_response_header,'content'=>$content);
+  }
+
+
 
 }
