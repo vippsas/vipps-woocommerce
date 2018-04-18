@@ -8,6 +8,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $method_title = 'Vipps';
     public $title = 'Vipps';
     public $method_description = "";
+    public $api = 'https://apitest.vipps.no';
 
     public function __construct() {
         $this->method_description = __('Offer Vipps as a payment method', 'vipps');
@@ -37,28 +38,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                  'clientId' => array(
                     'title' => __('Client Id', 'vipps'),
                     'label'       => __( 'Client Id', 'vipps' ),
-                    'type'        => 'text',
+                    'type'        => 'password',
                     'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','vipps'),
                     'default'     => '',
                     ),
                  'secret' => array(
                     'title' => __('Application Secret', 'vipps'),
                     'label'       => __( 'Application Secret', 'vipps' ),
-                    'type'        => 'text',
+                    'type'        => 'password',
                     'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','vipps'),
                     'default'     => '',
                     ),
                  'Ocp_Apim_Key_AccessToken' => array(
                     'title' => __('Subscription key for Access Token', 'vipps'),
                     'label'       => __( 'Subscription key for Access Token', 'vipps' ),
-                    'type'        => 'text',
+                    'type'        => 'password',
                     'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','vipps'),
                     'default'     => '',
                     ),
                  'Ocp_Apim_Key_eCommerce' => array(
                     'title' => __('Subscription key for eCommerce', 'vipps'),
                     'label'       => __( 'Subscription key for eCommerce', 'vipps' ),
-                    'type'        => 'text',
+                    'type'        => 'password',
                     'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','vipps'),
                     'default'     => '',
                     ),
@@ -102,6 +103,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function admin_options() {
         ?>
             <h2><?php _e('Vipps','vipps'); ?></h2>
+            <?php $this->display_errors(); ?>
             <table class="form-table">
             <?php $this->generate_settings_html(); ?>
             </table> <?php
@@ -110,10 +112,38 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     function process_admin_options () {
         // Handle options updates
         $saved = parent::process_admin_options();
+
+        $at = $this->get_option('Ocp_Apim_Key_AccessToken');
+        $s = $this->get_option('secret');
+        $c = $this->get_option('clientId');
+        if ($at && $s && $c) {
+         $connection = $this->get_app_auth();
+         print "<pre>";print_r($connection);exit();
+         /*
+         add_action('admin_notices',function () use ($responsestring) {
+           echo "<div class='notice notice-error is-dismissible'><p>" . __('Could not connect to Vipps','vipps'). ": <b>$responsestring</b></p></div>";
+         });
+         */
+        }
+
         return $saved;
     }
 
-private function http_call($url,$data,$verb='GET',$headers=[],$encoding='url'){
+
+ // Get an App authentification token if neccesary IOK 2018-04-18
+ private function get_app_auth() {
+  $clientid=$this->get_option('clientId');
+  $secret=$this->get_option('secret');
+  $at = $this->get_option('Ocp_Apim_Key_AccessToken');
+  $server=$this->api;
+
+  $url = $server . '/accessToken/get';
+  return $this->http_call($url,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
+ }
+
+// Conventently call Vipps IOK 2018-04-18
+private function http_call($url,$data,$verb='GET',$headers=null,$encoding='url'){
+    if (!$headers) $headers=array();
     $date = gmdate('c');
     $data_encoded = '';
     if ($encoding == 'url' || $verb == 'GET') {
@@ -123,16 +153,17 @@ private function http_call($url,$data,$verb='GET',$headers=[],$encoding='url'){
     }
     $data_len = strlen ($data_encoded);
     $http_response_header = null;
-    $sslparams = [];
+    $sslparams = array();
 
-    if (preg_match("!\.dev\.!",$url)) {
-    //  IOK 2017-11-09 Peer certificate CN=`internal.beat.no' did not match expected CN=`api.dev.beat.no'
+    // Always verify peer etc IOK 2018-04-18
+    if (true) {
      $sslparams['verify_peer'] = false;
      $sslparams['verify_peer_name'] = false;
     }
 
     $headers['Connection'] = 'close';
     if ($verb=='POST' || $verb == 'PATCH' || $verb == 'PUT') {
+      $headers['Content-length'] = $data_len;
      if ($encoding == 'url') {
       $headers['Content-type'] = 'application/x-www-form-urlencoded';
      } else {
@@ -140,7 +171,7 @@ private function http_call($url,$data,$verb='GET',$headers=[],$encoding='url'){
      }
     }
     $headerstring = '';
-    $hh = [];
+    $hh = array();
     foreach($headers as $key=>$value) {
      array_push($hh,"$key: $value");
     }
@@ -154,7 +185,7 @@ private function http_call($url,$data,$verb='GET',$headers=[],$encoding='url'){
     if ($verb == 'GET' && $data_encoded) {
      $url .= "?$data_encoded";
     }
-    $params = ['http'=>$httpparams,'ssl'=>$sslparams];
+    $params = array('http'=>$httpparams,'ssl'=>$sslparams);
 
     $context = stream_context_create($params);
     $content = null;
@@ -165,7 +196,7 @@ private function http_call($url,$data,$verb='GET',$headers=[],$encoding='url'){
     }
     $response = 0;
     if ($http_response_header && isset($http_response_header[0])) {
-     $match = [];
+     $match = array();
      $ok = preg_match('!^HTTP/... (...) !i',$http_response_header[0],$match);
      if ($ok) {
       $response = 1 * $match[1];
