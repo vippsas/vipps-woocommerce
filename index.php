@@ -5,6 +5,7 @@
    Author: Iver Odin Kvello
    Version: 0.9
  */
+require_once(dirname(__FILE__) . "/exceptions.php");
 
 /* This class is for hooks and plugin managent, and is instantiated as a singleton. IOK 2018-02-07*/
 class Vipps {

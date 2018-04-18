@@ -117,21 +117,69 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $s = $this->get_option('secret');
         $c = $this->get_option('clientId');
         if ($at && $s && $c) {
-         $connection = $this->get_app_auth();
-         print "<pre>";print_r($connection);exit();
-         /*
-         add_action('admin_notices',function () use ($responsestring) {
-           echo "<div class='notice notice-error is-dismissible'><p>" . __('Could not connect to Vipps','vipps'). ": <b>$responsestring</b></p></div>";
-         });
-         */
+         try {
+          $token = $this->get_access_token('force');
+          $this->adminnotify(__("Connection to Vipps OK", 'vipps'));
+         } catch (Exception $e) {
+          $msg = $e->getMessage();
+          $this->adminerr(__("Could not connect to Vipps", 'vipps') . ": $msg");
+         }
         }
 
         return $saved;
     }
 
+ // IOK 2018-04-18 utilities for the 'admin notices' interface.
+ private function adminwarn($what) {
+  add_action('admin_notices',function() use ($what) {
+   echo "<div class='notice notice-warning is-dismissible'><p>$what</p></div>";
+  });
+ }
+ private function adminerr($what) {
+  add_action('admin_notices',function() use ($what) {
+   echo "<div class='notice notice-error is-dismissible'><p>$what</p></div>";
+  });
+ }
+ private function adminnotify($what) {
+  add_action('admin_notices',function() use ($what) {
+   echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
+  });
+ }
 
- // Get an App authentification token if neccesary IOK 2018-04-18
- private function get_app_auth() {
+ // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
+ private function get_access_token($force=0) {
+  // First, get a stored 
+  $stored = get_transient('_vipps_app_token');
+  if (!$force && $stored && $stored['expires_on'] > time()) {
+   return $stored['access_token'];
+  }
+  $fresh = $this->api_get_access_token();
+
+  // Nothing at all? Throw an error IOK 2018-04-18
+  if (!$fresh || !isset($fresh['response'])) {
+   throw new VippsAPIException(__("Could not connect to Vipps API",'vipps')); 
+  }
+
+  // Else if we get a response at all, it will have the access token, so store it and return IOK 2018-04-18
+  if ($fresh['response'] == 200) {
+   $resp = $fresh['content'];
+   $at = $resp['access_token'];
+   $expire = $resp['expires_in']/2;
+   set_transient('_vipps_app_token',$resp,$expire);
+   return $at;
+  }
+// If we got an error message, throw that IOK 2018-04-18
+  if ($fresh['content'] && isset($fresh['content']['error'])) {
+   throw new VippsAPIException(__("Could not get access token from Vipps API",'vipps') . ": " . __($fresh['content']['error'],'vipps')); 
+   error_log("Vipps: " . $fresh['content']['error'] . " " . $fresh['content']['error_description']);
+  } 
+
+  // No message, so return the first header (500, 411 etc) IOK 2018-04-18
+  throw new VippsAPIException(__("Could not get access token from Vipps API",'vipps') . ": " . __($fresh['headers'][0],'vipps')); 
+ }
+
+// Fetch an access token if possible from the Vipps Api IOK 2018-04-18
+ private function api_get_access_token() { 
   $clientid=$this->get_option('clientId');
   $secret=$this->get_option('secret');
   $at = $this->get_option('Ocp_Apim_Key_AccessToken');
