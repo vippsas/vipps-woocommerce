@@ -17,6 +17,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->init_form_fields();
         $this->init_settings();
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+        add_action('woocommerce_receipt_vipps', array(&$this, 'receipt_page')); // The actual order form
     }
 
     public function init_form_fields() { 
@@ -96,25 +97,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 });
     }
 
-    // IOK FIXME  the core of things
+    // IOK 2018-04-20 for this plugin we will simply return true and add the 'Klarna' form to the receipt apage
     public function process_payment ($order_id) {
         global $woocommerce;
+
+
+        $at = $this->get_access_token();
+        if (!$at) {
+            $woocommerce->add_error(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+            return false;
+        }
         $order = new WC_Order( $order_id );
 
-        // Mark as on-hold (we're awaiting the cheque)
-        $order->update_status('on-hold', __( 'Vipps payment initiated', 'vipps' ));
+        $url =  $this->get_return_url($order);
+        // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
+        return array('result'=>'success','redirect'=>$url);
+    }
 
-        // Reduce stock levels
-        $order->reduce_order_stock();
 
-        // Remove cart
-        $woocommerce->cart->empty_cart();
-
-        // Return thankyou redirect
-        return array(
-                'result' => 'success',
-                'redirect' => $this->get_return_url( $order )
-                );
+    // The 'receipt page' is here actually the order form. IOK 2018-04-20
+    public function receipt_page ($order) {
+        print "<pre>This is where the form goes";
+        print_r($order);
+        print "</pre>";
     }
 
     public function admin_options() {
