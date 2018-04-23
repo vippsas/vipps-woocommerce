@@ -4,7 +4,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $form_fields = null;
     public $id = 'vipps';
     public $icon = ''; // IOK FIXME
-    public $has_fields = false; // IOK FIXME
+    //    public $has_fields = false; // IOK FIXME
     public $method_title = 'Vipps';
     public $title = 'Vipps';
     public $method_description = "";
@@ -101,14 +101,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function process_payment ($order_id) {
         global $woocommerce;
 
+        // From the request, get either    [billing_phone] =>  or [vipps phone]
 
         $at = $this->get_access_token();
-        if (!$at) {
+        if (true or !$at) {
             $woocommerce->add_error(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
             return false;
         }
         $order = new WC_Order( $order_id );
-        
+
+        // If call fails, do this and return false
+        // wc_add_notice(__('Payment error:', 'woothemes') . "<pre>" . print_r($_REQUEST,true) . "</pre>");
+        // if not, empty the cart, place order on on hold - or leave it as pending? And redirect to payment. 
+
         // Vipps-terminal-page FIXME fetch from settings! IOK 2018-04-23
         $url = '/vipps-betaling/';
 
@@ -259,6 +264,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         return array('response'=>$response,'headers'=>$http_response_header,'content'=>$content);
     }
+
+    // IOK experimental FIXME
+    public $has_fields = true;
+    public function payment_fields() {
+        print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
+    }
+    public function validate_fields() {
+        wc_add_notice(__('Payment error:', 'woothemes') . "<pre>" . print_r($_REQUEST,true) . "</pre>");
+        return false;;
+        return true;
+    }
+
 
 
 

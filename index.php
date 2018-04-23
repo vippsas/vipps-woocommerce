@@ -26,32 +26,32 @@ class Vipps {
     // This needs to be an actual page instead, which must be created on plugin activate
     // and then selected, and error-handling added and so forth.
     public function template_redirect() {
-     // Check if using pretty links, if so, use the pretty link, otherwise use a GET parameter which we will need to add, ala VFlow=orderid
-     $isvippscheckout = 0;
-     $orderid=0;
-     if ( get_option('permalink_structure')) {
-      if (preg_match("!^/vipps-betaling/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) { 
-       $orderid=@intval($matches[1]);
-       $isvippscheckout = 1;
-      }
-     } else {
-       if (isset($_GET['VippsBetaling'])) {
-       $orderid=@intval($_GET['VippsBetaling']);
-       $isvippscheckout = 1;
-       }
-     } 
-     if ($isvippscheckout) {
-      status_header(200,'OK');
-      $order = null;
-      if ($orderid) {
-        $order = new WC_Order($orderid); 
-      }
-      // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
-      // and check that the order matches (and is 'pending') (and exists)
+        // Check if using pretty links, if so, use the pretty link, otherwise use a GET parameter which we will need to add, ala VFlow=orderid
+        $isvippscheckout = 0;
+        $orderid=0;
+        if ( get_option('permalink_structure')) {
+            if (preg_match("!^/vipps-betaling/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) { 
+                $orderid=@intval($matches[1]);
+                $isvippscheckout = 1;
+            }
+        } else {
+            if (isset($_GET['VippsBetaling'])) {
+                $orderid=@intval($_GET['VippsBetaling']);
+                $isvippscheckout = 1;
+            }
+        } 
+        if ($isvippscheckout) {
+            status_header(200,'OK');
+            $order = null;
+            if ($orderid) {
+                $order = new WC_Order($orderid); 
+            }
+            // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
+            // and check that the order matches (and is 'pending') (and exists)
 
-      print "<pre>Terminal logic goes here\n";
-      exit();
-     }
+            print "<pre>Terminal logic goes here\n";
+            exit();
+        }
     }
 
     public function plugins_loaded() {
