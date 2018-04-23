@@ -26,6 +26,8 @@ class Vipps {
     // This needs to be an actual page instead, which must be created on plugin activate
     // and then selected, and error-handling added and so forth.
     public function template_redirect() {
+     // Check if using pretty links, if so, use the pretty link, otherwise use a GET parameter which we will need to add, ala VFlow=orderid
+       // if ( get_option('permalink_structure') ) { echo 'permalinks enabled'; }
      if (preg_match("!^/vipps-betaling/?$!", $_SERVER['REQUEST_URI'])) {
       status_header(200,'OK');
       print "Terminal logic goes here";
