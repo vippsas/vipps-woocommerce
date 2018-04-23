@@ -22,11 +22,24 @@ class Vipps {
     public function init () {
     }
 
+    // Temporary redirect handler! IOK FIXME REPLACE IOK 2018-04-23
+    // This needs to be an actual page instead, which must be created on plugin activate
+    // and then selected, and error-handling added and so forth.
+    public function template_redirect() {
+     if (preg_match("!^/vipps-betaling/?$!", $_SERVER['REQUEST_URI'])) {
+      status_header(200,'OK');
+      print "Terminal logic goes here";
+      exit();
+     }
+    }
+
     public function plugins_loaded() {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
         add_action( 'woocommerce_api_vipps_callback', array($this,'vipps_callback'));
+        /* URL rewriting and that sort of thing */
+        add_action('template_redirect', array($this,'template_redirect'));
     }
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20

@@ -108,8 +108,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
         $order = new WC_Order( $order_id );
+        
+        // Vipps-terminal-page FIXME fetch from settings! IOK 2018-04-23
+        $url = '/vipps-betaling/';
 
-        $url =  $this->get_return_url($order);
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);
     }
