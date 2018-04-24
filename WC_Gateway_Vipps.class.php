@@ -100,7 +100,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2018-04-20 for this plugin we will simply return true and add the 'Klarna' form to the receipt apage
     public function process_payment ($order_id) {
         global $woocommerce;
-
+        if (!$order_id) return false;
         // From the request, get either    [billing_phone] =>  or [vipps phone]
 
         $at = $this->get_access_token();
@@ -121,6 +121,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
       
         $this->log("ready to init payments", 'debug');
+        $order = new WC_Order($order_id);
+        $res = null;
+        try {
+          $res =  $this->api_initiate_payment($phone,$order,1);
+        } catch (VippException $e) {
+            wc_add_notice($e->getMessage());
+            return false;
+        }
+        if (!$res) {
+          wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+          return false;
+        }
 
         wc_add_notice(__('ok','vipps'),'notice');
         return false;
@@ -234,6 +246,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     private function api_initiate_payment($phone,$order,$requestid=1) {
+      $server = $this->api;
       $url = $server . '/Ecomm/v1/payments';
       $date = gmdate('c');
       $ip = $_SERVER['SERVER_ADDR'];
@@ -253,25 +266,33 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       $headers['X-TimeStamp'] = $date;
       $headers['X-Source-Address'] = $ip;
       $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-
-      $data = array();
-      $data['merchantSerialNumber'] = $merch;
-      // HTTPS is required here IOK 2018-04-24
-      $data['callBack'] = 'https//' . home_url() . '/wc-api/wc_gateway_vipps';
+ 
+      // HTTPS is required. IOK 2018-04-24
+      $callback = set_url_scheme(home_url(),'https') . '/wc-api/wc_gateway_vipps';
       // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
       if ( !get_option('permalink_structure')) {
-        $data['callBack'] = 'https//' . home_url() . '/?wc-api=wc_gateway_vipps';
+        $callBack = set_url_scheme(home_url(),'https') . '/?wc-api=wc_gateway_vipps';
       }
-      $data['mobileNumber'] = $phone;
+   
+      $transaction = array();
       // IOK FIXME use a 'prefix' setting in options IOK 2018-04-24
-      $data['orderId'] = 'Woo'.($order->get_id());
+      $transaction['orderId'] = 'Woo'.($order->get_id());
       // Ignore refOrderId - for child-transactions 
       // IOK FIXME use a currency conversion here IOK 2018-04-24
-      $data['amount'] = round($order->get_total() * 100); 
-      $data['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
-      $data['timeStamp'] = $date;
+      $transaction['amount'] = round($order->get_total() * 100); 
+      $transaction['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
+      $transaction['timeStamp'] = $date;
+      
 
-      $res = http_call($url,$data,'POST',$headers,'json'); 
+      $data = array();
+      $data['customerInfo'] = array('mobileNumber' => $phone);
+      $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callBack'=>$callback); 
+      $data['transaction'] = $transaction;
+
+      $this->log("headers are " . print_r($headers, true), 'debug');
+      $this->log("data are " . print_r($data, true), 'debug');
+
+      $res = $this->http_call($url,$data,'POST',$headers,'json'); 
       $this->log("res is " . print_r($res, true), 'debug');
       return $res;
      }
@@ -314,7 +335,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $headerstring = join("\r\n",$hh);
         $headerstring .= "\r\n";
 
-        $httpparams = array('method'=>$verb,'header'=>$headerstring);
+        $httpparams = array('method'=>$verb,'header'=>$headerstring,'ignore_errors'=>true);
         if ($verb == 'POST' || $verb == 'PATCH' || $verb == 'PUT') {
             $httpparams['content'] = $data_encoded;
         }
@@ -325,6 +346,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $context = stream_context_create($params);
         $content = null;
+
+        $this->log("url is $url", 'debug');
+        $this->log("header is $headerstring", 'debug');
+        $this->log("data is $data_encoded", 'debug');
 
         $contenttext = @file_get_contents($url,false,$context);
         if ($contenttext) {
