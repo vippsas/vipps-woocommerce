@@ -145,15 +145,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
                 if (isset($content['ResponseInfo'])) {
                     // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                    $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .  $content['ResponseInfo']['ResponseMessage'], 'error');
+                    $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'], 'error');
                     wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
                     return false;
                 } else {
                     // Otherwise, we get a simple array of objects with error messages.  Log them all.
+                    $notvippscustomer = 0;
                     foreach($content as $entry) {
-                        $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .  $entry['errorMessage'], 'error');
+                        if (preg_match('!User is not registered with VIPPS!i',$entry['errorMessage'])) {
+                         $notvippscustomer = 1;
+                        }
+                        $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'], 'error');
                     }
-                    wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+                    if ($notvippscustomer) {
+                     wc_add_notice(__('Your phone number doesn\'t have Vipps! Download the app and register, choose another payment method.','vipps'),'error');
+                    } else { 
+                     wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+                    }
                     return false;
                 }
             } else {

@@ -78,7 +78,9 @@ class Vipps {
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        $this->log("Got this in the callback: " . print_r($_REQUEST,true));
+        $this->log("We are in the callback");
+        $raw_post = file_get_contents( 'php://input' );
+        $this->log("Got this in the callback: $raw_post");
         // Do stuff. 
         /*
            Vipps answers immediately to service call and rest of processing is asynchronous. After reservation processing is done, Vipps will execute callback to the provided URL with the status of the payment. The callback call will be made via HTTPS, without any credentials. Callback is sent once. Please note that callback can be executed at any time within time-frame of 5 minutes after payment request is sent. With other words, if the merchant doesn’t receive any confirmation on payment request within callback timeframe, getPaymentDetails should be called to conclude further action. 
