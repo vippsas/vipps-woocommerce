@@ -17,7 +17,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->init_form_fields();
         $this->init_settings();
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-        add_action('woocommerce_receipt_vipps', array(&$this, 'receipt_page')); // The actual order form
     }
 
     public function init_form_fields() { 
@@ -171,40 +170,37 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        // So here we have a correct response 202 Accepted and so on and so forth!
+        // So here we have a correct response 202 Accepted and so on and so forth! IOK 2018-04-24
+        // We need to put the order "on-hold" until confirmed, store metadata for interfaceing with Vipps (in case the callback doesn't work)
+        // and store the order id in session so we can access it on the 'waiting for confirmation' screen. IOK 2018-04-24
+        $content = $res['content'];
+        $transactioninfo = @$content['transactionInfo'];
+        $transactionid = @$transactioninfo['transactionId'];
+        $vippsstatus = @$transactioninfo['status'];
+        $message = __(@$transactioninfo['message'],'vipps');
+        $vippstamp = strtotime(@$transactioninfo['timeStamp']);
 
-
-        wc_add_notice(__('ok','vipps'),'notice');
-        return false;
-
+        WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
 
         $order = new WC_Order( $order_id );
-
-        // If call fails, do this and return false
-        // wc_add_notice(__('Payment error:', 'woothemes') . "<pre>" . print_r($_REQUEST,true) . "</pre>");
-        // if not, empty the cart, place order on on hold - or leave it as pending? And redirect to payment. 
-
-        // Place data in isession
-        WC()->session = new WC_Session_Handler;
-        // Reduce stock levels and remove cart IOK 2018-04-24
+        $order->update_status('on-hold', __( 'Awaiting vipps payment', 'vipps' ));
         $order->reduce_order_stock();
-        $woocommerce->cart->empty_cart();
-        // Remove cart
+        $order->set_transaction_id($transactionid);
+        $order->update_meta_data('_vipps_transaction',$transactionid);
+        $order->update_meta_data('_vipps_confirm_message',$message);
+        $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
+        $order->update_meta_data('_vipps_status',$vippsstatus); // INITIATE right now
+        $order->add_order_note(__('Vipps payment initiated','vipps'));
+        $order->save();
 
+        // Then empty the cart; we'll ressurect it if we can and have to - later IOK 2018-04-24
+        $woocommerce->cart->empty_cart();
 
         // Vipps-terminal-page FIXME fetch from settings! IOK 2018-04-23
         $url = '/vipps-betaling/';
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);
-    }
-
-
-    // The 'receipt page' is here actually the order form. IOK 2018-04-20
-    public function receipt_page ($order) {
-        print "<pre>This is where the form goes";
-        print_r($order);
-        print "</pre>";
     }
 
     public function admin_options() {

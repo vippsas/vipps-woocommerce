@@ -38,25 +38,31 @@ class Vipps {
         $orderid=0;
         if ( get_option('permalink_structure')) {
             if (preg_match("!^/vipps-betaling/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) { 
-                $orderid=@intval($matches[1]);
                 $isvippscheckout = 1;
             }
         } else {
             if (isset($_GET['VippsBetaling'])) {
-                $orderid=@intval($_GET['VippsBetaling']);
                 $isvippscheckout = 1;
             }
         } 
+
         if ($isvippscheckout) {
+            // Call a method here in the gatway here IOK FIXME
             status_header(200,'OK');
+            $orderid = WC()->session->get('_vipps_pending_order');
             $order = null;
             if ($orderid) {
                 $order = new WC_Order($orderid); 
             }
             // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
             // and check that the order matches (and is 'pending') (and exists)
+            $transid = $order->get_meta('_vipps_transaction');
+            $vippsstamp = $order->get_meta('_vipps_init_timestamp');
+            $vippsstatus = $order->get_meta('_vipps_init_status');
+            $message = $order->get_meta('_vipps_confirm_message');
+            print "<pre>This is where we await user confirmation:\n";
+            print htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp));
 
-            print "<pre>Terminal logic goes here\n";
             exit();
         }
     }
