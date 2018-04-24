@@ -104,15 +104,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // From the request, get either    [billing_phone] =>  or [vipps phone]
 
         $at = $this->get_access_token();
-        if (true or !$at) {
-            $woocommerce->add_error(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+        if (!$at) {
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
             return false;
         }
+        $phone = '';
+        if (isset($_POST['vippsphone'])) {
+         $phone = trim($_POST['vippsphone']);
+        }
+        if (!$phone && isset($_POST['billing_phone'])) {
+         $phone = trim($_POST['billing_phone']);
+        }
+        if (!$phone) {
+            wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps') . print_r($_POST,true),'error');
+            return false;
+        }
+
+        wc_add_notice(__('ok','vipps'),'notice');
+        return false;
+       
+ 
         $order = new WC_Order( $order_id );
 
         // If call fails, do this and return false
         // wc_add_notice(__('Payment error:', 'woothemes') . "<pre>" . print_r($_REQUEST,true) . "</pre>");
         // if not, empty the cart, place order on on hold - or leave it as pending? And redirect to payment. 
+
+        // Place data in isession
+        WC()->session = new WC_Session_Handler;
+        // Reduce stock levels and remove cart IOK 2018-04-24
+        $order->reduce_order_stock();
+        $woocommerce->cart->empty_cart();
+        // Remove cart
+
 
         // Vipps-terminal-page FIXME fetch from settings! IOK 2018-04-23
         $url = '/vipps-betaling/';
@@ -268,11 +292,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK experimental FIXME
     public $has_fields = true;
     public function payment_fields() {
-        print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
+        $fields = WC()->checkout->checkout_fields;
+        if (isset($fields['billing']['billing_phone']) && $fields['billing']['billing_phone']['required']) {
+          // Use Billing Phone if required IOK 2018-04-24
+          } else {
+          print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
+        }
     }
     public function validate_fields() {
-        wc_add_notice(__('Payment error:', 'woothemes') . "<pre>" . print_r($_REQUEST,true) . "</pre>");
-        return false;;
         return true;
     }
 
