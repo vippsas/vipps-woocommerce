@@ -78,88 +78,77 @@ class Vipps {
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        $this->log("We are in the callback");
-        $raw_post = file_get_contents( 'php://input' );
-        $this->log("Got this in the callback: $raw_post");
-        // Do stuff. 
-        /*
-           Vipps answers immediately to service call and rest of processing is asynchronous. After reservation processing is done, Vipps will execute callback to the provided URL with the status of the payment. The callback call will be made via HTTPS, without any credentials. Callback is sent once. Please note that callback can be executed at any time within time-frame of 5 minutes after payment request is sent. With other words, if the merchant doesn’t receive any confirmation on payment request within callback timeframe, getPaymentDetails should be called to conclude further action. 
-
-        // Normal transaction
-        {
-        "orderId": "219930212",[String] REQUIRED
-        "transactionInfo": {
-        "amount": 120000, [Integer] REQUIRED Scale 2
-        "timeStamp": "2014-06-24T08:34:25-07:00",
-        "status": "Reserve",
-        "transactionId": "1000234732"
-        },
-        "errorInfo":{
-        "errorCode": "",
-        "errorGroup":"",
-        "errorMessage": ""
-        }}
-        // Express
-        {
-        "merchantSerialNumber": "csdac33",[String] REQUIRED
-        "orderId": "219930212",[String] REQUIRED
-        "shippingDetails" : {
-        "address" : {
-        "addressLine1":"",[String] REQUIRED
-        "addressLine2":"",[String] OPTIONAL
-        "city":"",[String] REQUIRED
-        "country" : "",[String] REQUIRED Default NO
-        "postCode":""[String] REQUIRED
-        },
-        "shippingCost" : 50.89, [BigDecimal]REQUIRED Scale 2
-        "shippingMethod" : ""[String] REQUIRED
-        "shippingMethodId" : ""[String] REQUIRED
-        } ,
-        "transactionInfo": {
-        "amount": 1200, [Integer] REQUIRED Scale 2
-        "status": "Reserve",
-        "timeStamp": "2014-06-24T08:34:25-07:00",
-        "transactionId": "1000234732"
-        },
-        "userDetails" : {
-        "bankIdVerified" : "Y",[Char] OPTIONAL Y/N only
-        "dateOfBirth" : "",[String] OPTIONAL
-        "email" : "",[String] REQUIRED
-        "firstName" : "",[String] REQUIRED
-        "lastName" : "",[String] REQUIRED
-        "mobileNumber" : "",[String]REQUIRED Length=8
-        "ssn" : "",[String] OPTIONAL Length=11
-        "userId" : ""[String] REQUIRED
+        $raw_post = @file_get_contents( 'php://input' );
+        $result = @json_decode($raw_post,true);
+        if (!$result) {
+            $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
+            return false;
         }
-        "errorInfo":{
-        "errorCode": "",
-        "errorGroup":"",
-
-
-
-Version: 2.0
-
-"errorMessage": ""
-},
-}
-
-         */ 
+        $this->log("We are in the callback" . print_r($result,true), 'debug');
+        $orderid = $result['orderId'];
+     
+        // IOK FIXME THE PREFIX THING STRIP IT
+        $orderid = preg_replace("!^Woo!","",$orderid);
+        $order = new WC_Order($orderid);
+        if (!$order) {
+           $this->log(__("Vipps callback for unknown order",'vipps') . " " .  $orderid);
+           return false;
         }
 
-/* WooCommerce Hooks */
-public function woocommerce_payment_gateways($methods) {
-    $methods[] = 'WC_Gateway_Vipps'; 
-    return $methods;
-}
-/* End Woocommerce hoos*/
+        $merchant= $result['merchantSerialNumber'];
+        // FIXME IOK MOVE TO GATEWAY AND CHECK THAT THIS IS CORRECT !
 
-public function activate () {
+        $transaction = @$result['transactionInfo'];
+        if (!$transaction) {
+            $this->log(__("Anomalous callback from vipps, handle errors and clean up",'vipps'),'error');
+            return false;
+        }
+        $transactionid = $transaction['transactionId'];
+        $vippsstamp = strtotime($transaction['timeStamp']);
+        $vippsamount = $transaction['amount'];
+        $vippsstatus = $transaction['status'];
 
-}
-public function uninstall() {
-}
-public function footer() {
-}
+        $ordertransid = $order->get_meta('_vipps_transaction');
+        if ($ordertransid != $transactionid) {
+            $this->log(__("Vipps callback with wrong transaction id for order",'vipps'). " " . $orderid . ": " . $transactionid . ': ' . $ordertransid ,'error');
+            return false;
+        }
+
+        $order->add_order_note(__('Vipps callback received','vipps'));
+
+        $errorInfo = @$result['errorInfo'];
+        if ($errorInfo) {
+            $this->log(__("Error message in callback from Vipps for order",'vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
+            $order->add_order_note($errorInfo['errorMessage']);
+        }
+
+        $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+        $order->update_meta_data('_vipps_amount',$vippsamount);
+        $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
+        
+        if ($vippsstatus == 'RESERVED') {
+         $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
+        } else {
+         $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
+        }
+        $order->save();
+        // At this point, add signal file for faster callbacks IOK 2018-04-24 FIXME
+    }
+
+    /* WooCommerce Hooks */
+    public function woocommerce_payment_gateways($methods) {
+        $methods[] = 'WC_Gateway_Vipps'; 
+        return $methods;
+    }
+    /* End Woocommerce hoos*/
+
+    public function activate () {
+
+    }
+    public function uninstall() {
+    }
+    public function footer() {
+    }
 }
 
 /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
