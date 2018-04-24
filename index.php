@@ -58,7 +58,7 @@ class Vipps {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
-        add_action( 'woocommerce_api_vipps_callback', array($this,'vipps_callback'));
+        add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         /* URL rewriting and that sort of thing */
         add_action('template_redirect', array($this,'template_redirect'));
     }

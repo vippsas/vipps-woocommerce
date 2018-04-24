@@ -119,6 +119,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps') . print_r($_POST,true),'error');
             return false;
         }
+      
+        $this->log("ready to init payments", 'debug');
 
         wc_add_notice(__('ok','vipps'),'notice');
         return false;
@@ -182,6 +184,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $saved;
     }
 
+    public function log ($what,$type='info') {
+       $logger = wc_get_logger();
+       $context = array('source','Vipps Woo Gateway');
+       $logger->log($type,$what,$context);
+    }
+
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
     private function get_access_token($force=0) {
         // First, get a stored 
@@ -224,6 +232,50 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $url = $server . '/accessToken/get';
         return $this->http_call($url,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
     }
+
+    private function api_initiate_payment($phone,$order,$requestid=1) {
+      $url = $server . '/Ecomm/v1/payments';
+      $date = gmdate('c');
+      $ip = $_SERVER['SERVER_ADDR'];
+      $at = $this->get_access_token();
+      $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+      $merch = $this->get_option('merchantSerialNumber');
+      // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+      if (!$subkey) {
+        throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+      }
+      if (!$merch) {
+        throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+      }
+      $headers = array();
+      $headers['Authorization'] = 'Bearer ' . $at;
+      $headers['X-Request-Id'] = $requestid;
+      $headers['X-TimeStamp'] = $date;
+      $headers['X-Source-Address'] = $ip;
+      $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
+      $data = array();
+      $data['merchantSerialNumber'] = $merch;
+      // HTTPS is required here IOK 2018-04-24
+      $data['callBack'] = 'https//' . home_url() . '/wc-api/wc_gateway_vipps';
+      // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
+      if ( !get_option('permalink_structure')) {
+        $data['callBack'] = 'https//' . home_url() . '/?wc-api=wc_gateway_vipps';
+      }
+      $data['mobileNumber'] = $phone;
+      // IOK FIXME use a 'prefix' setting in options IOK 2018-04-24
+      $data['orderId'] = 'Woo'.($order->get_id());
+      // Ignore refOrderId - for child-transactions 
+      // IOK FIXME use a currency conversion here IOK 2018-04-24
+      $data['amount'] = round($order->get_total() * 100); 
+      $data['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
+      $data['timeStamp'] = $date;
+
+      $res = http_call($url,$data,'POST',$headers,'json'); 
+      $this->log("res is " . print_r($res, true), 'debug');
+      return $res;
+     }
+
 
     // Conventently call Vipps IOK 2018-04-18
     private function http_call($url,$data,$verb='GET',$headers=null,$encoding='url'){
