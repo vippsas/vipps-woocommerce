@@ -110,34 +110,74 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $phone = '';
         if (isset($_POST['vippsphone'])) {
-         $phone = trim($_POST['vippsphone']);
+            $phone = trim($_POST['vippsphone']);
         }
         if (!$phone && isset($_POST['billing_phone'])) {
-         $phone = trim($_POST['billing_phone']);
+            $phone = trim($_POST['billing_phone']);
         }
         if (!$phone) {
             wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps') . print_r($_POST,true),'error');
             return false;
         }
-      
-        $this->log("ready to init payments", 'debug');
+
         $order = new WC_Order($order_id);
         $res = null;
         try {
-          $res =  $this->api_initiate_payment($phone,$order,1);
+            // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
+            // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
+            $requestid = 1;
+            $res =  $this->api_initiate_payment($phone,$order,$requestid);
         } catch (VippException $e) {
-            wc_add_notice($e->getMessage());
+            wc_add_notice($e->getMessage(), 'error');
             return false;
         }
-        if (!$res) {
-          wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-          return false;
+
+        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
+        if (!$res || !$res['response']) {
+            $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps'), 'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+            return false;
+        } 
+
+        // Errors. We can't do much recovery, but we can log, which we will do . IOK 2018-04-24
+        if ($res['response']>399) {
+            if (isset($res['content'])) {
+                $content = $res['content'];
+                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
+                if (isset($content['ResponseInfo'])) {
+                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
+                    $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .  $content['ResponseInfo']['ResponseMessage'], 'error');
+                    wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+                    return false;
+                } else {
+                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
+                    foreach($content as $entry) {
+                        $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .  $entry['errorMessage'], 'error');
+                    }
+                    wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+                    return false;
+                }
+            } else {
+                // No response content at all, so just log the response header
+                $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .  $res['headers'][0], 'error');
+                wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+                return false;
+            }
         }
+        // This should not ever happen, so log it and fail
+        if (intval($res['response']) != 202) {
+            $this->log(__('Unexpected response from Vipps','vipps') . ' ' .  print_r($res,true), 'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+            return false;
+        }
+
+        // So here we have a correct response 202 Accepted and so on and so forth!
+
 
         wc_add_notice(__('ok','vipps'),'notice');
         return false;
-       
- 
+
+
         $order = new WC_Order( $order_id );
 
         // If call fails, do this and return false
@@ -197,9 +237,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function log ($what,$type='info') {
-       $logger = wc_get_logger();
-       $context = array('source','Vipps Woo Gateway');
-       $logger->log($type,$what,$context);
+        $logger = wc_get_logger();
+        $context = array('source','Vipps Woo Gateway');
+        $logger->log($type,$what,$context);
     }
 
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
@@ -246,56 +286,52 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     private function api_initiate_payment($phone,$order,$requestid=1) {
-      $server = $this->api;
-      $url = $server . '/Ecomm/v1/payments';
-      $date = gmdate('c');
-      $ip = $_SERVER['SERVER_ADDR'];
-      $at = $this->get_access_token();
-      $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-      $merch = $this->get_option('merchantSerialNumber');
-      // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
-      if (!$subkey) {
-        throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
-      }
-      if (!$merch) {
-        throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
-      }
-      $headers = array();
-      $headers['Authorization'] = 'Bearer ' . $at;
-      $headers['X-Request-Id'] = $requestid;
-      $headers['X-TimeStamp'] = $date;
-      $headers['X-Source-Address'] = $ip;
-      $headers['Ocp-Apim-Subscription-Key'] = $subkey;
- 
-      // HTTPS is required. IOK 2018-04-24
-      $callback = set_url_scheme(home_url(),'https') . '/wc-api/wc_gateway_vipps';
-      // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
-      if ( !get_option('permalink_structure')) {
-        $callBack = set_url_scheme(home_url(),'https') . '/?wc-api=wc_gateway_vipps';
-      }
-   
-      $transaction = array();
-      // IOK FIXME use a 'prefix' setting in options IOK 2018-04-24
-      $transaction['orderId'] = 'Woo'.($order->get_id());
-      // Ignore refOrderId - for child-transactions 
-      // IOK FIXME use a currency conversion here IOK 2018-04-24
-      $transaction['amount'] = round($order->get_total() * 100); 
-      $transaction['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
-      $transaction['timeStamp'] = $date;
-      
+        $server = $this->api;
+        $url = $server . '/Ecomm/v1/payments';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+        if (!$subkey) {
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+        }
+        if (!$merch) {
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+        }
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-Request-Id'] = $requestid;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
-      $data = array();
-      $data['customerInfo'] = array('mobileNumber' => $phone);
-      $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callBack'=>$callback); 
-      $data['transaction'] = $transaction;
+        // HTTPS is required. IOK 2018-04-24
+        $callback = set_url_scheme(home_url(),'https') . '/wc-api/wc_gateway_vipps';
+        // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
+        if ( !get_option('permalink_structure')) {
+            $callBack = set_url_scheme(home_url(),'https') . '/?wc-api=wc_gateway_vipps';
+        }
 
-      $this->log("headers are " . print_r($headers, true), 'debug');
-      $this->log("data are " . print_r($data, true), 'debug');
+        $transaction = array();
+        // IOK FIXME use a 'prefix' setting in options IOK 2018-04-24
+        $transaction['orderId'] = 'Woo'.($order->get_id());
+        // Ignore refOrderId - for child-transactions 
+        // IOK FIXME use a currency conversion here IOK 2018-04-24
+        $transaction['amount'] = round($order->get_total() * 100); 
+        $transaction['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
+        $transaction['timeStamp'] = $date;
 
-      $res = $this->http_call($url,$data,'POST',$headers,'json'); 
-      $this->log("res is " . print_r($res, true), 'debug');
-      return $res;
-     }
+
+        $data = array();
+        $data['customerInfo'] = array('mobileNumber' => $phone);
+        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callBack'=>$callback); 
+        $data['transaction'] = $transaction;
+
+        $res = $this->http_call($url,$data,'POST',$headers,'json'); 
+        return $res;
+    }
 
 
     // Conventently call Vipps IOK 2018-04-18
@@ -347,9 +383,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $context = stream_context_create($params);
         $content = null;
 
-        $this->log("url is $url", 'debug');
-        $this->log("header is $headerstring", 'debug');
-        $this->log("data is $data_encoded", 'debug');
 
         $contenttext = @file_get_contents($url,false,$context);
         if ($contenttext) {
@@ -371,9 +404,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function payment_fields() {
         $fields = WC()->checkout->checkout_fields;
         if (isset($fields['billing']['billing_phone']) && $fields['billing']['billing_phone']['required']) {
-          // Use Billing Phone if required IOK 2018-04-24
-          } else {
-          print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
+            // Use Billing Phone if required IOK 2018-04-24
+        } else {
+            print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
         }
     }
     public function validate_fields() {

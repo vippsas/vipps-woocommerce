@@ -23,9 +23,9 @@ class Vipps {
     }
 
     public function log ($what,$type='info') {
-       $logger = wc_get_logger();
-       $context = array('source','Vipps Woo Gateway');
-       $logger->log($type,$what,$context);
+        $logger = wc_get_logger();
+        $context = array('source','Vipps Woo Gateway');
+        $logger->log($type,$what,$context);
     }
 
 
@@ -136,7 +136,7 @@ Version: 2.0
 }
 
          */ 
-    }
+        }
 
 /* WooCommerce Hooks */
 public function woocommerce_payment_gateways($methods) {
