@@ -72,8 +72,14 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
-        /* URL rewriting and that sort of thing */
+
+        // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
+
+        // Ajax endpoints for checking the order status while waiting for confirmation
+        add_action('wp_ajax_nopriv_check_order_status', array($this, 'check_order_status'));
+        add_action('wp_ajax_check_order_status', array($this, 'check_order_status'));
+
     }
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
@@ -103,6 +109,24 @@ class Vipps {
     }
     public function footer() {
     }
+
+    public function check_order_status () {
+        check_ajax_referer('vippsstatus','sec');
+
+        $orderid= wc_get_order_id_by_order_key($_POST['key']);
+        $transaction = wc_get_order_id_by_order_key($_POST['transaction']);
+
+        $order = new WC_Order($orderid); 
+        // IOK FIXME check that the transactionid for vipps is correct and that it exist. Then check the status, 
+        // either cancelled or processing and the stamps passed above
+
+        // If still on-hold, check the INITIATE timestamp. If that's old, then call Vipps directly
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        // Call Vipps here to determine status on-line, handling errors
+        return false;
+    }
+
 }
 
 /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
