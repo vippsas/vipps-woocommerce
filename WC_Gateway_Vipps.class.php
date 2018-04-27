@@ -4,7 +4,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $form_fields = null;
     public $id = 'vipps';
     public $icon = ''; // IOK FIXME
-    //    public $has_fields = false; // IOK FIXME
+    public $has_fields = true;
     public $method_title = 'Vipps';
     public $title = 'Vipps';
     public $method_description = "";
@@ -27,6 +27,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no',
+                    ),
+                'orderprefix' => array(
+                    'title' => __('Order-id Prefix', 'vipps'),
+                    'label'       => __( 'Order-id Prefix', 'vipps' ),
+                    'type'        => 'string',
+                    'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','vipps'),
+                    'default'     => 'Woo',
                     ),
                 'merchantSerialNumber' => array(
                     'title' => __('Merchant Serial Number', 'vipps'),
@@ -94,6 +101,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('admin_notices',function() use ($what) {
                 echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
                 });
+    }
+
+    public function is_valid_for_use() {
+     $currency = get_woocommerce_currency(); 
+     if ($currency != 'NOK') {
+      return false;
+     }
+     return true; 
     }
 
     // IOK 2018-04-20 for this plugin we will simply return true and add the 'Klarna' form to the receipt apage
@@ -216,8 +231,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->log("We are in the callback" . print_r($result,true), 'debug');
         $orderid = $result['orderId'];
 
-        // IOK FIXME THE PREFIX THING STRIP IT
-        $orderid = preg_replace("!^Woo!","",$orderid);
+        // Strip any alphanumeric prefix configured in the settings IOK 2018-04-27
+        $prefix = $this->get_option('orderprefix');
+        if ($prefix) {
+         $orderid = preg_replace("!^$prefix!","",$orderid);
+        }
         $order = new WC_Order($orderid);
         if (!$order) {
            $this->log(__("Vipps callback for unknown order",'vipps') . " " .  $orderid);
@@ -273,9 +291,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         ?>
             <h2><?php _e('Vipps','vipps'); ?></h2>
             <?php $this->display_errors(); ?>
+            <?php if (!$this->is_valid_for_use()): ?>
+            <div class="inline error">
+             <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
+                <?php _e( 'Vipps does not support your currency.', 'vipps' ); ?>
+             </p>
+            </div>
+      <?php endif; ?>
             <table class="form-table">
             <?php $this->generate_settings_html(); ?>
             </table> <?php
+    }
+
+    // Validate/mangle input fields 
+    function validate_text_field ($key, $value) {
+      if ($key != 'orderprefix') return parent::validate_text_field($key,$value);
+      $value = preg_replace('![^a-zA-Z0-9]!','',$value);
+      return $value;
+    }
+    function validate_checkbox_field($key,$value) {
+      if ($key != 'enabled') return parent::validate_text_field($key,$value);
+      if ($this->is_valid_for_use()) return 'yes';
+      return 'no';
     }
 
     function process_admin_options () {
@@ -355,6 +392,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $at = $this->get_access_token();
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
+        $prefix = $this->get_option('orderprefix');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
             throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
@@ -377,10 +415,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $transaction = array();
-        // IOK FIXME use a 'prefix' setting in options IOK 2018-04-24
-        $transaction['orderId'] = 'Woo'.($order->get_id());
+        $transaction['orderId'] = $prefix.($order->get_id());
         // Ignore refOrderId - for child-transactions 
-        // IOK FIXME use a currency conversion here IOK 2018-04-24
         $transaction['amount'] = round($order->get_total() * 100); 
         $transaction['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
         $transaction['timeStamp'] = $date;
@@ -461,12 +497,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return array('response'=>$response,'headers'=>$http_response_header,'content'=>$content);
     }
 
-    // IOK experimental FIXME
-    public $has_fields = true;
     public function payment_fields() {
         $fields = WC()->checkout->checkout_fields;
         if (isset($fields['billing']['billing_phone']) && $fields['billing']['billing_phone']['required']) {
-            // Use Billing Phone if required IOK 2018-04-24
+            // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         } else {
             print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
         }
