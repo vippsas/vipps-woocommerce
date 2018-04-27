@@ -60,10 +60,11 @@ class Vipps {
             $vippsstamp = $order->get_meta('_vipps_init_timestamp');
             $vippsstatus = $order->get_meta('_vipps_init_status');
             $message = $order->get_meta('_vipps_confirm_message');
-            print "<pre>This is where we await user confirmation:\n";
-            print htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp));
 
-            exit();
+            $content = "<pre>This is where we await user confirmation:\n";
+            $content .= htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp));
+
+            $this->fakepage(__('Confirm your purchase in your Vipps app','vipps'), $content);
         }
     }
 
@@ -125,6 +126,64 @@ class Vipps {
         $gw = new WC_Gateway_Vipps();
         // Call Vipps here to determine status on-line, handling errors
         return false;
+    }
+
+    public function fakepage($title,$content) {
+        global $wp, $wp_query;
+        $post = new stdClass();
+        $post->ID = -99;
+        $post->post_author = 1;
+        $post->post_date = current_time( 'mysql' );
+        $post->post_date_gmt = current_time( 'mysql', 1 );
+        $post->post_title = $title;
+        $post->post_content = $content;
+        $post->post_status = 'publish';
+        $post->comment_status = 'closed';
+        $post->ping_status = 'closed';
+        $post->post_name = 'vippsconfirm-fake-page-name';
+        $post->post_type = 'page';
+        $post->filter = 'raw'; // important
+        $wp_post = new WP_Post($post);
+        wp_cache_add( -99, $wp_post, 'posts' );
+        // Update the main query
+        $wp_query->post = $wp_post;
+        $wp_query->posts = array( $wp_post );
+        $wp_query->queried_object = $wp_post;
+        $wp_query->queried_object_id = $post_id;
+        $wp_query->found_posts = 1;
+        $wp_query->post_count = 1;
+        $wp_query->max_num_pages = 1; 
+        $wp_query->is_page = true;
+        $wp_query->is_singular = true; 
+        $wp_query->is_single = false; 
+        $wp_query->is_attachment = false;
+        $wp_query->is_archive = false; 
+        $wp_query->is_category = false;
+        $wp_query->is_tag = false; 
+        $wp_query->is_tax = false;
+        $wp_query->is_author = false;
+        $wp_query->is_date = false;
+        $wp_query->is_year = false;
+        $wp_query->is_month = false;
+        $wp_query->is_day = false;
+        $wp_query->is_time = false;
+        $wp_query->is_search = false;
+        $wp_query->is_feed = false;
+        $wp_query->is_comment_feed = false;
+        $wp_query->is_trackback = false;
+        $wp_query->is_home = false;
+        $wp_query->is_embed = false;
+        $wp_query->is_404 = false; 
+        $wp_query->is_paged = false;
+        $wp_query->is_admin = false; 
+        $wp_query->is_preview = false; 
+        $wp_query->is_robots = false; 
+        $wp_query->is_posts_page = false;
+        $wp_query->is_post_type_archive = false;
+        // Update globals
+        $GLOBALS['wp_query'] = $wp_query;
+        $wp->register_globals();
+        return $wp_post;
     }
 
 }
