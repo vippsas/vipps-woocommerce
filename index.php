@@ -84,55 +84,9 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
         }
-        $this->log("We are in the callback" . print_r($result,true), 'debug');
-        $orderid = $result['orderId'];
-     
-        // IOK FIXME THE PREFIX THING STRIP IT
-        $orderid = preg_replace("!^Woo!","",$orderid);
-        $order = new WC_Order($orderid);
-        if (!$order) {
-           $this->log(__("Vipps callback for unknown order",'vipps') . " " .  $orderid);
-           return false;
-        }
-
-        $merchant= $result['merchantSerialNumber'];
-        // FIXME IOK MOVE TO GATEWAY AND CHECK THAT THIS IS CORRECT !
-
-        $transaction = @$result['transactionInfo'];
-        if (!$transaction) {
-            $this->log(__("Anomalous callback from vipps, handle errors and clean up",'vipps'),'error');
-            return false;
-        }
-        $transactionid = $transaction['transactionId'];
-        $vippsstamp = strtotime($transaction['timeStamp']);
-        $vippsamount = $transaction['amount'];
-        $vippsstatus = $transaction['status'];
-
-        $ordertransid = $order->get_meta('_vipps_transaction');
-        if ($ordertransid != $transactionid) {
-            $this->log(__("Vipps callback with wrong transaction id for order",'vipps'). " " . $orderid . ": " . $transactionid . ': ' . $ordertransid ,'error');
-            return false;
-        }
-
-        $order->add_order_note(__('Vipps callback received','vipps'));
-
-        $errorInfo = @$result['errorInfo'];
-        if ($errorInfo) {
-            $this->log(__("Error message in callback from Vipps for order",'vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note($errorInfo['errorMessage']);
-        }
-
-        $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
-        $order->update_meta_data('_vipps_amount',$vippsamount);
-        $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
-        
-        if ($vippsstatus == 'RESERVED') {
-         $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
-        } else {
-         $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
-        }
-        $order->save();
-        // At this point, add signal file for faster callbacks IOK 2018-04-24 FIXME
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php"); // Unneccessary, as this will have been initialized by Woo, but anyway . 2018-04-27
+        $gw = new WC_Gateway_Vipps();
+        return $gw->handle_callback($result);
     }
 
     /* WooCommerce Hooks */
