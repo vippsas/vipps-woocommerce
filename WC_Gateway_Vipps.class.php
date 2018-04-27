@@ -3,7 +3,7 @@
 class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $form_fields = null;
     public $id = 'vipps';
-    public $icon = ''; // IOK FIXME
+    public $icon = ''; 
     public $has_fields = true;
     public $method_title = 'Vipps';
     public $title = 'Vipps';
@@ -14,6 +14,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->method_description = __('Offer Vipps as a payment method', 'vipps');
         $this->method_title = __('Vipps','vipps');
         $this->title = __('Vipps','vipps');
+        $this->icon = plugins_url('img/vipps_logo_rgb.png',__FILE__);
         $this->init_form_fields();
         $this->init_settings();
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -289,7 +290,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function admin_options() {
         ?>
-            <h2><?php _e('Vipps','vipps'); ?></h2>
+            <h2><?php _e('Vipps','vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
             <?php if (!$this->is_valid_for_use()): ?>
             <div class="inline error">
