@@ -238,6 +238,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function callback_check_order_status($order) {
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
+        $vippsstatus = $this->get_vipps_order_status($order,'iscallback');
 
         switch ($vippsstatus) { 
             case 'INITIATE':
@@ -269,10 +270,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     break;
             }
         }
+
+
+
         return $newstatus;
     }
  
-    public function get_vipps_order_status($order) {
+    public function get_vipps_order_status($order, $iscallback=0) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) return null;
         $statusdata = $this->api_order_status($order);
@@ -295,7 +299,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $transaction = @$statusdata['transactionInfo'];
         if (!$transaction) return null;
         $vippsstatus = $transaction['status'];
-        $timestamp = strtotime($transaction['timeSTamp']);
+        $vippsstamp = strtotime($transaction['timeStamp']);
+        $vippsamount= $transaction['amount'];
+
+        if ($iscallback) {
+          $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+        }
+        $order->update_meta_data('_vipps_amount',$vippsamount);
+        $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
+        $order->save();
  
         return $vippsstatus;
      }
@@ -339,7 +351,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(__("Vipps callback with wrong transaction id for order",'vipps'). " " . $orderid . ": " . $transactionid . ': ' . $ordertransid ,'error');
             return false;
         }
-
+        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
+        $Vipps->createCallbackSignal($order,'ok');
         $order->add_order_note(__('Vipps callback received','vipps'));
 
         $errorInfo = @$result['errorInfo'];

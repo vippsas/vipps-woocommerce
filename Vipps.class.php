@@ -9,6 +9,8 @@ require_once(dirname(__FILE__) . "/exceptions.php");
 
 /* This class is for hooks and plugin managent, and is instantiated as a singleton. IOK 2018-02-07*/
 class Vipps {
+    /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
+    private $callbackDirname = 'wc-vipps-status';
 
     function __construct() {
     }
@@ -20,12 +22,61 @@ class Vipps {
     }
 
     public function init () {
+     // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
+     $this->cleanupCallbackSignals();
     }
 
     public function log ($what,$type='info') {
         $logger = wc_get_logger();
         $context = array('source','Vipps Woo Gateway');
         $logger->log($type,$what,$context);
+    }
+
+    // This function will create a file with an obscure filename in the $callbackDirname directory.
+    // When initiating payment, this file will be created with a zero value. When the response is reday,
+    // it will be rewritten with the value 1.
+    // This function can fail if we can't write to the directory in question, in which case, return null and
+    // to the check with admin-ajax instead. IOK 2018-05-04
+    public function createCallbackSignal($order,$ok=0) {
+     $dir = $this->callbackDir();
+     if (!$dir) return;
+     $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
+     if ($ok) {
+      @file_put_contents($fname,"1");
+     }else {
+      @file_put_contents($fname,"0");
+     }
+     if (is_file($fname)) return $fname;
+     return null;
+    }
+    // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
+    public function cleanupCallbackSignals() {
+      $dir = $this->callbackDir();
+      if (is_dir($dir)) return;
+      $signals = scandir($dir);
+      $now = time();
+      foreach($signals as $signal) {
+        $path = $dir .  DIRECTORY_SEPARATOR . $signal;
+        if (is_dir($path)) continue;
+        if (is_file($path)) {
+          $age = @filemtime($path);
+          $halfhour = 30*60*60;
+          if (($age+$halfhour) < $now) {
+            @unlink($path);
+          }
+        }
+      }
+    }
+
+    // Returns the name of the callback-directory, or null if it doesn't exist. IOK 2018-05-04
+    private function callbackDir() {
+      $uploaddir = wp_upload_dir();
+      $base = $uploaddir['basedir'];
+      $callbackdir = $base . DIRECTORY_SEPARATOR . $callbackDirname;
+      if (is_dir($callbackdir)) return $callbackdir;
+      $ok = mkdir($callbackdir, 0755);
+      if ($ok) return $callbackdir; 
+      return null;
     }
 
 
@@ -118,10 +169,6 @@ class Vipps {
     public function footer() {
     }
  
-    public function wha () {
-      print "hwa";
-    }
-
     // Check order status in the database, and if it is on-hold for a long time, directly at Vipps
     // IOK 2018-05-04
     public function check_order_status($order) {
