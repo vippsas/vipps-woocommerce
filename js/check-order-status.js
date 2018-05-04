@@ -8,7 +8,7 @@ jQuery(document).ready(function () {
  var aminute = 1 * 60 * 60 * 1000;
  var data  = jQuery('#vippsdata').serialize();
 
- function checkStatus() {
+ function checkStatusReady() {
    console.log("Checking status");
    var now = new Date();
    iterate++;
@@ -20,7 +20,7 @@ jQuery(document).ready(function () {
      console.log("Checking " + url);
      jQuery.ajax(url,
       {'cache':false,
-       'complete': function () { if (!statusok) setTimeout(checkStatus,500); },
+       'complete': function () { if (!statusok) setTimeout(checkStatusReady,500); },
        'dataType':'json',
        'error': function (xhr, statustext, error) {
          console.log("Error checking status: " + statustext + " : "  + error);
@@ -28,17 +28,26 @@ jQuery(document).ready(function () {
        }, 
        'method': 'POST', // We realy don't want this cached
        'success': function (data,statustext, xhr) {
-         console.log("Found it!" + statustext);
-         statusok=true;
+         console.log("Found it!" + statustext + ": "  + data);
+         statusok=data*1;
+         if (statusok) checkStatus();
+         setTimeout(checkStatusReady,500);
          // and call the ajax stuff.
        },
        'timeout': 3000
      });
    } else {
-     console.log("Doing admin-ajax");
-//     setTimeout(checkStatus, 4000);
+     setTimeout(checkStatus,500);
    }
+}
+
+ // Actually check order status by calling admin-ajax
+ function checkStatus()  {
+   console.log(vippsajaxurl);
+   
+//   setTimeout(checkStatus, 3000);
  }
- checkStatus();
+
+ checkStatusReady();
 
 });

@@ -132,6 +132,7 @@ class Vipps {
 
 //            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),'1.0', 'true');
             wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
+            wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
 
             // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
             // and check that the order matches (and is 'pending') (and exists)
@@ -141,7 +142,7 @@ class Vipps {
             $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
             
             $signal = $this->callbackSignal($order);
-            $content = "<p>" . __('Confirm your purchase in your Vipps app','vipps');
+            $content .= "<p>" . __('Confirm your purchase in your Vipps app','vipps');
 
             if ($signal && !is_file($signal)) $signal = '';
             $signalurl = $this->callbackSignalURL($signal);
