@@ -151,10 +151,26 @@ class Vipps {
             $content .= "<span id='vippstime'></span>";
             $content .= "</p>";
             $content .= "<form id='vippsdata'>";
-            $content .= "<input type='xhidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
-            $content .= "<input type='xhidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
-            $content .= "<input type='xhidden' name='transaction' value='".htmlspecialchars($transid)."'>";
+            $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
+            $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
+            $content .= "<input type='hidden' name='transaction' value='".htmlspecialchars($transid)."'>";
             $content .= "</form>";
+ 
+            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+            $gw = new WC_Gateway_Vipps();
+ 
+            $content .= "<div id=error style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
+            $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps') . "</p>";
+            $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
+            $content .= "</div>";
+      
+            $content .= "<div id=success style='display:none'><p>". __('Order confirmed', 'vipps') . '</p>';
+            $content .= "<p><a class='btn button' id='continueToThankYou' href='" . $gw->get_return_url($order)  . "'>".__('Continue','vipps') ."</a></p>";
+            $content .= '</div>';
+
+            $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'vipps') . '</p>';
+            $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
+            $content .= "</div>";
 
 
             $this->fakepage(__('Confirm your purchase in your Vipps app','vipps'), $content);
