@@ -229,14 +229,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Handle the callback from Vipps.
     public function handle_callback($result) {
-        $this->log("We are in the callback" . print_r($result,true), 'debug');
-        $orderid = $result['orderId'];
+        global $Vipps;
 
-        // Strip any alphanumeric prefix configured in the settings IOK 2018-04-27
-        $prefix = $this->get_option('orderprefix');
-        if ($prefix) {
-         $orderid = preg_replace("!^$prefix!","",$orderid);
-        }
+        $this->log("We are in the callback" . print_r($result,true), 'debug');
+ 
+        // These can have a prefix added, which may have changed, so we'll use our own search
+        // to retrieve the order IOK 2018-05-03
+        $vippsorderid = $result['orderId'];
+        $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
+
         $order = new WC_Order($orderid);
         if (!$order) {
            $this->log(__("Vipps callback for unknown order",'vipps') . " " .  $orderid);
@@ -401,6 +402,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$merch) {
             throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
         }
+
+        // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
+        $vippsorderid =  $prefix.($order->get_id());
+        $order->update_meta_data('_vipps_prefix',$prefix);
+        $order->update_meta_data('_vipps_orderid', $vippsorderid);
+
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['X-Request-Id'] = $requestid;
@@ -416,7 +423,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $transaction = array();
-        $transaction['orderId'] = $prefix.($order->get_id());
+        $transaction['orderId'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($order->get_total() * 100); 
         $transaction['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 

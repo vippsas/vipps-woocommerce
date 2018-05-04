@@ -29,6 +29,13 @@ class Vipps {
     }
 
 
+    // Because the prefix used to create the Vipps order id is editable
+    // by the user, we will store that as a meta and use this for callbacks etc.
+    public function getOrderIdByVippsOrderId($vippsorderid) {
+      global $wpdb;
+      return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
+    }
+
     // Temporary redirect handler! IOK FIXME REPLACE IOK 2018-04-23
     // This needs to be an actual page instead, which must be created on plugin activate
     // and then selected, and error-handling added and so forth.
