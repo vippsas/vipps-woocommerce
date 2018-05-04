@@ -154,6 +154,8 @@ class Vipps {
             $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
             $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
             $content .= "<input type='hidden' name='transaction' value='".htmlspecialchars($transid)."'>";
+            $content .= "<input type='hidden' name='action' value='check_order_status'>";
+            $content .= wp_nonce_field('vippsstatus','sec',1,false); 
             $content .= "</form>";
  
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -263,8 +265,8 @@ class Vipps {
         if (!$order) {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps')));
         }
+        $order_status = $this->check_order_status($order);
 
-        $order_status = $this->callback_check_order_status($order);
         if ($order_status == 'processing') {
             wp_send_json(array('status'=>'ok', 'msg'=>__('Payment reserved', 'vipps')));
         }
