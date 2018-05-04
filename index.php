@@ -32,8 +32,8 @@ class Vipps {
     // Because the prefix used to create the Vipps order id is editable
     // by the user, we will store that as a meta and use this for callbacks etc.
     public function getOrderIdByVippsOrderId($vippsorderid) {
-      global $wpdb;
-      return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
+        global $wpdb;
+        return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
 
     // Temporary redirect handler! IOK FIXME REPLACE IOK 2018-04-23
@@ -124,14 +124,43 @@ class Vipps {
         $orderid= wc_get_order_id_by_order_key($_POST['key']);
         $transaction = wc_get_order_id_by_order_key($_POST['transaction']);
 
-        $order = new WC_Order($orderid); 
-        // IOK FIXME check that the transactionid for vipps is correct and that it exist. Then check the status, 
-        // either cancelled or processing and the stamps passed above
+        $sessionorders= WC()->session->get('_vipps_session_orders');
+        if (!isset($sessionorders[$orderid])) {
+            $this->log(__('The orderid passed is not from this session:','vipps') . $orderid);
+            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps')));
+        }
 
-        // If still on-hold, check the INITIATE timestamp. If that's old, then call Vipps directly
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
-        // Call Vipps here to determine status on-line, handling errors
+        $order = new WC_Order($orderid); 
+        if (!$order) {
+            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps')));
+        }
+
+        $order_status = $order->get_status();   
+        if ($order_status == 'processing') {
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment reserved', 'vipps')));
+        }
+        if ($order_status == 'completed') {
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Order complete', 'vipps')));
+        }
+
+        if ($order_status == 'failed') {
+            wp_send_json(array('status'=>'fail', 'msg'=>__('Order cancelled', 'vipps')));
+        }
+
+        // No callback has occured yet. If this has been going on for a while, check directly with Vipps
+        if ($order_status == 'on-hold') {
+            $now = time();
+            $then= $order->get_meta('_vipps_init_timestamp');
+            if ($then + (5 * 60 * 60) < $now) {
+                wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on confirmation', 'vipps')));
+            } else {
+                // If still on-hold, check the INITIATE timestamp. If that's old, then call Vipps directly
+                require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+                $gw = new WC_Gateway_Vipps();
+                $gw->check_order_status($order);
+            }
+        }
+        wp_send_json(array('status'=>'error', 'msg'=>__('Unknown order','vipps')));
         return false;
     }
 

@@ -204,17 +204,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $message = __(@$transactioninfo['message'],'vipps');
         $vippstamp = strtotime(@$transactioninfo['timeStamp']);
 
+        // Ensure we only check the status by ajax of our own orders. IOK 2018-05-03
+        $sessionorders= WC()->session->get('_vipps_session_orders');
+        $sessionorders[$order_id] = 1;
+        WC()->session->set('_vipps_session_orders',$sessionorders);
         WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
 
         $order = new WC_Order( $order_id );
         $order->update_status('on-hold', __( 'Awaiting vipps payment', 'vipps' ));
         $order->reduce_order_stock();
         $order->set_transaction_id($transactionid);
+        $order->update_meta_data('_session_custid')
         $order->update_meta_data('_vipps_transaction',$transactionid);
         $order->update_meta_data('_vipps_confirm_message',$message);
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status',$vippsstatus); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','vipps'));
+        
+
         $order->save();
 
         // Then empty the cart; we'll ressurect it if we can and have to - later IOK 2018-04-24
