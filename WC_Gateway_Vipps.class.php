@@ -212,7 +212,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order( $order_id );
         $order->update_status('on-hold', __( 'Awaiting vipps payment', 'vipps' ));
-        $order->reduce_order_stock();
+        wc_reduce_stock_levels($order_id);
         $order->set_transaction_id($transactionid);
         $order->update_meta_data('_vipps_transaction',$transactionid);
         $order->update_meta_data('_vipps_confirm_message',$message);
