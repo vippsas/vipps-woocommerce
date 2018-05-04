@@ -142,14 +142,15 @@ class Vipps {
             $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
             
             $signal = $this->callbackSignal($order);
-            $content .= "<p>" . __('Confirm your purchase in your Vipps app','vipps');
+            $content .= "<div id='waiting'><p>" . __('Confirm your purchase in your Vipps app','vipps');
 
             if ($signal && !is_file($signal)) $signal = '';
             $signalurl = $this->callbackSignalURL($signal);
 
             $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
             $content .= "<span id='vippstime'></span>";
-            $content .= "</p>";
+            $content .= "</p></div>";
+
             $content .= "<form id='vippsdata'>";
             $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
             $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
@@ -161,7 +162,7 @@ class Vipps {
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
  
-            $content .= "<div id=error style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
+            $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
             $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps') . "</p>";
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
             $content .= "</div>";
@@ -275,7 +276,7 @@ class Vipps {
         }
 
         if ($order_status == 'failed') {
-            wp_send_json(array('status'=>'fail', 'msg'=>__('Order cancelled', 'vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order cancelled', 'vipps')));
         }
 
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps

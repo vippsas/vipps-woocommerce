@@ -54,6 +54,7 @@ jQuery(document).ready(function () {
     "error": function (xhr, statustext, error) {
       console.log("Error checking order status " + statustext + " " + error);
       done=1;
+      jQuery("#waiting").hide();
       jQuery("#success").hide();
       jQuery("#failure").hide();
       jQuery("#error").show();
@@ -68,24 +69,28 @@ jQuery(document).ready(function () {
        console.log("Success result");
        done=1;
        setTimeout(function () {
-         console.log("Redirecting!");
-//         window.location.href = jQuery("#continue").attr("href");
-       }, 1000);
+         var next = jQuery("#continueToThankYou").attr("href");
+         console.log("Redirecting to  " +next );
+         window.location.href = next;
+       }, 500);
+      jQuery("#waiting").hide();
        jQuery("#success").show(); 
        jQuery("#failure").hide();
        jQuery("#error").hide();
      } else if (result["status"]=="failed") {
        console.log("Failure result");
        done=1;
+      jQuery("#waiting").hide();
        jQuery("#success").hide(); 
        jQuery("#failure").show();
        jQuery("#error").hide();
      } else {
        console.log("Error result");
        done=1;
+       jQuery("#waiting").hide();
        jQuery("#success").hide(); 
        jQuery("#failure").hide();
-       jQuery("#error").hide();
+       jQuery("#error").show();
      }
     },
     "timeout": 0
