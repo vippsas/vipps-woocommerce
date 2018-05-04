@@ -114,7 +114,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2018-04-20 for this plugin we will simply return true and add the 'Klarna' form to the receipt apage
     public function process_payment ($order_id) {
-        global $woocommerce;
+        global $woocommerce, $Vipps;
         if (!$order_id) return false;
         // From the request, get either    [billing_phone] =>  or [vipps phone]
 
@@ -222,7 +222,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
 
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
-        $Vipps->createCallbackSignal($order);
+        try {
+          $Vipps->createCallbackSignal($order);
+        } catch (Exception $e) {
+          // Could not create a signal file, but that's ok.
+        }
 
         // Then empty the cart; we'll ressurect it if we can and have to - later IOK 2018-04-24
         $woocommerce->cart->empty_cart();
@@ -354,7 +358,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        $Vipps->createCallbackSignal($order,'ok');
+        try {
+          $Vipps->createCallbackSignal($order,'ok');
+        } catch (Exception $e) {
+          // Could not create a signal file, but that's ok.
+        }
         $order->add_order_note(__('Vipps callback received','vipps'));
 
         $errorInfo = @$result['errorInfo'];

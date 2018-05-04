@@ -23,6 +23,8 @@ class Vipps {
 
     public function init () {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
+        $o = new WC_Order(148);
+        $k = $this->createCallbackSignal($o, 0);
         $this->cleanupCallbackSignals();
     }
 
@@ -38,8 +40,8 @@ class Vipps {
     // This function can fail if we can't write to the directory in question, in which case, return null and
     // to the check with admin-ajax instead. IOK 2018-05-04
     public function createCallbackSignal($order,$ok=0) {
-        $name = $this->callbackSignal($order);
-        if (!$name) return null;
+        $fname = $this->callbackSignal($order);
+        if (!$fname) return null;
         if ($ok) {
             @file_put_contents($fname,"1");
         }else {
@@ -50,16 +52,16 @@ class Vipps {
     }
 
     //Helper function that produces the signal file name for an order IOK 2018-05-04
-    private function callbackSignal($order) {
+    public function callbackSignal($order) {
         $dir = $this->callbackDir();
         if (!$dir) return null;
         $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
-        return $fname;
+        return $dir . DIRECTORY_SEPARATOR . $fname;
     }
     // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
     public function cleanupCallbackSignals() {
         $dir = $this->callbackDir();
-        if (is_dir($dir)) return;
+        if (!is_dir($dir)) return;
         $signals = scandir($dir);
         $now = time();
         foreach($signals as $signal) {
@@ -79,7 +81,7 @@ class Vipps {
     private function callbackDir() {
         $uploaddir = wp_upload_dir();
         $base = $uploaddir['basedir'];
-        $callbackdir = $base . DIRECTORY_SEPARATOR . $callbackDirname;
+        $callbackdir = $base . DIRECTORY_SEPARATOR . $this->callbackDirname;
         if (is_dir($callbackdir)) return $callbackdir;
         $ok = mkdir($callbackdir, 0755);
         if ($ok) return $callbackdir; 
@@ -119,6 +121,8 @@ class Vipps {
             if ($orderid) {
                 $order = new WC_Order($orderid); 
             }
+            if (!$order) wp_die(__('Unknown order', 'vipps'));
+
             // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
             // and check that the order matches (and is 'pending') (and exists)
             $transid = $order->get_meta('_vipps_transaction');
@@ -126,10 +130,13 @@ class Vipps {
             $vippsstatus = $order->get_meta('_vipps_init_status');
             $message = $order->get_meta('_vipps_confirm_message');
             
-            $signal = $this->callbackSignal();
-            if ($signal && !is_file($signal)) $signal = '';
+            $signal = $this->callbackSignal($order);
+
 
             $content = "<p>" . __('Confirm your purchase in your Vipps app','vipps');
+
+            $content .= "origsignal $signal<br>";
+            if ($signal && !is_file($signal)) $signal = '';
 
             $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
             $content .= "<span id='vippstime'></span>";
@@ -138,7 +145,7 @@ class Vipps {
             $content .= "<input type='hidden' name='fkey' value='".htmlspecialchars($signal)."'>";
             $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
             $content .= "<input type='hidden' name='transaction' value='".htmlspecialchars($transid)."'>";
-            $content .= "</form id='vippsdata'>";
+            $content .= "</form>";
 
 
             $this->fakepage(__('Confirm your purchase in your Vipps app','vipps'), $content);
