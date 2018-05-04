@@ -241,7 +241,7 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         try {
-            $order_status = $gw->calback_check_order_status($order);
+            $order_status = $gw->callback_check_order_status($order);
             return $order_status;
         } catch (Exception $e) {
             $this->log($e->getMessage());
@@ -276,14 +276,22 @@ class Vipps {
         }
 
         if ($order_status == 'failed') {
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order cancelled', 'vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
         }
-
+        if ($order_status == 'cancelled') {
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
+        }
+        if ($order_status == 'refunded') {
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
+        }
+        if ($order_status == 'pending') {
+            wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'vipps')));
+        }
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'on-hold') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on confirmation', 'vipps')));
         }
-        wp_send_json(array('status'=>'error', 'msg'=>__('Unknown order','vipps')));
+        wp_send_json(array('status'=>'error', 'msg'=> __('Unknown order status','vipps') . $order_status));
         return false;
     }
 
