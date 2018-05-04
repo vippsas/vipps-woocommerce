@@ -128,14 +128,13 @@ class Vipps {
             $transid = $order->get_meta('_vipps_transaction');
             $vippsstamp = $order->get_meta('_vipps_init_timestamp');
             $vippsstatus = $order->get_meta('_vipps_init_status');
-            $message = $order->get_meta('_vipps_confirm_message');
+            $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
             
             $signal = $this->callbackSignal($order);
 
 
             $content = "<p>" . __('Confirm your purchase in your Vipps app','vipps');
 
-            $content .= "origsignal $signal<br>";
             if ($signal && !is_file($signal)) $signal = '';
 
             $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
