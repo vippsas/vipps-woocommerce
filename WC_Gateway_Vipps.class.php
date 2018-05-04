@@ -407,6 +407,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsorderid =  $prefix.($order->get_id());
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
+        $order->save();
 
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
