@@ -10,17 +10,33 @@ jQuery(document).ready(function () {
 
  function checkStatus() {
    console.log("Checking status");
-   if (statusok) return 1;
    var now = new Date();
    iterate++;
    // If we have a fkey that hasn't responed 404 yet and a minute hasn't passed,  call that directly and often IOK 2018-05-04
-   if (fkey && !fkey404 && (now.getTime() - start.getTime()) < aminute) {
+   if (!statusok && fkey && !fkey404 && (now.getTime() - start.getTime()) < aminute) {
      // Use post to hide data slightly and to avoid caches
-     console.log("Checking " + fkey);
-     setTimeout(checkStatus, 500);
+     console.log("time is " + (now.getTime() - start.getTime()));
+     var url = fkey + "?v="+iterate;
+     console.log("Checking " + url);
+     jQuery.ajax(url,
+      {'cache':false,
+       'complete': function () { if (!statusok) setTimeout(checkStatus,500); },
+       'dataType':'json',
+       'error': function (xhr, statustext, error) {
+         console.log("Error checking status: " + statustext + " : "  + error);
+         fkey404 = true; // Could be other errors but we'll treat them the same
+       }, 
+       'method': 'POST', // We realy don't want this cached
+       'success': function (data,statustext, xhr) {
+         console.log("Found it!" + statustext);
+         statusok=true;
+         // and call the ajax stuff.
+       },
+       'timeout': 3000
+     });
    } else {
      console.log("Doing admin-ajax");
-     setTimeout(checkStatus, 4000);
+//     setTimeout(checkStatus, 4000);
    }
  }
  checkStatus();

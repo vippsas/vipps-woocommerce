@@ -62,7 +62,7 @@ class Vipps {
     public function callbackSignalURL($signal) {
       if (!$signal) return "";
       $uploaddir = wp_upload_dir();
-      return $uploaddir['baseurl'] . '/' . basename($signal);
+      return $uploaddir['baseurl'] . '/' . $this->callbackDirname . '/' . basename($signal);
     }
 
     // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
