@@ -85,8 +85,8 @@ class Vipps {
         add_action('template_redirect', array($this,'template_redirect'));
 
         // Ajax endpoints for checking the order status while waiting for confirmation
-        add_action('wp_ajax_nopriv_check_order_status', array($this, 'check_order_status'));
-        add_action('wp_ajax_check_order_status', array($this, 'check_order_status'));
+        add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
+        add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
 
     }
 
@@ -118,7 +118,29 @@ class Vipps {
     public function footer() {
     }
 
-    public function check_order_status () {
+    // Check order status in the database, and if it is on-hold for a long time, directly at Vipps
+    // IOK 2018-05-04
+    public function check_order_status($order) {
+      if (!$order) return null;
+      $order_status = $order->get_status();
+      if ($order_status != 'on-hold') return $order_status;
+      // No callback has occured yet. If this has been going on for a while, check directly with Vipps
+      if ($order_status == 'on-hold') {
+            $now = time();
+            $then= $order->get_meta('_vipps_init_timestamp');
+            if ($then + (5 * 60 * 60) < $now) {
+               return $order_status;
+            }
+      }
+
+      require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+      $gw = new WC_Gateway_Vipps();
+      $order_status = $gw->check_order_status($order);
+      return $order_status;
+    }
+
+    // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
+    public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
 
         $orderid= wc_get_order_id_by_order_key($_POST['key']);
@@ -135,7 +157,7 @@ class Vipps {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps')));
         }
 
-        $order_status = $order->get_status();   
+        $order_status = $this->check_order_status($order);
         if ($order_status == 'processing') {
             wp_send_json(array('status'=>'ok', 'msg'=>__('Payment reserved', 'vipps')));
         }
@@ -149,16 +171,7 @@ class Vipps {
 
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'on-hold') {
-            $now = time();
-            $then= $order->get_meta('_vipps_init_timestamp');
-            if ($then + (5 * 60 * 60) < $now) {
-                wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on confirmation', 'vipps')));
-            } else {
-                // If still on-hold, check the INITIATE timestamp. If that's old, then call Vipps directly
-                require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-                $gw = new WC_Gateway_Vipps();
-                $gw->check_order_status($order);
-            }
+            wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on confirmation', 'vipps')));
         }
         wp_send_json(array('status'=>'error', 'msg'=>__('Unknown order','vipps')));
         return false;

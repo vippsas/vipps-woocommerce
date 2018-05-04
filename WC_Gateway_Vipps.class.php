@@ -44,12 +44,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
                 'clientId' => array(
-                    'title' => __('Client Id', 'vipps'),
-                    'label'       => __( 'Client Id', 'vipps' ),
-                    'type'        => 'password',
-                    'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','vipps'),
-                    'default'     => '',
-                    ),
+                        'title' => __('Client Id', 'vipps'),
+                        'label'       => __( 'Client Id', 'vipps' ),
+                        'type'        => 'password',
+                        'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','vipps'),
+                        'default'     => '',
+                        ),
                 'secret' => array(
                         'title' => __('Application Secret', 'vipps'),
                         'label'       => __( 'Application Secret', 'vipps' ),
@@ -105,11 +105,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function is_valid_for_use() {
-     $currency = get_woocommerce_currency(); 
-     if ($currency != 'NOK') {
-      return false;
-     }
-     return true; 
+        $currency = get_woocommerce_currency(); 
+        if ($currency != 'NOK') {
+            return false;
+        }
+        return true; 
     }
 
     // IOK 2018-04-20 for this plugin we will simply return true and add the 'Klarna' form to the receipt apage
@@ -169,14 +169,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $notvippscustomer = 0;
                     foreach($content as $entry) {
                         if (preg_match('!User is not registered with VIPPS!i',$entry['errorMessage'])) {
-                         $notvippscustomer = 1;
+                            $notvippscustomer = 1;
                         }
                         $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'], 'error');
                     }
                     if ($notvippscustomer) {
-                     wc_add_notice(__('Your phone number doesn\'t have Vipps! Download the app and register, choose another payment method.','vipps'),'error');
+                        wc_add_notice(__('Your phone number doesn\'t have Vipps! Download the app and register, choose another payment method.','vipps'),'error');
                     } else { 
-                     wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+                        wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
                     }
                     return false;
                 }
@@ -219,7 +219,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status',$vippsstatus); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','vipps'));
-        
+
 
         $order->save();
 
@@ -233,12 +233,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return array('result'=>'success','redirect'=>$url);
     }
 
+    // Check status of order at Vipps, in case the callback has been delayed or failed.   
+    public function check_order_status($order) {
+        $vippsorderid = $order->get_meta('_vipps_orderid');
+        if (!$vippsorderid) return null;
+        $statusdata = $this->api_order_status($order);
+        print_r($statusdata);
+        $this->log(print_r($statusdata,true));
+        if (!$statusdata) return null;
+        $transaction = @$statusdata['transactionInfo'];
+        if (!$transaction) return null;
+        $timestamp = strtotime($transaction['timeSTamp']);
+        $status = $transaction['status'];
+        $this->log("Status was $status");
+    }
+
     // Handle the callback from Vipps.
     public function handle_callback($result) {
         global $Vipps;
 
         $this->log("We are in the callback" . print_r($result,true), 'debug');
- 
+
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
         $vippsorderid = $result['orderId'];
@@ -246,15 +261,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order($orderid);
         if (!$order) {
-           $this->log(__("Vipps callback for unknown order",'vipps') . " " .  $orderid);
-           return false;
+            $this->log(__("Vipps callback for unknown order",'vipps') . " " .  $orderid);
+            return false;
         }
 
         $merchant= $result['merchantSerialNumber'];
         $me = $this->get_option('merchantSerialNumber');
         if ($me != $merchant) {
-           $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'vipps') . " " .  $orderid);
-           return false;
+            $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'vipps') . " " .  $orderid);
+            return false;
         }
 
         $transaction = @$result['transactionInfo'];
@@ -286,9 +301,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
 
         if ($vippsstatus == 'RESERVED') {
-         $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
+            $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
         } else {
-         $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
+            $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
         }
         $order->save();
         // At this point, add signal file for faster callbacks IOK 2018-04-24 FIXME
@@ -301,11 +316,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             <?php $this->display_errors(); ?>
             <?php if (!$this->is_valid_for_use()): ?>
             <div class="inline error">
-             <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
-                <?php _e( 'Vipps does not support your currency.', 'vipps' ); ?>
-             </p>
+            <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
+            <?php _e( 'Vipps does not support your currency.', 'vipps' ); ?>
+            </p>
             </div>
-      <?php endif; ?>
+            <?php endif; ?>
             <table class="form-table">
             <?php $this->generate_settings_html(); ?>
             </table> <?php
@@ -313,14 +328,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Validate/mangle input fields 
     function validate_text_field ($key, $value) {
-      if ($key != 'orderprefix') return parent::validate_text_field($key,$value);
-      $value = preg_replace('![^a-zA-Z0-9]!','',$value);
-      return $value;
+        if ($key != 'orderprefix') return parent::validate_text_field($key,$value);
+        $value = preg_replace('![^a-zA-Z0-9]!','',$value);
+        return $value;
     }
     function validate_checkbox_field($key,$value) {
-      if ($key != 'enabled') return parent::validate_text_field($key,$value);
-      if ($this->is_valid_for_use()) return 'yes';
-      return 'no';
+        if ($key != 'enabled') return parent::validate_text_field($key,$value);
+        if ($this->is_valid_for_use()) return 'yes';
+        return 'no';
     }
 
     function process_admin_options () {
@@ -446,6 +461,35 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $res;
     }
 
+    private function api_order_status($order) {
+        $server = $this->api;
+
+        $vippsorderid = $order->get_meta('_vipps_orderid');
+        $url = $server . '/Ecomm/v1/payments/'.$orderid.'/status';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        $prefix = $this->get_option('orderprefix');
+        if (!$subkey) {
+            $this->log(__('Could not get order details from Vipps - no subscription key','vipps'));
+            return null;
+        }
+        if (!$merch) {
+            $this->log(__('Could not get order details from Vipps - no merchant serial number','vipps'));
+            return null;
+        }
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-Request-Id'] = $requestid;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $data = array();
+        $res = $this->http_call($url,$data,'GET',$headers);
+        return $res;
+    }
 
     // Conventently call Vipps IOK 2018-04-18
     private function http_call($url,$data,$verb='GET',$headers=null,$encoding='url'){
