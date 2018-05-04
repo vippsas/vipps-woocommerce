@@ -219,9 +219,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status',$vippsstatus); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','vipps'));
-
-
         $order->save();
+
+        // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
+        $Vipps->createCallbackSignal($order);
 
         // Then empty the cart; we'll ressurect it if we can and have to - later IOK 2018-04-24
         $woocommerce->cart->empty_cart();
@@ -275,7 +276,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         return $newstatus;
     }
- 
+
+    // Get the order status as defined by Vipps. If 'iscallback' is true, set timestamps etc as if this was a Vipps callback. IOK 2018-05-04 
     public function get_vipps_order_status($order, $iscallback=0) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) return null;
@@ -363,7 +365,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
         $order->update_meta_data('_vipps_amount',$vippsamount);
-        $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
+        $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
             $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
@@ -371,7 +373,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
         }
         $order->save();
-        // At this point, add signal file for faster callbacks IOK 2018-04-24 FIXME
     }
 
 

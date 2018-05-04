@@ -22,8 +22,8 @@ class Vipps {
     }
 
     public function init () {
-     // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
-     $this->cleanupCallbackSignals();
+        // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
+        $this->cleanupCallbackSignals();
     }
 
     public function log ($what,$type='info') {
@@ -38,45 +38,52 @@ class Vipps {
     // This function can fail if we can't write to the directory in question, in which case, return null and
     // to the check with admin-ajax instead. IOK 2018-05-04
     public function createCallbackSignal($order,$ok=0) {
-     $dir = $this->callbackDir();
-     if (!$dir) return;
-     $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
-     if ($ok) {
-      @file_put_contents($fname,"1");
-     }else {
-      @file_put_contents($fname,"0");
-     }
-     if (is_file($fname)) return $fname;
-     return null;
+        $name = $this->callbackSignal($order);
+        if (!$name) return null;
+        if ($ok) {
+            @file_put_contents($fname,"1");
+        }else {
+            @file_put_contents($fname,"0");
+        }
+        if (is_file($fname)) return $fname;
+        return null;
+    }
+
+    //Helper function that produces the signal file name for an order IOK 2018-05-04
+    private function callbackSignal($order) {
+        $dir = $this->callbackDir();
+        if (!$dir) return null;
+        $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
+        return $fname;
     }
     // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
     public function cleanupCallbackSignals() {
-      $dir = $this->callbackDir();
-      if (is_dir($dir)) return;
-      $signals = scandir($dir);
-      $now = time();
-      foreach($signals as $signal) {
-        $path = $dir .  DIRECTORY_SEPARATOR . $signal;
-        if (is_dir($path)) continue;
-        if (is_file($path)) {
-          $age = @filemtime($path);
-          $halfhour = 30*60*60;
-          if (($age+$halfhour) < $now) {
-            @unlink($path);
-          }
+        $dir = $this->callbackDir();
+        if (is_dir($dir)) return;
+        $signals = scandir($dir);
+        $now = time();
+        foreach($signals as $signal) {
+            $path = $dir .  DIRECTORY_SEPARATOR . $signal;
+            if (is_dir($path)) continue;
+            if (is_file($path)) {
+                $age = @filemtime($path);
+                $halfhour = 30*60*60;
+                if (($age+$halfhour) < $now) {
+                    @unlink($path);
+                }
+            }
         }
-      }
     }
 
     // Returns the name of the callback-directory, or null if it doesn't exist. IOK 2018-05-04
     private function callbackDir() {
-      $uploaddir = wp_upload_dir();
-      $base = $uploaddir['basedir'];
-      $callbackdir = $base . DIRECTORY_SEPARATOR . $callbackDirname;
-      if (is_dir($callbackdir)) return $callbackdir;
-      $ok = mkdir($callbackdir, 0755);
-      if ($ok) return $callbackdir; 
-      return null;
+        $uploaddir = wp_upload_dir();
+        $base = $uploaddir['basedir'];
+        $callbackdir = $base . DIRECTORY_SEPARATOR . $callbackDirname;
+        if (is_dir($callbackdir)) return $callbackdir;
+        $ok = mkdir($callbackdir, 0755);
+        if ($ok) return $callbackdir; 
+        return null;
     }
 
 
@@ -118,9 +125,21 @@ class Vipps {
             $vippsstamp = $order->get_meta('_vipps_init_timestamp');
             $vippsstatus = $order->get_meta('_vipps_init_status');
             $message = $order->get_meta('_vipps_confirm_message');
+            
+            $signal = $this->callbackSignal();
+            if ($signal && !is_file($signal)) $signal = '';
 
-            $content = "<pre>This is where we await user confirmation:\n";
-            $content .= htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp));
+            $content = "<p>" . __('Confirm your purchase in your Vipps app','vipps');
+
+            $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
+            $content .= "<span id='vippstime'></span>";
+            $content .= "</p>";
+            $content .= "<form id='vippsdata'>";
+            $content .= "<input type='hidden' name='fkey' value='".htmlspecialchars($signal)."'>";
+            $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
+            $content .= "<input type='hidden' name='transaction' value='".htmlspecialchars($transid)."'>";
+            $content .= "</form id='vippsdata'>";
+
 
             $this->fakepage(__('Confirm your purchase in your Vipps app','vipps'), $content);
         }
@@ -168,31 +187,31 @@ class Vipps {
     }
     public function footer() {
     }
- 
+
     // Check order status in the database, and if it is on-hold for a long time, directly at Vipps
     // IOK 2018-05-04
     public function check_order_status($order) {
-      if (!$order) return null;
-      $order_status = $order->get_status();
-      if ($order_status != 'on-hold') return $order_status;
-      // No callback has occured yet. If this has been going on for a while, check directly with Vipps
-      if ($order_status == 'on-hold') {
+        if (!$order) return null;
+        $order_status = $order->get_status();
+        if ($order_status != 'on-hold') return $order_status;
+        // No callback has occured yet. If this has been going on for a while, check directly with Vipps
+        if ($order_status == 'on-hold') {
             $now = time();
             $then= $order->get_meta('_vipps_init_timestamp');
             if ($then + (1 * 60) < $now) { // more than a minute? Start checking at Vipps
-               return $order_status;
+                return $order_status;
             }
-      }
-      $this->log("Checking order status on Vipps");
-      require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-      $gw = new WC_Gateway_Vipps();
-      try {
-       $order_status = $gw->calback_check_order_status($order);
-       return $order_status;
-      } catch (Exception $e) {
-        $this->log($e->getMessage());
-        return null;
-      }
+        }
+        $this->log("Checking order status on Vipps");
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        try {
+            $order_status = $gw->calback_check_order_status($order);
+            return $order_status;
+        } catch (Exception $e) {
+            $this->log($e->getMessage());
+            return null;
+        }
     }
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
