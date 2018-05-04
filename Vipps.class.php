@@ -123,6 +123,9 @@ class Vipps {
             }
             if (!$order) wp_die(__('Unknown order', 'vipps'));
 
+//            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),'1.0', 'true');
+            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
+
             // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
             // and check that the order matches (and is 'pending') (and exists)
             $transid = $order->get_meta('_vipps_transaction');
@@ -141,9 +144,9 @@ class Vipps {
             $content .= "<span id='vippstime'></span>";
             $content .= "</p>";
             $content .= "<form id='vippsdata'>";
-            $content .= "<input type='hidden' name='fkey' value='".htmlspecialchars($signal)."'>";
-            $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
-            $content .= "<input type='hidden' name='transaction' value='".htmlspecialchars($transid)."'>";
+            $content .= "<input type='xhidden' id='fkey' name='fkey' value='".htmlspecialchars($signal)."'>";
+            $content .= "<input type='xhidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
+            $content .= "<input type='xhidden' name='transaction' value='".htmlspecialchars($transid)."'>";
             $content .= "</form>";
 
 
