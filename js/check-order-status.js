@@ -7,7 +7,7 @@ jQuery(document).ready(function () {
  var iterate = 0;
  var statusok = 0;
  var done=0;
- var aminute = 1 * 60 * 60 * 1000;
+ var aminute = 1 * 60 * 1000;
  var data  = jQuery("#vippsdata").serialize();
 
  function checkStatusReady() {
@@ -33,7 +33,7 @@ jQuery(document).ready(function () {
        }, 
        "method": "POST", // We realy don"t want this cached
        "success": function (result,statustext, xhr) {
-         console.log("Found it!" + statustext + ": "  + result);
+         console.log("Found it!" + statustext + ": "  + result + " : " + (now.getTime() - start.getTime()) + " : " + aminute);
          statusok=result*1;
          if (!statusok) {
            // No result yet, check often as this is cheap
@@ -47,6 +47,7 @@ jQuery(document).ready(function () {
      });
    } else {
      // This happens when we've waited for a minute or moe, if we don't have a key and so forth.
+     console.log("Doesnt look as if this is going anyhere");
      statusok=1;
      setTimeout(checkStatus,500);
    }
