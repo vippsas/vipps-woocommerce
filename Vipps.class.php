@@ -58,6 +58,13 @@ class Vipps {
         $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
         return $dir . DIRECTORY_SEPARATOR . $fname;
     }
+    // URL of the above product thing
+    public function callbackSignalURL($signal) {
+      if (!$signal) return "";
+      $uploaddir = wp_upload_dir();
+      return $uploaddir['baseurl'] . '/' . basename($signal);
+    }
+
     // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
     public function cleanupCallbackSignals() {
         $dir = $this->callbackDir();
@@ -134,17 +141,16 @@ class Vipps {
             $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
             
             $signal = $this->callbackSignal($order);
-
-
             $content = "<p>" . __('Confirm your purchase in your Vipps app','vipps');
 
             if ($signal && !is_file($signal)) $signal = '';
+            $signalurl = $this->callbackSignalURL($signal);
 
             $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
             $content .= "<span id='vippstime'></span>";
             $content .= "</p>";
             $content .= "<form id='vippsdata'>";
-            $content .= "<input type='xhidden' id='fkey' name='fkey' value='".htmlspecialchars($signal)."'>";
+            $content .= "<input type='xhidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
             $content .= "<input type='xhidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
             $content .= "<input type='xhidden' name='transaction' value='".htmlspecialchars($transid)."'>";
             $content .= "</form>";
