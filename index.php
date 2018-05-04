@@ -117,6 +117,10 @@ class Vipps {
     }
     public function footer() {
     }
+ 
+    public function wha () {
+      print "hwa";
+    }
 
     // Check order status in the database, and if it is on-hold for a long time, directly at Vipps
     // IOK 2018-05-04
@@ -128,15 +132,20 @@ class Vipps {
       if ($order_status == 'on-hold') {
             $now = time();
             $then= $order->get_meta('_vipps_init_timestamp');
-            if ($then + (5 * 60 * 60) < $now) {
+            if ($then + (1 * 60) < $now) { // more than a minute? Start checking at Vipps
                return $order_status;
             }
       }
-
+      $this->log("Checking order status on Vipps");
       require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
       $gw = new WC_Gateway_Vipps();
-      $order_status = $gw->check_order_status($order);
-      return $order_status;
+      try {
+       $order_status = $gw->calback_check_order_status($order);
+       return $order_status;
+      } catch (Exception $e) {
+        $this->log($e->getMessage());
+        return null;
+      }
     }
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
@@ -157,7 +166,7 @@ class Vipps {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps')));
         }
 
-        $order_status = $this->check_order_status($order);
+        $order_status = $this->callback_check_order_status($order);
         if ($order_status == 'processing') {
             wp_send_json(array('status'=>'ok', 'msg'=>__('Payment reserved', 'vipps')));
         }

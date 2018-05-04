@@ -142,7 +142,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = 1;
             $res =  $this->api_initiate_payment($phone,$order,$requestid);
-        } catch (VippException $e) {
+        } catch (VippsApiException $e) {
             wc_add_notice($e->getMessage(), 'error');
             return false;
         }
@@ -234,19 +234,71 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
-    public function check_order_status($order) {
+    // Should only be called if in status 'on-hold'; it will modify the order when status changes.
+    public function callback_check_order_status($order) {
+        $oldstatus = $order->get_status();
+        $newstatus = $oldstatus;
+
+        switch ($vippsstatus) { 
+            case 'INITIATE':
+            case 'REGISTER':
+            case 'REGISTERED':
+                $newstatus = 'on-hold';
+                break;
+            case 'SALE':
+            case 'RESERVE':
+            case 'RESERVED':
+                $newstatus = 'processing'; 
+                break;
+            case 'CANCEL':
+            case 'VOID':
+            case 'AUTOREVERSAL':
+            case 'AUTOCANCEL':
+            case 'FAILED':
+            case 'REJECTED':
+                $newstatus = 'cancelled'; 
+                break;
+        }
+        if ($set && $oldstatus != $newstatus) {
+            switch ($newstatus) {
+                case 'processing':
+                    $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
+                    break;
+                case 'cancelled':
+                    $order->update_status('cancelled', __('Order failed or rejected at Vipps', 'vipps'));
+                    break;
+            }
+        }
+        return $newstatus;
+    }
+ 
+    public function get_vipps_order_status($order) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) return null;
         $statusdata = $this->api_order_status($order);
-        print_r($statusdata);
-        $this->log(print_r($statusdata,true));
         if (!$statusdata) return null;
+        // Errors. The response of an 500 is quite different than for a 40x. I0K 2018-05-04
+        if ($statusdata['response']>399) {
+            $content = $statusdata['content'];
+            if (isset($content['message'])) {
+                throw new VippsAPIException(__("Error getting order status: ",'vipps') . $statusdata['response'] . " " . $content['message']);
+            } else {
+                $msg = __("Error getting order status: ",'vipps') . $statusdata['response'];
+                foreach($content as $entry) {
+                    if (isset($entry['errorMessage'])) {
+                        $msg .= ' ' . $entry['errorMessage']; 
+                    }
+                }
+                throw new VippsAPIException($msg);
+            }
+        }
         $transaction = @$statusdata['transactionInfo'];
         if (!$transaction) return null;
+        $vippsstatus = $transaction['status'];
         $timestamp = strtotime($transaction['timeSTamp']);
-        $status = $transaction['status'];
-        $this->log("Status was $status");
-    }
+ 
+        return $vippsstatus;
+     }
 
     // Handle the callback from Vipps.
     public function handle_callback($result) {
@@ -300,7 +352,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_amount',$vippsamount);
         $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
 
-        if ($vippsstatus == 'RESERVED') {
+        if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
             $order->update_status('processing', __( 'Payment reserved at Vipps', 'vipps' ));
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
@@ -464,13 +516,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     private function api_order_status($order) {
         $server = $this->api;
 
+        $merch = $this->get_option('merchantSerialNumber');
         $vippsorderid = $order->get_meta('_vipps_orderid');
-        $url = $server . '/Ecomm/v1/payments/'.$orderid.'/status';
+
+        $url = $server . '/Ecomm/v1/payments/'.$vippsorderid.'/serialNumber/'.$merch.'/status';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $merch = $this->get_option('merchantSerialNumber');
         $prefix = $this->get_option('orderprefix');
         if (!$subkey) {
             $this->log(__('Could not get order details from Vipps - no subscription key','vipps'));
