@@ -243,11 +243,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
-    public function capture_order($order,$amount=0) {
+    public function capture_payment($order,$amount=0) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $this->log(__('Trying to capture payment on order not made by Vipps:','vipps'),$order->get_id());
-            wc_add_notice(__('Cannot capture payment on orders not made by Vipps','vipps'),'error');
+            $this->adminerr(__('Cannot capture payment on orders not made by Vipps','vipps'));
             return false;
         }
         try {
@@ -256,14 +256,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = '';
             $result =  $this->api_capture_payment($order,$requestid,$amount);
         } catch (VippsApiException $e) {
-            wc_add_notice($e->getMessage(), 'error');
+            $this->adminerr($e->getMessage());
             return false;
         }
         // This would be an error in the URL or something - or a network outage IOK 2018-04-24
         if (!$res || !$res['response']) {
             $msg = __('Could not capture Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps');
+            $this->adminerr($msg);
             $this->log($msg, 'error');
-            wc_add_notice($msg, 'error');
             $order->add_order_note($msg);
             return false;
         } 
@@ -276,7 +276,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
                     $msg = __('Could not capture Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
                     $this->log($msg,'error');
-                    wc_add_notice($msg,'error');
+                    $this->adminerr($msg);
                     $order->add_order_note($msg);
                     return false;
                 } else {
@@ -286,7 +286,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $msg = __('Could not capture Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'];
                         $allmsg .= $msg . "\n";
                         $this->log($msg, 'error');
-                        wc_add_notice($msg,'error');
+                        $this->adminerr($msg);
                     }
                     $order->add_order_note($allmsg);
                     return false;
@@ -295,14 +295,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // No response content at all, so just log the response header
                 $msg = __('Could not initiate Vipps payment','vipps') . ' ' .  $res['headers'][0];
                 $this->log($msg,'error');
-                wc_add_notice($msg,'error');
+                $this->adminerr($msg);
                 return false;
             }
         }
 
         $note = print_r($res['content'],true);
-        wc_add_notice($note,'info');
         $order->add_order_note($note);
+        $this->adminnotify($note);
         return true;
     }
 
@@ -681,7 +681,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $data['transaction'] = $transaction;
 
         $res = $this->http_call($url,$data,'POST',$headers,'json'); 
-        $this->log("Capture log " . print_r($res));
+        $this->log("Capture log " . print_r($res,true));
         return $res;
     }
 

@@ -24,6 +24,17 @@ class Vipps {
     public function admin_init () {
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
+        add_action('save_post', array($this, 'save_order'), 10, 3);
+
+        // Keep admin notices during redirects IOK 2018-05-07
+        add_action('admin_notices',array($this,'stored_admin_notices'));
+    }
+    public function stored_admin_notices() {
+       $stored = get_transient('_vipps_save_admin_notices',$notices, 5*60);
+       if ($stored) {
+        delete_transient('_vipps_save_admin_notices');
+        print $stored;
+       }
     }
 
     public function admin_menu () {
@@ -203,9 +214,32 @@ class Vipps {
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
     }
 
+    public function save_order($postid,$post,$update) {
+      if ($post->post_type != 'shop_order') return;
+      $order = new WC_Order($postid);
+      $pm = $order->get_payment_method();
+      if ($pm != 'vipps') return;
+
+      if (isset($_POST['do_capture_payment']) && $_POST['do_capture_payment']) {
+            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+            $gw = new WC_Gateway_Vipps();
+            // 0 in amount means full payment, which is all we currently support. IOK 2018-05-7
+            $ok = $gw->capture_payment($order,0);
+            // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
+            ob_start();
+            do_action('admin_notices');
+            $notices = ob_get_clean();
+            set_transient('_vipps_save_admin_notices',$notices, 5*60);
+      }
+   }
+
     public function order_item_add_action_buttons ($order) {
-     error_log("what");
-     print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">Knapp</button>';
+     $pm = $order->get_payment_method();
+     if ($pm != 'vipps') return;
+     // Check capture status of order here.
+
+     print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
+     print '<input type="hidden" value=1 name=do_capture_payment >';
     } 
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
