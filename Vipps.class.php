@@ -11,11 +11,19 @@ require_once(dirname(__FILE__) . "/exceptions.php");
 class Vipps {
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
+    private static $instance = null;
 
     function __construct() {
     }
 
+    public static function instance()  {
+     if (!static::$instance) static::$instance = new Vipps();
+     return static::$instance;
+    }
+
     public function admin_init () {
+        // Stuff for the Order screen
+        add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
     }
 
     public function admin_menu () {
@@ -189,11 +197,16 @@ class Vipps {
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
 
+
         // Ajax endpoints for checking the order status while waiting for confirmation
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
-
     }
+
+    public function order_item_add_action_buttons ($order) {
+     error_log("what");
+     print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">Knapp</button>';
+    } 
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
@@ -380,20 +393,3 @@ class Vipps {
     }
 
 }
-
-/* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
-global $Vipps;
-$Vipps = new Vipps();
-register_activation_hook(__FILE__,array($Vipps,'activate'));
-register_uninstall_hook(__FILE__,array($Vipps,'uninstall'));
-
-if (is_admin()) {
-    add_action('admin_init',array($Vipps,'admin_init'));
-    add_action('admin_menu',array($Vipps,'admin_menu'));
-} else {
-    add_action('wp_footer', array($Vipps,'footer'));
-}
-add_action('init',array($Vipps,'init'));
-add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
-
-?>
