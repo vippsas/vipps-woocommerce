@@ -222,15 +222,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
         try {
-          $Vipps->createCallbackSignal($order);
+            $Vipps->createCallbackSignal($order);
         } catch (Exception $e) {
-          // Could not create a signal file, but that's ok.
+            // Could not create a signal file, but that's ok.
         }
 
         // Then empty the cart; we'll ressurect it if we can and have to, so store it in session indexed by order number. IOK 2018-04-24
         // We really don't want any errors here for any reason, if we fail that's ok. IOK 2018-05-07
         try {
-          $Vipps->save_cart($order);
+            $Vipps->save_cart($order);
         } catch (Exception $e) {
         }
         $woocommerce->cart->empty_cart(true);
@@ -240,6 +240,70 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);
+    }
+
+    // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
+    public function capture_order($order,$amount=0) {
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') {
+            $this->log(__('Trying to capture payment on order not made by Vipps:','vipps'),$order->get_id());
+            wc_add_notice(__('Cannot capture payment on orders not made by Vipps','vipps'),'error');
+            return false;
+        }
+        try {
+            // IOK FIXME add a system for reentrancy here - the $requestid needs to be the same for each *retry*
+            // but must change for each *new* capture. 2018-05-07
+            $requestid = '';
+            $result =  $this->api_capture_payment($order,$requestid,$amount);
+        } catch (VippsApiException $e) {
+            wc_add_notice($e->getMessage(), 'error');
+            return false;
+        }
+        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
+        if (!$res || !$res['response']) {
+            $msg = __('Could not capture Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps');
+            $this->log($msg, 'error');
+            wc_add_notice($msg, 'error');
+            $order->add_order_note($msg);
+            return false;
+        } 
+        // Error-handling. This needs more work after testing. IOK 2018-05-07
+        if ($res['response']>399) {
+            if (isset($res['content'])) {
+                $content = $res['content'];
+                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
+                if (isset($content['ResponseInfo'])) {
+                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
+                    $msg = __('Could not capture Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
+                    $this->log($msg,'error');
+                    wc_add_notice($msg,'error');
+                    $order->add_order_note($msg);
+                    return false;
+                } else {
+                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
+                    $allmsg = '';
+                    foreach($content as $entry) {
+                        $msg = __('Could not capture Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'];
+                        $allmsg .= $msg . "\n";
+                        $this->log($msg, 'error');
+                        wc_add_notice($msg,'error');
+                    }
+                    $order->add_order_note($allmsg);
+                    return false;
+                }
+            } else {
+                // No response content at all, so just log the response header
+                $msg = __('Could not initiate Vipps payment','vipps') . ' ' .  $res['headers'][0];
+                $this->log($msg,'error');
+                wc_add_notice($msg,'error');
+                return false;
+            }
+        }
+
+        $note = print_r($res['content'],true);
+        wc_add_notice($note,'info');
+        $order->add_order_note($note);
+        return true;
     }
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
@@ -320,14 +384,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsamount= $transaction['amount'];
 
         if ($iscallback) {
-          $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+            $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
         }
         $order->update_meta_data('_vipps_amount',$vippsamount);
         $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
         $order->save();
- 
+
         return $vippsstatus;
-     }
+    }
 
     // Handle the callback from Vipps.
     public function handle_callback($result) {
@@ -370,9 +434,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
         try {
-          $Vipps->createCallbackSignal($order,'ok');
+            $Vipps->createCallbackSignal($order,'ok');
         } catch (Exception $e) {
-          // Could not create a signal file, but that's ok.
+            // Could not create a signal file, but that's ok.
         }
         $order->add_order_note(__('Vipps callback received','vipps'));
 
@@ -577,6 +641,51 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $res = $this->http_call($url,$data,'GET',$headers);
         return $res;
     }
+
+    // Capture a payment made. Defaults to full capture only. IOK 2018-05-07
+    private function api_capture_payment($order,$requestid=1,$amount=0) {
+        $server = $this->api;
+        $orderid = $order->get_meta('_vipps_orderid');
+        $amount = $amount ? $amount : $order->get_total();
+
+        $url = $server . '/Ecomm/v1/payments/'.$orderid.'/capture';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+        if (!$subkey) {
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+        }
+        if (!$merch) {
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+        }
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-Request-Id'] = $requestid;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
+
+        $transaction = array();
+        $transaction['orderId'] = $vippsorderid;
+        // Ignore refOrderId - for child-transactions 
+        $transaction['amount'] = round($amount * 100); 
+        $transaction['transactionText'] = __('Order capture for order','vipps') . ' ' . $orderid . ' ' . home_url(); 
+
+
+        $data = array();
+        $data['merchantInfo'] = array('merchantSerialNumber' => $merch);
+        $data['transaction'] = $transaction;
+
+        $res = $this->http_call($url,$data,'POST',$headers,'json'); 
+        $this->log("Capture log " . print_r($res));
+        return $res;
+    }
+
+
 
     // Conventently call Vipps IOK 2018-04-18
     private function http_call($url,$data,$verb='GET',$headers=null,$encoding='url'){
