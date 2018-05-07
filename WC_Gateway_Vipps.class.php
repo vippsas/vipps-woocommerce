@@ -18,7 +18,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->init_form_fields();
         $this->init_settings();
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
+        add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'maybe_capture_payment' ) );
+        add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'maybe_capture_payment' ) );
     }
+
 
     public function init_form_fields() { 
         $this->form_fields = array(
@@ -242,6 +246,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return array('result'=>'success','redirect'=>$url);
     }
 
+    // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
+    public function maybe_capture_payment($orderid) {
+        $order = new WC_Order( $orderid );
+        $ok = 0;
+        try {
+            $ok = $this->capture_payment($order);
+        } catch (Exception $e) {
+            // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
+        } 
+        if (!$ok) {
+            $msg = __("Could not capture Vipps payment - status set to", 'vipps') . ' ' . __('on-hold','woocommerce');
+            $this->adminerr($msg);
+            $order->set_status('on-hold',$msg);
+            $order->save();
+        }
+    }
+
+
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
     public function capture_payment($order,$amount=0) {
         $pm = $order->get_payment_method();
@@ -254,11 +276,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If we already have captured everything, then we are ok! IOK 2017-05-07
         $captured = $order->get_meta('_vipps_captured');
         if ($captured) {
-         $remaining = $order->get_meta('_vipps_capture_remaining');
-         if (!$remaining) {
-          $order->add_order_note(__('Payment already captured','vipps'));
-          return true;
-         }
+            $remaining = $order->get_meta('_vipps_capture_remaining');
+            if (!$remaining) {
+                $order->add_order_note(__('Payment already captured','vipps'));
+                return true;
+            }
         }
 
         // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07

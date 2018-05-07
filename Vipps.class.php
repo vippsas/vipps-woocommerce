@@ -17,8 +17,8 @@ class Vipps {
     }
 
     public static function instance()  {
-     if (!static::$instance) static::$instance = new Vipps();
-     return static::$instance;
+        if (!static::$instance) static::$instance = new Vipps();
+        return static::$instance;
     }
 
     public function init () {
@@ -41,8 +41,8 @@ class Vipps {
     }
 
     public function add_meta_boxes () {
-      // Metabox showing order status at Vipps IOK 2018-05-07
-      add_meta_box( 'vippsdata', __('Vipps','vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+        // Metabox showing order status at Vipps IOK 2018-05-07
+        add_meta_box( 'vippsdata', __('Vipps','vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
     }
 
     public function log ($what,$type='info') {
@@ -55,45 +55,45 @@ class Vipps {
     // If we have admin-notices that we haven't gotten a chance to show because of
     // a redirect, this method will fetch and show them IOK 2018-05-07
     public function stored_admin_notices() {
-       $stored = get_transient('_vipps_save_admin_notices',$notices, 5*60);
-       if ($stored) {
-        delete_transient('_vipps_save_admin_notices');
-        print $stored;
-       }
+        $stored = get_transient('_vipps_save_admin_notices',$notices, 5*60);
+        if ($stored) {
+            delete_transient('_vipps_save_admin_notices');
+            print $stored;
+        }
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post) {
-      $order = new WC_Order($post);
-      $pm = $order->get_payment_method();
-      if ($pm != 'vipps') return;
-      $init =  $order->get_meta('_vipps_init_timestamp');
-      $callback =  $order->get_meta('_vipps_callback_timestamp');
-      $capture =  $order->get_meta('_vipps_capture_timestamp');
-      $refund =  $order->get_meta('_vipps_refund_timestamp');
-      $cancel =  $order->get_meta('_vipps_cancel_timestamp');
+        $order = new WC_Order($post);
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') return;
+        $init =  $order->get_meta('_vipps_init_timestamp');
+        $callback =  $order->get_meta('_vipps_callback_timestamp');
+        $capture =  $order->get_meta('_vipps_capture_timestamp');
+        $refund =  $order->get_meta('_vipps_refund_timestamp');
+        $cancel =  $order->get_meta('_vipps_cancel_timestamp');
 
-      $status = $order->get_meta('_vipps_status');
-      $total = intval($order->get_meta('_vipps_amount'));
-      $captured = intval($order->get_meta('_vipps_captured'));
-      $refunded = intval($order->get_meta('_vipps_refunded'));
+        $status = $order->get_meta('_vipps_status');
+        $total = intval($order->get_meta('_vipps_amount'));
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $refunded = intval($order->get_meta('_vipps_refunded'));
 
-      $capremain = intval($order->get_meta('_vipps_capture_remaining'));
-      $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
- 
-      print "<table border=0><thead></thead><tbody>";
-      print "<tr><td>Status</td>";
-      print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";
-      print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
-      print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print "NOK"; print "</td></tr>";
-      print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
+        $capremain = intval($order->get_meta('_vipps_capture_remaining'));
+        $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
 
-      print "<tr><td>Vipps initiated</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$init); print "</td></tr>";
-      print "<tr><td>Vipps response </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$callback); print "</td></tr>";
-      print "<tr><td>Vipps capture </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$capture); print "</td></tr>";
-      print "<tr><td>Vipps refund</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$refund); print "</td></tr>";
-      print "<tr><td>Vipps cancelled</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$cancel); print "</td></tr>";
-      print "</tbody></table>";
+        print "<table border=0><thead></thead><tbody>";
+        print "<tr><td>Status</td>";
+        print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";
+        print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
+        print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print "NOK"; print "</td></tr>";
+        print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
+
+        print "<tr><td>Vipps initiated</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$init); print "</td></tr>";
+        print "<tr><td>Vipps response </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$callback); print "</td></tr>";
+        print "<tr><td>Vipps capture </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$capture); print "</td></tr>";
+        print "<tr><td>Vipps refund</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$refund); print "</td></tr>";
+        print "<tr><td>Vipps cancelled</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$cancel); print "</td></tr>";
+        print "</tbody></table>";
     }
 
     // This function will create a file with an obscure filename in the $callbackDirname directory.
@@ -122,9 +122,9 @@ class Vipps {
     }
     // URL of the above product thing
     public function callbackSignalURL($signal) {
-      if (!$signal) return "";
-      $uploaddir = wp_upload_dir();
-      return $uploaddir['baseurl'] . '/' . $this->callbackDirname . '/' . basename($signal);
+        if (!$signal) return "";
+        $uploaddir = wp_upload_dir();
+        return $uploaddir['baseurl'] . '/' . $this->callbackDirname . '/' . basename($signal);
     }
 
     // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
@@ -192,7 +192,7 @@ class Vipps {
             }
             if (!$order) wp_die(__('Unknown order', 'vipps'));
 
-//            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),'1.0', 'true');
+            //            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),'1.0', 'true');
             wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
             wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
 
@@ -202,7 +202,7 @@ class Vipps {
             $vippsstamp = $order->get_meta('_vipps_init_timestamp');
             $vippsstatus = $order->get_meta('_vipps_init_status');
             $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
-            
+
             $signal = $this->callbackSignal($order);
             $content .= "<div id='waiting'><p>" . __('Confirm your purchase in your Vipps app','vipps');
 
@@ -220,15 +220,15 @@ class Vipps {
             $content .= "<input type='hidden' name='action' value='check_order_status'>";
             $content .= wp_nonce_field('vippsstatus','sec',1,false); 
             $content .= "</form>";
- 
+
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
- 
+
             $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
             $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps') . "</p>";
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
             $content .= "</div>";
-      
+
             $content .= "<div id=success style='display:none'><p>". __('Order confirmed', 'vipps') . '</p>';
             $content .= "<p><a class='btn button' id='continueToThankYou' href='" . $gw->get_return_url($order)  . "'>".__('Continue','vipps') ."</a></p>";
             $content .= '</div>';
@@ -258,12 +258,12 @@ class Vipps {
     }
 
     public function save_order($postid,$post,$update) {
-      if ($post->post_type != 'shop_order') return;
-      $order = new WC_Order($postid);
-      $pm = $order->get_payment_method();
-      if ($pm != 'vipps') return;
+        if ($post->post_type != 'shop_order') return;
+        $order = new WC_Order($postid);
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') return;
 
-      if (isset($_POST['do_capture_payment']) && $_POST['do_capture_payment']) {
+        if (isset($_POST['do_capture_payment']) && $_POST['do_capture_payment']) {
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
             // 0 in amount means full payment, which is all we currently support. IOK 2018-05-7
@@ -273,16 +273,16 @@ class Vipps {
             do_action('admin_notices');
             $notices = ob_get_clean();
             set_transient('_vipps_save_admin_notices',$notices, 5*60);
-      }
-   }
+        }
+    }
 
     public function order_item_add_action_buttons ($order) {
-     $pm = $order->get_payment_method();
-     if ($pm != 'vipps') return;
-     // Check capture status of order here.
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') return;
+        // Check capture status of order here.
 
-     print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
-     print '<input type="hidden" value=1 name=do_capture_payment >';
+        print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
+        print '<input type="hidden" value=1 name=do_capture_payment >';
     } 
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
