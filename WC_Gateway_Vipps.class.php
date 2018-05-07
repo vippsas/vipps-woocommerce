@@ -9,6 +9,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $title = 'Vipps';
     public $method_description = "";
     public $api = 'https://apitest.vipps.no';
+    public $supports = null;
 
     public function __construct() {
         $this->method_description = __('Offer Vipps as a payment method', 'vipps');
@@ -17,10 +18,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->icon = plugins_url('img/vipps_logo_rgb.png',__FILE__);
         $this->init_form_fields();
         $this->init_settings();
+
+        $this->supports = array('products','refunds');
+
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
-        add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'maybe_capture_payment' ) );
-        add_action( 'woocommerce_order_status_on-hold_to_completed', array( $this, 'maybe_capture_payment' ) );
+        add_action( 'woocommerce_order_status_on-hold_to_processing', array($this, 'maybe_capture_payment'));
+        add_action( 'woocommerce_order_status_on-hold_to_completed', array($this, 'maybe_capture_payment'));
+
+        add_action( 'woocommerce_order_status_on-hold_to_cancelled', array($this, 'maybe_cancel_payment'));
+        add_action( 'woocommerce_order_status_on-hold_to_refunded', array($this, 'maybe_cancel_payment'));
+
+        add_action( 'woocommerce_order_status_processing_to_cancelled', array($this, 'maybe_refund_payment'));
+        add_action( 'woocommerce_order_status_completed_to_cancelled', array($this, 'maybe_refund_payment'));
+        // And any status to refunded.
+    }
+
+    public function maybe_cancel_payment($orderid) {
+    }
+
+    public function maybe_refund_payment($orderid) {
+    }
+    // This is the Woocommerce refund api
+    public function process_refund($orderid,$amount=null) {
+      die("YOWZA"); // IOK FIXME .
+      return false;
     }
 
 

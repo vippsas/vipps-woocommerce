@@ -279,7 +279,12 @@ class Vipps {
     public function order_item_add_action_buttons ($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
-        // Check capture status of order here.
+        $status = $order->get_status();
+        if ($status != 'on-hold' && $status != 'processing') return;
+        
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $capremain = intval($order->get_meta('_vipps_capture_remaining'));
+        if ($captured && !$capremain) return;
 
         print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
         print '<input type="hidden" value=1 name=do_capture_payment >';
