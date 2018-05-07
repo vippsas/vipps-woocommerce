@@ -24,6 +24,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
         add_action( 'woocommerce_order_status_on-hold_to_processing', array($this, 'maybe_capture_payment'));
+        add_action( 'woocommerce_order_status_processing_to_completed', array($this, 'maybe_capture_payment'));
         add_action( 'woocommerce_order_status_on-hold_to_completed', array($this, 'maybe_capture_payment'));
 
         add_action( 'woocommerce_order_status_on-hold_to_cancelled', array($this, 'maybe_cancel_payment'));
@@ -290,6 +291,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
+        $this->log("in maybe_capture_payment");
         $order = new WC_Order( $orderid );
         $ok = 0;
         try {
@@ -308,6 +310,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
     public function capture_payment($order,$amount=0) {
+        $this->log("in capture payment");
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $this->log(__('Trying to capture payment on order not made by Vipps:','vipps'),$order->get_id());
@@ -818,6 +821,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Capture a payment made. Defaults to full capture only. IOK 2018-05-07
     private function api_capture_payment($order,$requestid=1,$amount=0) {
+        $this->log("in api capture payment");
         $server = $this->api;
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
@@ -891,7 +895,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $data['transaction'] = $transaction;
 
         $res = $this->http_call($url,$data,'PUT',$headers,'json'); 
-        $this->log("Cancel result: " . print_r($res,true));  // IOK DEBUG FIXME
         return $res;
     }
 
