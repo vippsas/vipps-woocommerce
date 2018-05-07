@@ -249,6 +249,30 @@ class Vipps {
         }
     }
 
+    // We have to empty the cart when the user goes to Vipps, so
+    // we store it in the session and restore it if the users cancels. IOK 2018-05-07
+    public function save_cart($order) {
+        global $woocommerce;
+        $cartcontents = $woocommerce->cart->get_cart();
+        $carts = $woocommerce->session->get('_vipps_carts');
+        if (!$carts) $carts = array();
+        $carts[$order->get_id()] = $cartcontents;
+        $woocommerce->session->set('_vipps_carts',$carts); 
+    }
+    public function restore_cart($order) {
+        global $woocommerce;
+        $carts = $woocommerce->session->get('_vipps_carts');
+        if (empty($carts)) return;
+        $cart = @$carts[$order->get_id()];
+        unset($carts[$order->get_id()]);
+        $woocommerce->session->set('_vipps_carts');
+        foreach ($cart as $cart_item_key => $values) {
+            $id =$values['product_id'];
+            $quant=$values['quantity'];
+            $woocommerce->cart->add_to_cart($id,$quant);
+        }
+    }
+
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
@@ -278,12 +302,15 @@ class Vipps {
         }
 
         if ($order_status == 'failed') {
+            $this->restore_cart($order);
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
         }
         if ($order_status == 'cancelled') {
+            $this->restore_cart($order);
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
         }
         if ($order_status == 'refunded') {
+            $this->restore_cart($order);
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
         }
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps

@@ -140,7 +140,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
-            $requestid = 1;
+            $requestid = $order->get_order_key();
             $res =  $this->api_initiate_payment($phone,$order,$requestid);
         } catch (VippsApiException $e) {
             wc_add_notice($e->getMessage(), 'error');
@@ -227,7 +227,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           // Could not create a signal file, but that's ok.
         }
 
-        // Then empty the cart; we'll ressurect it if we can and have to - later IOK 2018-04-24
+        // Then empty the cart; we'll ressurect it if we can and have to, so store it in session indexed by order number. IOK 2018-04-24
+        // We really don't want any errors here for any reason, if we fail that's ok. IOK 2018-05-07
+        try {
+          $Vipps->save_cart($order);
+        } catch (Exception $e) {
+        }
         $woocommerce->cart->empty_cart(true);
 
         // Vipps-terminal-page FIXME fetch from settings! IOK 2018-04-23
