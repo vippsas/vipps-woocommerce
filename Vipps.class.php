@@ -223,14 +223,14 @@ class Vipps {
     public function footer() {
     }
 
-    // Check order status in the database, and if it is on-hold for a long time, directly at Vipps
+    // Check order status in the database, and if it is pending for a long time, directly at Vipps
     // IOK 2018-05-04
     public function check_order_status($order) {
         if (!$order) return null;
         $order_status = $order->get_status();
-        if ($order_status != 'on-hold') return $order_status;
+        if ($order_status != 'pending') return $order_status;
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
-        if ($order_status == 'on-hold') {
+        if ($order_status == 'pending') {
             $now = time();
             $then= $order->get_meta('_vipps_init_timestamp');
             if ($then + (1 * 60) < $now) { // more than a minute? Start checking at Vipps
@@ -267,9 +267,11 @@ class Vipps {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps')));
         }
         $order_status = $this->check_order_status($order);
-
+        if ($order_status == 'on-hold') {
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment authorized', 'vipps')));
+        }
         if ($order_status == 'processing') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment reserved', 'vipps')));
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment captured', 'vipps')));
         }
         if ($order_status == 'completed') {
             wp_send_json(array('status'=>'ok', 'msg'=>__('Order complete', 'vipps')));
@@ -284,12 +286,9 @@ class Vipps {
         if ($order_status == 'refunded') {
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps')));
         }
+        // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'vipps')));
-        }
-        // No callback has occured yet. If this has been going on for a while, check directly with Vipps
-        if ($order_status == 'on-hold') {
-            wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on confirmation', 'vipps')));
         }
         wp_send_json(array('status'=>'error', 'msg'=> __('Unknown order status','vipps') . $order_status));
         return false;
