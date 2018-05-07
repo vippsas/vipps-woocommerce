@@ -250,10 +250,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr(__('Cannot capture payment on orders not made by Vipps','vipps'));
             return false;
         }
+
+        // If we already have captured everything, then we are ok! IOK 2017-05-07
+        $captured = $order->get_meta('_vipps_captured');
+        if ($captured) {
+         $remaining = $order->get_meta('_vipps_capture_remaining');
+         if (!$remaining) {
+          $order->add_order_note(__('Payment already captured','vipps'));
+          return true;
+         }
+        }
+
+        // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07
+        // (but on failre, we don't increase it - and also, we don't really support partial capture yet.) IOK 2018-05-07
+        $requestidnr = intval($order->get_meta('_vipps_capture_transid'));
         try {
-            // IOK FIXME add a system for reentrancy here - the $requestid needs to be the same for each *retry*
-            // but must change for each *new* capture. 2018-05-07
-            $requestid = '';
+            $requestid = $requestidnr . ":" . $order->get_order-key();
             $res =  $this->api_capture_payment($order,$requestid,$amount);
         } catch (VippsApiException $e) {
             $this->adminerr($e->getMessage());
@@ -299,7 +311,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return false;
             }
         }
-        // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture (I think?)
+        // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
+        // status 'captured'
+        $content = $res['content'];
+        $transactionInfo = $content['transactionInfo'];
+        $transactionSummary= $content['transactionSummary'];
+        $order->update_meta_data('_vipps_capture_timestamp',strtotime($transactionInfo['timeStamp']));
+        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+        // Since we succeeded, the next time we'll start a new transaction.
+        $order->update_meta_data('_vipps_capture_transid', $requestidnr+1);
+        $order->add_order_note(__('Vipps Payment captured:','vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
+        $order->save();
+
         return true;
     }
 
@@ -374,6 +400,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 throw new VippsAPIException($msg);
             }
         }
+
+
         $transaction = @$statusdata['transactionInfo'];
         if (!$transaction) return null;
         $vippsstatus = $transaction['status'];

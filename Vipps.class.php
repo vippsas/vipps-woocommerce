@@ -21,14 +21,39 @@ class Vipps {
      return static::$instance;
     }
 
+    public function init () {
+        // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
+        $this->cleanupCallbackSignals();
+    }
+
     public function admin_init () {
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
         add_action('save_post', array($this, 'save_order'), 10, 3);
 
+        add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
+
         // Keep admin notices during redirects IOK 2018-05-07
         add_action('admin_notices',array($this,'stored_admin_notices'));
     }
+
+    public function admin_menu () {
+    }
+
+    public function add_meta_boxes () {
+      // Metabox showing order status at Vipps IOK 2018-05-07
+      add_meta_box( 'vippsdata', __('Vipps','vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+    }
+
+    public function log ($what,$type='info') {
+        $logger = wc_get_logger();
+        $context = array('source','Vipps Woo Gateway');
+        $logger->log($type,$what,$context);
+    }
+
+
+    // If we have admin-notices that we haven't gotten a chance to show because of
+    // a redirect, this method will fetch and show them IOK 2018-05-07
     public function stored_admin_notices() {
        $stored = get_transient('_vipps_save_admin_notices',$notices, 5*60);
        if ($stored) {
@@ -37,20 +62,38 @@ class Vipps {
        }
     }
 
-    public function admin_menu () {
-    }
+    // A metabox for showing Vipps information about the order. IOK 2018-05-07
+    public function add_vipps_metabox ($post) {
+      $order = new WC_Order($post);
+      $pm = $order->get_payment_method();
+      if ($pm != 'vipps') return;
+      $init =  $order->get_meta('_vipps_init_timestamp');
+      $callback =  $order->get_meta('_vipps_callback_timestamp');
+      $capture =  $order->get_meta('_vipps_capture_timestamp');
+      $refund =  $order->get_meta('_vipps_refund_timestamp');
+      $cancel =  $order->get_meta('_vipps_cancel_timestamp');
 
-    public function init () {
-        // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
-        $o = new WC_Order(148);
-        $k = $this->createCallbackSignal($o, 0);
-        $this->cleanupCallbackSignals();
-    }
+      $status = $order->get_meta('_vipps_status');
+      $total = intval($order->get_meta('_vipps_amount'));
+      $captured = intval($order->get_meta('_vipps_captured'));
+      $refunded = intval($order->get_meta('_vipps_refunded'));
 
-    public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source','Vipps Woo Gateway');
-        $logger->log($type,$what,$context);
+      $capremain = intval($order->get_meta('_vipps_capture_remaining'));
+      $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
+ 
+      print "<table border=0><thead></thead><tbody>";
+      print "<tr><td>Status</td>";
+      print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";
+      print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
+      print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print "NOK"; print "</td></tr>";
+      print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
+
+      print "<tr><td>Vipps initiated</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$init); print "</td></tr>";
+      print "<tr><td>Vipps response </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$callback); print "</td></tr>";
+      print "<tr><td>Vipps capture </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$capture); print "</td></tr>";
+      print "<tr><td>Vipps refund</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$refund); print "</td></tr>";
+      print "<tr><td>Vipps cancelled</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$cancel); print "</td></tr>";
+      print "</tbody></table>";
     }
 
     // This function will create a file with an obscure filename in the $callbackDirname directory.
