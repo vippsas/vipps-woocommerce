@@ -254,7 +254,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // IOK FIXME add a system for reentrancy here - the $requestid needs to be the same for each *retry*
             // but must change for each *new* capture. 2018-05-07
             $requestid = '';
-            $result =  $this->api_capture_payment($order,$requestid,$amount);
+            $res =  $this->api_capture_payment($order,$requestid,$amount);
         } catch (VippsApiException $e) {
             $this->adminerr($e->getMessage());
             return false;
@@ -299,10 +299,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return false;
             }
         }
-
-        $note = print_r($res['content'],true);
-        $order->add_order_note($note);
-        $this->adminnotify($note);
+        // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture (I think?)
         return true;
     }
 
