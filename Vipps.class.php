@@ -263,7 +263,8 @@ class Vipps {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
 
-        if (isset($_POST['do_capture_payment']) && $_POST['do_capture_payment']) {
+        if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
+            $this->log("Saving order and we have 'do capture pay'");
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
             // 0 in amount means full payment, which is all we currently support. IOK 2018-05-7
@@ -286,8 +287,8 @@ class Vipps {
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         if ($captured && !$capremain) return;
 
-        print '<button type="button" onclick="document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
-        print '<input type="hidden" value=1 name=do_capture_payment >';
+        print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
+        print "<input id=docapture type=hidden name=do_capture_vipps value=0>"; 
     } 
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20

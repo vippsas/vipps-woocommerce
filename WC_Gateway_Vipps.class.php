@@ -35,6 +35,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function maybe_cancel_payment($orderid) {
+        $order = new WC_Order( $orderid );
+        $ok = 0;
+
+        // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
+        $captured = $order->get_meta('_vipps_captured');
+        if ($captured) {
+          return maybe_refund_payment($orderid);
+        }
+
+        try {
+            $ok = $this->cancel_payment($order);
+        } catch (Exception $e) {
+            // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
+        } 
+        if (!$ok) {
+            // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
+            $msg = __("Could not cancel Vipps payment", 'vipps');
+            $this->adminerr($msg);
+            $order->save();
+        }
     }
 
     public function maybe_refund_payment($orderid) {
@@ -349,7 +369,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             } else {
                 // No response content at all, so just log the response header
-                $msg = __('Could not initiate Vipps payment','vipps') . ' ' .  $res['headers'][0];
+                $msg = __('Could not capture Vipps payment','vipps') . ' ' .  $res['headers'][0];
                 $this->log($msg,'error');
                 $this->adminerr($msg);
                 return false;
@@ -372,6 +392,91 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         return true;
     }
+
+    // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
+    public function cancel_payment($order) {
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') {
+            $this->log(__('Trying to cancel payment on order not made by Vipps:','vipps'),$order->get_id());
+            $this->adminerr(__('Cannot cancel payment on orders not made by Vipps','vipps'));
+            return false;
+        }
+        // If we have captured the order, we can't cancel it. IOK 2018-05-07
+        $captured = $order->get_meta('_vipps_captured');
+        if ($captured) {
+            $msg = __('Cannot cancel a captured Vipps transaction - use refund instead', 'vipps');
+            $this->adminerr($msg);
+            return false;
+        }
+        // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
+        try {
+            $requestid = "";
+            $res =  $this->api_cancel_payment($order,$requestid);
+        } catch (VippsApiException $e) {
+            $this->adminerr($e->getMessage());
+            return false;
+        }
+        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
+        if (!$res || !$res['response']) {
+            $msg = __('Could not cancel Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps');
+            $this->adminerr($msg);
+            $this->log($msg, 'error');
+            $order->add_order_note($msg);
+            return false;
+        } 
+        // Error-handling. This needs more work after testing. IOK 2018-05-07
+        if ($res['response']>399) {
+            if (isset($res['content'])) {
+                $content = $res['content'];
+                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
+                if (isset($content['ResponseInfo'])) {
+                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
+                    $msg = __('Could not cancel Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
+                    $this->log($msg,'error');
+                    $this->adminerr($msg);
+                    $order->add_order_note($msg);
+                    return false;
+                } else {
+                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
+                    $allmsg = '';
+                    foreach($content as $entry) {
+                        $msg = __('Could not cancel Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'];
+                        $allmsg .= $msg . "\n";
+                        $this->log($msg, 'error');
+                        $this->adminerr($msg);
+                    }
+                    $order->add_order_note($allmsg);
+                    return false;
+                }
+            } else {
+                // No response content at all, so just log the response header
+                $msg = __('Could not cancel Vipps payment','vipps') . ' ' .  $res['headers'][0];
+                $this->log($msg,'error');
+                $this->adminerr($msg);
+                return false;
+            }
+        }
+        // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
+        // status 'captured'
+        $content = $res['content'];
+        $transactionInfo = $content['transactionInfo'];
+        $transactionSummary= $content['transactionSummary'];
+        $order->update_meta_data('_vipps_cancel_timestamp',strtotime($transactionInfo['timeStamp']));
+        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+        $order->add_order_note(__('Vipps Payment cancelled:','vipps'));
+        $order->save();
+
+        // Update status from Vipps, but ignore errors IO 2018-05-07
+        try {
+          $this->get_vipps_order_status($order,false);
+        } catch (Exception $e)  {
+        }
+        return true;
+    }
+
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
@@ -725,10 +830,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $merch = $this->get_option('merchantSerialNumber');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
         }
         if (!$merch) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -739,7 +844,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         $transaction = array();
-        $transaction['orderId'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($amount * 100); 
         $transaction['transactionText'] = __('Order capture for order','vipps') . ' ' . $orderid . ' ' . home_url(); 
@@ -750,10 +854,46 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $data['transaction'] = $transaction;
 
         $res = $this->http_call($url,$data,'POST',$headers,'json'); 
-        $this->log("Capture log " . print_r($res,true));
         return $res;
     }
 
+    // Cancel a reserved but not captured payment IOK 2018-05-07
+    private function api_cancel_payment($order,$requestid=1) {
+        $server = $this->api;
+        $orderid = $order->get_meta('_vipps_orderid');
+        $amount = $amount ? $amount : $order->get_total();
+
+        $url = $server . '/Ecomm/v1/payments/'.$orderid.'/cancel';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+        if (!$subkey) {
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+        }
+        if (!$merch) {
+            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+        }
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-Request-Id'] = $requestid;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
+        $transaction = array();
+        $transaction['transactionText'] = __('Order cancel for order','vipps') . ' ' . $orderid . ' ' . home_url(); 
+
+        $data = array();
+        $data['merchantInfo'] = array('merchantSerialNumber' => $merch);
+        $data['transaction'] = $transaction;
+
+        $res = $this->http_call($url,$data,'PUT',$headers,'json'); 
+        $this->log("Cancel result: " . print_r($res,true));  // IOK DEBUG FIXME
+        return $res;
+    }
 
 
     // Conventently call Vipps IOK 2018-04-18
@@ -832,8 +972,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function validate_fields() {
         return true;
     }
-
-
 
 
 }
