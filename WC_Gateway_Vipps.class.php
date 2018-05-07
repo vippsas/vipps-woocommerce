@@ -195,7 +195,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // So here we have a correct response 202 Accepted and so on and so forth! IOK 2018-04-24
-        // We need to clean out the cart, reduce stock levels, store metadata for interfaceing with Vipps (in case the callback doesn't work)
+        // We need to clean out the cart, store metadata for interfaceing with Vipps (in case the callback doesn't work)
         // and store the order id in session so we can access it on the 'waiting for confirmation' screen. IOK 2018-04-24
         $content = $res['content'];
         $transactioninfo = @$content['transactionInfo'];
@@ -211,7 +211,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
 
         $order = new WC_Order( $order_id );
-        wc_reduce_stock_levels($order_id);
         $order->set_transaction_id($transactionid);
         $order->update_meta_data('_vipps_transaction',$transactionid);
         $order->update_meta_data('_vipps_confirm_message',$message);
@@ -270,9 +269,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($set && $oldstatus != $newstatus) {
             switch ($newstatus) {
                 case 'on-hold':
+                    wc_reduce_stock_levels($order->get_id());
                     $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'vipps' ));
                     break;
                 case 'processing':
+                    wc_reduce_stock_levels($order->get_id());
                     $order->update_status('processing', __( 'Payment captured at Vipps', 'vipps' ));
                     break;
                 case 'cancelled':
@@ -381,6 +382,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
+            wc_reduce_stock_levels($order->get_id());
             $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'vipps' ));
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
