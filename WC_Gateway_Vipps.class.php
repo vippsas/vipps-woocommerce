@@ -43,7 +43,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
         if ($captured) {
-          return maybe_refund_payment($orderid);
+            return $this->maybe_refund_payment($orderid);
         }
 
         try {
@@ -61,40 +61,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Handle the transition from anything to "refund"
     public function maybe_refund_payment($orderid) {
-       $order = new WC_Order( $orderid );
-       $ok = 0;
+        $order = new WC_Order( $orderid );
+        $ok = 0;
 
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
-       $captured = $order->get_meta('_vipps_captured');
-       $this->log("Captured: $captured");
+        $captured = $order->get_meta('_vipps_captured');
         if (!$captured) {
-          $this->log("Canceling instead: $captured");
-          return maybe_cancel_payment($orderid);
+            return $this->maybe_cancel_payment($orderid);
         }
-       $to_refund =  $order->get_meta('_vipps_refund_remaining');
-       $this->log("to refund is $to_refund");
-       $amount = $to_refund/100;
-       try {
-         $ok = $this->refund_payment($order,$amount);
-       } catch (Exception $e) {
-         $msg = __('Could not refund Vipps payment', 'vipps');
-         $this->adminerr($msg);
-         $order->set_status('processing',$msg);
-         $order->save();
-       }
+        $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        $amount = $to_refund/100;
+        try {
+            $ok = $this->refund_payment($order,$amount);
+        } catch (Exception $e) {
+        }
+        if (!$ok) {
+            $msg = __('Could not refund Vipps payment', 'vipps');
+            $this->adminerr($msg);
+            $order->set_status('processing',$msg);
+            $order->save();
+        }
     }
 
 
     // This is the Woocommerce refund api; which is a fairly trivial thing here
     public function process_refund($orderid,$amount=null,$reason) {
-      $order = new WC_Order( $orderid );
-      try {
-       $ok = $this->refund_payment($order,$amount);
-      } catch (Exception $e) {
-        throw new WP_Error($e->getMessage());
-      }
-      if ($ok) $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
-      return $ok;
+        $order = new WC_Order( $orderid );
+        try {
+            $ok = $this->refund_payment($order,$amount);
+        } catch (Exception $e) {
+            throw new WP_Error($e->getMessage());
+        }
+        if ($ok) $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
+        return $ok;
     }
 
 
@@ -503,7 +502,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Update status from Vipps, but ignore errors IO 2018-05-07
         try {
-          $this->get_vipps_order_status($order,false);
+            $this->get_vipps_order_status($order,false);
         } catch (Exception $e)  {
         }
         return true;
@@ -520,7 +519,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = $order->get_meta('_vipps_captured');
         if (!$captured) {
-         return false;
+            return false;
         }
         // Each time we succeed, we'll increase the 'refund' transaction id so we don't just refund the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it.) IOK 2018-05-07
@@ -585,7 +584,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
         $order->add_order_note(__('Vipps payment refunded:','vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
         $order->save();
- 
+
 
         return true;
     }
