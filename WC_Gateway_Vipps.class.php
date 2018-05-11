@@ -229,7 +229,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $order = new WC_Order($order_id);
-        $res = null;
+        $content = null;
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
@@ -383,7 +383,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         try {
             $requestid = "";
-            $res =  $this->api->cancel_payment($order,$requestid);
+            $content =  $this->api->cancel_payment($order,$requestid);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not cancel Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
             $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
