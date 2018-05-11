@@ -217,7 +217,7 @@ class VippsApi {
     }
 
     // Refund a captured payment.  IOK 2018-05-08
-    public function refund_payment($order,$requestid=1,$amount=0) {
+    public function refund_payment($order,$requestid=1,$amount=0,$cents=false) {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
@@ -243,9 +243,14 @@ class VippsApi {
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
 
-        $transaction = array();
         // Ignore refOrderId - for child-transactions 
-        $transaction['amount'] = round($amount * 100); 
+        $transaction = array();
+        // If we have passed the value as 'øre' we don't need to calculate any more.
+        if ($cents) {
+         $transaction['amount'] = $amount;
+        } else { 
+         $transaction['amount'] = round($amount * 100); 
+        }
         $transaction['transactionText'] = __('Refund for order','vipps') . ' ' . $orderid;
 
 

@@ -78,16 +78,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return $this->maybe_cancel_payment($orderid);
         }
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
-        $amount = $to_refund/100;
         try {
-            $ok = $this->refund_payment($order,$amount);
+            $ok = $this->refund_payment($order,$to_refund,'exact');
         } catch (Exception $e) {
         }
         if (!$ok) {
             $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'vipps');
             $this->adminerr($msg);
             $order->add_order_note($msg);
-            $order->add_order_notice($msg);
             // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
             // allow the state change here if that happens.
             global $Vipps;
@@ -416,7 +414,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Refund (possibly partially) the captured order. IOK 2018-05-07
-    public function refund_payment($order,$amount=0) {
+    public function refund_payment($order,$amount=0,$cents=false) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $msg = __('Trying to refund payment on order not made by Vipps:','vipps') . ' ' . $order->get_id();
@@ -438,7 +436,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $requestidnr = intval($order->get_meta('_vipps_refund_transid'));
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
-            $content =  $this->api->refund_payment($order,$requestid,$amount);
+            $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not refund Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
             $Vipps->store_admin_notices();
@@ -448,6 +446,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         } catch (Exception $e) {
             $msg = __('Could not refund Vipps payment','vipps') . ' ' . $e->getMessage();
+            $order->add_order_note($msg);
             $this->log($msg,'error');
             $this->adminerr($msg);
             global $Vipps;
