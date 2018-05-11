@@ -9,6 +9,6 @@ class TemporaryVippsAPIException extends VippsAPIException {
 }
 
 // This is for non-temporary problems with the keys and so forth
-class VippsAPIConfigurationException extends VippsAPIExceptions {
+class VippsAPIConfigurationException extends VippsAPIException {
 }
 

@@ -369,7 +369,7 @@ class VippsApi {
             $exception = new VippsApiException($msg);
         }
 
-        $exception->$responsecode = intval($response);
+        $exception->responsecode = intval($response);
         throw $exception;
     }
 
