@@ -198,13 +198,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function process_payment ($order_id) {
         global $woocommerce, $Vipps;
         if (!$order_id) return false;
-        // From the request, get either    [billing_phone] =>  or [vipps phone]
-
-        $at = $this->get_access_token();
-        if (!$at) {
-            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-            return false;
+     
+        // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
+        try {
+         $at = $this->api->get_access_token();
+        } catch (Exception $e) {
+          wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+          return false;
         }
+
+        // From the request, get either    [billing_phone] =>  or [vipps phone]
         $phone = '';
         if (isset($_POST['vippsphone'])) {
             $phone = trim($_POST['vippsphone']);
@@ -223,63 +226,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();
-            $res =  $this->api->initiate_payment($phone,$order,$requestid);
-        } catch (VippsApiException $e) {
-            wc_add_notice($e->getMessage(), 'error');
-            return false;
-        }
-
-        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
-        if (!$res || !$res['response']) {
-            $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps'), 'error');
-            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-            return false;
-        } 
-
-        // Errors. We can't do much recovery, but we can log, which we will do . IOK 2018-04-24
-        if ($res['response']>399) {
-            if (isset($res['content'])) {
-                $content = $res['content'];
-                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
-                if (isset($content['ResponseInfo'])) {
-                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                    $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'], 'error');
-                    wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-                    return false;
-                } else {
-                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
-                    $notvippscustomer = 0;
-                    foreach($content as $entry) {
-                        if (preg_match('!User is not registered with VIPPS!i',$entry['errorMessage'])) {
-                            $notvippscustomer = 1;
-                        }
-                        $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'], 'error');
-                    }
-                    if ($notvippscustomer) {
-                        wc_add_notice(__('Your phone number doesn\'t have Vipps! Download the app and register, choose another payment method.','vipps'),'error');
-                    } else { 
-                        wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-                    }
-                    return false;
-                }
-            } else {
-                // No response content at all, so just log the response header
-                $this->log(__('Could not initiate Vipps payment','vipps') . ' ' .  $res['headers'][0], 'error');
-                wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-                return false;
-            }
-        }
-        // This should not ever happen, so log it and fail
-        if (intval($res['response']) != 202) {
-            $this->log(__('Unexpected response from Vipps','vipps') . ' ' .  print_r($res,true), 'error');
-            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-            return false;
+            $content =  $this->api->initiate_payment($phone,$order,$requestid);
+        } catch (TemporaryVippsApiException $e) {
+          $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
+           wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','vipps'),'error');
+           return false;
+        } catch (Exception $e) {
+          $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
+          wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+          return false;
         }
 
         // So here we have a correct response 202 Accepted and so on and so forth! IOK 2018-04-24
         // We need to clean out the cart, store metadata for interfaceing with Vipps (in case the callback doesn't work)
         // and store the order id in session so we can access it on the 'waiting for confirmation' screen. IOK 2018-04-24
-        $content = $res['content'];
         $transactioninfo = @$content['transactionInfo'];
         $transactionid = @$transactioninfo['transactionId'];
         $vippsstatus = @$transactioninfo['status'];
@@ -366,54 +326,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $requestidnr = intval($order->get_meta('_vipps_capture_transid'));
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
-            $res =  $this->api->capture_payment($order,$requestid,$amount);
-        } catch (VippsApiException $e) {
-            $this->adminerr($e->getMessage());
+            $content =  $this->api->capture_payment($order,$requestid,$amount);
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not capture Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
+            $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
             return false;
-        }
-        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
-        if (!$res || !$res['response']) {
-            $msg = __('Could not capture Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps');
+        } catch (Exception $e) {
+            $msg = __('Could not capture Vipps payment','vipps') . ' ' . $e->getMessage();
+            $this->log($msg,'error');
             $this->adminerr($msg);
-            $this->log($msg, 'error');
-            $order->add_order_note($msg);
             return false;
-        } 
-        // Error-handling. This needs more work after testing. IOK 2018-05-07
-        if ($res['response']>399) {
-            if (isset($res['content'])) {
-                $content = $res['content'];
-                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
-                if (isset($content['ResponseInfo'])) {
-                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                    $msg = __('Could not capture Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
-                    $this->log($msg,'error');
-                    $this->adminerr($msg);
-                    $order->add_order_note($msg);
-                    return false;
-                } else {
-                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
-                    $allmsg = '';
-                    foreach($content as $entry) {
-                        $msg = __('Could not capture Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'];
-                        $allmsg .= $msg . "\n";
-                        $this->log($msg, 'error');
-                        $this->adminerr($msg);
-                    }
-                    $order->add_order_note($allmsg);
-                    return false;
-                }
-            } else {
-                // No response content at all, so just log the response header
-                $msg = __('Could not capture Vipps payment','vipps') . ' ' .  $res['headers'][0];
-                $this->log($msg,'error');
-                $this->adminerr($msg);
-                return false;
-            }
         }
         // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
         // status 'captured'
-        $content = $res['content'];
         $transactionInfo = $content['transactionInfo'];
         $transactionSummary= $content['transactionSummary'];
         $order->update_meta_data('_vipps_capture_timestamp',strtotime($transactionInfo['timeStamp']));
@@ -448,53 +373,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $requestid = "";
             $res =  $this->api->cancel_payment($order,$requestid);
-        } catch (VippsApiException $e) {
-            $this->adminerr($e->getMessage());
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not cancel Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
+            $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
             return false;
-        }
-        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
-        if (!$res || !$res['response']) {
-            $msg = __('Could not cancel Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps');
+        } catch (Exception $e) {
+            $msg = __('Could not cancel Vipps payment','vipps') . ' ' . $e->getMessage();
+            $this->log($msg,'error');
             $this->adminerr($msg);
-            $this->log($msg, 'error');
-            $order->add_order_note($msg);
             return false;
-        } 
-        // Error-handling. This needs more work after testing. IOK 2018-05-07
-        if ($res['response']>399) {
-            if (isset($res['content'])) {
-                $content = $res['content'];
-                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
-                if (isset($content['ResponseInfo'])) {
-                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                    $msg = __('Could not cancel Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
-                    $this->log($msg,'error');
-                    $this->adminerr($msg);
-                    $order->add_order_note($msg);
-                    return false;
-                } else {
-                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
-                    $allmsg = '';
-                    foreach($content as $entry) {
-                        $msg = __('Could not cancel Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'];
-                        $allmsg .= $msg . "\n";
-                        $this->log($msg, 'error');
-                        $this->adminerr($msg);
-                    }
-                    $order->add_order_note($allmsg);
-                    return false;
-                }
-            } else {
-                // No response content at all, so just log the response header
-                $msg = __('Could not cancel Vipps payment','vipps') . ' ' .  $res['headers'][0];
-                $this->log($msg,'error');
-                $this->adminerr($msg);
-                return false;
-            }
         }
         // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
-        // status 'captured'
-        $content = $res['content'];
         $transactionInfo = $content['transactionInfo'];
         $transactionSummary= $content['transactionSummary'];
         $order->update_meta_data('_vipps_cancel_timestamp',strtotime($transactionInfo['timeStamp']));
@@ -517,13 +406,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function refund_payment($order,$amount=0) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(__('Trying to capture payment on order not made by Vipps:','vipps'),$order->get_id());
-            $this->adminerr(__('Cannot capture payment on orders not made by Vipps','vipps'));
+            $this->log(__('Trying to refund payment on order not made by Vipps:','vipps'),$order->get_id());
+            $this->adminerr(__('Cannot refund payment on orders not made by Vipps','vipps'));
             return false;
         }
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = $order->get_meta('_vipps_captured');
         if (!$captured) {
+            $this->log(__('Trying to refund payment on Vipps payment not captured:','vipps'),$order->get_id());
             return false;
         }
         // Each time we succeed, we'll increase the 'refund' transaction id so we don't just refund the same amount again and again. IOK 2018-05-07
@@ -532,53 +422,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $res =  $this->api->refund_payment($order,$requestid,$amount);
-        } catch (VippsApiException $e) {
-            $this->adminerr($e->getMessage());
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not refund Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
+            $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
             return false;
-        }
-        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
-        if (!$res || !$res['response']) {
-            $msg = __('Could not refund Vipps payment','vipps') . ' ' . __('No response from Vipps', 'vipps');
+        } catch (Exception $e) {
+            $msg = __('Could not refund Vipps payment','vipps') . ' ' . $e->getMessage();
+            $this->log($msg,'error');
             $this->adminerr($msg);
-            $this->log($msg, 'error');
-            $order->add_order_note($msg);
             return false;
-        } 
-        // Error-handling. This needs more work after testing. IOK 2018-05-07
-        if ($res['response']>399) {
-            if (isset($res['content'])) {
-                $content = $res['content'];
-                // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24 
-                if (isset($content['ResponseInfo'])) {
-                    // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                    $msg = __('Could not refund Vipps payment','vipps') . ' ' . $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
-                    $this->log($msg,'error');
-                    $this->adminerr($msg);
-                    $order->add_order_note($msg);
-                    return false;
-                } else {
-                    // Otherwise, we get a simple array of objects with error messages.  Log them all.
-                    $allmsg = '';
-                    foreach($content as $entry) {
-                        $msg = __('Could not refund Vipps payment','vipps') . ' ' .$res['response'] . ' ' .   $entry['errorMessage'];
-                        $allmsg .= $msg . "\n";
-                        $this->log($msg, 'error');
-                        $this->adminerr($msg);
-                    }
-                    $order->add_order_note($allmsg);
-                    return false;
-                }
-            } else {
-                // No response content at all, so just log the response header
-                $msg = __('Could not refund Vipps payment','vipps') . ' ' .  $res['headers'][0];
-                $this->log($msg,'error');
-                $this->adminerr($msg);
-                return false;
-            }
         }
         // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
-        $content = $res['content'];
-        $transactionInfo = $content['transaction'];
+        $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
         $transactionSummary= $content['transactionSummary'];
         $order->update_meta_data('_vipps_refund_timestamp',strtotime($transactionInfo['timeStamp']));
         $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
@@ -589,8 +444,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
         $order->add_order_note(__('Vipps payment refunded:','vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
         $order->save();
-
-
         return true;
     }
 
@@ -648,24 +501,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_vipps_order_status($order, $iscallback=0) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) return null;
-        $statusdata = $this->api->order_status($order);
-        if (!$statusdata) return null;
-        // Errors. The response of an 500 is quite different than for a 40x. I0K 2018-05-04
-        if ($statusdata['response']>399) {
-            $content = $statusdata['content'];
-            if (isset($content['message'])) {
-                throw new VippsAPIException(__("Error getting order status: ",'vipps') . $statusdata['response'] . " " . $content['message']);
-            } else {
-                $msg = __("Error getting order status: ",'vipps') . $statusdata['response'];
-                foreach($content as $entry) {
-                    if (isset($entry['errorMessage'])) {
-                        $msg .= ' ' . $entry['errorMessage']; 
-                    }
-                }
-                throw new VippsAPIException($msg);
-            }
+        try { 
+         $statusdata = $this->api->order_status($order);
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not get Vipps order status', 'vipps') . ' ' .$e->getMessage(),'error');
+            if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
+            return null;
+        } catch (Exception $e) {
+            $msg = __('Could not get Vipps order status','vipps') . ' ' . $e->getMessage();
+            $this->log($msg,'error');
+            if (!$iscallback) $this->adminerr($msg);
+            return null;
         }
-
+        if (!$statusdata) return null;
 
         $transaction = @$statusdata['transactionInfo'];
         if (!$transaction) return null;
@@ -786,7 +634,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $c = $this->get_option('clientId');
         if ($at && $s && $c) {
             try {
-                $token = $this->get_access_token('force');
+                $token = $this->api->get_access_token('force');
                 $this->adminnotify(__("Connection to Vipps OK", 'vipps'));
             } catch (Exception $e) {
                 $msg = $e->getMessage();
@@ -801,38 +649,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $logger = wc_get_logger();
         $context = array('source','Vipps Woo Gateway');
         $logger->log($type,$what,$context);
-    }
-
-    // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
-    private function get_access_token($force=0) {
-        // First, get a stored 
-        $stored = get_transient('_vipps_app_token');
-        if (!$force && $stored && $stored['expires_on'] > time()) {
-            return $stored['access_token'];
-        }
-        $fresh = $this->api->get_access_token();
-
-        // Nothing at all? Throw an error IOK 2018-04-18
-        if (!$fresh || !isset($fresh['response'])) {
-            throw new VippsAPIException(__("Could not connect to Vipps API",'vipps')); 
-        }
-
-        // Else if we get a response at all, it will have the access token, so store it and return IOK 2018-04-18
-        if ($fresh['response'] == 200) {
-            $resp = $fresh['content'];
-            $at = $resp['access_token'];
-            $expire = $resp['expires_in']/2;
-            set_transient('_vipps_app_token',$resp,$expire);
-            return $at;
-        }
-        // If we got an error message, throw that IOK 2018-04-18
-        if ($fresh['content'] && isset($fresh['content']['error'])) {
-            throw new VippsAPIException(__("Could not get access token from Vipps API",'vipps') . ": " . __($fresh['content']['error'],'vipps')); 
-            error_log("Vipps: " . $fresh['content']['error'] . " " . $fresh['content']['error_description']);
-        } 
-
-        // No message, so return the first header (500, 411 etc) IOK 2018-04-18
-        throw new VippsAPIException(__("Could not get access token from Vipps API",'vipps') . ": " . __($fresh['headers'][0],'vipps')); 
     }
 
     public function payment_fields() {

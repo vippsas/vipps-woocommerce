@@ -21,8 +21,25 @@ class VippsApi {
         return $this->gateway->log($what,$type);
     }
 
+    // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
+    public function get_access_token($force=0) {
+        // First, get a stored token if it exists
+        $stored = get_transient('_vipps_app_token');
+        if (!$force && $stored && $stored['expires_on'] > time()) {
+            return $stored['access_token'];
+        }
+        // Otherwise, get it from vipps - this might throw errors 
+        $fresh = $this->get_access_token_from_vipps();
+        if (!$fresh) return null;
+
+        $at = $fresh['access_token'];
+        $expire = $fresh['expires_in']/2;
+        set_transient('_vipps_app_token',$resp,$expire);
+        return $at;
+   }
+
     // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
-    public function get_access_token() { 
+    private function get_access_token_from_vipps() { 
         $clientid=$this->get_option('clientId');
         $secret=$this->get_option('secret');
         $at = $this->get_option('Ocp_Apim_Key_AccessToken');
@@ -33,7 +50,7 @@ class VippsApi {
         } catch (TemporaryVippsAPIException $e) {
           throw $e;
         } catch (Exception $e) {
-          $this->log(__("Could not get Vipps access key",'vipps') .' '. $e->getMessage());
+          $this->log(__("Could not get Vipps access token",'vipps') .' '. $e->getMessage());
           throw new VippsAPIConfigurationException($e->getMessage());
         }
     }
@@ -330,14 +347,17 @@ class VippsApi {
 
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
-            if (isset($content['ResponseInfo'])) {
+            if (isset($content['error'])) {
+              // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
+              $msg = $content['error'];
+            } elseif (isset($content['ResponseInfo'])) {
                 // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                $msg = $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
+                $msg = $response  . ' ' .  $content['ResponseInfo']['ResponseMessage'];
             } else {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
                 $msg = '';
                 foreach($content as $entry) {
-                    $msg .= $res['response'] . ' ' .   $entry['errorMessage'] . "\n";
+                    $msg .= $response  . ' ' .   $entry['errorMessage'] . "\n";
                 } 
             }
         }
