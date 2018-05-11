@@ -49,9 +49,11 @@ class VippsApi {
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         if (!$merch) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         $vippsorderid =  $prefix.($order->get_id());
@@ -102,9 +104,11 @@ class VippsApi {
         $prefix = $this->get_option('orderprefix');
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         if (!$merch) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -130,9 +134,11 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         if (!$merch) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -169,9 +175,11 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         if (!$merch) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -204,9 +212,11 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         if (!$merch) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
