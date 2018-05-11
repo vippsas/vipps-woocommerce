@@ -27,7 +27,15 @@ class VippsApi {
         $secret=$this->get_option('secret');
         $at = $this->get_option('Ocp_Apim_Key_AccessToken');
         $command = 'accessToken/get';
-        return $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
+        try {
+         $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
+         return $result;
+        } catch (TemporaryVippsAPIException $e) {
+          throw $e;
+        } catch (Exception $e) {
+          $this->log(__("Could not get Vipps access key",'vipps') .' '. $e->getMessage());
+          throw new VippsAPIConfigurationException($e->getMessage());
+        }
     }
 
     public function initiate_payment($phone,$order,$requestid=1) {
@@ -40,10 +48,10 @@ class VippsApi {
         $prefix = $this->get_option('orderprefix');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         if (!$merch) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         $vippsorderid =  $prefix.($order->get_id());
@@ -93,12 +101,10 @@ class VippsApi {
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $prefix = $this->get_option('orderprefix');
         if (!$subkey) {
-            $this->log(__('Could not get order details from Vipps - no subscription key','vipps'));
-            return null;
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         if (!$merch) {
-            $this->log(__('Could not get order details from Vipps - no merchant serial number','vipps'));
-            return null;
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -122,12 +128,11 @@ class VippsApi {
         $at = $this->get_access_token();
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
-        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         if (!$merch) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -162,12 +167,11 @@ class VippsApi {
         $at = $this->get_access_token();
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
-        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         if (!$merch) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -198,12 +202,11 @@ class VippsApi {
         $at = $this->get_access_token();
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
-        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         if (!$merch) {
-            throw new VippsAPIException(__('Unfortunately, the Vipps payment method is currently unavailable.','vipps'));
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
