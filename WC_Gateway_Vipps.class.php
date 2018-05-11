@@ -74,10 +74,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
+        $to_refund =  $order->get_meta('_vipps_refund_remaining');
         if (!$captured) {
             return $this->maybe_cancel_payment($orderid);
         }
-        $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        if ($to_refund == 0) return true;
+
         try {
             $ok = $this->refund_payment($order,$to_refund,'exact');
         } catch (Exception $e) {
@@ -98,13 +100,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // This is the Woocommerce refund api; which is a fairly trivial thing here
     public function process_refund($orderid,$amount=null,$reason) {
         $order = new WC_Order( $orderid );
+
+        $captured = $order->get_meta('_vipps_captured');
+        $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        if (!$captured) {
+          return false;
+        }
+
         $ok = $this->refund_payment($order,$amount);
         if ($ok) {
          $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
-        } else {
-         $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'vipps');
-         global $Vipps;
-         $Vipps->store_admin_notices();
         } 
         return $ok;
     }
