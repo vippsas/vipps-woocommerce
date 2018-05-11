@@ -71,7 +71,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = new WC_Order( $orderid );
         $ok = 0;
 
-
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
@@ -82,7 +81,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         try {
             $ok = $this->refund_payment($order,$to_refund,'exact');
+        } catch (TemporaryVippsAPIException $e) {
+            $this->adminerr(__('Temporary error when refunding payment through Vipps - ensure order is refunded manually, or reset the order to "Processing" and try again', 'vipps'));
+            $this->adminerr($e->getMessage());
+            global $Vipps;
+            $Vipps->store_admin_notices();
+            return false;
         } catch (Exception $e) {
+            $order->add_order_note(__("Error when refunding payment through Vipps:", 'vipps') . ' ' . $e->getMessage());
+            $order->save();
+            $this->adminerr($e->getMessage());
         }
         if (!$ok) {
             $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'vipps');
@@ -97,17 +105,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
-    // This is the Woocommerce refund api; which is a fairly trivial thing here
+    // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason) {
         $order = new WC_Order( $orderid );
 
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
         if (!$captured) {
-          return false;
+          return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'vipps'));
+        }
+        if ($amount*100 > $to_refund) {
+          return new WP_Error('Vipps', __("Cannot refund through Vipps - the refund amount is too large.", 'vipps'));
+        }
+        $ok = 0;
+        try {
+          $ok = $this->refund_payment($order,$amount);
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not refund Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
+            return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
+        } catch (Exception $e) {
+            $msg = __('Could not refund Vipps payment','vipps') . ' ' . $e->getMessage();
+            $order->add_order_note($msg);
+            $this->log($msg,'error');
+            return new WP_Error('Vipps',$msg);
         }
 
-        $ok = $this->refund_payment($order,$amount);
         if ($ok) {
          $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
         } 
@@ -419,45 +441,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Refund (possibly partially) the captured order. IOK 2018-05-07
+    // The caller must handle the errors.
     public function refund_payment($order,$amount=0,$cents=false) {
+
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $msg = __('Trying to refund payment on order not made by Vipps:','vipps') . ' ' . $order->get_id();
             $this->log($msg,'error');
-            $this->adminerr($msg);
-            return false;
+            throw new VippsAPIException($msg);
         }
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = $order->get_meta('_vipps_captured');
         if (!$captured) {
             $msg = __('Trying to refund payment on Vipps payment not captured:','vipps'). ' ' .$order->get_id();
             $this->log($msg,'error');
-            $this->adminerr($msg);
-            return false;
+            throw new VippsAPIException($msg);
         }
  
         // Each time we succeed, we'll increase the 'refund' transaction id so we don't just refund the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it.) IOK 2018-05-07
         $requestidnr = intval($order->get_meta('_vipps_refund_transid'));
-        try {
-            $requestid = $requestidnr . ":" . $order->get_order_key();
-            $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not refund Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
-            $Vipps->store_admin_notices();
-            $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
-        } catch (Exception $e) {
-            $msg = __('Could not refund Vipps payment','vipps') . ' ' . $e->getMessage();
-            $order->add_order_note($msg);
-            $this->log($msg,'error');
-            $this->adminerr($msg);
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
-        }
+        $requestid = $requestidnr . ":" . $order->get_order_key();
+        $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
         // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
         $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
         $transactionSummary= $content['transactionSummary'];
