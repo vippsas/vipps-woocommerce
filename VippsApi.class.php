@@ -22,7 +22,7 @@ class VippsApi {
     }
 
     // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
-    public function api_get_access_token() { 
+    public function get_access_token() { 
         $clientid=$this->get_option('clientId');
         $secret=$this->get_option('secret');
         $at = $this->get_option('Ocp_Apim_Key_AccessToken');
@@ -30,7 +30,7 @@ class VippsApi {
         return $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
     }
 
-    public function api_initiate_payment($phone,$order,$requestid=1) {
+    public function initiate_payment($phone,$order,$requestid=1) {
         $command = 'Ecomm/v1/payments';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
@@ -82,7 +82,7 @@ class VippsApi {
         return $res;
     }
 
-    public function api_order_status($order) {
+    public function order_status($order) {
         $merch = $this->get_option('merchantSerialNumber');
         $vippsorderid = $order->get_meta('_vipps_orderid');
 
@@ -112,7 +112,7 @@ class VippsApi {
     }
 
     // Capture a payment made. Defaults to full capture only. IOK 2018-05-07
-    public function api_capture_payment($order,$requestid=1,$amount=0) {
+    public function capture_payment($order,$requestid=1,$amount=0) {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
@@ -152,7 +152,7 @@ class VippsApi {
     }
 
     // Cancel a reserved but not captured payment IOK 2018-05-07
-    public function api_cancel_payment($order,$requestid=1) {
+    public function cancel_payment($order,$requestid=1) {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
@@ -188,7 +188,7 @@ class VippsApi {
     }
 
     // Refund a captured payment.  IOK 2018-05-08
-    public function api_refund_payment($order,$requestid=1,$amount=0) {
+    public function refund_payment($order,$requestid=1,$amount=0) {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
