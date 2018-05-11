@@ -67,11 +67,11 @@ class Vipps {
         $order = new WC_Order($post);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
-        $init =  $order->get_meta('_vipps_init_timestamp');
-        $callback =  $order->get_meta('_vipps_callback_timestamp');
-        $capture =  $order->get_meta('_vipps_capture_timestamp');
-        $refund =  $order->get_meta('_vipps_refund_timestamp');
-        $cancel =  $order->get_meta('_vipps_cancel_timestamp');
+        $init =  intval($order->get_meta('_vipps_init_timestamp'));
+        $callback =  intval($order->get_meta('_vipps_callback_timestamp'));
+        $capture =  intval($order->get_meta('_vipps_capture_timestamp'));
+        $refund =  intval($order->get_meta('_vipps_refund_timestamp'));
+        $cancel =  intval($order->get_meta('_vipps_cancel_timestamp'));
 
         $status = $order->get_meta('_vipps_status');
         $total = intval($order->get_meta('_vipps_amount'));
@@ -89,10 +89,10 @@ class Vipps {
         print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
 
         print "<tr><td>Vipps initiated</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$init); print "</td></tr>";
-        print "<tr><td>Vipps response </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$callback); print "</td></tr>";
-        print "<tr><td>Vipps capture </td><td align=right>";if ($init) print date('Y-m-d H:i:s',$capture); print "</td></tr>";
-        print "<tr><td>Vipps refund</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$refund); print "</td></tr>";
-        print "<tr><td>Vipps cancelled</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$cancel); print "</td></tr>";
+        print "<tr><td>Vipps response </td><td align=right>";if ($callback) print date('Y-m-d H:i:s',$callback); print "</td></tr>";
+        print "<tr><td>Vipps capture </td><td align=right>";if ($capture) print date('Y-m-d H:i:s',$capture); print "</td></tr>";
+        print "<tr><td>Vipps refund</td><td align=right>";if ($refund) print date('Y-m-d H:i:s',$refund); print "</td></tr>";
+        print "<tr><td>Vipps cancelled</td><td align=right>";if ($cancel) print date('Y-m-d H:i:s',$cancel); print "</td></tr>";
         print "</tbody></table>";
     }
 
@@ -264,17 +264,21 @@ class Vipps {
         if ($pm != 'vipps') return;
 
         if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
-            $this->log("Saving order and we have 'do capture pay'");
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
             // 0 in amount means full payment, which is all we currently support. IOK 2018-05-7
             $ok = $gw->capture_payment($order,0);
             // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
-            ob_start();
-            do_action('admin_notices');
-            $notices = ob_get_clean();
-            set_transient('_vipps_save_admin_notices',$notices, 5*60);
+            $this->store_admin_notices();
         }
+    }
+
+    // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
+    public function store_admin_notices() {
+        ob_start();
+        do_action('admin_notices');
+        $notices = ob_get_clean();
+        set_transient('_vipps_save_admin_notices',$notices, 5*60);
     }
 
     public function order_item_add_action_buttons ($order) {

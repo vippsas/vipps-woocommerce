@@ -61,6 +61,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $msg = __("Could not cancel Vipps payment", 'vipps');
             $this->adminerr($msg);
             $order->save();
+            global $Vipps;
+            $Vipps->store_admin_notices();
         }
     }
 
@@ -68,6 +70,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function maybe_refund_payment($orderid) {
         $order = new WC_Order( $orderid );
         $ok = 0;
+
 
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
@@ -81,10 +84,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
         }
         if (!$ok) {
-            $msg = __('Could not refund Vipps payment', 'vipps');
+            $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'vipps');
             $this->adminerr($msg);
-            $order->set_status('processing',$msg);
-            $order->save();
+            $order->add_order_note($msg);
+            $order->add_order_notice($msg);
+            // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
+            // allow the state change here if that happens.
+            global $Vipps;
+            $Vipps->store_admin_notices();
+            return false;
         }
     }
 
@@ -92,12 +100,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // This is the Woocommerce refund api; which is a fairly trivial thing here
     public function process_refund($orderid,$amount=null,$reason) {
         $order = new WC_Order( $orderid );
-        try {
-            $ok = $this->refund_payment($order,$amount);
-        } catch (Exception $e) {
-            throw new WP_Error($e->getMessage());
-        }
-        if ($ok) $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
+        $ok = $this->refund_payment($order,$amount);
+        if ($ok) {
+         $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
+        } else {
+         $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'vipps');
+         global $Vipps;
+         $Vipps->store_admin_notices();
+        } 
         return $ok;
     }
 
@@ -298,6 +308,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr($msg);
             $order->set_status('on-hold',$msg);
             $order->save();
+            global $Vipps;
+            $Vipps->store_admin_notices();
+            return false;
         }
     }
 
@@ -306,7 +319,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function capture_payment($order,$amount=0) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(__('Trying to capture payment on order not made by Vipps:','vipps'),$order->get_id());
+            $this->log(__('Trying to capture payment on order not made by Vipps:','vipps'). ' ' . $order->get_id(), 'error');
             $this->adminerr(__('Cannot capture payment on orders not made by Vipps','vipps'));
             return false;
         }
@@ -358,7 +371,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function cancel_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(__('Trying to cancel payment on order not made by Vipps:','vipps'),$order->get_id());
+            $this->log(__('Trying to cancel payment on order not made by Vipps:','vipps'). ' ' .$order->get_id(), 'error');
             $this->adminerr(__('Cannot cancel payment on orders not made by Vipps','vipps'));
             return false;
         }
@@ -406,30 +419,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function refund_payment($order,$amount=0) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(__('Trying to refund payment on order not made by Vipps:','vipps'),$order->get_id());
-            $this->adminerr(__('Cannot refund payment on orders not made by Vipps','vipps'));
+            $msg = __('Trying to refund payment on order not made by Vipps:','vipps') . ' ' . $order->get_id();
+            $this->log($msg,'error');
+            $this->adminerr($msg);
             return false;
         }
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = $order->get_meta('_vipps_captured');
         if (!$captured) {
-            $this->log(__('Trying to refund payment on Vipps payment not captured:','vipps'),$order->get_id());
+            $msg = __('Trying to refund payment on Vipps payment not captured:','vipps'). ' ' .$order->get_id();
+            $this->log($msg,'error');
+            $this->adminerr($msg);
             return false;
         }
+ 
         // Each time we succeed, we'll increase the 'refund' transaction id so we don't just refund the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it.) IOK 2018-05-07
         $requestidnr = intval($order->get_meta('_vipps_refund_transid'));
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
-            $res =  $this->api->refund_payment($order,$requestid,$amount);
+            $content =  $this->api->refund_payment($order,$requestid,$amount);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not refund Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
+            $Vipps->store_admin_notices();
             $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
+            global $Vipps;
+            $Vipps->store_admin_notices();
             return false;
         } catch (Exception $e) {
             $msg = __('Could not refund Vipps payment','vipps') . ' ' . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
+            global $Vipps;
+            $Vipps->store_admin_notices();
             return false;
         }
         // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
