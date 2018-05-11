@@ -1,9 +1,9 @@
 <?php
 /*
-  This is the VippsApi  class, a delegate in WC_Payment_Gateway that handles the actual communication with Vipps.
-  The parameters are fetched from the containing class. IOK 2018-05-11
+   This is the VippsApi  class, a delegate in WC_Payment_Gateway that handles the actual communication with Vipps.
+   The parameters are fetched from the containing class. IOK 2018-05-11
 
-*/
+ */
 
 require_once(dirname(__FILE__) . "/exceptions.php");
 
@@ -15,10 +15,10 @@ class VippsApi {
     }
 
     public function get_option($optionname) {
-      return $this->gateway->get_option($optionname);
+        return $this->gateway->get_option($optionname);
     }
     public function log($what,$type='info') {
-      return $this->gateway->log($what,$type);
+        return $this->gateway->log($what,$type);
     }
 
     // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
@@ -294,7 +294,50 @@ class VippsApi {
                 $response = 1 * $match[1];
             }
         }
-        return array('response'=>$response,'headers'=>$http_response_header,'content'=>$content);
+        // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
+        return $this->handle_http_response($response,$http_response_header,$content);
+    }
+
+    // Read the response from Vipps - if any - and convert errors (null results, results over 299)
+    // to Exceptions IOK 2018-05-11
+    private function handle_http_response ($response, $headers, $content) {
+        // This would be an error in the URL or something - or a network outage IOK 2018-04-24
+        // we will assume it is temporary (ie, no response).
+        if (!$response) {
+            $msg = __('No response from Vipps', 'vipps');
+            throw new TemporaryVippsAPIException($msg);
+        }
+
+        // Good result!
+        if ($response < 300) {
+            return $content; 
+        }
+        // Now errorhandling. Default to use just the error header IOK 2018-05-11
+        $msg = $headers[0];
+
+        // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
+        if ($content) {
+            if (isset($content['ResponseInfo'])) {
+                // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
+                $msg = $res['response'] . ' ' .  $content['ResponseInfo']['ResponseMessage'];
+            } else {
+                // Otherwise, we get a simple array of objects with error messages.  Grab them all.
+                $msg = '';
+                foreach($content as $entry) {
+                    $msg .= $res['response'] . ' ' .   $entry['errorMessage'] . "\n";
+                } 
+            }
+        }
+
+        // 502's are Bad Gateway which means that Vipps is busy. IOK 2018-05-11
+        if (intval($response) == 502) {
+            $exception = new TemporaryVippsAPIException($msg);
+        } else {
+            $exception = new VippsApiException($msg);
+        }
+
+        $exception->$responsecode = intval($response);
+        throw $exception;
     }
 
 }
