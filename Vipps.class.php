@@ -1,13 +1,11 @@
 <?php
 /*
-   Plugin Name: Woocommerce Vipps Payment Module
-   Description: Offer Vips as a payment method for Woocommerce
-   Author: Iver Odin Kvello
-   Version: 0.9
+ This class is for hooks and plugin managent, and is instantiated as a singleton and set globally as $Vipps. IOK 2018-02-07
+ For WP-specific interactions.
+
  */
 require_once(dirname(__FILE__) . "/exceptions.php");
 
-/* This class is for hooks and plugin managent, and is instantiated as a singleton. IOK 2018-02-07*/
 class Vipps {
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
