@@ -190,6 +190,7 @@ class Vipps {
             }
             if (!$order) wp_die(__('Unknown order', 'vipps'));
 
+
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
 

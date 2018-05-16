@@ -250,10 +250,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$phone && isset($_POST['billing_phone'])) {
             $phone = trim($_POST['billing_phone']);
         }
-        if (!$phone) {
+        // No longer the case for V2
+        if (false && !$phone) {
             wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps') ,'error');
             return false;
         }
+        $phone = "";
 
         $order = new WC_Order($order_id);
         $content = null;
@@ -673,8 +675,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function payment_fields() {
         $fields = WC()->checkout->checkout_fields;
+        // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
+        // For v2 of the api, just let Vipps ask for then umber
+        return;
         if (isset($fields['billing']['billing_phone']) && $fields['billing']['billing_phone']['required']) {
-            // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         } else {
             print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
         }

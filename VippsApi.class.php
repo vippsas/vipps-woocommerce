@@ -123,7 +123,7 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         $vippsorderid = $order->get_meta('_vipps_orderid');
 
-        $command = 'Ecomm/v1/payments/'.$vippsorderid.'/serialNumber/'.$merch.'/status';
+        $command = 'Ecomm/v2/payments/'.$vippsorderid.'/serialNumber/'.$merch.'/status';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -153,7 +153,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
-        $command = 'Ecomm/v1/payments/'.$orderid.'/capture';
+        $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -194,7 +194,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
-        $command = 'Ecomm/v1/payments/'.$orderid.'/cancel';
+        $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -231,7 +231,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
-        $command = 'Ecomm/v1/payments/'.$orderid.'/refund';
+        $command = 'Ecomm/v2/payments/'.$orderid.'/refund';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
