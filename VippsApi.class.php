@@ -55,8 +55,8 @@ class VippsApi {
         }
     }
 
-    public function initiate_payment($phone,$order,$requestid=1) {
-        $command = 'Ecomm/v1/payments';
+    public function initiate_payment($phone,$order,$returnurl,$requestid) {
+        $command = 'Ecomm/v2/payments';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -86,11 +86,12 @@ class VippsApi {
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
         // HTTPS is required. IOK 2018-04-24
-        $callback = set_url_scheme(home_url(),'https') . '/wc-api/wc_gateway_vipps';
+        $callback = set_url_scheme(home_url(),'https') . '/wc-api/wc_gateway_vipps?callback=';
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
-            $callBack = set_url_scheme(home_url(),'https') . '/?wc-api=wc_gateway_vipps';
+            $callBack = set_url_scheme(home_url(),'https') . '/?wc-api=wc_gateway_vipps&callback=';
         }
+        $fallback = set_url_scheme(home_url(),'https') . $returnurl;
 
         $transaction = array();
         $transaction['orderId'] = $vippsorderid;
@@ -101,8 +102,17 @@ class VippsApi {
 
 
         $data = array();
-        $data['customerInfo'] = array('mobileNumber' => $phone);
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callBack'=>$callback); 
+        $data['customerInfo'] = array('mobileNumber' => $phone); // IOK FIXME not required in 2.0
+        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback); 
+
+        // For express, add  IOK FIXME!
+        /*
+         "shippingDetailsPrefix" : "https://www.test.no/api/callback/api",
+         "authToken": "c2hpcHBpbmdTZXJ2aWNlVXNlcjpIZWlzYW5uNw==",
+         "paymentType":"eComm Express Payment",
+         "consentRemovalPrefix":"https://www.test.no/api/callback",
+        */
+
         $data['transaction'] = $transaction;
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
@@ -113,7 +123,7 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         $vippsorderid = $order->get_meta('_vipps_orderid');
 
-        $command = 'Ecomm/v1/payments/'.$vippsorderid.'/serialNumber/'.$merch.'/status';
+        $command = 'Ecomm/v2/payments/'.$vippsorderid.'/status';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -143,7 +153,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
-        $command = 'Ecomm/v1/payments/'.$orderid.'/capture';
+        $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -184,7 +194,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
-        $command = 'Ecomm/v1/payments/'.$orderid.'/cancel';
+        $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -221,7 +231,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : $order->get_total();
 
-        $command = 'Ecomm/v1/payments/'.$orderid.'/refund';
+        $command = 'Ecomm/v2/payments/'.$orderid.'/refund';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -358,6 +368,8 @@ class VippsApi {
             } elseif (isset($content['ResponseInfo'])) {
                 // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
                 $msg = $response  . ' ' .  $content['ResponseInfo']['ResponseMessage'];
+            } elseif (isset($content['errorInfo'])) {
+                $msg = $response  . ' ' .  $content['errorInfo']['errorMessage'];
             } else {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
                 $msg = '';
