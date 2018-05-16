@@ -255,7 +255,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps') ,'error');
             return false;
         }
-        $phone = "";
 
         $order = new WC_Order($order_id);
         $content = null;
@@ -517,9 +516,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $order->update_status('cancelled', __('Order failed or rejected at Vipps', 'vipps'));
                     break;
             }
+            $order->save();
         }
-
-
 
         return $newstatus;
     }
@@ -534,6 +532,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(__('Could not get Vipps order status', 'vipps') . ' ' .$e->getMessage(),'error');
             if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
             return null;
+        } catch (VippsAPIException $e) {
+          $msg = __('Could not get Vipps order status','vipps') . ' ' . $e->getMessage();
+          $this->log($msg,'error');
+          if (intval($e->responsecode) == 402) {
+            $this->log(__('Order does not exist at Vipps - cancelling','vipps'));
+            return 'CANCEL'; 
+          }
+          if (!$iscallback) $this->adminerr($msg);
         } catch (Exception $e) {
             $msg = __('Could not get Vipps order status','vipps') . ' ' . $e->getMessage();
             $this->log($msg,'error');

@@ -123,7 +123,7 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         $vippsorderid = $order->get_meta('_vipps_orderid');
 
-        $command = 'Ecomm/v2/payments/'.$vippsorderid.'/serialNumber/'.$merch.'/status';
+        $command = 'Ecomm/v2/payments/'.$vippsorderid.'/status';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();

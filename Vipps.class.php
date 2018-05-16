@@ -200,6 +200,15 @@ class Vipps {
              wp_redirect($gw->get_return_url($order));
              exit();
             }
+
+            // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
+            if ($status == 'pending') {
+              $newstatus = $gw->callback_check_order_status($order);
+              if ($newstatus) {
+                $status = $newstatus;
+              }
+            }
+
             // We are done, but in failure. Don't poll.
             if ($status == 'cancelled' || $status == 'refunded') {
                 $content .= "<div id=failure><p>". __('Order cancelled', 'vipps') . '</p>';
@@ -208,7 +217,10 @@ class Vipps {
                 $this->fakepage(__('Order cancelled','vipps'), $content);
                 return;
             }
- 
+
+            // Still pending and order is supposed to exist, so wait for Vipps. This part might not be relevant anymore. IOK 2018-05-16
+            $this->log("Unexpectedly reached the wait-for-callback branch.");
+            
             // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
             wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
             wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
