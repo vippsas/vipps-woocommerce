@@ -257,11 +257,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order($order_id);
         $content = null;
+
+        // Vipps-terminal-page return url to poll/await return  FIXME fetch from settings! IOK 2018-04-23
+        $returnurl= '/vipps-betaling/';
+
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();
-            $content =  $this->api->initiate_payment($phone,$order,$requestid);
+            $content =  $this->api->initiate_payment($phone,$order,$returnurl,$requestid);
         } catch (TemporaryVippsApiException $e) {
           $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
            wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','vipps'),'error');
@@ -272,14 +276,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           return false;
         }
 
-        // So here we have a correct response 202 Accepted and so on and so forth! IOK 2018-04-24
-        // We need to clean out the cart, store metadata for interfaceing with Vipps (in case the callback doesn't work)
-        // and store the order id in session so we can access it on the 'waiting for confirmation' screen. IOK 2018-04-24
-        $transactioninfo = @$content['transactionInfo'];
-        $transactionid = @$transactioninfo['transactionId'];
-        $vippsstatus = @$transactioninfo['status'];
-        $message = __(@$transactioninfo['message'],'vipps');
-        $vippstamp = strtotime(@$transactioninfo['timeStamp']);
+        $url = $content['url'];
+        $vippstamp = time();
 
         // Ensure we only check the status by ajax of our own orders. IOK 2018-05-03
         $sessionorders= WC()->session->get('_vipps_session_orders');
@@ -289,10 +287,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order( $order_id );
         $order->set_transaction_id($transactionid);
-        $order->update_meta_data('_vipps_transaction',$transactionid);
-        $order->update_meta_data('_vipps_confirm_message',$message);
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
-        $order->update_meta_data('_vipps_status',$vippsstatus); // INITIATE right now
+        $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','vipps'));
         $order->add_order_note(__('Awaiting Vipps payment confirmation','vipps'));
         $order->save();
@@ -312,8 +308,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $woocommerce->cart->empty_cart(true);
 
-        // Vipps-terminal-page FIXME fetch from settings! IOK 2018-04-23
-        $url = '/vipps-betaling/';
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);
@@ -595,11 +589,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsamount = $transaction['amount'];
         $vippsstatus = $transaction['status'];
 
-        $ordertransid = $order->get_meta('_vipps_transaction');
-        if ($ordertransid != $transactionid) {
-            $this->log(__("Vipps callback with wrong transaction id for order",'vipps'). " " . $orderid . ": " . $transactionid . ': ' . $ordertransid ,'error');
-            return false;
-        }
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
         try {
             $Vipps->createCallbackSignal($order,'ok');

@@ -297,6 +297,7 @@ class Vipps {
     public function vipps_callback() {
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
+        $this->log(print_r($result,true));
         if (!$result) {
             $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
