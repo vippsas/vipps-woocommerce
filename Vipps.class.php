@@ -190,7 +190,25 @@ class Vipps {
             }
             if (!$order) wp_die(__('Unknown order', 'vipps'));
 
-            //            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),'1.0', 'true');
+            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+            $gw = new WC_Gateway_Vipps();
+
+            // If we are done, we are done, so go directly to the end. IOK 2018-05-16
+            $status = $order->get_status();
+            if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
+             wp_redirect($gw->get_return_url($order));
+             exit();
+            }
+            // We are done, but in failure. Don't poll.
+            if ($status == 'cancelled' || $status == 'refunded') {
+                $content .= "<div id=failure><p>". __('Order cancelled', 'vipps') . '</p>';
+                $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
+                $content .= "</div>";
+                $this->fakepage(__('Order cancelled','vipps'), $content);
+                return;
+            }
+ 
+            // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
             wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
             wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
 
@@ -219,8 +237,6 @@ class Vipps {
             $content .= wp_nonce_field('vippsstatus','sec',1,false); 
             $content .= "</form>";
 
-            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-            $gw = new WC_Gateway_Vipps();
 
             $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
             $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps') . "</p>";
@@ -236,7 +252,7 @@ class Vipps {
             $content .= "</div>";
 
 
-            $this->fakepage(__('Confirm your purchase in your Vipps app','vipps'), $content);
+            $this->fakepage(__('Waiting for your order confirmation','vipps'), $content);
         }
     }
 
@@ -297,7 +313,6 @@ class Vipps {
     public function vipps_callback() {
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
-        $this->log(print_r($result,true));
         if (!$result) {
             $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;

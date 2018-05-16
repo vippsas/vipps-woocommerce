@@ -328,7 +328,6 @@ class VippsApi {
 
 
         $contenttext = @file_get_contents($url,false,$context);
-$this->log($contenttext); // DEBUG
         if ($contenttext) {
             $content = json_decode($contenttext,true);
         }
