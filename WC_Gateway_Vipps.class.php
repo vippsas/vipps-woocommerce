@@ -15,6 +15,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $api = null;
     public $supports = null;
 
+
     public function __construct() {
         $this->method_description = __('Offer Vipps as a payment method', 'vipps');
         $this->method_title = __('Vipps','vipps');
@@ -40,6 +41,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action( 'woocommerce_order_status_processing_to_refunded', array($this, 'maybe_refund_payment'));
         add_action( 'woocommerce_order_status_completed_to_refunded', array($this, 'maybe_refund_payment'));
     }
+
+    // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
+    private function make_callback_urls($forwhat) {
+        // HTTPS required. IOK 2018-05-18
+        // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
+        if ( !get_option('permalink_structure')) {
+            return set_url_scheme(home_url(),'https') . "/?wc-api=$forwhat&callback=";
+        } else {
+            return set_url_scheme(home_url(),'https') . "/wc-api/$forwhat?callback=";
+        }
+    }
+    // The main payment callback
+    public function payment_callback_url () {
+        return $this->make_callback_urls('wc_gateway_vipps');
+    }
+    // Callback for the login api
+    public function login_callback_url () {
+        return $this->make_callback_urls('vipps_login');
+    }
+    // Callback for the consetn removal callback
+    public function consent_removal_callback_url () {
+        return $this->make_callback_urls('vipps_consent_removal');
+    }
+
 
     public function maybe_cancel_payment($orderid) {
         $order = new WC_Order( $orderid );
@@ -259,8 +284,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = new WC_Order($order_id);
         $content = null;
 
-        // Vipps-terminal-page return url to poll/await return  FIXME fetch from settings! IOK 2018-04-23
-        $returnurl= '/vipps-betaling/';
+        // Vipps-terminal-page return url to poll/await return
+        $returnurl= $Vipps->payment_return_url();
 
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.

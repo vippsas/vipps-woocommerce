@@ -170,27 +170,29 @@ class Vipps {
         // Handle special callbacks
         // Check if using pretty links, if so, use the pretty link, otherwise use a GET parameter which we will need to add, ala VFlow=orderid
         $isvippswaitcallback= 0;
+        $isloginwithvipps=0;
+
         if ( get_option('permalink_structure')) {
-            if (preg_match("!^/vipps-betaling/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) { 
-                $isvippswaitcallback= 1;
-            }
+            if (preg_match("!^/vipps-betaling/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) $isvippswaitcallback= 1;
+            elseif (preg_match("!^/vipps-login/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) $isvippslogin= 1;
         } else {
-            if (isset($_GET['VippsBetaling'])) {
-                $isvippswaitcallback= 1;
-            }
+            if (isset($_GET['VippsBetaling'])) $isvippswaitcallback= 1;
+            elseif (isset($_GET['VippsLogin'])) $isvippslogin= 1;
         } 
 
         // We are returning from Vipps, but must wait for the callback for a period. IOK 2018-05-18
-        if ($isvippswaitcallback) {
-           return  $this->vippswaitforcallback();
-        }
+        if ($isvippswaitcallback)  return  $this->vippswaitforcallback();
+        if ($isvippslogin)  return  $this->vippsloginpage();
     }
 
     public function plugins_loaded() {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
+
+        // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
+        add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
+        add_action( 'woocommerce_api_vipps_consent_removal', array($this,'vipps_consent_removal_callback'));
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
@@ -247,9 +249,35 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
         }
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php"); // Unneccessary, as this will have been initialized by Woo, but anyway . 2018-04-27
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         return $gw->handle_callback($result);
+    }
+
+    // This if for the callback from Vipps when logging in
+    public function vipps_login_callback() {
+        $raw_post = @file_get_contents( 'php://input' );
+        $result = @json_decode($raw_post,true);
+        if (!$result) {
+            $this->log(__("Did not understand login callback from Vipps:",'vipps') . " " .  $raw_post);
+            return false;
+        }
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        // return $gw->handle_login_callback($result);
+        $this->log($raw_post,'debug'); // DEBUG
+    }
+    public function vipps_consent_removal_callback () {
+        $raw_post = @file_get_contents( 'php://input' );
+        $result = @json_decode($raw_post,true);
+        if (!$result) {
+            $this->log(__("Did not understand consent removal callback from Vipps:",'vipps') . " " .  $raw_post);
+            return false;
+        }
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        // return $gw->handle_login_callback($result);
+        $this->log($raw_post,'debug'); // DEBUG
     }
 
     /* WooCommerce Hooks */
@@ -365,7 +393,43 @@ class Vipps {
         return false;
     }
 
-    public function vippswaitforcallback() {
+    // The various return URLs for special pages of the Vipps stuff depend on settings and pretty-URLs so we supply them from here
+    // IOK  FIXME add backend support for these
+    private function make_return_url($what) {
+      $url = '';
+      if ( !get_option('permalink_structure')) {
+            $url = "/?VippsSpecialPage=$what&cb=";
+        } else {
+            $url = "/$what/?cb=";
+        }
+      return set_url_scheme(home_url(),'https') . $url;
+    }
+    public function payment_return_url() {
+     return $this->make_return_url('vipps-betaling');
+    }
+    public function login_return_url() {
+     return $this->make_return_url('vipps-login-venter');
+    }
+    // Return the method in the Vipps
+    public function is_special_page() {
+        $specials = array('vipps-login'=>'vipps-login-page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login');
+        $method = null;
+        if ( get_option('permalink_structure')) {
+         foreach($specials as $special=>$specialmethod) {
+            if (preg_match("!^/$special/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
+              $method = $specialmethod; break;
+            }
+         }
+        } else {
+            if (isset($_GET['VippsSpecialPage'])) {
+              $method = array_search($_GET['VippsSpecialPage'], $specials);
+            }
+        }
+        return $method;
+    }
+
+
+    public function vipps_wait_for_payment() {
             // Call a method here in the gatway here IOK FIXME
             status_header(200,'OK');
             $orderid = WC()->session->get('_vipps_pending_order');
@@ -376,7 +440,7 @@ class Vipps {
             if (!$order) wp_die(__('Unknown order', 'vipps'));
 
 
-            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
 
             // If we are done, we are done, so go directly to the end. IOK 2018-05-16
@@ -449,6 +513,44 @@ class Vipps {
 
 
             $this->fakepage(__('Waiting for your order confirmation','vipps'), $content);
+   }
+
+   public function vippsloginpage() {
+      // Because we want to call this using GET we must ensure no caching happens so we can set cookies etc.
+      header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
+      header('Cache-Control: no-store, no-cache, must-revalidate');
+      header('Cache-Control: post-check=0, pre-check=0', FALSE);
+      header('Pragma: no-cache');
+
+      if (is_user_logged_in()) {
+       wc_add_notice(__('You are already logged in!','vipps'),'notice');
+       wp_redirect(home_url());
+       exit();
+      } 
+
+      // To login, we need a session, even if the user hasn't added anything to the cart yet. IOK 2018-05-18 
+      if (!WC()->session->has_session()) {
+        WC()->session->set_customer_session_cookie(true);
+      }
+      WC()->session->set('vipps_login_request', null);
+
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+      $gw = new WC_Gateway_Vipps();
+      $msg = __('Unknown error','vipps');
+      $result = null;
+      try {
+        $result = $gw->login_request(); 
+      } catch (Exception $e) {
+        $msg = $e->getMessage();
+      }
+      if (!$result) {
+        wc_add_notice($msg);
+        wp_redirect(home_url());
+        exit();
+      }
+      
+      WC()->session->set('vipps_login_request', $result['requestId']);
+      wp_redirect($result['url']);
    }
    
 

@@ -55,6 +55,49 @@ class VippsApi {
         }
     }
 
+    // This is for 'login with vipps', not express checkout - but both have the same parameters more or less. IOK 2018-05-18
+    public function loginrequest($returnurl,$authtoken,$requestid) {
+        $command = 'signup/v1/loginRequests';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+        }
+        // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-Request-Id'] = $requestid;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
+        $callback = $this->gateway->login_callback_url();
+        $consentremoval = $this->gateway->consent_removal_callback_url();
+
+        $merchantInfo = array();
+        $merchantInfo['merchantSerialNumber'] = $merch;
+        $merchantInfo['callbackPrefix'] = $callback;
+        $merchantInfo['consentRemovalPrefix'] = $consentremoval;
+        $merchantInfo['fallBack'] = $returnurl;
+        $merchantInfo['isApp'] = false;
+        $merchantInfo['autoLoginToken'] = false;
+        $merchantInfo['authToken'] = $authToken;
+       
+        $data = array('merchantInfo'=>$merchantInfo);
+
+        $res = $this->http_call($command,$data,'POST',$headers,'json');
+        return $res;
+    }
+
     public function initiate_payment($phone,$order,$returnurl,$requestid) {
         $command = 'Ecomm/v2/payments';
         $date = gmdate('c');
@@ -85,13 +128,8 @@ class VippsApi {
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
-        // HTTPS is required. IOK 2018-04-24
-        $callback = set_url_scheme(home_url(),'https') . '/wc-api/wc_gateway_vipps?callback=';
-        // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
-        if ( !get_option('permalink_structure')) {
-            $callBack = set_url_scheme(home_url(),'https') . '/?wc-api=wc_gateway_vipps&callback=';
-        }
-        $fallback = set_url_scheme(home_url(),'https') . $returnurl;
+        $callback = $this->gateway->payment_callback_url();
+        $fallback = $returnurl;
 
         $transaction = array();
         $transaction['orderId'] = $vippsorderid;
