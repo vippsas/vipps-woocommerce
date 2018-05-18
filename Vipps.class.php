@@ -1,7 +1,7 @@
 <?php
 /*
- This class is for hooks and plugin managent, and is instantiated as a singleton and set globally as $Vipps. IOK 2018-02-07
- For WP-specific interactions.
+   This class is for hooks and plugin managent, and is instantiated as a singleton and set globally as $Vipps. IOK 2018-02-07
+   For WP-specific interactions.
 
  */
 require_once(dirname(__FILE__) . "/exceptions.php");
@@ -220,7 +220,7 @@ class Vipps {
         if ($pm != 'vipps') return;
         $status = $order->get_status();
         if ($status != 'on-hold' && $status != 'processing') return;
-        
+
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         if ($captured && !$capremain) return;
@@ -252,12 +252,12 @@ class Vipps {
         }
         $loginrequest = get_transient('_vipps_loginrequests_' . $result['requestId']);
         if (!$loginrequest) {
-         $this->log(__("Error during Vipps login callback: unknown request id",'vipps'));
-         return false;
+            $this->log(__("Error during Vipps login callback: unknown request id",'vipps'));
+            return false;
         }
         if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
-         $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'vipps'));
-         return false;
+            $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'vipps'));
+            return false;
         }
         // Store the request! The waiting-page will do the login/creation. IOK 2018-05-18 
         $this->log(__("Got login callback from",'vipps') . " " .$result['status']);;
@@ -392,33 +392,33 @@ class Vipps {
     // These are for the "fallback URL" mostly. IOK 2018-05-18
     // IOK  FIXME add backend support for these
     private function make_return_url($what) {
-      $url = '';
-      if ( !get_option('permalink_structure')) {
+        $url = '';
+        if ( !get_option('permalink_structure')) {
             $url = "/?VippsSpecialPage=$what";
         } else {
             $url = "/$what/";
         }
-      return set_url_scheme(home_url(),'https') . $url;
+        return set_url_scheme(home_url(),'https') . $url;
     }
     public function payment_return_url() {
-     return $this->make_return_url('vipps-betaling');
+        return $this->make_return_url('vipps-betaling');
     }
     public function login_return_url() {
-     return $this->make_return_url('vipps-login-venter');
+        return $this->make_return_url('vipps-login-venter');
     }
     // Return the method in the Vipps
     public function is_special_page() {
         $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login');
         $method = null;
         if ( get_option('permalink_structure')) {
-         foreach($specials as $special=>$specialmethod) {
-            if (preg_match("!^/$special/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
-              $method = $specialmethod; break;
+            foreach($specials as $special=>$specialmethod) {
+                if (preg_match("!^/$special/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
+                    $method = $specialmethod; break;
+                }
             }
-         }
         } else {
             if (isset($_GET['VippsSpecialPage'])) {
-              $method = array_search($_GET['VippsSpecialPage'], $specials);
+                $method = array_search($_GET['VippsSpecialPage'], $specials);
             }
         }
         return $method;
@@ -426,138 +426,177 @@ class Vipps {
 
 
     public function vipps_wait_for_payment() {
-            // Call a method here in the gatway here IOK FIXME
-            status_header(200,'OK');
-            $orderid = WC()->session->get('_vipps_pending_order');
-            $order = null;
-            if ($orderid) {
-                $order = new WC_Order($orderid); 
-            }
-            if (!$order) wp_die(__('Unknown order', 'vipps'));
+        // Call a method here in the gatway here IOK FIXME
+        status_header(200,'OK');
+        $orderid = WC()->session->get('_vipps_pending_order');
+        $order = null;
+        if ($orderid) {
+            $order = new WC_Order($orderid); 
+        }
+        if (!$order) wp_die(__('Unknown order', 'vipps'));
 
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-            $gw = new WC_Gateway_Vipps();
+        $gw = new WC_Gateway_Vipps();
 
-            // If we are done, we are done, so go directly to the end. IOK 2018-05-16
-            $status = $order->get_status();
-            if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
-             wp_redirect($gw->get_return_url($order));
-             exit();
-            }
+        // If we are done, we are done, so go directly to the end. IOK 2018-05-16
+        $status = $order->get_status();
+        if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
+            wp_redirect($gw->get_return_url($order));
+            exit();
+        }
 
-            // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-            if ($status == 'pending') {
-              $newstatus = $gw->callback_check_order_status($order);
-              if ($newstatus) {
+        // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
+        if ($status == 'pending') {
+            $newstatus = $gw->callback_check_order_status($order);
+            if ($newstatus) {
                 $status = $newstatus;
-              }
             }
+        }
 
-            // We are done, but in failure. Don't poll.
-            if ($status == 'cancelled' || $status == 'refunded') {
-                $content .= "<div id=failure><p>". __('Order cancelled', 'vipps') . '</p>';
-                $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
-                $content .= "</div>";
-                $this->fakepage(__('Order cancelled','vipps'), $content);
-                return;
-            }
-
-            // Still pending and order is supposed to exist, so wait for Vipps. This part might not be relevant anymore. IOK 2018-05-16
-            $this->log("Unexpectedly reached the wait-for-callback branch.");
-            
-            // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
-            wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
-            wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
-
-            // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
-            // and check that the order matches (and is 'pending') (and exists)
-            $vippsstamp = $order->get_meta('_vipps_init_timestamp');
-            $vippsstatus = $order->get_meta('_vipps_init_status');
-            $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
-
-            $signal = $this->callbackSignal($order);
-            $content .= "<div id='waiting'><p>" . __('Waiting for confirmation of purchase from Vipps','vipps');
-
-            if ($signal && !is_file($signal)) $signal = '';
-            $signalurl = $this->callbackSignalURL($signal);
-
-            $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
-            $content .= "<span id='vippstime'></span>";
-            $content .= "</p></div>";
-
-            $content .= "<form id='vippsdata'>";
-            $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
-            $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
-            $content .= "<input type='hidden' name='action' value='check_order_status'>";
-            $content .= wp_nonce_field('vippsstatus','sec',1,false); 
-            $content .= "</form>";
-
-
-            $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
-            $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps') . "</p>";
+        // We are done, but in failure. Don't poll.
+        if ($status == 'cancelled' || $status == 'refunded') {
+            $content .= "<div id=failure><p>". __('Order cancelled', 'vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
             $content .= "</div>";
+            $this->fakepage(__('Order cancelled','vipps'), $content);
+            return;
+        }
 
-            $content .= "<div id=success style='display:none'><p>". __('Order confirmed', 'vipps') . '</p>';
-            $content .= "<p><a class='btn button' id='continueToThankYou' href='" . $gw->get_return_url($order)  . "'>".__('Continue','vipps') ."</a></p>";
-            $content .= '</div>';
+        // Still pending and order is supposed to exist, so wait for Vipps. This part might not be relevant anymore. IOK 2018-05-16
+        $this->log("Unexpectedly reached the wait-for-callback branch.");
 
-            $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'vipps') . '</p>';
-            $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
-            $content .= "</div>";
+        // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
+        wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
+        wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
+
+        // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
+        // and check that the order matches (and is 'pending') (and exists)
+        $vippsstamp = $order->get_meta('_vipps_init_timestamp');
+        $vippsstatus = $order->get_meta('_vipps_init_status');
+        $message = __($order->get_meta('_vipps_confirm_message'),'vipps');
+
+        $signal = $this->callbackSignal($order);
+        $content .= "<div id='waiting'><p>" . __('Waiting for confirmation of purchase from Vipps','vipps');
+
+        if ($signal && !is_file($signal)) $signal = '';
+        $signalurl = $this->callbackSignalURL($signal);
+
+        $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
+        $content .= "<span id='vippstime'></span>";
+        $content .= "</p></div>";
+
+        $content .= "<form id='vippsdata'>";
+        $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
+        $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
+        $content .= "<input type='hidden' name='action' value='check_order_status'>";
+        $content .= wp_nonce_field('vippsstatus','sec',1,false); 
+        $content .= "</form>";
 
 
-            $this->fakepage(__('Waiting for your order confirmation','vipps'), $content);
-   }
+        $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','vipps'). '</p>';
+        $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps') . "</p>";
+        $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
+        $content .= "</div>";
 
-   public function vipps_login_page() {
-      // Because we want to call this using GET we must ensure no caching happens so we can set cookies etc.
-      header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
-      header('Cache-Control: no-store, no-cache, must-revalidate');
-      header('Cache-Control: post-check=0, pre-check=0', FALSE);
-      header('Pragma: no-cache');
+        $content .= "<div id=success style='display:none'><p>". __('Order confirmed', 'vipps') . '</p>';
+        $content .= "<p><a class='btn button' id='continueToThankYou' href='" . $gw->get_return_url($order)  . "'>".__('Continue','vipps') ."</a></p>";
+        $content .= '</div>';
 
-      if (is_user_logged_in()) {
-       wc_add_notice(__('You are already logged in!','vipps'),'notice');
-       wp_redirect(home_url());
-       exit();
-      } 
+        $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'vipps') . '</p>';
+        $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps') . '</a></p>';
+        $content .= "</div>";
 
-      // To login, we need a session, even if the user hasn't added anything to the cart yet. IOK 2018-05-18 
-      if (!WC()->session->has_session()) {
-        WC()->session->set_customer_session_cookie(true);
-      }
-      WC()->session->set('vipps_login_request', null);
+
+        $this->fakepage(__('Waiting for your order confirmation','vipps'), $content);
+    }
+
+    public function vipps_login_page() {
+        // Because we want to call this using GET we must ensure no caching happens so we can set cookies etc.
+        header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Cache-Control: post-check=0, pre-check=0', FALSE);
+        header('Pragma: no-cache');
+
+        if (is_user_logged_in()) {
+            wc_add_notice(__('You are already logged in!','vipps'),'notice');
+            wp_redirect(home_url());
+            exit();
+        } 
+
+        // To login, we need a session, even if the user hasn't added anything to the cart yet. IOK 2018-05-18 
+        if (!WC()->session->has_session()) {
+            WC()->session->set_customer_session_cookie(true);
+        }
+        WC()->session->set('vipps_login_request', null);
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-      $gw = new WC_Gateway_Vipps();
-      $msg = __('Unknown error','vipps');
-      $result = null;
-      try {
-        $result = $gw->login_request(); 
-      } catch (Exception $e) {
-        $msg = $e->getMessage();
-      }
-      if (!$result) {
-        wc_add_notice($msg);
-        wp_redirect(home_url());
-        exit();
-      }
-      
-      WC()->session->set('vipps_login_request', $result['requestId']);
-      wp_redirect($result['url']);
-   }
+        $gw = new WC_Gateway_Vipps();
+        $msg = __('Unknown error','vipps');
+        $result = null;
+        try {
+            $result = $gw->login_request(); 
+        } catch (Exception $e) {
+            $msg = $e->getMessage();
+        }
+        if (!$result) {
+            wc_add_notice($msg);
+            wp_redirect(home_url());
+            exit();
+        }
 
-   public function vipps_wait_for_login() {
-      $content = "Bleh, we are waiting for login response here<br>"; 
-      $content .= WC()->session->get('vipps_login_authtoken') . "<br>";
-      $content .= WC()->session->get('vipps_login_request');
- 
+        WC()->session->set('vipps_login_request', $result['requestId']);
+        wp_redirect($result['url']);
+    }
 
-      $this->fakepage("Waiting",$content);
-   }
-   
+    // Actually create/login the user when we have a result
+    public function vipps_wait_for_login() {
+        header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Cache-Control: post-check=0, pre-check=0', FALSE);
+        header('Pragma: no-cache');
+
+        $loginrequest = get_transient('_vipps_loginrequests_' . $requestid);
+        if (!$loginrequest) {
+            $msg = __('Could not login with Vipps:','vipps');
+            $this->log(__('Login wait page: Unknown login request','vipps'));
+            wc_add_notice($msg);
+            wp_redirect(home_url());
+            exit();
+        }
+        $status = isset($loginrequest['status']) ? $loginrequest['status'] : '';
+
+        if ($status == 'SUCCESS') {
+            try {
+                $this->createOrLoginVippsUser($loginrequest['userDetails']);
+                $user = wp_get_current_user();
+                wc_add_notice(__('Velkommen') . ' ' . $user->display_name, 'success');
+            } catch (Exception $e) {
+                $msg = __('Could not login with Vipps:','vipps') . $e->getMessage();
+                $this->log($msg);
+                wc_add_notice($msg);
+            }
+            wp_redirect(home_url());
+            exit();
+        }
+
+        if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
+            $msg = __('Could not login with Vipps:','vipps') . $status;
+            delete_transient('_vipps_loginrequests_' . $requestid);
+            wc_add_notice(__('Vipps login cancelled','vipps'),'error');
+            wp_redirect(home_url());
+            exit();
+        }
+
+        if ($status == 'PENDING' || !$status) {
+            // We should actaully try to call the 'get login request status after enough time has passed here,
+            // but really.. this is just a failure result, so we could just as well go directly to failure after a couple of seconnds. IOK 2018-05-18
+            header("Refresh: 3");
+            $content = __("Waiting for Vipps login approval",'vipps');
+            $this->fakepage(__("Waiting for Vipps login approval", 'vipps'),$content);
+        }
+    }
+
 
     public function fakepage($title,$content) {
         global $wp, $wp_query;

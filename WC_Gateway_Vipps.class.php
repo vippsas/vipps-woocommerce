@@ -137,14 +137,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
         if (!$captured) {
-          return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'vipps'));
+            return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'vipps'));
         }
         if ($amount*100 > $to_refund) {
-          return new WP_Error('Vipps', __("Cannot refund through Vipps - the refund amount is too large.", 'vipps'));
+            return new WP_Error('Vipps', __("Cannot refund through Vipps - the refund amount is too large.", 'vipps'));
         }
         $ok = 0;
         try {
-          $ok = $this->refund_payment($order,$amount);
+            $ok = $this->refund_payment($order,$amount);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not refund Vipps payment', 'vipps') . ' ' .$e->getMessage(),'error');
             return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
@@ -156,7 +156,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if ($ok) {
-         $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
+            $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps') . ' ' . $reason);
         } 
         return $ok;
     }
@@ -258,13 +258,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function process_payment ($order_id) {
         global $woocommerce, $Vipps;
         if (!$order_id) return false;
-     
+
         // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
         try {
-         $at = $this->api->get_access_token();
+            $at = $this->api->get_access_token();
         } catch (Exception $e) {
-          wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-          return false;
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+            return false;
         }
 
         // From the request, get either    [billing_phone] =>  or [vipps phone]
@@ -293,13 +293,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $order->get_order_key();
             $content =  $this->api->initiate_payment($phone,$order,$returnurl,$requestid);
         } catch (TemporaryVippsApiException $e) {
-          $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
-           wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','vipps'),'error');
-           return false;
+            $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','vipps'),'error');
+            return false;
         } catch (Exception $e) {
-          $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
-          wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
-          return false;
+            $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps'),'error');
+            return false;
         }
 
         $url = $content['url'];
@@ -477,7 +477,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
         }
- 
+
         // Each time we succeed, we'll increase the 'refund' transaction id so we don't just refund the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it.) IOK 2018-05-07
         $requestidnr = intval($order->get_meta('_vipps_refund_transid'));
@@ -500,20 +500,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Generate a one-time password for certain callbacks, with some backwards compatibility for PHP 5.6
     private function generate_authtoken($length=32) {
-     $token="";
-     if (function_exists('random_bytes')) {
-        $token = bin2hex(random_bytes($length));
-    } elseif  (function_exists('openssl_random_pseudo_bytes')) {
-        $token = bin2hex(openssl_random_pseudo_bytes($length));
-     } elseif (function_exists('mcrypt_create_iv')) {
-// These aren't "secure" but they are probably ok for this purpose. IOK 2018-05-18
-        $token = bin2hex(mcrypt_create_iv($length, MCRYPT_DEV_URANDOM));
-     } else {
-     // Final fallback
-        $token = bin2hex(md5(microtime() . ":" . mt_rand()));
-     }
+        $token="";
+        if (function_exists('random_bytes')) {
+            $token = bin2hex(random_bytes($length));
+        } elseif  (function_exists('openssl_random_pseudo_bytes')) {
+            $token = bin2hex(openssl_random_pseudo_bytes($length));
+        } elseif (function_exists('mcrypt_create_iv')) {
+            // These aren't "secure" but they are probably ok for this purpose. IOK 2018-05-18
+            $token = bin2hex(mcrypt_create_iv($length, MCRYPT_DEV_URANDOM));
+        } else {
+            // Final fallback
+            $token = bin2hex(md5(microtime() . ":" . mt_rand()));
+        }
 
-      return $token;
+        return $token;
     }
 
     // Send a login-request to Vipps
@@ -598,19 +598,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) return null;
         try { 
-         $statusdata = $this->api->order_status($order);
+            $statusdata = $this->api->order_status($order);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not get Vipps order status', 'vipps') . ' ' .$e->getMessage(),'error');
             if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','vipps') . ' ' . $e->getMessage());
             return null;
         } catch (VippsAPIException $e) {
-          $msg = __('Could not get Vipps order status','vipps') . ' ' . $e->getMessage();
-          $this->log($msg,'error');
-          if (intval($e->responsecode) == 402) {
-            $this->log(__('Order does not exist at Vipps - cancelling','vipps'));
-            return 'CANCEL'; 
-          }
-          if (!$iscallback) $this->adminerr($msg);
+            $msg = __('Could not get Vipps order status','vipps') . ' ' . $e->getMessage();
+            $this->log($msg,'error');
+            if (intval($e->responsecode) == 402) {
+                $this->log(__('Order does not exist at Vipps - cancelling','vipps'));
+                return 'CANCEL'; 
+            }
+            if (!$iscallback) $this->adminerr($msg);
         } catch (Exception $e) {
             $msg = __('Could not get Vipps order status','vipps') . ' ' . $e->getMessage();
             $this->log($msg,'error');

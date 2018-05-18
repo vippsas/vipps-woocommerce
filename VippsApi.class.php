@@ -36,7 +36,7 @@ class VippsApi {
         $expire = $fresh['expires_in']/2;
         set_transient('_vipps_app_token',$resp,$expire);
         return $at;
-   }
+    }
 
     // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
     private function get_access_token_from_vipps() { 
@@ -45,13 +45,13 @@ class VippsApi {
         $at = $this->get_option('Ocp_Apim_Key_AccessToken');
         $command = 'accessToken/get';
         try {
-         $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
-         return $result;
+            $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
+            return $result;
         } catch (TemporaryVippsAPIException $e) {
-          throw $e;
+            throw $e;
         } catch (Exception $e) {
-          $this->log(__("Could not get Vipps access token",'vipps') .' '. $e->getMessage());
-          throw new VippsAPIConfigurationException($e->getMessage());
+            $this->log(__("Could not get Vipps access token",'vipps') .' '. $e->getMessage());
+            throw new VippsAPIConfigurationException($e->getMessage());
         }
     }
 
@@ -90,11 +90,11 @@ class VippsApi {
         $merchantInfo['fallBack'] = $returnurl;
         $merchantInfo['isApp'] = false;
         $merchantInfo['autoLoginToken'] = "";
- 
+
         /// *WHY*? Well, PHP will parse an Authorization header, and will absolutely not understand anything else than Basic and Digest. The header itself is stripped.
         /// So we must make Vipps actually send a Basic login.
         $merchantInfo['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
-       
+
         $data = array('merchantInfo'=>$merchantInfo);
 
         $this->log(json_encode($data));
@@ -150,11 +150,11 @@ class VippsApi {
 
         // For express, add  IOK FIXME!
         /*
-         "shippingDetailsPrefix" : "https://www.test.no/api/callback/api",
-        'authToken' : "Basic " . base64_encode("Vipps" . ":" . $authtoken);
-         "paymentType":"eComm Express Payment",
-         "consentRemovalPrefix":"https://www.test.no/api/callback",
-        */
+           "shippingDetailsPrefix" : "https://www.test.no/api/callback/api",
+           'authToken' : "Basic " . base64_encode("Vipps" . ":" . $authtoken);
+           "paymentType":"eComm Express Payment",
+           "consentRemovalPrefix":"https://www.test.no/api/callback",
+         */
 
         $data['transaction'] = $transaction;
 
@@ -300,9 +300,9 @@ class VippsApi {
         $transaction = array();
         // If we have passed the value as 'øre' we don't need to calculate any more.
         if ($cents) {
-         $transaction['amount'] = $amount;
+            $transaction['amount'] = $amount;
         } else { 
-         $transaction['amount'] = round($amount * 100); 
+            $transaction['amount'] = round($amount * 100); 
         }
         $transaction['transactionText'] = __('Refund for order','vipps') . ' ' . $orderid;
 
@@ -406,8 +406,8 @@ class VippsApi {
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
             if (isset($content['error'])) {
-              // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
-              $msg = $content['error'];
+                // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
+                $msg = $content['error'];
             } elseif (isset($content['ResponseInfo'])) {
                 // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
                 $msg = $response  . ' ' .  $content['ResponseInfo']['ResponseMessage'];
