@@ -131,7 +131,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
-    public function process_refund($orderid,$amount=null,$reason) {
+    public function process_refund($orderid,$amount=null,$reason='') {
         $order = new WC_Order( $orderid );
 
         $captured = $order->get_meta('_vipps_captured');
