@@ -500,18 +500,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Generate a one-time password for certain callbacks, with some backwards compatibility for PHP 5.6
     private function generate_authtoken($length=32) {
+     $token="";
      if (function_exists('random_bytes')) {
-        return bin2hex(random_bytes($length));
-    }
-     if (function_exists('openssl_random_pseudo_bytes')) {
-        return bin2hex(openssl_random_pseudo_bytes($length));
-     } 
-     // These aren't "secure" but they are probably ok for this purpose. IOK 2018-05-18
-     if (function_exists('mcrypt_create_iv')) {
-        return bin2hex(mcrypt_create_iv($length, MCRYPT_DEV_URANDOM));
-     }
+        $token = bin2hex(random_bytes($length));
+    } elseif  (function_exists('openssl_random_pseudo_bytes')) {
+        $token = bin2hex(openssl_random_pseudo_bytes($length));
+     } elseif (function_exists('mcrypt_create_iv')) {
+// These aren't "secure" but they are probably ok for this purpose. IOK 2018-05-18
+        $token = bin2hex(mcrypt_create_iv($length, MCRYPT_DEV_URANDOM));
+     } else {
      // Final fallback
-     return bin2hex(md5(microtime() . ":" . mt_rand()));
+        $token = bin2hex(md5(microtime() . ":" . mt_rand()));
+     }
+
+      return $token;
     }
 
     // Send a login-request to Vipps
@@ -520,13 +522,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it - and also, we don't really support partial capture yet.) IOK 2018-05-07
         $authtoken = $this->generate_authtoken();
-        WC()->session->set('vipps_login_authtoken',$authtoken);
 
         $requestidnr = intval(WC()->session->get('_vipps_login_requestid'));
         $returnurl = $Vipps->login_return_url();
-
-        $this->log("Using $authtoken and $returnurl and $requestidnr");
-
         try {
             $requestid = $requestidnr . ":" . WC()->session->get_customer_id();
             $content =  $this->api->login_request($returnurl,$authtoken,$requestid);
@@ -541,6 +539,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
+        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>$authtoken), 10*60);
         WC()->session->set('_vipps_login_requestid', $requestidnr+1);
         return $content;
     }

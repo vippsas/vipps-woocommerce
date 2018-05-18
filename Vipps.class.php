@@ -252,11 +252,20 @@ class Vipps {
         }
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        // return $gw->handle_login_callback($result);
-        $this->log($raw_post,'debug'); // DEBUG
-        $this->log(WC()->session('vipps_login_authtoken'));
-        $this->log(WC()->session('vipps_login_request'));
+        $loginrequest = get_transient('_vipps_loginrequests_' . $result['requestId']);
+        if (!$loginrequest) {
+         $this->log(__("Error during Vipps login callback: unknown request id",'vipps'));
+         return false;
+        }
+        if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
+         $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'vipps'));
+         return false;
+        }
+        // Store the request! The waiting-page will do the login/creation. IOK 2018-05-18 
+        $this->log(__("Got login callback from",'vipps') . " " .$result['status']);;
+        set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
     }
+
     public function vipps_consent_removal_callback () {
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
@@ -267,7 +276,10 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         // return $gw->handle_login_callback($result);
+        $this->log(print_r($_SERVER,true),'debug');
         $this->log($raw_post,'debug'); // DEBUG
+        $this->log(WC()->session->get('vipps_login_authtoken'));
+        $this->log(WC()->session->get('vipps_login_request'));
     }
 
     /* WooCommerce Hooks */
@@ -384,13 +396,14 @@ class Vipps {
     }
 
     // The various return URLs for special pages of the Vipps stuff depend on settings and pretty-URLs so we supply them from here
+    // These are for the "fallback URL" mostly. IOK 2018-05-18
     // IOK  FIXME add backend support for these
     private function make_return_url($what) {
       $url = '';
       if ( !get_option('permalink_structure')) {
-            $url = "/?VippsSpecialPage=$what&cb=";
+            $url = "/?VippsSpecialPage=$what";
         } else {
-            $url = "/$what/?cb=";
+            $url = "/$what/";
         }
       return set_url_scheme(home_url(),'https') . $url;
     }
@@ -544,7 +557,12 @@ class Vipps {
    }
 
    public function vipps_wait_for_login() {
-      $this->fakepage("Waiting","Bleh, we are waiting for login response here"); 
+      $content = "Bleh, we are waiting for login response here<br>"; 
+      $content .= WC()->session->get('vipps_login_authtoken') . "<br>";
+      $content .= WC()->session->get('vipps_login_request');
+ 
+
+      $this->fakepage("Waiting",$content);
    }
    
 

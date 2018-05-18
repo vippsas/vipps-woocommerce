@@ -89,10 +89,15 @@ class VippsApi {
         $merchantInfo['consentRemovalPrefix'] = $consentremoval;
         $merchantInfo['fallBack'] = $returnurl;
         $merchantInfo['isApp'] = false;
-//        $merchantInfo['autoLoginToken'] = false;
-        $merchantInfo['authToken'] = $authToken;
+        $merchantInfo['autoLoginToken'] = "";
+ 
+        /// *WHY*? Well, PHP will parse an Authorization header, and will absolutely not understand anything else than Basic and Digest. The header itself is stripped.
+        /// So we must make Vipps actually send a Basic login.
+        $merchantInfo['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
        
         $data = array('merchantInfo'=>$merchantInfo);
+
+        $this->log(json_encode($data));
 
         $res = $this->http_call($command,$data,'POST',$headers,'json');
         return $res;
@@ -146,7 +151,7 @@ class VippsApi {
         // For express, add  IOK FIXME!
         /*
          "shippingDetailsPrefix" : "https://www.test.no/api/callback/api",
-         "authToken": "c2hpcHBpbmdTZXJ2aWNlVXNlcjpIZWlzYW5uNw==",
+        'authToken' : "Basic " . base64_encode("Vipps" . ":" . $authtoken);
          "paymentType":"eComm Express Payment",
          "consentRemovalPrefix":"https://www.test.no/api/callback",
         */
