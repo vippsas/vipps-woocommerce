@@ -7,15 +7,15 @@ jQuery(document).ready(function () {
  var iterate = 0;
  var statusok = 0;
  var done=0;
- var aminute = 1 * 60 * 1000;
+ var halfminute = 1 * 30 * 1000;
  var data  = jQuery("#vippsdata").serialize();
 
  function checkStatusReady() {
    console.log("Checking status");
    var now = new Date();
    iterate++;
-   // If we have a fkey that hasn"t responed 404 yet and a minute hasn"t passed,  call that directly and often IOK 2018-05-04
-   if (!statusok && fkey && !fkey404 && (now.getTime() - start.getTime()) < aminute) {
+   // If we have a fkey that hasn't responed 404 yet and a half a minute hasn't passed,  call that directly and often IOK 2018-05-04
+   if (!statusok && fkey && !fkey404 && (now.getTime() - start.getTime()) < halfminute) {
      // Use post to hide data slightly and to avoid caches
      var url = fkey + "?v="+iterate;
      jQuery.ajax(url,
@@ -33,7 +33,6 @@ jQuery(document).ready(function () {
        }, 
        "method": "POST", // We realy don"t want this cached
        "success": function (result,statustext, xhr) {
-         console.log("Found it!" + statustext + ": "  + result + " : " + (now.getTime() - start.getTime()) + " : " + aminute);
          statusok=result*1;
          if (!statusok) {
            // No result yet, check often as this is cheap
