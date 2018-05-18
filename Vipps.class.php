@@ -162,6 +162,52 @@ class Vipps {
         global $wpdb;
         return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
+                
+    private function  createOrLoginVippsUser($userdetails) {
+      $email = $userdetails['email'];
+      $user = get_user_by('email',$email);
+ 
+      $userdata = array();
+      $userdata['first_name'] = $userdetails['firstName'];
+      $userdata['last_name'] = $userdetails['lastName'];
+
+      // If user exists, ensure metadata are up to date, log the user in and return IOK 2018-05-18
+      $userid = 0;
+      if ($user) {
+       $userid = $user->ID;
+      } else {
+       $username = sanitize_user( current( explode( '@', $email ) ), true );
+       $append     = 1;
+       $o_username = $username;
+       while ( username_exists( $username ) ) {
+                $username = $o_username . $append;
+                $append++;
+       }
+       $password = wp_generate_password();
+       $userid =  wc_create_new_customer($email, $username, $password);
+      }
+      if (is_wp_error($userid)) {
+        throw new VippsApiException($userid->get_error_message());
+      }
+      wp_update($userdata);
+      $address = $userdetails['address'];
+      update_user_meta( $userid, "vipps_id", $userdetails['userId']);
+      update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
+      update_user_meta( $userid, "billing_last_name", $userdetails['lastName']);
+      update_user_meta( $userid, "billing_phone", $userdetails['mobileNumber']);
+      update_user_meta( $userid, "billing_email", $email);
+      update_user_meta( $userid, "billing_address_1", $address['addressLine1']);
+      if ($address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
+      if ($address['city']) update_user_meta( $userid, "billing_city", $address['city']);
+      if ($address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
+      if ($address['country']) update_user_meta( $userid, "billing_country", $address['country']);
+
+      $user = get_user_by('id',$userid);
+      wp_set_current_user($user->ID,$user->user_login);
+      wp_set_auth_cookie($userid);
+      do_action('wp_login', $user->user_login); 
+      return $user;
+    }
 
     // Temporary redirect handler! IOK FIXME REPLACE IOK 2018-04-23
     // This needs to be an actual page instead, which must be created on plugin activate
@@ -568,8 +614,7 @@ class Vipps {
 
         if ($status == 'SUCCESS') {
             try {
-                $this->createOrLoginVippsUser($loginrequest['userDetails']);
-                $user = wp_get_current_user();
+                $user = $this->createOrLoginVippsUser($loginrequest['userDetails']);
                 wc_add_notice(__('Velkommen') . ' ' . $user->display_name, 'success');
             } catch (Exception $e) {
                 $msg = __('Could not login with Vipps:','vipps') . $e->getMessage();
