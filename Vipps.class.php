@@ -168,24 +168,12 @@ class Vipps {
     // and then selected, and error-handling added and so forth.
     public function template_redirect() {
         // Handle special callbacks
-        // Check if using pretty links, if so, use the pretty link, otherwise use a GET parameter which we will need to add, ala VFlow=orderid
-        $isvippswaitcallback= 0;
-        $isloginwithvipps=0;
-
-        if ( get_option('permalink_structure')) {
-            if (preg_match("!^/vipps-betaling/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) $isvippswaitcallback= 1;
-            elseif (preg_match("!^/vipps-login/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) $isvippslogin= 1;
-        } else {
-            if (isset($_GET['VippsBetaling'])) $isvippswaitcallback= 1;
-            elseif (isset($_GET['VippsLogin'])) $isvippslogin= 1;
-        } 
-
-        // We are returning from Vipps, but must wait for the callback for a period. IOK 2018-05-18
-        if ($isvippswaitcallback)  return  $this->vippswaitforcallback();
-        if ($isvippslogin)  return  $this->vippsloginpage();
+        $special = $this->is_special_page() ;
+        if ($special) return $this->$special();
     }
 
     public function plugins_loaded() {
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
