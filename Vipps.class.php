@@ -250,8 +250,6 @@ class Vipps {
             $this->log(__("Did not understand login callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
         }
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
         $loginrequest = get_transient('_vipps_loginrequests_' . $result['requestId']);
         if (!$loginrequest) {
          $this->log(__("Error during Vipps login callback: unknown request id",'vipps'));
@@ -267,19 +265,14 @@ class Vipps {
     }
 
     public function vipps_consent_removal_callback () {
+        $this->log("Got called: consent removal",'debug');
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         if (!$result) {
             $this->log(__("Did not understand consent removal callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
         }
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
-        // return $gw->handle_login_callback($result);
-        $this->log(print_r($_SERVER,true),'debug');
         $this->log($raw_post,'debug'); // DEBUG
-        $this->log(WC()->session->get('vipps_login_authtoken'));
-        $this->log(WC()->session->get('vipps_login_request'));
     }
 
     /* WooCommerce Hooks */
