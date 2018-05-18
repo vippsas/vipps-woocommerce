@@ -254,6 +254,8 @@ class Vipps {
         $gw = new WC_Gateway_Vipps();
         // return $gw->handle_login_callback($result);
         $this->log($raw_post,'debug'); // DEBUG
+        $this->log(WC()->session('vipps_login_authtoken'));
+        $this->log(WC()->session('vipps_login_request'));
     }
     public function vipps_consent_removal_callback () {
         $raw_post = @file_get_contents( 'php://input' );
@@ -400,7 +402,7 @@ class Vipps {
     }
     // Return the method in the Vipps
     public function is_special_page() {
-        $specials = array('vipps-login'=>'vipps-login-page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login');
+        $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login');
         $method = null;
         if ( get_option('permalink_structure')) {
          foreach($specials as $special=>$specialmethod) {
@@ -503,7 +505,7 @@ class Vipps {
             $this->fakepage(__('Waiting for your order confirmation','vipps'), $content);
    }
 
-   public function vippsloginpage() {
+   public function vipps_login_page() {
       // Because we want to call this using GET we must ensure no caching happens so we can set cookies etc.
       header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
       header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -539,6 +541,10 @@ class Vipps {
       
       WC()->session->set('vipps_login_request', $result['requestId']);
       wp_redirect($result['url']);
+   }
+
+   public function vipps_wait_for_login() {
+      $this->fakepage("Waiting","Bleh, we are waiting for login response here"); 
    }
    
 

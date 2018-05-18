@@ -56,7 +56,7 @@ class VippsApi {
     }
 
     // This is for 'login with vipps', not express checkout - but both have the same parameters more or less. IOK 2018-05-18
-    public function loginrequest($returnurl,$authtoken,$requestid) {
+    public function login_request($returnurl,$authtoken,$requestid) {
         $command = 'signup/v1/loginRequests';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
@@ -89,7 +89,7 @@ class VippsApi {
         $merchantInfo['consentRemovalPrefix'] = $consentremoval;
         $merchantInfo['fallBack'] = $returnurl;
         $merchantInfo['isApp'] = false;
-        $merchantInfo['autoLoginToken'] = false;
+//        $merchantInfo['autoLoginToken'] = false;
         $merchantInfo['authToken'] = $authToken;
        
         $data = array('merchantInfo'=>$merchantInfo);
