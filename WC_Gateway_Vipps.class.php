@@ -60,9 +60,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function login_callback_url () {
         return $this->make_callback_urls('vipps_login');
     }
-    // Callback for the consetn removal callback
+    // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
+    // IOK 2018-05-18
     public function consent_removal_callback_url () {
-        return $this->make_callback_urls('vipps_consent_removal');
+        if ( !get_option('permalink_structure')) {
+            return set_url_scheme(home_url(),'https') . "/?vipps-consent-removal&callback=";
+        } else {
+            return set_url_scheme(home_url(),'https') . "/vipps-consent-removal/?callback=";
+        }
     }
 
 

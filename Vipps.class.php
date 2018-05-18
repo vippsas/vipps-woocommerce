@@ -209,14 +209,32 @@ class Vipps {
       return $user;
     }
 
-    // Temporary redirect handler! IOK FIXME REPLACE IOK 2018-04-23
-    // This needs to be an actual page instead, which must be created on plugin activate
-    // and then selected, and error-handling added and so forth.
+    // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
+        error_log("bongo This is template redir");
         // Handle special callbacks
         $special = $this->is_special_page() ;
         if ($special) return $this->$special();
+
+        $consentremoval = $this->is_consent_removal();
+        if ($consentremoval) return  $this->vipps_consent_removal_callback($consentremoval);
+
     }
+
+
+    // Can't use wc-api for this, as that does not support DELETE . IOK 2018-05-18
+    private function is_consent_removal () {
+        if ($_SERVER['REQUEST_METHOD'] != 'DELETE') return false;
+        if ( !get_option('permalink_structure')) {
+            if (@$_REQUEST['vipps-consent-removal']) return @$_REQUEST['callback'];
+            return false;
+        }
+        if (preg_match("!^/vipps-consent-removal/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
+            return @$_REQUEST['callback'];
+        }
+        return false;
+    }
+
 
     public function plugins_loaded() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -226,7 +244,6 @@ class Vipps {
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
-        add_action( 'woocommerce_api_vipps_consent_removal', array($this,'vipps_consent_removal_callback'));
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
@@ -285,7 +302,8 @@ class Vipps {
         }
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        return $gw->handle_callback($result);
+        $gw->handle_callback($result);
+        exit();
     }
 
     // This if for the callback from Vipps when logging in
@@ -308,25 +326,43 @@ class Vipps {
         // Store the request! The waiting-page will do the login/creation. IOK 2018-05-18 
         $this->log(__("Got login callback from",'vipps') . " " .$result['status']);;
         set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
+        exit();
     }
-
-    public function vipps_consent_removal_callback () {
-        $this->log("Got called: consent removal",'debug');
-        $raw_post = @file_get_contents( 'php://input' );
-        $result = @json_decode($raw_post,true);
-        if (!$result) {
-            $this->log(__("Did not understand consent removal callback from Vipps:",'vipps') . " " .  $raw_post);
-            return false;
+    // Handle DELETE on a vipps consent removal callback
+    public function vipps_consent_removal_callback ($callback) {
+        $data = array_reverse(explode("/",$callback));
+        if (empty($data)) return false;
+        $uid = $data[0];
+        $this->log(__("Vipps consent removal recieved for",'vipps') . ' ' . $uid); 
+        if (!$uid) {
+          print "-1";exit();
         }
-        $this->log($raw_post,'debug'); // DEBUG
+        $users = get_users(array('meta_key'=>'vipps_id','meta_value'=>$uid));
+        if (empty($users)) {
+          print "-1";exit();
+        }
+        $user = $users[0];
+        if ($user->has_cap("remove_users")) {
+          $this->log(__("Administrator user can remove users - don't accidentally remove by consent removal:", 'vipps') . " " . $user->ID); 
+          print "-1";exit();
+        }
+
+        $customer = new WC_Customer($user->ID); 
+        if (!$customer) {
+          print "-1";exit();
+        }
+ 
+        // Quite incredibly, this is neccessary. IOK 2018-05-18
+        require_once(ABSPATH.'wp-admin/includes/user.php');
+        $customer->delete();
+        print "1"; exit();
+        exit();
     }
 
-    /* WooCommerce Hooks */
     public function woocommerce_payment_gateways($methods) {
         $methods[] = 'WC_Gateway_Vipps'; 
         return $methods;
     }
-    /* End Woocommerce hoos*/
 
     public function activate () {
 
@@ -630,9 +666,10 @@ class Vipps {
         }
 
         // We haven't had a result in 30 seconds - give up . IOK 2018-05-18
-        if (!isset($loginrequest['when']) || ($loginrequest['when'] + 30) > time()) {
+        if (!isset($loginrequest['when']) || ($loginrequest['when'] + 30) < time()) {
           $status = 'FAILURE';
         }
+
 
         if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
             $msg = __('Could not login with Vipps:','vipps') . $status;
