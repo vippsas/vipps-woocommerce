@@ -189,7 +189,7 @@ class Vipps {
       if (is_wp_error($userid)) {
         throw new VippsApiException($userid->get_error_message());
       }
-      wp_update($userdata);
+      wp_update_user($userdata);
       $address = $userdetails['address'];
       update_user_meta( $userid, "vipps_id", $userdetails['userId']);
       update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
@@ -595,12 +595,15 @@ class Vipps {
         wp_redirect($result['url']);
     }
 
-    // Actually create/login the user when we have a result
+    // Actually create/login the user when we have a result. 
+    // IOK 2018-05-18 FIXME REWRITE TO USE AJAX INSTEAD OF RELOAD for smoothness. Also, potentialy call the 'get login status' call.
     public function vipps_wait_for_login() {
         header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
         header('Cache-Control: no-store, no-cache, must-revalidate');
         header('Cache-Control: post-check=0, pre-check=0', FALSE);
         header('Pragma: no-cache');
+
+        $requestid = WC()->session->get('vipps_login_request');
 
         $loginrequest = get_transient('_vipps_loginrequests_' . $requestid);
         if (!$loginrequest) {
@@ -615,14 +618,20 @@ class Vipps {
         if ($status == 'SUCCESS') {
             try {
                 $user = $this->createOrLoginVippsUser($loginrequest['userDetails']);
-                wc_add_notice(__('Velkommen') . ' ' . $user->display_name, 'success');
+                wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
             } catch (Exception $e) {
                 $msg = __('Could not login with Vipps:','vipps') . $e->getMessage();
                 $this->log($msg);
                 wc_add_notice($msg);
             }
+            delete_transient('_vipps_loginrequests_' . $requestid);
             wp_redirect(home_url());
             exit();
+        }
+
+        // We haven't had a result in 30 seconds - give up . IOK 2018-05-18
+        if (!isset($loginrequest['when']) || ($loginrequest['when'] + 30) > time()) {
+          $status = 'FAILURE';
         }
 
         if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
@@ -633,11 +642,12 @@ class Vipps {
             exit();
         }
 
+
         if ($status == 'PENDING' || !$status) {
             // We should actaully try to call the 'get login request status after enough time has passed here,
             // but really.. this is just a failure result, so we could just as well go directly to failure after a couple of seconnds. IOK 2018-05-18
-            header("Refresh: 3");
             $content = __("Waiting for Vipps login approval",'vipps');
+            $content .= "\n<script>setTimeout(function() {window.location.reload(true);}, 10000);</script\n>";
             $this->fakepage(__("Waiting for Vipps login approval", 'vipps'),$content);
         }
     }

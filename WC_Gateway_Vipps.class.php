@@ -539,7 +539,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>$authtoken), 10*60);
+        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>$authtoken, 'when'=>time()), 10*60);
         WC()->session->set('_vipps_login_requestid', $requestidnr+1);
         return $content;
     }
