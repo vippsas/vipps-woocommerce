@@ -549,6 +549,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $content;
     }
 
+    // Get the status of a login request
+    public function login_request_status($requestid) {
+        global $Vipps;
+        try {
+            $content =  $this->api->login_request_status($requestid);
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not login with Vipps', 'vipps') . ' ' .$e->getMessage(),'error');
+            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','vipps'));
+            return false;
+        } catch (Exception $e) {
+            $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();
+            $this->log($msg,'error');
+            throw new VippsApiException( __('Vipps is temporarily unavailable.','vipps'));
+            return false;
+        }
+        // Errors with a 200 result :( IOK 2018-05-23
+        if (is_array($content) && isset($content[0]) && isset($content[0]['errorMessage'])) {
+         throw new VippsApiException($content[0]['errorMessage']); 
+        }
+        // Store here as well.
+        set_transient('_vipps_loginrequests_' . $content['requestId'], $content, 10*60);
+        return $content;
+    }
+
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {

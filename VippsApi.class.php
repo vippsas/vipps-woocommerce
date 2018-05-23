@@ -96,10 +96,34 @@ class VippsApi {
         $merchantInfo['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
 
         $data = array('merchantInfo'=>$merchantInfo);
-
-        $this->log(json_encode($data));
-
         $res = $this->http_call($command,$data,'POST',$headers,'json');
+        return $res;
+    }
+
+    // Call Vipps to get the result of the login request passed. Should be called just once. IOK 2018-05-22 
+    public function login_request_status($requestid) {
+        $command = 'signup/v1/loginRequests/' . $requestid;
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+        }
+        // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $res = $this->http_call($command,array(),'GET',$headers);
         return $res;
     }
 

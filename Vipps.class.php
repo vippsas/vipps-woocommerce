@@ -316,7 +316,7 @@ class Vipps {
         }
         $loginrequest = get_transient('_vipps_loginrequests_' . $result['requestId']);
         if (!$loginrequest) {
-            $this->log(__("Error during Vipps login callback: unknown request id",'vipps'));
+            $this->log(__("Error during Vipps login callback: unknown request id",'vipps') . ' ' . print_r($result,true));
             return false;
         }
         if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
@@ -641,24 +641,42 @@ class Vipps {
 
         $requestid = WC()->session->get('vipps_login_request');
 
+
         $loginrequest = get_transient('_vipps_loginrequests_' . $requestid);
         if (!$loginrequest) {
             $msg = __('Could not login with Vipps:','vipps');
             $this->log(__('Login wait page: Unknown login request','vipps'));
-            wc_add_notice($msg);
+            wc_add_notice($msg, 'error');
             wp_redirect(home_url());
             exit();
         }
         $status = isset($loginrequest['status']) ? $loginrequest['status'] : '';
+ 
+        // No callback yet, so make 1 call to the get status thing, which should normally produce some result.
+        if (!$status || $status == 'PENDING') {
+         try {
+            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+            $gw = new WC_Gateway_Vipps();
+            $result = $gw->login_request_status($requestid); 
+            $status = isset($result['status']) ?  $result['status'] : '';
+         } catch (Exception $e) {
+            $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();
+            $this->log($msg);
+            wc_add_notice(__('Could not login with Vipps:','vipps') . ' ' .  __('Vipps is temporarily unavailable.','vipps'), 'error');
+            delete_transient('_vipps_loginrequests_' . $requestid);
+            wp_redirect(home_url());
+            exit();
+         }
+        }
 
         if ($status == 'SUCCESS') {
             try {
                 $user = $this->createOrLoginVippsUser($loginrequest['userDetails']);
                 wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
             } catch (Exception $e) {
-                $msg = __('Could not login with Vipps:','vipps') . $e->getMessage();
+                $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();
                 $this->log($msg);
-                wc_add_notice($msg);
+                wc_add_notice($msg, 'error');
             }
             delete_transient('_vipps_loginrequests_' . $requestid);
             wp_redirect(home_url());
@@ -670,9 +688,8 @@ class Vipps {
           $status = 'FAILURE';
         }
 
-
         if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
-            $msg = __('Could not login with Vipps:','vipps') . $status;
+            $msg = __('Could not login with Vipps:','vipps') . ' ' . $status;
             delete_transient('_vipps_loginrequests_' . $requestid);
             wc_add_notice(__('Vipps login cancelled','vipps'),'error');
             wp_redirect(home_url());
