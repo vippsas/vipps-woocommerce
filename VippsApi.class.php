@@ -172,8 +172,8 @@ class VippsApi {
         $data['customerInfo'] = array('mobileNumber' => $phone); // IOK FIXME not required in 2.0
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback); 
 
-        $express = true;
-        // Exptress only if shipping and address missign
+        // Exptress only if shipping and address missing - we do have the order here so check!
+        $express = false;
         if ($express) {
           $data['merchantInfo']['shippingDetailsPrefix'] = $this->gateway->shipping_details_callback_url();
           if ($authtoken) {
@@ -398,11 +398,6 @@ class VippsApi {
 
 
         $contenttext = @file_get_contents($url,false,$context);
-
-$this->log($url);
-$this->log(print_r($data_encoded,true));
-$this->log($contenttext);
-$this->log(print_r($http_response_headers,true));
 
         if ($contenttext) {
             $content = json_decode($contenttext,true);

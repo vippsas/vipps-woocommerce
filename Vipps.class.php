@@ -345,17 +345,23 @@ class Vipps {
         }
 
         // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
+
+
         $addressid = $result['addressId'];
         $addressline1 = $result['addressLine1'];
         $addressline2 = $result['addressLine2'];
+        $vippscountry = $result['country'];
         $city = $result['city'];
-        $country = $result['country'];
         $postcode= $result['postCode'];
 
-        $postcode = 0254;
-        $city ="Oslo";
-        $country = "NO";
-        $addressline1 = "Foon";
+        $country = '';  
+        switch (strtoupper($vippscountry)) { 
+          case 'NORWAY':
+          case 'NORGE':
+          case 'NOREG':
+           $country = 'NO';
+           break;
+        }
 
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
         // shipping calculation environment.
@@ -370,12 +376,14 @@ class Vipps {
         $package['contents'] = $acart->cart_contents;
         $package['contents_cost'] = $order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax();
         $package['destination'] = array();
-        $package['destination']['country']  = $country;
+        $package['destination']['country']  = 'NO'; //$country;
         $package['destination']['state']    = '';
         $package['destination']['postcode'] = $postcode;
         $package['destination']['city']     = $city;
         $package['destination']['address']  = $addressline1;
-        $package['destination']['address_2']= $addressline2;
+        if ($addressline2 && !$addressline2 == 'null') {
+         $package['destination']['address_2']= $addressline2;
+        }
 
         $packages = array($package);
         $shipping =  WC()->shipping->calculate_shipping($packages);
@@ -384,19 +392,26 @@ class Vipps {
         // Then format for Vipps
         $methods = array();
         $howmany = count($methods);
+        $priority=0;
+        $isdefault = 1;
         foreach ($shipping_methods as  $rate) {
+            $priority++;
+            $method['isDefault'] = $isdefault ? 'Y' : 'N';
+            $isdefault=0;
+            $method['priority'] = $priority;
+            $cost = $rate->get_cost() + $rate->get_shipping_tax();
+            $method['shippingCost'] = sprintf("%.2f",$cost);
+            $method['shippingMethod'] = $rate->get_label();
             // It's possible that just the id is enough, but Woo isn't quite clear here and the
             // constructor for WC_Shipping_Rate takes both. So pack them together with an ; - the id uses the colon. IOK 2018-05-24
             $method['shippingMethodId'] = $rate->get_method_id() . ";" . $rate->get_id(); 
-            $method['shippingMethod'] = $rate->get_label();
-            $method['isDefault'] = $howmany == 1 ? 'Y' : 'N';
-            // $method['priority'] = 0;
-            $method['shippingCost'] = $rate->get_cost() + $rate->get_shipping_tax();
             $methods[]= $method;
         }
 
-        $return = array('addressId'=>$addressId, 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
-        print json_encode($return);
+        $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
+        $json = json_encode($return);
+        header("Content-type: application/json; charset=UTF-8");
+        print $json;
         exit();
     }
 

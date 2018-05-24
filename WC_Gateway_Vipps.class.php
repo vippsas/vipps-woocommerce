@@ -283,7 +283,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$phone && isset($_POST['billing_phone'])) {
             $phone = trim($_POST['billing_phone']);
         }
-        // No longer the case for V2
+        // No longer the case for V2 of the API
         if (false && !$phone) {
             wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps') ,'error');
             return false;
@@ -294,12 +294,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Vipps-terminal-page return url to poll/await return
         $returnurl= $Vipps->payment_return_url();
+        $authtoken = $this->generate_authtoken();
 
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();
-            $content =  $this->api->initiate_payment($phone,$order,$returnurl,$requestid);
+            $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not initiate Vipps payment','vipps') . ' ' . $e->getMessage(), 'error');
             wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','vipps'),'error');
