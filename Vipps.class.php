@@ -577,7 +577,7 @@ class Vipps {
     }
     // Return the method in the Vipps
     public function is_special_page() {
-        $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login');
+        $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login', 'vipps-express-checkout'=>'vipps_express_checkout');
         $method = null;
         if ( get_option('permalink_structure')) {
             foreach($specials as $special=>$specialmethod) {
@@ -593,6 +593,31 @@ class Vipps {
         return $method;
     }
 
+    public function vipps_express_checkout() {
+      status_header(200,'OK');
+      print "<pre>";
+      print "hei. Sjekk her for hva vi har av personalia, valgt shipping osv og lag evnt. en fakeordre\n";
+
+      require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+      $gw = new WC_Gateway_Vipps();
+      exit();
+  
+/* 
+      $prodid = 111;
+      $order = new WC_Order();
+      $order->set_status('PENDING');
+      $order->set_created_via('Vipps express checkout');
+      $product = wc_get_product($prodid);
+      $order->set_payment_method($gw);
+      $order->save(); // Creates the order with no personal info etc.
+      $order->add_product($product,1); // Hver av disse legger til en ny linje til en *ny tom ordre* :(
+      $order->calculate_totals(true);
+
+      $order->save(); // Creates the order with no personal info etc.
+      print_r($order);
+*/
+
+    }
 
     public function vipps_wait_for_payment() {
         // Call a method here in the gatway here IOK FIXME
