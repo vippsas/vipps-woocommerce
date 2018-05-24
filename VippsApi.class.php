@@ -127,7 +127,7 @@ class VippsApi {
         return $res;
     }
 
-    public function initiate_payment($phone,$order,$returnurl,$requestid) {
+    public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
         $command = 'Ecomm/v2/payments';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
@@ -172,13 +172,16 @@ class VippsApi {
         $data['customerInfo'] = array('mobileNumber' => $phone); // IOK FIXME not required in 2.0
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback); 
 
-        // For express, add  IOK FIXME!
-        /*
-           "shippingDetailsPrefix" : "https://www.test.no/api/callback/api",
-           'authToken' : "Basic " . base64_encode("Vipps" . ":" . $authtoken);
-           "paymentType":"eComm Express Payment",
-           "consentRemovalPrefix":"https://www.test.no/api/callback",
-         */
+        $express = true;
+        // Exptress only if shipping and address missign
+        if ($express) {
+          $data['merchantInfo']['shippingDetailsPrefix'] = $this->gateway->shipping_details_callback_url();
+          if ($authtoken) {
+            $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
+          }
+          $data['merchantInfo']["paymentType"] = "eComm Express Payment";
+          $data['merchantInfo']["consentRemovalPrefix"] = $this->gateway->consent_removal_callback_url();
+        }
 
         $data['transaction'] = $transaction;
 
@@ -395,6 +398,12 @@ class VippsApi {
 
 
         $contenttext = @file_get_contents($url,false,$context);
+
+$this->log($url);
+$this->log(print_r($data_encoded,true));
+$this->log($contenttext);
+$this->log(print_r($http_response_headers,true));
+
         if ($contenttext) {
             $content = json_decode($contenttext,true);
         }
