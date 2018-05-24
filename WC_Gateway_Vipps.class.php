@@ -60,6 +60,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function login_callback_url () {
         return $this->make_callback_urls('vipps_login');
     }
+    public function shipping_details_callback_url() {
+        return $this->make_callback_urls('vipps_shipping_details');
+    }
     // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
     // IOK 2018-05-18
     public function consent_removal_callback_url () {
@@ -566,7 +569,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Errors with a 200 result :( IOK 2018-05-23
         if (is_array($content) && isset($content[0]) && isset($content[0]['errorMessage'])) {
-         throw new VippsApiException($content[0]['errorMessage']); 
+            throw new VippsApiException($content[0]['errorMessage']); 
         }
         // Store here as well.
         set_transient('_vipps_loginrequests_' . $content['requestId'], $content, 10*60);

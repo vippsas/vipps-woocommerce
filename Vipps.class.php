@@ -162,51 +162,51 @@ class Vipps {
         global $wpdb;
         return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
-                
-    private function  createOrLoginVippsUser($userdetails) {
-      $email = $userdetails['email'];
-      $user = get_user_by('email',$email);
- 
-      $userdata = array();
-      $userdata['first_name'] = $userdetails['firstName'];
-      $userdata['last_name'] = $userdetails['lastName'];
 
-      // If user exists, ensure metadata are up to date, log the user in and return IOK 2018-05-18
-      $userid = 0;
-      if ($user) {
-       $userid = $user->ID;
-      } else {
-       $username = sanitize_user( current( explode( '@', $email ) ), true );
-       $append     = 1;
-       $o_username = $username;
-       while ( username_exists( $username ) ) {
+    private function  createOrLoginVippsUser($userdetails) {
+        $email = $userdetails['email'];
+        $user = get_user_by('email',$email);
+
+        $userdata = array();
+        $userdata['first_name'] = $userdetails['firstName'];
+        $userdata['last_name'] = $userdetails['lastName'];
+
+        // If user exists, ensure metadata are up to date, log the user in and return IOK 2018-05-18
+        $userid = 0;
+        if ($user) {
+            $userid = $user->ID;
+        } else {
+            $username = sanitize_user( current( explode( '@', $email ) ), true );
+            $append     = 1;
+            $o_username = $username;
+            while ( username_exists( $username ) ) {
                 $username = $o_username . $append;
                 $append++;
-       }
-       $password = wp_generate_password();
-       $userid =  wc_create_new_customer($email, $username, $password);
-      }
-      if (is_wp_error($userid)) {
-        throw new VippsApiException($userid->get_error_message());
-      }
-      wp_update_user($userdata);
-      $address = $userdetails['address'];
-      update_user_meta( $userid, "vipps_id", $userdetails['userId']);
-      update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
-      update_user_meta( $userid, "billing_last_name", $userdetails['lastName']);
-      update_user_meta( $userid, "billing_phone", $userdetails['mobileNumber']);
-      update_user_meta( $userid, "billing_email", $email);
-      update_user_meta( $userid, "billing_address_1", $address['addressLine1']);
-      if ($address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
-      if ($address['city']) update_user_meta( $userid, "billing_city", $address['city']);
-      if ($address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
-      if ($address['country']) update_user_meta( $userid, "billing_country", $address['country']);
+            }
+            $password = wp_generate_password();
+            $userid =  wc_create_new_customer($email, $username, $password);
+        }
+        if (is_wp_error($userid)) {
+            throw new VippsApiException($userid->get_error_message());
+        }
+        wp_update_user($userdata);
+        $address = $userdetails['address'];
+        update_user_meta( $userid, "vipps_id", $userdetails['userId']);
+        update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
+        update_user_meta( $userid, "billing_last_name", $userdetails['lastName']);
+        update_user_meta( $userid, "billing_phone", $userdetails['mobileNumber']);
+        update_user_meta( $userid, "billing_email", $email);
+        update_user_meta( $userid, "billing_address_1", $address['addressLine1']);
+        if ($address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
+        if ($address['city']) update_user_meta( $userid, "billing_city", $address['city']);
+        if ($address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
+        if ($address['country']) update_user_meta( $userid, "billing_country", $address['country']);
 
-      $user = get_user_by('id',$userid);
-      wp_set_current_user($user->ID,$user->user_login);
-      wp_set_auth_cookie($userid);
-      do_action('wp_login', $user->user_login); 
-      return $user;
+        $user = get_user_by('id',$userid);
+        wp_set_current_user($user->ID,$user->user_login);
+        wp_set_auth_cookie($userid);
+        do_action('wp_login', $user->user_login); 
+        return $user;
     }
 
     // Special pages, and some callbacks. IOK 2018-05-18 
@@ -244,10 +244,10 @@ class Vipps {
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
+        add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
-
 
         // Ajax endpoints for checking the order status while waiting for confirmation
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
@@ -328,6 +328,78 @@ class Vipps {
         set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
         exit();
     }
+    // Getting shipping methods/costs for a given order to Vipps for express checkout
+    public function vipps_shipping_details_callback() {
+        $raw_post = @file_get_contents( 'php://input' );
+        $result = @json_decode($raw_post,true);
+        $callback = @$_REQUEST['callback'];
+        $data = array_reverse(explode("/",$callback));
+        $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
+        $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
+        if (!$orderid) {
+            exit();
+        }
+        $order = new WC_Order($orderid);
+        if (!$order) {
+            exit();
+        }
+
+        // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
+        $addressid = $result['addressId'];
+        $addressline1 = $result['addressLine1'];
+        $addressline2 = $result['addressLine2'];
+        $city = $result['city'];
+        $country = $result['country'];
+        $postcode= $result['postCode'];
+
+        $postcode = 0254;
+        $city ="Oslo";
+        $country = "NO";
+        $addressline1 = "Foon";
+
+        // We need unfortunately to create a fake cart to be able to send a 'package' to the
+        // shipping calculation environment.
+        $acart = new WC_Cart();
+        foreach($order->get_items() as $item) {
+            $varid = $item['variation_id'];
+            $prodid = $item['product_id'];
+            $quantity = $item['quantity'];
+            $acart->add_to_cart($prodid,$quantity,$varid);
+        }
+        $package = array();
+        $package['contents'] = $acart->cart_contents;
+        $package['contents_cost'] = $order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax();
+        $package['destination'] = array();
+        $package['destination']['country']  = $country;
+        $package['destination']['state']    = '';
+        $package['destination']['postcode'] = $postcode;
+        $package['destination']['city']     = $city;
+        $package['destination']['address']  = $addressline1;
+        $package['destination']['address_2']= $addressline2;
+
+        $packages = array($package);
+        $shipping =  WC()->shipping->calculate_shipping($packages);
+        $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
+
+        // Then format for Vipps
+        $methods = array();
+        $howmany = count($methods);
+        foreach ($shipping_methods as  $rate) {
+            // It's possible that just the id is enough, but Woo isn't quite clear here and the
+            // constructor for WC_Shipping_Rate takes both. So pack them together with an ; - the id uses the colon. IOK 2018-05-24
+            $method['shippingMethodId'] = $rate->get_method_id() . ";" . $rate->get_id(); 
+            $method['shippingMethod'] = $rate->get_label();
+            $method['isDefault'] = $howmany == 1 ? 'Y' : 'N';
+            // $method['priority'] = 0;
+            $method['shippingCost'] = $rate->get_cost() + $rate->get_shipping_tax();
+            $methods[]= $method;
+        }
+
+        $return = array('addressId'=>$addressId, 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
+        print json_encode($return);
+        exit();
+    }
+
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {
         $data = array_reverse(explode("/",$callback));
@@ -335,23 +407,23 @@ class Vipps {
         $uid = $data[0];
         $this->log(__("Vipps consent removal recieved for",'vipps') . ' ' . $uid); 
         if (!$uid) {
-          print "-1";exit();
+            print "-1";exit();
         }
         $users = get_users(array('meta_key'=>'vipps_id','meta_value'=>$uid));
         if (empty($users)) {
-          print "-1";exit();
+            print "-1";exit();
         }
         $user = $users[0];
         if ($user->has_cap("remove_users")) {
-          $this->log(__("Administrator user can remove users - don't accidentally remove by consent removal:", 'vipps') . " " . $user->ID); 
-          print "-1";exit();
+            $this->log(__("Administrator user can remove users - don't accidentally remove by consent removal:", 'vipps') . " " . $user->ID); 
+            print "-1";exit();
         }
 
         $customer = new WC_Customer($user->ID); 
         if (!$customer) {
-          print "-1";exit();
+            print "-1";exit();
         }
- 
+
         // Quite incredibly, this is neccessary. IOK 2018-05-18
         require_once(ABSPATH.'wp-admin/includes/user.php');
         $customer->delete();
@@ -651,22 +723,22 @@ class Vipps {
             exit();
         }
         $status = isset($loginrequest['status']) ? $loginrequest['status'] : '';
- 
+
         // No callback yet, so make 1 call to the get status thing, which should normally produce some result.
         if (!$status || $status == 'PENDING') {
-         try {
-            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-            $gw = new WC_Gateway_Vipps();
-            $result = $gw->login_request_status($requestid); 
-            $status = isset($result['status']) ?  $result['status'] : '';
-         } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();
-            $this->log($msg);
-            wc_add_notice(__('Could not login with Vipps:','vipps') . ' ' .  __('Vipps is temporarily unavailable.','vipps'), 'error');
-            delete_transient('_vipps_loginrequests_' . $requestid);
-            wp_redirect(home_url());
-            exit();
-         }
+            try {
+                require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+                $gw = new WC_Gateway_Vipps();
+                $result = $gw->login_request_status($requestid); 
+                $status = isset($result['status']) ?  $result['status'] : '';
+            } catch (Exception $e) {
+                $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();
+                $this->log($msg);
+                wc_add_notice(__('Could not login with Vipps:','vipps') . ' ' .  __('Vipps is temporarily unavailable.','vipps'), 'error');
+                delete_transient('_vipps_loginrequests_' . $requestid);
+                wp_redirect(home_url());
+                exit();
+            }
         }
 
         if ($status == 'SUCCESS') {
@@ -685,7 +757,7 @@ class Vipps {
 
         // We haven't had a result in 30 seconds - give up . IOK 2018-05-18
         if (!isset($loginrequest['when']) || ($loginrequest['when'] + 30) < time()) {
-          $status = 'FAILURE';
+            $status = 'FAILURE';
         }
 
         if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
