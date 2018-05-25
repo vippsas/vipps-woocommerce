@@ -22,6 +22,7 @@ class Vipps {
     public function init () {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
         $this->cleanupCallbackSignals();
+        add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
     }
 
     public function admin_init () {
@@ -43,6 +44,10 @@ class Vipps {
         add_meta_box( 'vippsdata', __('Vipps','vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
     }
 
+    public function wp_enqueue_scripts() {
+      wp_enqueue_script('check-vipps',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+    }
+
     public function log ($what,$type='info') {
         $logger = wc_get_logger();
         $context = array('source','Vipps Woo Gateway');
@@ -59,6 +64,13 @@ class Vipps {
             print $stored;
         }
     }
+
+    // Show the express button if reasonable to do so
+    public function cart_express_checkout_button() {
+     $url = $this->express_checkout_url();
+     echo ' <a href="'.$url.'" class="button wc-forward vipps-express-checkout">' . __('Buy now with Vipps!', 'vipps') . '</a>';
+    }
+
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post) {
@@ -235,7 +247,6 @@ class Vipps {
         return false;
     }
 
-
     public function plugins_loaded() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
@@ -245,6 +256,11 @@ class Vipps {
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
+  
+        // Template integrations
+        add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
+        add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
+
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
@@ -576,6 +592,9 @@ class Vipps {
     public function login_return_url() {
         return $this->make_return_url('vipps-login-venter');
     }
+    public function express_checkout_url() {
+        return $this->make_return_url('vipps-express-checkout');
+    }
     // Return the method in the Vipps
     public function is_special_page() {
         $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login', 'vipps-express-checkout'=>'vipps_express_checkout');
@@ -722,7 +741,7 @@ $order->add_item($it);
 
         $content .= "<form id='vippsdata'>";
         $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
-        $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
+        $content .= "<input type='hidden' name='key' value='".htmlpecialchars($order->get_order_key())."'>";
         $content .= "<input type='hidden' name='action' value='check_order_status'>";
         $content .= wp_nonce_field('vippsstatus','sec',1,false); 
         $content .= "</form>";

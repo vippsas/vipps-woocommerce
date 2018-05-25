@@ -348,6 +348,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return array('result'=>'success','redirect'=>$url);
     }
 
+    // Customer not logged in, shipping not selected etc - express checkout support!
+    public function process_express_checkout_payment($prodid=null,$variation_id=null) {
+         $product = null;
+         $variation = null;
+         if ($variation_id) {
+           $product = wc_get_product($variation_id);
+           $product = $variation->get_variation_attributes();
+         } else {
+           $product = wc_get_product($prodid);
+         }
+         if ($prodid) WC()->cart->add_to_cart($prodid, 1, $variation_id, $variation);
+    }
+
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
         $order = new WC_Order( $orderid );
