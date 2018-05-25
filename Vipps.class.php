@@ -399,12 +399,13 @@ class Vipps {
             $method['isDefault'] = $isdefault ? 'Y' : 'N';
             $isdefault=0;
             $method['priority'] = $priority;
-            $cost = $rate->get_cost() + $rate->get_shipping_tax();
+            $tax  = $rate->get_shipping_tax();
+            $cost = $rate->get_cost();
             $method['shippingCost'] = sprintf("%.2f",$cost);
             $method['shippingMethod'] = $rate->get_label();
             // It's possible that just the id is enough, but Woo isn't quite clear here and the
             // constructor for WC_Shipping_Rate takes both. So pack them together with an ; - the id uses the colon. IOK 2018-05-24
-            $method['shippingMethodId'] = $rate->get_method_id() . ";" . $rate->get_id(); 
+            $method['shippingMethodId'] = $rate->get_method_id() . ";" . $rate->get_id() . ";" . $tax; 
             $methods[]= $method;
         }
 
@@ -597,12 +598,12 @@ class Vipps {
       status_header(200,'OK');
       print "<pre>";
       print "hei. Sjekk her for hva vi har av personalia, valgt shipping osv og lag evnt. en fakeordre\n";
- 
+
+/* 
 
       require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
       $gw = new WC_Gateway_Vipps();
 
-/*
       $prodid = 111;
       $order = new WC_Order();
       $order->set_status('PENDING');
@@ -638,11 +639,15 @@ class Vipps {
       $order->set_shipping_postcode($postcode);
       $order->set_shipping_country($country);
 
-$shipp = new WC_Shipping_Rate('flat_rate:3','Ypp',100);
-$it = new WC_Order_item_Shipping();
+// Cost *wo* tax, and tax separately.
+$shipp = new WC_Shipping_Rate('flat_rate:3','Ypp', 80, array(array('total'=>25)), 'flat_rate');
+print_r($shipp);
+$it = new WC_Order_Item_Shipping();
 $it->set_shipping_rate($shipp);
 $it->set_order_id( $order->get_id() );
 $order->add_item($it);
+
+      $order->save(); // Creates the order with no personal info etc.
 
       $order->calculate_totals(true);
       $order->save(); // Creates the order with no personal info etc.
