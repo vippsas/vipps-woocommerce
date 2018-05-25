@@ -635,12 +635,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(__("Express checkout - no callback, so getting payment details from Vipps", 'vipps'));
             try {
               $statusdata = $this->api->payment_details($order);
+              $this->log(print_r($statusdata,true));
             } catch (Exception $e) {
               $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
               return $oldstatus; 
             }
             if (@$statusdata['shippingDetails']) {
-              $this->set_order_shipping_details($result['shippingDetails'], $result['userDetails']);
+              $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
             } else {
               $this->log(__("No shipping details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
               return $oldstatus; 
@@ -710,7 +711,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $vippsstatus;
     }
 
-    public function set_order_shipping_details($shipping, $user) {
+    public function set_order_shipping_details($order,$shipping, $user) {
       $firstname = $user['firstName'];
       $lastname = $user['lastName'];
       $phone = $user['mobileNumber'];
@@ -731,6 +732,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            break;
       }
  
+      $order->set_billing_email($email);
+      $order->set_billing_phone($phone);
       $order->set_billing_first_name($firstname);
       $order->set_billing_last_name($lastname);
       $order->set_billing_address_1($addressline1);
@@ -738,10 +741,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       $order->set_billing_city($city);
       $order->set_billing_postcode($postcode);
       $order->set_billing_country($country);
+
+      $order->set_shipping_email($email);
+      $order->set_shipping_phone($phone);
       $order->set_shipping_first_name($firstname);
       $order->set_shipping_last_name($lastname);
-      $order->set_shipping_address_1($address1);
-      $order->set_shipping_address_2($address2);
+      $order->set_shipping_address_1($addressline1);
+      $order->set_shipping_address_2($addressline2);
       $order->set_shipping_city($city);
       $order->set_shipping_postcode($postcode);
       $order->set_shipping_country($country);
@@ -757,7 +763,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
       $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total',$tax)), $method);
       $it = new WC_Order_Item_Shipping();
-      $it->set_shipping_rate($shipp);
+      $it->set_shipping_rate($shipping_rate);
       $it->set_order_id( $order->get_id() );
       $order->add_item($it);
       $order->save(); 
@@ -788,8 +794,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if (@$result['shippingDetails']) {
-         $this->set_order_shipping_details($result['shippingDetails'], $result['userDetails']);
+         $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
+ 
+        // This is for express checkout - some added protection
+        $authtoken = $order->get_meta('_vipps_authtoken');
+        if ($authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
+          $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
+          exit();
+        }
+
 
         $transaction = @$result['transactionInfo'];
         if (!$transaction) {

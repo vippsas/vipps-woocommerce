@@ -310,19 +310,14 @@ class Vipps {
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
         $raw_post = @file_get_contents( 'php://input' );
+        $this->log("Callback!");
+        $this->log($raw_post);
+
         $result = @json_decode($raw_post,true);
         if (!$result) {
             $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
         }
- 
-        // This is for express checkout - some added protection
-        $authtoken = $order->get_meta('_vipps_authtoken');
-        if ($authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
-          $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
-          exit();
-        }
-
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         $gw->handle_callback($result);
