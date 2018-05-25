@@ -223,7 +223,6 @@ class Vipps {
 
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
-        error_log("bongo This is template redir");
         // Handle special callbacks
         $special = $this->is_special_page() ;
         if ($special) return $this->$special();
@@ -316,6 +315,14 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'vipps') . " " .  $raw_post);
             return false;
         }
+ 
+        // This is for express checkout - some added protection
+        $authtoken = $order->get_meta('_vipps_authtoken');
+        if ($authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
+          $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
+          exit();
+        }
+
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         $gw->handle_callback($result);
@@ -360,9 +367,15 @@ class Vipps {
             exit();
         }
 
+        // a small bit of security
+        if ($order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
+          $this->log("Wrong authtoken on shipping details callback");
+          print "-1";
+          exit();
+        }
+
         // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
-
-
+        // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
         $addressid = $result['addressId'];
         $addressline1 = $result['addressLine1'];
         $addressline2 = $result['addressLine2'];
@@ -378,6 +391,18 @@ class Vipps {
            $country = 'NO';
            break;
         }
+       $order->set_billing_address_1($addressline1);
+       $order->set_billing_address_2($addressline2);
+       $order->set_billing_city($city);
+       $order->set_billing_postcode($postcode);
+       $order->set_billing_country($country);
+       $order->set_shipping_address_1($address1);
+       $order->set_shipping_address_2($address2);
+       $order->set_shipping_city($city);
+       $order->set_shipping_postcode($postcode);
+       $order->set_shipping_country($country);
+       $order->save();
+
 
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
         // shipping calculation environment.
@@ -392,7 +417,7 @@ class Vipps {
         $package['contents'] = $acart->cart_contents;
         $package['contents_cost'] = $order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax();
         $package['destination'] = array();
-        $package['destination']['country']  = 'NO'; //$country;
+        $package['destination']['country']  = $country;
         $package['destination']['state']    = '';
         $package['destination']['postcode'] = $postcode;
         $package['destination']['city']     = $city;
@@ -613,71 +638,68 @@ class Vipps {
         return $method;
     }
 
+    // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
     public function vipps_express_checkout() {
+
+      $backurl = $_SERVER['HTTP_REFERER'];
+      if (!$backurl) $backurl = home_url();
+      if ( WC()->cart->get_cart_contents_count() == 0 ) {
+        wc_add_notice(__('Your shopping cart is empty','vipps'),'error');
+        wp_redirect($backurl);
+        exit();
+      }
+
       status_header(200,'OK');
-      print "<pre>";
-      print "hei. Sjekk her for hva vi har av personalia, valgt shipping osv og lag evnt. en fakeordre\n";
 
-/* 
+      // We need to reuse a lot of the code from checkout->create_order which we can't call directly because
+      // it won't allow empty shipping methods and so forth  IOK FIXME MOVE TO GATEWAY, CALL MAKE_PARTIAL_ORDER
+      try {
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        $cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
+        $order = new WC_Order();
+        $order->set_status('PENDING');
+        $order->set_created_via('Vipps express checkout');
+        $order->set_payment_method($gw);
+ 
+        $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+        $order->set_currency( get_woocommerce_currency() );
+        $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+        $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
+        $order->set_customer_user_agent( wc_get_user_agent() );
+        $order->set_discount_total( WC()->cart->get_discount_total() );
+        $order->set_discount_tax( WC()->cart->get_discount_tax() );
+        $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
 
-      require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-      $gw = new WC_Gateway_Vipps();
-
-      $prodid = 111;
-      $order = new WC_Order();
-      $order->set_status('PENDING');
-      $order->set_created_via('Vipps express checkout');
-      $product = wc_get_product($prodid);
-      $order->set_payment_method($gw);
-      $order->save(); // Creates the order with no personal info etc.
-      $order->add_product($product,1); // Hver av disse legger til en ny linje til en *ny tom ordre* :(
-      $order->calculate_totals(true);
-
-      $firstname = 'Iver test';
-      $lastname = 'Kvello';
-      $address1 = 'Test test';
-      $address2 = 'Test test test';
-      $city = "Oslo";
-      $postcode = "0254"; 
-      $country = "NO";
-      $phone = "97125562";
-      $email = "iver@wp-hosting.no";
-
-      $order->set_billing_first_name($firstname);
-      $order->set_billing_last_name($lastname);
-      $order->set_billing_address_1($address1);
-      $order->set_billing_address_2($address2);
-      $order->set_billing_city($city);
-      $order->set_billing_postcode($postcode);
-      $order->set_billing_country($country);
-      $order->set_shipping_first_name($firstname);
-      $order->set_shipping_last_name($lastname);
-      $order->set_shipping_address_1($address1);
-      $order->set_shipping_address_2($address2);
-      $order->set_shipping_city($city);
-      $order->set_shipping_postcode($postcode);
-      $order->set_shipping_country($country);
-
-// Cost *wo* tax, and tax separately.
-$shipp = new WC_Shipping_Rate('flat_rate:3','Ypp', 80, array(array('total'=>25)), 'flat_rate');
-print_r($shipp);
-$it = new WC_Order_Item_Shipping();
-$it->set_shipping_rate($shipp);
-$it->set_order_id( $order->get_id() );
-$order->add_item($it);
-
-      $order->save(); // Creates the order with no personal info etc.
+        // Use these methods directly - they should be safe.      
+        WC()->checkout->create_order_line_items( $order, WC()->cart );
+        WC()->checkout->create_order_fee_lines( $order, WC()->cart );
+        WC()->checkout->create_order_tax_lines( $order, WC()->cart );
+        WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
+        $order->calculate_totals(true);
+        $orderid = $order->save(); // Creates the order with no personal info etc.
+      } catch (Exception $e) {
+        wc_add_notice(__('Could not create order','vipps') . ': ' . $e->getMessage(),'error');
+        wp_redirect($backurl);
+        exit();
+      } 
+      if (!$orderid) {
+        wc_add_notice(__('Could not create order','vipps'), 'error');
+        wp_redirect($backurl);
+        exit();
+      }
 
       $order->calculate_totals(true);
-      $order->save(); // Creates the order with no personal info etc.
-  
-      print_r($order);
-*/
+      $order->save();
+      $gw->express_checkout = 1;
+      $ok = $gw->process_payment($orderid);
+      if ($ok && $ok['result'] == 'success') {
+        wp_redirect($ok['redirect']);
+        exit();
+      }
+      wp_redirect($backurl);
       exit();
-
-
     }
-
     public function vipps_wait_for_payment() {
         // Call a method here in the gatway here IOK FIXME
         status_header(200,'OK');
@@ -741,7 +763,7 @@ $order->add_item($it);
 
         $content .= "<form id='vippsdata'>";
         $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
-        $content .= "<input type='hidden' name='key' value='".htmlpecialchars($order->get_order_key())."'>";
+        $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
         $content .= "<input type='hidden' name='action' value='check_order_status'>";
         $content .= wp_nonce_field('vippsstatus','sec',1,false); 
         $content .= "</form>";

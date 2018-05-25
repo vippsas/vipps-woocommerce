@@ -172,8 +172,7 @@ class VippsApi {
         $data['customerInfo'] = array('mobileNumber' => $phone); // IOK FIXME not required in 2.0
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback); 
 
-        // Exptress only if shipping and address missing - we do have the order here so check!
-        $express = false;
+        $express = $this->gateway->express_checkout;
         if ($express) {
           $data['merchantInfo']['shippingDetailsPrefix'] = $this->gateway->shipping_details_callback_url();
           if ($authtoken) {
@@ -339,6 +338,37 @@ class VippsApi {
         $data['transaction'] = $transaction;
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        return $res;
+    }
+
+    // Used to retrieve shipping and user details for express checkout orders where relevant and the callback isn't coming.
+    public function payment_details ($order) {
+        $orderid = $order->get_meta('_vipps_orderid');
+        $command = 'Ecomm/v2/payments/'.$orderid.'/details';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $merch = $this->get_option('merchantSerialNumber');
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+        }
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-Request-Id'] = $requestid;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
+
+        $data = array();
+
+        $res = $this->http_call($command,$data,'GET',$headers,'json'); 
         return $res;
     }
 
