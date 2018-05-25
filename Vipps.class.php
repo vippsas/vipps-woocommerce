@@ -597,12 +597,12 @@ class Vipps {
       status_header(200,'OK');
       print "<pre>";
       print "hei. Sjekk her for hva vi har av personalia, valgt shipping osv og lag evnt. en fakeordre\n";
+ 
 
       require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
       $gw = new WC_Gateway_Vipps();
-      exit();
-  
-/* 
+
+/*
       $prodid = 111;
       $order = new WC_Order();
       $order->set_status('PENDING');
@@ -613,9 +613,44 @@ class Vipps {
       $order->add_product($product,1); // Hver av disse legger til en ny linje til en *ny tom ordre* :(
       $order->calculate_totals(true);
 
+      $firstname = 'Iver test';
+      $lastname = 'Kvello';
+      $address1 = 'Test test';
+      $address2 = 'Test test test';
+      $city = "Oslo";
+      $postcode = "0254"; 
+      $country = "NO";
+      $phone = "97125562";
+      $email = "iver@wp-hosting.no";
+
+      $order->set_billing_first_name($firstname);
+      $order->set_billing_last_name($lastname);
+      $order->set_billing_address_1($address1);
+      $order->set_billing_address_2($address2);
+      $order->set_billing_city($city);
+      $order->set_billing_postcode($postcode);
+      $order->set_billing_country($country);
+      $order->set_shipping_first_name($firstname);
+      $order->set_shipping_last_name($lastname);
+      $order->set_shipping_address_1($address1);
+      $order->set_shipping_address_2($address2);
+      $order->set_shipping_city($city);
+      $order->set_shipping_postcode($postcode);
+      $order->set_shipping_country($country);
+
+$shipp = new WC_Shipping_Rate('flat_rate:3','Ypp',100);
+$it = new WC_Order_item_Shipping();
+$it->set_shipping_rate($shipp);
+$it->set_order_id( $order->get_id() );
+$order->add_item($it);
+
+      $order->calculate_totals(true);
       $order->save(); // Creates the order with no personal info etc.
+  
       print_r($order);
 */
+      exit();
+
 
     }
 
