@@ -15,6 +15,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $api = null;
     public $supports = null;
 
+    public $express_checkout = 0;
 
     public function __construct() {
         $this->method_description = __('Offer Vipps as a payment method', 'vipps');
@@ -294,7 +295,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Vipps-terminal-page return url to poll/await return
         $returnurl= $Vipps->payment_return_url();
-        $authtoken = $this->generate_authtoken();
+        // If we are using express checkout, use this to handle the address stuff
+        $authtoken = $this->express_checkout ?  $this->generate_authtoken() : '';
 
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
@@ -322,6 +324,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order( $order_id );
         $order->set_transaction_id($transactionid);
+        if ($authtoken) {
+          $order->update_meta_data('_vipps_authtoken',$authtoken);
+        }
+        // Needed to ensure we have orderinfo
+        if ($this->express_checkout) {
+          $order->update_meta_data('_vipps_express_checkout',1);
+        }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','vipps'));
@@ -521,7 +530,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Generate a one-time password for certain callbacks, with some backwards compatibility for PHP 5.6
-    private function generate_authtoken($length=32) {
+    public function generate_authtoken($length=32) {
         $token="";
         if (function_exists('random_bytes')) {
             $token = bin2hex(random_bytes($length));
@@ -619,7 +628,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $newstatus = 'cancelled'; 
                 break;
         }
-        if ($set && $oldstatus != $newstatus) {
+
+
+        // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
+        if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
+            $this->log(__("Express checkout - no callback, so getting payment details from Vipps", 'vipps'));
+            try {
+              $statusdata = $this->api->payment_details($order);
+            } catch (Exception $e) {
+              $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
+              return $oldstatus; 
+            }
+            if (@$statusdata['shippingDetails']) {
+              $this->set_order_shipping_details($result['shippingDetails'], $result['userDetails']);
+            } else {
+              $this->log(__("No shipping details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
+              return $oldstatus; 
+            }
+        }
+
+
+        if ($oldstatus != $newstatus) {
             switch ($newstatus) {
                 case 'on-hold':
                     wc_reduce_stock_levels($order->get_id());
@@ -681,10 +710,64 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $vippsstatus;
     }
 
+    public function set_order_shipping_details($shipping, $user) {
+      $firstname = $user['firstName'];
+      $lastname = $user['lastName'];
+      $phone = $user['mobileNumber'];
+      $email = $user['email'];
+
+      $addressline1 = $shipping['addressLine1'];
+      $addressline2 = @$shipping['addressLine2'];
+      $vippscountry = $shipping['country'];
+      $city = $shipping['city'];
+      $postcode= $shipping['zipCode'];
+
+      $country = '';  
+      switch (strtoupper($vippscountry)) { 
+          case 'NORWAY':
+          case 'NORGE':
+          case 'NOREG':
+           $country = 'NO';
+           break;
+      }
+ 
+      $order->set_billing_first_name($firstname);
+      $order->set_billing_last_name($lastname);
+      $order->set_billing_address_1($addressline1);
+      $order->set_billing_address_2($addressline2);
+      $order->set_billing_city($city);
+      $order->set_billing_postcode($postcode);
+      $order->set_billing_country($country);
+      $order->set_shipping_first_name($firstname);
+      $order->set_shipping_last_name($lastname);
+      $order->set_shipping_address_1($address1);
+      $order->set_shipping_address_2($address2);
+      $order->set_shipping_city($city);
+      $order->set_shipping_postcode($postcode);
+      $order->set_shipping_country($country);
+
+      // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
+      // method name - including any tax.
+      $method = $shipping['shippingMethodId'];
+      list ($method,$rate,$tax) = explode(";",$method);
+      $tax = floatval($tax);
+      $label = $shipping['shippingMethod'];
+      $cost = $shipping['shippingCost']; // This is inclusive of tax
+      $costExTax= floatval($cost)-$tax;
+
+      $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total',$tax)), $method);
+      $it = new WC_Order_Item_Shipping();
+      $it->set_shipping_rate($shipp);
+      $it->set_order_id( $order->get_id() );
+      $order->add_item($it);
+      $order->save(); 
+      $order->calculate_totals(true);
+      $order->save(); // I'm not sure why this is neccessary - but be sure.
+    }
+
     // Handle the callback from Vipps.
     public function handle_callback($result) {
         global $Vipps;
-
 
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
@@ -702,6 +785,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($me != $merchant) {
             $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'vipps') . " " .  $orderid);
             return false;
+        }
+
+        if (@$result['shippingDetails']) {
+         $this->set_order_shipping_details($result['shippingDetails'], $result['userDetails']);
         }
 
         $transaction = @$result['transactionInfo'];
