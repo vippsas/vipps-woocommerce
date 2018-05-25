@@ -602,6 +602,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
+        $order = new WC_Order($order->get_id()); // Ensure fresh copy.
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
         $vippsstatus = $this->get_vipps_order_status($order,'iscallback');
@@ -632,10 +633,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
-            $this->log(__("Express checkout - no callback, so getting payment details from Vipps", 'vipps'));
+            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'vipps'));
             try {
               $statusdata = $this->api->payment_details($order);
-              $this->log(print_r($statusdata,true));
             } catch (Exception $e) {
               $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
               return $oldstatus; 
@@ -742,8 +742,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       $order->set_billing_postcode($postcode);
       $order->set_billing_country($country);
 
-      $order->set_shipping_email($email);
-      $order->set_shipping_phone($phone);
       $order->set_shipping_first_name($firstname);
       $order->set_shipping_last_name($lastname);
       $order->set_shipping_address_1($addressline1);
@@ -751,17 +749,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       $order->set_shipping_city($city);
       $order->set_shipping_postcode($postcode);
       $order->set_shipping_country($country);
+      $order->save();
 
       // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
       // method name - including any tax.
       $method = $shipping['shippingMethodId'];
       list ($method,$rate,$tax) = explode(";",$method);
-      $tax = floatval($tax);
+      $tax = wc_format_decimal($tax);
       $label = $shipping['shippingMethod'];
-      $cost = $shipping['shippingCost']; // This is inclusive of tax
-      $costExTax= floatval($cost)-$tax;
+      $cost = wc_format_decimal($shipping['shippingCost']); // This is inclusive of tax
+      $costExTax= wc_format_decimal($cost-$tax);
+ 
 
-      $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total',$tax)), $method);
+      $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method);
       $it = new WC_Order_Item_Shipping();
       $it->set_shipping_rate($shipping_rate);
       $it->set_order_id( $order->get_id() );
@@ -840,6 +840,34 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
         }
         $order->save();
+    }
+
+    // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
+    // IOK 2018-05-25
+    public function create_partial_order() {
+        $cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
+        $order = new WC_Order();
+        $order->set_status('PENDING');
+        $order->set_created_via('Vipps express checkout');
+        $order->set_payment_method($gw);
+
+        $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+        $order->set_currency( get_woocommerce_currency() );
+        $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+        $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
+        $order->set_customer_user_agent( wc_get_user_agent() );
+        $order->set_discount_total( WC()->cart->get_discount_total() );
+        $order->set_discount_tax( WC()->cart->get_discount_tax() );
+        $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
+
+        // Use these methods directly - they should be safe.
+        WC()->checkout->create_order_line_items( $order, WC()->cart );
+        WC()->checkout->create_order_fee_lines( $order, WC()->cart );
+        WC()->checkout->create_order_tax_lines( $order, WC()->cart );
+        WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
+        $order->calculate_totals(true);
+        $orderid = $order->save(); 
+        return $orderid;
     }
 
 

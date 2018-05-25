@@ -358,12 +358,13 @@ class Vipps {
             exit();
         }
         $order = new WC_Order($orderid);
+
         if (!$order) {
             exit();
         }
 
         // a small bit of security
-        if ($order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
+        if ($order->get_meta('_vipps_authtoken') && $order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
           $this->log("Wrong authtoken on shipping details callback");
           print "-1";
           exit();
@@ -378,11 +379,20 @@ class Vipps {
         $city = $result['city'];
         $postcode= $result['postCode'];
 
+        $addressid = "0";
+        $addressline1 = "obs";
+        $addressline1 = "obs";
+        $vippscountry = 'NO';
+        $city = 'OSLO';
+        $postcode = '0254';
+
+
         $country = '';  
         switch (strtoupper($vippscountry)) { 
           case 'NORWAY':
           case 'NORGE':
           case 'NOREG':
+          case 'NO':
            $country = 'NO';
            break;
         }
@@ -400,7 +410,8 @@ class Vipps {
 
 
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
-        // shipping calculation environment.
+        // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
+        // so this needs to be maintained. IOK 2018.
         $acart = new WC_Cart();
         foreach($order->get_items() as $item) {
             $varid = $item['variation_id'];
@@ -430,6 +441,13 @@ class Vipps {
         $howmany = count($methods);
         $priority=0;
         $isdefault = 1;
+
+        // This way of calculating the results will always produce the cost as if it was
+        // not including tax. This means that it will be wrong in all those cases - it will 
+        // for a cost of 50 have cost '50' and tax 12.5 instead of 10. So we need to redo the tax. IOK 2018-05-25
+        $pricesincludetax = 0;
+        if (get_option('woocommerce_prices_include_tax') == 'yes') $pricesincludetax=1;
+
         foreach ($shipping_methods as  $rate) {
             $priority++;
             $method['isDefault'] = $isdefault ? 'Y' : 'N';
@@ -437,6 +455,16 @@ class Vipps {
             $method['priority'] = $priority;
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
+
+            // Limitations in the  Woo api makes it neccessary to recalculate the tax in this case. IOK 2018-05-25
+            if ($pricesincludetax && $tax>0) {
+              $sum = $tax+$cost;
+              $percentage = $sum/$cost;
+              $exTax = $cost/$percentage; 
+              $tax = sprintf("%.2f", $cost-$exTax);
+            } 
+
+
             $method['shippingCost'] = sprintf("%.2f",$cost);
             $method['shippingMethod'] = $rate->get_label();
             // It's possible that just the id is enough, but Woo isn't quite clear here and the
@@ -457,7 +485,7 @@ class Vipps {
         $data = array_reverse(explode("/",$callback));
         if (empty($data)) return false;
         $uid = $data[0];
-        $this->log(__("Vipps consent removal recieved for",'vipps') . ' ' . $uid); 
+        $this->log(__("Vipps consent removal received for",'vipps') . ' ' . $uid); 
         if (!$uid) {
             print "-1";exit();
         }
@@ -634,8 +662,9 @@ class Vipps {
     }
 
     // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
+    // It could be changed to be a normal page that would call the below as an ajax method - this would
+    // be better performancewise as this can take some time. IOK 2018-05-25
     public function vipps_express_checkout() {
-
       $backurl = $_SERVER['HTTP_REFERER'];
       if (!$backurl) $backurl = home_url();
       if ( WC()->cart->get_cart_contents_count() == 0 ) {
@@ -643,36 +672,12 @@ class Vipps {
         wp_redirect($backurl);
         exit();
       }
-
-      status_header(200,'OK');
-
       // We need to reuse a lot of the code from checkout->create_order which we can't call directly because
       // it won't allow empty shipping methods and so forth  IOK FIXME MOVE TO GATEWAY, CALL MAKE_PARTIAL_ORDER
       try {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        $cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
-        $order = new WC_Order();
-        $order->set_status('PENDING');
-        $order->set_created_via('Vipps express checkout');
-        $order->set_payment_method($gw);
- 
-        $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
-        $order->set_currency( get_woocommerce_currency() );
-        $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
-        $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
-        $order->set_customer_user_agent( wc_get_user_agent() );
-        $order->set_discount_total( WC()->cart->get_discount_total() );
-        $order->set_discount_tax( WC()->cart->get_discount_tax() );
-        $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
-
-        // Use these methods directly - they should be safe.      
-        WC()->checkout->create_order_line_items( $order, WC()->cart );
-        WC()->checkout->create_order_fee_lines( $order, WC()->cart );
-        WC()->checkout->create_order_tax_lines( $order, WC()->cart );
-        WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
-        $order->calculate_totals(true);
-        $orderid = $order->save(); // Creates the order with no personal info etc.
+        $orderid = $gw->create_partial_order();
       } catch (Exception $e) {
         wc_add_notice(__('Could not create order','vipps') . ': ' . $e->getMessage(),'error');
         wp_redirect($backurl);
@@ -683,9 +688,6 @@ class Vipps {
         wp_redirect($backurl);
         exit();
       }
-
-      $order->calculate_totals(true);
-      $order->save();
       $gw->express_checkout = 1;
       $ok = $gw->process_payment($orderid);
       if ($ok && $ok['result'] == 'success') {
@@ -695,8 +697,8 @@ class Vipps {
       wp_redirect($backurl);
       exit();
     }
+
     public function vipps_wait_for_payment() {
-        // Call a method here in the gatway here IOK FIXME
         status_header(200,'OK');
         $orderid = WC()->session->get('_vipps_pending_order');
         $order = null;
@@ -711,17 +713,16 @@ class Vipps {
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $order->get_status();
-        if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
-            wp_redirect($gw->get_return_url($order));
-            exit();
-        }
-
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
             $newstatus = $gw->callback_check_order_status($order);
             if ($newstatus) {
                 $status = $newstatus;
             }
+        }
+        if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
+            wp_redirect($gw->get_return_url($order));
+            exit();
         }
 
         // We are done, but in failure. Don't poll.
