@@ -1,6 +1,5 @@
 // IOK 2018-05-04 Call ajax methods determining if and order is complete or not from the "confirm" waiting screen
 jQuery(document).ready(function () {
- console.log("Loaded");
  var start = new Date();
  var fkey = jQuery("#fkey").val();
  var fkey404 = false;

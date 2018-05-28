@@ -45,7 +45,8 @@ class Vipps {
     }
 
     public function wp_enqueue_scripts() {
-        wp_enqueue_script('check-vipps',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_enqueue_script('vipps',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_enqueue_style('vipps',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
     }
 
     public function log ($what,$type='info') {
@@ -585,6 +586,7 @@ class Vipps {
     }
 
     public function ajax_do_express_checkout () {
+        check_ajax_referer('do_express','sec');
         try {
             require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
             $gw = new WC_Gateway_Vipps();
@@ -699,6 +701,27 @@ class Vipps {
         return $method;
     }
 
+    // Just create a spinner and a overlay.
+    public function spinner () {
+        ob_start();
+?>
+<div class="vippsoverlay">
+<div id="floatingCirclesG" class="vippsspinner">
+    <div class="f_circleG" id="frotateG_01"></div>
+    <div class="f_circleG" id="frotateG_02"></div>
+    <div class="f_circleG" id="frotateG_03"></div>
+    <div class="f_circleG" id="frotateG_04"></div>
+    <div class="f_circleG" id="frotateG_05"></div>
+    <div class="f_circleG" id="frotateG_06"></div>
+    <div class="f_circleG" id="frotateG_07"></div>
+    <div class="f_circleG" id="frotateG_08"></div>
+</div>
+</div>
+<?php
+        return ob_get_clean(); 
+    }
+
+
     // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
     // It could be changed to be a normal page that would call the below as an ajax method - this would
     // be better performancewise as this can take some time. IOK 2018-05-25
@@ -716,20 +739,30 @@ class Vipps {
             exit();
         }
 
-        wp_enqueue_script('express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
+        wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
+        wp_add_inline_script('vipps-express-checkout','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
+
+        $content = $this->spinner();
+        $content .= "<form id='vippsdata'>";
+        $content .= "<input type='hidden' name='action' value='do_express_checkout'>";
+        $content .= wp_nonce_field('do_express','sec',1,false); 
+        $content .= "</form>";
+
         if ($ok) {
-            $content .= "<p>" . __("Please wait while we are preparing your order", 'vipps') . "</p>";
-            $content .= "<div id='success'></div>";
-            $content .= "<div id='failure'></div>";
+            $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'vipps') . "</p>";
+            $content .= "<div style='display:none' id='success'></div>";
+            $content .= "<div style='display:none' id='failure'></div>";
+            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','vipps')  . "</div>";
             $this->fakepage(__('Order in progress','vipps'), $content);
             return;
         } else {
-            $content .= "<p>" . __("Ready for express checkout - press the button", 'vipps') . "</p>";
+            $content .= "<p id=waiting>" . __("Ready for express checkout - press the button", 'vipps') . "</p>";
             $content .= "<p><button id='do-express-checkout' class='button vipps-express-checkout'>". __("Checkout with Vipps",'vipps'). "</button></p>";
-            $content .= "<div id='success'></div>";
-            $content .= "<div id='failure'></div>";
+            $content .= "<div style='display:none' id='success'></div>";
+            $content .= "<div style='display:none' id='failure'></div>";
+            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','vipps')  . "</div>";
             $this->fakepage(__('Express checkout','vipps'), $content);
             return;
         }
