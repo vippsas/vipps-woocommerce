@@ -234,7 +234,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type' => 'textarea',
                         'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce' ),
                         'default' => __("Pay with Vipps", 'vipps')
-                        )
+                        ),
+
+                'cartexpress' => array(
+                    'title'       => __( 'Enable Express Checkout in cart', 'vipps' ),
+                    'label'       => __( 'Enable Express Checkout in cart', 'vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'vipps'),
+                    'default'     => 'yes',
+                    ),
+
                     );
     }
 

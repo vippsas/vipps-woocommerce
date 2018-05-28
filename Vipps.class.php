@@ -45,7 +45,7 @@ class Vipps {
     }
 
     public function wp_enqueue_scripts() {
-      wp_enqueue_script('check-vipps',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_enqueue_script('check-vipps',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
     }
 
     public function log ($what,$type='info') {
@@ -67,8 +67,13 @@ class Vipps {
 
     // Show the express button if reasonable to do so
     public function cart_express_checkout_button() {
-     $url = $this->express_checkout_url();
-     echo ' <a href="'.$url.'" class="button wc-forward vipps-express-checkout">' . __('Buy now with Vipps!', 'vipps') . '</a>';
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        if ($gw->get_option('cartexpress') == 'yes') { 
+            $url = $this->express_checkout_url();
+            $url = wp_nonce_url($url,'express','sec');
+            echo ' <a href="'.$url.'" class="button wc-forward vipps-express-checkout">' . __('Buy now with Vipps!', 'vipps') . '</a>';
+        }
     }
 
 
@@ -255,7 +260,7 @@ class Vipps {
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
-  
+
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
@@ -267,6 +272,11 @@ class Vipps {
         // Ajax endpoints for checking the order status while waiting for confirmation
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
+
+        // This is for express checkout which we will also do asynchronously IOK 2018-05-28
+        add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
+        add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
+
     }
 
     public function save_order($postid,$post,$update) {
@@ -365,9 +375,9 @@ class Vipps {
 
         // a small bit of security
         if ($order->get_meta('_vipps_authtoken') && $order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
-          $this->log("Wrong authtoken on shipping details callback");
-          print "-1";
-          exit();
+            $this->log("Wrong authtoken on shipping details callback");
+            print "-1";
+            exit();
         }
 
         // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
@@ -389,24 +399,24 @@ class Vipps {
 
         $country = '';  
         switch (strtoupper($vippscountry)) { 
-          case 'NORWAY':
-          case 'NORGE':
-          case 'NOREG':
-          case 'NO':
-           $country = 'NO';
-           break;
+            case 'NORWAY':
+            case 'NORGE':
+            case 'NOREG':
+            case 'NO':
+                $country = 'NO';
+                break;
         }
-       $order->set_billing_address_1($addressline1);
-       $order->set_billing_address_2($addressline2);
-       $order->set_billing_city($city);
-       $order->set_billing_postcode($postcode);
-       $order->set_billing_country($country);
-       $order->set_shipping_address_1($address1);
-       $order->set_shipping_address_2($address2);
-       $order->set_shipping_city($city);
-       $order->set_shipping_postcode($postcode);
-       $order->set_shipping_country($country);
-       $order->save();
+        $order->set_billing_address_1($addressline1);
+        $order->set_billing_address_2($addressline2);
+        $order->set_billing_city($city);
+        $order->set_billing_postcode($postcode);
+        $order->set_billing_country($country);
+        $order->set_shipping_address_1($address1);
+        $order->set_shipping_address_2($address2);
+        $order->set_shipping_city($city);
+        $order->set_shipping_postcode($postcode);
+        $order->set_shipping_country($country);
+        $order->save();
 
 
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
@@ -429,7 +439,7 @@ class Vipps {
         $package['destination']['city']     = $city;
         $package['destination']['address']  = $addressline1;
         if ($addressline2 && !$addressline2 == 'null') {
-         $package['destination']['address_2']= $addressline2;
+            $package['destination']['address_2']= $addressline2;
         }
 
         $packages = array($package);
@@ -458,10 +468,10 @@ class Vipps {
 
             // Limitations in the  Woo api makes it neccessary to recalculate the tax in this case. IOK 2018-05-25
             if ($pricesincludetax && $tax>0) {
-              $sum = $tax+$cost;
-              $percentage = $sum/$cost;
-              $exTax = $cost/$percentage; 
-              $tax = sprintf("%.2f", $cost-$exTax);
+                $sum = $tax+$cost;
+                $percentage = $sum/$cost;
+                $exTax = $cost/$percentage; 
+                $tax = sprintf("%.2f", $cost-$exTax);
             } 
 
 
@@ -574,6 +584,34 @@ class Vipps {
         }
     }
 
+    public function ajax_do_express_checkout () {
+        try {
+            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+            $gw = new WC_Gateway_Vipps();
+            $orderid = $gw->create_partial_order();
+        } catch (Exception $e) {
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','vipps') . ': ' . $e->getMessage(), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        } 
+        if (!$orderid) {
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+
+        $gw->express_checkout = 1;
+        $ok = $gw->process_payment($orderid);
+        if ($ok && $ok['result'] == 'success') {
+            $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
+            wp_send_json($result);
+            exit();
+        }
+        $result = array('ok'=>0, 'msg'=> __('Vipps is temporarily unavailable.','vipps'), 'url'=>'');
+        wp_send_json($result);
+        exit();
+    }
+
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
@@ -665,38 +703,39 @@ class Vipps {
     // It could be changed to be a normal page that would call the below as an ajax method - this would
     // be better performancewise as this can take some time. IOK 2018-05-25
     public function vipps_express_checkout() {
-      $backurl = $_SERVER['HTTP_REFERER'];
-      if (!$backurl) $backurl = home_url();
-      if ( WC()->cart->get_cart_contents_count() == 0 ) {
-        wc_add_notice(__('Your shopping cart is empty','vipps'),'error');
-        wp_redirect($backurl);
-        exit();
-      }
-      // We need to reuse a lot of the code from checkout->create_order which we can't call directly because
-      // it won't allow empty shipping methods and so forth  IOK FIXME MOVE TO GATEWAY, CALL MAKE_PARTIAL_ORDER
-      try {
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
-        $orderid = $gw->create_partial_order();
-      } catch (Exception $e) {
-        wc_add_notice(__('Could not create order','vipps') . ': ' . $e->getMessage(),'error');
-        wp_redirect($backurl);
-        exit();
-      } 
-      if (!$orderid) {
-        wc_add_notice(__('Could not create order','vipps'), 'error');
-        wp_redirect($backurl);
-        exit();
-      }
-      $gw->express_checkout = 1;
-      $ok = $gw->process_payment($orderid);
-      if ($ok && $ok['result'] == 'success') {
-        wp_redirect($ok['redirect']);
-        exit();
-      }
-      wp_redirect($backurl);
-      exit();
+        // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
+        // IOK 2018-05-28
+        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
+
+        $backurl = wp_validate_redirect($_SERVER['HTTP_REFERER']);
+        if (!$backurl) $backurl = home_url();
+
+        if ( WC()->cart->get_cart_contents_count() == 0 ) {
+            wc_add_notice(__('Your shopping cart is empty','vipps'),'error');
+            wp_redirect($backurl);
+            exit();
+        }
+
+        wp_enqueue_script('express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
+        // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
+        // to actually perform the express checkout.
+        if ($ok) {
+            $content .= "<p>" . __("Please wait while we are preparing your order", 'vipps') . "</p>";
+            $content .= "<div id='success'></div>";
+            $content .= "<div id='failure'></div>";
+            $this->fakepage(__('Order in progress','vipps'), $content);
+            return;
+        } else {
+            $content .= "<p>" . __("Ready for express checkout - press the button", 'vipps') . "</p>";
+            $content .= "<p><button id='do-express-checkout' class='button vipps-express-checkout'>". __("Checkout with Vipps",'vipps'). "</button></p>";
+            $content .= "<div id='success'></div>";
+            $content .= "<div id='failure'></div>";
+            $this->fakepage(__('Express checkout','vipps'), $content);
+            return;
+        }
     }
+
+
 
     public function vipps_wait_for_payment() {
         status_header(200,'OK');
