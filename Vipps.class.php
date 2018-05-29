@@ -181,15 +181,17 @@ class Vipps {
         return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
 
-    private function  createOrLoginVippsUser($userdetails) {
+     
+    // This will, in a callback from express checkout, or Vipps login, create a user as a Vipps user. If the user exists 
+    // it will be updated with the relevant information from Vipps. Returns the user ID, not a user object. IOK 2018-05-29
+    public function createVippsUser($userdetails,$address) {
+        if (!$userdetails) return null;
+        if (!$address) $address = array();
         $email = $userdetails['email'];
         $user = get_user_by('email',$email);
-
         $userdata = array();
         $userdata['first_name'] = $userdetails['firstName'];
         $userdata['last_name'] = $userdetails['lastName'];
-
-        // If user exists, ensure metadata are up to date, log the user in and return IOK 2018-05-18
         $userid = 0;
         if ($user) {
             $userid = $user->ID;
@@ -207,8 +209,8 @@ class Vipps {
         if (is_wp_error($userid)) {
             throw new VippsApiException($userid->get_error_message());
         }
+        // Update all metadata for both new and old users. IOK 2018-05-29
         wp_update_user($userdata);
-        $address = $userdetails['address'];
         update_user_meta( $userid, "vipps_id", $userdetails['userId']);
         update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
         update_user_meta( $userid, "billing_last_name", $userdetails['lastName']);
@@ -218,13 +220,25 @@ class Vipps {
         if ($address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
         if ($address['city']) update_user_meta( $userid, "billing_city", $address['city']);
         if ($address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
+        if ($address['postCode']) update_user_meta( $userid, "billing_postcode", $address['postCode']); // *Both* are used by different calls!
         if ($address['country']) update_user_meta( $userid, "billing_country", $address['country']);
+        return $userid;
+    }
 
+    // Login the given user ID - unless somebody is already logged in, in which case, don't.
+    private function loginUser($userid) {
         $user = get_user_by('id',$userid);
         wp_set_current_user($user->ID,$user->user_login);
         wp_set_auth_cookie($userid);
         do_action('wp_login', $user->user_login); 
         return $user;
+    }
+
+    // Creates a Vipps user or retreives and updates and existing one, then logs them in. IOK 2018-05-29
+    private function  createOrLoginVippsUser($userdetails,$address) {
+        if (is_user_logged_in()) return false;
+        $userid = $this->createVippsUser($userdetails,$address);
+        return $this->loginUser($userid);
     }
 
     // Special pages, and some callbacks. IOK 2018-05-18 
@@ -932,8 +946,13 @@ class Vipps {
 
         if ($status == 'SUCCESS') {
             try {
-                $user = $this->createOrLoginVippsUser($loginrequest['userDetails']);
-                wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
+                $userdetails = $loginrequest['userDetails'];
+                $address = $userdetails['address'];
+                $user = $this->createOrLoginVippsUser($userdetails,$address);
+                if ($user) {
+                 // Returns false if e.g. the user is already logged in, in which case, don't go "welcome!". IOK 2018-05-29
+                 wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
+                }
             } catch (Exception $e) {
                 $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();
                 $this->log($msg);

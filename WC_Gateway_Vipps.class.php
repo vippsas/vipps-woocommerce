@@ -243,6 +243,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'vipps'),
                     'default'     => 'yes',
                     ),
+                'expresscreateuser' => array (
+                    'title'       => __( 'Create new customers on Express Checkout', 'vipps' ),
+                    'label'       => __( 'Create new customers on Express Checkout', 'vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps'),
+                    'default'     => 'yes',
+                    )
+
+
 
                     );
     }
@@ -811,6 +820,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
           $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
           exit();
+        }
+
+        // If express checkout, get the user ID or create the new user, if allowed
+        $express =  $order->get_meta('_vipps_express_checkout');
+        if ($express && $this->get_option('expresscreateuser')) {
+          try {
+           $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']);
+           update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
+           $order->set_customer_id($userid); 
+           $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
+          } catch (Exception $e) {
+            // can't do much here, so ignore and log the error
+            $this->log(__("Couldn't create Vipps user on express checkout:",'vipps') . ' ' . $e->getMessage(), 'error'); 
+          }
         }
 
 
