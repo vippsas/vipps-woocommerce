@@ -267,6 +267,8 @@ class Vipps {
     }
 
     public function plugins_loaded() {
+        load_plugin_textdomain('vipps', false, basename( dirname( __FILE__ ) ));
+
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
@@ -291,6 +293,7 @@ class Vipps {
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
         add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
+
 
     }
 

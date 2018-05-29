@@ -8,8 +8,6 @@
  */
 require_once(dirname(__FILE__) . "/exceptions.php");
 require_once(dirname(__FILE__) . "/Vipps.class.php");
-// Enable Internationalization IOK 2018-05-29
-load_plugin_textdomain('vipps', false, basename( dirname( __FILE__ ) ) . '/languages' );
 
 /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
 global $Vipps;
