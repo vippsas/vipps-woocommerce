@@ -237,19 +237,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'cartexpress' => array(
-                    'title'       => __( 'Enable Express Checkout in cart', 'vipps' ),
-                    'label'       => __( 'Enable Express Checkout in cart', 'vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'vipps'),
-                    'default'     => 'yes',
-                    ),
+                        'title'       => __( 'Enable Express Checkout in cart', 'vipps' ),
+                        'label'       => __( 'Enable Express Checkout in cart', 'vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'vipps'),
+                        'default'     => 'yes',
+                        ),
                 'expresscreateuser' => array (
-                    'title'       => __( 'Create new customers on Express Checkout', 'vipps' ),
-                    'label'       => __( 'Create new customers on Express Checkout', 'vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps'),
-                    'default'     => 'yes',
-                    )
+                        'title'       => __( 'Create new customers on Express Checkout', 'vipps' ),
+                        'label'       => __( 'Create new customers on Express Checkout', 'vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps'),
+                        'default'     => 'yes',
+                        )
 
 
 
@@ -343,15 +343,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = new WC_Order( $order_id );
         $order->set_transaction_id($transactionid);
         if ($authtoken) {
-          $order->update_meta_data('_vipps_authtoken',$authtoken);
+            $order->update_meta_data('_vipps_authtoken',$authtoken);
         }
         // Needed to ensure we have orderinfo
         if ($this->express_checkout) {
-          if ('yes' == $this->get_option('expresscreateuser')) {
-           $order->update_meta_data('_vipps_express_checkout','create');
-          } else {
-           $order->update_meta_data('_vipps_express_checkout',1);
-          }
+            if ('yes' == $this->get_option('expresscreateuser')) {
+                $order->update_meta_data('_vipps_express_checkout','create');
+            } else {
+                $order->update_meta_data('_vipps_express_checkout',1);
+            }
         }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
@@ -381,15 +381,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Customer not logged in, shipping not selected etc - express checkout support!
     public function process_express_checkout_payment($prodid=null,$variation_id=null) {
-         $product = null;
-         $variation = null;
-         if ($variation_id) {
-           $product = wc_get_product($variation_id);
-           $product = $variation->get_variation_attributes();
-         } else {
-           $product = wc_get_product($prodid);
-         }
-         if ($prodid) WC()->cart->add_to_cart($prodid, 1, $variation_id, $variation);
+        $product = null;
+        $variation = null;
+        if ($variation_id) {
+            $product = wc_get_product($variation_id);
+            $product = $variation->get_variation_attributes();
+        } else {
+            $product = wc_get_product($prodid);
+        }
+        if ($prodid) WC()->cart->add_to_cart($prodid, 1, $variation_id, $variation);
     }
 
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
@@ -624,7 +624,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
-        $order = new WC_Order($order->get_id()); // Ensure fresh copy.
+        $orderid = $order->get_id();
+        $order = new WC_Order($orderid); // Ensure a fresh copy is read.
+      
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
         $vippsstatus = $this->get_vipps_order_status($order,'iscallback');
@@ -652,26 +654,36 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
         }
 
-$this->log("in call to get status ", "debug");
+        // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
+        // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
+        // and callbacks happen at the same time.
+        if(get_transient('order_callback_'.$orderid)) return $oldstatus;
+
+        if ($newstatus != $oldstatus) {
+            // Again, because we have no way of handling locks portably in Woo or WP yet, we must reduce the risk of race conditions by doing a 'fast' operation 
+            // If the status hasn't changed this is probably not the case, so we'll only do it in this case. IOK 2018-05-30
+            set_transient('order_query_'.$orderid, 1, 30);
+        }
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
-        // IOK FIXME Correct this
         if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
             $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'vipps'));
+     
+
             try {
-              $statusdata = $this->api->payment_details($order);
-              $this->log(print_r($statusdata,true));
+                $statusdata = $this->api->payment_details($order);
+                $this->log(print_r($statusdata,true));
             } catch (Exception $e) {
-              $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
-              return $oldstatus; 
+                $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
+                return $oldstatus; 
             }
-            // This is for orders using express checkout. IOK 2018-05-29
+            // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
             if (@$statusdata['shippingDetails']) {
-              $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
-              $this->maybe_create_user($order,$result); 
+                $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
+                $this->maybe_create_user($order,$result); 
             } else {
-              $this->log(__("No shipping details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
-              return $oldstatus; 
+                $this->log(__("No shipping details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
+                return $oldstatus; 
             }
         }
 
@@ -691,7 +703,8 @@ $this->log("in call to get status ", "debug");
             }
             $order->save();
         }
-
+        // Ensure this is gone so any callback can happen. IOK 2018-05-30
+        delete_transient('order_query_'.$orderid);
         return $newstatus;
     }
 
@@ -738,70 +751,70 @@ $this->log("in call to get status ", "debug");
     }
 
     public function set_order_shipping_details($order,$shipping, $user) {
-      $address = $shipping['address'];
+        $address = $shipping['address'];
 
-      $firstname = $user['firstName'];
-      $lastname = $user['lastName'];
-      $phone = $user['mobileNumber'];
-      $email = $user['email'];
+        $firstname = $user['firstName'];
+        $lastname = $user['lastName'];
+        $phone = $user['mobileNumber'];
+        $email = $user['email'];
 
-      $addressline1 = $address['addressLine1'];
-      $addressline2 = @$address['addressLine2'];
-      $vippscountry = $address['country'];
-      $city = $address['city'];
-      $postcode= @$address['zipCode'];
-      if (isset($address['postCode'])) {
-        $postcode= $address['postCode'];
-      } elseif (isset($address['postalCode'])){
-        $postcode= $address['postalCode'];
-      }
+        $addressline1 = $address['addressLine1'];
+        $addressline2 = @$address['addressLine2'];
+        $vippscountry = $address['country'];
+        $city = $address['city'];
+        $postcode= @$address['zipCode'];
+        if (isset($address['postCode'])) {
+            $postcode= $address['postCode'];
+        } elseif (isset($address['postalCode'])){
+            $postcode= $address['postalCode'];
+        }
 
-      $country = '';  
-      switch (strtoupper($vippscountry)) { 
-          case 'NORWAY':
-          case 'NORGE':
-          case 'NOREG':
-           $country = 'NO';
-           break;
-      }
- 
-      $order->set_billing_email($email);
-      $order->set_billing_phone($phone);
-      $order->set_billing_first_name($firstname);
-      $order->set_billing_last_name($lastname);
-      $order->set_billing_address_1($addressline1);
-      $order->set_billing_address_2($addressline2);
-      $order->set_billing_city($city);
-      $order->set_billing_postcode($postcode);
-      $order->set_billing_country($country);
+        $country = '';  
+        switch (strtoupper($vippscountry)) { 
+            case 'NORWAY':
+            case 'NORGE':
+            case 'NOREG':
+                $country = 'NO';
+                break;
+        }
 
-      $order->set_shipping_first_name($firstname);
-      $order->set_shipping_last_name($lastname);
-      $order->set_shipping_address_1($addressline1);
-      $order->set_shipping_address_2($addressline2);
-      $order->set_shipping_city($city);
-      $order->set_shipping_postcode($postcode);
-      $order->set_shipping_country($country);
-      $order->save();
+        $order->set_billing_email($email);
+        $order->set_billing_phone($phone);
+        $order->set_billing_first_name($firstname);
+        $order->set_billing_last_name($lastname);
+        $order->set_billing_address_1($addressline1);
+        $order->set_billing_address_2($addressline2);
+        $order->set_billing_city($city);
+        $order->set_billing_postcode($postcode);
+        $order->set_billing_country($country);
 
-      // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
-      // method name - including any tax.
-      $method = $shipping['shippingMethodId'];
-      list ($method,$rate,$tax) = explode(";",$method);
-      $tax = wc_format_decimal($tax);
-      $label = $shipping['shippingMethod'];
-      $cost = wc_format_decimal($shipping['shippingCost']); // This is inclusive of tax
-      $costExTax= wc_format_decimal($cost-$tax);
- 
+        $order->set_shipping_first_name($firstname);
+        $order->set_shipping_last_name($lastname);
+        $order->set_shipping_address_1($addressline1);
+        $order->set_shipping_address_2($addressline2);
+        $order->set_shipping_city($city);
+        $order->set_shipping_postcode($postcode);
+        $order->set_shipping_country($country);
+        $order->save();
 
-      $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method);
-      $it = new WC_Order_Item_Shipping();
-      $it->set_shipping_rate($shipping_rate);
-      $it->set_order_id( $order->get_id() );
-      $order->add_item($it);
-      $order->save(); 
-      $order->calculate_totals(true);
-      $order->save(); // I'm not sure why this is neccessary - but be sure.
+        // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
+        // method name - including any tax.
+        $method = $shipping['shippingMethodId'];
+        list ($method,$rate,$tax) = explode(";",$method);
+        $tax = wc_format_decimal($tax);
+        $label = $shipping['shippingMethod'];
+        $cost = wc_format_decimal($shipping['shippingCost']); // This is inclusive of tax
+        $costExTax= wc_format_decimal($cost-$tax);
+
+
+        $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method);
+        $it = new WC_Order_Item_Shipping();
+        $it->set_shipping_rate($shipping_rate);
+        $it->set_order_id( $order->get_id() );
+        $order->add_item($it);
+        $order->save(); 
+        $order->calculate_totals(true);
+        $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
 
     // Create users on express checkout, maybe. Used by both handle_callback and callback_get_order_status
@@ -809,15 +822,15 @@ $this->log("in call to get status ", "debug");
         global $Vipps;
         $express =  $order->get_meta('_vipps_express_checkout');
         if ($express == 'create') {
-          try {
-           $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']['address']);
-           update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
-           $order->set_customer_id($userid); 
-           $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
-          } catch (Exception $e) {
-            // can't do much here, so ignore and log the error
-            $this->log(__("Couldn't create Vipps user on express checkout:",'vipps') . ' ' . $e->getMessage(), 'error'); 
-          }
+            try {
+                $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']['address']);
+                update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
+                $order->set_customer_id($userid); 
+                $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
+            } catch (Exception $e) {
+                // can't do much here, so ignore and log the error
+                $this->log(__("Couldn't create Vipps user on express checkout:",'vipps') . ' ' . $e->getMessage(), 'error'); 
+            }
         }
     }
 
@@ -825,12 +838,13 @@ $this->log("in call to get status ", "debug");
     public function handle_callback($result) {
         global $Vipps;
 
-$this->log("in callback", "debug");
+        $this->log("in callback", "debug");
 
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
         $vippsorderid = $result['orderId'];
         $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
+
 
         $order = new WC_Order($orderid);
         if (!$order) {
@@ -845,25 +859,39 @@ $this->log("in callback", "debug");
             return false;
         }
 
-        if (@$result['shippingDetails']) {
-         $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
-        }
- 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
         if ($authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
-          $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
-          exit();
+            $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
+            exit();
         }
-        
-        // If express checkout, maybe create a customer as well. IOK 2018-05-29 
-        $this->maybe_create_user($order,$result); 
 
         $transaction = @$result['transactionInfo'];
         if (!$transaction) {
             $this->log(__("Anomalous callback from vipps, handle errors and clean up",'vipps'),'error');
             return false;
         }
+
+        if (@$result['shippingDetails']) {
+            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
+        }
+
+        // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
+        // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
+        // when callbacks happen while we are polling for results. IOK 2018-05-30
+        if(get_transient('order_query_'.$orderid))  {
+          $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'vipps'));
+          return;
+        }
+
+        $trans = 'order_callback_'.$orderid;
+        $this->log("Entering critical area with $trans", 'debug');
+        set_transient('order_callback_'.$orderid,1, 60);
+        sleep(20); // Simulate really slow servers IOK FIXME DEBUG
+
+        // If express checkout, maybe create a customer as well. IOK 2018-05-29 
+        $this->maybe_create_user($order,$result); 
+
         $transactionid = $transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);
         $vippsamount = $transaction['amount'];
@@ -894,6 +922,8 @@ $this->log("in callback", "debug");
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
         }
         $order->save();
+        $this->log("Exiting critical area", 'debug');
+        delete_transient('order_callback_',$orderid);
     }
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();

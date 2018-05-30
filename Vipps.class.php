@@ -864,13 +864,27 @@ class Vipps {
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $order->get_status();
+        $this->log("Status on arrival is $status",'debug');
+
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
-            $newstatus = $gw->callback_check_order_status($order);
-            if ($newstatus) {
-                $status = $newstatus;
+            // Unfortunately, Woo or WP has no locking system, and creating one portably is not currently feasible. Therefore
+            // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
+            // This then will check if the callback is in progress - the callback will do exactly the same on its part.
+            if (!get_transient('order_callback_'.$orderid)) {
+              $trans = 'order_callback_'.$orderid;
+              $this->log(get_transient('order_callback_'.$orderid),'debug');
+              $this->log("Getting status directly from vipps on '$trans'.",'debug');
+              $newstatus = $gw->callback_check_order_status($order);
+              if ($newstatus) {
+                  $status = $newstatus;
+              }
+            } else {
+              $this->log(__('Vipps callback in progress, but not complete on shop return. You probably need to look at server or database performance.','vipps'));
             }
         }
+
+        // All these stauuses are successes so go to the thankyou page. Any logins etc will happen there.
         if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
             wp_redirect($gw->get_return_url($order));
             exit();
