@@ -274,7 +274,6 @@ class Vipps {
             // we need to mark that the user should be logged in on the *next* click instead.
             // The session should be active in this case, if it isn't, oh well.
             if (!$userid) {
-              $this->log("No user yet, mark session");
               wc()->session->set('_login_order',$orderid);
               return true;
             } else {
@@ -400,8 +399,6 @@ class Vipps {
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
         $raw_post = @file_get_contents( 'php://input' );
-        $this->log("Callback!",'debug');
-        $this->log($raw_post,'debug');
 
         $result = @json_decode($raw_post,true);
         if (!$result) {
@@ -864,7 +861,6 @@ class Vipps {
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $order->get_status();
-        $this->log("Status on arrival is $status",'debug');
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
@@ -873,8 +869,6 @@ class Vipps {
             // This then will check if the callback is in progress - the callback will do exactly the same on its part.
             if (!get_transient('order_callback_'.$orderid)) {
               $trans = 'order_callback_'.$orderid;
-              $this->log(get_transient('order_callback_'.$orderid),'debug');
-              $this->log("Getting status directly from vipps on '$trans'.",'debug');
               $newstatus = $gw->callback_check_order_status($order);
               if ($newstatus) {
                   $status = $newstatus;

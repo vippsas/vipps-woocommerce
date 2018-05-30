@@ -672,15 +672,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             try {
                 $statusdata = $this->api->payment_details($order);
-                $this->log(print_r($statusdata,true));
             } catch (Exception $e) {
                 $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
                 return $oldstatus; 
             }
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
             if (@$statusdata['shippingDetails']) {
-                $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
-                $this->maybe_create_user($order,$result); 
+                $this->set_order_shipping_details($order,$statusdata['shippingDetails'], $statusdata['userDetails']);
+                $this->maybe_create_user($order,$statusdata); 
             } else {
                 $this->log(__("No shipping details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
                 return $oldstatus; 
@@ -838,8 +837,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function handle_callback($result) {
         global $Vipps;
 
-        $this->log("in callback", "debug");
-
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
         $vippsorderid = $result['orderId'];
@@ -884,10 +881,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           return;
         }
 
-        $trans = 'order_callback_'.$orderid;
-        $this->log("Entering critical area with $trans", 'debug');
+        $oldstatus = $order->get_status();
+        if ($oldstatus != 'pending') {
+         // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
+         $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','vipps'));
+         return;
+        }
+ 
+        // Entering critical area, so start with the fake locking mentioned above. IOK 2018-05-30
         set_transient('order_callback_'.$orderid,1, 60);
-        sleep(20); // Simulate really slow servers IOK FIXME DEBUG
 
         // If express checkout, maybe create a customer as well. IOK 2018-05-29 
         $this->maybe_create_user($order,$result); 
@@ -922,7 +924,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps' ));
         }
         $order->save();
-        $this->log("Exiting critical area", 'debug');
         delete_transient('order_callback_',$orderid);
     }
 
@@ -931,7 +932,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function create_partial_order() {
         $cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
         $order = new WC_Order();
-        $order->set_status('PENDING');
+        $order->set_status('pending');
         $order->set_created_via('Vipps express checkout');
         $order->set_payment_method($gw);
 
