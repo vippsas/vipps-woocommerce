@@ -23,6 +23,7 @@ class Vipps {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
         $this->cleanupCallbackSignals();
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
+        add_action('wp_login', array($this, 'wp_login'), 10, 2);
     }
 
     public function admin_init () {
@@ -228,6 +229,7 @@ class Vipps {
     // Login the given user ID - unless somebody is already logged in, in which case, don't.
     private function loginUser($userid) {
         $user = get_user_by('id',$userid);
+        if (!$user) return false;
         wp_set_current_user($user->ID,$user->user_login);
         wp_set_auth_cookie($userid);
         do_action('wp_login', $user->user_login); 
@@ -241,8 +243,61 @@ class Vipps {
         return $this->loginUser($userid);
     }
 
+    // Given an orderid, check to see if we should log the user in. This is done on 'express checkout' when enabled. IOK 2018-05-29
+    // called by template-redirect when on the thank-you page. As the order may not be ready, we may have to store the order ID in session
+    // and log in later when the user navigates. IOK 2018-05-30
+    private function maybe_login_user($orderid) {
+            if (!$orderid) return false;
+            if (is_user_logged_in()) {
+                wc()->session->set('_login_order',0);
+                return false;
+            }
+            $order = new WC_Order($orderid);
+            if (!$order) return false;
+            $express =  $order->get_meta('_vipps_express_checkout');
+            if ($express != 'create') {
+             wc()->session->set('_login_order',0);
+             return false;
+            }
+            $this->log("Express checkout with create option", 'debug');
+
+            $userid = $order->get_meta('_vipps_express_user'); 
+            $this->log("In maybe login user with userid $userid", 'debug');
+            // As the user may have been created async, and the creation process not yet done
+            // we need to mark that the user should be logged in on the *next* click instead.
+            // The session should be active in this case, if it isn't, oh well.
+            if (!$userid) {
+              $this->log("No user yet, mark session");
+              wc()->session->set('_login_order',$orderid);
+              return true;
+            } else {
+              wc()->session->set('_login_order',0);
+              $this->loginUser($userid); 
+              return true;
+            }
+    }
+    public function wp_login($user_login,$user) {
+              // Remove any waiting login actions from the express checkout branch.
+              wc()->session->set('_login_order',0);
+    }
+
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
+        // If this is the/an order-received/thank you page, check to see if we should log the user in. 
+        //  We can only do this if the user actually has been created, and if that hasn't happened - because some servers are 
+        // slow and this is/can be asynchronous, we will store the order inn a sessino. Then login using that when it is ready.
+        // This will happen only for express checkout, when the 'create customers for express checkout' is true. IOK 2018-05-30
+        if (is_order_received_page()){
+            global $wp;
+            $orderid = isset( $wp->query_vars['order-received'] ) ? intval( $wp->query_vars['order-received'] ) : 0;
+            $this->maybe_login_user($orderid);
+            return;
+        }
+        if ($orderid = WC()->session->get('_login_order')) {
+          $this->maybe_login_user($orderid); 
+        }
+
+
         // Handle special callbacks
         $special = $this->is_special_page() ;
         if ($special) return $this->$special();
@@ -338,8 +393,8 @@ class Vipps {
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
         $raw_post = @file_get_contents( 'php://input' );
-        $this->log("Callback!");
-        $this->log($raw_post);
+        $this->log("Callback!",'debug');
+        $this->log($raw_post,'debug');
 
         $result = @json_decode($raw_post,true);
         if (!$result) {

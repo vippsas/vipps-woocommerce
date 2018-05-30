@@ -347,7 +347,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Needed to ensure we have orderinfo
         if ($this->express_checkout) {
-          $order->update_meta_data('_vipps_express_checkout',1);
+          if ('yes' == $this->get_option('expresscreateuser')) {
+           $order->update_meta_data('_vipps_express_checkout','create');
+          } else {
+           $order->update_meta_data('_vipps_express_checkout',1);
+          }
         }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
@@ -648,18 +652,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
         }
 
+$this->log("in call to get status ", "debug");
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
+        // IOK FIXME Correct this
         if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
             $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'vipps'));
             try {
               $statusdata = $this->api->payment_details($order);
+              $this->log(print_r($statusdata,true));
             } catch (Exception $e) {
               $this->log(__("Error getting payment details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
               return $oldstatus; 
             }
+            // This is for orders using express checkout. IOK 2018-05-29
             if (@$statusdata['shippingDetails']) {
               $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
+              $this->maybe_create_user($order,$result); 
             } else {
               $this->log(__("No shipping details from Vipps for express checkout",'vipps') . ": " . $e->getMessage(), 'error');
               return $oldstatus; 
@@ -789,9 +798,33 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
 
+    // Create users on express checkout, maybe. Used by both handle_callback and callback_get_order_status
+    private function maybe_create_user($order,$result) {
+        global $Vipps;
+        $express =  $order->get_meta('_vipps_express_checkout');
+        $this->log("Express checkout", 'debug');
+        $this->log($this->get_option('expresscreateuser'), 'debug');
+        if ($express == 'create') {
+          try {
+           $this->log("Creating vipps user", 'debug');
+           $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']);
+           $this->log("Created vipps user $userid", 'debug');
+           update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
+           $order->set_customer_id($userid); 
+           $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
+           $this->log("Userid $userid", 'debug');
+          } catch (Exception $e) {
+            // can't do much here, so ignore and log the error
+            $this->log(__("Couldn't create Vipps user on express checkout:",'vipps') . ' ' . $e->getMessage(), 'error'); 
+          }
+        }
+    }
+
     // Handle the callback from Vipps.
     public function handle_callback($result) {
         global $Vipps;
+
+$this->log("in callback", "debug");
 
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
@@ -821,21 +854,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
           exit();
         }
-
-        // If express checkout, get the user ID or create the new user, if allowed
-        $express =  $order->get_meta('_vipps_express_checkout');
-        if ($express && $this->get_option('expresscreateuser')) {
-          try {
-           $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']);
-           update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
-           $order->set_customer_id($userid); 
-           $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
-          } catch (Exception $e) {
-            // can't do much here, so ignore and log the error
-            $this->log(__("Couldn't create Vipps user on express checkout:",'vipps') . ' ' . $e->getMessage(), 'error'); 
-          }
-        }
-
+        
+        // If express checkout, maybe create a customer as well. IOK 2018-05-29 
+        $this->maybe_create_user($order,$result); 
 
         $transaction = @$result['transactionInfo'];
         if (!$transaction) {
