@@ -186,13 +186,14 @@ class Vipps {
     // This will, in a callback from express checkout, or Vipps login, create a user as a Vipps user. If the user exists 
     // it will be updated with the relevant information from Vipps. Returns the user ID, not a user object. IOK 2018-05-29
     public function createVippsUser($userdetails,$address) {
+        $this->log(print_r($userdetails, true), 'debug');
+        $this->log(print_r($address , true), 'debug');
+
         if (!$userdetails) return null;
         if (!$address) $address = array();
         $email = $userdetails['email'];
         $user = get_user_by('email',$email);
         $userdata = array();
-        $userdata['first_name'] = $userdetails['firstName'];
-        $userdata['last_name'] = $userdetails['lastName'];
         $userid = 0;
         if ($user) {
             $userid = $user->ID;
@@ -206,23 +207,34 @@ class Vipps {
             }
             $password = wp_generate_password();
             $userid =  wc_create_new_customer($email, $username, $password);
+
+            $userdata['first_name'] = $userdetails['firstName'];
+            $userdata['last_name'] = $userdetails['lastName'];
+            $userdata['display_name'] =  $userdetails['firstName'] . ' ' . $userdetails['lastName'];
+            $userdata['user_email'] =  $email;
         }
         if (is_wp_error($userid)) {
             throw new VippsApiException($userid->get_error_message());
         }
+
+        if (!empty($userdata)) {
+         wp_update_user($userdata);
+        }
+
         // Update all metadata for both new and old users. IOK 2018-05-29
-        wp_update_user($userdata);
         update_user_meta( $userid, "vipps_id", $userdetails['userId']);
         update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
         update_user_meta( $userid, "billing_last_name", $userdetails['lastName']);
         update_user_meta( $userid, "billing_phone", $userdetails['mobileNumber']);
         update_user_meta( $userid, "billing_email", $email);
         update_user_meta( $userid, "billing_address_1", $address['addressLine1']);
+
         if ($address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
         if ($address['city']) update_user_meta( $userid, "billing_city", $address['city']);
         if ($address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
         if ($address['postCode']) update_user_meta( $userid, "billing_postcode", $address['postCode']); // *Both* are used by different calls!
         if ($address['country']) update_user_meta( $userid, "billing_country", $address['country']);
+
         return $userid;
     }
 

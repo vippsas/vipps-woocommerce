@@ -675,7 +675,6 @@ $this->log("in call to get status ", "debug");
             }
         }
 
-
         if ($oldstatus != $newstatus) {
             switch ($newstatus) {
                 case 'on-hold':
@@ -739,16 +738,23 @@ $this->log("in call to get status ", "debug");
     }
 
     public function set_order_shipping_details($order,$shipping, $user) {
+      $address = $shipping['address'];
+
       $firstname = $user['firstName'];
       $lastname = $user['lastName'];
       $phone = $user['mobileNumber'];
       $email = $user['email'];
 
-      $addressline1 = $shipping['addressLine1'];
-      $addressline2 = @$shipping['addressLine2'];
-      $vippscountry = $shipping['country'];
-      $city = $shipping['city'];
-      $postcode= $shipping['zipCode'];
+      $addressline1 = $address['addressLine1'];
+      $addressline2 = @$address['addressLine2'];
+      $vippscountry = $address['country'];
+      $city = $address['city'];
+      $postcode= @$address['zipCode'];
+      if (isset($address['postCode'])) {
+        $postcode= $address['postCode'];
+      } elseif (isset($address['postalCode'])){
+        $postcode= $address['postalCode'];
+      }
 
       $country = '';  
       switch (strtoupper($vippscountry)) { 
@@ -807,7 +813,8 @@ $this->log("in call to get status ", "debug");
         if ($express == 'create') {
           try {
            $this->log("Creating vipps user", 'debug');
-           $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']);
+           $this->log(print_r($result, true), 'debug');
+           $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']['address']);
            $this->log("Created vipps user $userid", 'debug');
            update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
            $order->set_customer_id($userid); 
