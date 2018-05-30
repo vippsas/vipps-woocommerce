@@ -808,18 +808,12 @@ $this->log("in call to get status ", "debug");
     private function maybe_create_user($order,$result) {
         global $Vipps;
         $express =  $order->get_meta('_vipps_express_checkout');
-        $this->log("Express checkout", 'debug');
-        $this->log($this->get_option('expresscreateuser'), 'debug');
         if ($express == 'create') {
           try {
-           $this->log("Creating vipps user", 'debug');
-           $this->log(print_r($result, true), 'debug');
            $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']['address']);
-           $this->log("Created vipps user $userid", 'debug');
            update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
            $order->set_customer_id($userid); 
            $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
-           $this->log("Userid $userid", 'debug');
           } catch (Exception $e) {
             // can't do much here, so ignore and log the error
             $this->log(__("Couldn't create Vipps user on express checkout:",'vipps') . ' ' . $e->getMessage(), 'error'); 
