@@ -174,12 +174,12 @@ class VippsApi {
 
         $express = $this->gateway->express_checkout;
         if ($express) {
-          $data['merchantInfo']['shippingDetailsPrefix'] = $this->gateway->shipping_details_callback_url();
-          if ($authtoken) {
-            $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
-          }
-          $data['merchantInfo']["paymentType"] = "eComm Express Payment";
-          $data['merchantInfo']["consentRemovalPrefix"] = $this->gateway->consent_removal_callback_url();
+            $data['merchantInfo']['shippingDetailsPrefix'] = $this->gateway->shipping_details_callback_url();
+            if ($authtoken) {
+                $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
+            }
+            $data['merchantInfo']["paymentType"] = "eComm Express Payment";
+            $data['merchantInfo']["consentRemovalPrefix"] = $this->gateway->consent_removal_callback_url();
         }
 
         $data['transaction'] = $transaction;

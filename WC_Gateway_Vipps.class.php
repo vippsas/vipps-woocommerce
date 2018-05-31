@@ -11,13 +11,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $method_title = 'Vipps';
     public $title = 'Vipps';
     public $method_description = "";
-    public $apiurl = 'https://apitest.vipps.no';
+    public $apiurl = null;
     public $api = null;
     public $supports = null;
 
     public $express_checkout = 0;
 
     public function __construct() {
+
+        // This can be set in your wp-config.php file. IOK 2018-05-31
+        if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE) {
+            $this->apiurl = 'https://apitest.vipps.no';
+        } else {
+            $this->apiurl = 'https://api.vipps.no';
+        }
+
         $this->method_description = __('Offer Vipps as a payment method', 'vipps');
         $this->method_title = __('Vipps','vipps');
         $this->title = __('Vipps','vipps');
@@ -634,7 +642,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function callback_check_order_status($order) {
         $orderid = $order->get_id();
         $order = new WC_Order($orderid); // Ensure a fresh copy is read.
-      
+
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
         $vippsstatus = $this->get_vipps_order_status($order,'iscallback');
@@ -676,7 +684,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
             $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'vipps'));
-     
+
 
             try {
                 $statusdata = $this->api->payment_details($order);
@@ -885,17 +893,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
-          $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'vipps'));
-          return;
+            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'vipps'));
+            return;
         }
 
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
-         // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-         $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','vipps'));
-         return;
+            // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
+            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','vipps'));
+            return;
         }
- 
+
         // Entering critical area, so start with the fake locking mentioned above. IOK 2018-05-30
         set_transient('order_callback_'.$orderid,1, 60);
 

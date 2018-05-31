@@ -39,6 +39,16 @@ class Vipps {
 
         // Keep admin notices during redirects IOK 2018-05-07
         add_action('admin_notices',array($this,'stored_admin_notices'));
+
+        if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE) {
+            add_action('admin_notices', function() {
+                    $what = __('Vipps is currently in test mode - no real transactions will occur', 'vipps');
+                    echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
+                    });
+        }
+    }
+
+    public function notice_is_test_mode() {
     }
 
     public function admin_menu () {
@@ -83,7 +93,7 @@ class Vipps {
         $linktext = __('Vipps hurtigkasse','vipps');
         $message = $text . "<a href='$url'> " . $linktext . "! </a>";
         wc_print_notice( $message, 'notice' );
-   }
+    }
 
     // Show the express button if reasonable to do so
     public function cart_express_checkout_button() {
