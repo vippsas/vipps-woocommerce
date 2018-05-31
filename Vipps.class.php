@@ -74,7 +74,9 @@ class Vipps {
         if ($gw->get_option('cartexpress') == 'yes') { 
             $url = $this->express_checkout_url();
             $url = wp_nonce_url($url,'express','sec');
-            echo ' <a href="'.$url.'" class="button wc-forward vipps-express-checkout">' . __('Buy now with Vipps!', 'vipps') . '</a>';
+            $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
+            $title = __('Buy now with Vipps!', 'vipps');
+            echo "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
         }
     }
 

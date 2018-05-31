@@ -1,6 +1,29 @@
+a.button.vipps-express-checkout {
+ background-color: #fff;
+ color: transparent;
+ vertical-align: bottom;
+ padding: 0;
+ margin-left:.5em;
+}
+
+.widget_shopping_cart a.button.vipps-express-checkout {
+ margin: 0 auto;
+ color:transparent;!important;
+ background-color: #fff !important;
+ float: none !important;
+ margin-top: .5em !important;
+ margin-bottom: 0 !important;
+ margin-left: auto !important;
+ margin-right: auto !important;
+ min-width: 190px;
+ clear: both;
+
+}
+
 .vippsorange {
  background-color: #fe5b24;
 }
+
 .vippsspinner {
     display: none;
     position:absolute;
