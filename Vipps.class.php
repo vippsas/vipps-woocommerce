@@ -80,6 +80,16 @@ class Vipps {
         }
     }
 
+    // Add an 'login to vipps' thing here if required. IOK 2018-05-31
+    public function before_customer_login_form () {
+            $imgurl = plugins_url('img/logginn.png',__FILE__);
+            $title = __('Log in with Vipps!', 'vipps');
+            $url = $this->login_url();
+?>        
+<div class="vippslogincontainer"><a class="button vipps-login" href="<?php echo $url;?>" title="<?php echo $title;?>"><img border=0 alt="<?php echo $title;?>" src="<?php echo $imgurl;?>"></a></div>
+ <?php
+    }
+
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post) {
@@ -228,11 +238,14 @@ class Vipps {
         update_user_meta( $userid, "billing_email", $email);
         update_user_meta( $userid, "billing_address_1", $address['addressLine1']);
 
-        if ($address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
-        if ($address['city']) update_user_meta( $userid, "billing_city", $address['city']);
-        if ($address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
-        if ($address['postCode']) update_user_meta( $userid, "billing_postcode", $address['postCode']); // *Both* are used by different calls!
-        if ($address['country']) update_user_meta( $userid, "billing_country", $address['country']);
+        // Why this would be neccessary, I couln't say, but here we go. IOK 2018-05-31
+        if ($address['addressLine2'] == 'null') $address['addressLine2'] = '';
+
+        if (@$address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
+        if (@$address['city']) update_user_meta( $userid, "billing_city", $address['city']);
+        if (@$address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
+        if (@$address['postCode']) update_user_meta( $userid, "billing_postcode", $address['postCode']); // *Both* are used by different calls!
+        if (@$address['country']) update_user_meta( $userid, "billing_country", $address['country']);
 
         return $userid;
     }
@@ -344,6 +357,7 @@ class Vipps {
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
+        add_action( 'woocommerce_before_customer_login_form' , array($this, 'before_customer_login_form'));
 
 
         // Special pages and callbacks handled by template_redirect
@@ -755,12 +769,16 @@ class Vipps {
     public function payment_return_url() {
         return $this->make_return_url('vipps-betaling');
     }
+    public function login_url() {
+        return $this->make_return_url('vipps-login');
+    }
     public function login_return_url() {
         return $this->make_return_url('vipps-login-venter');
     }
     public function express_checkout_url() {
         return $this->make_return_url('vipps-express-checkout');
     }
+
     // Return the method in the Vipps
     public function is_special_page() {
         $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login', 'vipps-express-checkout'=>'vipps_express_checkout');

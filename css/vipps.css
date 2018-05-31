@@ -7,7 +7,6 @@ a.button.vipps-express-checkout {
 }
 
 .widget_shopping_cart a.button.vipps-express-checkout {
- margin: 0 auto;
  color:transparent;!important;
  background-color: #fff !important;
  float: none !important;
@@ -17,7 +16,22 @@ a.button.vipps-express-checkout {
  margin-right: auto !important;
  min-width: 190px;
  clear: both;
+}
 
+.vippslogincontainer {
+ width: 100%;
+ text-align: center;
+}
+
+a.button.vipps-login {
+ vertical-align: bottom;
+ max-width: 250px;
+ color:transparent;
+ background-color: #fff;
+ margin: 1em auto;
+ min-width: 190px;
+ clear: both;
+ padding:0;
 }
 
 .vippsorange {
