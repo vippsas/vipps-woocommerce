@@ -10,6 +10,7 @@ class Vipps {
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
     private static $instance = null;
+    private $vippsbuttonadded = 0; // Used to show login-button only once
 
     function __construct() {
     }
@@ -27,6 +28,9 @@ class Vipps {
     }
 
     public function admin_init () {
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
         add_action('save_post', array($this, 'save_order'), 10, 3);
@@ -67,6 +71,20 @@ class Vipps {
         }
     }
 
+    // Show express option on checkout form too
+    public function before_checkout_form_express () {
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        if (!$gw->get_option('cartexpress') == 'yes') return;
+
+        $url = $this->express_checkout_url();
+        $url = wp_nonce_url($url,'express','sec');
+        $text = __('Skip entering your address and just checkout using', 'vipps');
+        $linktext = __('Vipps hurtigkasse','vipps');
+        $message = $text . "<a href='$url'> " . $linktext . "! </a>";
+        wc_print_notice( $message, 'notice' );
+   }
+
     // Show the express button if reasonable to do so
     public function cart_express_checkout_button() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -81,13 +99,22 @@ class Vipps {
     }
 
     // Add an 'login to vipps' thing here if required. IOK 2018-05-31
-    public function before_customer_login_form () {
-            $imgurl = plugins_url('img/logginn.png',__FILE__);
-            $title = __('Log in with Vipps!', 'vipps');
-            $url = $this->login_url();
-?>        
-<div class="vippslogincontainer"><a class="button vipps-login" href="<?php echo $url;?>" title="<?php echo $title;?>"><img border=0 alt="<?php echo $title;?>" src="<?php echo $imgurl;?>"></a></div>
- <?php
+    public function login_with_vipps_button() {
+        // Do this once per instance only.
+        if ($this->vippsbuttonadded) return;
+        $this->vippsbuttonadded = 1;
+        if (is_user_logged_in()) return;
+
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        if ($gw->get_option('vippslogin') != 'yes') return;
+
+        $imgurl = plugins_url('img/logginn.png',__FILE__);
+        $title = __('Log in with Vipps!', 'vipps');
+        $url = $this->login_url();
+        ?>        
+            <div class="vippslogincontainer"><a class="button vipps-login" href="<?php echo $url;?>" title="<?php echo $title;?>"><img border=0 alt="<?php echo $title;?>" src="<?php echo $imgurl;?>"></a></div>
+            <?php
     }
 
 
@@ -194,7 +221,7 @@ class Vipps {
         return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
 
-     
+
     // This will, in a callback from express checkout, or Vipps login, create a user as a Vipps user. If the user exists 
     // it will be updated with the relevant information from Vipps. Returns the user ID, not a user object. IOK 2018-05-29
     public function createVippsUser($userdetails,$address) {
@@ -271,35 +298,35 @@ class Vipps {
     // called by template-redirect when on the thank-you page. As the order may not be ready, we may have to store the order ID in session
     // and log in later when the user navigates. IOK 2018-05-30
     private function maybe_login_user($orderid) {
-            if (!$orderid) return false;
-            if (is_user_logged_in()) {
-                wc()->session->set('_login_order',0);
-                return false;
-            }
-            $order = new WC_Order($orderid);
-            if (!$order) return false;
-            $express =  $order->get_meta('_vipps_express_checkout');
-            if ($express != 'create') {
-             wc()->session->set('_login_order',0);
-             return false;
-            }
+        if (!$orderid) return false;
+        if (is_user_logged_in()) {
+            wc()->session->set('_login_order',0);
+            return false;
+        }
+        $order = new WC_Order($orderid);
+        if (!$order) return false;
+        $express =  $order->get_meta('_vipps_express_checkout');
+        if ($express != 'create') {
+            wc()->session->set('_login_order',0);
+            return false;
+        }
 
-            $userid = $order->get_meta('_vipps_express_user'); 
-            // As the user may have been created async, and the creation process not yet done
-            // we need to mark that the user should be logged in on the *next* click instead.
-            // The session should be active in this case, if it isn't, oh well.
-            if (!$userid) {
-              wc()->session->set('_login_order',$orderid);
-              return true;
-            } else {
-              wc()->session->set('_login_order',0);
-              $this->loginUser($userid); 
-              return true;
-            }
+        $userid = $order->get_meta('_vipps_express_user'); 
+        // As the user may have been created async, and the creation process not yet done
+        // we need to mark that the user should be logged in on the *next* click instead.
+        // The session should be active in this case, if it isn't, oh well.
+        if (!$userid) {
+            wc()->session->set('_login_order',$orderid);
+            return true;
+        } else {
+            wc()->session->set('_login_order',0);
+            $this->loginUser($userid); 
+            return true;
+        }
     }
     public function wp_login($user_login,$user) {
-              // Remove any waiting login actions from the express checkout branch.
-              wc()->session->set('_login_order',0);
+        // Remove any waiting login actions from the express checkout branch.
+        wc()->session->set('_login_order',0);
     }
 
     // Special pages, and some callbacks. IOK 2018-05-18 
@@ -315,7 +342,7 @@ class Vipps {
             return;
         }
         if ($orderid = WC()->session->get('_login_order')) {
-          $this->maybe_login_user($orderid); 
+            $this->maybe_login_user($orderid); 
         }
 
 
@@ -349,6 +376,7 @@ class Vipps {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
+
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
@@ -357,7 +385,9 @@ class Vipps {
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
-        add_action( 'woocommerce_before_customer_login_form' , array($this, 'before_customer_login_form'));
+        add_action( 'woocommerce_before_customer_login_form' , array($this, 'login_with_vipps_button'));
+        add_action('woocommerce_login_form_start' , array($this, 'login_with_vipps_button'));
+        add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
 
 
         // Special pages and callbacks handled by template_redirect
@@ -397,6 +427,7 @@ class Vipps {
         $notices = ob_get_clean();
         set_transient('_vipps_save_admin_notices',$notices, 5*60);
     }
+
 
     public function order_item_add_action_buttons ($order) {
         $pm = $order->get_payment_method();
@@ -800,21 +831,21 @@ class Vipps {
     // Just create a spinner and a overlay.
     public function spinner () {
         ob_start();
-?>
-<div class="vippsoverlay">
-<div id="floatingCirclesG" class="vippsspinner">
-    <div class="f_circleG" id="frotateG_01"></div>
-    <div class="f_circleG" id="frotateG_02"></div>
-    <div class="f_circleG" id="frotateG_03"></div>
-    <div class="f_circleG" id="frotateG_04"></div>
-    <div class="f_circleG" id="frotateG_05"></div>
-    <div class="f_circleG" id="frotateG_06"></div>
-    <div class="f_circleG" id="frotateG_07"></div>
-    <div class="f_circleG" id="frotateG_08"></div>
-</div>
-</div>
-<?php
-        return ob_get_clean(); 
+        ?>
+            <div class="vippsoverlay">
+            <div id="floatingCirclesG" class="vippsspinner">
+            <div class="f_circleG" id="frotateG_01"></div>
+            <div class="f_circleG" id="frotateG_02"></div>
+            <div class="f_circleG" id="frotateG_03"></div>
+            <div class="f_circleG" id="frotateG_04"></div>
+            <div class="f_circleG" id="frotateG_05"></div>
+            <div class="f_circleG" id="frotateG_06"></div>
+            <div class="f_circleG" id="frotateG_07"></div>
+            <div class="f_circleG" id="frotateG_08"></div>
+            </div>
+            </div>
+            <?php
+            return ob_get_clean(); 
     }
 
 
@@ -888,13 +919,13 @@ class Vipps {
             // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
             // This then will check if the callback is in progress - the callback will do exactly the same on its part.
             if (!get_transient('order_callback_'.$orderid)) {
-              $trans = 'order_callback_'.$orderid;
-              $newstatus = $gw->callback_check_order_status($order);
-              if ($newstatus) {
-                  $status = $newstatus;
-              }
+                $trans = 'order_callback_'.$orderid;
+                $newstatus = $gw->callback_check_order_status($order);
+                if ($newstatus) {
+                    $status = $newstatus;
+                }
             } else {
-              $this->log(__('Vipps callback in progress, but not complete on shop return. You probably need to look at server or database performance.','vipps'));
+                $this->log(__('Vipps callback in progress, but not complete on shop return. You probably need to look at server or database performance.','vipps'));
             }
         }
 
@@ -1043,8 +1074,8 @@ class Vipps {
                 $address = $userdetails['address'];
                 $user = $this->createOrLoginVippsUser($userdetails,$address);
                 if ($user) {
-                 // Returns false if e.g. the user is already logged in, in which case, don't go "welcome!". IOK 2018-05-29
-                 wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
+                    // Returns false if e.g. the user is already logged in, in which case, don't go "welcome!". IOK 2018-05-29
+                    wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
                 }
             } catch (Exception $e) {
                 $msg = __('Could not login with Vipps:','vipps') . ' ' . $e->getMessage();

@@ -249,7 +249,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps'),
                         'default'     => 'yes',
+                        ),
+                'vippslogin' => array (
+                        'title'       => __( 'Enable "Login with Vipps"', 'vipps' ),
+                        'label'       => __( 'Enable "Login with Vipps"', 'vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Enable this to allow customers (and yourself!) to log in with Vipps', 'vipps'),
+                        'default'     => 'yes',
                         )
+
 
 
 
