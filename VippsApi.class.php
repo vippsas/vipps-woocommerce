@@ -5,7 +5,7 @@
 
  */
 
-require_once(dirname(__FILE__) . "/exceptions.php");
+require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class VippsApi {
     public $gateway;

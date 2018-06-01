@@ -6,7 +6,6 @@
    Text-domain: vipps
    Version: 0.9
  */
-require_once(dirname(__FILE__) . "/exceptions.php");
 require_once(dirname(__FILE__) . "/Vipps.class.php");
 
 /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */

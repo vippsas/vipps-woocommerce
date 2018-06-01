@@ -4,7 +4,7 @@
    For WP-specific interactions.
 
  */
-require_once(dirname(__FILE__) . "/exceptions.php");
+require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
@@ -386,7 +386,7 @@ class Vipps {
     }
 
     public function plugins_loaded() {
-        load_plugin_textdomain('vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+        $ok = load_plugin_textdomain('vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
@@ -455,7 +455,9 @@ class Vipps {
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         if ($captured && !$capremain) return;
 
-        print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items">' . __('Capture payment','vipps') . '</button>';
+        $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+
+        print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items"><img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','vipps') . '</button>';
         print "<input id=docapture type=hidden name=do_capture_vipps value=0>"; 
     } 
 
