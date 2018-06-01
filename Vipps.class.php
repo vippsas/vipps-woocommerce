@@ -602,9 +602,8 @@ class Vipps {
 
             $method['shippingCost'] = sprintf("%.2f",$cost+$tax);
             $method['shippingMethod'] = $rate->get_label();
-            // It's possible that just the id is enough, but Woo isn't quite clear here and the
-            // constructor for WC_Shipping_Rate takes both. So pack them together with an ; - the id uses the colon. IOK 2018-05-24
-            $method['shippingMethodId'] = $rate->get_method_id() . ";" . $rate->get_id() . ";" . $tax; 
+            // We may not really need the tax stashed here, but just to be sure.
+            $method['shippingMethodId'] = $rate->get_id() . ";" . $tax; 
             $methods[]= $method;
         }
 

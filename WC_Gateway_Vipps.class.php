@@ -815,7 +815,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
         // method name - including any tax.
         $method = $shipping['shippingMethodId'];
-        list ($method,$rate,$tax) = explode(";",$method);
+        list ($rate,$tax) = explode(";",$method);
+        // The method ID is encoded in the rate ID but we apparently must still send it to the WC_Shipping_Rate constructor. IOK 2018-06-01
+        // Unfortunately, Vipps won't accept long enought 'shipingMethodId' for us to actually stash all the information we need. IOK 2018-06-01
+        list ($method,$product) = explode(":",$rate);
         $tax = wc_format_decimal($tax);
         $label = $shipping['shippingMethod'];
         $cost = wc_format_decimal($shipping['shippingCost']); // This is inclusive of tax
