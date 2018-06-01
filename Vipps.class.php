@@ -90,9 +90,14 @@ class Vipps {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
         $text = __('Skip entering your address and just checkout using', 'vipps');
-        $linktext = __('Vipps hurtigkasse','vipps');
-        $message = $text . "<a href='$url'> " . $linktext . "! </a>";
-        wc_print_notice( $message, 'notice' );
+        $linktext = __('express checkout','vipps');
+        $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+
+        $message = $text . "<a href='$url'> <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/> $linktext!</a>";
+        // wc_print_notice( $message, 'notice' ); // Won't use this because we want to add a new class
+        ?>
+        <div class="woocommerce-info vipps-info"><?php echo $message;?></div>
+        <?php
     }
 
     // Show the express button if reasonable to do so

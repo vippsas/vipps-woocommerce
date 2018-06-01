@@ -5,7 +5,6 @@ a.button.vipps-express-checkout {
  padding: 0;
  margin-left:.5em;
 }
-
 .widget_shopping_cart a.button.vipps-express-checkout {
  color:transparent;!important;
  background-color: #fff !important;
@@ -33,6 +32,17 @@ a.button.vipps-login {
  clear: both;
  padding:0;
 }
+
+/* Displays a 'vipps' information banner  */
+.woocommerce-info.vipps-info {
+ background-color: #fe5b24;
+}
+img.inline {
+ height: 2ex;
+ display:inline;
+ vertical-align: text-bottom;
+}
+
 
 .vippsorange {
  background-color: #fe5b24;
