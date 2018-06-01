@@ -386,7 +386,7 @@ class Vipps {
     }
 
     public function plugins_loaded() {
-        load_plugin_textdomain('vipps', false, basename( dirname( __FILE__ ) ));
+        load_plugin_textdomain('vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
@@ -598,16 +598,7 @@ class Vipps {
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
 
-            // Limitations in the  Woo api makes it neccessary to recalculate the tax in this case. IOK 2018-05-25
-            if ($pricesincludetax && $tax>0) {
-                $sum = $tax+$cost;
-                $percentage = $sum/$cost;
-                $exTax = $cost/$percentage; 
-                $tax = sprintf("%.2f", $cost-$exTax);
-            } 
-
-
-            $method['shippingCost'] = sprintf("%.2f",$cost);
+            $method['shippingCost'] = sprintf("%.2f",$cost+$tax);
             $method['shippingMethod'] = $rate->get_label();
             // It's possible that just the id is enough, but Woo isn't quite clear here and the
             // constructor for WC_Shipping_Rate takes both. So pack them together with an ; - the id uses the colon. IOK 2018-05-24
