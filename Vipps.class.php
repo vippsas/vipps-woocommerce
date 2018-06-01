@@ -83,6 +83,7 @@ class Vipps {
 
     // Show express option on checkout form too
     public function before_checkout_form_express () {
+        if (is_user_logged_in()) return;
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         if (!$gw->get_option('cartexpress') == 'yes') return;
