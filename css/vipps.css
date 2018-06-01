@@ -13,8 +13,12 @@ a.button.vipps-express-checkout {
  margin-bottom: 0 !important;
  margin-left: auto !important;
  margin-right: auto !important;
- min-width: 190px;
  clear: both;
+}
+
+/* This is for a plugin I'm doing testing with. */
+.woocommerce-cart-tab-container .widget_shopping_cart a.button.vipps-express-checkout {
+ min-width: 190px;
 }
 
 .vippslogincontainer {
