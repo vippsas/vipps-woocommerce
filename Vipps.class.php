@@ -529,14 +529,6 @@ class Vipps {
         $city = $result['city'];
         $postcode= $result['postCode'];
 
-        $addressid = "0";
-        $addressline1 = "obs";
-        $addressline1 = "obs";
-        $vippscountry = 'NO';
-        $city = 'OSLO';
-        $postcode = '0254';
-
-
         $country = '';  
         switch (strtoupper($vippscountry)) { 
             case 'NORWAY':
