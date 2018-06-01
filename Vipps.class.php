@@ -886,6 +886,7 @@ class Vipps {
         wp_add_inline_script('vipps-express-checkout','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
+        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
 
         $content = $this->spinner();
         $content .= "<form id='vippsdata'>";
@@ -902,7 +903,11 @@ class Vipps {
             return;
         } else {
             $content .= "<p id=waiting>" . __("Ready for express checkout - press the button", 'vipps') . "</p>";
-            $content .= "<p><button id='do-express-checkout' class='button vipps-express-checkout'>". __("Checkout with Vipps",'vipps'). "</button></p>";
+
+            $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
+            $title = __('Buy now with Vipps!', 'vipps');
+
+            $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
             $content .= "<div style='display:none' id='success'></div>";
             $content .= "<div style='display:none' id='failure'></div>";
             $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','vipps')  . "</div>";
