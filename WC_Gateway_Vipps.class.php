@@ -877,6 +877,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
+	// Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
         if (false && $authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
             $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps'), 'error');
             exit();

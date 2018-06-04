@@ -489,6 +489,7 @@ class Vipps {
             $this->log(__("Error during Vipps login callback: unknown request id",'vipps') . ' ' . print_r($result,true));
             return false;
         }
+	// Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
 	if (false) {
           if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
               $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'vipps'));
@@ -518,6 +519,7 @@ class Vipps {
         }
 
         // a small bit of security
+	// Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
         if (false && $order->get_meta('_vipps_authtoken') && $order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
             $this->log("Wrong authtoken on shipping details callback");
             print "-1";
