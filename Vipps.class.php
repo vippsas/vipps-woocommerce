@@ -1024,6 +1024,9 @@ class Vipps {
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
+
+        if (!VIPPSLOGIN || $gw->get_option('vippslogin') != 'yes') return;
+
         $msg = __('Unknown error','vipps');
         $result = null;
         try {
