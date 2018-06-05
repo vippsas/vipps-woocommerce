@@ -50,7 +50,7 @@ class VippsApi {
         } catch (TemporaryVippsAPIException $e) {
             throw $e;
         } catch (Exception $e) {
-            $this->log(__("Could not get Vipps access token",'vipps') .' '. $e->getMessage());
+            $this->log(__("Could not get Vipps access token",'woocommerce-gateway-vipps') .' '. $e->getMessage());
             throw new VippsAPIConfigurationException($e->getMessage());
         }
     }
@@ -65,12 +65,12 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         $headers = array();
@@ -110,12 +110,12 @@ class VippsApi {
         $merch = $this->get_option('merchantSerialNumber');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         $headers = array();
@@ -137,12 +137,12 @@ class VippsApi {
         $prefix = $this->get_option('orderprefix');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         $vippsorderid =  $prefix.($order->get_id());
@@ -164,7 +164,7 @@ class VippsApi {
         $transaction['orderId'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($order->get_total() * 100); 
-        $transaction['transactionText'] = __('Confirm your order from','vipps') . ' ' . home_url(); 
+        $transaction['transactionText'] = __('Confirm your order from','woocommerce-gateway-vipps') . ' ' . home_url(); 
         $transaction['timeStamp'] = $date;
 
 
@@ -199,12 +199,12 @@ class VippsApi {
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $prefix = $this->get_option('orderprefix');
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -229,12 +229,12 @@ class VippsApi {
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -247,7 +247,7 @@ class VippsApi {
         $transaction = array();
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($amount * 100); 
-        $transaction['transactionText'] = __('Order capture for order','vipps') . ' ' . $orderid . ' ' . home_url(); 
+        $transaction['transactionText'] = __('Order capture for order','woocommerce-gateway-vipps') . ' ' . $orderid . ' ' . home_url(); 
 
 
         $data = array();
@@ -270,12 +270,12 @@ class VippsApi {
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -285,7 +285,7 @@ class VippsApi {
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
         $transaction = array();
-        $transaction['transactionText'] = __('Order cancel for order','vipps') . ' ' . $orderid . ' ';
+        $transaction['transactionText'] = __('Order cancel for order','woocommerce-gateway-vipps') . ' ' . $orderid . ' ';
 
         $data = array();
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch);
@@ -307,12 +307,12 @@ class VippsApi {
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -330,7 +330,7 @@ class VippsApi {
         } else { 
             $transaction['amount'] = round($amount * 100); 
         }
-        $transaction['transactionText'] = __('Refund for order','vipps') . ' ' . $orderid;
+        $transaction['transactionText'] = __('Refund for order','woocommerce-gateway-vipps') . ' ' . $orderid;
 
 
         $data = array();
@@ -351,12 +351,12 @@ class VippsApi {
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
         $merch = $this->get_option('merchantSerialNumber');
         if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','vipps'),'error');
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woocommerce-gateway-vipps'),'error');
         }
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
@@ -450,7 +450,7 @@ class VippsApi {
         // This would be an error in the URL or something - or a network outage IOK 2018-04-24
         // we will assume it is temporary (ie, no response).
         if (!$response) {
-            $msg = __('No response from Vipps', 'vipps');
+            $msg = __('No response from Vipps', 'woocommerce-gateway-vipps');
             throw new TemporaryVippsAPIException($msg);
         }
 
