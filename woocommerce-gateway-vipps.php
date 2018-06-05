@@ -3,7 +3,7 @@
    Plugin Name: Woocommerce Vipps Payment Gateway
    Description: Offer Vipps as a payment method for Woocommerce
    Author: Iver Odin Kvello
-   Text-domain: vipps
+   Text-domain: woocommerce-gateway-vipps
    Version: 0.9
  */
 
