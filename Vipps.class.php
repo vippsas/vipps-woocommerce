@@ -123,7 +123,7 @@ class Vipps {
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if ($gw->get_option('vippslogin') != 'yes') return;
+        if (!VIPPSLOGIN || $gw->get_option('vippslogin') != 'yes') return;
 
         $imgurl = plugins_url('img/logginn.png',__FILE__);
         $title = __('Log in with Vipps!', 'vipps');
@@ -478,6 +478,8 @@ class Vipps {
 
     // This if for the callback from Vipps when logging in
     public function vipps_login_callback() {
+        if (!VIPPS_LOGIN) exit();
+
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         if (!$result) {

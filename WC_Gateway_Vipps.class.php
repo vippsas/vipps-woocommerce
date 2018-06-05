@@ -250,27 +250,32 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'vipps'),
                         'default'     => 'yes',
-                        ),
-                'expresscreateuser' => array (
-                        'title'       => __( 'Create new customers on Express Checkout', 'vipps' ),
-                        'label'       => __( 'Create new customers on Express Checkout', 'vipps' ),
-                        'type'        => 'checkbox',
-                        'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps'),
-                        'default'     => 'yes',
-                        ),
-                'vippslogin' => array (
-                        'title'       => __( 'Enable "Login with Vipps"', 'vipps' ),
-                        'label'       => __( 'Enable "Login with Vipps"', 'vipps' ),
-                        'type'        => 'checkbox',
-                        'description' => __('Enable this to allow customers (and yourself!) to log in with Vipps', 'vipps'),
-                        'default'     => 'yes',
                         )
+        );
 
-
-
-
+        // This will be enabled on a later date . IOK 2018-06-05
+        if (VIPPS_LOGIN) {
+            $this->form_fields['expresscreateuser'] = array (
+                    'title'       => __( 'Create new customers on Express Checkout', 'vipps' ),
+                    'label'       => __( 'Create new customers on Express Checkout', 'vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps'),
+                    'default'     => 'yes',
                     );
+            $this->form_fields['vippslogin']  = array (
+                    'title'       => __( 'Enable "Login with Vipps"', 'vipps' ),
+                    'label'       => __( 'Enable "Login with Vipps"', 'vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('Enable this to allow customers (and yourself!) to log in with Vipps', 'vipps'),
+                    'default'     => 'yes',
+                    );
+        }
     }
+
+
+
+
+
 
     // IOK 2018-04-18 utilities for the 'admin notices' interface.
     private function adminwarn($what) {
@@ -363,7 +368,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Needed to ensure we have orderinfo
         if ($this->express_checkout) {
-            if ('yes' == $this->get_option('expresscreateuser')) {
+            if (VIPPS_LOGIN && 'yes' == $this->get_option('expresscreateuser')) {
                 $order->update_meta_data('_vipps_express_checkout','create');
             } else {
                 $order->update_meta_data('_vipps_express_checkout',1);
