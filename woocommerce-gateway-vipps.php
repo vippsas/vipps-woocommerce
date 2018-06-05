@@ -7,6 +7,9 @@
    Version: 0.9
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 // This is currently not available. Affects creation of accounts for express checkout too.
 define('VIPPS_LOGIN', false);
 

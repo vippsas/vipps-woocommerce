@@ -4,7 +4,9 @@
    The parameters are fetched from the containing class. IOK 2018-05-11
 
  */
-
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class VippsApi {

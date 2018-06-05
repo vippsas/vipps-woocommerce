@@ -1,6 +1,8 @@
 <?php
-
 // Delegate class for talking to Vipps
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 require_once(dirname(__FILE__) . "/VippsApi.class.php");
 
 class WC_Gateway_Vipps extends WC_Payment_Gateway {

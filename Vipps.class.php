@@ -4,6 +4,9 @@
    For WP-specific interactions.
 
  */
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {

@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 // This file just creates some exception types for error handling. IOK 2018-04-18
 class VippsAPIException extends Exception {
  public $responsecode = null;
