@@ -123,7 +123,7 @@ class Vipps {
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if (!VIPPSLOGIN || $gw->get_option('vippslogin') != 'yes') return;
+        if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes') return;
 
         $imgurl = plugins_url('img/logginn.png',__FILE__);
         $title = __('Log in with Vipps!', 'vipps');
@@ -1025,7 +1025,11 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
 
-        if (!VIPPSLOGIN || $gw->get_option('vippslogin') != 'yes') return;
+        if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes')  {
+            wc_add_notice(__('Login with Vipps is not available !','vipps'),'notice');
+            wp_redirect(home_url());
+            exit();
+        }
 
         $msg = __('Unknown error','vipps');
         $result = null;
@@ -1052,10 +1056,18 @@ class Vipps {
         header('Cache-Control: post-check=0, pre-check=0', FALSE);
         header('Pragma: no-cache');
 
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+
         $requestid = WC()->session->get('vipps_login_request');
-
-
         $loginrequest = get_transient('_vipps_loginrequests_' . $requestid);
+
+        // When disabled, do not log in. IOK 2018-06-05
+        if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes') {
+          $loginrequest = false;
+        }
+
+
         if (!$loginrequest) {
             $msg = __('Could not login with Vipps:','vipps');
             $this->log(__('Login wait page: Unknown login request','vipps'));

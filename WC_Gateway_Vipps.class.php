@@ -844,7 +844,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     private function maybe_create_user($order,$result) {
         global $Vipps;
         $express =  $order->get_meta('_vipps_express_checkout');
-        if ($express == 'create') {
+        if (VIPPS_LOGIN && $express == 'create') {
             try {
                 $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']['address']);
                 update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
