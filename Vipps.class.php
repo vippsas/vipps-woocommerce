@@ -419,6 +419,9 @@ class Vipps {
         add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
 
+        // Currently this sets Vipps as default payment method if hooked. IOK 2018-06-06 
+        add_action( 'woocommerce_cart_updated', array($this,'woocommerce_cart_updated'));
+
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
@@ -512,13 +515,13 @@ class Vipps {
             $this->log(__("Error during Vipps login callback: unknown request id",'woocommerce-gateway-vipps') . ' ' . print_r($result,true));
             return false;
         }
-	// Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
-	if (false) {
-          if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
-              $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'woocommerce-gateway-vipps'));
-              return false;
-          }
-	}
+        // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
+        if (false) {
+            if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
+                $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'woocommerce-gateway-vipps'));
+                return false;
+            }
+        }
         // Store the request! The waiting-page will do the login/creation. IOK 2018-05-18 
         $this->log(__("Got login callback from",'woocommerce-gateway-vipps') . " " .$result['status']);;
         set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
@@ -527,10 +530,10 @@ class Vipps {
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
     public function country_to_code($countryname) {
-     if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
-     $mapped = @$this->countrymap[strtoupper($countryname)];
-     if ($mapped) return $mapped;
-     return  $countryname;
+        if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
+        $mapped = @$this->countrymap[strtoupper($countryname)];
+        if ($mapped) return $mapped;
+        return  $countryname;
     }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
@@ -551,7 +554,7 @@ class Vipps {
         }
 
         // a small bit of security
-	// Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
+        // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
         if (false && $order->get_meta('_vipps_authtoken') && $order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
             $this->log("Wrong authtoken on shipping details callback");
             print "-1";
@@ -644,6 +647,13 @@ class Vipps {
 
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {
+        // This feature is disabled - no customers are created by express checkout or login-with-vipps,
+        // so there is nothing to do. IOK 2018-06-06
+        if (!VIPPS_LOGIN) {
+            print "1";
+            exit();
+        }
+
         $data = array_reverse(explode("/",$callback));
         if (empty($data)) return false;
         $uid = $data[0];
@@ -678,12 +688,28 @@ class Vipps {
         return $methods;
     }
 
+    // Runs after set_session, so if the session is just created, we'll get called. IOK 2018-06-06
+    public function woocommerce_cart_updated() {
+        $this->maybe_set_vipps_as_default();
+    }
+
     public function activate () {
 
     }
     public function uninstall() {
     }
     public function footer() {
+    }
+
+
+    // If setting is true, use Vipps as default payment. Called by the woocommrece_cart_updated hook. IOK 2018-06-06
+    private function maybe_set_vipps_as_default() {
+        if (WC()->session->get('chosen_payment_method')) return; // User has already chosen payment method, so we're done.
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+        if ($gw->get_option('vippsdefault')) {
+            WC()->session->set('chosen_payment_method', $gw->id);
+        }
     }
 
     // Check order status in the database, and if it is pending for a long time, directly at Vipps
@@ -1086,7 +1112,7 @@ class Vipps {
 
         // When disabled, do not log in. IOK 2018-06-05
         if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes') {
-          $loginrequest = false;
+            $loginrequest = false;
         }
 
 

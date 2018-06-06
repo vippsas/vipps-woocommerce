@@ -1,28 +1,28 @@
 <?php
 /*
-    Delegate class for talking to Vipps, encapsulating all the low-level behaviour and mapping error codes to exceptions
+   Delegate class for talking to Vipps, encapsulating all the low-level behaviour and mapping error codes to exceptions
 
 
-    This file is part of the WordPress plugin Vipps for WooCommerce
-    Copyright (C) 2018 WP Hosting AS
+   This file is part of the WordPress plugin Vipps for WooCommerce
+   Copyright (C) 2018 WP Hosting AS
 
-    Vipps for WooCommerce is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   Vipps for WooCommerce is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    Vipps for WooCommerce is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+   Vipps for WooCommerce is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-*/
+
+
+ */
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
@@ -269,14 +269,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default' => __("Pay with Vipps", 'woocommerce-gateway-vipps')
                         ),
 
-                'cartexpress' => array(
-                        'title'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
-                        'label'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
+                'vippsdefault' => array(
+                        'title'       => __( 'Use Vipps as default payment method on checkout page', 'woocommerce-gateway-vipps' ),
+                        'label'       => __( 'Vipps is default payment method', 'woocommerce-gateway-vipps' ),
                         'type'        => 'checkbox',
-                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woocommerce-gateway-vipps'),
+                        'description' => __('Enable this to use Vipps as the default payment method on the checkout page, regardless of order.', 'woocommerce-gateway-vipps'),
                         'default'     => 'yes',
                         )
-        );
+
+                    'cartexpress' => array(
+                            'title'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
+                            'label'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
+                            'type'        => 'checkbox',
+                            'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woocommerce-gateway-vipps'),
+                            'default'     => 'yes',
+                            )
+                    );
 
         // This will be enabled on a later date . IOK 2018-06-05
         if (VIPPS_LOGIN) {
@@ -900,7 +908,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
-	// Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
+        // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
         if (false && $authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
             $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woocommerce-gateway-vipps'), 'error');
             exit();
