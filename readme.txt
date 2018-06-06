@@ -5,8 +5,10 @@ Requires at least: 4.7
 Tested up to: 4.9.6
 Stable tag: 4.3
 Requires PHP: 5.6
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+WC requires at least: 3.3.4
+WC tested up to: 3.4.2
+License: AGPLv3 or later
+License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
 Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
 
