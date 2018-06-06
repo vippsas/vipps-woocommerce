@@ -275,15 +275,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('Enable this to use Vipps as the default payment method on the checkout page, regardless of order.', 'woocommerce-gateway-vipps'),
                         'default'     => 'yes',
-                        )
+                        ),
 
-                    'cartexpress' => array(
-                            'title'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
-                            'label'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
-                            'type'        => 'checkbox',
-                            'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woocommerce-gateway-vipps'),
-                            'default'     => 'yes',
-                            )
+                'cartexpress' => array(
+                        'title'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
+                        'label'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woocommerce-gateway-vipps'),
+                        'default'     => 'yes',
+                        )
                     );
 
         // This will be enabled on a later date . IOK 2018-06-05
@@ -1006,21 +1006,57 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $orderid;
     }
 
+    // Using this internally to allow the 'enable' button or not. Checks SSL in addition to currency,
+    // is valid_for_use can in principle run on a http version of the page; we only need to have https accessible for callbacks,
+    // but if so, admin should definitely be HTTPS so we just check that. IOK 2018-06-06
+    public function can_be_activated () {
+        $currency = get_woocommerce_currency(); 
+        if ($currency != 'NOK') return false;
+        if (!is_ssl() && !preg_match("!^https!i",home_url())) return false;
+        return true;
+    }
+
+    // Used by the ajax thing that 'sets activated' - checks that it can be activated and that all keys are present. IOK 2018-06-06
+    function needs_setup() {
+        if (!$this->can_be_activated()) return true;
+        $this->log("Can be activated");
+        $required = array( 'merchantSerialNumber','clientId', 'secret', 'Ocp_Apim_Key_AccessToken', 'Ocp_Apim_Key_eCommerce'); 
+        foreach ($required as $key) {
+            if (!$this->get_option($key)) return true;
+        }
+        $this->log("activated");
+        return false;
+    }
 
     public function admin_options() {
+        if (!$this->can_be_activated()) {
+            $this->update_option( 'enabled', 'no' );
+        }
         ?>
             <h2><?php _e('Vipps','woocommerce-gateway-vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'woocommerce-gateway-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
-            <?php if (!$this->is_valid_for_use()): ?>
-            <div class="inline error">
-            <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
-            <?php _e( 'Vipps does not support your currency.', 'woocommerce-gateway-vipps' ); ?>
-            </p>
-            </div>
-            <?php endif; ?>
-            <table class="form-table">
-            <?php $this->generate_settings_html(); ?>
-            </table> <?php
+
+            <?php 
+            $currency = get_woocommerce_currency(); 
+        if ($currency != 'NOK'): 
+            ?> 
+                <div class="inline error">
+                <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
+                <?php _e( 'Vipps does not support your currency.', 'woocommerce-gateway-vipps' ); ?>
+                </p>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!is_ssl() &&  !preg_match("!^https!i",home_url())): ?>
+                <div class="inline error">
+                <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
+                <?php _e( 'Vipps requires that your site uses HTTPS.', 'woocommerce-gateway-vipps' ); ?>
+                </p>
+                </div>
+                <?php endif; ?>
+                <table class="form-table">
+                <?php $this->generate_settings_html(); ?>
+                </table> <?php
     }
 
     // Validate/mangle input fields 
@@ -1031,7 +1067,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
     function validate_checkbox_field($key,$value) {
         if ($key != 'enabled') return parent::validate_checkbox_field($key,$value);
-        if ($this->is_valid_for_use()) return 'yes';
+        if ($this->can_be_activated()) return 'yes';
         return 'no';
     }
 
