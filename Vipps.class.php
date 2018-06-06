@@ -3,7 +3,7 @@
    This class is for hooks and plugin managent, and is instantiated as a singleton and set globally as $Vipps. IOK 2018-02-07
    For WP-specific interactions.
 
-    This file is part of the WordPress plugin Woocommerce Vipps Payment Gateway
+    This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
     Article Adopter is free software: you can redistribute it and/or modify

@@ -1,7 +1,7 @@
 <?php
 /* This file just creates some exception types for error handling. IOK 2018-04-18
 
-    This file is part of the WordPress plugin Woocommerce Vipps Payment Gateway
+    This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
     Article Adopter is free software: you can redistribute it and/or modify

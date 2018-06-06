@@ -1,12 +1,17 @@
 <?php
 /*
-   Plugin Name: Woocommerce Vipps Payment Gateway
-   Description: Offer Vipps as a payment method for Woocommerce
-   Author: Iver Odin Kvello
+   Plugin Name: Vipps for WooCommerce
+   Plugin URI: https://wordpress.org/woocommerce-gateway-vipps
+   Description: Offer Vipps as a payment method for WooCommerce
+   Author: Iver Odin Kvello, Pål Martin Bakken
+   Author URI: https://www.wp-hosting.no/
    Text-domain: woocommerce-gateway-vipps
+   Domain Path: /languages
    Version: 0.9
+   License: AGPLv3 or later
+   License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
-    This file is part of the WordPress plugin Woocommerce Vipps Payment Gateway
+    This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
     Article Adopter is free software: you can redistribute it and/or modify

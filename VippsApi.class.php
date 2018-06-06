@@ -3,7 +3,7 @@
    This is the VippsApi  class, a delegate in WC_Payment_Gateway that handles the actual communication with Vipps.
    The parameters are fetched from the containing class. IOK 2018-05-11
 
-    This file is part of the WordPress plugin Woocommerce Vipps Payment Gateway
+    This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
     Article Adopter is free software: you can redistribute it and/or modify

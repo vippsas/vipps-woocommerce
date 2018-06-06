@@ -3,7 +3,7 @@
     Delegate class for talking to Vipps, encapsulating all the low-level behaviour and mapping error codes to exceptions
 
 
-    This file is part of the WordPress plugin Woocommerce Vipps Payment Gateway
+    This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
     Article Adopter is free software: you can redistribute it and/or modify
