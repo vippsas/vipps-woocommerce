@@ -1,5 +1,28 @@
 <?php
-// Delegate class for talking to Vipps
+/*
+    Delegate class for talking to Vipps, encapsulating all the low-level behaviour and mapping error codes to exceptions
+
+
+    This file is part of the WordPress plugin Woocommerce Vipps Payment Gateway
+    Copyright (C) 2018 WP Hosting AS
+
+    Article Adopter is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Article Adopter is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+
+*/
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
