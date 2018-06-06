@@ -6,12 +6,12 @@
     This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
-    Article Adopter is free software: you can redistribute it and/or modify
+    Vipps for WooCommerce is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Article Adopter is distributed in the hope that it will be useful,
+    Vipps for WooCommerce is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
@@ -31,6 +31,7 @@ class Vipps {
     private $callbackDirname = 'wc-vipps-status';
     private static $instance = null;
     private $vippsbuttonadded = 0; // Used to show login-button only once
+    private $countrymap = null;
 
     function __construct() {
     }
@@ -523,6 +524,15 @@ class Vipps {
         set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
         exit();
     }
+
+    // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
+    public function country_to_code($countryname) {
+     if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
+     $mapped = @$this->countrymap[strtoupper($countryname)];
+     if ($mapped) return $mapped;
+     return  $countryname;
+    }
+
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
         $raw_post = @file_get_contents( 'php://input' );
@@ -556,16 +566,8 @@ class Vipps {
         $vippscountry = $result['country'];
         $city = $result['city'];
         $postcode= $result['postCode'];
+        $country = $this->country_to_code($vippscountry);
 
-        $country = '';  
-        switch (strtoupper($vippscountry)) { 
-            case 'NORWAY':
-            case 'NORGE':
-            case 'NOREG':
-            case 'NO':
-                $country = 'NO';
-                break;
-        }
         $order->set_billing_address_1($addressline1);
         $order->set_billing_address_2($addressline2);
         $order->set_billing_city($city);

@@ -6,12 +6,12 @@
     This file is part of the WordPress plugin Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
-    Article Adopter is free software: you can redistribute it and/or modify
+    Vipps for WooCommerce is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Article Adopter is distributed in the hope that it will be useful,
+    Vipps for WooCommerce is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.
@@ -796,6 +796,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user) {
+        global $Vipps;
         $address = $shipping['address'];
 
         $firstname = $user['firstName'];
@@ -813,15 +814,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } elseif (isset($address['postalCode'])){
             $postcode= $address['postalCode'];
         }
-
-        $country = '';  
-        switch (strtoupper($vippscountry)) { 
-            case 'NORWAY':
-            case 'NORGE':
-            case 'NOREG':
-                $country = 'NO';
-                break;
-        }
+        $country = $Vipps->country_to_code($vippscountry);
 
         $order->set_billing_email($email);
         $order->set_billing_phone($phone);
