@@ -400,7 +400,8 @@ class Vipps {
             if (@$_REQUEST['vipps-consent-removal']) return @$_REQUEST['callback'];
             return false;
         }
-        if (preg_match("!^/vipps-consent-removal/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
+        // FIXME add home_url() path to match IOK 2018-06-06
+        if (preg_match("!/vipps-consent-removal/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
             return @$_REQUEST['callback'];
         }
         return false;
@@ -491,7 +492,7 @@ class Vipps {
 
         $result = @json_decode($raw_post,true);
         if (!$result) {
-            $this->log(__("Did not understand callback from Vipps:",'woocommerce-gateway-vipps') . " " .  $raw_post);
+            $this->log(__("Did not understand callback from Vipps:",'woocommerce-gateway-vipps') . " " .  $raw_post, 'error');
             return false;
         }
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
