@@ -335,7 +335,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true; 
     }
 
-    // IOK 2018-04-20 for this plugin we will simply return true and add the 'Klarna' form to the receipt apage
+    // IOK 2018-04-20 Initiate payment at Vipps and redirect to the Vipps payment terminal.
     public function process_payment ($order_id) {
         global $woocommerce, $Vipps;
         if (!$order_id) return false;
@@ -433,18 +433,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return array('result'=>'success','redirect'=>$url);
     }
 
-    // Customer not logged in, shipping not selected etc - express checkout support!
-    public function process_express_checkout_payment($prodid=null,$variation_id=null) {
-        $product = null;
-        $variation = null;
-        if ($variation_id) {
-            $product = wc_get_product($variation_id);
-            $product = $variation->get_variation_attributes();
-        } else {
-            $product = wc_get_product($prodid);
-        }
-        if ($prodid) WC()->cart->add_to_cart($prodid, 1, $variation_id, $variation);
-    }
 
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
@@ -1019,12 +1007,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Used by the ajax thing that 'sets activated' - checks that it can be activated and that all keys are present. IOK 2018-06-06
     function needs_setup() {
         if (!$this->can_be_activated()) return true;
-        $this->log("Can be activated");
         $required = array( 'merchantSerialNumber','clientId', 'secret', 'Ocp_Apim_Key_AccessToken', 'Ocp_Apim_Key_eCommerce'); 
         foreach ($required as $key) {
             if (!$this->get_option($key)) return true;
         }
-        $this->log("activated");
         return false;
     }
 

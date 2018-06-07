@@ -10,7 +10,7 @@ WC tested up to: 3.4.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
-Here is a short description of the plugin.  This should be no more than 150 characters.  No markup here.
+Vipps Express Checkout and Vipps Checkout.
 
 == Description ==
 

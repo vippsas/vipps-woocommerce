@@ -870,13 +870,14 @@ class Vipps {
         $method = null;
         if ( get_option('permalink_structure')) {
             foreach($specials as $special=>$specialmethod) {
-                if (preg_match("!^/$special/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
+                // IOK 2018-06-07 Change to add any prefix from home-url for better matching IOK 2018-06-07
+                if (preg_match("!/$special/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
                     $method = $specialmethod; break;
                 }
             }
         } else {
             if (isset($_GET['VippsSpecialPage'])) {
-                $method = array_search($_GET['VippsSpecialPage'], $specials);
+                $method = @$specials[$_GET['VippsSpecialPage']];
             }
         }
         return $method;
