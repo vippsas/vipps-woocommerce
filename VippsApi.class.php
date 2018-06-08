@@ -392,7 +392,7 @@ class VippsApi {
     }
 
 
-    // Conventently call Vipps IOK 2018-04-18
+    // Conveniently call Vipps IOK 2018-04-18
     private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){
         $server=$this->gateway->apiurl;
         $url = $server . "/" . $command; 
