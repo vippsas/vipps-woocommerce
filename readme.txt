@@ -13,19 +13,19 @@ License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
 == Description ==
 
-* Vipps Express Checkout and Vipps Payment for WooCommerce. 2.9 millon norwegians use Vipps. Give them a fast and familiar shopping experience. *
+* Official Vipps Express Checkout and Payment for WooCommerce. 2.9 millon norwegians use Vipps. Give them a fast and familiar shopping experience. *
 
 This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
 
-With this plugin you can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for you customer and easy for you.
+You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
 === Vipps Express Checkout ===
-When you enable the Express Checkout, your customers can choose between the regular WooCommerce checkout, or to go directly to Vipps. If they choose Vipps, they will only have to submit their phone number, and the rest of the checkout is in the Vipps app.
+When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
 
-Since we know who they are, they will not have to enter all their personal information. The customer just accepts the payment, and we send the delivery address back to the store. Easy, fast and secure.
+Since we know who they are, they don't have to enter all their personal information. The customer just choose the shipping method and accepts the payment. We send all the necessary info back to the store. Easy, fast and secure.
 
 === Vipps Payment ===
-When enable this plugin, your customers will be able to choose Vipps as a payment method in the checkout along all your other payment methods. No need to go via a third party payment method. If your customer choose to use Vipps, she is asked to enter her phone number in the browser and confirm the payment in the Vipps app.
+When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app.
 
 === How to get started ===
 * [Sign up to use Vipps på Nett](https://www.vipps.no/bedrift)
@@ -58,6 +58,4 @@ For issues with your WooCommerce installation you should use the support forum h
 
 = 1.0 =
 * Initial release.
-
-
 
