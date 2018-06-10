@@ -10,116 +10,54 @@ WC tested up to: 3.4.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
-Vipps Express Checkout and Vipps Checkout.
 
 == Description ==
 
+* Vipps Express Checkout and Vipps Payment for WooCommerce. 2.9 millon norwegians use Vipps. Give them a fast and familiar shopping experience. *
 
-# Documentation
+This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
 
-$specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login', 'vipps-express-checkout'=>'vipps_express_checkout');
+With this plugin you can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for you customer and easy for you.
 
+=== Vipps Express Checkout ===
+When you enable the Express Checkout, your customers can choose between the regular WooCommerce checkout, or to go directly to Vipps. If they choose Vipps, they will only have to submit their phone number, and the rest of the checkout is in the Vipps app.
 
+Since we know who they are, they will not have to enter all their personal information. The customer just accepts the payment, and we send the delivery address back to the store. Easy, fast and secure.
 
-This is the long description.  No limit, and you can use Markdown (as well as in the following sections).
+=== Vipps Payment ===
+When enable this plugin, your customers will be able to choose Vipps as a payment method in the checkout along all your other payment methods. No need to go via a third party payment method. If your customer choose to use Vipps, she is asked to enter her phone number in the browser and confirm the payment in the Vipps app.
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-Markdown parsed.
+=== How to get started ===
+* [Sign up to use Vipps på Nett](https://www.vipps.no/bedrift)
+* Install the plugin
+* Configure the plugin
 
-A few notes about the sections above:
-
-*   "Contributors" is a comma separated list of wordpress.org usernames
-*   "Tags" is a comma separated list of tags that apply to the plugin
-*   "Requires at least" is the lowest version that the plugin will work on
-*   "Tested up to" is the highest version that you've *successfully used to test the plugin*. Note that it might work on
-higher versions... this is just the highest one you've verified.
-*   Stable tag should indicate the Subversion "tag" of the latest stable version, or "trunk," if you use `/trunk/` for
-stable.
-
-    Note that the `readme.txt` of the stable tag is the one that is considered the defining one for the plugin, so
-if the `/trunk/readme.txt` file says that the stable tag is `4.3`, then it is `/tags/4.3/readme.txt` that'll be used
-for displaying information about the plugin.  In this situation, the only thing considered from the trunk `readme.txt`
-is the stable tag pointer.  Thus, if you develop in trunk, you can update the trunk `readme.txt` to reflect changes in
-your in-development version, without having that information incorrectly disclosed about the current stable version
-that lacks those changes -- as long as the trunk's `readme.txt` points to the correct stable tag.
-
-    If no stable tag is provided, it is assumed that trunk is stable, but you should specify "trunk" if that's where
-you put the stable version, in order to eliminate any doubt.
 
 == Installation ==
-
-This section describes how to install the plugin and get it working.
-
-e.g.
-
-1. Upload the plugin files to the `/wp-content/plugins/plugin-name` directory, or install the plugin through the WordPress plugins screen directly.
-1. Activate the plugin through the 'Plugins' screen in WordPress
-1. Use the Settings->Plugin Name screen to configure the plugin
-1. (Make your instructions match the desired user flow for activating and installing your plugin. Include any steps that might be needed for explanatory purposes)
+1. Upload the plugin files to the `/wp-content/plugins/` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
+4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
 
 
 == Frequently Asked Questions ==
 
-= A question that someone might have =
+= In which countries can I use Vipps? =
+You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
 
-An answer to that question.
+= How can I get help if I have any issues? =
+For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
 
-= What about foo bar? =
+= What are the requirements? =
+* WooCommerce 3.6 or newer is required
+* PHP 5.6 or higher is required.
+* An SSL Certificate is required.
 
-Answer to foo bar dilemma.
-
-== Screenshots ==
-
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif). Note that the screenshot is taken from
-the /assets directory or the directory that contains the stable readme.txt (tags or trunk). Screenshots in the /assets
-directory take precedence. For example, `/assets/screenshot-1.png` would win over `/tags/4.3/screenshot-1.png`
-(or jpg, jpeg, gif).
-2. This is the second screen shot
 
 == Changelog ==
 
 = 1.0 =
-* A change since the previous version.
-* Another change.
+* Initial release.
 
-= 0.5 =
-* List versions from most recent at top to oldest at bottom.
 
-== Upgrade Notice ==
 
-= 1.0 =
-Upgrade notices describe the reason a user should upgrade.  No more than 300 characters.
-
-= 0.5 =
-This version fixes a security related bug.  Upgrade immediately.
-
-== Arbitrary section ==
-
-You may provide arbitrary sections, in the same format as the ones above.  This may be of use for extremely complicated
-plugins where more information needs to be conveyed that doesn't fit into the categories of "description" or
-"installation."  Arbitrary sections will be shown below the built-in sections outlined above.
-
-== A brief Markdown Example ==
-
-Ordered list:
-
-1. Some feature
-1. Another feature
-1. Something else about the plugin
-
-Unordered list:
-
-* something
-* something else
-* third thing
-
-Here's a link to [WordPress](http://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
-Titles are optional, naturally.
-
-[markdown syntax]: http://daringfireball.net/projects/markdown/syntax
-            "Markdown is what the parser uses to process much of the readme file"
-
-Markdown uses email style notation for blockquotes and I've been told:
-> Asterisks for *emphasis*. Double it up  for **strong**.
-
-`<?php code(); // goes in backticks ?>`
