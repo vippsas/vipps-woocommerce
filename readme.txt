@@ -1,5 +1,5 @@
 === Vipps for WooCommerce ===
-Contributors: iverok, pmbakken
+Contributors: wphostingdev, iverok, pmbakken
 Tags: woocommerce, vipps
 Requires at least: 4.7
 Tested up to: 4.9.6

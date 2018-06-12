@@ -3,7 +3,7 @@
    Plugin Name: Vipps for WooCommerce
    Plugin URI: https://wordpress.org/woocommerce-gateway-vipps
    Description: Offer Vipps as a payment method for WooCommerce
-   Author: Iver Odin Kvello, Pål Martin Bakken
+   Author: WP-Hosting
    Author URI: https://www.wp-hosting.no/
    Text-domain: woocommerce-gateway-vipps
    Domain Path: /languages
