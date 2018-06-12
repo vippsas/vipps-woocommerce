@@ -49,7 +49,7 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
 
 = What are the requirements? =
-* WooCommerce 3.6 or newer is required
+* WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
 

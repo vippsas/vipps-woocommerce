@@ -51,9 +51,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->apiurl = 'https://api.vipps.no';
         }
 
-        $this->method_description = __('Offer Vipps as a payment method', 'woocommerce-gateway-vipps');
-        $this->method_title = __('Vipps','woocommerce-gateway-vipps');
-        $this->title = __('Vipps','woocommerce-gateway-vipps');
+        $this->method_description = __('Offer Vipps as a payment method', 'vipps-for-woocommerce');
+        $this->method_title = __('Vipps','vipps-for-woocommerce');
+        $this->title = __('Vipps','vipps-for-woocommerce');
         $this->icon = plugins_url('img/vipps_logo_rgb.png',__FILE__);
         $this->init_form_fields();
         $this->init_settings();
@@ -125,7 +125,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } 
         if (!$ok) {
             // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
-            $msg = __("Could not cancel Vipps payment", 'woocommerce-gateway-vipps');
+            $msg = __("Could not cancel Vipps payment", 'vipps-for-woocommerce');
             $this->adminerr($msg);
             $order->save();
             global $Vipps;
@@ -149,18 +149,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $ok = $this->refund_payment($order,$to_refund,'exact');
         } catch (TemporaryVippsAPIException $e) {
-            $this->adminerr(__('Temporary error when refunding payment through Vipps - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woocommerce-gateway-vipps'));
+            $this->adminerr(__('Temporary error when refunding payment through Vipps - ensure order is refunded manually, or reset the order to "Processing" and try again', 'vipps-for-woocommerce'));
             $this->adminerr($e->getMessage());
             global $Vipps;
             $Vipps->store_admin_notices();
             return false;
         } catch (Exception $e) {
-            $order->add_order_note(__("Error when refunding payment through Vipps:", 'woocommerce-gateway-vipps') . ' ' . $e->getMessage());
+            $order->add_order_note(__("Error when refunding payment through Vipps:", 'vipps-for-woocommerce') . ' ' . $e->getMessage());
             $order->save();
             $this->adminerr($e->getMessage());
         }
         if (!$ok) {
-            $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'woocommerce-gateway-vipps');
+            $msg = __('Could not refund payment through Vipps - ensure the refund is handled manually!', 'vipps-for-woocommerce');
             $this->adminerr($msg);
             $order->add_order_note($msg);
             // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
@@ -179,26 +179,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
         if (!$captured) {
-            return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'woocommerce-gateway-vipps'));
+            return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'vipps-for-woocommerce'));
         }
         if ($amount*100 > $to_refund) {
-            return new WP_Error('Vipps', __("Cannot refund through Vipps - the refund amount is too large.", 'woocommerce-gateway-vipps'));
+            return new WP_Error('Vipps', __("Cannot refund through Vipps - the refund amount is too large.", 'vipps-for-woocommerce'));
         }
         $ok = 0;
         try {
             $ok = $this->refund_payment($order,$amount);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not refund Vipps payment', 'woocommerce-gateway-vipps') . ' ' .$e->getMessage(),'error');
-            return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','woocommerce-gateway-vipps') . ' ' . $e->getMessage());
+            $this->log(__('Could not refund Vipps payment', 'vipps-for-woocommerce') . ' ' .$e->getMessage(),'error');
+            return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','vipps-for-woocommerce') . ' ' . $e->getMessage());
         } catch (Exception $e) {
-            $msg = __('Could not refund Vipps payment','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not refund Vipps payment','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $order->add_order_note($msg);
             $this->log($msg,'error');
             return new WP_Error('Vipps',$msg);
         }
 
         if ($ok) {
-            $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'woocommerce-gateway-vipps') . ' ' . $reason);
+            $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'vipps-for-woocommerce') . ' ' . $reason);
         } 
         return $ok;
     }
@@ -208,51 +208,51 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->form_fields = array(
                 'enabled' => array(
                     'title'       => __( 'Enable/Disable', 'woocommerce' ),
-                    'label'       => __( 'Enable Vipps', 'woocommerce-gateway-vipps' ),
+                    'label'       => __( 'Enable Vipps', 'vipps-for-woocommerce' ),
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no',
                     ),
                 'orderprefix' => array(
-                    'title' => __('Order-id Prefix', 'woocommerce-gateway-vipps'),
-                    'label'       => __( 'Order-id Prefix', 'woocommerce-gateway-vipps' ),
+                    'title' => __('Order-id Prefix', 'vipps-for-woocommerce'),
+                    'label'       => __( 'Order-id Prefix', 'vipps-for-woocommerce' ),
                     'type'        => 'string',
-                    'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woocommerce-gateway-vipps'),
+                    'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','vipps-for-woocommerce'),
                     'default'     => 'Woo',
                     ),
                 'merchantSerialNumber' => array(
-                    'title' => __('Merchant Serial Number', 'woocommerce-gateway-vipps'),
-                    'label'       => __( 'Merchant Serial Number', 'woocommerce-gateway-vipps' ),
+                    'title' => __('Merchant Serial Number', 'vipps-for-woocommerce'),
+                    'label'       => __( 'Merchant Serial Number', 'vipps-for-woocommerce' ),
                     'type'        => 'number',
-                    'description' => __('Your merchant serial number from the Developer Portal - Applications tab, Saleunit Serial Number','woocommerce-gateway-vipps'),
+                    'description' => __('Your merchant serial number from the Developer Portal - Applications tab, Saleunit Serial Number','vipps-for-woocommerce'),
                     'default'     => '',
                     ),
                 'clientId' => array(
-                        'title' => __('Client Id', 'woocommerce-gateway-vipps'),
-                        'label'       => __( 'Client Id', 'woocommerce-gateway-vipps' ),
+                        'title' => __('Client Id', 'vipps-for-woocommerce'),
+                        'label'       => __( 'Client Id', 'vipps-for-woocommerce' ),
                         'type'        => 'password',
-                        'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','woocommerce-gateway-vipps'),
+                        'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','vipps-for-woocommerce'),
                         'default'     => '',
                         ),
                 'secret' => array(
-                        'title' => __('Application Secret', 'woocommerce-gateway-vipps'),
-                        'label'       => __( 'Application Secret', 'woocommerce-gateway-vipps' ),
+                        'title' => __('Application Secret', 'vipps-for-woocommerce'),
+                        'label'       => __( 'Application Secret', 'vipps-for-woocommerce' ),
                         'type'        => 'password',
-                        'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','woocommerce-gateway-vipps'),
+                        'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','vipps-for-woocommerce'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_AccessToken' => array(
-                        'title' => __('Subscription key for Access Token', 'woocommerce-gateway-vipps'),
-                        'label'       => __( 'Subscription key for Access Token', 'woocommerce-gateway-vipps' ),
+                        'title' => __('Subscription key for Access Token', 'vipps-for-woocommerce'),
+                        'label'       => __( 'Subscription key for Access Token', 'vipps-for-woocommerce' ),
                         'type'        => 'password',
-                        'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','woocommerce-gateway-vipps'),
+                        'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','vipps-for-woocommerce'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_eCommerce' => array(
-                        'title' => __('Subscription key for eCommerce', 'woocommerce-gateway-vipps'),
-                        'label'       => __( 'Subscription key for eCommerce', 'woocommerce-gateway-vipps' ),
+                        'title' => __('Subscription key for eCommerce', 'vipps-for-woocommerce'),
+                        'label'       => __( 'Subscription key for eCommerce', 'vipps-for-woocommerce' ),
                         'type'        => 'password',
-                        'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','woocommerce-gateway-vipps'),
+                        'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','vipps-for-woocommerce'),
                         'default'     => '',
                         ),
 
@@ -260,28 +260,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title' => __( 'Title', 'woocommerce' ),
                         'type' => 'text',
                         'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
-                        'default' => __('Vipps','woocommerce-gateway-vipps')
+                        'default' => __('Vipps','vipps-for-woocommerce')
                         ),
                 'description' => array(
                         'title' => __( 'Description', 'woocommerce' ),
                         'type' => 'textarea',
                         'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce' ),
-                        'default' => __("Pay with Vipps", 'woocommerce-gateway-vipps')
+                        'default' => __("Pay with Vipps", 'vipps-for-woocommerce')
                         ),
 
                 'vippsdefault' => array(
-                        'title'       => __( 'Use Vipps as default payment method on checkout page', 'woocommerce-gateway-vipps' ),
-                        'label'       => __( 'Vipps is default payment method', 'woocommerce-gateway-vipps' ),
+                        'title'       => __( 'Use Vipps as default payment method on checkout page', 'vipps-for-woocommerce' ),
+                        'label'       => __( 'Vipps is default payment method', 'vipps-for-woocommerce' ),
                         'type'        => 'checkbox',
-                        'description' => __('Enable this to use Vipps as the default payment method on the checkout page, regardless of order.', 'woocommerce-gateway-vipps'),
+                        'description' => __('Enable this to use Vipps as the default payment method on the checkout page, regardless of order.', 'vipps-for-woocommerce'),
                         'default'     => 'yes',
                         ),
 
                 'cartexpress' => array(
-                        'title'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
-                        'label'       => __( 'Enable Express Checkout in cart', 'woocommerce-gateway-vipps' ),
+                        'title'       => __( 'Enable Express Checkout in cart', 'vipps-for-woocommerce' ),
+                        'label'       => __( 'Enable Express Checkout in cart', 'vipps-for-woocommerce' ),
                         'type'        => 'checkbox',
-                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woocommerce-gateway-vipps'),
+                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'vipps-for-woocommerce'),
                         'default'     => 'yes',
                         )
                     );
@@ -289,17 +289,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This will be enabled on a later date . IOK 2018-06-05
         if (VIPPS_LOGIN) {
             $this->form_fields['expresscreateuser'] = array (
-                    'title'       => __( 'Create new customers on Express Checkout', 'woocommerce-gateway-vipps' ),
-                    'label'       => __( 'Create new customers on Express Checkout', 'woocommerce-gateway-vipps' ),
+                    'title'       => __( 'Create new customers on Express Checkout', 'vipps-for-woocommerce' ),
+                    'label'       => __( 'Create new customers on Express Checkout', 'vipps-for-woocommerce' ),
                     'type'        => 'checkbox',
-                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'woocommerce-gateway-vipps'),
+                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'vipps-for-woocommerce'),
                     'default'     => 'yes',
                     );
             $this->form_fields['vippslogin']  = array (
-                    'title'       => __( 'Enable "Login with Vipps"', 'woocommerce-gateway-vipps' ),
-                    'label'       => __( 'Enable "Login with Vipps"', 'woocommerce-gateway-vipps' ),
+                    'title'       => __( 'Enable "Login with Vipps"', 'vipps-for-woocommerce' ),
+                    'label'       => __( 'Enable "Login with Vipps"', 'vipps-for-woocommerce' ),
                     'type'        => 'checkbox',
-                    'description' => __('Enable this to allow customers (and yourself!) to log in with Vipps', 'woocommerce-gateway-vipps'),
+                    'description' => __('Enable this to allow customers (and yourself!) to log in with Vipps', 'vipps-for-woocommerce'),
                     'default'     => 'yes',
                     );
         }
@@ -344,7 +344,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $at = $this->api->get_access_token();
         } catch (Exception $e) {
-            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','woocommerce-gateway-vipps'),'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps-for-woocommerce'),'error');
             return false;
         }
 
@@ -358,7 +358,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // No longer the case for V2 of the API
         if (false && !$phone) {
-            wc_add_notice(__('You need to enter your phone number to pay with Vipps','woocommerce-gateway-vipps') ,'error');
+            wc_add_notice(__('You need to enter your phone number to pay with Vipps','vipps-for-woocommerce') ,'error');
             return false;
         }
 
@@ -376,12 +376,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $order->get_order_key();
             $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not initiate Vipps payment','woocommerce-gateway-vipps') . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','woocommerce-gateway-vipps'),'error');
+            $this->log(__('Could not initiate Vipps payment','vipps-for-woocommerce') . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','vipps-for-woocommerce'),'error');
             return false;
         } catch (Exception $e) {
-            $this->log(__('Could not initiate Vipps payment','woocommerce-gateway-vipps') . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','woocommerce-gateway-vipps'),'error');
+            $this->log(__('Could not initiate Vipps payment','vipps-for-woocommerce') . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','vipps-for-woocommerce'),'error');
             return false;
         }
 
@@ -409,8 +409,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
-        $order->add_order_note(__('Vipps payment initiated','woocommerce-gateway-vipps'));
-        $order->add_order_note(__('Awaiting Vipps payment confirmation','woocommerce-gateway-vipps'));
+        $order->add_order_note(__('Vipps payment initiated','vipps-for-woocommerce'));
+        $order->add_order_note(__('Awaiting Vipps payment confirmation','vipps-for-woocommerce'));
         $order->save();
 
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
@@ -444,7 +444,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
         if (!$ok) {
-            $msg = __("Could not capture Vipps payment - status set to", 'woocommerce-gateway-vipps') . ' ' . __('on-hold','woocommerce');
+            $msg = __("Could not capture Vipps payment - status set to", 'vipps-for-woocommerce') . ' ' . __('on-hold','woocommerce');
             $this->adminerr($msg);
             $order->set_status('on-hold',$msg);
             $order->save();
@@ -459,8 +459,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function capture_payment($order,$amount=0) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(__('Trying to capture payment on order not made by Vipps:','woocommerce-gateway-vipps'). ' ' . $order->get_id(), 'error');
-            $this->adminerr(__('Cannot capture payment on orders not made by Vipps','woocommerce-gateway-vipps'));
+            $this->log(__('Trying to capture payment on order not made by Vipps:','vipps-for-woocommerce'). ' ' . $order->get_id(), 'error');
+            $this->adminerr(__('Cannot capture payment on orders not made by Vipps','vipps-for-woocommerce'));
             return false;
         }
 
@@ -469,7 +469,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($captured) {
             $remaining = $order->get_meta('_vipps_capture_remaining');
             if (!$remaining) {
-                $order->add_order_note(__('Payment already captured','woocommerce-gateway-vipps'));
+                $order->add_order_note(__('Payment already captured','vipps-for-woocommerce'));
                 return true;
             }
         }
@@ -481,11 +481,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $content =  $this->api->capture_payment($order,$requestid,$amount);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not capture Vipps payment', 'woocommerce-gateway-vipps') . ' ' .$e->getMessage(),'error');
-            $this->adminerr(__('Vipps is temporarily unavailable.','woocommerce-gateway-vipps') . ' ' . $e->getMessage());
+            $this->log(__('Could not capture Vipps payment', 'vipps-for-woocommerce') . ' ' .$e->getMessage(),'error');
+            $this->adminerr(__('Vipps is temporarily unavailable.','vipps-for-woocommerce') . ' ' . $e->getMessage());
             return false;
         } catch (Exception $e) {
-            $msg = __('Could not capture Vipps payment','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not capture Vipps payment','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
             return false;
@@ -501,7 +501,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_capture_transid', $requestidnr+1);
-        $order->add_order_note(__('Vipps Payment captured:','woocommerce-gateway-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
+        $order->add_order_note(__('Vipps Payment captured:','vipps-for-woocommerce') . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
         $order->save();
 
         return true;
@@ -511,14 +511,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function cancel_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(__('Trying to cancel payment on order not made by Vipps:','woocommerce-gateway-vipps'). ' ' .$order->get_id(), 'error');
-            $this->adminerr(__('Cannot cancel payment on orders not made by Vipps','woocommerce-gateway-vipps'));
+            $this->log(__('Trying to cancel payment on order not made by Vipps:','vipps-for-woocommerce'). ' ' .$order->get_id(), 'error');
+            $this->adminerr(__('Cannot cancel payment on orders not made by Vipps','vipps-for-woocommerce'));
             return false;
         }
         // If we have captured the order, we can't cancel it. IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
         if ($captured) {
-            $msg = __('Cannot cancel a captured Vipps transaction - use refund instead', 'woocommerce-gateway-vipps');
+            $msg = __('Cannot cancel a captured Vipps transaction - use refund instead', 'vipps-for-woocommerce');
             $this->adminerr($msg);
             return false;
         }
@@ -527,11 +527,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = "";
             $content =  $this->api->cancel_payment($order,$requestid);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not cancel Vipps payment', 'woocommerce-gateway-vipps') . ' ' .$e->getMessage(),'error');
-            $this->adminerr(__('Vipps is temporarily unavailable.','woocommerce-gateway-vipps') . ' ' . $e->getMessage());
+            $this->log(__('Could not cancel Vipps payment', 'vipps-for-woocommerce') . ' ' .$e->getMessage(),'error');
+            $this->adminerr(__('Vipps is temporarily unavailable.','vipps-for-woocommerce') . ' ' . $e->getMessage());
             return false;
         } catch (Exception $e) {
-            $msg = __('Could not cancel Vipps payment','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not cancel Vipps payment','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
             return false;
@@ -544,7 +544,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
         $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
         $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-        $order->add_order_note(__('Vipps Payment cancelled:','woocommerce-gateway-vipps'));
+        $order->add_order_note(__('Vipps Payment cancelled:','vipps-for-woocommerce'));
         $order->save();
 
         // Update status from Vipps, but ignore errors IO 2018-05-07
@@ -561,14 +561,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $msg = __('Trying to refund payment on order not made by Vipps:','woocommerce-gateway-vipps') . ' ' . $order->get_id();
+            $msg = __('Trying to refund payment on order not made by Vipps:','vipps-for-woocommerce') . ' ' . $order->get_id();
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
         }
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = $order->get_meta('_vipps_captured');
         if (!$captured) {
-            $msg = __('Trying to refund payment on Vipps payment not captured:','woocommerce-gateway-vipps'). ' ' .$order->get_id();
+            $msg = __('Trying to refund payment on Vipps payment not captured:','vipps-for-woocommerce'). ' ' .$order->get_id();
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
         }
@@ -588,7 +588,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
-        $order->add_order_note(__('Vipps payment refunded:','woocommerce-gateway-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
+        $order->add_order_note(__('Vipps payment refunded:','vipps-for-woocommerce') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
         $order->save();
         return true;
     }
@@ -624,13 +624,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $requestidnr . ":" . WC()->session->get_customer_id();
             $content =  $this->api->login_request($returnurl,$authtoken,$requestid);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not login with Vipps', 'woocommerce-gateway-vipps') . ' ' .$e->getMessage(),'error');
-            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps'));
+            $this->log(__('Could not login with Vipps', 'vipps-for-woocommerce') . ' ' .$e->getMessage(),'error');
+            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','vipps-for-woocommerce'));
             return false;
         } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not login with Vipps:','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $this->log($msg,'error');
-            throw new VippsApiException( __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps'));
+            throw new VippsApiException( __('Vipps is temporarily unavailable.','vipps-for-woocommerce'));
             return false;
         }
 
@@ -645,13 +645,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $content =  $this->api->login_request_status($requestid);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not login with Vipps', 'woocommerce-gateway-vipps') . ' ' .$e->getMessage(),'error');
-            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps'));
+            $this->log(__('Could not login with Vipps', 'vipps-for-woocommerce') . ' ' .$e->getMessage(),'error');
+            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','vipps-for-woocommerce'));
             return false;
         } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not login with Vipps:','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $this->log($msg,'error');
-            throw new VippsApiException( __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps'));
+            throw new VippsApiException( __('Vipps is temporarily unavailable.','vipps-for-woocommerce'));
             return false;
         }
         // Errors with a 200 result :( IOK 2018-05-23
@@ -709,13 +709,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
-            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'woocommerce-gateway-vipps'));
+            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'vipps-for-woocommerce'));
 
 
             try {
                 $statusdata = $this->api->payment_details($order);
             } catch (Exception $e) {
-                $this->log(__("Error getting payment details from Vipps for express checkout",'woocommerce-gateway-vipps') . ": " . $e->getMessage(), 'error');
+                $this->log(__("Error getting payment details from Vipps for express checkout",'vipps-for-woocommerce') . ": " . $e->getMessage(), 'error');
                 return $oldstatus; 
             }
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
@@ -723,7 +723,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->set_order_shipping_details($order,$statusdata['shippingDetails'], $statusdata['userDetails']);
                 $this->maybe_create_user($order,$statusdata); 
             } else {
-                $this->log(__("No shipping details from Vipps for express checkout",'woocommerce-gateway-vipps') . ": " . $e->getMessage(), 'error');
+                $this->log(__("No shipping details from Vipps for express checkout",'vipps-for-woocommerce') . ": " . $e->getMessage(), 'error');
                 return $oldstatus; 
             }
         }
@@ -732,14 +732,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             switch ($newstatus) {
                 case 'on-hold':
                     wc_reduce_stock_levels($order->get_id());
-                    $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woocommerce-gateway-vipps' ));
+                    $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'vipps-for-woocommerce' ));
                     break;
                 case 'processing':
                     wc_reduce_stock_levels($order->get_id());
-                    $order->update_status('processing', __( 'Payment captured at Vipps', 'woocommerce-gateway-vipps' ));
+                    $order->update_status('processing', __( 'Payment captured at Vipps', 'vipps-for-woocommerce' ));
                     break;
                 case 'cancelled':
-                    $order->update_status('cancelled', __('Order failed or rejected at Vipps', 'woocommerce-gateway-vipps'));
+                    $order->update_status('cancelled', __('Order failed or rejected at Vipps', 'vipps-for-woocommerce'));
                     break;
             }
             $order->save();
@@ -756,19 +756,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try { 
             $statusdata = $this->api->order_status($order);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not get Vipps order status', 'woocommerce-gateway-vipps') . ' ' .$e->getMessage(),'error');
-            if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','woocommerce-gateway-vipps') . ' ' . $e->getMessage());
+            $this->log(__('Could not get Vipps order status', 'vipps-for-woocommerce') . ' ' .$e->getMessage(),'error');
+            if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','vipps-for-woocommerce') . ' ' . $e->getMessage());
             return null;
         } catch (VippsAPIException $e) {
-            $msg = __('Could not get Vipps order status','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not get Vipps order status','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $this->log($msg,'error');
             if (intval($e->responsecode) == 402) {
-                $this->log(__('Order does not exist at Vipps - cancelling','woocommerce-gateway-vipps'));
+                $this->log(__('Order does not exist at Vipps - cancelling','vipps-for-woocommerce'));
                 return 'CANCEL'; 
             }
             if (!$iscallback) $this->adminerr($msg);
         } catch (Exception $e) {
-            $msg = __('Could not get Vipps order status','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not get Vipps order status','vipps-for-woocommerce') . ' ' . $e->getMessage();
             $this->log($msg,'error');
             if (!$iscallback) $this->adminerr($msg);
             return null;
@@ -866,7 +866,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
             } catch (Exception $e) {
                 // can't do much here, so ignore and log the error
-                $this->log(__("Couldn't create Vipps user on express checkout:",'woocommerce-gateway-vipps') . ' ' . $e->getMessage(), 'error'); 
+                $this->log(__("Couldn't create Vipps user on express checkout:",'vipps-for-woocommerce') . ' ' . $e->getMessage(), 'error'); 
             }
         }
     }
@@ -883,14 +883,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order($orderid);
         if (!$order) {
-            $this->log(__("Vipps callback for unknown order",'woocommerce-gateway-vipps') . " " .  $orderid);
+            $this->log(__("Vipps callback for unknown order",'vipps-for-woocommerce') . " " .  $orderid);
             return false;
         }
 
         $merchant= $result['merchantSerialNumber'];
         $me = $this->get_option('merchantSerialNumber');
         if ($me != $merchant) {
-            $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'woocommerce-gateway-vipps') . " " .  $orderid);
+            $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'vipps-for-woocommerce') . " " .  $orderid);
             return false;
         }
 
@@ -898,13 +898,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $authtoken = $order->get_meta('_vipps_authtoken');
         // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
         if (false && $authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
-            $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woocommerce-gateway-vipps'), 'error');
+            $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps-for-woocommerce'), 'error');
             exit();
         }
 
         $transaction = @$result['transactionInfo'];
         if (!$transaction) {
-            $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woocommerce-gateway-vipps'),'error');
+            $this->log(__("Anomalous callback from vipps, handle errors and clean up",'vipps-for-woocommerce'),'error');
             return false;
         }
 
@@ -916,14 +916,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
-            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woocommerce-gateway-vipps'));
+            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'vipps-for-woocommerce'));
             return;
         }
 
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','woocommerce-gateway-vipps'));
+            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','vipps-for-woocommerce'));
             return;
         }
 
@@ -944,11 +944,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             // Could not create a signal file, but that's ok.
         }
-        $order->add_order_note(__('Vipps callback received','woocommerce-gateway-vipps'));
+        $order->add_order_note(__('Vipps callback received','vipps-for-woocommerce'));
 
         $errorInfo = @$result['errorInfo'];
         if ($errorInfo) {
-            $this->log(__("Error message in callback from Vipps for order",'woocommerce-gateway-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
+            $this->log(__("Error message in callback from Vipps for order",'vipps-for-woocommerce') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
             $order->add_order_note($errorInfo['errorMessage']);
         }
 
@@ -958,9 +958,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
             wc_reduce_stock_levels($order->get_id());
-            $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woocommerce-gateway-vipps' ));
+            $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'vipps-for-woocommerce' ));
         } else {
-            $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woocommerce-gateway-vipps' ));
+            $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'vipps-for-woocommerce' ));
         }
         $order->save();
         delete_transient('order_callback_',$orderid);
@@ -1019,7 +1019,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->update_option( 'enabled', 'no' );
         }
         ?>
-            <h2><?php _e('Vipps','woocommerce-gateway-vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'woocommerce-gateway-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
+            <h2><?php _e('Vipps','vipps-for-woocommerce'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'vipps-for-woocommerce'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
 
             <?php 
@@ -1028,7 +1028,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             ?> 
                 <div class="inline error">
                 <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
-                <?php _e( 'Vipps does not support your currency.', 'woocommerce-gateway-vipps' ); ?>
+                <?php _e( 'Vipps does not support your currency.', 'vipps-for-woocommerce' ); ?>
                 </p>
                 </div>
                 <?php endif; ?>
@@ -1036,7 +1036,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 <?php if (!is_ssl() &&  !preg_match("!^https!i",home_url())): ?>
                 <div class="inline error">
                 <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
-                <?php _e( 'Vipps requires that your site uses HTTPS.', 'woocommerce-gateway-vipps' ); ?>
+                <?php _e( 'Vipps requires that your site uses HTTPS.', 'vipps-for-woocommerce' ); ?>
                 </p>
                 </div>
                 <?php endif; ?>
@@ -1067,10 +1067,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($at && $s && $c) {
             try {
                 $token = $this->api->get_access_token('force');
-                $this->adminnotify(__("Connection to Vipps OK", 'woocommerce-gateway-vipps'));
+                $this->adminnotify(__("Connection to Vipps OK", 'vipps-for-woocommerce'));
             } catch (Exception $e) {
                 $msg = $e->getMessage();
-                $this->adminerr(__("Could not connect to Vipps", 'woocommerce-gateway-vipps') . ": $msg");
+                $this->adminerr(__("Could not connect to Vipps", 'vipps-for-woocommerce') . ": $msg");
             }
         }
 

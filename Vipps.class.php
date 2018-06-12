@@ -63,7 +63,7 @@ class Vipps {
 
         if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE) {
             add_action('admin_notices', function() {
-                    $what = __('Vipps is currently in test mode - no real transactions will occur', 'woocommerce-gateway-vipps');
+                    $what = __('Vipps is currently in test mode - no real transactions will occur', 'vipps-for-woocommerce');
                     echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
                     });
         }
@@ -77,7 +77,7 @@ class Vipps {
 
     public function add_meta_boxes () {
         // Metabox showing order status at Vipps IOK 2018-05-07
-        add_meta_box( 'vippsdata', __('Vipps','woocommerce-gateway-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+        add_meta_box( 'vippsdata', __('Vipps','vipps-for-woocommerce'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
     }
 
     public function wp_enqueue_scripts() {
@@ -111,8 +111,8 @@ class Vipps {
 
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $text = __('Skip entering your address and just checkout using', 'woocommerce-gateway-vipps');
-        $linktext = __('express checkout','woocommerce-gateway-vipps');
+        $text = __('Skip entering your address and just checkout using', 'vipps-for-woocommerce');
+        $linktext = __('express checkout','vipps-for-woocommerce');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
         $message = $text . "<a href='$url'> <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/> $linktext!</a>";
@@ -130,7 +130,7 @@ class Vipps {
             $url = $this->express_checkout_url();
             $url = wp_nonce_url($url,'express','sec');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
-            $title = __('Buy now with Vipps!', 'woocommerce-gateway-vipps');
+            $title = __('Buy now with Vipps!', 'vipps-for-woocommerce');
             echo "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
         }
     }
@@ -147,7 +147,7 @@ class Vipps {
         if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes') return;
 
         $imgurl = plugins_url('img/logginn.png',__FILE__);
-        $title = __('Log in with Vipps!', 'woocommerce-gateway-vipps');
+        $title = __('Log in with Vipps!', 'vipps-for-woocommerce');
         $url = $this->login_url();
         ?>        
             <div class="vippslogincontainer"><a class="button vipps-login" href="<?php echo $url;?>" title="<?php echo $title;?>"><img border=0 alt="<?php echo $title;?>" src="<?php echo $imgurl;?>"></a></div>
@@ -408,7 +408,7 @@ class Vipps {
     }
 
     public function plugins_loaded() {
-        $ok = load_plugin_textdomain('woocommerce-gateway-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+        $ok = load_plugin_textdomain('vipps-for-woocommerce', false, basename( dirname( __FILE__ ) ) . "/languages");
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
@@ -482,7 +482,7 @@ class Vipps {
 
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
-        print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items"><img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','woocommerce-gateway-vipps') . '</button>';
+        print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items"><img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','vipps-for-woocommerce') . '</button>';
         print "<input id=docapture type=hidden name=do_capture_vipps value=0>"; 
     } 
 
@@ -492,7 +492,7 @@ class Vipps {
 
         $result = @json_decode($raw_post,true);
         if (!$result) {
-            $this->log(__("Did not understand callback from Vipps:",'woocommerce-gateway-vipps') . " " .  $raw_post, 'error');
+            $this->log(__("Did not understand callback from Vipps:",'vipps-for-woocommerce') . " " .  $raw_post, 'error');
             return false;
         }
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -508,23 +508,23 @@ class Vipps {
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         if (!$result) {
-            $this->log(__("Did not understand login callback from Vipps:",'woocommerce-gateway-vipps') . " " .  $raw_post);
+            $this->log(__("Did not understand login callback from Vipps:",'vipps-for-woocommerce') . " " .  $raw_post);
             return false;
         }
         $loginrequest = get_transient('_vipps_loginrequests_' . $result['requestId']);
         if (!$loginrequest) {
-            $this->log(__("Error during Vipps login callback: unknown request id",'woocommerce-gateway-vipps') . ' ' . print_r($result,true));
+            $this->log(__("Error during Vipps login callback: unknown request id",'vipps-for-woocommerce') . ' ' . print_r($result,true));
             return false;
         }
         // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
         if (false) {
             if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
-                $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'woocommerce-gateway-vipps'));
+                $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'vipps-for-woocommerce'));
                 return false;
             }
         }
         // Store the request! The waiting-page will do the login/creation. IOK 2018-05-18 
-        $this->log(__("Got login callback from",'woocommerce-gateway-vipps') . " " .$result['status']);;
+        $this->log(__("Got login callback from",'vipps-for-woocommerce') . " " .$result['status']);;
         set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
         exit();
     }
@@ -658,7 +658,7 @@ class Vipps {
         $data = array_reverse(explode("/",$callback));
         if (empty($data)) return false;
         $uid = $data[0];
-        $this->log(__("Vipps consent removal received for",'woocommerce-gateway-vipps') . ' ' . $uid); 
+        $this->log(__("Vipps consent removal received for",'vipps-for-woocommerce') . ' ' . $uid); 
         if (!$uid) {
             print "-1";exit();
         }
@@ -668,7 +668,7 @@ class Vipps {
         }
         $user = $users[0];
         if ($user->has_cap("remove_users")) {
-            $this->log(__("Administrator user can remove users - don't accidentally remove by consent removal:", 'woocommerce-gateway-vipps') . " " . $user->ID); 
+            $this->log(__("Administrator user can remove users - don't accidentally remove by consent removal:", 'vipps-for-woocommerce') . " " . $user->ID); 
             print "-1";exit();
         }
 
@@ -770,12 +770,12 @@ class Vipps {
             $gw = new WC_Gateway_Vipps();
             $orderid = $gw->create_partial_order();
         } catch (Exception $e) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woocommerce-gateway-vipps') . ': ' . $e->getMessage(), 'url'=>false);
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','vipps-for-woocommerce') . ': ' . $e->getMessage(), 'url'=>false);
             wp_send_json($result);
             exit();
         } 
         if (!$orderid) {
-            $result = array('ok'=>0, 'msg'=>__('Could not create order','woocommerce-gateway-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','vipps-for-woocommerce'), 'url'=>false);
             wp_send_json($result);
             exit();
         }
@@ -787,7 +787,7 @@ class Vipps {
             wp_send_json($result);
             exit();
         }
-        $result = array('ok'=>0, 'msg'=> __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps'), 'url'=>'');
+        $result = array('ok'=>0, 'msg'=> __('Vipps is temporarily unavailable.','vipps-for-woocommerce'), 'url'=>'');
         wp_send_json($result);
         exit();
     }
@@ -801,42 +801,42 @@ class Vipps {
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!isset($sessionorders[$orderid])) {
-            $this->log(__('The orderid passed is not from this session:','woocommerce-gateway-vipps') . $orderid);
-            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woocommerce-gateway-vipps')));
+            $this->log(__('The orderid passed is not from this session:','vipps-for-woocommerce') . $orderid);
+            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps-for-woocommerce')));
         }
 
         $order = new WC_Order($orderid); 
         if (!$order) {
-            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','vipps-for-woocommerce')));
         }
         $order_status = $this->check_order_status($order);
         if ($order_status == 'on-hold') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment authorized', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment authorized', 'vipps-for-woocommerce')));
         }
         if ($order_status == 'processing') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment captured', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment captured', 'vipps-for-woocommerce')));
         }
         if ($order_status == 'completed') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Order complete', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Order complete', 'vipps-for-woocommerce')));
         }
 
         if ($order_status == 'failed') {
             $this->restore_cart($order);
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps-for-woocommerce')));
         }
         if ($order_status == 'cancelled') {
             $this->restore_cart($order);
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps-for-woocommerce')));
         }
         if ($order_status == 'refunded') {
             $this->restore_cart($order);
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'vipps-for-woocommerce')));
         }
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
-            wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woocommerce-gateway-vipps')));
+            wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'vipps-for-woocommerce')));
         }
-        wp_send_json(array('status'=>'error', 'msg'=> __('Unknown order status','woocommerce-gateway-vipps') . $order_status));
+        wp_send_json(array('status'=>'error', 'msg'=> __('Unknown order status','vipps-for-woocommerce') . $order_status));
         return false;
     }
 
@@ -917,7 +917,7 @@ class Vipps {
         if (!$backurl) $backurl = home_url();
 
         if ( WC()->cart->get_cart_contents_count() == 0 ) {
-            wc_add_notice(__('Your shopping cart is empty','woocommerce-gateway-vipps'),'error');
+            wc_add_notice(__('Your shopping cart is empty','vipps-for-woocommerce'),'error');
             wp_redirect($backurl);
             exit();
         }
@@ -935,23 +935,23 @@ class Vipps {
         $content .= "</form>";
 
         if ($ok) {
-            $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woocommerce-gateway-vipps') . "</p>";
+            $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'vipps-for-woocommerce') . "</p>";
             $content .= "<div style='display:none' id='success'></div>";
             $content .= "<div style='display:none' id='failure'></div>";
-            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps')  . "</div>";
-            $this->fakepage(__('Order in progress','woocommerce-gateway-vipps'), $content);
+            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','vipps-for-woocommerce')  . "</div>";
+            $this->fakepage(__('Order in progress','vipps-for-woocommerce'), $content);
             return;
         } else {
-            $content .= "<p id=waiting>" . __("Ready for express checkout - press the button", 'woocommerce-gateway-vipps') . "</p>";
+            $content .= "<p id=waiting>" . __("Ready for express checkout - press the button", 'vipps-for-woocommerce') . "</p>";
 
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
-            $title = __('Buy now with Vipps!', 'woocommerce-gateway-vipps');
+            $title = __('Buy now with Vipps!', 'vipps-for-woocommerce');
 
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
             $content .= "<div style='display:none' id='success'></div>";
             $content .= "<div style='display:none' id='failure'></div>";
-            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps')  . "</div>";
-            $this->fakepage(__('Express checkout','woocommerce-gateway-vipps'), $content);
+            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','vipps-for-woocommerce')  . "</div>";
+            $this->fakepage(__('Express checkout','vipps-for-woocommerce'), $content);
             return;
         }
     }
@@ -965,7 +965,7 @@ class Vipps {
         if ($orderid) {
             $order = new WC_Order($orderid); 
         }
-        if (!$order) wp_die(__('Unknown order', 'woocommerce-gateway-vipps'));
+        if (!$order) wp_die(__('Unknown order', 'vipps-for-woocommerce'));
 
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -986,7 +986,7 @@ class Vipps {
                     $status = $newstatus;
                 }
             } else {
-                $this->log(__('Vipps callback in progress, but not complete on shop return. You probably need to look at server or database performance.','woocommerce-gateway-vipps'));
+                $this->log(__('Vipps callback in progress, but not complete on shop return. You probably need to look at server or database performance.','vipps-for-woocommerce'));
             }
         }
 
@@ -998,10 +998,10 @@ class Vipps {
 
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $status == 'refunded') {
-            $content .= "<div id=failure><p>". __('Order cancelled', 'woocommerce-gateway-vipps') . '</p>';
-            $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woocommerce-gateway-vipps') . '</a></p>';
+            $content .= "<div id=failure><p>". __('Order cancelled', 'vipps-for-woocommerce') . '</p>';
+            $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps-for-woocommerce') . '</a></p>';
             $content .= "</div>";
-            $this->fakepage(__('Order cancelled','woocommerce-gateway-vipps'), $content);
+            $this->fakepage(__('Order cancelled','vipps-for-woocommerce'), $content);
             return;
         }
 
@@ -1016,10 +1016,10 @@ class Vipps {
         // and check that the order matches (and is 'pending') (and exists)
         $vippsstamp = $order->get_meta('_vipps_init_timestamp');
         $vippsstatus = $order->get_meta('_vipps_init_status');
-        $message = __($order->get_meta('_vipps_confirm_message'),'woocommerce-gateway-vipps');
+        $message = __($order->get_meta('_vipps_confirm_message'),'vipps-for-woocommerce');
 
         $signal = $this->callbackSignal($order);
-        $content .= "<div id='waiting'><p>" . __('Waiting for confirmation of purchase from Vipps','woocommerce-gateway-vipps');
+        $content .= "<div id='waiting'><p>" . __('Waiting for confirmation of purchase from Vipps','vipps-for-woocommerce');
 
         if ($signal && !is_file($signal)) $signal = '';
         $signalurl = $this->callbackSignalURL($signal);
@@ -1036,21 +1036,21 @@ class Vipps {
         $content .= "</form>";
 
 
-        $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','woocommerce-gateway-vipps'). '</p>';
-        $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'woocommerce-gateway-vipps') . "</p>";
-        $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woocommerce-gateway-vipps') . '</a></p>';
+        $content .= "<div id='error' style='display:none'><p>".__('Error during order confirmation','vipps-for-woocommerce'). '</p>';
+        $content .= "<p>" . __('An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order', 'vipps-for-woocommerce') . "</p>";
+        $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps-for-woocommerce') . '</a></p>';
         $content .= "</div>";
 
-        $content .= "<div id=success style='display:none'><p>". __('Order confirmed', 'woocommerce-gateway-vipps') . '</p>';
-        $content .= "<p><a class='btn button' id='continueToThankYou' href='" . $gw->get_return_url($order)  . "'>".__('Continue','woocommerce-gateway-vipps') ."</a></p>";
+        $content .= "<div id=success style='display:none'><p>". __('Order confirmed', 'vipps-for-woocommerce') . '</p>';
+        $content .= "<p><a class='btn button' id='continueToThankYou' href='" . $gw->get_return_url($order)  . "'>".__('Continue','vipps-for-woocommerce') ."</a></p>";
         $content .= '</div>';
 
-        $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woocommerce-gateway-vipps') . '</p>';
-        $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woocommerce-gateway-vipps') . '</a></p>';
+        $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'vipps-for-woocommerce') . '</p>';
+        $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','vipps-for-woocommerce') . '</a></p>';
         $content .= "</div>";
 
 
-        $this->fakepage(__('Waiting for your order confirmation','woocommerce-gateway-vipps'), $content);
+        $this->fakepage(__('Waiting for your order confirmation','vipps-for-woocommerce'), $content);
     }
 
     public function vipps_login_page() {
@@ -1061,7 +1061,7 @@ class Vipps {
         header('Pragma: no-cache');
 
         if (is_user_logged_in()) {
-            wc_add_notice(__('You are already logged in!','woocommerce-gateway-vipps'),'notice');
+            wc_add_notice(__('You are already logged in!','vipps-for-woocommerce'),'notice');
             wp_redirect(home_url());
             exit();
         } 
@@ -1076,12 +1076,12 @@ class Vipps {
         $gw = new WC_Gateway_Vipps();
 
         if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes')  {
-            wc_add_notice(__('Login with Vipps is not available !','woocommerce-gateway-vipps'),'notice');
+            wc_add_notice(__('Login with Vipps is not available !','vipps-for-woocommerce'),'notice');
             wp_redirect(home_url());
             exit();
         }
 
-        $msg = __('Unknown error','woocommerce-gateway-vipps');
+        $msg = __('Unknown error','vipps-for-woocommerce');
         $result = null;
         try {
             $result = $gw->login_request(); 
@@ -1119,8 +1119,8 @@ class Vipps {
 
 
         if (!$loginrequest) {
-            $msg = __('Could not login with Vipps:','woocommerce-gateway-vipps');
-            $this->log(__('Login wait page: Unknown login request','woocommerce-gateway-vipps'));
+            $msg = __('Could not login with Vipps:','vipps-for-woocommerce');
+            $this->log(__('Login wait page: Unknown login request','vipps-for-woocommerce'));
             wc_add_notice($msg, 'error');
             wp_redirect(home_url());
             exit();
@@ -1135,9 +1135,9 @@ class Vipps {
                 $result = $gw->login_request_status($requestid); 
                 $status = isset($result['status']) ?  $result['status'] : '';
             } catch (Exception $e) {
-                $msg = __('Could not login with Vipps:','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+                $msg = __('Could not login with Vipps:','vipps-for-woocommerce') . ' ' . $e->getMessage();
                 $this->log($msg);
-                wc_add_notice(__('Could not login with Vipps:','woocommerce-gateway-vipps') . ' ' .  __('Vipps is temporarily unavailable.','woocommerce-gateway-vipps'), 'error');
+                wc_add_notice(__('Could not login with Vipps:','vipps-for-woocommerce') . ' ' .  __('Vipps is temporarily unavailable.','vipps-for-woocommerce'), 'error');
                 delete_transient('_vipps_loginrequests_' . $requestid);
                 wp_redirect(home_url());
                 exit();
@@ -1154,7 +1154,7 @@ class Vipps {
                     wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
                 }
             } catch (Exception $e) {
-                $msg = __('Could not login with Vipps:','woocommerce-gateway-vipps') . ' ' . $e->getMessage();
+                $msg = __('Could not login with Vipps:','vipps-for-woocommerce') . ' ' . $e->getMessage();
                 $this->log($msg);
                 wc_add_notice($msg, 'error');
             }
@@ -1169,9 +1169,9 @@ class Vipps {
         }
 
         if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
-            $msg = __('Could not login with Vipps:','woocommerce-gateway-vipps') . ' ' . $status;
+            $msg = __('Could not login with Vipps:','vipps-for-woocommerce') . ' ' . $status;
             delete_transient('_vipps_loginrequests_' . $requestid);
-            wc_add_notice(__('Vipps login cancelled','woocommerce-gateway-vipps'),'error');
+            wc_add_notice(__('Vipps login cancelled','vipps-for-woocommerce'),'error');
             wp_redirect(home_url());
             exit();
         }
@@ -1180,9 +1180,9 @@ class Vipps {
         if ($status == 'PENDING' || !$status) {
             // We should actaully try to call the 'get login request status after enough time has passed here,
             // but really.. this is just a failure result, so we could just as well go directly to failure after a couple of seconnds. IOK 2018-05-18
-            $content = __("Waiting for Vipps login approval",'woocommerce-gateway-vipps');
+            $content = __("Waiting for Vipps login approval",'vipps-for-woocommerce');
             $content .= "\n<script>setTimeout(function() {window.location.reload(true);}, 10000);</script\n>";
-            $this->fakepage(__("Waiting for Vipps login approval", 'woocommerce-gateway-vipps'),$content);
+            $this->fakepage(__("Waiting for Vipps login approval", 'vipps-for-woocommerce'),$content);
         }
     }
 
