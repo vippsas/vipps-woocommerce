@@ -99,7 +99,7 @@ class VippsApi {
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
-        $callback = $this->gateway->login_callback_url();
+        $callback = $this->gateway->login_callback_url($authtoken);
         $consentremoval = $this->gateway->consent_removal_callback_url();
 
         $merchantInfo = array();
@@ -176,7 +176,7 @@ class VippsApi {
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
-        $callback = $this->gateway->payment_callback_url();
+        $callback = $this->gateway->payment_callback_url($authtoken);
         $fallback = $returnurl;
 
         $transaction = array();
@@ -188,19 +188,19 @@ class VippsApi {
 
 
         $data = array();
-        $data['customerInfo'] = array('mobileNumber' => $phone); // IOK FIXME not required in 2.0
+        $data['customerInfo'] = array('mobileNumber' => $phone); 
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback); 
 
         $express = $this->gateway->express_checkout;
         if ($express) {
-            $data['merchantInfo']['shippingDetailsPrefix'] = $this->gateway->shipping_details_callback_url();
+            $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
             if ($authtoken) {
                 $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
             }
             $data['merchantInfo']["paymentType"] = "eComm Express Payment";
             $data['merchantInfo']["consentRemovalPrefix"] = $this->gateway->consent_removal_callback_url();
+            $data['merchantInfo']['shippingDetailsPrefix'] = $shippingcallback;
         }
-
         $data['transaction'] = $transaction;
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
