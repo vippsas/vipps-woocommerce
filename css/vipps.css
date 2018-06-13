@@ -24,6 +24,13 @@ a.button.vipps-express-checkout {
  padding: 0;
  margin-left:.5em;
 }
+a.button.vipps-express-checkout:active {
+ border: 0 !important;
+}
+a.button.vipps-express-checkout:hover{
+ border: 0 !important;
+}
+
 .widget_shopping_cart a.button.vipps-express-checkout {
  color:transparent;!important;
  background-color: #fff !important;
