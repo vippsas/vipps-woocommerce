@@ -517,7 +517,7 @@ class Vipps {
             return false;
         }
 
-        if ($_REQUEST['tk'] != $loginrequest['authToken']) {
+        if (!wp_check_password($_REQUEST['tk'], $loginrequest['authToken'])) {
                 $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'vipps-for-woocommerce'));
                 return false;
         }
@@ -554,7 +554,7 @@ class Vipps {
         }
 
         // a small bit of security
-        if ($order->get_meta('_vipps_authtoken') && $order->get_meta('_vipps_authtoken') != $_REQUEST['tk']) {
+        if ($order->get_meta('_vipps_authtoken') && !wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken'))){
             $this->log("Wrong authtoken on shipping details callback");
             print "-1";
             exit();

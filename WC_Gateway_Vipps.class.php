@@ -402,7 +402,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = new WC_Order( $order_id );
         $order->set_transaction_id($transactionid);
         if ($authtoken) {
-            $order->update_meta_data('_vipps_authtoken',$authtoken);
+            $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
         // Needed to ensure we have orderinfo
         if ($this->express_checkout) {
@@ -639,7 +639,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>$authtoken, 'when'=>time()), 10*60);
+        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>wp_hash_password($authtoken), 'when'=>time()), 10*60);
         WC()->session->set('_vipps_login_requestid', $requestidnr+1);
         return $content;
     }
@@ -901,7 +901,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
-        if ($authtoken && $authtoken != $_REQUEST['tk']) {
+        if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
             $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'vipps-for-woocommerce'), 'error');
             exit();
         }
