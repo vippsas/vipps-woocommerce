@@ -113,7 +113,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 	    return $this->enabled && ($this->get_option('cartexpress') == 'yes') ;
     }
     public function show_login_with_vipps() {
-	    return VIPPS_LOGIN && $this->enabled && $this->get_option('vippslogin') == 'yes');
+	    return VIPPS_LOGIN && $this->enabled && ($this->get_option('vippslogin') == 'yes');
     }
 
 

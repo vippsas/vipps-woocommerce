@@ -126,7 +126,7 @@ class Vipps {
     public function cart_express_checkout_button() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if ($gw->show_express_checkout())
+        if ($gw->show_express_checkout()){
             $url = $this->express_checkout_url();
             $url = wp_nonce_url($url,'express','sec');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
