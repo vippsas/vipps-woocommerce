@@ -61,7 +61,7 @@ class Vipps {
         // Keep admin notices during redirects IOK 2018-05-07
         add_action('admin_notices',array($this,'stored_admin_notices'));
 
-        if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE) {
+        if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE && $gw->enabled == 'yes') {
             add_action('admin_notices', function() {
                     $what = __('Vipps is currently in test mode - no real transactions will occur', 'vipps-for-woocommerce');
                     echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
@@ -126,7 +126,7 @@ class Vipps {
     public function cart_express_checkout_button() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if ($gw->show_express_checkout())
+        if ($gw->show_express_checkout()){
             $url = $this->express_checkout_url();
             $url = wp_nonce_url($url,'express','sec');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);

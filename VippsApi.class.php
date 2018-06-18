@@ -482,7 +482,10 @@ class VippsApi {
 
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
-            if (isset($content['error'])) {
+	    // From initiate payment, at least some times. IOK 2018-06-18
+	    if (isset($content['message'])) {
+		$msg = $content['message'];
+	    } elseif (isset($content['error'])) {
                 // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
                 $msg = $content['error'];
             } elseif (isset($content['ResponseInfo'])) {
