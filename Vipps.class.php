@@ -107,7 +107,7 @@ class Vipps {
         if (is_user_logged_in()) return;
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if (!$gw->get_option('cartexpress') == 'yes') return;
+        if (!$gw->show_express_checkout()) return;
 
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
@@ -126,7 +126,7 @@ class Vipps {
     public function cart_express_checkout_button() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if ($gw->get_option('cartexpress') == 'yes') { 
+        if ($gw->show_express_checkout())
             $url = $this->express_checkout_url();
             $url = wp_nonce_url($url,'express','sec');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
@@ -144,7 +144,7 @@ class Vipps {
 
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes') return;
+        if (!$gw->show_login_with_vipps()) return;
 
         $imgurl = plugins_url('img/logginn.png',__FILE__);
         $title = __('Log in with Vipps!', 'vipps-for-woocommerce');
@@ -1075,7 +1075,7 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
 
-        if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes')  {
+        if (!$gw->show_login_with_vipps()) {
             wc_add_notice(__('Login with Vipps is not available !','vipps-for-woocommerce'),'notice');
             wp_redirect(home_url());
             exit();
@@ -1113,7 +1113,7 @@ class Vipps {
         $loginrequest = get_transient('_vipps_loginrequests_' . $requestid);
 
         // When disabled, do not log in. IOK 2018-06-05
-        if (!VIPPS_LOGIN || $gw->get_option('vippslogin') != 'yes') {
+        if (!$gw->show_login_with_vipps()) {
             $loginrequest = false;
         }
 
