@@ -1062,7 +1062,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
     function validate_checkbox_field($key,$value) {
         if ($key != 'enabled') return parent::validate_checkbox_field($key,$value);
-        if ($this->can_be_activated()) return 'yes';
+        if ($value && $this->can_be_activated()) return 'yes';
         return 'no';
     }
 
