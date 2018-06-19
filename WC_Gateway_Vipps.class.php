@@ -119,6 +119,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function maybe_cancel_payment($orderid) {
         $order = new WC_Order( $orderid );
+        if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
@@ -145,6 +146,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Handle the transition from anything to "refund"
     public function maybe_refund_payment($orderid) {
         $order = new WC_Order( $orderid );
+        if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
@@ -446,6 +448,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
         $order = new WC_Order( $orderid );
+        if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
         try {
             $ok = $this->capture_payment($order);
