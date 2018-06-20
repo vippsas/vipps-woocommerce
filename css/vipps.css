@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+li.wc_payment_method.payment_method_vipps img {
+	max-width: 145px;
+}
 
 a.button.vipps-express-checkout {
  background-color: #fff;
