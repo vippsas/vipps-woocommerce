@@ -3,21 +3,21 @@
    This class is for hooks and plugin managent, and is instantiated as a singleton and set globally as $Vipps. IOK 2018-02-07
    For WP-specific interactions.
 
-    This file is part of the WordPress plugin Vipps for WooCommerce
-    Copyright (C) 2018 WP Hosting AS
+   This file is part of the WordPress plugin Vipps for WooCommerce
+   Copyright (C) 2018 WP Hosting AS
 
-    Vipps for WooCommerce is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   Vipps for WooCommerce is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    Vipps for WooCommerce is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+   Vipps for WooCommerce is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
  */
@@ -78,10 +78,15 @@ class Vipps {
     public function add_meta_boxes () {
         // Metabox showing order status at Vipps IOK 2018-05-07
         global $post;
-        $order = new WC_Order($post);
+        if (!$post) return;
+        try {
+            $order = new WC_Order($post);
+        } catch (Exception $e) {
+            return;
+        }
         $pm = $order->get_payment_method();
         if ($pm == 'vipps') {
-          add_meta_box( 'vippsdata', __('Vipps','vipps-for-woocommerce'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+            add_meta_box( 'vippsdata', __('Vipps','vipps-for-woocommerce'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
         }
     }
 
@@ -123,8 +128,8 @@ class Vipps {
         $message = $text . "<a href='$url'> <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/> $linktext!</a>";
         // wc_print_notice( $message, 'notice' ); // Won't use this because we want to add a new class
         ?>
-        <div class="woocommerce-info vipps-info"><?php echo $message;?></div>
-        <?php
+            <div class="woocommerce-info vipps-info"><?php echo $message;?></div>
+            <?php
     }
 
     // Show the express button if reasonable to do so
