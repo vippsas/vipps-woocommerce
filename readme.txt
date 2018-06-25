@@ -3,10 +3,10 @@ Contributors: wphostingdev, iverok, pmbakken
 Tags: woocommerce, vipps
 Requires at least: 4.7
 Tested up to: 4.9.6
-Stable tag: 4.3
+Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.4.2
+WC tested up to: 3.4.3
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 

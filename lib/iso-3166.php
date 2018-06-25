@@ -3,15 +3,15 @@
   Generate a serialized array map from country names to country codes. Run this to generate a 'countrycodes.php' file which is serialized and used to produce the 
   two-letter code used by WooCommerce. IOK 2018-06-06
 
-    This file is part of the WordPress plugin Vipps for WooCommerce
+    This file is part of the WordPress plugin Checkout with Vipps for WooCommerce
     Copyright (C) 2018 WP Hosting AS
 
-    Vipps for WooCommerce is free software: you can redistribute it and/or modify
+    Checkout with Vipps for WooCommerce is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Vipps for WooCommerce is distributed in the hope that it will be useful,
+    Checkout with Vipps for WooCommerce is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Affero General Public License for more details.

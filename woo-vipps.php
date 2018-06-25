@@ -1,25 +1,25 @@
 <?php
 /*
-   Plugin Name: Vipps for WooCommerce
-   Plugin URI: https://wordpress.org/plugins/vipps-for-woocommerce/
+   Plugin Name: Checkout with Vipps for WooCommerce
+   Plugin URI: https://wordpress.org/plugins/woo-vipps/
    Description: Offer Vipps as a payment method for WooCommerce
    Author: WP Hosting
    Author URI: https://www.wp-hosting.no/
-   Text-domain: vipps-for-woocommerce
+   Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 0.9
+   Version: 1.0
    License: AGPLv3 or later
    License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
-   This file is part of the WordPress plugin Vipps for WooCommerce
+   This file is part of the WordPress plugin Checkout with Vipps for WooCommerce
    Copyright (C) 2018 WP Hosting AS
 
-   Vipps for WooCommerce is free software: you can redistribute it and/or modify
+   Checkout with Vipps for WooCommerce is free software: you can redistribute it and/or modify
    it under the terms of the GNU Affero General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
-   Vipps for WooCommerce is distributed in the hope that it will be useful,
+   Checkout with Vipps for WooCommerce is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Affero General Public License for more details.
