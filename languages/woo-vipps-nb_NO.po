@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-25 09:38+0000\n"
-"PO-Revision-Date: 2018-06-25 09:40+0000\n"
+"PO-Revision-Date: 2018-06-25 11:45+0000\n"
 "Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
 "Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
@@ -29,7 +29,7 @@ msgstr "Kunne ikke hente access token for Vipps"
 #: VippsApi.class.php:334 VippsApi.class.php:373 VippsApi.class.php:374
 #: VippsApi.class.php:377 VippsApi.class.php:378
 msgid "The Vipps gateway is not correctly configured."
-msgstr "Vipps for Woocommerce er ikke korrekt konfigurert"
+msgstr "Betal med Vipps for Woocommerce er ikke korrekt konfigurert"
 
 #: VippsApi.class.php:186
 msgid "Confirm your order from"
