@@ -55,6 +55,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->method_title = __('Vipps','woo-vipps');
         $this->title = __('Vipps','woo-vipps');
         $this->icon = plugins_url('img/vipps_logo_rgb.png',__FILE__);
+        $this->order_button_text = __('Pay with Vipps','woo-vipps');
         $this->init_form_fields();
         $this->init_settings();
         $this->api = new VippsApi($this);
