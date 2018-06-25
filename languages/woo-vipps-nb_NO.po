@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-25 09:38+0000\n"
-"PO-Revision-Date: 2018-06-25 11:45+0000\n"
+"PO-Revision-Date: 2018-06-25 12:02+0000\n"
 "Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
 "Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
@@ -63,7 +63,7 @@ msgstr "Vipps"
 
 #: Vipps.class.php:124
 msgid "Skip entering your address and just checkout using"
-msgstr "Vil du slippe å fylle ut alt dette manuelt? Velg "
+msgstr "Slipp å fylle inn adresse og kortinfo - Klikk her for"
 
 #: Vipps.class.php:125
 msgid "express checkout"
