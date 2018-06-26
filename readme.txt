@@ -28,7 +28,7 @@ Since we know who they are, they don't have to enter all their personal informat
 When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app.
 
 === How to get started ===
-* [Sign up to use Vipps på Nett](https://www.vipps.no/bedrift)
+* [Sign up to use Vipps på Nett](https://vippsbedrift.no/signup/vippspanett/)
 * Install the plugin
 * Configure the plugin
 
@@ -39,6 +39,9 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
 
+== Screenshots ==
+1. Enable Vipps as a payment method.
+2. Enter your Vipps account keys and configure the plugin.
 
 == Frequently Asked Questions ==
 
