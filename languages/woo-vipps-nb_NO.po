@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-25 09:38+0000\n"
-"PO-Revision-Date: 2018-06-25 12:02+0000\n"
+"PO-Revision-Date: 2018-06-26 07:15+0000\n"
 "Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
 "Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
@@ -29,7 +29,7 @@ msgstr "Kunne ikke hente access token for Vipps"
 #: VippsApi.class.php:334 VippsApi.class.php:373 VippsApi.class.php:374
 #: VippsApi.class.php:377 VippsApi.class.php:378
 msgid "The Vipps gateway is not correctly configured."
-msgstr "Betal med Vipps for Woocommerce er ikke korrekt konfigurert"
+msgstr "Vipps for Woocommerce er ikke korrekt konfigurert"
 
 #: VippsApi.class.php:186
 msgid "Confirm your order from"
@@ -63,7 +63,7 @@ msgstr "Vipps"
 
 #: Vipps.class.php:124
 msgid "Skip entering your address and just checkout using"
-msgstr "Slipp å fylle inn adresse og kortinfo - Klikk her for"
+msgstr "Slipp å fylle inn adresse og kortinfo - Klikk her for "
 
 #: Vipps.class.php:125
 msgid "express checkout"
@@ -79,7 +79,7 @@ msgstr "Logg inn med Vipps!"
 
 #: Vipps.class.php:495
 msgid "Capture payment"
-msgstr "Trekk/Capture beløp"
+msgstr "Capture (Trekk beløp)"
 
 #: Vipps.class.php:505
 msgid "Did not understand callback from Vipps:"
@@ -461,7 +461,7 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:423
 msgid "Vipps payment initiated"
-msgstr "Vippsbetaling startet"
+msgstr "Vipps betaling startet"
 
 #: WC_Gateway_Vipps.class.php:424
 msgid "Awaiting Vipps payment confirmation"
@@ -547,7 +547,7 @@ msgstr "Betaling reservert hos Vipps"
 
 #: WC_Gateway_Vipps.class.php:751
 msgid "Payment captured at Vipps"
-msgstr "Betaling belastet hos Vipps"
+msgstr "Betaling Captured (belastet) hos Vipps"
 
 #: WC_Gateway_Vipps.class.php:754
 msgid "Order failed or rejected at Vipps"
