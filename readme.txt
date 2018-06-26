@@ -1,4 +1,4 @@
-=== Vipps for WooCommerce ===
+=== Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken
 Tags: woocommerce, vipps
 Requires at least: 4.7
