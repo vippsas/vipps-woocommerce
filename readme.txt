@@ -28,10 +28,18 @@ Since Vipps knows who the customers are, they don't have to enter all their pers
 When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app.
 
 === How to get started ===
-* [Sign up to use Vipps på Nett](https://vippsbedrift.no/signup/vippspanett/)
-* Install the plugin
+* Sign up to use Vipps på Nett ([vipps.no/woocommerce](https://www.vipps.no/bedrift/vipps-pa-nett/woocommerce))
+* After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
+* Download and install the plugin
 * Configure the plugin
 
+=== How to get API credentials from Vipps Developer Portal ===
+1.Sign in to Vipps Developer Portal at [https://apitest-portal.vipps.no/](https://apitest-portal.vipps.no/)
+	a. Username is sent via email
+	b. Password is sent via SMS
+2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
+3. Click on "View Secret" to see “Client ID” and “Client Secret”
+4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
 
 == Installation ==
 1. Upload the plugin files to the `/wp-content/plugins/` directory, or install the plugin through the WordPress plugins screen directly.
