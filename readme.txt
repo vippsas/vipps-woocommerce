@@ -40,7 +40,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
 
 === How to get API credentials from Vipps Developer Portal ===
-1. Sign in to Vipps Developer Portal at [https://apitest-portal.vipps.no/](https://apitest-portal.vipps.no/)
+1. Sign in to Vipps Developer Portal at [https://api-portal.vipps.no/](https://api-portal.vipps.no/)
    - Username is sent via email
    - Password is sent via SMS
 2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
