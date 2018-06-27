@@ -33,6 +33,12 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 * Download and install the plugin
 * Configure the plugin
 
+=== How to install the plugin ===
+1. Upload the plugin files to the `/wp-content/plugins/` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
+4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
+
 === How to get API credentials from Vipps Developer Portal ===
 1. Sign in to Vipps Developer Portal at [https://apitest-portal.vipps.no/](https://apitest-portal.vipps.no/)
    - Username is sent via email
@@ -40,6 +46,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
 3. Click on "View Secret" to see “Client ID” and “Client Secret”
 4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
+
 
 == Installation ==
 1. Upload the plugin files to the `/wp-content/plugins/` directory, or install the plugin through the WordPress plugins screen directly.
