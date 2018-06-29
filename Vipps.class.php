@@ -30,7 +30,6 @@ class Vipps {
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
     private static $instance = null;
-    private $vippsbuttonadded = 0; // Used to show login-button only once
     private $countrymap = null;
 
     function __construct() {
@@ -45,7 +44,6 @@ class Vipps {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
         $this->cleanupCallbackSignals();
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
-        add_action('wp_login', array($this, 'wp_login'), 10, 2);
     }
 
     public function admin_init () {
@@ -145,24 +143,6 @@ class Vipps {
         }
     }
 
-    // Add an 'login to vipps' thing here if required. IOK 2018-05-31
-    public function login_with_vipps_button() {
-        // Do this once per instance only.
-        if ($this->vippsbuttonadded) return;
-        $this->vippsbuttonadded = 1;
-        if (is_user_logged_in()) return;
-
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
-        if (!$gw->show_login_with_vipps()) return;
-
-        $imgurl = plugins_url('img/logginn.png',__FILE__);
-        $title = __('Log in with Vipps!', 'woo-vipps');
-        $url = $this->login_url();
-        ?>        
-            <div class="vippslogincontainer"><a class="button vipps-login" href="<?php echo $url;?>" title="<?php echo $title;?>"><img border=0 alt="<?php echo $title;?>" src="<?php echo $imgurl;?>"></a></div>
-            <?php
-    }
 
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
@@ -268,131 +248,8 @@ class Vipps {
         return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
 
-
-    // This will, in a callback from express checkout, or Vipps login, create a user as a Vipps user. If the user exists 
-    // it will be updated with the relevant information from Vipps. Returns the user ID, not a user object. IOK 2018-05-29
-    public function createVippsUser($userdetails,$address) {
-        if (!$userdetails) return null;
-        if (!$address) $address = array();
-
-        $email = $userdetails['email'];
-        $user = get_user_by('email',$email);
-        $userdata = array();
-        $userid = 0;
-
-        if ($user) {
-            $userid = $user->ID;
-        } else {
-            $username = sanitize_user( current( explode( '@', $email ) ), true );
-            $append     = 1;
-            $o_username = $username;
-            while ( username_exists( $username ) ) {
-                $username = $o_username . $append;
-                $append++;
-            }
-            $password = wp_generate_password();
-            $userid =  wc_create_new_customer($email, $username, $password);
-
-        }
-        if (is_wp_error($userid)) {
-            throw new VippsApiException($userid->get_error_message());
-        }
-
-        $userdata['first_name'] = $userdetails['firstName'];
-        $userdata['last_name'] = $userdetails['lastName'];
-        $userdata['display_name'] =  $userdetails['firstName'] . ' ' . $userdetails['lastName'];
-        $userdata['ID'] = $userid;
-        $updateresult = wp_update_user($userdata);
-
-        // Update all metadata for both new and old users. IOK 2018-05-29
-        update_user_meta( $userid, "vipps_id", $userdetails['userId']);
-        update_user_meta( $userid, "billing_first_name", $userdetails['firstName']);
-        update_user_meta( $userid, "billing_last_name", $userdetails['lastName']);
-        update_user_meta( $userid, "billing_phone", $userdetails['mobileNumber']);
-        update_user_meta( $userid, "billing_email", $email);
-        update_user_meta( $userid, "billing_address_1", $address['addressLine1']);
-
-        // Why this would be neccessary, I couln't say, but here we go. IOK 2018-05-31
-        if ($address['addressLine2'] == 'null') $address['addressLine2'] = '';
-
-        if (@$address['addressLine2']) update_user_meta( $userid, "billing_address_2", $address['addressLine2']);
-        if (@$address['city']) update_user_meta( $userid, "billing_city", $address['city']);
-        if (@$address['zipCode']) update_user_meta( $userid, "billing_postcode", $address['zipCode']);
-        if (@$address['postCode']) update_user_meta( $userid, "billing_postcode", $address['postCode']); // *Both* are used by different calls!
-        if (@$address['country']) update_user_meta( $userid, "billing_country", $address['country']);
-
-        return $userid;
-    }
-
-    // Login the given user ID - unless somebody is already logged in, in which case, don't.
-    private function loginUser($userid) {
-        $user = get_user_by('id',$userid);
-        if (!$user) return false;
-        wp_set_current_user($user->ID,$user->user_login);
-        wp_set_auth_cookie($userid);
-        do_action('wp_login', $user->user_login); 
-        return $user;
-    }
-
-    // Creates a Vipps user or retreives and updates and existing one, then logs them in. IOK 2018-05-29
-    private function  createOrLoginVippsUser($userdetails,$address) {
-        if (is_user_logged_in()) return false;
-        $userid = $this->createVippsUser($userdetails,$address);
-        return $this->loginUser($userid);
-    }
-
-    // Given an orderid, check to see if we should log the user in. This is done on 'express checkout' when enabled. IOK 2018-05-29
-    // called by template-redirect when on the thank-you page. As the order may not be ready, we may have to store the order ID in session
-    // and log in later when the user navigates. IOK 2018-05-30
-    private function maybe_login_user($orderid) {
-        if (!$orderid) return false;
-        if (is_user_logged_in()) {
-            wc()->session->set('_login_order',0);
-            return false;
-        }
-        $order = new WC_Order($orderid);
-        if (!$order) return false;
-        $express =  $order->get_meta('_vipps_express_checkout');
-        if ($express != 'create') {
-            wc()->session->set('_login_order',0);
-            return false;
-        }
-
-        $userid = $order->get_meta('_vipps_express_user'); 
-        // As the user may have been created async, and the creation process not yet done
-        // we need to mark that the user should be logged in on the *next* click instead.
-        // The session should be active in this case, if it isn't, oh well.
-        if (!$userid) {
-            wc()->session->set('_login_order',$orderid);
-            return true;
-        } else {
-            wc()->session->set('_login_order',0);
-            $this->loginUser($userid); 
-            return true;
-        }
-    }
-    public function wp_login($user_login,$user) {
-        // Remove any waiting login actions from the express checkout branch.
-        wc()->session->set('_login_order',0);
-    }
-
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
-        // If this is the/an order-received/thank you page, check to see if we should log the user in. 
-        //  We can only do this if the user actually has been created, and if that hasn't happened - because some servers are 
-        // slow and this is/can be asynchronous, we will store the order inn a sessino. Then login using that when it is ready.
-        // This will happen only for express checkout, when the 'create customers for express checkout' is true. IOK 2018-05-30
-        if (is_order_received_page()){
-            global $wp;
-            $orderid = isset( $wp->query_vars['order-received'] ) ? intval( $wp->query_vars['order-received'] ) : 0;
-            $this->maybe_login_user($orderid);
-            return;
-        }
-        if ($orderid = WC()->session->get('_login_order')) {
-            $this->maybe_login_user($orderid); 
-        }
-
-
         // Handle special callbacks
         $special = $this->is_special_page() ;
         if ($special) return $this->$special();
@@ -427,7 +284,6 @@ class Vipps {
 
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
-        add_action( 'woocommerce_api_vipps_login', array($this,'vipps_login_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
 
         // Currently this sets Vipps as default payment method if hooked. IOK 2018-06-06 
@@ -436,8 +292,6 @@ class Vipps {
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
-        add_action( 'woocommerce_before_customer_login_form' , array($this, 'login_with_vipps_button'));
-        add_action('woocommerce_login_form_start' , array($this, 'login_with_vipps_button'));
         add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
 
 
@@ -511,33 +365,6 @@ class Vipps {
         exit();
     }
 
-    // This if for the callback from Vipps when logging in
-    public function vipps_login_callback() {
-        if (!VIPPS_LOGIN) exit();
-
-        $raw_post = @file_get_contents( 'php://input' );
-        $result = @json_decode($raw_post,true);
-        if (!$result) {
-            $this->log(__("Did not understand login callback from Vipps:",'woo-vipps') . " " .  $raw_post);
-            return false;
-        }
-        $loginrequest = get_transient('_vipps_loginrequests_' . $result['requestId']);
-        if (!$loginrequest) {
-            $this->log(__("Error during Vipps login callback: unknown request id",'woo-vipps') . ' ' . print_r($result,true));
-            return false;
-        }
-        // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
-        if (false) {
-            if ($_SERVER['PHP_AUTH_USER'] != 'Vipps' || $_SERVER['PHP_AUTH_PW'] != $loginrequest['authToken']) {
-                $this->log(__("Error during Vipps login callback: wrong or no authtoken. Make sure the Authorization header is not stripped on your system",'woo-vipps'));
-                return false;
-            }
-        }
-        // Store the request! The waiting-page will do the login/creation. IOK 2018-05-18 
-        $this->log(__("Got login callback from",'woo-vipps') . " " .$result['status']);;
-        set_transient('_vipps_loginrequests_' . $result['requestId'], $result, 10*60);
-        exit();
-    }
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
     public function country_to_code($countryname) {
@@ -660,38 +487,8 @@ class Vipps {
     public function vipps_consent_removal_callback ($callback) {
         // This feature is disabled - no customers are created by express checkout or login-with-vipps,
         // so there is nothing to do. IOK 2018-06-06
-        if (!VIPPS_LOGIN) {
             print "1";
             exit();
-        }
-
-        $data = array_reverse(explode("/",$callback));
-        if (empty($data)) return false;
-        $uid = $data[0];
-        $this->log(__("Vipps consent removal received for",'woo-vipps') . ' ' . $uid); 
-        if (!$uid) {
-            print "-1";exit();
-        }
-        $users = get_users(array('meta_key'=>'vipps_id','meta_value'=>$uid));
-        if (empty($users)) {
-            print "-1";exit();
-        }
-        $user = $users[0];
-        if ($user->has_cap("remove_users")) {
-            $this->log(__("Administrator user can remove users - don't accidentally remove by consent removal:", 'woo-vipps') . " " . $user->ID); 
-            print "-1";exit();
-        }
-
-        $customer = new WC_Customer($user->ID); 
-        if (!$customer) {
-            print "-1";exit();
-        }
-
-        // Quite incredibly, this is neccessary. IOK 2018-05-18
-        require_once(ABSPATH.'wp-admin/includes/user.php');
-        $customer->delete();
-        print "1"; exit();
-        exit();
     }
 
     public function woocommerce_payment_gateways($methods) {
@@ -865,19 +662,13 @@ class Vipps {
     public function payment_return_url() {
         return $this->make_return_url('vipps-betaling');
     }
-    public function login_url() {
-        return $this->make_return_url('vipps-login');
-    }
-    public function login_return_url() {
-        return $this->make_return_url('vipps-login-venter');
-    }
     public function express_checkout_url() {
         return $this->make_return_url('vipps-express-checkout');
     }
 
     // Return the method in the Vipps
     public function is_special_page() {
-        $specials = array('vipps-login'=>'vipps_login_page','vipps-betaling' => 'vipps_wait_for_payment','vipps-login-venter'=>'vipps_wait_for_login', 'vipps-express-checkout'=>'vipps_express_checkout');
+        $specials = array('vipps-betaling' => 'vipps_wait_for_payment', 'vipps-express-checkout'=>'vipps_express_checkout');
         $method = null;
         if ( get_option('permalink_structure')) {
             foreach($specials as $special=>$specialmethod) {
@@ -1000,7 +791,7 @@ class Vipps {
             }
         }
 
-        // All these stauuses are successes so go to the thankyou page. Any logins etc will happen there.
+        // All these stauuses are successes so go to the thankyou page. 
         if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
             wp_redirect($gw->get_return_url($order));
             exit();
@@ -1063,138 +854,6 @@ class Vipps {
         $this->fakepage(__('Waiting for your order confirmation','woo-vipps'), $content);
     }
 
-    public function vipps_login_page() {
-        // Because we want to call this using GET we must ensure no caching happens so we can set cookies etc.
-        header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', FALSE);
-        header('Pragma: no-cache');
-
-        if (is_user_logged_in()) {
-            wc_add_notice(__('You are already logged in!','woo-vipps'),'notice');
-            wp_redirect(home_url());
-            exit();
-        } 
-
-        // To login, we need a session, even if the user hasn't added anything to the cart yet. IOK 2018-05-18 
-        if (!WC()->session->has_session()) {
-            WC()->session->set_customer_session_cookie(true);
-        }
-        WC()->session->set('vipps_login_request', null);
-
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
-
-        if (!$gw->show_login_with_vipps()) {
-            wc_add_notice(__('Login with Vipps is not available !','woo-vipps'),'notice');
-            wp_redirect(home_url());
-            exit();
-        }
-
-        $msg = __('Unknown error','woo-vipps');
-        $result = null;
-        try {
-            $result = $gw->login_request(); 
-        } catch (Exception $e) {
-            $msg = $e->getMessage();
-        }
-        if (!$result) {
-            wc_add_notice($msg);
-            wp_redirect(home_url());
-            exit();
-        }
-
-        WC()->session->set('vipps_login_request', $result['requestId']);
-        wp_redirect($result['url']);
-    }
-
-    // Actually create/login the user when we have a result. 
-    // IOK 2018-05-18 FIXME REWRITE TO USE AJAX INSTEAD OF RELOAD for smoothness. Also, potentialy call the 'get login status' call.
-    public function vipps_wait_for_login() {
-        header('Expires: Sun, 01 Jan 2014 00:00:00 GMT');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', FALSE);
-        header('Pragma: no-cache');
-
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
-
-        $requestid = WC()->session->get('vipps_login_request');
-        $loginrequest = get_transient('_vipps_loginrequests_' . $requestid);
-
-        // When disabled, do not log in. IOK 2018-06-05
-        if (!$gw->show_login_with_vipps()) {
-            $loginrequest = false;
-        }
-
-
-        if (!$loginrequest) {
-            $msg = __('Could not login with Vipps:','woo-vipps');
-            $this->log(__('Login wait page: Unknown login request','woo-vipps'));
-            wc_add_notice($msg, 'error');
-            wp_redirect(home_url());
-            exit();
-        }
-        $status = isset($loginrequest['status']) ? $loginrequest['status'] : '';
-
-        // No callback yet, so make 1 call to the get status thing, which should normally produce some result.
-        if (!$status || $status == 'PENDING') {
-            try {
-                require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-                $gw = new WC_Gateway_Vipps();
-                $result = $gw->login_request_status($requestid); 
-                $status = isset($result['status']) ?  $result['status'] : '';
-            } catch (Exception $e) {
-                $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $e->getMessage();
-                $this->log($msg);
-                wc_add_notice(__('Could not login with Vipps:','woo-vipps') . ' ' .  __('Vipps is temporarily unavailable.','woo-vipps'), 'error');
-                delete_transient('_vipps_loginrequests_' . $requestid);
-                wp_redirect(home_url());
-                exit();
-            }
-        }
-
-        if ($status == 'SUCCESS') {
-            try {
-                $userdetails = $loginrequest['userDetails'];
-                $address = $userdetails['address'];
-                $user = $this->createOrLoginVippsUser($userdetails,$address);
-                if ($user) {
-                    // Returns false if e.g. the user is already logged in, in which case, don't go "welcome!". IOK 2018-05-29
-                    wc_add_notice(__('Welcome') . ' ' . $user->display_name . '!', 'success');
-                }
-            } catch (Exception $e) {
-                $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $e->getMessage();
-                $this->log($msg);
-                wc_add_notice($msg, 'error');
-            }
-            delete_transient('_vipps_loginrequests_' . $requestid);
-            wp_redirect(home_url());
-            exit();
-        }
-
-        // We haven't had a result in 30 seconds - give up . IOK 2018-05-18
-        if (!isset($loginrequest['when']) || ($loginrequest['when'] + 30) < time()) {
-            $status = 'FAILURE';
-        }
-
-        if ($status == 'FAILURE' || $status == 'DECLINED' || $status == 'REMOVED') {
-            $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $status;
-            delete_transient('_vipps_loginrequests_' . $requestid);
-            wc_add_notice(__('Vipps login cancelled','woo-vipps'),'error');
-            wp_redirect(home_url());
-            exit();
-        }
-
-
-        if ($status == 'PENDING' || !$status) {
-            // We should actaully try to call the 'get login request status after enough time has passed here,
-            // but really.. this is just a failure result, so we could just as well go directly to failure after a couple of seconnds. IOK 2018-05-18
-            $content = __("Waiting for Vipps login approval",'woo-vipps');
-            $content .= "\n<script>setTimeout(function() {window.location.reload(true);}, 10000);</script\n>";
-            $this->fakepage(__("Waiting for Vipps login approval", 'woo-vipps'),$content);
-        }
-    }
 
 
     public function fakepage($title,$content) {

@@ -34,8 +34,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-// This is currently not available. Affects creation of accounts for express checkout too.
-define('VIPPS_LOGIN', false);
 
 // Only be active if Woocommerce is active IOK 2018-06-05
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {

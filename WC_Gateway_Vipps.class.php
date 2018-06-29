@@ -91,10 +91,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function payment_callback_url () {
         return $this->make_callback_urls('wc_gateway_vipps');
     }
-    // Callback for the login api
-    public function login_callback_url () {
-        return $this->make_callback_urls('vipps_login');
-    }
     public function shipping_details_callback_url() {
         return $this->make_callback_urls('vipps_shipping_details');
     }
@@ -114,7 +110,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 	    return ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
     }
     public function show_login_with_vipps() {
-	    return VIPPS_LOGIN && ($this->enabled == 'yes') && ($this->get_option('vippslogin') == 'yes');
+	    return false;
     }
 
 
@@ -299,7 +295,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     );
 
         // This will be enabled on a later date . IOK 2018-06-05
-        if (VIPPS_LOGIN) {
+        if (false) {
             $this->form_fields['expresscreateuser'] = array (
                     'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
                     'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
@@ -413,11 +409,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Needed to ensure we have orderinfo
         if ($this->express_checkout) {
-            if (VIPPS_LOGIN && 'yes' == $this->get_option('expresscreateuser')) {
-                $order->update_meta_data('_vipps_express_checkout','create');
-            } else {
-                $order->update_meta_data('_vipps_express_checkout',1);
-            }
+            $order->update_meta_data('_vipps_express_checkout',1);
         }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
@@ -624,57 +616,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $token;
     }
 
-    // Send a login-request to Vipps
-    public function login_request() {
-        global $Vipps;
-        // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07
-        // (but on failre, we don't increase it - and also, we don't really support partial capture yet.) IOK 2018-05-07
-        $authtoken = $this->generate_authtoken();
-
-        $requestidnr = intval(WC()->session->get('_vipps_login_requestid'));
-        $returnurl = $Vipps->login_return_url();
-        try {
-            $requestid = $requestidnr . ":" . WC()->session->get_customer_id();
-            $content =  $this->api->login_request($returnurl,$authtoken,$requestid);
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not login with Vipps', 'woo-vipps') . ' ' .$e->getMessage(),'error');
-            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $e->getMessage();
-            $this->log($msg,'error');
-            throw new VippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        }
-
-        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>$authtoken, 'when'=>time()), 10*60);
-        WC()->session->set('_vipps_login_requestid', $requestidnr+1);
-        return $content;
-    }
-
-    // Get the status of a login request
-    public function login_request_status($requestid) {
-        global $Vipps;
-        try {
-            $content =  $this->api->login_request_status($requestid);
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not login with Vipps', 'woo-vipps') . ' ' .$e->getMessage(),'error');
-            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $e->getMessage();
-            $this->log($msg,'error');
-            throw new VippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        }
-        // Errors with a 200 result :( IOK 2018-05-23
-        if (is_array($content) && isset($content[0]) && isset($content[0]['errorMessage'])) {
-            throw new VippsApiException($content[0]['errorMessage']); 
-        }
-        // Store here as well.
-        set_transient('_vipps_loginrequests_' . $content['requestId'], $content, 10*60);
-        return $content;
-    }
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
@@ -734,7 +675,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
             if (@$statusdata['shippingDetails']) {
                 $this->set_order_shipping_details($order,$statusdata['shippingDetails'], $statusdata['userDetails']);
-                $this->maybe_create_user($order,$statusdata); 
             } else {
                 $this->log(__("No shipping details from Vipps for express checkout",'woo-vipps') . ": " . $e->getMessage(), 'error');
                 return $oldstatus; 
@@ -867,23 +807,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
 
-    // Create users on express checkout, maybe. Used by both handle_callback and callback_get_order_status
-    private function maybe_create_user($order,$result) {
-        global $Vipps;
-        $express =  $order->get_meta('_vipps_express_checkout');
-        if (VIPPS_LOGIN && $express == 'create') {
-            try {
-                $userid = $Vipps->createVippsUser(@$result['userDetails'], @$result['shippingDetails']['address']);
-                update_post_meta($orderid, '_customer_user', $userid); // Was required at some point, so for sanitys sake.
-                $order->set_customer_id($userid); 
-                $order->update_meta_data('_vipps_express_user',$userid); // Will be used to login the user if they go to the "wait for confirmation" page.
-            } catch (Exception $e) {
-                // can't do much here, so ignore and log the error
-                $this->log(__("Couldn't create Vipps user on express checkout:",'woo-vipps') . ' ' . $e->getMessage(), 'error'); 
-            }
-        }
-    }
-
     // Handle the callback from Vipps.
     public function handle_callback($result) {
         global $Vipps;
@@ -942,9 +865,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Entering critical area, so start with the fake locking mentioned above. IOK 2018-05-30
         set_transient('order_callback_'.$orderid,1, 60);
-
-        // If express checkout, maybe create a customer as well. IOK 2018-05-29 
-        $this->maybe_create_user($order,$result); 
 
         $transactionid = $transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);
