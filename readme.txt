@@ -15,11 +15,11 @@ License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
 *Official Vipps Express Checkout and Payment for WooCommerce. 2.9 millon norwegians use Vipps. Give them a fast and familiar shopping experience.*
 
-Read [information from Vipps](https://www.vipps.no/woocommerce ) about the plugin.
-
 This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
+
+Read [information from Vipps](https://www.vipps.no/woocommerce ) about the plugin.
 
 === Vipps Express Checkout ===
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
