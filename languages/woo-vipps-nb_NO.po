@@ -2,9 +2,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-25 09:38+0000\n"
-"PO-Revision-Date: 2018-06-25 09:40+0000\n"
-"Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
+"POT-Creation-Date: 2018-06-29 08:52+0000\n"
+"PO-Revision-Date: 2018-06-29 08:52+0000\n"
+"Last-Translator: muadmin <iver@ignitas.no>\n"
 "Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
@@ -12,6 +12,398 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/"
+
+#: WC_Gateway_Vipps.class.php:54
+msgid "Offer Vipps as a payment method"
+msgstr "Tilby Vipps som betalingsmetode"
+
+#: WC_Gateway_Vipps.class.php:55 WC_Gateway_Vipps.class.php:56
+#: WC_Gateway_Vipps.class.php:275 WC_Gateway_Vipps.class.php:1038
+#: Vipps.class.php:89
+msgid "Vipps"
+msgstr "Vipps"
+
+#: WC_Gateway_Vipps.class.php:58 WC_Gateway_Vipps.class.php:281
+msgid "Pay with Vipps"
+msgstr "Betal med Vipps"
+
+#: WC_Gateway_Vipps.class.php:139 WC_Gateway_Vipps.class.php:543
+#: WC_Gateway_Vipps.class.php:547
+msgid "Could not cancel Vipps payment"
+msgstr "Kunne ikke kansellere Vipps-betalingen"
+
+#: WC_Gateway_Vipps.class.php:164
+msgid ""
+"Temporary error when refunding payment through Vipps - ensure order is "
+"refunded manually, or reset the order to \"Processing\" and try again"
+msgstr ""
+"Midlertidig feil under tilbakebetaling via Vipps - sørg for at bestillingen "
+"tilbakebetales manuelt, eller sett status tilbake til \"Behandler\" og prøv "
+"igjen"
+
+#: WC_Gateway_Vipps.class.php:170
+msgid "Error when refunding payment through Vipps:"
+msgstr "Feil under tilbakebetaling via Vipps:"
+
+#: WC_Gateway_Vipps.class.php:175
+msgid ""
+"Could not refund payment through Vipps - ensure the refund is handled "
+"manually!"
+msgstr ""
+"Det var ikke mulig å tilbakebetale med Vipps - sørg for at tilbakebetalingen "
+"gjøres manuelt!"
+
+#: WC_Gateway_Vipps.class.php:194
+msgid "Cannot refund through Vipps - the payment has not been captured yet."
+msgstr ""
+"Kan ikke tilbakebetale beløpet via Vipps - betalingen har ikke blitt "
+"belastet ennå."
+
+#: WC_Gateway_Vipps.class.php:197
+msgid "Cannot refund through Vipps - the refund amount is too large."
+msgstr ""
+"Kan ikke tilbakebetale gjennom Vipps - beløpet som skal tilbakebetales er "
+"for stort."
+
+#: WC_Gateway_Vipps.class.php:203 WC_Gateway_Vipps.class.php:206
+msgid "Could not refund Vipps payment"
+msgstr "Kunne ikke tilbakebetale Vipps-betalingen"
+
+#: WC_Gateway_Vipps.class.php:204 WC_Gateway_Vipps.class.php:498
+#: WC_Gateway_Vipps.class.php:544 WC_Gateway_Vipps.class.php:641
+#: WC_Gateway_Vipps.class.php:646 WC_Gateway_Vipps.class.php:662
+#: WC_Gateway_Vipps.class.php:667 WC_Gateway_Vipps.class.php:773
+#: Vipps.class.php:800 Vipps.class.php:951 Vipps.class.php:963
+#: Vipps.class.php:1150
+msgid "Vipps is temporarily unavailable."
+msgstr "Vipps er midlertidig utilgjengelig"
+
+#: WC_Gateway_Vipps.class.php:213
+msgid " refunded through Vipps:"
+msgstr "Refundert gjennom Vipps:"
+
+#: WC_Gateway_Vipps.class.php:223
+msgid "Enable Vipps"
+msgstr "Skru på Vipps"
+
+#: WC_Gateway_Vipps.class.php:229 WC_Gateway_Vipps.class.php:230
+msgid "Order-id Prefix"
+msgstr "Bestillingsnummer-prefiks"
+
+#: WC_Gateway_Vipps.class.php:232
+msgid ""
+"An alphanumeric textstring to use as a prefix on orders from your shop, to "
+"avoid duplicate order-ids"
+msgstr ""
+"En kort tekst med bokstaver og tall som brukes som prefiks på ordre-id fra "
+"butikken, slik at det ikke oppstår duplikater hos Vipps"
+
+#: WC_Gateway_Vipps.class.php:236 WC_Gateway_Vipps.class.php:237
+msgid "Merchant Serial Number"
+msgstr "Merchant Serial Number"
+
+#: WC_Gateway_Vipps.class.php:239
+msgid ""
+"Your merchant serial number from the Developer Portal - Applications tab, "
+"Saleunit Serial Number"
+msgstr ""
+"Din \"Merchant Serial Number\" fra utviklerportalen - Fanen \"Applications\","
+" \"Saleunit Serial Number\""
+
+#: WC_Gateway_Vipps.class.php:243 WC_Gateway_Vipps.class.php:244
+msgid "Client Id"
+msgstr "Client id"
+
+#: WC_Gateway_Vipps.class.php:246
+msgid "Client Id from Developer Portal - Applications tab, \"View Secret\""
+msgstr ""
+"\"Client Id\" fra Utviklerportalen - Fanen \"Applications\", \"View Secret\""
+
+#: WC_Gateway_Vipps.class.php:250 WC_Gateway_Vipps.class.php:251
+msgid "Application Secret"
+msgstr "Application Secret"
+
+#: WC_Gateway_Vipps.class.php:253
+msgid ""
+"Application secret from Developer Portal - Applications tab, \"View Secret\""
+msgstr ""
+"Application secret fra Utviklerportalen - fanen \"Applications\", \"View "
+"Secret\""
+
+#: WC_Gateway_Vipps.class.php:257 WC_Gateway_Vipps.class.php:258
+msgid "Subscription key for Access Token"
+msgstr "Subscription key Access Token"
+
+#: WC_Gateway_Vipps.class.php:260
+msgid ""
+"The Primary key for the Access Token subscription from your profile on the "
+"developer portal"
+msgstr ""
+"Din \"Primary Key\" for din \"Access Token\"-abonnement fra din profil på "
+"Utviklerportalen"
+
+#: WC_Gateway_Vipps.class.php:264 WC_Gateway_Vipps.class.php:265
+msgid "Subscription key for eCommerce"
+msgstr "Abonnementsnøkkel for eCommerce"
+
+#: WC_Gateway_Vipps.class.php:267
+msgid ""
+"The Primary key for the eCommerce API subscription from your profile on the "
+"developer portal"
+msgstr ""
+"Primary key for din \"eCommerce API subscription\" fra din profil på "
+"Utviklerportalen"
+
+#: WC_Gateway_Vipps.class.php:285
+msgid "Use Vipps as default payment method on checkout page"
+msgstr "Bruk Vipps som standard betalingsmetode på kassa-siden"
+
+#: WC_Gateway_Vipps.class.php:286
+msgid "Vipps is default payment method"
+msgstr "Vipps er standard betalingsmetode"
+
+#: WC_Gateway_Vipps.class.php:288
+msgid ""
+"Enable this to use Vipps as the default payment method on the checkout page, "
+"regardless of order."
+msgstr ""
+"Skru på denne for å bruke Vipps som standard betalingsmetode på kassa-siden, "
+"uavhengig av sorteringsrekkefølge"
+
+#: WC_Gateway_Vipps.class.php:293 WC_Gateway_Vipps.class.php:294
+msgid "Enable Express Checkout in cart"
+msgstr "Skru på Hurtigkassen i handlekurven"
+
+#: WC_Gateway_Vipps.class.php:296
+msgid ""
+"Enable this to allow customers to shop using Express Checkout directly from "
+"the cart with no login or address input needed"
+msgstr ""
+"Skru på denne for å la kunder handle med Vipps Hurtigkasse direkte fra "
+"handlekurven uten å måtte logge inn eller skrive inn en addresse"
+
+#: WC_Gateway_Vipps.class.php:304 WC_Gateway_Vipps.class.php:305
+msgid "Create new customers on Express Checkout"
+msgstr "Opprett nye brukere gjennom Hurtigkassen"
+
+#: WC_Gateway_Vipps.class.php:307
+msgid ""
+"Enable this to create and login new customers when using express checkout. "
+"Otherwise these will all be guest checkouts."
+msgstr ""
+"Skru på dette for å opprette nye kunder og logge dem inn når de bruker "
+"Hurtigkassen. Ellers vil disse være gjestekjøp."
+
+#: WC_Gateway_Vipps.class.php:311 WC_Gateway_Vipps.class.php:312
+msgid "Enable \"Login with Vipps\""
+msgstr "Skru på \"Logg inn med Vipps\""
+
+#: WC_Gateway_Vipps.class.php:314
+msgid "Enable this to allow customers (and yourself!) to log in with Vipps"
+msgstr "Skru på denne for å la kundene (og deg selv!) logge inn med Vipps"
+
+#: WC_Gateway_Vipps.class.php:359 WC_Gateway_Vipps.class.php:396
+msgid ""
+"Unfortunately, the Vipps payment method is currently unavailable. Please "
+"choose another method."
+msgstr ""
+"Dessverre så er Vipps-betaling ikke tilgjengelig for øyeblikket. Vennligst "
+"velg en annen metode."
+
+#: WC_Gateway_Vipps.class.php:373
+msgid "You need to enter your phone number to pay with Vipps"
+msgstr "Du må skrive inn ditt telefonnummer for å handle med Vipps"
+
+#: WC_Gateway_Vipps.class.php:391 WC_Gateway_Vipps.class.php:395
+msgid "Could not initiate Vipps payment"
+msgstr "Kunne ikke opprette Vipps-betaling"
+
+#: WC_Gateway_Vipps.class.php:392
+msgid ""
+"Unfortunately, the Vipps payment method is temporarily unavailable. Please "
+"wait or  choose another method."
+msgstr ""
+"Dessverre så er Vipps-betaling ikke tilgjengelig for øyeblikket. Vennligst "
+"velg en annen metode eller vent en stund."
+
+#: WC_Gateway_Vipps.class.php:424
+msgid "Vipps payment initiated"
+msgstr "Vipps betaling startet"
+
+#: WC_Gateway_Vipps.class.php:425
+msgid "Awaiting Vipps payment confirmation"
+msgstr "Venter på bekreftelse fra Vipps"
+
+#: WC_Gateway_Vipps.class.php:460
+msgid "Could not capture Vipps payment - status set to"
+msgstr "Kunne ikke belaste Vipps-betalingen - status satt til"
+
+#: WC_Gateway_Vipps.class.php:475
+msgid "Trying to capture payment on order not made by Vipps:"
+msgstr "Prøver å belaste en bestilling som ikke er gjort med Vipps:"
+
+#: WC_Gateway_Vipps.class.php:476
+msgid "Cannot capture payment on orders not made by Vipps"
+msgstr "Kan ikke belaste betalingen på bestillinger ikke utført med Vipps"
+
+#: WC_Gateway_Vipps.class.php:485
+msgid "Payment already captured"
+msgstr "Betalingen er allerede belastet"
+
+#: WC_Gateway_Vipps.class.php:497 WC_Gateway_Vipps.class.php:501
+msgid "Could not capture Vipps payment"
+msgstr "Kunne ikke belaste Vipps-betalingen"
+
+#: WC_Gateway_Vipps.class.php:517
+msgid "Vipps Payment captured:"
+msgstr "Vipps-betaling belastet:"
+
+#: WC_Gateway_Vipps.class.php:527
+msgid "Trying to cancel payment on order not made by Vipps:"
+msgstr "Forsøker å kansellere betaling på bestilling ikke gjort med Vipps:"
+
+#: WC_Gateway_Vipps.class.php:528
+msgid "Cannot cancel payment on orders not made by Vipps"
+msgstr "Kan ikke kansellere ordren; den er ikke utført med Vipps"
+
+#: WC_Gateway_Vipps.class.php:534
+msgid "Cannot cancel a captured Vipps transaction - use refund instead"
+msgstr ""
+"Kan ikke kansellere en Vipps-transaksjon etter at den er blitt belastet - "
+"bruk \"refunder\" istedet"
+
+#: WC_Gateway_Vipps.class.php:560
+msgid "Vipps Payment cancelled:"
+msgstr "Vipps-betaling kansellert:"
+
+#: WC_Gateway_Vipps.class.php:577
+msgid "Trying to refund payment on order not made by Vipps:"
+msgstr "Forsøker å tilbakebetale bestilling ikke gjort med Vipps:"
+
+#: WC_Gateway_Vipps.class.php:584
+msgid "Trying to refund payment on Vipps payment not captured:"
+msgstr "Forsøker å tilbakebetale Vipps-betaling som ikke er belastet:"
+
+#: WC_Gateway_Vipps.class.php:604
+msgid "Vipps payment refunded:"
+msgstr "Vipps-betaling tilbakebetalt:"
+
+#: WC_Gateway_Vipps.class.php:640 WC_Gateway_Vipps.class.php:661
+msgid "Could not login with Vipps"
+msgstr "Kunne ikke logge inn med Vipps"
+
+#: WC_Gateway_Vipps.class.php:644 WC_Gateway_Vipps.class.php:665
+#: Vipps.class.php:1132 Vipps.class.php:1148 Vipps.class.php:1150
+#: Vipps.class.php:1167 Vipps.class.php:1182
+msgid "Could not login with Vipps:"
+msgstr "Kunne ikke logge inn med Vipps:"
+
+#: WC_Gateway_Vipps.class.php:725
+msgid ""
+"Express checkout - no callback yet, so getting payment details from Vipps"
+msgstr ""
+"Hurtigkasse - ikke noe callback ennå, så hent betalingsdetaljer direkte fra "
+"Vipps"
+
+#: WC_Gateway_Vipps.class.php:731
+msgid "Error getting payment details from Vipps for express checkout"
+msgstr ""
+"Feil under uthenting av betalingsdetaljer fra Vipps i Vipps Hurtigkasse"
+
+#: WC_Gateway_Vipps.class.php:739
+msgid "No shipping details from Vipps for express checkout"
+msgstr "Ingen fraktdetaljer fra Vipps via Hurtigkasse"
+
+#: WC_Gateway_Vipps.class.php:748 WC_Gateway_Vipps.class.php:974
+msgid "Payment authorized at Vipps"
+msgstr "Betaling reservert hos Vipps"
+
+#: WC_Gateway_Vipps.class.php:752
+msgid "Payment captured at Vipps"
+msgstr "Betaling Captured (belastet) hos Vipps"
+
+#: WC_Gateway_Vipps.class.php:755
+msgid "Order failed or rejected at Vipps"
+msgstr "Bestilling mislyktes eller ble avvist hos Vipps"
+
+#: WC_Gateway_Vipps.class.php:772 WC_Gateway_Vipps.class.php:776
+#: WC_Gateway_Vipps.class.php:784
+msgid "Could not get Vipps order status"
+msgstr "Kunne ikke hente ordrestatus hos Vipps"
+
+#: WC_Gateway_Vipps.class.php:779
+msgid "Order does not exist at Vipps - cancelling"
+msgstr "Bestillingen eksisterer ikke hos Vipps - kansellerer"
+
+#: WC_Gateway_Vipps.class.php:882
+msgid "Couldn't create Vipps user on express checkout:"
+msgstr "Kunne ikke opprette Vipps-bruker i Hurtigkassen:"
+
+#: WC_Gateway_Vipps.class.php:899
+msgid "Vipps callback for unknown order"
+msgstr "Vipps-callback for ukjent bestilling"
+
+#: WC_Gateway_Vipps.class.php:906
+msgid "Vipps callback with wrong merchantSerialNumber - might be forged"
+msgstr "Vipps-callback med feil merchantSerialNumber - kan være forfalsket"
+
+#: WC_Gateway_Vipps.class.php:914
+msgid ""
+"Wrong auth token in callback from Vipps - possibly an attempt to fake a "
+"callback"
+msgstr ""
+"Feil auth-token i callback fra Vipps - muligens et forsøk på å forfalske en "
+"callback"
+
+#: WC_Gateway_Vipps.class.php:920
+msgid "Anomalous callback from vipps, handle errors and clean up"
+msgstr "Uvanlig callback fra Vipps - håndter feil og rydd opp"
+
+#: WC_Gateway_Vipps.class.php:932
+msgid ""
+"Vipps callback ignored because we are currently updating the order using get "
+"order status"
+msgstr ""
+"Vipps-callback ignoreres fordi vi holder på å oppdatere bestillingsstatus "
+"via \"get order status\""
+
+#: WC_Gateway_Vipps.class.php:939
+msgid "Vipps callback recieved for order no longer pending. Ignoring callback."
+msgstr ""
+"Vipps-callback mottatt for ordre som ikke lenger er på vent. Callback "
+"ignoreres."
+
+#: WC_Gateway_Vipps.class.php:960
+msgid "Vipps callback received"
+msgstr "Vipps-callback mottatt."
+
+#: WC_Gateway_Vipps.class.php:964
+msgid "Error message in callback from Vipps for order"
+msgstr "Feilmelding i callback fra Vipps for bestilling"
+
+#: WC_Gateway_Vipps.class.php:976
+msgid "Payment cancelled at Vipps"
+msgstr "Betaling avbrutt hos Vipps"
+
+#: WC_Gateway_Vipps.class.php:991
+msgid "Vipps Express Checkout"
+msgstr "Vipps Hurtigkasse"
+
+#: WC_Gateway_Vipps.class.php:1047
+msgid "Vipps does not support your currency."
+msgstr "Vipps støtter ikke din valuta"
+
+#: WC_Gateway_Vipps.class.php:1055
+msgid "Vipps requires that your site uses HTTPS."
+msgstr "Vipps krever at ditt nettsted støtter HTTPS."
+
+#: WC_Gateway_Vipps.class.php:1086
+msgid "Connection to Vipps OK"
+msgstr "Forbindelse til Vipps OK"
+
+#: WC_Gateway_Vipps.class.php:1089
+msgid "Could not connect to Vipps"
+msgstr "Kunne ikke oppnå forbindelse med Vipps"
 
 #: VippsApi.class.php:72
 msgid "Could not get Vipps access token"
@@ -29,7 +421,7 @@ msgstr "Kunne ikke hente access token for Vipps"
 #: VippsApi.class.php:334 VippsApi.class.php:373 VippsApi.class.php:374
 #: VippsApi.class.php:377 VippsApi.class.php:378
 msgid "The Vipps gateway is not correctly configured."
-msgstr "Vipps for Woocommerce er ikke korrekt konfigurert"
+msgstr "Betal med Vipps for Woocommerce er ikke korrekt konfigurert"
 
 #: VippsApi.class.php:186
 msgid "Confirm your order from"
@@ -55,15 +447,9 @@ msgstr "Manglende respons fra Vipps"
 msgid "Vipps is currently in test mode - no real transactions will occur"
 msgstr "Vipps er i testmodus - ingen ekte transaksjoner vil bli gjennomført"
 
-#: Vipps.class.php:89 WC_Gateway_Vipps.class.php:55
-#: WC_Gateway_Vipps.class.php:56 WC_Gateway_Vipps.class.php:274
-#: WC_Gateway_Vipps.class.php:1034
-msgid "Vipps"
-msgstr "Vipps"
-
 #: Vipps.class.php:124
 msgid "Skip entering your address and just checkout using"
-msgstr "Vil du slippe å fylle ut alt dette manuelt? Velg "
+msgstr "Slipp å fylle inn adresse og kortinfo - Klikk her for "
 
 #: Vipps.class.php:125
 msgid "express checkout"
@@ -79,7 +465,7 @@ msgstr "Logg inn med Vipps!"
 
 #: Vipps.class.php:495
 msgid "Capture payment"
-msgstr "Trekk/Capture beløp"
+msgstr "Capture (Trekk beløp)"
 
 #: Vipps.class.php:505
 msgid "Did not understand callback from Vipps:"
@@ -120,15 +506,6 @@ msgstr ""
 #: Vipps.class.php:783 Vipps.class.php:788
 msgid "Could not create order"
 msgstr "Kunne ikke opprette orderen"
-
-#: Vipps.class.php:800 Vipps.class.php:951 Vipps.class.php:963
-#: Vipps.class.php:1150 WC_Gateway_Vipps.class.php:203
-#: WC_Gateway_Vipps.class.php:497 WC_Gateway_Vipps.class.php:543
-#: WC_Gateway_Vipps.class.php:640 WC_Gateway_Vipps.class.php:645
-#: WC_Gateway_Vipps.class.php:661 WC_Gateway_Vipps.class.php:666
-#: WC_Gateway_Vipps.class.php:772
-msgid "Vipps is temporarily unavailable."
-msgstr "Vipps er midlertidig utilgjengelig"
 
 #: Vipps.class.php:814
 msgid "The orderid passed is not from this session:"
@@ -243,12 +620,6 @@ msgstr "Innlogging med Vipps er ikke tilgjengelig!"
 msgid "Unknown error"
 msgstr "Ukjent feil"
 
-#: Vipps.class.php:1132 Vipps.class.php:1148 Vipps.class.php:1150
-#: Vipps.class.php:1167 Vipps.class.php:1182 WC_Gateway_Vipps.class.php:643
-#: WC_Gateway_Vipps.class.php:664
-msgid "Could not login with Vipps:"
-msgstr "Kunne ikke logge inn med Vipps:"
-
 #: Vipps.class.php:1133
 msgid "Login wait page: Unknown login request"
 msgstr "Logg-inn-venteside: Ukjent innloggingsforespørsel"
@@ -260,373 +631,6 @@ msgstr "Vipps-innlogging avbrutt"
 #: Vipps.class.php:1193 Vipps.class.php:1195
 msgid "Waiting for Vipps login approval"
 msgstr "Venter på godkjennelse for Vipps-innlogging."
-
-#: WC_Gateway_Vipps.class.php:54
-msgid "Offer Vipps as a payment method"
-msgstr "Tilby Vipps som betalingsmetode"
-
-#: WC_Gateway_Vipps.class.php:138 WC_Gateway_Vipps.class.php:542
-#: WC_Gateway_Vipps.class.php:546
-msgid "Could not cancel Vipps payment"
-msgstr "Kunne ikke kansellere Vipps-betalingen"
-
-#: WC_Gateway_Vipps.class.php:163
-msgid ""
-"Temporary error when refunding payment through Vipps - ensure order is "
-"refunded manually, or reset the order to \"Processing\" and try again"
-msgstr ""
-"Midlertidig feil under tilbakebetaling via Vipps - sørg for at bestillingen "
-"tilbakebetales manuelt, eller sett status tilbake til \"Behandler\" og prøv "
-"igjen"
-
-#: WC_Gateway_Vipps.class.php:169
-msgid "Error when refunding payment through Vipps:"
-msgstr "Feil under tilbakebetaling via Vipps:"
-
-#: WC_Gateway_Vipps.class.php:174
-msgid ""
-"Could not refund payment through Vipps - ensure the refund is handled "
-"manually!"
-msgstr ""
-"Det var ikke mulig å tilbakebetale med Vipps - sørg for at tilbakebetalingen "
-"gjøres manuelt!"
-
-#: WC_Gateway_Vipps.class.php:193
-msgid "Cannot refund through Vipps - the payment has not been captured yet."
-msgstr ""
-"Kan ikke tilbakebetale beløpet via Vipps - betalingen har ikke blitt "
-"belastet ennå."
-
-#: WC_Gateway_Vipps.class.php:196
-msgid "Cannot refund through Vipps - the refund amount is too large."
-msgstr ""
-"Kan ikke tilbakebetale gjennom Vipps - beløpet som skal tilbakebetales er "
-"for stort."
-
-#: WC_Gateway_Vipps.class.php:202 WC_Gateway_Vipps.class.php:205
-msgid "Could not refund Vipps payment"
-msgstr "Kunne ikke tilbakebetale Vipps-betalingen"
-
-#: WC_Gateway_Vipps.class.php:212
-msgid " refunded through Vipps:"
-msgstr "Refundert gjennom Vipps:"
-
-#: WC_Gateway_Vipps.class.php:222
-msgid "Enable Vipps"
-msgstr "Skru på Vipps"
-
-#: WC_Gateway_Vipps.class.php:228 WC_Gateway_Vipps.class.php:229
-msgid "Order-id Prefix"
-msgstr "Bestillingsnummer-prefiks"
-
-#: WC_Gateway_Vipps.class.php:231
-msgid ""
-"An alphanumeric textstring to use as a prefix on orders from your shop, to "
-"avoid duplicate order-ids"
-msgstr ""
-"En kort tekst med bokstaver og tall som brukes som prefiks på ordre-id fra "
-"butikken, slik at det ikke oppstår duplikater hos Vipps"
-
-#: WC_Gateway_Vipps.class.php:235 WC_Gateway_Vipps.class.php:236
-msgid "Merchant Serial Number"
-msgstr "Merchant Serial Number"
-
-#: WC_Gateway_Vipps.class.php:238
-msgid ""
-"Your merchant serial number from the Developer Portal - Applications tab, "
-"Saleunit Serial Number"
-msgstr ""
-"Din \"Merchant Serial Number\" fra utviklerportalen - Fanen \"Applications\","
-" \"Saleunit Serial Number\""
-
-#: WC_Gateway_Vipps.class.php:242 WC_Gateway_Vipps.class.php:243
-msgid "Client Id"
-msgstr "Client id"
-
-#: WC_Gateway_Vipps.class.php:245
-msgid "Client Id from Developer Portal - Applications tab, \"View Secret\""
-msgstr ""
-"\"Client Id\" fra Utviklerportalen - Fanen \"Applications\", \"View Secret\""
-
-#: WC_Gateway_Vipps.class.php:249 WC_Gateway_Vipps.class.php:250
-msgid "Application Secret"
-msgstr "Application Secret"
-
-#: WC_Gateway_Vipps.class.php:252
-msgid ""
-"Application secret from Developer Portal - Applications tab, \"View Secret\""
-msgstr ""
-"Application secret fra Utviklerportalen - fanen \"Applications\", \"View "
-"Secret\""
-
-#: WC_Gateway_Vipps.class.php:256 WC_Gateway_Vipps.class.php:257
-msgid "Subscription key for Access Token"
-msgstr "Subscription key Access Token"
-
-#: WC_Gateway_Vipps.class.php:259
-msgid ""
-"The Primary key for the Access Token subscription from your profile on the "
-"developer portal"
-msgstr ""
-"Din \"Primary Key\" for din \"Access Token\"-abonnement fra din profil på "
-"Utviklerportalen"
-
-#: WC_Gateway_Vipps.class.php:263 WC_Gateway_Vipps.class.php:264
-msgid "Subscription key for eCommerce"
-msgstr "Abonnementsnøkkel for eCommerce"
-
-#: WC_Gateway_Vipps.class.php:266
-msgid ""
-"The Primary key for the eCommerce API subscription from your profile on the "
-"developer portal"
-msgstr ""
-"Primary key for din \"eCommerce API subscription\" fra din profil på "
-"Utviklerportalen"
-
-#: WC_Gateway_Vipps.class.php:280
-msgid "Pay with Vipps"
-msgstr "Betal med Vipps"
-
-#: WC_Gateway_Vipps.class.php:284
-msgid "Use Vipps as default payment method on checkout page"
-msgstr "Bruk Vipps som standard betalingsmetode på kassa-siden"
-
-#: WC_Gateway_Vipps.class.php:285
-msgid "Vipps is default payment method"
-msgstr "Vipps er standard betalingsmetode"
-
-#: WC_Gateway_Vipps.class.php:287
-msgid ""
-"Enable this to use Vipps as the default payment method on the checkout page, "
-"regardless of order."
-msgstr ""
-"Skru på denne for å bruke Vipps som standard betalingsmetode på kassa-siden, "
-"uavhengig av sorteringsrekkefølge"
-
-#: WC_Gateway_Vipps.class.php:292 WC_Gateway_Vipps.class.php:293
-msgid "Enable Express Checkout in cart"
-msgstr "Skru på Hurtigkassen i handlekurven"
-
-#: WC_Gateway_Vipps.class.php:295
-msgid ""
-"Enable this to allow customers to shop using Express Checkout directly from "
-"the cart with no login or address input needed"
-msgstr ""
-"Skru på denne for å la kunder handle med Vipps Hurtigkasse direkte fra "
-"handlekurven uten å måtte logge inn eller skrive inn en addresse"
-
-#: WC_Gateway_Vipps.class.php:303 WC_Gateway_Vipps.class.php:304
-msgid "Create new customers on Express Checkout"
-msgstr "Opprett nye brukere gjennom Hurtigkassen"
-
-#: WC_Gateway_Vipps.class.php:306
-msgid ""
-"Enable this to create and login new customers when using express checkout. "
-"Otherwise these will all be guest checkouts."
-msgstr ""
-"Skru på dette for å opprette nye kunder og logge dem inn når de bruker "
-"Hurtigkassen. Ellers vil disse være gjestekjøp."
-
-#: WC_Gateway_Vipps.class.php:310 WC_Gateway_Vipps.class.php:311
-msgid "Enable \"Login with Vipps\""
-msgstr "Skru på \"Logg inn med Vipps\""
-
-#: WC_Gateway_Vipps.class.php:313
-msgid "Enable this to allow customers (and yourself!) to log in with Vipps"
-msgstr "Skru på denne for å la kundene (og deg selv!) logge inn med Vipps"
-
-#: WC_Gateway_Vipps.class.php:358 WC_Gateway_Vipps.class.php:395
-msgid ""
-"Unfortunately, the Vipps payment method is currently unavailable. Please "
-"choose another method."
-msgstr ""
-"Dessverre så er Vipps-betaling ikke tilgjengelig for øyeblikket. Vennligst "
-"velg en annen metode."
-
-#: WC_Gateway_Vipps.class.php:372
-msgid "You need to enter your phone number to pay with Vipps"
-msgstr "Du må skrive inn ditt telefonnummer for å handle med Vipps"
-
-#: WC_Gateway_Vipps.class.php:390 WC_Gateway_Vipps.class.php:394
-msgid "Could not initiate Vipps payment"
-msgstr "Kunne ikke opprette Vipps-betaling"
-
-#: WC_Gateway_Vipps.class.php:391
-msgid ""
-"Unfortunately, the Vipps payment method is temporarily unavailable. Please "
-"wait or  choose another method."
-msgstr ""
-"Dessverre så er Vipps-betaling ikke tilgjengelig for øyeblikket. Vennligst "
-"velg en annen metode eller vent en stund."
-
-#: WC_Gateway_Vipps.class.php:423
-msgid "Vipps payment initiated"
-msgstr "Vippsbetaling startet"
-
-#: WC_Gateway_Vipps.class.php:424
-msgid "Awaiting Vipps payment confirmation"
-msgstr "Venter på bekreftelse fra Vipps"
-
-#: WC_Gateway_Vipps.class.php:459
-msgid "Could not capture Vipps payment - status set to"
-msgstr "Kunne ikke belaste Vipps-betalingen - status satt til"
-
-#: WC_Gateway_Vipps.class.php:474
-msgid "Trying to capture payment on order not made by Vipps:"
-msgstr "Prøver å belaste en bestilling som ikke er gjort med Vipps:"
-
-#: WC_Gateway_Vipps.class.php:475
-msgid "Cannot capture payment on orders not made by Vipps"
-msgstr "Kan ikke belaste betalingen på bestillinger ikke utført med Vipps"
-
-#: WC_Gateway_Vipps.class.php:484
-msgid "Payment already captured"
-msgstr "Betalingen er allerede belastet"
-
-#: WC_Gateway_Vipps.class.php:496 WC_Gateway_Vipps.class.php:500
-msgid "Could not capture Vipps payment"
-msgstr "Kunne ikke belaste Vipps-betalingen"
-
-#: WC_Gateway_Vipps.class.php:516
-msgid "Vipps Payment captured:"
-msgstr "Vipps-betaling belastet:"
-
-#: WC_Gateway_Vipps.class.php:526
-msgid "Trying to cancel payment on order not made by Vipps:"
-msgstr "Forsøker å kansellere betaling på bestilling ikke gjort med Vipps:"
-
-#: WC_Gateway_Vipps.class.php:527
-msgid "Cannot cancel payment on orders not made by Vipps"
-msgstr "Kan ikke kansellere ordren; den er ikke utført med Vipps"
-
-#: WC_Gateway_Vipps.class.php:533
-msgid "Cannot cancel a captured Vipps transaction - use refund instead"
-msgstr ""
-"Kan ikke kansellere en Vipps-transaksjon etter at den er blitt belastet - "
-"bruk \"refunder\" istedet"
-
-#: WC_Gateway_Vipps.class.php:559
-msgid "Vipps Payment cancelled:"
-msgstr "Vipps-betaling kansellert:"
-
-#: WC_Gateway_Vipps.class.php:576
-msgid "Trying to refund payment on order not made by Vipps:"
-msgstr "Forsøker å tilbakebetale bestilling ikke gjort med Vipps:"
-
-#: WC_Gateway_Vipps.class.php:583
-msgid "Trying to refund payment on Vipps payment not captured:"
-msgstr "Forsøker å tilbakebetale Vipps-betaling som ikke er belastet:"
-
-#: WC_Gateway_Vipps.class.php:603
-msgid "Vipps payment refunded:"
-msgstr "Vipps-betaling tilbakebetalt:"
-
-#: WC_Gateway_Vipps.class.php:639 WC_Gateway_Vipps.class.php:660
-msgid "Could not login with Vipps"
-msgstr "Kunne ikke logge inn med Vipps"
-
-#: WC_Gateway_Vipps.class.php:724
-msgid ""
-"Express checkout - no callback yet, so getting payment details from Vipps"
-msgstr ""
-"Hurtigkasse - ikke noe callback ennå, så hent betalingsdetaljer direkte fra "
-"Vipps"
-
-#: WC_Gateway_Vipps.class.php:730
-msgid "Error getting payment details from Vipps for express checkout"
-msgstr ""
-"Feil under uthenting av betalingsdetaljer fra Vipps i Vipps Hurtigkasse"
-
-#: WC_Gateway_Vipps.class.php:738
-msgid "No shipping details from Vipps for express checkout"
-msgstr "Ingen fraktdetaljer fra Vipps via Hurtigkasse"
-
-#: WC_Gateway_Vipps.class.php:747 WC_Gateway_Vipps.class.php:973
-msgid "Payment authorized at Vipps"
-msgstr "Betaling reservert hos Vipps"
-
-#: WC_Gateway_Vipps.class.php:751
-msgid "Payment captured at Vipps"
-msgstr "Betaling belastet hos Vipps"
-
-#: WC_Gateway_Vipps.class.php:754
-msgid "Order failed or rejected at Vipps"
-msgstr "Bestilling mislyktes eller ble avvist hos Vipps"
-
-#: WC_Gateway_Vipps.class.php:771 WC_Gateway_Vipps.class.php:775
-#: WC_Gateway_Vipps.class.php:783
-msgid "Could not get Vipps order status"
-msgstr "Kunne ikke hente ordrestatus hos Vipps"
-
-#: WC_Gateway_Vipps.class.php:778
-msgid "Order does not exist at Vipps - cancelling"
-msgstr "Bestillingen eksisterer ikke hos Vipps - kansellerer"
-
-#: WC_Gateway_Vipps.class.php:881
-msgid "Couldn't create Vipps user on express checkout:"
-msgstr "Kunne ikke opprette Vipps-bruker i Hurtigkassen:"
-
-#: WC_Gateway_Vipps.class.php:898
-msgid "Vipps callback for unknown order"
-msgstr "Vipps-callback for ukjent bestilling"
-
-#: WC_Gateway_Vipps.class.php:905
-msgid "Vipps callback with wrong merchantSerialNumber - might be forged"
-msgstr "Vipps-callback med feil merchantSerialNumber - kan være forfalsket"
-
-#: WC_Gateway_Vipps.class.php:913
-msgid ""
-"Wrong auth token in callback from Vipps - possibly an attempt to fake a "
-"callback"
-msgstr ""
-"Feil auth-token i callback fra Vipps - muligens et forsøk på å forfalske en "
-"callback"
-
-#: WC_Gateway_Vipps.class.php:919
-msgid "Anomalous callback from vipps, handle errors and clean up"
-msgstr "Uvanlig callback fra Vipps - håndter feil og rydd opp"
-
-#: WC_Gateway_Vipps.class.php:931
-msgid ""
-"Vipps callback ignored because we are currently updating the order using get "
-"order status"
-msgstr ""
-"Vipps-callback ignoreres fordi vi holder på å oppdatere bestillingsstatus "
-"via \"get order status\""
-
-#: WC_Gateway_Vipps.class.php:938
-msgid "Vipps callback recieved for order no longer pending. Ignoring callback."
-msgstr ""
-"Vipps-callback mottatt for ordre som ikke lenger er på vent. Callback "
-"ignoreres."
-
-#: WC_Gateway_Vipps.class.php:959
-msgid "Vipps callback received"
-msgstr "Vipps-callback mottatt."
-
-#: WC_Gateway_Vipps.class.php:963
-msgid "Error message in callback from Vipps for order"
-msgstr "Feilmelding i callback fra Vipps for bestilling"
-
-#: WC_Gateway_Vipps.class.php:975
-msgid "Payment cancelled at Vipps"
-msgstr "Betaling avbrutt hos Vipps"
-
-#: WC_Gateway_Vipps.class.php:1043
-msgid "Vipps does not support your currency."
-msgstr "Vipps støtter ikke din valuta"
-
-#: WC_Gateway_Vipps.class.php:1051
-msgid "Vipps requires that your site uses HTTPS."
-msgstr "Vipps krever at ditt nettsted støtter HTTPS."
-
-#: WC_Gateway_Vipps.class.php:1082
-msgid "Connection to Vipps OK"
-msgstr "Forbindelse til Vipps OK"
-
-#: WC_Gateway_Vipps.class.php:1085
-msgid "Could not connect to Vipps"
-msgstr "Kunne ikke oppnå forbindelse med Vipps"
 
 #. Name of the plugin
 msgid "Checkout with Vipps for WooCommerce"

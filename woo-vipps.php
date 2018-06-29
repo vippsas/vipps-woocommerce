@@ -7,7 +7,7 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.0
+   Version: 1.0.1
    License: AGPLv3 or later
    License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -34,8 +34,6 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
-// This is currently not available. Affects creation of accounts for express checkout too.
-define('VIPPS_LOGIN', true);
 
 // Only be active if Woocommerce is active IOK 2018-06-05
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
