@@ -985,8 +985,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
         $order = new WC_Order();
         $order->set_status('pending');
-        $order->set_created_via('Vipps express checkout');
         $order->set_payment_method($this);
+        $order->set_created_via('Vipps Express Checkout');
+        $order->set_payment_method_title('Vipps Express Checkout');
 
         $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
         $order->set_currency( get_woocommerce_currency() );
