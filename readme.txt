@@ -76,6 +76,7 @@ For issues with your WooCommerce installation you should use the support forum h
 == Changelog ==
 = 2018.06.29 version 1.0.1
 * Fix	- Showing whether an order is made with express checkout or checkout in backend 
+* Change- Login code temporarily removed
 
 = 1.0 =
 * Initial release.
