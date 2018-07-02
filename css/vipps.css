@@ -1,0 +1,271 @@
+/* 
+    This file is part of the WordPress plugin Checkout with Vipps for WooCommerce
+    Copyright (C) 2018 WP Hosting AS
+
+    Checkout with Vipps for WooCommerce is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Checkout with Vipps for WooCommerce is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+a.button.vipps-express-checkout img {
+    max-width: 100%;
+    filter: drop-shadow( 0px 1px 2px #d7d7d7);
+}
+a.button.vipps-express-checkout:hover img {
+    opacity: 0.9;
+}
+
+li.wc_payment_method.payment_method_vipps img {
+	max-width: 145px;
+}
+
+a.button.vipps-express-checkout {
+ background-color: #fff;
+ color: transparent;
+ vertical-align: bottom;
+ padding: 0;
+ margin-left:.5em;
+}
+a.button.vipps-express-checkout:active {
+ border: 0 !important;
+}
+a.button.vipps-express-checkout:hover{
+ border: 0 !important;
+}
+
+.widget_shopping_cart a.button.vipps-express-checkout {
+ color:transparent;!important;
+ background-color: #fff !important;
+ float: none !important;
+ margin-top: .5em !important;
+ margin-bottom: 0 !important;
+ margin-left: auto !important;
+ margin-right: auto !important;
+ clear: both;
+}
+
+/* This is for a plugin I'm doing testing with. */
+.woocommerce-cart-tab-container .widget_shopping_cart a.button.vipps-express-checkout {
+ min-width: 190px;
+}
+
+.vippslogincontainer {
+ width: 100%;
+ text-align: center;
+}
+
+a.button.vipps-login {
+ vertical-align: bottom;
+ max-width: 250px;
+ color:transparent;
+ background-color: #fff;
+ margin: 1em auto;
+ min-width: 190px;
+ clear: both;
+ padding:0;
+}
+
+/* Displays a 'vipps' information banner  */
+.woocommerce-info.vipps-info {
+ background-color: #fe5b24;
+}
+img.inline {
+ height: 2ex;
+ display:inline;
+ vertical-align: text-bottom;
+}
+
+
+.vippsorange {
+ background-color: #fe5b24;
+}
+
+.vippsspinner {
+    display: none;
+    position:absolute;
+    top:50%;
+    left:50%;
+}
+.vippsoverlay {
+    background: #e9e9e9;
+    position:fixed;
+    display: none;
+    top: 0;           
+    right: 0;        
+    bottom: 0;
+    left: 0;
+    opacity: 0.5;
+    z-index: 1000;
+}
+.processing .vippsoverlay {
+    display:block;
+}
+.processing .vippsspinner  {
+        display:block;
+}
+
+.vippsspinner {
+    width:125px;
+    height:125px;
+    margin:auto;
+    transform:scale(0.6);
+        -o-transform:scale(0.6);
+        -ms-transform:scale(0.6);
+        -webkit-transform:scale(0.6);
+        -moz-transform:scale(0.6);
+}
+
+.f_circleG{
+    position:absolute;
+    background-color:rgb(255,255,255);
+    height:22px;
+    width:22px;
+    border-radius:12px;
+        -o-border-radius:12px;
+        -ms-border-radius:12px;
+        -webkit-border-radius:12px;
+        -moz-border-radius:12px;
+    animation-name:f_fadeG;
+        -o-animation-name:f_fadeG;
+        -ms-animation-name:f_fadeG;
+        -webkit-animation-name:f_fadeG;
+        -moz-animation-name:f_fadeG;
+    animation-duration:1.2s;
+        -o-animation-duration:1.2s;
+        -ms-animation-duration:1.2s;
+        -webkit-animation-duration:1.2s;
+        -moz-animation-duration:1.2s;
+    animation-iteration-count:infinite;
+        -o-animation-iteration-count:infinite;
+        -ms-animation-iteration-count:infinite;
+        -webkit-animation-iteration-count:infinite;
+        -moz-animation-iteration-count:infinite;
+    animation-direction:normal;
+        -o-animation-direction:normal;
+        -ms-animation-direction:normal;
+        -webkit-animation-direction:normal;
+        -moz-animation-direction:normal;
+}
+#frotateG_01{
+    left:0;
+    top:51px;
+    animation-delay:0.45s;
+        -o-animation-delay:0.45s;
+        -ms-animation-delay:0.45s;
+        -webkit-animation-delay:0.45s;
+        -moz-animation-delay:0.45s;
+}
+#frotateG_02{
+    left:15px;
+    top:15px;
+    animation-delay:0.6s;
+        -o-animation-delay:0.6s;
+        -ms-animation-delay:0.6s;
+        -webkit-animation-delay:0.6s;
+        -moz-animation-delay:0.6s;
+}
+#frotateG_03{
+    left:51px;
+    top:0;
+    animation-delay:0.75s;
+        -o-animation-delay:0.75s;
+        -ms-animation-delay:0.75s;
+        -webkit-animation-delay:0.75s;
+        -moz-animation-delay:0.75s;
+}
+#frotateG_04{
+    right:15px;
+    top:15px;
+    animation-delay:0.9s;
+        -o-animation-delay:0.9s;
+        -ms-animation-delay:0.9s;
+        -webkit-animation-delay:0.9s;
+        -moz-animation-delay:0.9s;
+}
+#frotateG_05{
+    right:0;
+    top:51px;
+    animation-delay:1.05s;
+        -o-animation-delay:1.05s;
+        -ms-animation-delay:1.05s;
+        -webkit-animation-delay:1.05s;
+        -moz-animation-delay:1.05s;
+}
+#frotateG_06{
+    right:15px;
+    bottom:15px;
+    animation-delay:1.2s;
+        -o-animation-delay:1.2s;
+        -ms-animation-delay:1.2s;
+        -webkit-animation-delay:1.2s;
+        -moz-animation-delay:1.2s;
+}
+#frotateG_07{
+    left:51px;
+    bottom:0;
+    animation-delay:1.35s;
+        -o-animation-delay:1.35s;
+        -ms-animation-delay:1.35s;
+        -webkit-animation-delay:1.35s;
+        -moz-animation-delay:1.35s;
+}
+#frotateG_08{
+    left:15px;
+    bottom:15px;
+    animation-delay:1.5s;
+        -o-animation-delay:1.5s;
+        -ms-animation-delay:1.5s;
+        -webkit-animation-delay:1.5s;
+        -moz-animation-delay:1.5s;
+}
+@keyframes f_fadeG{
+    0%{
+        background-color:rgba(254,90,36,0.97);
+    }
+    100%{
+        background-color:rgb(255,255,255);
+    }
+}
+@-o-keyframes f_fadeG{
+    0%{
+        background-color:rgba(254,90,36,0.97);
+    }
+    100%{
+        background-color:rgb(255,255,255);
+    }
+}
+@-ms-keyframes f_fadeG{
+    0%{
+        background-color:rgba(254,90,36,0.97);
+    }
+    100%{
+        background-color:rgb(255,255,255);
+    }
+}
+@-webkit-keyframes f_fadeG{
+    0%{
+        background-color:rgba(254,90,36,0.97);
+    }
+
+    100%{
+        background-color:rgb(255,255,255);
+    }
+}
+@-moz-keyframes f_fadeG{
+    0%{
+        background-color:rgba(254,90,36,0.97);
+    }
+
+    100%{
+        background-color:rgb(255,255,255);
+    }
+}
