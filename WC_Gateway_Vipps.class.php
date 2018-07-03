@@ -621,60 +621,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $token;
     }
 
-<<<<<<< HEAD
-    // Send a login-request to Vipps
-    public function login_request() {
-        global $Vipps;
-        // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07
-        // (but on failre, we don't increase it - and also, we don't really support partial capture yet.) IOK 2018-05-07
-        $authtoken = $this->generate_authtoken();
-
-        $requestidnr = intval(WC()->session->get('_vipps_login_requestid'));
-        $returnurl = $Vipps->login_return_url();
-        try {
-            $requestid = $requestidnr . ":" . WC()->session->get_customer_id();
-            $content =  $this->api->login_request($returnurl,$authtoken,$requestid);
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not login with Vipps', 'woo-vipps') . ' ' .$e->getMessage(),'error');
-            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $e->getMessage();
-            $this->log($msg,'error');
-            throw new VippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        }
-
-        set_transient('_vipps_loginrequests_' . $content['requestId'], array('authToken'=>wp_hash_password($authtoken), 'when'=>time()), 10*60);
-        WC()->session->set('_vipps_login_requestid', $requestidnr+1);
-        return $content;
-    }
-
-    // Get the status of a login request
-    public function login_request_status($requestid) {
-        global $Vipps;
-        try {
-            $content =  $this->api->login_request_status($requestid);
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not login with Vipps', 'woo-vipps') . ' ' .$e->getMessage(),'error');
-            throw new TemporaryVippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        } catch (Exception $e) {
-            $msg = __('Could not login with Vipps:','woo-vipps') . ' ' . $e->getMessage();
-            $this->log($msg,'error');
-            throw new VippsApiException( __('Vipps is temporarily unavailable.','woo-vipps'));
-            return false;
-        }
-        // Errors with a 200 result :( IOK 2018-05-23
-        if (is_array($content) && isset($content[0]) && isset($content[0]['errorMessage'])) {
-            throw new VippsApiException($content[0]['errorMessage']); 
-        }
-        // Store here as well.
-        set_transient('_vipps_loginrequests_' . $content['requestId'], $content, 10*60);
-        return $content;
-    }
-=======
->>>>>>> master
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
