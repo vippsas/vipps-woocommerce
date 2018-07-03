@@ -103,7 +103,7 @@ class Vipps {
     // If we have admin-notices that we haven't gotten a chance to show because of
     // a redirect, this method will fetch and show them IOK 2018-05-07
     public function stored_admin_notices() {
-        $stored = get_transient('_vipps_save_admin_notices',$notices, 5*60);
+        $stored = get_transient('_vipps_save_admin_notices');
         if ($stored) {
             delete_transient('_vipps_save_admin_notices');
             print $stored;
@@ -503,7 +503,7 @@ class Vipps {
     public function activate () {
 
     }
-    public function uninstall() {
+    public static function uninstall() {
     }
     public function footer() {
     }
