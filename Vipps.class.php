@@ -103,7 +103,7 @@ class Vipps {
     // If we have admin-notices that we haven't gotten a chance to show because of
     // a redirect, this method will fetch and show them IOK 2018-05-07
     public function stored_admin_notices() {
-        $stored = get_transient('_vipps_save_admin_notices',$notices, 5*60);
+        $stored = get_transient('_vipps_save_admin_notices');
         if ($stored) {
             delete_transient('_vipps_save_admin_notices');
             print $stored;
@@ -392,8 +392,7 @@ class Vipps {
         }
 
         // a small bit of security
-        // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
-        if (false && $order->get_meta('_vipps_authtoken') && $order->get_meta('_vipps_authtoken') != $_SERVER['PHP_AUTH_PW']) {
+        if ($order->get_meta('_vipps_authtoken') && !wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken'))){
             $this->log("Wrong authtoken on shipping details callback");
             print "-1";
             exit();
@@ -414,8 +413,8 @@ class Vipps {
         $order->set_billing_city($city);
         $order->set_billing_postcode($postcode);
         $order->set_billing_country($country);
-        $order->set_shipping_address_1($address1);
-        $order->set_shipping_address_2($address2);
+        $order->set_shipping_address_1($addressline1);
+        $order->set_shipping_address_2($addressline2);
         $order->set_shipping_city($city);
         $order->set_shipping_postcode($postcode);
         $order->set_shipping_country($country);
@@ -504,7 +503,7 @@ class Vipps {
     public function activate () {
 
     }
-    public function uninstall() {
+    public static function uninstall() {
     }
     public function footer() {
     }
@@ -603,8 +602,8 @@ class Vipps {
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
 
-        $orderid= wc_get_order_id_by_order_key($_POST['key']);
-        $transaction = wc_get_order_id_by_order_key($_POST['transaction']);
+        $orderid= wc_get_order_id_by_order_key(@$_POST['key']);
+        $transaction = wc_get_order_id_by_order_key(@$_POST['transaction']);
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!isset($sessionorders[$orderid])) {
@@ -797,6 +796,7 @@ class Vipps {
             exit();
         }
 
+	$content = "";
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $status == 'refunded') {
             $content .= "<div id=failure><p>". __('Order cancelled', 'woo-vipps') . '</p>';
@@ -820,6 +820,7 @@ class Vipps {
         $message = __($order->get_meta('_vipps_confirm_message'),'woo-vipps');
 
         $signal = $this->callbackSignal($order);
+	$content = "";
         $content .= "<div id='waiting'><p>" . __('Waiting for confirmation of purchase from Vipps','woo-vipps');
 
         if ($signal && !is_file($signal)) $signal = '';
@@ -877,7 +878,7 @@ class Vipps {
         $wp_query->post = $wp_post;
         $wp_query->posts = array( $wp_post );
         $wp_query->queried_object = $wp_post;
-        $wp_query->queried_object_id = $post_id;
+        $wp_query->queried_object_id = $wp_post->ID;
         $wp_query->found_posts = 1;
         $wp_query->post_count = 1;
         $wp_query->max_num_pages = 1; 

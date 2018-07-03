@@ -43,7 +43,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
     global $Vipps;
     $Vipps = new Vipps();
     register_activation_hook(__FILE__,array($Vipps,'activate'));
-    register_uninstall_hook(__FILE__,array($Vipps,'uninstall'));
+    register_uninstall_hook(__FILE__, 'Vipps::uninstall');
 
     if (is_admin()) {
         add_action('admin_init',array($Vipps,'admin_init'));

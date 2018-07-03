@@ -78,21 +78,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
-    private function make_callback_urls($forwhat) {
+    private function make_callback_urls($forwhat,$token='') {
+        // Passing the token as GET arguments, as the Authorize header is stripped. IOK 2018-06-13
+        $tk = '';
+        if ($token)  {
+          $tk = "tk=$token";
+        }
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
-            return set_url_scheme(home_url(),'https') . "/?wc-api=$forwhat&callback=";
+            return set_url_scheme(home_url(),'https') . "/?wc-api=$forwhat&$tk&callback=";
         } else {
-            return set_url_scheme(home_url(),'https') . "/wc-api/$forwhat?callback=";
+            return set_url_scheme(home_url(),'https') . "/wc-api/$forwhat?$tk&callback=";
         }
     }
     // The main payment callback
-    public function payment_callback_url () {
-        return $this->make_callback_urls('wc_gateway_vipps');
+    public function payment_callback_url ($token='') {
+        return $this->make_callback_urls('wc_gateway_vipps',$token);
     }
-    public function shipping_details_callback_url() {
-        return $this->make_callback_urls('vipps_shipping_details');
+    public function shipping_details_callback_url($token='') {
+        return $this->make_callback_urls('vipps_shipping_details',$token);
     }
     // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
     // IOK 2018-05-18
@@ -403,9 +408,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
 
         $order = new WC_Order( $order_id );
-        $order->set_transaction_id($transactionid);
         if ($authtoken) {
-            $order->update_meta_data('_vipps_authtoken',$authtoken);
+            $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
         // Needed to ensure we have orderinfo
         if ($this->express_checkout) {
@@ -832,8 +836,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
-        // Does not work on PHP-FPM . IOK 2018-05-04 FIXME DEBUG 
-        if (false && $authtoken && $authtoken != $_SERVER['PHP_AUTH_PW']) {
+        if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
             $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woo-vipps'), 'error');
             exit();
         }
