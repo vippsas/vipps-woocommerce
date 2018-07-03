@@ -504,7 +504,7 @@ class Vipps {
     public function activate () {
 
     }
-    public function uninstall() {
+    public static function uninstall() {
     }
     public function footer() {
     }
