@@ -96,8 +96,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function payment_callback_url ($token='') {
         return $this->make_callback_urls('wc_gateway_vipps',$token);
     }
-    public function shipping_details_callback_url() {
-        return $this->make_callback_urls('vipps_shipping_details');
+    public function shipping_details_callback_url($token='') {
+        return $this->make_callback_urls('vipps_shipping_details',$token);
     }
     // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
     // IOK 2018-05-18
@@ -408,7 +408,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
 
         $order = new WC_Order( $order_id );
-        $order->set_transaction_id($transactionid);
         if ($authtoken) {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }

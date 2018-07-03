@@ -53,7 +53,7 @@ class VippsApi {
 
         $at = $fresh['access_token'];
         $expire = $fresh['expires_in']/2;
-        set_transient('_vipps_app_token',$resp,$expire);
+        set_transient('_vipps_app_token',$fresh,$expire);
         return $at;
     }
 
@@ -138,6 +138,7 @@ class VippsApi {
     public function order_status($order) {
         $merch = $this->get_option('merchantSerialNumber');
         $vippsorderid = $order->get_meta('_vipps_orderid');
+	$requestid = 1;
 
         $command = 'Ecomm/v2/payments/'.$vippsorderid.'/status';
         $date = gmdate('c');
@@ -208,7 +209,6 @@ class VippsApi {
     // Cancel a reserved but not captured payment IOK 2018-05-07
     public function cancel_payment($order,$requestid=1) {
         $orderid = $order->get_meta('_vipps_orderid');
-        $amount = $amount ? $amount : $order->get_total();
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
         $date = gmdate('c');
