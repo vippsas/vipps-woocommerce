@@ -63,10 +63,11 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
+For issues with your WooCommerce installation you should use the support forum on wordpress.org: https://wordpress.org/support/plugin/woo-vipps For other issues you should contact Vipps: woocommerce@vipps.no
 
 # What are the requirements?
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
+* Vipps eCommerce version 2, and if using "Vipps Hurtigkasse": Express Checkout. [Sign up here](https://vippsbedrift.no/signup/vippspanett/?r=f7458716-95c6-44f0-bc05-02fdfd10b5c7)
 
