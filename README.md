@@ -69,5 +69,5 @@ For issues with your WooCommerce installation you should use the support forum o
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
-* Vipps eCommerce version 2, and if using "Vipps Hurtigkasse": Express Checkout. [Sign up here](https://vippsbedrift.no/signup/vippspanett/?r=f7458716-95c6-44f0-bc05-02fdfd10b5c7)
+* Vipps eCommerce version 2, and if using "Vipps Hurtigkasse": Express Checkout. [Sign up here](https://api.vippsbedrift.no/v1/partial/signup/vippspanett/woocommerce)
 
