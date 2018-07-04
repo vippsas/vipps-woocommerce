@@ -32,17 +32,11 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 * Download and install the plugin
 * Configure the plugin
 
-# How to install the plugin
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
-
 # Installation
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
+1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory. 
+2. Activate the plugin through the `Plugins` screen in WordPress.
+3. Go to the WooCommerce `Settings` page and choose `Payment Gateways` (Betalinger) and enable Vipps.
+4. Go the `Settings` page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 # How to get Vipps account keys from Vipps Developer Portal
 1. Sign in to Vipps Developer Portal at [https://api-portal.vipps.no/](https://api-portal.vipps.no/)
@@ -63,10 +57,11 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
+For issues with your WooCommerce installation you should use the support forum on wordpress.org: https://wordpress.org/support/plugin/woo-vipps For other issues you should contact Vipps: woocommerce@vipps.no
 
 # What are the requirements?
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
+* Vipps eCommerce version 2, and if using "Vipps Hurtigkasse": Express Checkout. [Sign up here](https://api.vippsbedrift.no/v1/partial/signup/vippspanett/woocommerce)
 
