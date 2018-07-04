@@ -53,8 +53,11 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
 
 # Screenshots
-1. Enable Vipps as a payment method.
-2. Enter your Vipps account keys and configure the plugin.
+Enable Vipps as a payment method
+![Enable Vipps as a payment method](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-1.png?raw=true "Enable Vipps as a payment method.")
+
+Enter your Vipps account keys and configure the plugin
+![Enter your Vipps account keys and configure the plugin](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-2.png?raw=true "Enter your Vipps account keys and configure the plugin")
 
 # Frequently Asked Questions
 
