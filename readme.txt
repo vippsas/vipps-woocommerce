@@ -78,6 +78,9 @@ For issues with your WooCommerce installation you should use the support forum h
 
 == Changelog ==
 
+= 2018.07.06 version 1.0.3 =
+* Change - Added more logging for failed access token call
+
 = 2018.07.03 version 1.0.2 =
 * Fix	- Uninitialized variable use and wrong call to uninstall - thanks to Rafal Sokolowski for bug reports and patches
 * Change- Authtoken now used when verifying express checkout calls
