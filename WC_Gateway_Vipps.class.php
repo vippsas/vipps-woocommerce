@@ -357,6 +357,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $at = $this->api->get_access_token();
         } catch (Exception $e) {
+            $this->log(__('Could not get access token when initiating Vipps payment','woo-vipps') .': ' . $e->getMessage(), 'error');
             wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','woo-vipps'),'error');
             return false;
         }
