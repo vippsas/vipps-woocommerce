@@ -1026,6 +1026,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $fields = WC()->checkout->checkout_fields;
         // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         // For v2 of the api, just let Vipps ask for then umber
+	print $this->get_option('description');
+	parent::payment_fields();
         return;
         if (isset($fields['billing']['billing_phone']) && $fields['billing']['billing_phone']['required']) {
         } else {
