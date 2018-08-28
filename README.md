@@ -32,12 +32,6 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 * Download and install the plugin
 * Configure the plugin
 
-# How to install the plugin
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
-
 # Installation
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
 2. Activate the plugin through the 'Plugins' screen in WordPress.
