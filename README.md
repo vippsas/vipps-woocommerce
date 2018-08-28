@@ -46,7 +46,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 3. Click on "View Secret" to see “Client ID” and “Client Secret”
 4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
 
-_Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)."_ 
+_Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)._ 
 
 See: [Getting Started](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-getting-started.md) with the Vipps Developer Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
 
