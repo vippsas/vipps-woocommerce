@@ -64,7 +64,7 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
+For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
 
 # What are the requirements?
 * WooCommerce 3.3.4 or newer is required
