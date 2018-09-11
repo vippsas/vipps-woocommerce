@@ -561,7 +561,7 @@ class Vipps {
         if (empty($carts)) return;
         $cart = @$carts[$order->get_id()];
         unset($carts[$order->get_id()]);
-        $woocommerce->session->set('_vipps_carts');
+        $woocommerce->session->set('_vipps_carts',$carts);
         foreach ($cart as $cart_item_key => $values) {
             $id =$values['product_id'];
             $quant=$values['quantity'];
