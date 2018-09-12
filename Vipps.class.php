@@ -384,6 +384,7 @@ class Vipps {
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid);
+            $this->log(__('Callback was:', 'woo-vipps') . " " . $callback);
             exit();
         }
         $order = new WC_Order($orderid);
@@ -396,7 +397,6 @@ class Vipps {
         // a small bit of security
         if ($order->get_meta('_vipps_authtoken') && !wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken'))){
             $this->log("Wrong authtoken on shipping details callback");
-            print "-1";
             exit();
         }
 
@@ -452,6 +452,7 @@ class Vipps {
 
         if (empty($shipping_methods)) {
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps'));
+            exit();
         }
 
         // Then format for Vipps
