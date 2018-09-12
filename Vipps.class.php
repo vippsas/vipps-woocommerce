@@ -383,18 +383,20 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
         if (!$orderid) {
+            $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid);
+            $this->log(__('Callback was:', 'woo-vipps') . " " . $callback);
             exit();
         }
         $order = new WC_Order($orderid);
 
         if (!$order) {
+            $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid);
             exit();
         }
 
         // a small bit of security
         if ($order->get_meta('_vipps_authtoken') && !wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken'))){
             $this->log("Wrong authtoken on shipping details callback");
-            print "-1";
             exit();
         }
 
@@ -447,6 +449,11 @@ class Vipps {
         $packages = array($package);
         $shipping =  WC()->shipping->calculate_shipping($packages);
         $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
+
+        if (empty($shipping_methods)) {
+            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps'));
+            exit();
+        }
 
         // Then format for Vipps
         $methods = array();
@@ -561,7 +568,7 @@ class Vipps {
         if (empty($carts)) return;
         $cart = @$carts[$order->get_id()];
         unset($carts[$order->get_id()]);
-        $woocommerce->session->set('_vipps_carts');
+        $woocommerce->session->set('_vipps_carts',$carts);
         foreach ($cart as $cart_item_key => $values) {
             $id =$values['product_id'];
             $quant=$values['quantity'];

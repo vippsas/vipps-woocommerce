@@ -7,7 +7,7 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.0.3
+   Version: 1.0.4
    License: AGPLv3 or later
    License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -35,8 +35,15 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-// Only be active if Woocommerce is active IOK 2018-06-05
-if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+
+// Only be active if Woocommerce is active, either on site or network activated IOK 2018-08-29
+$activeplugins =  apply_filters( 'active_plugins', get_option( 'active_plugins' ));
+$activesiteplugins = apply_filters('active_sitewide_plugins', get_site_option('active_sitewide_plugins'));
+if ($activesiteplugins) {
+ $activeplugins = array_merge($activeplugins,array_keys($activesiteplugins));
+}
+
+if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     require_once(dirname(__FILE__) . "/Vipps.class.php");
 
     /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */

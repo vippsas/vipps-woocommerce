@@ -8,13 +8,13 @@ See the main GitHub page for Vipps contact information, etc: https://github.com/
 
 # Description
 
-*Official Vipps Express Checkout and Payment for WooCommerce. 2.9 millon norwegians use Vipps. Give them a fast and familiar shopping experience.*
+*Official Vipps Express Checkout and Payment for WooCommerce. More than 3 millon Norwegians use Vipps. Give them a fast and familiar shopping experience.*
 
 This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
-Read [information from Vipps](https://www.vipps.no/woocommerce ) about the plugin.
+Read [information from Vipps](https://www.vipps.no/woocommerce) about the plugin.
 
 # Vipps Express Checkout
 
@@ -32,12 +32,6 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 * Download and install the plugin
 * Configure the plugin
 
-# How to install the plugin
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
-
 # Installation
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
 2. Activate the plugin through the 'Plugins' screen in WordPress.
@@ -51,6 +45,10 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
 3. Click on "View Secret" to see “Client ID” and “Client Secret”
 4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
+
+_Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)._ 
+
+See: [Getting Started](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-getting-started.md) with the Vipps Developer Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
 
 # Screenshots
 Enable Vipps as a payment method
@@ -66,7 +64,7 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
+For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
 
 # What are the requirements?
 * WooCommerce 3.3.4 or newer is required
