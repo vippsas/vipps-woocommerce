@@ -383,11 +383,13 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
         if (!$orderid) {
+            $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid);
             exit();
         }
         $order = new WC_Order($orderid);
 
         if (!$order) {
+            $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid);
             exit();
         }
 
@@ -447,6 +449,10 @@ class Vipps {
         $packages = array($package);
         $shipping =  WC()->shipping->calculate_shipping($packages);
         $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
+
+        if (empty($shipping_methods)) {
+            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps'));
+        }
 
         // Then format for Vipps
         $methods = array();
