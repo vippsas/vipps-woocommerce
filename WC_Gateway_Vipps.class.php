@@ -1022,16 +1022,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $logger->log($type,$what,$context);
     }
 
+    // Ensure chosen name gets used in the checkout page IOK 2018-09-12
+    public function get_title() {
+     $title = trim($this->get_option('title'));
+     if (!$title) $title = __('Vipps','woo-vipps');
+     return $title;
+    }
+
     public function payment_fields() {
-        $fields = WC()->checkout->checkout_fields;
         // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         // For v2 of the api, just let Vipps ask for then umber
+        // IOK 2019-09-12 removed dead code only used for v1 of api
 	print $this->get_option('description');
         return;
-        if (isset($fields['billing']['billing_phone']) && $fields['billing']['billing_phone']['required']) {
-        } else {
-            print "<input type=text name='vippsphone' value='' placeholder='ditt telefonnr'>";
-        }
     }
     public function validate_fields() {
         return true;
