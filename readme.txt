@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.4.4
+WC tested up to: 3.4.5
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -77,6 +77,11 @@ For issues with your WooCommerce installation you should use the support forum h
 
 
 == Changelog ==
+
+= 2018.09.12 version 1.0.4 =
+* Change - Added more logging for shipping metods
+* Fix - Make Description and Payment Method Name in settings actually affect the checkout page
+* Fix - Make plugin work in network installs of WooCommerce for multisite shops (Thanks to Thomas Audunhus for the bug report)
 
 = 2018.07.06 version 1.0.3 =
 * Change - Added more logging for failed access token call
