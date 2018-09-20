@@ -578,9 +578,16 @@ class Vipps {
 
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+
+        if (!$gw->express_checkout_available()) {
+            $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+
         try {
-            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-            $gw = new WC_Gateway_Vipps();
             $orderid = $gw->create_partial_order();
         } catch (Exception $e) {
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
@@ -718,7 +725,7 @@ class Vipps {
     public function vipps_express_checkout() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
-        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
+//        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
 
         $backurl = wp_validate_redirect($_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
