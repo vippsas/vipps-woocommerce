@@ -77,9 +77,14 @@ For issues with your WooCommerce installation you should use the support forum h
 
 = Filters and Hooks for customization =
 There are several filters and hooks you can use to customize the behaviour of this plugin:
- * 'woo_vipps_is_available': Takes a boolean availability argument and the gateway and must return true or false
- * 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
- * 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
+ * Filter: 'woo_vipps_is_available': Takes a boolean availability argument and the gateway and must return true or false
+ * Filter: 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
+ * Filter: 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
+ * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
+ 
+= Shortcodes =
+ * [woo_vipps_express_checkout_button] will print the express checkout button if valid
+ * [woo_vipps_express_checkout_banner] will print the express checkout banner normally shown on the checkout page for non-logged-in users
 
 
 == Changelog ==

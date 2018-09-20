@@ -44,6 +44,7 @@ class Vipps {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
         $this->cleanupCallbackSignals();
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
+        $this->add_shortcodes();
     }
 
     public function admin_init () {
@@ -93,6 +94,11 @@ class Vipps {
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
     }
 
+    public function add_shortcodes() {
+      add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
+      add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
+    }
+
     public function log ($what,$type='info') {
         $logger = wc_get_logger();
         $context = array('source','Vipps Woo Gateway');
@@ -113,6 +119,10 @@ class Vipps {
     // Show express option on checkout form too
     public function before_checkout_form_express () {
         if (is_user_logged_in()) return;
+        $this->express_checkout_banner();
+    }
+ 
+    public function express_checkout_banner() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
         if (!$gw->show_express_checkout()) return;
@@ -124,7 +134,7 @@ class Vipps {
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
         $message = $text . "<a href='$url'> <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/> $linktext!</a>";
-        // wc_print_notice( $message, 'notice' ); // Won't use this because we want to add a new class
+        $message = apply_filters('woo_vipps_express_checkout_banner', $message, $url);
         ?>
             <div class="woocommerce-info vipps-info"><?php echo $message;?></div>
             <?php
@@ -143,6 +153,15 @@ class Vipps {
             $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
             echo $button;
         }
+    }
+
+    // The express checkout shortcode implementation
+    public function express_checkout_button_shortcode() {
+     $this->cart_express_checkout_button();
+    }
+    // Show a banner normally shown for non-logged-in-users at the checkout page
+    public function express_checkout_banner_shortcode() {
+      $this->express_checkout_banner();
     }
 
 
