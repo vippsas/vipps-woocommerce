@@ -78,6 +78,9 @@ For issues with your WooCommerce installation you should use the support forum h
 
 == Changelog ==
 
+= 2018.0x.xx version 1.0.5 =
+* Fix - Shipping details callback returned prices wrongly formatted for some locales
+
 = 2018.09.12 version 1.0.4 =
 * Change - Added more logging for shipping metods
 * Fix - Make Description and Payment Method Name in settings actually affect the checkout page
