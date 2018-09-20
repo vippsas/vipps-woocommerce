@@ -405,6 +405,8 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
+        do_action('woo_vipps_shipping_details_callback', $orderid, $vippsorderid);
+
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid);
             $this->log(__('Callback was:', 'woo-vipps') . " " . $callback);
@@ -485,9 +487,9 @@ class Vipps {
         $shipping =  WC()->shipping->calculate_shipping($packages);
         $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
 
+        // No exit here, because developers can add more methods using the filter below. IOK 2019-09-20
         if (empty($shipping_methods)) {
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps'));
-            exit();
         }
 
         // Then format for Vipps
@@ -518,6 +520,9 @@ class Vipps {
         }
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
+        $return = apply_filters('woo_vipps_shipping_methods', $return, $address, $order,$cart);
+        
+
         $json = json_encode($return);
         header("Content-type: application/json; charset=UTF-8");
         print $json;

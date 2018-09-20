@@ -82,6 +82,8 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
  * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
+ * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the address, the order and a cart. Should return an array of shipping methods.
+ * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
