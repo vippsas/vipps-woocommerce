@@ -521,7 +521,7 @@ class Vipps {
         if (WC()->session->get('chosen_payment_method')) return; // User has already chosen payment method, so we're done.
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
-        if ($gw->get_option('vippsdefault')) {
+        if ($gw->get_option('vippsdefault')=='yes') {
             WC()->session->set('chosen_payment_method', $gw->id);
         }
     }

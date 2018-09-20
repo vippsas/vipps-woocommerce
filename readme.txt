@@ -80,6 +80,7 @@ For issues with your WooCommerce installation you should use the support forum h
 
 = 2018.0x.xx version 1.0.5 =
 * Fix - Shipping details callback returned prices wrongly formatted for some locales
+* Fix - "Vipps as default" was always on (Thanks to Jacob von der Lippe for the bug report)
 
 = 2018.09.12 version 1.0.4 =
 * Change - Added more logging for shipping metods
