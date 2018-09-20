@@ -475,7 +475,7 @@ class Vipps {
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
 
-            $method['shippingCost'] = sprintf("%.2f",$cost+$tax);
+            $method['shippingCost'] = sprintf("%.2F",$cost+$tax);
             $method['shippingMethod'] = $rate->get_label();
             // We may not really need the tax stashed here, but just to be sure.
             $method['shippingMethodId'] = $rate->get_id() . ";" . $tax; 
