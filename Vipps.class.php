@@ -400,16 +400,19 @@ class Vipps {
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         $callback = @$_REQUEST['callback'];
+
         $data = array_reverse(explode("/",$callback));
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
+
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid);
             $this->log(__('Callback was:', 'woo-vipps') . " " . $callback);
             exit();
         }
-        $order = new WC_Order($orderid);
 
+
+        $order = new WC_Order($orderid);
         if (!$order) {
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid);
             exit();
@@ -454,6 +457,17 @@ class Vipps {
             $quantity = $item['quantity'];
             $acart->add_to_cart($prodid,$quantity,$varid);
         }
+      
+        // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
+        if (!$acart->needs_shipping()) {
+           $methods = array(array('isDefault'=>'Y','priority'=>'0','shippingCost'=>'0.00','shippingMethod'=>__('No shipping required','woo-vipps'),'shippingMethodId'=>'Free;0'));
+           $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
+           $json = json_encode($return);
+           header("Content-type: application/json; charset=UTF-8");
+           print $json;
+           exit();
+        }
+
         $package = array();
         $package['contents'] = $acart->cart_contents;
         $package['contents_cost'] = $order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax();
@@ -736,13 +750,11 @@ class Vipps {
             </div>
             </div>
             <?php
-            return ob_get_clean(); 
+            return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
 
 
     // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
-    // It could be changed to be a normal page that would call the below as an ajax method - this would
-    // be better performancewise as this can take some time. IOK 2018-05-25
     public function vipps_express_checkout() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28

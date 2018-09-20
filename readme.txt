@@ -81,6 +81,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
  * Filter: 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
  * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
+ * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
  
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid

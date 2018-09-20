@@ -61,12 +61,6 @@ jQuery(document).ready(function () {
    });
  }
 
- var buttons = jQuery('#do-express-checkout');
- if (buttons.length == 0) {
-  doExpressCheckout();
- } else {
   jQuery('#do-express-checkout').click(doExpressCheckout);
- }
-
-
+  doExpressCheckout();
 });
