@@ -75,6 +75,11 @@ For issues with your WooCommerce installation you should use the support forum h
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
 
+= Filters and Hooks for customization =
+There are several filters and hooks you can use to customize the behaviour of this plugin:
+ * 'woo_vipps_is_available': Takes a boolean availability argument and the gateway and must return true or false
+ * 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
+
 
 == Changelog ==
 

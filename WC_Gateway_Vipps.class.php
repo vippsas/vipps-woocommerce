@@ -112,6 +112,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // True if "Express checkout" should be displayed IOK 2018-06-18
     public function show_express_checkout() {
+            if (!$this->express_checkout_available()) return false;
 	    return ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
     }
     public function show_login_with_vipps() {
@@ -340,12 +341,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 });
     }
 
-    public function is_valid_for_use() {
+   // Only be available if current currency is NOK IOK 2018-09-19
+    public function is_available() {
+        if (!$this->can_be_activated()) return false;
+        if (!parent::is_available()) return false;
+
+        $ok = true;
+
         $currency = get_woocommerce_currency(); 
         if ($currency != 'NOK') {
-            return false;
+            $ok = false;
         }
-        return true; 
+
+        $ok = apply_filters('woo_vipps_is_available', $ok, $this);
+        return $ok; 
+    }
+
+    // True iff the express checkout feature  should be available 
+    public function express_checkout_available() {
+       if (! $this->is_available()) return false;
+       $ok = true;
+       $ok = apply_filters('woo_vipps_express_checkout_available', $ok, $this);
+       return $ok;
     }
 
     // IOK 2018-04-20 Initiate payment at Vipps and redirect to the Vipps payment terminal.
@@ -937,8 +954,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // is valid_for_use can in principle run on a http version of the page; we only need to have https accessible for callbacks,
     // but if so, admin should definitely be HTTPS so we just check that. IOK 2018-06-06
     public function can_be_activated () {
-        $currency = get_woocommerce_currency(); 
-        if ($currency != 'NOK') return false;
         if (!is_ssl() && !preg_match("!^https!i",home_url())) return false;
         return true;
     }
@@ -966,8 +981,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($currency != 'NOK'): 
             ?> 
                 <div class="inline error">
-                <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
-                <?php _e( 'Vipps does not support your currency.', 'woo-vipps' ); ?>
+                <p><strong><?php _e( 'Vipps does not support your currency.', 'woo-vipps' ); ?></strong>
+                <?php _e('Vipps will only be available as a payment option when currency is NOK', 'woo-vipps'); ?>                
                 </p>
                 </div>
                 <?php endif; ?>
