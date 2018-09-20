@@ -139,7 +139,9 @@ class Vipps {
             $url = wp_nonce_url($url,'express','sec');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
             $title = __('Buy now with Vipps!', 'woo-vipps');
-            echo "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
+            $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
+            $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
+            echo $button;
         }
     }
 

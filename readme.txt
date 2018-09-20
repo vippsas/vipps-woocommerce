@@ -79,6 +79,7 @@ For issues with your WooCommerce installation you should use the support forum h
 There are several filters and hooks you can use to customize the behaviour of this plugin:
  * 'woo_vipps_is_available': Takes a boolean availability argument and the gateway and must return true or false
  * 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
+ * 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
 
 
 == Changelog ==
@@ -86,6 +87,8 @@ There are several filters and hooks you can use to customize the behaviour of th
 = 2018.0x.xx version 1.0.5 =
 * Fix - Shipping details callback returned prices wrongly formatted for some locales
 * Fix - "Vipps as default" was always on (Thanks to Jacob von der Lippe for the bug report)
+* Fix - Availability now depends on currency and is subject to filters. Express checkout only shown when available
+* Improvement - Filters and hooks added
 
 = 2018.09.12 version 1.0.4 =
 * Change - Added more logging for shipping metods
