@@ -391,8 +391,10 @@ class Vipps {
     public function country_to_code($countryname) {
         if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
         $mapped = @$this->countrymap[strtoupper($countryname)];
-        if ($mapped) return $mapped;
-        return  $countryname;
+        $code = $countryname;
+        if ($mapped) $code = $mapped;
+        $code = apply_filters('woo_vipps_country_to_code', $code, $countryname);
+        return  $code;
     }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
