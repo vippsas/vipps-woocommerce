@@ -407,6 +407,8 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
+	$this->log("Shipping details for order $vippsorderid $orderid");
+
         do_action('woo_vipps_shipping_details_callback', $orderid, $vippsorderid);
 
         if (!$orderid) {
@@ -464,13 +466,15 @@ class Vipps {
       
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
-           $methods = array(array('isDefault'=>'Y','priority'=>'0','shippingCost'=>'0.00','shippingMethod'=>__('No shipping required','woo-vipps'),'shippingMethodId'=>'Free;0'));
+           $methods = array(array('isDefault'=>'Y','priority'=>'0','shippingCost'=>'0.00','shippingMethod'=>__('No shipping required','woo-vipps'),'shippingMethodId'=>'Free:Free;0'));
            $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
            $json = json_encode($return);
            header("Content-type: application/json; charset=UTF-8");
            print $json;
            exit();
         }
+
+	$this->log("Needs shipping");
 
         $package = array();
         $package['contents'] = $acart->cart_contents;
@@ -522,10 +526,15 @@ class Vipps {
         }
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
-        $return = apply_filters('woo_vipps_shipping_methods', $return, $address, $order,$cart);
+
+	$this->log("Pre filters: " . print_r($return,true));
+
+        $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
         
+	$this->log("post filters: " . print_r($return,true));
 
         $json = json_encode($return);
+	$this->log("json $json");
         header("Content-type: application/json; charset=UTF-8");
         print $json;
         exit();
@@ -765,7 +774,7 @@ class Vipps {
     public function vipps_express_checkout() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
-//        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
+        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
 
         $backurl = wp_validate_redirect($_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
