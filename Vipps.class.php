@@ -186,6 +186,9 @@ class Vipps {
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
 
+// This is for debugging the API IOK 2019-09-21
+//        $gw = new WC_Gateway_Vipps(); print "<pre>";print_r($gw->get_payment_details($order)); print "</pre>";
+
         print "<table border=0><thead></thead><tbody>";
         print "<tr><td>Status</td>";
         print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";

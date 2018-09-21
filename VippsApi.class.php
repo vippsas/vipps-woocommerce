@@ -291,6 +291,7 @@ class VippsApi {
 
     // Used to retrieve shipping and user details for express checkout orders where relevant and the callback isn't coming.
     public function payment_details ($order) {
+	$requestid=0;
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'Ecomm/v2/payments/'.$orderid.'/details';
         $date = gmdate('c');
