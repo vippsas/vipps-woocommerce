@@ -185,6 +185,32 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
+    // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
+    // they don't require payment. So we try to capture, and if successful, call "payment_complete". IOK 2018-09-21
+    // do NOT call this unless the order is 'reserved' at Vipps!
+    protected function maybe_complete_payment($order) {
+        if ('vipps' != $order->get_payment_method()) return false;
+        if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
+        $captured = $order->get_meta('_vipps_captured');
+        if ($captured) { 
+          // IOK 2019-09-21 already captured, so just run 'payment complete'
+          $order->payment_complete();
+          return true;
+        }
+        $ok = 0;
+        try {
+            $ok = $this->capture_payment($order);
+            $order->add_order_note(__('Payment automatically captured at Vipps for order not needing processing','woo_vipps'));
+          
+        } catch (Exception $e) {
+            $order->add_order_note(__('Order does not need processing, but payment could not be captured at Vipps:','woo_vipps') . ' ' . $e->getMessage());
+        }
+        if (!$ok) return false;
+        $order->save();
+        $order->payment_complete();
+        return true;
+    }
+
 
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason='') {
@@ -706,12 +732,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($oldstatus != $newstatus) {
             switch ($newstatus) {
                 case 'on-hold':
-                    wc_reduce_stock_levels($order->get_id());
-                    $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woo-vipps' ));
+                    // Orders not needing processing can be autocaptured, so try to do so now. IOK 2019-09-21
+                    $autocapture = $this->maybe_complete_payment($order);
+                    if (!$autocapture) {
+                      wc_reduce_stock_levels($order->get_id());
+                      $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woo-vipps' ));
+                    }
                     break;
                 case 'processing':
-                    wc_reduce_stock_levels($order->get_id());
-                    $order->update_status('processing', __( 'Payment captured at Vipps', 'woo-vipps' ));
+                    $order->payment_complete();
                     break;
                 case 'cancelled':
                     $order->update_status('cancelled', __('Order failed or rejected at Vipps', 'woo-vipps'));
@@ -911,8 +940,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
-            wc_reduce_stock_levels($order->get_id());
-            $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woo-vipps' ));
+            $autocapture = $this->maybe_complete_payment($order);
+            if (!$autocapture) {
+               wc_reduce_stock_levels($order->get_id());
+               $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woo-vipps' ));
+            }
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
         }
