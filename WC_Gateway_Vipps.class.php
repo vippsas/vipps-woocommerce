@@ -191,7 +191,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     protected function maybe_complete_payment($order) {
         if ('vipps' != $order->get_payment_method()) return false;
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
-        $captured = $order->get_meta('_vipps_captured');
+        $captured = $order->get_meta('_vipps_captured'); // IOK FIXME this could in theory be a partial capture; but this method should really only be called by 'pending' status orders.
         if ($captured) { 
           // IOK 2019-09-21 already captured, so just run 'payment complete'
           $order->payment_complete();
@@ -732,7 +732,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($oldstatus != $newstatus) {
             switch ($newstatus) {
                 case 'on-hold':
-                    // Orders not needing processing can be autocaptured, so try to do so now. IOK 2019-09-21
+                    // Orders not needing processing can be autocaptured, so try to do so now. This will reduce stock and mark the order 'completed' IOK 2019-09-21
                     $autocapture = $this->maybe_complete_payment($order);
                     if (!$autocapture) {
                       wc_reduce_stock_levels($order->get_id());
@@ -945,6 +945,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
+            // Orders not needing processing can be autocaptured, so try to do so now. This will reduce stock and mark the order 'completed' IOK 2019-09-21
             $autocapture = $this->maybe_complete_payment($order);
             if (!$autocapture) {
                wc_reduce_stock_levels($order->get_id());
