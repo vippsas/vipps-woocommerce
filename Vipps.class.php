@@ -171,6 +171,7 @@ class Vipps {
         $order = new WC_Order($post);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
+
         $init =  intval($order->get_meta('_vipps_init_timestamp'));
         $callback =  intval($order->get_meta('_vipps_callback_timestamp'));
         $capture =  intval($order->get_meta('_vipps_capture_timestamp'));
@@ -407,8 +408,6 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-	$this->log("Shipping details for order $vippsorderid $orderid");
-
         do_action('woo_vipps_shipping_details_callback', $orderid, $vippsorderid);
 
         if (!$orderid) {
@@ -474,8 +473,6 @@ class Vipps {
            exit();
         }
 
-	$this->log("Needs shipping");
-
         $package = array();
         $package['contents'] = $acart->cart_contents;
         $package['contents_cost'] = $order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax();
@@ -526,15 +523,9 @@ class Vipps {
         }
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
-
-	$this->log("Pre filters: " . print_r($return,true));
-
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
-        
-	$this->log("post filters: " . print_r($return,true));
 
         $json = json_encode($return);
-	$this->log("json $json");
         header("Content-type: application/json; charset=UTF-8");
         print $json;
         exit();
