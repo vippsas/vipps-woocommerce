@@ -955,6 +955,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // but if so, admin should definitely be HTTPS so we just check that. IOK 2018-06-06
     public function can_be_activated () {
         if (!is_ssl() && !preg_match("!^https!i",home_url())) return false;
+        if (!ini_get('allow_url_fopen')) return false;
         return true;
     }
 
@@ -977,6 +978,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             <?php $this->display_errors(); ?>
 
             <?php 
+
             $currency = get_woocommerce_currency(); 
         if ($currency != 'NOK'): 
             ?> 
@@ -985,15 +987,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 <?php _e('Vipps will only be available as a payment option when currency is NOK', 'woo-vipps'); ?>                
                 </p>
                 </div>
-                <?php endif; ?>
+        <?php endif; ?>
 
-                <?php if (!is_ssl() &&  !preg_match("!^https!i",home_url())): ?>
+        <?php if (!is_ssl() &&  !preg_match("!^https!i",home_url())): ?>
                 <div class="inline error">
                 <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
                 <?php _e( 'Vipps requires that your site uses HTTPS.', 'woo-vipps' ); ?>
                 </p>
                 </div>
-                <?php endif; ?>
+        <?php endif; ?>
+    
+        <?php if (! ini_get('allow_url_fopen')): ?>
+                <div class="inline error">
+                <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
+                <?php _e( 'Vipps requires that your PHP configuraton has <b>allow_url_fopen</b> set to true.', 'woo-vipps' ); ?>
+                </p>
+                </div>
+        <?php endif; ?>
+
                 <table class="form-table">
                 <?php $this->generate_settings_html(); ?>
                 </table> <?php

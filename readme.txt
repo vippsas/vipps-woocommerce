@@ -98,6 +98,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Fix - "Vipps as default" was always on (Thanks to Jacob von der Lippe for the bug report)
 * Fix - Availability now depends on currency and is subject to filters. Express checkout only shown when available
 * Improvement - Filters and hooks added
+* Improvement - Give a specific error message if allow_url_fopen is false (thanks to eddiex666 for suggestion)
 
 = 2018.09.12 version 1.0.4 =
 * Change - Added more logging for shipping metods
