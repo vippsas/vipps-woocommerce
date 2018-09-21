@@ -70,6 +70,11 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 = How can I get help if I have any issues? =
 For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
 
+= Why are orders put on-hold and not reserved or completed? =
+When the order is on-hold the payment is reserved, but not yet transferred to the merchant. To do this, the money must be 'captured', and you are normally only allowed to do this at the same time as the order is shipped. You can 'capture' the money explitly on the order screen; but the money will be captured automatically when the order is set to "Processing" or "Complete".
+
+There is an exception for orders where all items are both virtual and downloadable: These are considered to not need processing and will thus be captured automatically (and indeed will go directly to the 'Complete' status). It is possible to customize this property for your needs using the woocommerce_order_item_needs_processing filter.
+
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
