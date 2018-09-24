@@ -98,7 +98,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.09.24 version 1.0.5 =
+= 2018.09.25 version 1.0.5 =
 * Fix - Shipping details callback returned prices wrongly formatted for some locales
 * Fix - "Vipps as default" was always on (Thanks to Jacob von der Lippe for the bug report)
 * Fix - Availability of the payment alternative now depends on currency and is subject to filters. Express checkout only shown when available
