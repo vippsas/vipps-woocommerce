@@ -98,12 +98,15 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.0x.xx version 1.0.5 =
+= 2018.09.24 version 1.0.5 =
 * Fix - Shipping details callback returned prices wrongly formatted for some locales
 * Fix - "Vipps as default" was always on (Thanks to Jacob von der Lippe for the bug report)
-* Fix - Availability now depends on currency and is subject to filters. Express checkout only shown when available
-* Improvement - Filters and hooks added
+* Fix - Availability of the payment alternative now depends on currency and is subject to filters. Express checkout only shown when available
+* Change - The plugin can be activated even if default currency is not NOK (to allow for multi-currency situations)
+* Improvement - Filters, hooks and shortcodes added
 * Improvement - Give a specific error message if allow_url_fopen is false (thanks to eddiex666 for suggestion)
+* Improvement - Shipping details callback will return a zero-cost alternative if no shipping is needed
+* Improvement - For order that do not need processing, payment_complete will be called iff capture is successful. This allows for auto-capture of virtual and downloadable products.
 
 = 2018.09.12 version 1.0.4 =
 * Change - Added more logging for shipping metods
