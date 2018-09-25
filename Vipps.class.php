@@ -726,7 +726,7 @@ class Vipps {
 
     // Return the method in the Vipps
     public function is_special_page() {
-        $specials = array('vipps-betaling' => 'vipps_wait_for_payment', 'vipps-express-checkout'=>'vipps_express_checkout');
+        $specials = array('vipps-betaling' => 'vipps_wait_for_payment', 'vipps-express-checkout'=>'vipps_express_checkout', 'vipps-buy-product','vipps_buy_product');
         $method = null;
         if ( get_option('permalink_structure')) {
             foreach($specials as $special=>$specialmethod) {
@@ -764,6 +764,17 @@ class Vipps {
     }
 
 
+    // This URL will when accessed add a product to the cart and go directly to the express  checkout page.
+    // The argument passed must be a campaign link created for a given product - so this in effect acts as a landing page for 
+    // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2019-09-24
+    public function vipps_buy_product() {
+
+      do_action('woo_vipps_express_checkout_page',$order);
+
+      $content = "<p>Buy some stuff why don'tcha</p>";
+      $this->fakepage(__('Express checkout','woo-vipps'), $content);
+    }
+
     // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
     public function vipps_express_checkout() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
@@ -778,6 +789,9 @@ class Vipps {
             wp_redirect($backurl);
             exit();
         }
+
+        do_action('woo_vipps_express_checkout_page',$order);
+
 
         wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
         wp_add_inline_script('vipps-express-checkout','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
@@ -817,11 +831,15 @@ class Vipps {
 
     public function vipps_wait_for_payment() {
         status_header(200,'OK');
+
+
         $orderid = WC()->session->get('_vipps_pending_order');
         $order = null;
         if ($orderid) {
             $order = new WC_Order($orderid); 
         }
+        do_action('woo_vipps_wait_for_payment_page',$order);
+
         if (!$order) wp_die(__('Unknown order', 'woo-vipps'));
 
 
