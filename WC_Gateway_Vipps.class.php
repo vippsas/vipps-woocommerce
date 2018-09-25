@@ -40,7 +40,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $api = null;
     public $supports = null;
 
+    // Used to signal state to process_payment
     public $express_checkout = 0;
+    public $tempcart = 0;
 
     public function __construct() {
 
@@ -474,12 +476,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Then empty the cart; we'll ressurect it if we can and have to, so store it in session indexed by order number. IOK 2018-04-24
         // We really don't want any errors here for any reason, if we fail that's ok. IOK 2018-05-07
-        try {
-            $Vipps->save_cart($order);
-        } catch (Exception $e) {
+        // IOK 2019-09-25: Introducing *temporary carts* for shopping single products directly without changing the main cart. 
+        if (!$this->tempcart) {
+         try {
+             $Vipps->save_cart($order); // Actually, save the tempcart too here IOK FIXME DEBUG
+         } catch (Exception $e) {
+         }
+         $woocommerce->cart->empty_cart(true); // But only empty the cart if we are not in temp. IOK 2019-09-25
         }
-        $woocommerce->cart->empty_cart(true);
-
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);
@@ -960,8 +964,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
     // IOK 2018-05-25
-    public function create_partial_order() {
-        $cart_hash = md5( json_encode( wc_clean( WC()->cart->get_cart_for_session() ) ) . WC()->cart->total );
+    public function create_partial_order($thecart=null) {
+        if (!$thecart) {
+         $thecart = WC()->cart->get_cart_for_session();
+        }
+        $cart_hash = md5( json_encode( wc_clean( $thecart . $thecart->total)));
         $order = new WC_Order();
         $order->set_status('pending');
         $order->set_payment_method($this);
@@ -974,15 +981,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
         $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
         $order->set_customer_user_agent( wc_get_user_agent() );
-        $order->set_discount_total( WC()->cart->get_discount_total() );
-        $order->set_discount_tax( WC()->cart->get_discount_tax() );
-        $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
+        $order->set_discount_total( $thecart->get_discount_total()); 
+        $order->set_discount_tax( $thecart->get_discount_tax() );
+        $order->set_cart_tax( $thecart->get_cart_contents_tax() + $thecart->get_fee_tax() );
 
         // Use these methods directly - they should be safe.
-        WC()->checkout->create_order_line_items( $order, WC()->cart );
-        WC()->checkout->create_order_fee_lines( $order, WC()->cart );
-        WC()->checkout->create_order_tax_lines( $order, WC()->cart );
-        WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
+        WC()->checkout->create_order_line_items( $order, $thecart);
+        WC()->checkout->create_order_fee_lines( $order, $thecart);
+        WC()->checkout->create_order_tax_lines( $order, $thecart);
+        WC()->checkout->create_order_coupon_lines( $order, $thecart);
         $order->calculate_totals(true);
         $orderid = $order->save(); 
         return $orderid;

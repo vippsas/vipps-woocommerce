@@ -657,6 +657,52 @@ class Vipps {
         exit();
     }
 
+    // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
+    public function ajax_do_single_product_express_checkout() {
+        check_ajax_referer('do_express','sec');
+
+        if (!$gw->express_checkout_available()) {
+            $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+
+        $varid = $item['variation_id'];
+        $prodid = $item['product_id'];
+        $quantity = 1;
+
+        // Create a new temporary cart for this order. IOK 2019-09-25
+        $acart = new WC_Cart();
+        $acart->add_to_cart($prodid,$quantity,$varid);
+
+        try {
+            $orderid = $gw->create_partial_order($acart);
+        } catch (Exception $e) {
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        } 
+        if (!$orderid) {
+            $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+
+        // We want to process payments using a temporary cart, with express checkout. The main session cart should remain unchanged. IOK 2019-09-25
+        $gw->express_checkout = 1;
+        $gw->tempcart = 1;         
+
+        $ok = $gw->process_payment($orderid);
+        if ($ok && $ok['result'] == 'success') {
+            $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
+            wp_send_json($result);
+            exit();
+        }
+        $result = array('ok'=>0, 'msg'=> __('Vipps is temporarily unavailable.','woo-vipps'), 'url'=>'');
+        wp_send_json($result);
+        exit();
+    }
+
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
