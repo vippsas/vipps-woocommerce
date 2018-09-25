@@ -847,7 +847,7 @@ class Vipps {
             }
         }
 
-        // All these stauuses are successes so go to the thankyou page. 
+        // All these statuses are successes so go to the thankyou page. 
         if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
             wp_redirect($gw->get_return_url($order));
             exit();
@@ -856,6 +856,7 @@ class Vipps {
 	$content = "";
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $status == 'refunded') {
+            $this->restore_cart($order);
             $content .= "<div id=failure><p>". __('Order cancelled', 'woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
