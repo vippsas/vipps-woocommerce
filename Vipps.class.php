@@ -615,9 +615,13 @@ class Vipps {
         unset($carts[$order->get_id()]);
         $woocommerce->session->set('_vipps_carts',$carts);
         foreach ($cart as $cart_item_key => $values) {
+            // IOK 2018-09-26 FIXME DEBUG check that these values are correct
             $id =$values['product_id'];
             $quant=$values['quantity'];
-            $woocommerce->cart->add_to_cart($id,$quant);
+            $varid = @$values['variation_id'];
+            $variation = @$values['variation'];
+            $extra_data = @$values['cart_item_data'];
+            $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation,$extra_data);
         }
     }
 
@@ -667,13 +671,40 @@ class Vipps {
             exit();
         }
 
-        $varid = $item['variation_id'];
-        $prodid = $item['product_id'];
+        $varid = sprintf('%d',(@$_POST['key']));
+        $prodid = sprintf('%d',(@$_POST['key']));
         $quantity = 1;
+
+        $product = $prodid ? wc_get_product($prodid) : null;
+        $variant = null;
+
+        if (!$product) {
+            $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+        if ($product->is_type('variable')) {
+          $variations = $product->get_available_variations();
+          foreach($variations as $variation) {
+            if ($variation->get_id() == $varid) {
+              $variant = $variation; break;
+            } 
+          }
+          if (!$variant) {
+            $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+          }
+
+        }
 
         // Create a new temporary cart for this order. IOK 2019-09-25
         $acart = new WC_Cart();
-        $acart->add_to_cart($prodid,$quantity,$varid);
+        if ($varid) {
+            $acart->add_to_cart($prodid,$quantity,$varid);
+        } else {
+            $acart->add_to_cart($prodid,$quantity);
+        }
 
         try {
             $orderid = $gw->create_partial_order($acart);
