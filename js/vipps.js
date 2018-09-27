@@ -39,7 +39,7 @@ jQuery( document ).ready( function() {
  // Remove old error messages
  function removeErrorMessages () {
    jQuery('.woocommerce-error.vipps-error').fadeOut(300, function () {  jQuery(this).remove(); });
-   jQuery.trigger('woo-vipps-remove-errors');
+   jQuery(document).trigger('woo-vipps-remove-errors');
  }
 
 // Hooks for the button itself
@@ -47,10 +47,12 @@ jQuery( document ).ready( function() {
    removeErrorMessages();
    var button = jQuery(this);
 
+   // Allow developers to customize error message by hiding vipps-default-error-message and hooking woo-vipps-error-message <messsage>,<element>
    var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-express-checkout-error'><li>Something went wrong!</li></ul></p>";
-   jQuery.trigger('woo-vipps-error-message',[msg, button]);
+   jQuery(document).trigger('woo-vipps-error-message',[msg, button]);
    jQuery(msg).hide().insertAfter(button).fadeIn(300);
-   jQuery('.woocommerce-error').click(removeErrorMessages);
+
+   jQuery('.woocommerce-error.vipps-error').click(removeErrorMessages);
 
  });
  
