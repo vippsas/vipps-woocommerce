@@ -306,7 +306,6 @@ class Vipps {
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
-
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
@@ -320,6 +319,7 @@ class Vipps {
         add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
 
         add_action('woocommerce_after_add_to_cart_button', array($this, 'single_product_buy_now_button'));
+        add_action('woocommerce_after_shop_loop_item', array($this, 'loop_single_product_buy_now_button'), 20);
 
 
         // Special pages and callbacks handled by template_redirect
@@ -332,7 +332,6 @@ class Vipps {
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
         add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
-
 
     }
 
@@ -850,19 +849,39 @@ class Vipps {
          return;
         }
         
-        global $post;
-        $prod = new WC_Product($post->ID);
+        global $product;
         $disabled="";
-        if ($prod->is_type('variable')) {
+        if ($product->is_type('variable')) {
           $disabled="disabled";
         }
+        $variation=null;
         $title = __('Buy now with Vipps!', 'woo-vipps');
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
-      ?>
-<a href='#' <?php echo $disabled; ?> class='single-product button vipps-express-checkout <?php echo $disabled; ?>' title='<?php echo $title; ?>'><img alt='$title' border=0 src='<?php echo $buttonimgurl; ?>'></a>
-
-<?php
+        $buttoncode = "<a href='javascript:void(0)' $disabled class='single-product button vipps-express-checkout $disabled' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
+        echo apply_filters('woo_vipps_buy_now_button', $buttoncode, $product, $variation, $disabled);
    }
+
+    public function loop_single_product_buy_now_button() {
+        global $product;
+        if (!$product) return;
+        if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->supports( 'ajax_add_to_cart' )) return;
+
+        $gw = new WC_Gateway_Vipps();
+        if (!$gw->express_checkout_available()) {
+         return;
+        }
+        $prodid = $product->get_id();
+        $sku = $product->get_sku();
+        $label = $product->add_to_cart_description();
+
+        $title = __('Buy now with Vipps!', 'woo-vipps');
+        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
+        $variation=null;
+        $disabled='';
+
+        $buttoncode = "<a data-product-id='$prodid' rel='nofollow' aria-label='$label' data-product_sku='$sku' href='javascript:void(0)' $disabled class='single-product button vipps-express-checkout $disabled' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
+        echo apply_filters('woo_vipps_buy_now_button', $buttoncode, $product, $variation, $disabled);  
+    }
 
 
     // This URL will when accessed add a product to the cart and go directly to the express  checkout page.
