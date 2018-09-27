@@ -605,21 +605,27 @@ class Vipps {
         $carts = $woocommerce->session->get('_vipps_carts');
         if (!$carts) $carts = array();
         $carts[$order->get_id()] = $cartcontents;
-        $woocommerce->session->set('_vipps_carts',$carts); 
+        $woocommerce->session->set('_vipps_carts',$carts);
+        do_action('woo_vipps_cart_saved');
     }
     public function restore_cart($order) {
         global $woocommerce;
         $carts = $woocommerce->session->get('_vipps_carts');
         if (empty($carts)) return;
         $cart = @$carts[$order->get_id()];
+        do_action('woo_vipps_restoring_cart',$order,$cart);
         unset($carts[$order->get_id()]);
         $woocommerce->session->set('_vipps_carts',$carts);
         foreach ($cart as $cart_item_key => $values) {
             $id =$values['product_id'];
             $quant=$values['quantity'];
-            $woocommerce->cart->add_to_cart($id,$quant);
+            $varid = @$values['variation_id'];
+            $variation = @$values['variation'];
+            $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
         }
+        do_action('woo_vipps_cart_restored');
     }
+
 
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
