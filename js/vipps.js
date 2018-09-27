@@ -26,14 +26,17 @@ jQuery( document ).ready( function() {
    if (purchasable) {
     jQuery('form .button.single-product.vipps-express-checkout').removeAttr('disabled');
     jQuery('form .button.single-product.vipps-express-checkout').removeClass('disabled');
+    removeErrorMessages();
    } else {
     jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
     jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
+    removeErrorMessages();
    }
  });
  jQuery('body').on('reset_data', function () {
     jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
     jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
+    removeErrorMessages();
  });
 
  function buySingleProduct (element) {
@@ -62,7 +65,6 @@ jQuery( document ).ready( function() {
     data['variation-id'] = (varid.length>0) ? varid.val() : 0;
    }
    data['action'] = 'do_single_product_express_checkout';
-   console.log("data is %j",data);
 
    jQuery.ajax(vippsajaxurl, {
     "method": "POST",
