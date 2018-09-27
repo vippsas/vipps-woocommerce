@@ -292,7 +292,7 @@ class Vipps {
             if (@$_REQUEST['vipps-consent-removal']) return @$_REQUEST['callback'];
             return false;
         }
-        // FIXME add home_url() path to match IOK 2018-06-06
+        // IOK 2018-09-27 possibly add home_url() path to match IOK 2018-06-06
         if (preg_match("!/vipps-consent-removal/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
             return @$_REQUEST['callback'];
         }
@@ -615,13 +615,11 @@ class Vipps {
         unset($carts[$order->get_id()]);
         $woocommerce->session->set('_vipps_carts',$carts);
         foreach ($cart as $cart_item_key => $values) {
-            // IOK 2018-09-26 FIXME DEBUG check that these values are correct
             $id =$values['product_id'];
             $quant=$values['quantity'];
             $varid = @$values['variation_id'];
             $variation = @$values['variation'];
-            $extra_data = @$values['cart_item_data'];
-            $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation,$extra_data);
+            $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
         }
     }
 
@@ -784,7 +782,6 @@ class Vipps {
 
     // The various return URLs for special pages of the Vipps stuff depend on settings and pretty-URLs so we supply them from here
     // These are for the "fallback URL" mostly. IOK 2018-05-18
-    // IOK  FIXME add backend support for these
     private function make_return_url($what) {
         $url = '';
         if ( !get_option('permalink_structure')) {

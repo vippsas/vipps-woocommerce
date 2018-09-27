@@ -966,9 +966,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2018-05-25
     public function create_partial_order($thecart=null) {
         if (!$thecart) {
-         $thecart = WC()->cart->get_cart_for_session();
+         $thecart = WC()->cart;
+         $contents = $thecart->get_cart_for_session();
+        } else {
+            // if ( ! did_action( 'woocommerce_cart_loaded_from_session' ) ) 
+         $contents->get_cart_contents();
         }
-        $cart_hash = md5( json_encode( wc_clean( $thecart . $thecart->total)));
+        $cart_hash = md5(json_encode(wc_clean($contents)) . $thecart->total);
         $order = new WC_Order();
         $order->set_status('pending');
         $order->set_payment_method($this);
