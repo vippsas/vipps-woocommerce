@@ -98,6 +98,10 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= xxxx.xx.xx version x.x.x =
+* Fix - Cart is now saved and restored if the payment is aborted or fails
+* Improvement: Added hooks for cart save and restore
+
 = 2018.09.25 version 1.0.5 =
 * Fix - Shipping details callback returned prices wrongly formatted for some locales
 * Fix - "Vipps as default" was always on (Thanks to Jacob von der Lippe for the bug report)
