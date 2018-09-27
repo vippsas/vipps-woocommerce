@@ -90,6 +90,9 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the order and a cart. Should return an array of shipping methods.
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
  * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
+ * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
+ * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
+ ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
  
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
