@@ -17,19 +17,12 @@
 */
 
 jQuery( document ).ready( function() {
- // This fires when a product has been added to the cart with ajax. 
- jQuery( 'body' ).on( 'added_to_cart', function() {
-  // nothing 
- });
- jQuery('body').on('check_variations', function () {
-    console.log("variations check");
- });
+ // Hooks for the 'buy now with vipps' button on product pages etc
  jQuery('body').on('found_variation', function (e,variation) {
    var purchasable=true;
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
-   console.log("Found variation purchasable ->" + purchasable + "<-");
    if (purchasable) {
     jQuery('form .button.single-product.vipps-express-checkout').removeAttr('disabled');
     jQuery('form .button.single-product.vipps-express-checkout').removeClass('disabled');
@@ -39,11 +32,26 @@ jQuery( document ).ready( function() {
    }
  });
  jQuery('body').on('reset_data', function () {
-    console.log("reset data");
     jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
     jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
  });
- jQuery('body').on('woocommerce_variation_has_changed',function () {
-    console.log("Variation has changed");
+
+ // Remove old error messages
+ function removeErrorMessages () {
+   jQuery('.woocommerce-error.vipps-error').fadeOut(300, function () {  jQuery(this).remove(); });
+   jQuery.trigger('woo-vipps-remove-errors');
+ }
+
+// Hooks for the button itself
+ jQuery('.button.single-product.vipps-express-checkout').click(function () {
+   removeErrorMessages();
+   var button = jQuery(this);
+
+   var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-express-checkout-error'><li>Something went wrong!</li></ul></p>";
+   jQuery.trigger('woo-vipps-error-message',[msg]);
+   jQuery(msg).hide().insertAfter(button).fadeIn(300);
+   jQuery('.woocommerce-error').click(removeErrorMessages);
+
  });
+ 
 });
