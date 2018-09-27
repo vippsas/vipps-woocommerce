@@ -31,17 +31,17 @@ jQuery( document ).ready( function() {
    }
    console.log("Found variation purchasable ->" + purchasable + "<-");
    if (purchasable) {
-    jQuery('#do-express-checkout').removeAttr('disabled');
-    jQuery('#do-express-checkout').removeClass('disabled');
+    jQuery('form .button.single-product.vipps-express-checkout').removeAttr('disabled');
+    jQuery('form .button.single-product.vipps-express-checkout').removeClass('disabled');
    } else {
-    jQuery('#do-express-checkout').attr('disabled','disabled');
-    jQuery('#do-express-checkout').addClass('disabled');
+    jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
+    jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
    }
  });
  jQuery('body').on('reset_data', function () {
     console.log("reset data");
-    jQuery('#do-express-checkout').attr('disabled','disabled');
-    jQuery('#do-express-checkout').addClass('disabled');
+    jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
+    jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
  });
  jQuery('body').on('woocommerce_variation_has_changed',function () {
     console.log("Variation has changed");

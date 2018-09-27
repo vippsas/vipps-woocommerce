@@ -319,7 +319,7 @@ class Vipps {
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
         add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
 
-        add_action('woocommerce_after_add_to_cart_button', array($this, 'buy_now_button'));
+        add_action('woocommerce_after_add_to_cart_button', array($this, 'single_product_buy_now_button'));
 
 
         // Special pages and callbacks handled by template_redirect
@@ -844,15 +844,22 @@ class Vipps {
 
 
    // Display a 'buy now with express checkout' button on the product page IOK 2019-09-27
-   function buy_now_button () {
+   function single_product_buy_now_button () {
         $gw = new WC_Gateway_Vipps();
         if (!$gw->express_checkout_available()) {
          return;
         }
+        
+        global $post;
+        $prod = new WC_Product($post->ID);
+        $disabled="";
+        if ($prod->is_type('variable')) {
+          $disabled="disabled";
+        }
         $title = __('Buy now with Vipps!', 'woo-vipps');
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
       ?>
-<a href='#' disabled id='do-express-checkout' class='button vipps-express-checkout disabled' title='<?php echo $title; ?>'><img alt='$title' border=0 src='<?php echo $buttonimgurl; ?>'></a>
+<a href='#' <?php echo $disabled; ?> class='single-product button vipps-express-checkout <?php echo $disabled; ?>' title='<?php echo $title; ?>'><img alt='$title' border=0 src='<?php echo $buttonimgurl; ?>'></a>
 
 <?php
    }
