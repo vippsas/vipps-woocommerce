@@ -19,6 +19,31 @@
 jQuery( document ).ready( function() {
  // This fires when a product has been added to the cart with ajax. 
  jQuery( 'body' ).on( 'added_to_cart', function() {
-  console.log("Stuff added to cart");
+  // nothing 
+ });
+ jQuery('body').on('check_variations', function () {
+    console.log("variations check");
+ });
+ jQuery('body').on('found_variation', function (e,variation) {
+   var purchasable=true;
+   if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
+     purchasable = false;
+   }
+   console.log("Found variation purchasable ->" + purchasable + "<-");
+   if (purchasable) {
+    jQuery('#do-express-checkout').removeAttr('disabled');
+    jQuery('#do-express-checkout').removeClass('disabled');
+   } else {
+    jQuery('#do-express-checkout').attr('disabled','disabled');
+    jQuery('#do-express-checkout').addClass('disabled');
+   }
+ });
+ jQuery('body').on('reset_data', function () {
+    console.log("reset data");
+    jQuery('#do-express-checkout').attr('disabled','disabled');
+    jQuery('#do-express-checkout').addClass('disabled');
+ });
+ jQuery('body').on('woocommerce_variation_has_changed',function () {
+    console.log("Variation has changed");
  });
 });
