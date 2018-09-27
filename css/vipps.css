@@ -109,6 +109,9 @@ img.inline {
     opacity: 0.5;
     z-index: 1000;
 }
+body.processing {
+ cursor: 'progress';
+}
 .processing .vippsoverlay {
     display:block;
 }

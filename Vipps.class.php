@@ -91,6 +91,7 @@ class Vipps {
 
     public function wp_enqueue_scripts() {
         wp_enqueue_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        wp_add_inline_script('vipps-gw','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
     }
 
@@ -332,6 +333,10 @@ class Vipps {
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
         add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
+
+        // Same thing, but for single products IOK 2018-05-28
+        add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
+        add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
 
     }
 
@@ -665,7 +670,11 @@ class Vipps {
 
     // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
     public function ajax_do_single_product_express_checkout() {
-        check_ajax_referer('do_express','sec');
+        // We cannot actually do check_ajax_referer here, because the user may not have a session yet, and thus no nonce. IOK 2018-09-27 FIXME fix this by
+        // bouncing thru a temporary landing page which should create a session and then do the order.
+        $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps'), 'url'=>false);
+        wp_send_json($result);
+        exit();
 
         if (!$gw->express_checkout_available()) {
             $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
@@ -1002,12 +1011,10 @@ class Vipps {
             return;
         }
 
-        // Still pending and order is supposed to exist, so wait for Vipps. This part might not be relevant anymore. IOK 2018-05-16
-        $this->log("Unexpectedly reached the wait-for-callback branch.");
+        // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2019-09-27
 
         // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
-        wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
-        wp_add_inline_script('check-vipps','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
+        wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
 
         // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
         // and check that the order matches (and is 'pending') (and exists)
