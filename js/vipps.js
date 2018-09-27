@@ -48,7 +48,7 @@ jQuery( document ).ready( function() {
    var button = jQuery(this);
 
    var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-express-checkout-error'><li>Something went wrong!</li></ul></p>";
-   jQuery.trigger('woo-vipps-error-message',[msg]);
+   jQuery.trigger('woo-vipps-error-message',[msg, button]);
    jQuery(msg).hide().insertAfter(button).fadeIn(300);
    jQuery('.woocommerce-error').click(removeErrorMessages);
 
