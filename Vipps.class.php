@@ -722,7 +722,7 @@ class Vipps {
         if ($product->is_type('variable')) {
           $variations = $product->get_available_variations();
           foreach($variations as $variation) {
-            if ($variation->get_id() == $varid) {
+            if ($variation['variation_id'] == $varid){
               $variant = $variation; break;
             } 
           }
