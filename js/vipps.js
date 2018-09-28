@@ -39,6 +39,7 @@ jQuery( document ).ready( function() {
     removeErrorMessages();
  });
 
+ // Using ajax, get a session and a key and redirect to the "buy single product using express checkout" page.
  function buySingleProduct (element) {
    var button = jQuery(this);
    jQuery(button).prop('disabled',true);
@@ -64,7 +65,7 @@ jQuery( document ).ready( function() {
     data['product-id'] = (prodid.length>0) ? prodid.val() : 0;
     data['variation-id'] = (varid.length>0) ? varid.val() : 0;
    }
-   data['action'] = 'do_single_product_express_checkout';
+   data['action'] = 'vipps_buy_single_product';
 
    jQuery.ajax(vippsajaxurl, {
     "method": "POST",

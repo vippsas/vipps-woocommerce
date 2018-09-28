@@ -330,6 +330,10 @@ class Vipps {
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
 
+        // Buying a single product directly using express checkout IOK 2019-09-28
+        add_action('wp_ajax_nopriv_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
+        add_action('wp_ajax_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
+
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
         add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
@@ -632,6 +636,14 @@ class Vipps {
         do_action('woo_vipps_cart_restored');
     }
 
+    public function ajax_vipps_buy_single_product () {
+        // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
+        // 'create order' page wherein we'll do the actual work. IOK 2019-09-28
+        $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps'), 'url'=>false);
+        wp_send_json($result);
+        exit();
+    }
+
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -670,8 +682,10 @@ class Vipps {
 
     // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
     public function ajax_do_single_product_express_checkout() {
-        // We cannot actually do check_ajax_referer here, because the user may not have a session yet, and thus no nonce. IOK 2018-09-27 FIXME fix this by
-        // bouncing thru a temporary landing page which should create a session and then do the order.
+        check_ajax_referer('do_express','sec');
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $gw = new WC_Gateway_Vipps();
+
         $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps'), 'url'=>false);
         wp_send_json($result);
         exit();
