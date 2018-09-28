@@ -914,6 +914,7 @@ class Vipps {
         echo $this->get_buy_now_button(false,false,false, $product->is_type('variable') ? 'disabled' : false);
    }
 
+    // Print a "buy now with vipps" for products in the loop, like on a category page
     public function loop_single_product_buy_now_button() {
         global $product;
         if (!$product) return;
@@ -937,11 +938,6 @@ class Vipps {
     public function vipps_buy_product() {
       do_action('woo_vipps_express_checkout_page',$order);
 
-
-      $session = WC()->session;
-      if (!$session->has_session()) {
-          $content .= "<p>No session though!</p>";
-      }
       $posted = $session->get('__vipps_buy_product');
       $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
       if (!$posted) {
@@ -968,7 +964,7 @@ class Vipps {
       $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
 
-    // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
+    //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
     public function vipps_express_checkout() {
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
