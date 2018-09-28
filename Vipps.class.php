@@ -886,7 +886,7 @@ class Vipps {
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
 
-        $buttoncode = "<a href='javascript:void(0)' $disabled ";
+        $buttoncode = "<a href='#'' $disabled ";
         foreach($data as $key=>$value) {
          $value = sanitize_text_field($value);
          $buttoncode .= " data-$key='$value' ";
