@@ -878,7 +878,6 @@ class Vipps {
 
    // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false) {
-        $title = __('Buy now with Vipps!', 'woo-vipps');
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
         if ($sku) $data['product-sku'] = $sku;
@@ -891,7 +890,13 @@ class Vipps {
          $buttoncode .= " data-$key='$value' ";
         }
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
-        $buttoncode .=  " class='single-product button vipps-express-checkout $disabled' title='$title'><img src='$buttonimgurl' border=0 alt='$title'></a>";
+        //$buttoncode .=  " class='single-product button vipps-express-checkout $disabled' title='$title'><img src='$buttonimgurl' border=0 alt='$title'></a>";
+
+        $title = __('Buy now with', 'woo-vipps');
+        $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+        $message = $title . "<img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
+
+        $buttoncode .=  " class='single-product button vipps-buy-now $disabled' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
    }
 

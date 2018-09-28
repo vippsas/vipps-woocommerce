@@ -31,6 +31,19 @@ li.wc_payment_method.payment_method_vipps img {
 	max-width: 145px;
 }
 
+a.button.vipps-buy-now {
+ color: #fff;
+ background-color: #fe5b24;
+}
+a.button.vipps-buy-now img {
+ margin:0px !important;
+ display:inline !important;
+}
+ul.products li.product a.button.vipps-buy-now img {
+ margin:0px;
+ display:inline;
+}
+
 a.button.vipps-express-checkout {
  background-color: #fff;
  color: transparent;
@@ -38,10 +51,10 @@ a.button.vipps-express-checkout {
  padding: 0;
  margin-left:.5em;
 }
-a.button.vipps-express-checkout:active {
+a.button.vipps-express-checkout:active, a.button.vipps-buy-now:active {
  border: 0 !important;
 }
-a.button.vipps-express-checkout:hover{
+a.button.vipps-express-checkout:hover, a.button.vipps-buy-now:hover {
  border: 0 !important;
 }
 

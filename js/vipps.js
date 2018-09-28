@@ -24,18 +24,18 @@ jQuery( document ).ready( function() {
      purchasable = false;
    }
    if (purchasable) {
-    jQuery('form .button.single-product.vipps-express-checkout').removeAttr('disabled');
-    jQuery('form .button.single-product.vipps-express-checkout').removeClass('disabled');
+    jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
+    jQuery('form .button.single-product.vipps-buy-now').removeClass('disabled');
     removeErrorMessages();
    } else {
-    jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
-    jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
+    jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
+    jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
     removeErrorMessages();
    }
  });
  jQuery('body').on('reset_data', function () {
-    jQuery('form .button.single-product.vipps-express-checkout').attr('disabled','disabled');
-    jQuery('form .button.single-product.vipps-express-checkout').addClass('disabled');
+    jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
+    jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
     removeErrorMessages();
  });
 
@@ -113,13 +113,13 @@ jQuery( document ).ready( function() {
  // And add new ones
  function addErrorMessage(msg,element) {
    // Allow developers to customize error message by hiding vipps-default-error-message and hooking woo-vipps-error-message <messsage>,<element>
-   var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-express-checkout-error'><li>"+msg+"!</li></ul></p>";
+   var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-buy-now-error'><li>"+msg+"!</li></ul></p>";
    jQuery(document).trigger('woo-vipps-error-message',[msg, element]);
    jQuery(msg).hide().insertAfter(element).fadeIn(300);
    jQuery('.woocommerce-error.vipps-error').click(removeErrorMessages);
  }
 
  // Hooks for the button itself
- jQuery('.button.single-product.vipps-express-checkout').click(buySingleProduct);
+ jQuery('.button.single-product.vipps-buy-now').click(buySingleProduct);
  
 });
