@@ -187,7 +187,7 @@ class Vipps {
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
 
-// This is for debugging the API IOK 2019-09-21
+// This is for debugging the API IOK 2018-09-21
 //        $gw = new WC_Gateway_Vipps(); print "<pre>";print_r($gw->get_payment_details($order)); print "</pre>";
 
         print "<table border=0><thead></thead><tbody>";
@@ -330,7 +330,7 @@ class Vipps {
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
         add_action('wp_ajax_check_order_status', array($this, 'ajax_check_order_status'));
 
-        // Buying a single product directly using express checkout IOK 2019-09-28
+        // Buying a single product directly using express checkout IOK 2018-09-28
         add_action('wp_ajax_nopriv_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
         add_action('wp_ajax_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
 
@@ -503,7 +503,7 @@ class Vipps {
         $shipping =  WC()->shipping->calculate_shipping($packages);
         $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
 
-        // No exit here, because developers can add more methods using the filter below. IOK 2019-09-20
+        // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps'));
         }
@@ -638,7 +638,7 @@ class Vipps {
 
     public function ajax_vipps_buy_single_product () {
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
-        // 'create order' page wherein we'll do the actual work. IOK 2019-09-28
+        // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         error_log("iver: hei og hopp");
         $session = WC()->session;
         if (!$session->has_session()) {
@@ -732,7 +732,7 @@ class Vipps {
 
         }
 
-        // Create a new temporary cart for this order. IOK 2019-09-25
+        // Create a new temporary cart for this order. IOK 2018-09-25
         $acart = new WC_Cart();
         if ($varid) {
             $acart->add_to_cart($prodid,$quantity,$varid);
@@ -753,7 +753,7 @@ class Vipps {
             exit();
         }
 
-        // We want to process payments using a temporary cart, with express checkout. The main session cart should remain unchanged. IOK 2019-09-25
+        // We want to process payments using a temporary cart, with express checkout. The main session cart should remain unchanged. IOK 2018-09-25
         $gw->express_checkout = 1;
         $gw->tempcart = 1;         
 
@@ -876,24 +876,37 @@ class Vipps {
             return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
 
+   // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
+   public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false) {
+        $title = __('Buy now with Vipps!', 'woo-vipps');
+        $disabled = $disabled ? 'disabled' : '';
+        $data = array();
+        if ($sku) $data['product-sku'] = $sku;
+        if ($product_id) $data['product-id'] = $product_id;
+        if ($variation_id) $data['variation-id'] = $variation_id;
 
-   // Display a 'buy now with express checkout' button on the product page IOK 2019-09-27
-   function single_product_buy_now_button () {
+        $buttoncode = "<a href='javascript:void(0)' $disabled ";
+        foreach($data as $key=>$value) {
+         $value = sanitize_text_field($value);
+         $buttoncode .= " data-$key='$value' ";
+        }
+        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
+        $buttoncode .=  " class='single-product button vipps-express-checkout $disabled' title='$title'><img src='$buttonimgurl' border=0 alt='$title'></a>";
+        return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
+   }
+
+   // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
+   public function single_product_buy_now_button () {
         $gw = new WC_Gateway_Vipps();
         if (!$gw->express_checkout_available()) {
          return;
         }
-        
         global $product;
         $disabled="";
         if ($product->is_type('variable')) {
           $disabled="disabled";
         }
-        $variation=null;
-        $title = __('Buy now with Vipps!', 'woo-vipps');
-        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
-        $buttoncode = "<a href='javascript:void(0)' $disabled class='single-product button vipps-express-checkout $disabled' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
-        echo apply_filters('woo_vipps_buy_now_button', $buttoncode, $product, $variation, $disabled);
+        echo $this->get_buy_now_button($product->get_id(),false,false, $product->is_type('variable') ? 'disabled' : false);
    }
 
     public function loop_single_product_buy_now_button() {
@@ -909,19 +922,13 @@ class Vipps {
         $sku = $product->get_sku();
         $label = $product->add_to_cart_description();
 
-        $title = __('Buy now with Vipps!', 'woo-vipps');
-        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
-        $variation=null;
-        $disabled='';
-
-        $buttoncode = "<a data-product-id='$prodid' rel='nofollow' aria-label='$label' data-product_sku='$sku' href='javascript:void(0)' $disabled class='single-product button vipps-express-checkout $disabled' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
-        echo apply_filters('woo_vipps_buy_now_button', $buttoncode, $product, $variation, $disabled);  
+        echo $this->get_buy_now_button($product->get_id(),false,$sku);
     }
 
 
     // This URL will when accessed add a product to the cart and go directly to the express  checkout page.
     // The argument passed must be a campaign link created for a given product - so this in effect acts as a landing page for 
-    // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2019-09-24
+    // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
 
       do_action('woo_vipps_express_checkout_page',$order);
@@ -1044,7 +1051,7 @@ class Vipps {
             return;
         }
 
-        // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2019-09-27
+        // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27
 
         // Otherwise, go to a page waiting/polling for the callback. IOK 2018-05-16
         wp_enqueue_script('check-vipps',plugins_url('js/check-order-status.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/check-order-status.js"), 'true');
