@@ -695,7 +695,7 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
 
-        $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps'), 'url'=>false);
+        $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps') . "<pre>" . print_r($_REQUEST,true) . "</pre>", 'url'=>false);
         wp_send_json($result);
         exit();
 
@@ -880,9 +880,9 @@ class Vipps {
    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false) {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
-        if ($sku) $data['product-sku'] = $sku;
-        if ($product_id) $data['product-id'] = $product_id;
-        if ($variation_id) $data['variation-id'] = $variation_id;
+        if ($sku) $data['product_sku'] = $sku;
+        if ($product_id) $data['product_id'] = $product_id;
+        if ($variation_id) $data['variation_id'] = $variation_id;
 
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {
@@ -942,24 +942,30 @@ class Vipps {
       if (!$session->has_session()) {
           $content .= "<p>No session though!</p>";
       }
-      $productinfo = $session->get('__vipps_buy_product');
+      $posted = $session->get('__vipps_buy_product');
       $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
-      if (!$productinfo) {
+      if (!$posted) {
         // Find product/variation using an external campaign link
-        if (array_key_exists($_REQUEST['product'])) {
+        if (array_key_exists('product',$_REQUEST)) {
            $externalkey = $_REQUEST['product'];
-           $productinfo = get_option("_vipps_productinfo_$externalkey");
+           $posted = get_option("_vipps_productinfo_$externalkey");
         }
       }
+      $productinfo = $posted ? @json_decode($posted,true) : false; 
+
       if (!$productinfo) {
          $title = __("Product is no longer available",'woo-vipps');
          $content =  __("The link you have followed is for a product that is no longer available at this location. Please return to the store and try again",'woo-vipps');
-      } else {
-         $title= __("Preparing your order", 'woo-vipps');
-         $content = "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
+         return $this->fakepage($title,$content);
       }
 
-      $this->fakepage(__('Express checkout','woo-vipps'), $content);
+      // Pass the productinfo to the express checkout form
+      $args = array();
+      if (array_key_exists('product_id',$productinfo)) $args['product_id'] = sprintf("%d", $productinfo['product_id']);
+      if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = sprintf("%d", $productinfo['variation_id']);
+      if (array_key_exists('product_sku',$productinfo)) $args['sku'] = $productinfo['product_sku'];
+
+      $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
 
     // This URL only exists to recieve calls to "express checkout" and to redirect to Vipps.
@@ -979,20 +985,32 @@ class Vipps {
 
         do_action('woo_vipps_express_checkout_page',$order);
 
+        $this->print_express_checkout_page($ok,'do_express_checkout');
+    }
 
+    // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
+    protected function print_express_checkout_page($execute,$action,$productinfo=null) {
         wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
-        wp_add_inline_script('vipps-express-checkout','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
 
         $content = $this->spinner();
         $content .= "<form id='vippsdata'>";
-        $content .= "<input type='hidden' name='action' value='do_express_checkout'>";
+        $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
+
+
+        if ($productinfo) {
+          foreach($productinfo as $key=>$value) {
+            $k = sanitize_text_field($key);
+            $v = sanitize_text_field($value);
+            $content .= "<input type='hidden' name='$k' value='$v' />";
+          }
+        }
         $content .= "</form>";
 
-        if ($ok) {
+        if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
             $content .= "<div style='display:none' id='success'></div>";
             $content .= "<div style='display:none' id='failure'></div>";

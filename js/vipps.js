@@ -53,7 +53,7 @@ jQuery( document ).ready( function() {
 
    var data  =  {};
 
-   if (element.data('product-id')) {
+   if (element.data('product_id')) {
      data = element.data();
    } else {
      var form = element.closest('form.cart');
@@ -68,8 +68,8 @@ jQuery( document ).ready( function() {
     }
     var prodid = jQuery(form).find('input[name="product_id"]');
     var varid = jQuery(form).find('input[name="variation_id"]');
-    data['product-id'] = (prodid.length>0) ? prodid.val() : 0;
-    data['variation-id'] = (varid.length>0) ? varid.val() : 0;
+    data['product_id'] = (prodid.length>0) ? prodid.val() : 0;
+    data['variation_id'] = (varid.length>0) ? varid.val() : 0;
    }
    data['action'] = 'vipps_buy_single_product';
 
