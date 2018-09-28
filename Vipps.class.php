@@ -935,16 +935,29 @@ class Vipps {
     // The argument passed must be a campaign link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
-
       do_action('woo_vipps_express_checkout_page',$order);
 
-      $content = "<p>Buy some stuff why don'tcha</p>";
 
       $session = WC()->session;
       if (!$session->has_session()) {
           $content .= "<p>No session though!</p>";
       }
-      $content .= "<pre>".htmlspecialchars(print_r($session->get('__vipps_buy_product'),true))."</pre>";
+      $productinfo = $session->get('__vipps_buy_product');
+      $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
+      if (!$productinfo) {
+        // Find product/variation using an external campaign link
+        if (array_key_exists($_REQUEST['product'])) {
+           $externalkey = $_REQUEST['product'];
+           $productinfo = get_option("_vipps_productinfo_$externalkey");
+        }
+      }
+      if (!$productinfo) {
+         $title = __("Product is no longer available",'woo-vipps');
+         $content =  __("The link you have followed is for a product that is no longer available at this location. Please return to the store and try again",'woo-vipps');
+      } else {
+         $title= __("Preparing your order", 'woo-vipps');
+         $content = "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
+      }
 
       $this->fakepage(__('Express checkout','woo-vipps'), $content);
     }
