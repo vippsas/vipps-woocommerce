@@ -695,18 +695,20 @@ class Vipps {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = new WC_Gateway_Vipps();
 
-        $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps') . "<pre>" . print_r($_REQUEST,true) . "</pre>", 'url'=>false);
-        wp_send_json($result);
-        exit();
-
         if (!$gw->express_checkout_available()) {
             $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
         }
 
-        $varid = sprintf('%d',(@$_POST['key']));
-        $prodid = sprintf('%d',(@$_POST['key']));
+        $varid = sprintf('%d',(@$_POST['variation_id']));
+        $prodid = sprintf('%d',(@$_POST['product_id']));
+
+        $sku = @$_POST['sku'];
+        if ($sku) {
+          // IOK IF SKU then find the correct product variation FIXME FIXME DEBUG
+        }
+
         $quantity = 1;
 
         $product = $prodid ? wc_get_product($prodid) : null;
@@ -938,6 +940,7 @@ class Vipps {
     public function vipps_buy_product() {
       do_action('woo_vipps_express_checkout_page',$order);
 
+      $session = WC()->session;
       $posted = $session->get('__vipps_buy_product');
       $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
       if (!$posted) {

@@ -970,7 +970,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
          $contents = $thecart->get_cart_for_session();
         } else {
             // if ( ! did_action( 'woocommerce_cart_loaded_from_session' ) ) 
-         $contents->get_cart_contents();
+         $contents = $thecart->get_cart_contents();
         }
         $cart_hash = md5(json_encode(wc_clean($contents)) . $thecart->total);
         $order = new WC_Order();
