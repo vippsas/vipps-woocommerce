@@ -906,7 +906,7 @@ class Vipps {
         if ($product->is_type('variable')) {
           $disabled="disabled";
         }
-        echo $this->get_buy_now_button($product->get_id(),false,false, $product->is_type('variable') ? 'disabled' : false);
+        echo $this->get_buy_now_button(false,false,false, $product->is_type('variable') ? 'disabled' : false);
    }
 
     public function loop_single_product_buy_now_button() {
