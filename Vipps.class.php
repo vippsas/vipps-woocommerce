@@ -639,7 +639,12 @@ class Vipps {
     public function ajax_vipps_buy_single_product () {
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2019-09-28
-        $result = array('ok'=>0, 'msg'=>__('Testing error messages!','woo-vipps'), 'url'=>false);
+        $session = WC()->session;
+        if (!$session->has_session()) {
+          $session->set_customer_session_cookie(true);
+        }
+        $session->set('__vipps_buy_product', json_encode($_REQUEST));
+        $result = array('ok'=>1, 'msg'=>__('Testing error messages! ' . $this->buy_product_url() ,'woo-vipps'), 'url'=>$this->buy_product_url());
         wp_send_json($result);
         exit();
     }
@@ -824,10 +829,13 @@ class Vipps {
     public function express_checkout_url() {
         return $this->make_return_url('vipps-express-checkout');
     }
+    public function buy_product_url() {
+        return $this->make_return_url('vipps-buy-product');
+    }
 
     // Return the method in the Vipps
     public function is_special_page() {
-        $specials = array('vipps-betaling' => 'vipps_wait_for_payment', 'vipps-express-checkout'=>'vipps_express_checkout', 'vipps-buy-product','vipps_buy_product');
+        $specials = array('vipps-betaling' => 'vipps_wait_for_payment', 'vipps-express-checkout'=>'vipps_express_checkout', 'vipps-buy-product'=>'vipps_buy_product');
         $method = null;
         if ( get_option('permalink_structure')) {
             foreach($specials as $special=>$specialmethod) {
@@ -915,6 +923,13 @@ class Vipps {
       do_action('woo_vipps_express_checkout_page',$order);
 
       $content = "<p>Buy some stuff why don'tcha</p>";
+
+      $session = WC()->session;
+      if (!$session->has_session()) {
+          $content .= "<p>No session though!</p>";
+      }
+      $content .= "<pre>".htmlspecialchars(print_r($session->get('__vipps_buy_product'),true))."</pre>";
+
       $this->fakepage(__('Express checkout','woo-vipps'), $content);
     }
 
