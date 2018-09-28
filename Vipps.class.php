@@ -639,12 +639,16 @@ class Vipps {
     public function ajax_vipps_buy_single_product () {
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2019-09-28
+        error_log("iver: hei og hopp");
         $session = WC()->session;
         if (!$session->has_session()) {
           $session->set_customer_session_cookie(true);
         }
         $session->set('__vipps_buy_product', json_encode($_REQUEST));
-        $result = array('ok'=>1, 'msg'=>__('Testing error messages! ' . $this->buy_product_url() ,'woo-vipps'), 'url'=>$this->buy_product_url());
+
+        // Is there any errros that could be catched here?
+
+        $result = array('ok'=>1, 'msg'=>__('Behandler bestilling... ' . $this->buy_product_url() ,'woo-vipps'), 'url'=>$this->buy_product_url());
         wp_send_json($result);
         exit();
     }

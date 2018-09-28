@@ -110,7 +110,7 @@ img.inline {
     z-index: 1000;
 }
 body.processing {
- cursor: 'progress';
+ cursor: progress;
 }
 .processing .vippsoverlay {
     display:block;

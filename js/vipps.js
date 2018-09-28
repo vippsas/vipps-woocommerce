@@ -40,26 +40,32 @@ jQuery( document ).ready( function() {
  });
 
  // Using ajax, get a session and a key and redirect to the "buy single product using express checkout" page.
- function buySingleProduct (element) {
-   var button = jQuery(this);
-   jQuery(button).prop('disabled',true);
-   jQuery(button).prop('inactive',true);
-   if ((button).hasClass('processing')) return; // Trying to stop doublecclickers. IOK 2018-09-27
-   removeErrorMessages();
+ function buySingleProduct (event) {
+   var element = jQuery(this);
+   if (jQuery('body').hasClass('processing')) return; // Trying to stop doublecclickers. IOK 2018-09-27
    jQuery('body').addClass('processing');
+
+   removeErrorMessages();
+   jQuery(element).attr('disabled','disabled');
+   jQuery(element).attr('inactive','inactive');
+   jQuery(element).addClass('disabled');
+   jQuery(element).addClass('loading');
+
    var data  =  {};
 
-   if (button.data('product-id')) {
-     data = button.data();
+   if (element.data('product-id')) {
+     data = element.data();
    } else {
-     var form = button.closest('form.cart');
+     var form = element.closest('form.cart');
      if (!form) {
+       jQuery(element).removeClass('disabled');
+       jQuery(element).removeClass('loading');
+       jQuery(element).removeAttr('disabled');
+       jQuery(element).removeAttr('inactive');
        jQuery('body').removeClass('processing');
        addErrorMessage('Cannot add product - unknown error');
-       jQuery(button).prop('disabled',true);
-       jQuery(button).prop('inactive',true);
        return false;
-     }
+    }
     var prodid = jQuery(form).find('input[name="product_id"]');
     var varid = jQuery(form).find('input[name="variation_id"]');
     data['product-id'] = (prodid.length>0) ? prodid.val() : 0;
@@ -74,21 +80,22 @@ jQuery( document ).ready( function() {
     "dataType": "json",
     "error": function (xhr, statustext, error) {
       console.log("Error creating express checkout:" + statustext + " " + error);
-      addErrorMessage(error, button);
-      jQuery(button).prop('disabled',true);
-      jQuery(button).prop('inactive',true);
+      addErrorMessage(error, element);
+      jQuery(element).prop('disabled',true);
+      jQuery(element).prop('inactive',true);
       jQuery('body').removeClass('processing');
     },
     "success": function (result, statustext, xhr) {
      if (result["ok"]) {
        console.log("We created the order!");
-       jQuery(button).hide();
        window.location.href = result["url"];
      } else {
        console.log("Failure!");
-       addErrorMessage(result['msg'],button);
-       jQuery(button).prop('disabled',true);
-       jQuery(button).prop('inactive',true);
+       jQuery(element).removeClass('disabled');
+       jQuery(element).removeClass('loading');
+       jQuery(element).removeAttr('disabled');
+       jQuery(element).removeAttr('inactive');
+       addErrorMessage(result['msg'],element);
        jQuery('body').removeClass('processing');
      }
     },
