@@ -476,14 +476,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Then empty the cart; we'll ressurect it if we can and have to, so store it in session indexed by order number. IOK 2018-04-24
         // We really don't want any errors here for any reason, if we fail that's ok. IOK 2018-05-07
-        // IOK 2019-09-25: Introducing *temporary carts* for shopping single products directly without changing the main cart. 
-        if (!$this->tempcart) {
          try {
-             $Vipps->save_cart($order); // Actually, save the tempcart too here IOK FIXME DEBUG
+             $Vipps->save_cart($order); 
          } catch (Exception $e) {
          }
-         $woocommerce->cart->empty_cart(true); // But only empty the cart if we are not in temp. IOK 2019-09-25
-        }
+         if (!$this->tempcart) $woocommerce->cart->empty_cart(true); // But only empty the cart if we are not in temp. IOK 2019-09-25
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);
