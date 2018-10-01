@@ -44,6 +44,10 @@ class Vipps {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
         $this->cleanupCallbackSignals();
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
+
+	// This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
+        add_action('woocommerce_thankyou_vipps', array($this, 'maybe_restore_cart'), 10, 1); 
+
         $this->add_shortcodes();
     }
 
@@ -635,6 +639,20 @@ class Vipps {
         }
         do_action('woo_vipps_cart_restored');
     }
+    // This restores the cart on order complete, but only if the current order was a single product buy with an active cart.
+    public function maybe_restore_cart($orderid) {
+	    if (!$orderid) return;
+	    $o = null;
+	    try {
+ 	     $o = new WC_Order($orderid);
+	    } catch (Exception $e) {
+	     // Well, we tried.
+	    }
+	    if (!$o) return;
+	    if (!$o->get_meta('_vipps_single_product_express')) return;
+	    $this->restore_cart($o);
+    }
+
 
     public function ajax_vipps_buy_single_product () {
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the

@@ -465,6 +465,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','woo-vipps'));
         $order->add_order_note(__('Awaiting Vipps payment confirmation','woo-vipps'));
+
+        //  Annotate this order as a single-product express checkout thing. This is done to ensure the 'real' cart is not emptied after a successful purchase. IOK 2019-10-01
+	if ($this->tempcart) {
+           $order->update_meta_data('_vipps_single_product_express',true); 
+	}
+
         $order->save();
 
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
