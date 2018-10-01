@@ -639,7 +639,6 @@ class Vipps {
     public function ajax_vipps_buy_single_product () {
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
-        error_log("iver: hei og hopp");
         $session = WC()->session;
         if (!$session->has_session()) {
           $session->set_customer_session_cookie(true);
@@ -938,7 +937,7 @@ class Vipps {
     // The argument passed must be a campaign link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
-      do_action('woo_vipps_express_checkout_page',$order);
+      do_action('woo_vipps_express_checkout_page');
 
       $session = WC()->session;
       $posted = $session->get('__vipps_buy_product');
