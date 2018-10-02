@@ -81,16 +81,23 @@ class Vipps {
     }
 
     public function admin_head() {
-      $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
+      // Add some styling to the Vipps product-meta box
+      $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
     ?>
 <style>
-@media only screen and (min-width: 901px) {
+@media only screen and (max-width: 900px) {
         #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
-           background: url(<?php echo $logo ?>) left center no-repeat;
-           content: " "; !important;
+          background: url(<?php echo $smile ?>) center center no-repeat;
+          content: " " !important;
+          background-size: 20px 20px;
+        }
+}
+@media only screen and (min-width: 900px) {
+        #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
+           background: url(<?php echo $smile ?>) center center no-repeat;
+           content: " " !important;
            background-size:100%;
-           position:relative; top:3px;
-           width:65px;height:13px;display:inline-block;line-height:1;
+           width:13px;height:13px;display:inline-block;line-height:1;
         }
 }
 </style>
