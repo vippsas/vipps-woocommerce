@@ -95,6 +95,7 @@ class Vipps {
     }
 
     public function add_shortcodes() {
+      add_shortcode('woo_vipps_buy_now', array($this, 'buy_now_button_shortcode'));
       add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
       add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
     }
@@ -153,6 +154,13 @@ class Vipps {
             $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
             echo $button;
         }
+    }
+
+    // A shortcode for a single buy now button. Express checkout must be active; but I don't check for this here, as this button may be
+    // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
+    public function buy_now_button_shortcode ($atts) {
+       $args = shortcode_atts( array( 'id' => '','sku' => '',), $atts );
+       return $this->get_buy_now_button($args['product-id'], $args['variant-id'], $args['sku'], false);
     }
 
     // The express checkout shortcode implementation
@@ -736,45 +744,68 @@ class Vipps {
             exit();
         }
 
+        // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
+        // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
         $varid = sprintf('%d',(@$_POST['variation_id']));
         $prodid = sprintf('%d',(@$_POST['product_id']));
-
         $sku = @$_POST['sku'];
-        if ($sku) {
-          // IOK IF SKU then find the correct product variation FIXME FIXME DEBUG
-        }
 
-        $quantity = 1;
-
-        $product = $prodid ? wc_get_product($prodid) : null;
+        $product = null;
         $variant = null;
+        $parent = null;
+        $parentid = null;
 
+        // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
+        try {
+           if ($sku) {
+               $skuid = wc_get_product_id_by_sku($args['sku']);
+               $product = wc_get_product($skuid);
+           } elseif ($varid) {
+               $product = wc_get_product($varid);
+           } elseif ($prodid) {
+               $product = wc_get_product($prodid);
+           }
+        } catch (Exception $e) {
+            $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
         if (!$product) {
             $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
         }
-        if ($product->is_type('variable')) {
-          $variations = $product->get_available_variations();
-          foreach($variations as $variation) {
-            if ($variation['variation_id'] == $varid){
-              $variant = $variation; break;
-            } 
-          }
-          if (!$variant) {
+
+        $parentid = $product ? $product->get_parent_id() : null; // If the product is a variation, then the parent product is the parentid.
+        $parent = $parentid ? wc_get_product($parentid) : null; 
+
+        // This can't really happen, but if it did..
+        if ($prodid && $parentid && ($prodid != $parentid)) {
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
-          }
-
         }
-
-        // Create a new temporary cart for this order. IOK 2018-09-25
+        // Somebody addded the wrong SKU
+        if ($product->is_variable()) {
+            $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available for purchase','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        } 
+        // Final check of availability
+        if (!$product->is_purchasable() || !$product->is_in_stock()) {
+            $result = array('ok'=>0, 'msg'=>__('Your product is temporarily no longer available for purchase','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+        
+        // Now it should be safe to continue to the checkout process. IOK 2018-10-02
+        // Create a new temporary cart for this order. It will eventually replace the normal cart, but we'll save that. IOK 2018-09-25
         $acart = new WC_Cart();
-        if ($varid) {
-            $acart->add_to_cart($prodid,$quantity,$varid);
+        $quantity = 1; 
+        if ($parent && $parent->is_variable()) {
+            $acart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
         } else {
-            $acart->add_to_cart($prodid,$quantity);
+            $acart->add_to_cart($product->get_id(),$quantity);
         }
 
         try {
@@ -927,8 +958,6 @@ class Vipps {
          $buttoncode .= " data-$key='$value' ";
         }
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
-        //$buttoncode .=  " class='single-product button vipps-express-checkout $disabled' title='$title'><img src='$buttonimgurl' border=0 alt='$title'></a>";
-
         $title = __('Buy now with', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $message = $title . "<img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
