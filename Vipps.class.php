@@ -803,7 +803,7 @@ class Vipps {
         // Create a new temporary cart for this order. It will eventually replace the normal cart, but we'll save that. IOK 2018-09-25
         $acart = new WC_Cart();
         $quantity = 1; 
-        if ($parent && $parent->is_variable()) {
+        if ($parent && $parent->get_type() == 'variable') {
             $acart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
         } else {
             $acart->add_to_cart($product->get_id(),$quantity);
@@ -1086,7 +1086,7 @@ class Vipps {
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
-            $content .= "<div class='woocommerce-info' style='display:none' id='success'></div>";
+            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('Til Vipps-appen!','woo-vips') . "</div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
             $this->fakepage(__('Order in progress','woo-vipps'), $content);
@@ -1098,7 +1098,7 @@ class Vipps {
             $title = __('Buy now with Vipps!', 'woo-vipps');
 
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
-            $content .= "<div class='woocommerce-info' style='display:none' id='success'></div>";
+            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('Til Vipps-appen!','woo-vips') . "</div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
             $this->fakepage(__('Express checkout','woo-vipps'), $content);
