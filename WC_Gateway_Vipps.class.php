@@ -341,7 +341,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
                  'singleproductexpressarchives' => array(
                         'title'       => __( 'Add \'Buy now\' button on catalog pages too', 'woo-vipps' ),
-                        'label'       => __( 'Add the button for all relevant products', 'woo-vipps' ),
+                        'label'       => __( 'Add the button for all relevant products on catalog pages', 'woo-vipps' ),
                         'type'        => 'checkbox',
                         'description' => __('If Express Checkout is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'),
                         'default'     => 'no',

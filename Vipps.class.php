@@ -940,10 +940,15 @@ class Vipps {
    // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
    public function single_product_buy_now_button () {
         $gw = new WC_Gateway_Vipps();
-        if (!$gw->express_checkout_available()) {
-         return;
-        }
+        $how = $gw->get_option('singleproductexpress');
+        if (!$gw->express_checkout_available()) return;
+        if ($how == 'none') return;
+
         global $product;
+        $prodid = $product->get_id();
+
+        if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) return;
+
         $disabled="";
         if ($product->is_type('variable')) {
           $disabled="disabled";
@@ -958,10 +963,15 @@ class Vipps {
         if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->supports( 'ajax_add_to_cart' )) return;
 
         $gw = new WC_Gateway_Vipps();
-        if (!$gw->express_checkout_available()) {
-         return;
-        }
+        if (!$gw->express_checkout_available()) return;
+        if ($gw->get_option('singleproductexpressarchives') != 'yes') return;
+
+        $how = $gw->get_option('singleproductexpress');
         $prodid = $product->get_id();
+
+        if ($how == 'none') return;
+        if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) return;
+
         $sku = $product->get_sku();
         $label = $product->add_to_cart_description();
 
