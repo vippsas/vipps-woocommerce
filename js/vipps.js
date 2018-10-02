@@ -53,7 +53,7 @@ jQuery( document ).ready( function() {
 
    var data  =  {};
 
-   if (element.data('product_id')) {
+   if (element.data('product_id') || element.data('product_sku')) {
      data = element.data();
    } else {
      var form = element.closest('form.cart');

@@ -758,7 +758,7 @@ class Vipps {
         // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
         try {
            if ($sku) {
-               $skuid = wc_get_product_id_by_sku($args['sku']);
+               $skuid = wc_get_product_id_by_sku($sku);
                $product = wc_get_product($skuid);
            } elseif ($varid) {
                $product = wc_get_product($varid);
@@ -766,10 +766,11 @@ class Vipps {
                $product = wc_get_product($prodid);
            }
         } catch (Exception $e) {
-            $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'msg'=>__('Error finding product - cannot create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
         }
+
         if (!$product) {
             $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
@@ -786,7 +787,7 @@ class Vipps {
             exit();
         }
         // Somebody addded the wrong SKU
-        if ($product->is_variable()) {
+        if ($product->get_type() == 'variable'){
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available for purchase','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
@@ -1085,9 +1086,9 @@ class Vipps {
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
-            $content .= "<div style='display:none' id='success'></div>";
-            $content .= "<div style='display:none' id='failure'></div>";
-            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
+            $content .= "<div class='woocommerce-info' style='display:none' id='success'></div>";
+            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
+            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
             $this->fakepage(__('Order in progress','woo-vipps'), $content);
             return;
         } else {
@@ -1097,9 +1098,9 @@ class Vipps {
             $title = __('Buy now with Vipps!', 'woo-vipps');
 
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
-            $content .= "<div style='display:none' id='success'></div>";
-            $content .= "<div style='display:none' id='failure'></div>";
-            $content .= "<div style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
+            $content .= "<div class='woocommerce-info' style='display:none' id='success'></div>";
+            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
+            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
             $this->fakepage(__('Express checkout','woo-vipps'), $content);
             return;
         }
