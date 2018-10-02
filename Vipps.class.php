@@ -58,8 +58,11 @@ class Vipps {
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
-        add_action('woocommerce_product_options_general_product_data', array($this,'product_options_general_product_data'));
+        add_action('admin_head', array($this, 'admin_head'));
 
+        // Custom product properties
+        add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
+        add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
         add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
 
         add_action('save_post', array($this, 'save_order'), 10, 3);
@@ -75,6 +78,22 @@ class Vipps {
                     echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
                     });
         }
+    }
+
+    public function admin_head() {
+      $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
+    ?>
+<style>
+        #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
+           background: url(<?php echo $logo ?>) left center no-repeat;
+           content: " "; !important;
+           background-size:100%;
+           position:relative; top:3px;
+           width:65px;height:13px;display:inline-block;line-height:1;
+        }
+</style>
+
+    <?php
     }
 
     public function notice_is_test_mode() {
@@ -173,14 +192,26 @@ class Vipps {
     }
 
    // Manage the various product meta fields
-   public function process_product_meta ($id, $post) {
+    public function process_product_meta ($id, $post) {
       if (isset($_POST['woo_vipps_add_buy_now_button'])) {
         update_post_meta($id, '_vipps_buy_now_button', $_POST['woo_vipps_add_buy_now_button']);
       }
-   }
+    }
 
+    // An extra product meta tab for Vipps 
+    public function woocommerce_product_data_tabs ($tabs) {
+       $img =  plugins_url('img/vipps_logo.png',__FILE__);
+       $tabs['vipps'] = array( 'label' =>  __('Vipps', 'woo-vipps'), 'priority'=>100, 'target'=>'woo-vipps', 'class'=>array());
+       return $tabs;
+    }
+    public function woocommerce_product_data_panels() {
+       global $post;
+       echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
+       $this->product_options_vipps();
+       echo "</div>";
+    }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
-    public function product_options_general_product_data () {
+    public function product_options_vipps() {
         $gw = new WC_Gateway_Vipps();
         if ($gw->get_option('singleproductexpress') == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
