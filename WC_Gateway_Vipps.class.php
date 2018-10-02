@@ -325,7 +325,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woo-vipps'),
                         'default'     => 'yes',
-                        )
+                        ),
+
+                'singleproductexpress' => array(
+                        'title'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
+                        'label'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
+                        'type'        => 'select',
+                        'options' => array(
+                              'none' => __('No products','woo-vips'),
+                              'some' => __('Some products', 'woo-vipps'),
+                              'all' => __('All products','woo-vipps')
+                        ), 
+                        'description' => __('Enable this to allow customers to buy a product using Express Checkout directly from the product page. If you choose \'some\', you must enable this on the relevant products', 'woo-vipps'),
+                        'default'     => 'none',
+                        ),
+                 'singleproductexpressarchives' => array(
+                        'title'       => __( 'Add \'Buy now\' button on catalog pages too', 'woo-vipps' ),
+                        'label'       => __( 'Add the button for all relevant products', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If Express Checkout is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
+
                     );
 
         // This will be enabled on a later date . IOK 2018-06-05
