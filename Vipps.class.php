@@ -238,10 +238,41 @@ class Vipps {
         }
     }
     public function product_options_vipps_campaign_link() {
+            global $post;
+            $product = wc_get_product($post->ID);
             echo '<div class="options_group">';
             echo '<p class="form-field">';
-            echo "<h4 style='margin-left:30px'>Create a campaign link</h4>";
-            echo '</p></div>';
+            echo "<div class='blurb' style='margin-left:13px'>";
+            echo "<h4>".__("Campaign links", 'woo-vipps') . "</h4>";
+            echo "<p>".__("Campaign links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps') . "</p>";
+            echo '</p>';
+            if ($product->get_type() == 'variable'):
+              $variations = $product->get_available_variations();
+              echo "<button disabled  onclick='return false;'>Create shareable link</button>";
+              echo "<input type=text placeholder='Name' style='max-width:8em;'>";
+              echo "<select id='sharelinkvariant'><option value=''>Select variant</option>";
+              foreach($variations as $var) {
+                echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
+                echo sanitize_text_field($var['sku']);
+                echo "</option>";
+              }
+              echo "</select>";
+            else:
+              echo "<input type=text placeholder='Name' style='max-width:8em;>'";
+              echo "<button onclick='return false;'>Create shareable link</button>";
+            endif;
+            echo '</div>';
+?>
+<div class='blurb' style='margin-left:13px'>
+<ul id="woo_vipps_shareables">
+<li> BERK<br><input type hidden name='woovipps_shared_links_delenda[]' value='berk'><input id=berk style="width:80%" type=text readonly value='https://berkberk.com/berk'> <a href="javascript:void(0)">delete</a> </li>
+    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
+    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
+    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
+    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
+</ul>
+</div>
+<?php
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
