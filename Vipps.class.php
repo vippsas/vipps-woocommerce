@@ -57,6 +57,11 @@ class Vipps {
 
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
+
+        add_action('woocommerce_product_options_general_product_data', array($this,'product_options_general_product_data'));
+
+        add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
+
         add_action('save_post', array($this, 'save_order'), 10, 3);
 
         add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
@@ -80,17 +85,7 @@ class Vipps {
 
     public function add_meta_boxes () {
         // Metabox showing order status at Vipps IOK 2018-05-07
-        global $post;
-        if (!$post) return;
-        try {
-            $order = new WC_Order($post);
-        } catch (Exception $e) {
-            return;
-        }
-        $pm = $order->get_payment_method();
-        if ($pm == 'vipps') {
-            add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
-        }
+        add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
     }
 
     public function wp_enqueue_scripts() {
@@ -169,7 +164,30 @@ class Vipps {
       $this->express_checkout_banner();
     }
 
+   // Manage the various product meta fields
+   public function process_product_meta ($id, $post) {
+      if (isset($_POST['woo_vipps_add_buy_now_button'])) {
+        update_post_meta($id, '_vipps_buy_now_button', $_POST['woo_vipps_add_buy_now_button']);
+      }
+   }
 
+    // Product data specific to Vipps - mostly the use of the 'Buy now!' button
+    public function product_options_general_product_data () {
+        $gw = new WC_Gateway_Vipps();
+        if ($gw->get_option('singleproductexpress') == 'some') {
+            $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
+            echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
+            echo '<div class="option_group">';
+            woocommerce_wp_checkbox( array(
+             'id'      => 'woo_vipps_add_buy_now_button',
+             'value'   => $button,
+             'label'   => __('Add  \'Buy now with Vipps\' button', 'woo-vipps'),
+             'desc_tip' => true,
+             'description' => __('Add a \'Buy now with Vipps\'-button to this product','woo-vipps')
+            ) ); 
+            echo '</div>';
+        }
+    }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post) {
