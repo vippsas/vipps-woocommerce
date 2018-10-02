@@ -84,6 +84,7 @@ class Vipps {
       $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
     ?>
 <style>
+@media only screen and (min-width: 901px) {
         #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
            background: url(<?php echo $logo ?>) left center no-repeat;
            content: " "; !important;
@@ -91,6 +92,7 @@ class Vipps {
            position:relative; top:3px;
            width:65px;height:13px;display:inline-block;line-height:1;
         }
+}
 </style>
 
     <?php
@@ -208,6 +210,7 @@ class Vipps {
        global $post;
        echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
        $this->product_options_vipps();
+       $this->product_options_vipps_campaign_link();
        echo "</div>";
     }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
@@ -215,8 +218,8 @@ class Vipps {
         $gw = new WC_Gateway_Vipps();
         if ($gw->get_option('singleproductexpress') == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
+            echo '<div class="options_group">';
             echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
-            echo '<div class="option_group">';
             woocommerce_wp_checkbox( array(
              'id'      => 'woo_vipps_add_buy_now_button',
              'value'   => $button,
@@ -226,6 +229,12 @@ class Vipps {
             ) ); 
             echo '</div>';
         }
+    }
+    public function product_options_vipps_campaign_link() {
+            echo '<div class="options_group">';
+            echo '<p class="form-field">';
+            echo "<h4 style='margin-left:30px'>Create a campaign link</h4>";
+            echo '</p></div>';
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
