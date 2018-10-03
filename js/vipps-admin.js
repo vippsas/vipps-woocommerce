@@ -23,7 +23,7 @@
  if  (pagenow == 'product') {
      // Called on the product edit screen by a button.
      function vipps_create_shareable_link() {
-
+      console.log("Creating link");
       jQuery('#vipps-share-link').attr('disabled','disabled');
 
       jQuery('#vipps-shareable-link-error').text('');
@@ -33,12 +33,20 @@
       var prodid = jQuery('#vipps_sharelink_id').val();
       var varid=0;
       var isvariant = false;
-      if (!prodid) return false; 
+      if (!prodid) {
+         jQuery('#vipps-share-link').removeAttr('disabled');
+         console.log("No prodid");
+         return false; 
+      }
       var varselector = jQuery('#vipps_sharelink_variant');
       if (varselector.length > 0) isvariant = true;
       if (isvariant) {
         varid = varselector.val();
-        if (!varid) return false;
+        if (!varid) {
+          jQuery('#vipps-share-link').removeAttr('disabled');
+         console.log("No varid");
+          return false;
+        }
       }
       var nonce = jQuery('#vipps_share_sec').val();
       var data = { 'action': 'vipps_create_shareable_link', 'prodid':prodid,'varid':varid, 'vipps_share_sec':nonce };

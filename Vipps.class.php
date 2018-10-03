@@ -260,11 +260,12 @@ class Vipps {
             <div class='blurb' style='margin-left:13px'>
              <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
             <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
-        <?php if ($product->get_type() == 'variable'):
+            <input type=hidden id=vipps_sharelink_id value='<?php echo $product->get_id(); ?>'>
+        <?php 
+              echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
+              if ($product->get_type() == 'variable'):
               $variations = $product->get_available_variations(); 
               echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
-              echo "<input type=hidden id=vipps_sharelink_id value='" . $product->get_id() . "'>";
-              echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
               echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
               foreach($variations as $var) {
                 echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
@@ -282,7 +283,7 @@ class Vipps {
 <div class="vipps-shareable-link-delete-message" style="display:none"><?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?></div>
 
 <div class='blurb' style='margin-left:13px;margin-right:13px;margin-top:13px'>
- <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100%">
+ <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
   <thead>
    <tr><th align=left>Variant</th><th align=left>Link</th><th>Action</th></tr>
   </thead>
@@ -323,7 +324,7 @@ class Vipps {
             $product = wc_get_product($prodid);
             $variant = $varid ? wc_get_product($varid) : null;
             $varname = $variant ? $variant->get_id() : '';
-            if ($variant->get_sku()) {
+            if ($variant && $variant->get_sku()) {
               $varname .= ":" . sanitize_text_field($variant->get_sku());
             }
         } catch (Exception $e) {
