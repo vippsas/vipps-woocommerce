@@ -253,6 +253,7 @@ class Vipps {
     public function product_options_vipps_shareable_link() {
             global $post;
             $product = wc_get_product($post->ID);
+            $variable = ($product->get_type() == 'variable');
             $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
 ?>
             <div class="options_group">
@@ -263,7 +264,7 @@ class Vipps {
             <input type=hidden id=vipps_sharelink_id value='<?php echo $product->get_id(); ?>'>
         <?php 
               echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
-              if ($product->get_type() == 'variable'):
+              if ($variable):
               $variations = $product->get_available_variations(); 
               echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
               echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
@@ -285,17 +286,20 @@ class Vipps {
 <div class='blurb' style='margin-left:13px;margin-right:13px;margin-top:13px'>
  <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
   <thead>
-   <tr><th align=left>Variant</th><th align=left>Link</th><th>Action</th></tr>
+   <tr>
+     <?php if ($variable): ?><th align=left><?php echo __('Variant','woo-vipps'); ?></th><?php endif; ?>
+     <th align=left><?php echo __('Link','woo-vipps'); ?></th>
+    <th><?php echo __('Action','woo-vipps'); ?></th></tr>
   </thead>
   <tbody>
    <tr>
 <?php foreach ($shareables as $shareable): ?>
-     <td><?php echo sanitize_text_field($shareable['variant']); ?></td>
+     <?php if ($variable): ?><td><?php echo sanitize_text_field($shareable['variant']); ?></td><?php endif; ?>
      <td><a class='shareable deleted' title="Click to copy" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input type hidden name='woovipps_shared_links_delenda[]' value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
      <td align=center>
-<a class="copyaction" href='javascript:void(0)'>[Copy]</a>
+<a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
 <a class="qraction" href='javascript:void(0)'>[QR]</a>
-<a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[Delete]</a>
+<a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
 </td>
    </tr>
 <?php endforeach; ?>
