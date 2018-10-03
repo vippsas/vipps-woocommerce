@@ -71,6 +71,7 @@
              actions.removeAttr('id');
              newrow.append('<td align=center>' + actions.html() + '<td>');
              jQuery('#woo_vipps_shareables tbody').append(newrow);
+             add_shareable_commands(newrow);
           } else {
              console.log("Error creating shareable link " + result['msg']);
              jQuery('#vipps-shareable-link-error').text(' : ' +result['msg']);
@@ -82,6 +83,29 @@
       return false;
      } 
 
+     function add_shareable_commands(element) {
+       if (!element) element = jQuery('#woo_vipps_shareables');
+       element.find('.shareable').click(function () {
+         jQuery('<input type=hidden/>').appendTo('body').val(jQuery(this).text()).select(); 
+         document.execCommand('copy');
+       }); 
+       element.find('.copyaction').click(function () {
+         var link = jQuery(this).closest('tr').find('.shareable');
+         jQuery('<input type=hidden/>').appendTo('body').val(link.text()).select();
+         document.execCommand('copy');
+       });
+       element.find('.deleteaction').click(function () {
+         console.log("Deleteaction");
+         var link = jQuery(this).closest('tr').find('.shareable');
+         link.toggleClass('deleted');
+         if (link.hasClass('deleted')) {
+          link.siblings('.deletemarker').attr('name','woo_vipps_shareable_delenda[]');
+         } else {
+          link.siblings('.deletemarker').removeAttr('name');
+         }
+       });
+     }
+
      jQuery(document).ready(function () {
        // Require a variant to have been selected in order for the shareable-link thing to work
        jQuery('#vipps_sharelink_variant').change(function () {
@@ -92,17 +116,7 @@
          }
        });
        jQuery('#vipps-share-link').click(vipps_create_shareable_link);
-       
-       jQuery('#woo_vipps_shareables .shareable').click(function () {
-         jQuery('<input type=hidden/>').appendTo('body').val(jQuery(this).text()).select(); 
-         document.execCommand('copy');
-       }); 
-       jQuery('#woo_vipps_shareables .copyaction').click(function () {
-         var link = jQuery(this).closest('tr').find('.shareable');
-         jQuery('<input type=hidden/>').appendTo('body').val(link.text()).select();
-         document.execCommand('copy');
-       });
-
+       add_shareable_commands();
      });
 
 
