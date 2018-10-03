@@ -396,6 +396,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         global $woocommerce, $Vipps;
         if (!$order_id) return false;
 
+        do_action('woo_vipps_before_process_payment',$order_id);
+
         // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
         try {
             $at = $this->api->get_access_token();
@@ -479,6 +481,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
         }
         $woocommerce->cart->empty_cart(true);
+
+        do_action('woo_vipps_before_redirect_to_vipps',$order_id);
 
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
