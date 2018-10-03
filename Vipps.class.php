@@ -280,8 +280,20 @@ class Vipps {
             echo "</p>";
 ?>
 </div>
-<div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?><span id="vipps-shareable-link-error"></span></div>
-<div class="vipps-shareable-link-delete-message" style="display:none"><?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?></div>
+<div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?>
+ <span id="vipps-shareable-link-error"></span>
+</div>
+<div class="vipps-shareable-link-delete-message" style="display:none">
+ <?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?>
+</div>
+ <div style="display:none;" id='woo_vipps_shareable_link_template'>
+  <a class='shareable deleted' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input type hidden name='woovipps_shared_links_delenda[]' value=''>
+</div>
+ <div style="display:none;" id='woo_vipps_shareable_command_template'>
+   <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
+   <a class="qraction" href='javascript:void(0)'>[QR]</a>
+   <a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
+ </div>
 
 <div class='blurb' style='margin-left:13px;margin-right:13px;margin-top:13px'>
  <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
@@ -295,7 +307,7 @@ class Vipps {
    <tr>
 <?php foreach ($shareables as $shareable): ?>
      <?php if ($variable): ?><td><?php echo sanitize_text_field($shareable['variant']); ?></td><?php endif; ?>
-     <td><a class='shareable deleted' title="Click to copy" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input type hidden name='woovipps_shared_links_delenda[]' value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
+     <td><a class='shareable deleted' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input type hidden name='woovipps_shared_links_delenda[]' value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
      <td align=center>
 <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
 <a class="qraction" href='javascript:void(0)'>[QR]</a>

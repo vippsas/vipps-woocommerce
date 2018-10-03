@@ -23,7 +23,6 @@
  if  (pagenow == 'product') {
      // Called on the product edit screen by a button.
      function vipps_create_shareable_link() {
-      console.log("Creating link");
       jQuery('#vipps-share-link').attr('disabled','disabled');
 
       jQuery('#vipps-shareable-link-error').text('');
@@ -35,7 +34,6 @@
       var isvariant = false;
       if (!prodid) {
          jQuery('#vipps-share-link').removeAttr('disabled');
-         console.log("No prodid");
          return false; 
       }
       var varselector = jQuery('#vipps_sharelink_variant');
@@ -44,7 +42,6 @@
         varid = varselector.val();
         if (!varid) {
           jQuery('#vipps-share-link').removeAttr('disabled');
-         console.log("No varid");
           return false;
         }
       }
@@ -61,7 +58,19 @@
         "success": function (result, statustext, xhr) {
           jQuery('#vipps-share-link').removeAttr('disabled');
           if (result["ok"]) {
-             console.log("Shareable link created %j!", result);
+             console.log("Shareable link created ");
+             jQuery('#woo_vipps_shareables').show();
+             var newrow = jQuery('<tr>');
+             if (result['variant']) newrow.append('<td>'+result['variant']+'</td>');
+             var link = jQuery('#woo_vipps_shareable_link_template').clone();
+             link.removeAttr('id');
+             link.find('a').text(result['url']);
+             link.find('input').attr('value',result['key']);
+             newrow.append('<td>'+link.html()+'</td>');
+             var actions = jQuery('#woo_vipps_shareable_command_template').clone();
+             actions.removeAttr('id');
+             newrow.append('<td align=center>' + actions.html() + '<td>');
+             jQuery('#woo_vipps_shareables tbody').append(newrow);
           } else {
              console.log("Error creating shareable link " + result['msg']);
              jQuery('#vipps-shareable-link-error').text(' : ' +result['msg']);
@@ -76,7 +85,6 @@
      jQuery(document).ready(function () {
        // Require a variant to have been selected in order for the shareable-link thing to work
        jQuery('#vipps_sharelink_variant').change(function () {
-         console.log("variant action");
          if (jQuery(this).val()) {
            jQuery('#vipps-share-link').removeAttr('disabled');
          } else {
