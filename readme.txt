@@ -107,7 +107,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 = xxxx.xx.xx version x.x.x =
 * New feature: Buy directly using Vipps Express Checkout from product pages and catalog listings
-* New feature: Create 'campaign links' allowing customers to buy directly using Vipps Express Checkout from external links and banners
+* New feature: Create 'shareable links' allowing customers to buy directly using Vipps Express Checkout from external links and banners
 
 = 2018.10.03 version 1.0.6 =
 * Fix - Cart is now saved and restored if the payment is aborted or fails

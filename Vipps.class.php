@@ -57,8 +57,12 @@ class Vipps {
 
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
-
+ 
+        // Styling etc
         add_action('admin_head', array($this, 'admin_head'));
+
+        // Scripts
+        add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // Custom product properties
         add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
@@ -101,8 +105,11 @@ class Vipps {
         }
 }
 </style>
-
     <?php
+    }
+    // Scripts used in the backend
+    public function admin_enqueue_scripts($hook) {
+       wp_enqueue_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
     }
 
     public function notice_is_test_mode() {
@@ -217,7 +224,7 @@ class Vipps {
        global $post;
        echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
        $this->product_options_vipps();
-       $this->product_options_vipps_campaign_link();
+       $this->product_options_vipps_shareable_link();
        echo "</div>";
     }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
@@ -237,14 +244,14 @@ class Vipps {
             echo '</div>';
         }
     }
-    public function product_options_vipps_campaign_link() {
+    public function product_options_vipps_shareable_link() {
             global $post;
             $product = wc_get_product($post->ID);
             echo '<div class="options_group">';
             echo '<p class="form-field">';
             echo "<div class='blurb' style='margin-left:13px'>";
-            echo "<h4>".__("Campaign links", 'woo-vipps') . "</h4>";
-            echo "<p>".__("Campaign links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps') . "</p>";
+            echo "<h4>".__("Shareable links", 'woo-vipps') . "</h4>";
+            echo "<p>".__("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps') . "</p>";
             echo '</p>';
             if ($product->get_type() == 'variable'):
               $variations = $product->get_available_variations();
@@ -1088,7 +1095,7 @@ class Vipps {
 
 
     // This URL will when accessed add a product to the cart and go directly to the express  checkout page.
-    // The argument passed must be a campaign link created for a given product - so this in effect acts as a landing page for 
+    // The argument passed must be a shareable link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
       do_action('woo_vipps_express_checkout_page');
@@ -1097,7 +1104,7 @@ class Vipps {
       $posted = $session->get('__vipps_buy_product');
       $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
       if (!$posted) {
-        // Find product/variation using an external campaign link
+        // Find product/variation using an external shareable link
         if (array_key_exists('product',$_REQUEST)) {
            $externalkey = $_REQUEST['product'];
            $posted = get_option("_vipps_productinfo_$externalkey");
