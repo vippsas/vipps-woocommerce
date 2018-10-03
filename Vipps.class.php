@@ -247,17 +247,19 @@ class Vipps {
     public function product_options_vipps_shareable_link() {
             global $post;
             $product = wc_get_product($post->ID);
-            echo '<div class="options_group">';
-            echo '<p class="form-field">';
-            echo "<div class='blurb' style='margin-left:13px'>";
-            echo "<h4>".__("Shareable links", 'woo-vipps') . "</h4>";
-            echo "<p>".__("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps') . "</p>";
-            echo '</p>';
-            if ($product->get_type() == 'variable'):
-              $variations = $product->get_available_variations();
-              echo "<button disabled  onclick='return false;'>Create shareable link</button>";
-              echo "<input type=text placeholder='Name' style='max-width:8em;'>";
-              echo "<select id='sharelinkvariant'><option value=''>Select variant</option>";
+            $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+?>
+            <div class="options_group">
+            <p class="form-field">
+            <div class='blurb' style='margin-left:13px'>
+             <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
+            <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
+            </p>
+<?php if ($product->get_type() == 'variable'):
+              $variations = $product->get_available_variations(); 
+              echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
+              echo "<input type=hidden id=vipps_sharelink_id value='" . $product->get_id() . "'>";
+              echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
               foreach($variations as $var) {
                 echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
                 echo sanitize_text_field($var['sku']);
@@ -265,19 +267,23 @@ class Vipps {
               }
               echo "</select>";
             else:
-              echo "<input type=text placeholder='Name' style='max-width:8em;>'";
-              echo "<button onclick='return false;'>Create shareable link</button>";
+              echo "<button id='vipps-share-link' class='button'  onclick='return false;'>"; echo __("Create shareable link", 'woo-vipps'); "</button>";
             endif;
-            echo '</div>';
 ?>
-<div class='blurb' style='margin-left:13px'>
-<ul id="woo_vipps_shareables">
-<li> BERK<br><input type hidden name='woovipps_shared_links_delenda[]' value='berk'><input id=berk style="width:80%" type=text readonly value='https://berkberk.com/berk'> <a href="javascript:void(0)">delete</a> </li>
-    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
-    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
-    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
-    <li> BORK<br><input type hidden name='woovipps_shared_links_delenda[]' value='bork'><input id=bork style="width:80%" type=text readonly value='https://borkbork.com/bork'> <a href="javascript:void(0)">delete</a> </li>
-</ul>
+</div>
+<div class='blurb' style='margin-left:13px;margin-right:13px'>
+ <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100%">
+  <thead>
+   <tr><th align=left>Variant</th><th align=left>Link</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+   <tr>
+     <td>BERK</td>
+     <td><a class='shareable deleted' title="Click to copy" href="javascrip:void(0)">https://berkberk.com/blargagarfgarf'</a><input type hidden name='woovipps_shared_links_delenda[]' value='berk'></td>
+     <td align=center><a href="javascript:void(0)">[Delete]</a> <a href='javascript:void(0)'>[Copy]</a> <a href='javascript:void(0)'>[QR]</a></td>
+   </tr>
+  </tbody>
+</table>   
 </div>
 <?php
     }
