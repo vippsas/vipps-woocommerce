@@ -76,6 +76,9 @@ class Vipps {
         // Keep admin notices during redirects IOK 2018-05-07
         add_action('admin_notices',array($this,'stored_admin_notices'));
 
+        // Ajax just for the backend
+        add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
+
         if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE && $gw->enabled == 'yes') {
             add_action('admin_notices', function() {
                     $what = __('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps');
@@ -254,11 +257,11 @@ class Vipps {
             <div class='blurb' style='margin-left:13px'>
              <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
             <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
-            </p>
-<?php if ($product->get_type() == 'variable'):
+        <?php if ($product->get_type() == 'variable'):
               $variations = $product->get_available_variations(); 
               echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
               echo "<input type=hidden id=vipps_sharelink_id value='" . $product->get_id() . "'>";
+              echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
               echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
               foreach($variations as $var) {
                 echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
@@ -269,9 +272,13 @@ class Vipps {
             else:
               echo "<button id='vipps-share-link' class='button'  onclick='return false;'>"; echo __("Create shareable link", 'woo-vipps'); "</button>";
             endif;
+            echo "</p>";
 ?>
 </div>
-<div class='blurb' style='margin-left:13px;margin-right:13px'>
+<div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?><span id="vipps-shareable-link-error"></span></div>
+<div class="vipps-shareable-link-delete-message" style="display:none"><?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?></div>
+
+<div class='blurb' style='margin-left:13px;margin-right:13px;margin-top:13px'>
  <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100%">
   <thead>
    <tr><th align=left>Variant</th><th align=left>Link</th><th>Action</th></tr>
@@ -280,12 +287,42 @@ class Vipps {
    <tr>
      <td>BERK</td>
      <td><a class='shareable deleted' title="Click to copy" href="javascrip:void(0)">https://berkberk.com/blargagarfgarf'</a><input type hidden name='woovipps_shared_links_delenda[]' value='berk'></td>
-     <td align=center><a href="javascript:void(0)">[Delete]</a> <a href='javascript:void(0)'>[Copy]</a> <a href='javascript:void(0)'>[QR]</a></td>
+     <td align=center>
+<a class="copyaction" href='javascript:void(0)'>[Copy]</a>
+<a class="qraction" href='javascript:void(0)'>[QR]</a>
+<a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[Delete]</a>
+</td>
    </tr>
   </tbody>
 </table>   
 </div>
 <?php
+    }
+
+    public function ajax_vipps_create_shareable_link() {
+        check_ajax_referer('share_link_nonce','vipps_share_sec');
+        if (!current_user_can('manage_woocommerce')) {
+           echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
+           wp_die();
+        }
+
+        $prodid = sprintf("%d",$_POST['prodid']);
+        $varid = sprintf("%d",$_POST['varid']);
+        $key = md5(mt_rand() . ":" . $prodid . ":" . $varid);
+        $varname = '';
+        try {
+            $variant = $varid ? wc_get_product($varid) : null;
+            $varname = $variant ? $variant->get_id() : '';
+            if ($variant->get_sku()) {
+              $varname .= ":" . sanitize_text_field($variant->get_sku());
+            }
+            $url = add_query_arg('pr',$key,$this->buy_product_url());
+        } catch (Exception $e) {
+           echo json_encode(array('ok'=>0,'msg'=>$e->getMessage()));
+           wp_die();
+        }
+        echo json_encode(array('ok'=>1,'msg'=>'ok', 'link'=>$url, 'variant'=> $varname));
+        wp_die();
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
@@ -453,6 +490,9 @@ class Vipps {
         // Buying a single product directly using express checkout IOK 2018-09-28
         add_action('wp_ajax_nopriv_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
         add_action('wp_ajax_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
+
+
+
 
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
@@ -1111,8 +1151,8 @@ class Vipps {
       $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
       if (!$posted) {
         // Find product/variation using an external shareable link
-        if (array_key_exists('product',$_REQUEST)) {
-           $externalkey = $_REQUEST['product'];
+        if (array_key_exists('pr',$_REQUEST)) {
+           $externalkey = $_REQUEST['pr'];
            $posted = get_option("_vipps_productinfo_$externalkey");
         }
       }

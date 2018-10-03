@@ -23,6 +23,13 @@
  if  (pagenow == 'product') {
      // Called on the product edit screen by a button.
      function vipps_create_shareable_link() {
+
+      jQuery('#vipps-share-link').attr('disabled','disabled');
+
+      jQuery('#vipps-shareable-link-error').text('');
+      jQuery('.vipps-shareable-link-error').hide();
+
+
       var prodid = jQuery('#vipps_sharelink_id').val();
       var varid=0;
       var isvariant = false;
@@ -33,7 +40,27 @@
         varid = varselector.val();
         if (!varid) return false;
       }
-      var data = { 'action': 'vipps_create_shareable_link', 'prodid':prodid,'varid':varid };
+      var nonce = jQuery('#vipps_share_sec').val();
+      var data = { 'action': 'vipps_create_shareable_link', 'prodid':prodid,'varid':varid, 'vipps_share_sec':nonce };
+
+      jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
+        "error": function (xhr, statustext, error) {
+           jQuery('#vipps-share-link').removeAttr('disabled');
+           console.log("Error creating shareable link" + statustext + " " + error);
+           jQuery('#vipps-shareable-link-error').text(' : ' +error);
+           jQuery('.vipps-shareable-link-error').show();
+        },
+        "success": function (result, statustext, xhr) {
+          jQuery('#vipps-share-link').removeAttr('disabled');
+          if (result["ok"]) {
+             console.log("Shareable link created!!");
+          } else {
+             console.log("Error creating shareable link " + result['msg']);
+             jQuery('#vipps-shareable-link-error').text(' : ' +result['msg']);
+             jQuery('.vipps-shareable-link-error').show();
+          }
+         },
+      });
 
       return false;
      } 
@@ -49,8 +76,20 @@
          }
        });
        jQuery('#vipps-share-link').click(vipps_create_shareable_link);
+       
+       jQuery('#woo_vipps_shareables .shareable').click(function () {
+         jQuery('<input type=hidden/>').appendTo('body').val(jQuery(this).text()).select(); 
+         document.execCommand('copy');
+       }); 
+       jQuery('#woo_vipps_shareables .copyaction').click(function () {
+         var link = jQuery(this).closest('tr').find('.shareable');
+         jQuery('<input type=hidden/>').appendTo('body').val(link.text()).select();
+         document.execCommand('copy');
+       });
 
      });
+
+
  }
 })();
 
