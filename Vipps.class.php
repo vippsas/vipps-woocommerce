@@ -1219,11 +1219,25 @@ class Vipps {
       if (!$posted) {
         // Find product/variation using an external shareable link
         if (array_key_exists('pr',$_REQUEST)) {
+           global $wpdb;
+           error_log("iverok: external key");
            $externalkey = $_REQUEST['pr'];
-           $posted = get_option("_vipps_productinfo_$externalkey");
+           error_log("iverok: external key $externalkey");
+           $search = '_vipps_shareable_link_'.esc_sql($externalkey);
+           $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='$search' limit 1",'ARRAY_A');
+           error_log("iverok: prod  " . print_r($existing,true));
+           if (!empty($existing)) {
+            $posted = get_post_meta($existing['post_id'], $search, true);
+            error_log("iverok: $search posted " . print_r($posted,true));
+           }
         }
       }
-      $productinfo = $posted ? @json_decode($posted,true) : false; 
+      $productinfo = false;
+      if (is_array($posted)) {
+       $productinfo = $posted;
+      } else {
+       $productinfo = $posted ? @json_decode($posted,true) : false; 
+      }
 
       if (!$productinfo) {
          $title = __("Product is no longer available",'woo-vipps');
