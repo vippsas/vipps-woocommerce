@@ -236,6 +236,9 @@ class Vipps {
         if ($gw->get_option('singleproductexpress') == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
             echo '<div class="options_group">';
+            echo "<div class='blurb' style='margin-left:13px'><h4>";
+            echo __("Buy-now button", 'woo-vipps') ;
+            echo "<h4></div>";
             echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
             woocommerce_wp_checkbox( array(
              'id'      => 'woo_vipps_add_buy_now_button',
@@ -285,14 +288,16 @@ class Vipps {
   </thead>
   <tbody>
    <tr>
-     <td>BERK</td>
-     <td><a class='shareable deleted' title="Click to copy" href="javascrip:void(0)">https://berkberk.com/blargagarfgarf'</a><input type hidden name='woovipps_shared_links_delenda[]' value='berk'></td>
+<?php foreach ($shareables as $shareable): ?>
+     <td><?php echo sanitize_text_field($shareable['variant']); ?></td>
+     <td><a class='shareable deleted' title="Click to copy" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input type hidden name='woovipps_shared_links_delenda[]' value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
      <td align=center>
 <a class="copyaction" href='javascript:void(0)'>[Copy]</a>
 <a class="qraction" href='javascript:void(0)'>[QR]</a>
 <a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[Delete]</a>
 </td>
    </tr>
+<?php endforeach; ?>
   </tbody>
 </table>   
 </div>
@@ -346,7 +351,7 @@ class Vipps {
         update_post_meta($prodid,'_vipps_shareable_link_'.$key, array('product_id'=>$prodid,'variant_id'=>$varid,'key'=>$key));
         add_post_meta($prodid,'_vipps_shareable_links',$payload);
 
-        echo json_encode(array('ok'=>1,'msg'=>'ok', 'link'=>$url, 'variant'=> $varname, 'key'=>$key));
+        echo json_encode(array('ok'=>1,'msg'=>'ok', 'url'=>$url, 'variant'=> $varname, 'key'=>$key));
         wp_die();
     }
 
