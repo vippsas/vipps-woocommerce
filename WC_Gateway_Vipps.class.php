@@ -193,7 +193,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     protected function maybe_complete_payment($order) {
         if ('vipps' != $order->get_payment_method()) return false;
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
-        $captured = $order->get_meta('_vipps_captured'); // IOK FIXME this could in theory be a partial capture; but this method should really only be called by 'pending' status orders.
+        // IOK 2018-10-03 when implementing partial capture, this must be modified.
+        $captured = $order->get_meta('_vipps_captured'); 
         if ($captured) { 
           // IOK 2019-09-21 already captured, so just run 'payment complete'
           $order->payment_complete();
@@ -419,6 +420,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         global $woocommerce, $Vipps;
         if (!$order_id) return false;
 
+        do_action('woo_vipps_before_process_payment',$order_id);
+
         // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
         try {
             $at = $this->api->get_access_token();
@@ -503,7 +506,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Then empty the cart; we'll ressurect it if we can and have to, so store it in session indexed by order number. IOK 2018-04-24
         // We really don't want any errors here for any reason, if we fail that's ok. IOK 2018-05-07
-         try {
+        try {
              // This actually isn't neccessary *unless* there is a tempcart, so this could be rewritten in the future.
              // It saves the *current* order which will not include a single-product to be bought. On purchase, that cart will replace
              // the 'current' cart, so that this one will be empty and must be restored (both on success and failure). IOK 2019-10-02
@@ -514,7 +517,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
          // order complete. If this is a temporary cart for a single-product express checkout purchase; this cart will be *replaced* by the
          // single product cart. If it isn't, the cart will be emptied on purchase completion. For now I'm keeping this logic just to avoid
          // exhaustive testing. IOK 2018-10-02
-         if (!$this->tempcart) $woocommerce->cart->empty_cart(true); 
+        if (!$this->tempcart) $woocommerce->cart->empty_cart(true); 
+        do_action('woo_vipps_before_redirect_to_vipps',$order_id);
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
         return array('result'=>'success','redirect'=>$url);

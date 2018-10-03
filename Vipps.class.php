@@ -401,7 +401,6 @@ class Vipps {
             if (@$_REQUEST['vipps-consent-removal']) return @$_REQUEST['callback'];
             return false;
         }
-        // IOK 2018-09-27 possibly add home_url() path to match IOK 2018-06-06
         if (preg_match("!/vipps-consent-removal/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
             return @$_REQUEST['callback'];
         }
@@ -607,7 +606,7 @@ class Vipps {
             $package['destination']['address_2']= $addressline2;
         }
 
-        $packages = array($package);
+        $packages = apply_filters('woo_vipps_shipping_callback_packages', array($package));
         $shipping =  WC()->shipping->calculate_shipping($packages);
         $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
 
@@ -743,6 +742,7 @@ class Vipps {
         }
         do_action('woo_vipps_cart_restored');
     }
+
     // This restores the cart on order complete, but only if the current order was a single product buy with an active cart.
     public function maybe_restore_cart($orderid) {
 	    if (!$orderid) return;

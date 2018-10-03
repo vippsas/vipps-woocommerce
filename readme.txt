@@ -1,5 +1,5 @@
 === Checkout with Vipps for WooCommerce ===
-Contributors: wphostingdev, iverok, pmbakken
+Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
 Tested up to: 4.9.8
@@ -88,11 +88,14 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
  * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the order and a cart. Should return an array of shipping methods.
+ * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
  * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
  ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
+ * Action: 'woo_vipps_before_redirect_to_vipps': Takes an order-id, called at the end of process_payment right before the redirect to Vipps
+ * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
  
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
@@ -106,9 +109,11 @@ There are several filters and hooks you can use to customize the behaviour of th
 * New feature: Buy directly using Vipps Express Checkout from product pages and catalog listings
 * New feature: Create 'campaign links' allowing customers to buy directly using Vipps Express Checkout from external links and banners
 
-= xxxx.xx.xx version x.x.x =
+= 2018.10.03 version 1.0.6 =
 * Fix - Cart is now saved and restored if the payment is aborted or fails
 * Improvement: Added hooks for cart save and restore
+* Improvement: Added actions 'woo_vipps_before_process_payment', 'woo_vipps_before_redirect_to_vipps'
+* Improvement: Added filter 'woo_vipps_shipping_callback_packages'
 
 = 2018.09.25 version 1.0.5 =
 * Fix - Shipping details callback returned prices wrongly formatted for some locales
