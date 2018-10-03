@@ -191,7 +191,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     protected function maybe_complete_payment($order) {
         if ('vipps' != $order->get_payment_method()) return false;
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
-        $captured = $order->get_meta('_vipps_captured'); // IOK FIXME this could in theory be a partial capture; but this method should really only be called by 'pending' status orders.
+        // IOK 2018-10-03 when implementing partial capture, this must be modified.
+        $captured = $order->get_meta('_vipps_captured'); 
         if ($captured) { 
           // IOK 2019-09-21 already captured, so just run 'payment complete'
           $order->payment_complete();
