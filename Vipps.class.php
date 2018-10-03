@@ -212,8 +212,24 @@ class Vipps {
 
    // Manage the various product meta fields
     public function process_product_meta ($id, $post) {
+      // This is for the 'buy now' button
       if (isset($_POST['woo_vipps_add_buy_now_button'])) {
         update_post_meta($id, '_vipps_buy_now_button', $_POST['woo_vipps_add_buy_now_button']);
+      }
+      // This is for the shareable links.
+      if (isset($_POST['woo_vipps_shareable_delenda'])) {
+         $delenda = $_POST['woo_vipps_shareable_delenda'];
+         foreach($delenda as $delendum) {
+            // This will delete the actual link
+            delete_post_meta($post->ID, '_vipps_shareable_link_'.$delendum);
+         }
+         // This will delete the item from the list of links for the product
+         $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+         foreach ($shareables as $shareable) {
+                 if (in_array($shareable['key'], $delenda)) {
+                     delete_post_meta($post->ID,'_vipps_shareable_links', $shareable);
+                 }
+         }
       }
     }
 
@@ -287,14 +303,18 @@ class Vipps {
  <?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?>
 </div>
  <div style="display:none;" id='woo_vipps_shareable_link_template'>
-  <a class='shareable deleted' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input type hidden name='woovipps_shared_links_delenda[]' value=''>
+  <a class='shareable' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input class=deletemarker type=hidden  value=''>
 </div>
  <div style="display:none;" id='woo_vipps_shareable_command_template'>
    <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
    <a class="qraction" href='javascript:void(0)'>[QR]</a>
    <a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
  </div>
-
+<style>
+ #woo_vipps_shareables a.deleted {
+   text-decoration: line-through;
+ }
+</style>
 <div class='blurb' style='margin-left:13px;margin-right:13px;margin-top:13px'>
  <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
   <thead>
@@ -307,7 +327,7 @@ class Vipps {
    <tr>
 <?php foreach ($shareables as $shareable): ?>
      <?php if ($variable): ?><td><?php echo sanitize_text_field($shareable['variant']); ?></td><?php endif; ?>
-     <td><a class='shareable deleted' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input type hidden name='woovipps_shared_links_delenda[]' value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
+     <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
      <td align=center>
 <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
 <a class="qraction" href='javascript:void(0)'>[QR]</a>
