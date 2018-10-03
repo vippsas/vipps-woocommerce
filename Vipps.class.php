@@ -299,29 +299,54 @@ class Vipps {
 <?php
     }
 
+    // This creates and stores a shareable link that when followed will allow external buyers to buy the specified product direclty.
+    // Only products with these links can be bought like this; both to avoid having to create spurious orders from griefers and to ensure
+    // that a link can be retracted if it has been printed or shared in emails with a specific price. IOK 2018-10-03
     public function ajax_vipps_create_shareable_link() {
         check_ajax_referer('share_link_nonce','vipps_share_sec');
         if (!current_user_can('manage_woocommerce')) {
            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
            wp_die();
         }
-
         $prodid = sprintf("%d",$_POST['prodid']);
         $varid = sprintf("%d",$_POST['varid']);
-        $key = md5(mt_rand() . ":" . $prodid . ":" . $varid);
+
+        $product = ''; 
+        $variant = '';
         $varname = '';
         try {
+            $product = wc_get_product($prodid);
             $variant = $varid ? wc_get_product($varid) : null;
             $varname = $variant ? $variant->get_id() : '';
             if ($variant->get_sku()) {
               $varname .= ":" . sanitize_text_field($variant->get_sku());
             }
-            $url = add_query_arg('pr',$key,$this->buy_product_url());
         } catch (Exception $e) {
            echo json_encode(array('ok'=>0,'msg'=>$e->getMessage()));
            wp_die();
         }
-        echo json_encode(array('ok'=>1,'msg'=>'ok', 'link'=>$url, 'variant'=> $varname));
+        if (!$product) {
+           echo json_encode(array('ok'=>0,'msg'=>__('The product doesn\'t exist', 'woo-vipps')));
+           wp_die();
+        }
+ 
+        // Find a free shareable link by generating a hash and testing it. Normally there won't be any collisions at all.
+        $key = '';
+        while (!$key) {
+         global $wpdb;
+         $key = substr(sha1(mt_rand() . ":" . $prodid . ":" . $varid),0,8);
+         $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='_vipps_shareable_link_$key' limit 1",'ARRAY_A');
+         if (!empty($existing)) $key = '';
+        }
+
+        $url = add_query_arg('pr',$key,$this->buy_product_url());
+        $payload = array('product_id'=>$prodid,'variant_id'=>$varid,'key'=>$key, 'url'=>$url, 'variant'=>$varname);
+
+        // This is used to find the link itself
+        update_post_meta($prodid,'_vipps_shareable_link_'.$key, array('product_id'=>$prodid,'variant_id'=>$varid,'key'=>$key));
+        add_post_meta($prodid,'_vipps_shareable_links',$payload);
+
+        echo json_encode(array('ok'=>1,'msg'=>'ok', 'link'=>$url, 'variant'=> $varname, 'key'=>$key));
         wp_die();
     }
 

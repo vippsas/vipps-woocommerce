@@ -53,7 +53,7 @@
         "success": function (result, statustext, xhr) {
           jQuery('#vipps-share-link').removeAttr('disabled');
           if (result["ok"]) {
-             console.log("Shareable link created!!");
+             console.log("Shareable link created %j!", result);
           } else {
              console.log("Error creating shareable link " + result['msg']);
              jQuery('#vipps-shareable-link-error').text(' : ' +result['msg']);
