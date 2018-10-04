@@ -96,7 +96,6 @@
          document.execCommand('copy');
        });
        element.find('.deleteaction').click(function () {
-         console.log("Deleteaction");
          var link = jQuery(this).closest('tr').find('.shareable');
          link.toggleClass('deleted');
          if (link.hasClass('deleted')) {
@@ -104,6 +103,13 @@
          } else {
           link.siblings('.deletemarker').removeAttr('name');
          }
+
+         if (jQuery('a.shareable.deleted').length>0) {
+          jQuery('#vipps-shareable-link-delete-message').show();
+         } else {
+          jQuery('#vipps-shareable-link-delete-message').hide();
+         }
+
        });
        element.find('.qraction').click(function () {
           var key = jQuery(this).closest('tr').find('.shareable').siblings('input').val();

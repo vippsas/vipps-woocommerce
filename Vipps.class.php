@@ -274,7 +274,6 @@ class Vipps {
             $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
 ?>
             <div class="options_group">
-            <p class="form-field">
             <div class='blurb' style='margin-left:13px'>
              <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
             <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
@@ -294,14 +293,7 @@ class Vipps {
             else:
               echo "<button id='vipps-share-link' class='button'  onclick='return false;'>"; echo __("Create shareable link", 'woo-vipps'); "</button>";
             endif;
-            echo "</p>";
 ?>
-</div>
-<div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?>
- <span id="vipps-shareable-link-error"></span>
-</div>
-<div class="vipps-shareable-link-delete-message" style="display:none">
- <?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?>
 </div>
  <div style="display:none;" id='woo_vipps_shareable_link_template'>
   <a class='shareable' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input class=deletemarker type=hidden  value=''>
@@ -316,7 +308,14 @@ class Vipps {
    text-decoration: line-through;
  }
 </style>
-<div class='blurb' style='margin-left:13px;margin-right:13px;margin-top:13px'>
+<div class='blurb' style='margin-left:13px;margin-right:13px'>
+
+<div id="message-area" style="min-height:2em">
+<div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?>
+ <span id="vipps-shareable-link-error"></span> </div>
+<div id="vipps-shareable-link-delete-message" style="display:none"><em><?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?> </em></div>
+</div>
+
  <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
   <thead>
    <tr>
