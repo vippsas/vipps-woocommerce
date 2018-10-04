@@ -978,10 +978,6 @@ class Vipps {
         $parentid = $product ? $product->get_parent_id() : null; // If the product is a variation, then the parent product is the parentid.
         $parent = $parentid ? wc_get_product($parentid) : null; 
 
-            $result = array('ok'=>0, 'msg'=>"parentid $parentid prodid $prodid" . __('Selected product variant is not available','woo-vipps'), 'url'=>false);
-            wp_send_json($result);
-            exit();
-
         // This can't really happen, but if it did..
         if ($prodid && $parentid && ($prodid != $parentid)) {
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available','woo-vipps'), 'url'=>false);
