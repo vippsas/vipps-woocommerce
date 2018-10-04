@@ -107,12 +107,18 @@
        });
        element.find('.qraction').click(function () {
           var key = jQuery(this).closest('tr').find('.shareable').siblings('input').val();
+          var url = encodeURIComponent(jQuery(this).closest('tr').find('.shareable').text());
           var nonce = jQuery('#vipps_share_sec').val();
-          var source = ajaxurl + '?nonce=' + nonce + '&action=woo_vipps_link_qr&key=' + key;
+          var postid= jQuery('#post_ID').val();
+          var source = ajaxurl + '?vipps_share_sec=' + nonce + '&action=vipps_link_qr&key=' + key + '&id=' + postid + '&url='+url;
+        
+          var y = window.outerHeight / 4 + window.screenY - (320/2);
+          var x = window.outerWidth / 2 + window.screenX - (320/2);
 
-          var qrwin = window.open('','_blank','height=640,width=640');
+          var qrwin = window.open('','_blank','height=320,width=320,menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,copyhistory=no,top='+y+',left='+x);
           qrwin.document.write('<p style="position:fixed;top:50%;left:50%"><i>loading...</i></p>');
           qrwin.location.href = source;
+          qrwin.title ="QR Code";
 
        });
      }

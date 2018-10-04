@@ -78,6 +78,7 @@ class Vipps {
 
         // Ajax just for the backend
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
+        add_action('wp_ajax_vipps_link_qr', array($this, 'ajax_vipps_link_qr'));
 
         if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE && $gw->enabled == 'yes') {
             add_action('admin_notices', function() {
@@ -390,6 +391,29 @@ class Vipps {
 
         echo json_encode(array('ok'=>1,'msg'=>'ok', 'url'=>$url, 'variant'=> $varname, 'key'=>$key));
         wp_die();
+    }
+
+    // Create a QR code for a shareable link for printing on posters and such.. or just for demos
+    public function ajax_vipps_link_qr() {
+       $ok = check_ajax_referer('share_link_nonce','vipps_share_sec',false);
+       if (!$ok) {
+         wp_die(__("You are not allowed to use this link to create QR codes",'woo-vipps'));
+       }
+       $url = $_GET['url']; 
+       $key = $_GET['key']; 
+       if (!$url) {
+         wp_die(__("The requested link does not exist", 'woo-vipps'));
+       }
+       // External library, may have been included by other parties IOK 2018-10-04
+       if (!class_exists('QRcode')) {
+        require_once(dirname(__FILE__) ."/tools/phpqrcode/phpqrcode.php");
+       }
+       if (!method_exists('QRcode','png')) {
+         wp_die(__("Cannot create QR code - library is missing or does not work", 'woo-vipps'));
+       }
+       header("Content-disposition: inline; filename='qr-$key.png'");
+       QRcode::png($url,false, QR_ECLEVEL_H, 4);
+       wp_die();
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
