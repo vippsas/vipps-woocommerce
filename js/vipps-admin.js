@@ -21,6 +21,7 @@
 (function () {
 
  if  (pagenow == 'product') {
+
      // Called on the product edit screen by a button.
      function vipps_create_shareable_link() {
       jQuery('#vipps-share-link').attr('disabled','disabled');
@@ -103,6 +104,16 @@
          } else {
           link.siblings('.deletemarker').removeAttr('name');
          }
+       });
+       element.find('.qraction').click(function () {
+          var key = jQuery(this).closest('tr').find('.shareable').siblings('input').val();
+          var nonce = jQuery('#vipps_share_sec').val();
+          var source = ajaxurl + '?nonce=' + nonce + '&action=woo_vipps_link_qr&key=' + key;
+
+          var qrwin = window.open('','_blank','height=640,width=640');
+          qrwin.document.write('<p style="position:fixed;top:50%;left:50%"><i>loading...</i></p>');
+          qrwin.location.href = source;
+
        });
      }
 
