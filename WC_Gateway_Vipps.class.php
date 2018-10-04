@@ -113,7 +113,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if "Express checkout" should be displayed IOK 2018-06-18
     public function show_express_checkout() {
             if (!$this->express_checkout_available()) return false;
-	    return ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
+	    $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
+            return apply_filters('woo_vipps_show_express_checkout', $show);
     }
     public function show_login_with_vipps() {
 	    return false;
