@@ -382,10 +382,10 @@ class Vipps {
         }
 
         $url = add_query_arg('pr',$key,$this->buy_product_url());
-        $payload = array('product_id'=>$prodid,'variant_id'=>$varid,'key'=>$key, 'url'=>$url, 'variant'=>$varname);
+        $payload = array('product_id'=>$prodid,'variation_id'=>$varid,'key'=>$key, 'url'=>$url, 'variant'=>$varname);
 
         // This is used to find the link itself
-        update_post_meta($prodid,'_vipps_shareable_link_'.$key, array('product_id'=>$prodid,'variant_id'=>$varid,'key'=>$key));
+        update_post_meta($prodid,'_vipps_shareable_link_'.$key, array('product_id'=>$prodid,'variation_id'=>$varid,'key'=>$key));
         add_post_meta($prodid,'_vipps_shareable_links',$payload);
 
         echo json_encode(array('ok'=>1,'msg'=>'ok', 'url'=>$url, 'variant'=> $varname, 'key'=>$key));
@@ -978,6 +978,10 @@ class Vipps {
         $parentid = $product ? $product->get_parent_id() : null; // If the product is a variation, then the parent product is the parentid.
         $parent = $parentid ? wc_get_product($parentid) : null; 
 
+            $result = array('ok'=>0, 'msg'=>"parentid $parentid prodid $prodid" . __('Selected product variant is not available','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+
         // This can't really happen, but if it did..
         if ($prodid && $parentid && ($prodid != $parentid)) {
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available','woo-vipps'), 'url'=>false);
@@ -1220,15 +1224,11 @@ class Vipps {
         // Find product/variation using an external shareable link
         if (array_key_exists('pr',$_REQUEST)) {
            global $wpdb;
-           error_log("iverok: external key");
            $externalkey = $_REQUEST['pr'];
-           error_log("iverok: external key $externalkey");
            $search = '_vipps_shareable_link_'.esc_sql($externalkey);
            $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='$search' limit 1",'ARRAY_A');
-           error_log("iverok: prod  " . print_r($existing,true));
            if (!empty($existing)) {
             $posted = get_post_meta($existing['post_id'], $search, true);
-            error_log("iverok: $search posted " . print_r($posted,true));
            }
         }
       }
