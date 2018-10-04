@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-04 17:29+0000\n"
-"PO-Revision-Date: 2018-10-04 17:36+0000\n"
+"POT-Creation-Date: 2018-10-04 17:39+0000\n"
+"PO-Revision-Date: 2018-10-04 17:40+0000\n"
 "Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
 "Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
@@ -104,7 +104,7 @@ msgstr "Lag delbar lenke"
 msgid "Select variant"
 msgstr "Velg variant"
 
-#: Vipps.class.php:299 Vipps.class.php:330
+#: Vipps.class.php:299 Vipps.class.php:330 Vipps.class.php:332
 msgid "Click to copy"
 msgstr "Klikk for å kopiere"
 
@@ -135,6 +135,14 @@ msgstr "Lenke"
 #: Vipps.class.php:324
 msgid "Action"
 msgstr "Handling"
+
+#: Vipps.class.php:333
+msgid "Create QR-code for link"
+msgstr "Lag QR-kode for lenken"
+
+#: Vipps.class.php:334
+msgid "Mark this link for deletion"
+msgstr "Merk lenken for sletting"
 
 #: Vipps.class.php:350
 msgid "You don't have sufficient rights to edit this product"

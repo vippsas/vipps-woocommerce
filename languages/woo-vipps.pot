@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-04 17:29+0000\n"
+"POT-Creation-Date: 2018-10-04 17:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -102,7 +102,7 @@ msgstr ""
 msgid "Select variant"
 msgstr ""
 
-#: Vipps.class.php:299 Vipps.class.php:330
+#: Vipps.class.php:299 Vipps.class.php:330 Vipps.class.php:332
 msgid "Click to copy"
 msgstr ""
 
@@ -132,6 +132,14 @@ msgstr ""
 
 #: Vipps.class.php:324
 msgid "Action"
+msgstr ""
+
+#: Vipps.class.php:333
+msgid "Create QR-code for link"
+msgstr ""
+
+#: Vipps.class.php:334
+msgid "Mark this link for deletion"
 msgstr ""
 
 #: Vipps.class.php:350
