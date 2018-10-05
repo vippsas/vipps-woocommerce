@@ -75,6 +75,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         foreach($captured_statuses as $capstatus) {
            add_action( 'woocommerce_order_status_on-hold_to_' . $capstatus, array($this, 'maybe_capture_payment'));
            add_action( 'woocommerce_order_status_' . $capstatus .'_to_cancelled', array($this, 'maybe_refund_payment'));
+           add_action( 'woocommerce_order_status_' . $capstatus .'_to_refunded', array($this, 'maybe_refund_payment'));
         }
         // And this ensures that any partial capture be completed when going to 'completed'
         foreach($non_completed_captured_statuses as $unfinishedstatus) {
