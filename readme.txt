@@ -108,6 +108,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Improvement: Add 'woo_vipps_show_express_checkout' filter
 * Improvement: Add 'woo_vipps_show_capture_button' filter
 * Improvement: Add 'woo_vipps_captured_statuses'
+* Bugfix/improvement: Changed WC_Gateway_Vipps to be a Singleton (fixes certain hooks being called several times)
 
 = 2018.10.03 version 1.0.6 =
 * Fix - Cart is now saved and restored if the payment is aborted or fails

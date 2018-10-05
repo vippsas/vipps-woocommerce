@@ -41,6 +41,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $supports = null;
 
     public $express_checkout = 0;
+    
+    private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
+
+    // This returns the singleton instance of this class
+    public static function instance() {
+            if (null === self::$instance) {
+                self::$instance = new self();
+            }
+            return self::$instance;
+    } 
+	    
 
     public function __construct() {
 

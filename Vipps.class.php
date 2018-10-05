@@ -40,6 +40,12 @@ class Vipps {
         return static::$instance;
     }
 
+    // Get the singleton WC_GatewayVipps instance
+    public function gateway() {
+      require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+      return WC_Gateway_Vipps::instance();
+    }
+
     public function init () {
         // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
         $this->cleanupCallbackSignals();
@@ -48,8 +54,7 @@ class Vipps {
     }
 
     public function admin_init () {
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
 
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
@@ -123,8 +128,7 @@ class Vipps {
     }
  
     public function express_checkout_banner() {
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         if (!$gw->show_express_checkout()) return;
 
         $url = $this->express_checkout_url();
@@ -142,8 +146,7 @@ class Vipps {
 
     // Show the express button if reasonable to do so
     public function cart_express_checkout_button() {
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         if ($gw->show_express_checkout()){
             $url = $this->express_checkout_url();
             $url = wp_nonce_url($url,'express','sec');
@@ -187,7 +190,7 @@ class Vipps {
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
 
 // This is for debugging the API IOK 2019-09-21
-//        $gw = new WC_Gateway_Vipps(); print "<pre>";print_r($gw->get_payment_details($order)); print "</pre>";
+// $gw = $this->gateway(); print "<pre>";print_r($gw->get_payment_details($order)); print "</pre>";
 
         print "<table border=0><thead></thead><tbody>";
         print "<tr><td>Status</td>";
@@ -301,7 +304,6 @@ class Vipps {
     public function plugins_loaded() {
         $ok = load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
 
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
@@ -340,8 +342,7 @@ class Vipps {
         if ($pm != 'vipps') return;
 
         if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
-            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-            $gw = new WC_Gateway_Vipps();
+            $gw = $this->gateway();
             // 0 in amount means full payment, which is all we currently support. IOK 2018-05-7
             $ok = $gw->capture_payment($order,0);
             // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
@@ -385,8 +386,7 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             return false;
         }
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         $gw->handle_callback($result);
         exit();
     }
@@ -544,7 +544,8 @@ class Vipps {
     }
 
     public function woocommerce_payment_gateways($methods) {
-        $methods[] = 'WC_Gateway_Vipps'; 
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        $methods[] = WC_Gateway_Vipps::instance();
         return $methods;
     }
 
@@ -565,8 +566,7 @@ class Vipps {
     // If setting is true, use Vipps as default payment. Called by the woocommrece_cart_updated hook. IOK 2018-06-06
     private function maybe_set_vipps_as_default() {
         if (WC()->session->get('chosen_payment_method')) return; // User has already chosen payment method, so we're done.
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         if ($gw->get_option('vippsdefault')=='yes') {
             WC()->session->set('chosen_payment_method', $gw->id);
         }
@@ -587,8 +587,7 @@ class Vipps {
             }
         }
         $this->log("Checking order status on Vipps");
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         try {
             $order_status = $gw->callback_check_order_status($order);
             return $order_status;
@@ -630,8 +629,7 @@ class Vipps {
 
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
 
         if (!$gw->express_checkout_available()) {
             $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
@@ -831,8 +829,7 @@ class Vipps {
         if (!$order) wp_die(__('Unknown order', 'woo-vipps'));
 
 
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $order->get_status();
