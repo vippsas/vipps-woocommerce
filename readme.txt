@@ -86,10 +86,13 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
  * Filter: 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
  * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
+ * Filter: 'woo_vipps_show_express_checkout' - Takes a boolean, returns whether or not to show the express checkout button
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
  * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the order and a cart. Should return an array of shipping methods.
  * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
+ * Filter: 'woo_vipps_show_capture_button': Takes a boolean and an order and returns whether or not to show the capture button in the backend
+ * Filter: 'woo_vipps_captured_statues': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
  * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
@@ -105,9 +108,15 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= xxxx.xx.xx version x.x.x =
+= xxxx.xx.xx version 1.1.0 =
 * New feature: Buy directly using Vipps Express Checkout from product pages and catalog listings
 * New feature: Create 'shareable links' allowing customers to buy directly using Vipps Express Checkout from external links and banners
+
+= xxx.xx.xx version 1.0.7 =
+* Improvement: Add 'woo_vipps_show_express_checkout' filter
+* Improvement: Add 'woo_vipps_show_capture_button' filter
+* Improvement: Add 'woo_vipps_captured_statuses'
+* Bugfix/improvement: Changed WC_Gateway_Vipps to be a Singleton (fixes certain hooks being called several times)
 
 = 2018.10.03 version 1.0.6 =
 * Fix - Cart is now saved and restored if the payment is aborted or fails
