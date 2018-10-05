@@ -91,6 +91,8 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the order and a cart. Should return an array of shipping methods.
  * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
+ * Filter: 'woo_vipps_show_capture_button': Takes a boolean and an order and returns whether or not to show the capture button in the backend
+ * Filter: 'woo_vipps_captured_statues': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
  * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_before_redirect_to_vipps': Takes an order-id, called at the end of process_payment right before the redirect to Vipps
  * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
@@ -103,7 +105,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 == Changelog ==
 
 = xxx.xx.xx version 1.0.7 =
-* Improvement: Add  'woo_vipps_show_express_checkout' filter
+* Improvement: Add 'woo_vipps_show_express_checkout' filter
+* Improvement: Add 'woo_vipps_show_capture_button' filter
+* Improvement: Add 'woo_vipps_captured_statuses'
 
 = 2018.10.03 version 1.0.6 =
 * Fix - Cart is now saved and restored if the payment is aborted or fails

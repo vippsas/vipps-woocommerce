@@ -362,7 +362,9 @@ class Vipps {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
         $status = $order->get_status();
-        if ($status != 'on-hold' && $status != 'processing') return;
+
+        $show_capture_button = ($status == 'on-hold' || $status != 'processing');
+        if (!apply_filters('woo_vipps_show_capture_button', $show_capture_button, $order)) return; 
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));

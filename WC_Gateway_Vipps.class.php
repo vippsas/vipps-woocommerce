@@ -64,17 +64,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
-        add_action( 'woocommerce_order_status_on-hold_to_processing', array($this, 'maybe_capture_payment'));
-        add_action( 'woocommerce_order_status_on-hold_to_completed', array($this, 'maybe_capture_payment'));
-        add_action( 'woocommerce_order_status_processing_to_completed', array($this, 'maybe_capture_payment'));
+        //  Capturing, refunding and cancelling the order when transitioning states:
+        //   This are the statuses for which the Vipps plugin should try to ensure capture has been made.
+        //   Normally, this is 'processing' and 'completed', but plugins may define other statuses. IOK 2018-10-05
+        $captured_statuses = apply_filters('woo_vipps_captured_statuses', array('processing', 'completed'));
+        $non_completed_captured_statuses = array_diff($captured_statuses, array('completed'));
 
+        // This ensures that funds are captured when transitioning from 'on hold' to a status where the money
+        // should be captured, and refunded moved from this status to cancelled or refunded
+        foreach($captured_statuses as $capstatus) {
+           add_action( 'woocommerce_order_status_on-hold_to_' . $capstatus, array($this, 'maybe_capture_payment'));
+           add_action( 'woocommerce_order_status_' . $capstatus .'_to_cancelled', array($this, 'maybe_refund_payment'));
+        }
+        // And this ensures that any partial capture be completed when going to 'completed'
+        foreach($non_completed_captured_statuses as $unfinishedstatus) {
+           add_action( 'woocommerce_order_status_'. $unfinishedstatus. '_to_completed', array($this, 'maybe_capture_payment'));
+        }
         add_action( 'woocommerce_order_status_on-hold_to_cancelled', array($this, 'maybe_cancel_payment'));
         add_action( 'woocommerce_order_status_on-hold_to_refunded', array($this, 'maybe_cancel_payment'));
-
-        add_action( 'woocommerce_order_status_processing_to_cancelled', array($this, 'maybe_refund_payment'));
-        add_action( 'woocommerce_order_status_completed_to_cancelled', array($this, 'maybe_refund_payment'));
-        add_action( 'woocommerce_order_status_processing_to_refunded', array($this, 'maybe_refund_payment'));
-        add_action( 'woocommerce_order_status_completed_to_refunded', array($this, 'maybe_refund_payment'));
     }
 
     // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
