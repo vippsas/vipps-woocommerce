@@ -363,7 +363,7 @@ class Vipps {
         if ($pm != 'vipps') return;
         $status = $order->get_status();
 
-        $show_capture_button = ($status == 'on-hold' || $status != 'processing');
+        $show_capture_button = ($status == 'on-hold' || $status == 'processing');
         if (!apply_filters('woo_vipps_show_capture_button', $show_capture_button, $order)) return; 
 
         $captured = intval($order->get_meta('_vipps_captured'));

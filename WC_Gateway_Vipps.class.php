@@ -71,7 +71,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $non_completed_captured_statuses = array_diff($captured_statuses, array('completed'));
 
         // This ensures that funds are captured when transitioning from 'on hold' to a status where the money
-        // should be captured, and refunded moved from this status to cancelled or refunded
+        // should be captured, and refunded when moved from this status to cancelled or refunded
         foreach($captured_statuses as $capstatus) {
            add_action( 'woocommerce_order_status_on-hold_to_' . $capstatus, array($this, 'maybe_capture_payment'));
            add_action( 'woocommerce_order_status_' . $capstatus .'_to_cancelled', array($this, 'maybe_refund_payment'));
