@@ -252,7 +252,7 @@ class Vipps {
     }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
     public function product_options_vipps() {
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         if ($gw->get_option('singleproductexpress') == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
             echo '<div class="options_group">';
@@ -957,7 +957,7 @@ class Vipps {
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
 
         if (!$gw->express_checkout_available()) {
             $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
@@ -1190,7 +1190,7 @@ class Vipps {
 
    // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
    public function single_product_buy_now_button () {
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         $how = $gw->get_option('singleproductexpress');
         if (!$gw->express_checkout_available()) return;
         if ($how == 'none') return;
@@ -1213,7 +1213,7 @@ class Vipps {
         if (!$product) return;
         if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->supports( 'ajax_add_to_cart' )) return;
 
-        $gw = new WC_Gateway_Vipps();
+        $gw = $this->gateway();
         if (!$gw->express_checkout_available()) return;
         if ($gw->get_option('singleproductexpressarchives') != 'yes') return;
 
