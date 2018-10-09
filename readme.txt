@@ -104,7 +104,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= xxx.xx.xx version 1.0.7 =
+= 2018.10.09 version 1.0.7 =
 * Improvement: Add 'woo_vipps_show_express_checkout' filter
 * Improvement: Add 'woo_vipps_show_capture_button' filter
 * Improvement: Add 'woo_vipps_captured_statuses'
