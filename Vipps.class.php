@@ -201,8 +201,8 @@ class Vipps {
     // A shortcode for a single buy now button. Express checkout must be active; but I don't check for this here, as this button may be
     // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
     public function buy_now_button_shortcode ($atts) {
-       $args = shortcode_atts( array( 'id' => '','sku' => '',), $atts );
-       return $this->get_buy_now_button($args['product-id'], $args['variant-id'], $args['sku'], false);
+       $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
+       return $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false);
     }
 
     // The express checkout shortcode implementation
