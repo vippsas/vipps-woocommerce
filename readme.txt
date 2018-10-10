@@ -86,7 +86,10 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
  * Filter: 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
  * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
+ * Filter: 'woo_vipps_buy_now_button': Takes HTML for the button, and optionally product id, variation id, sku and if the button is to be shown as disabled by default
  * Filter: 'woo_vipps_show_express_checkout' - Takes a boolean, returns whether or not to show the express checkout button
+ * Filter: 'woo_vipps_show_single_product_buy_now' - Takes a boolean and a product, returns true if the product should show a 'buy now with vipps' button
+ * Filter: 'woo_vipps_show_single_product_buy_now_in_loop' - Like above, but especially for products shown in the loop - catalog pages, archives and so forth
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
  * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the order and a cart. Should return an array of shipping methods.
  * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
@@ -99,6 +102,8 @@ There are several filters and hooks you can use to customize the behaviour of th
  ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
  * Action: 'woo_vipps_before_redirect_to_vipps': Takes an order-id, called at the end of process_payment right before the redirect to Vipps
  * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
+ * Action: 'woo_vipps_wait_for_payment_page': Run on the page shown on return from Vipps
+ * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipp
  
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid

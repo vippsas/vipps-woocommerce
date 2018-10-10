@@ -1191,13 +1191,16 @@ class Vipps {
    public function single_product_buy_now_button () {
         $gw = $this->gateway();
         $how = $gw->get_option('singleproductexpress');
-        if (!$gw->express_checkout_available()) return;
         if ($how == 'none') return;
+        if (!$gw->express_checkout_available()) return;
 
         global $product;
         $prodid = $product->get_id();
 
-        if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) return;
+        $showit = true;
+        if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) $showit = false;;
+        $showit = apply_filters('woo_vipps_show_single_product_buy_now', $showit, $product);
+        if (!$showit) return;
 
         $disabled="";
         if ($product->is_type('variable')) {
@@ -1217,10 +1220,14 @@ class Vipps {
         if ($gw->get_option('singleproductexpressarchives') != 'yes') return;
 
         $how = $gw->get_option('singleproductexpress');
+        if ($how == 'none') return;
         $prodid = $product->get_id();
 
-        if ($how == 'none') return;
-        if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) return;
+        $showit = true;
+        if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) $showit = false;
+        $showit = apply_filters('woo_vipps_show_single_product_buy_now', $showit, $product);
+        $showit = apply_filters('woo_vipps_show_single_product_buy_now_in_loop', $showit, $product);
+        if (!$showit) return;
 
         $sku = $product->get_sku();
         $label = $product->add_to_cart_description();
