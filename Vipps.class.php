@@ -913,7 +913,7 @@ class Vipps {
 
         // Is there any errros that could be catched here?
 
-        $result = array('ok'=>1, 'msg'=>__('Behandler bestilling... ' . $this->buy_product_url() ,'woo-vipps'), 'url'=>$this->buy_product_url());
+        $result = array('ok'=>1, 'msg'=>__('Behandler bestilling... ','woo-vipps'), 'url'=>$this->buy_product_url());
         wp_send_json($result);
         exit();
     }
@@ -1179,7 +1179,6 @@ class Vipps {
          $value = sanitize_text_field($value);
          $buttoncode .= " data-$key='$value' ";
         }
-        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
         $title = __('Buy now with', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $message = $title . "<img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
