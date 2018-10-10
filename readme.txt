@@ -103,7 +103,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
  * [woo_vipps_express_checkout_banner] will print the express checkout banner normally shown on the checkout page for non-logged-in users
- * [woo_vipps_buy_now sku=<SKU> id=<product or variant id>] prints a "buy now" button given a SKU or an (product or variant) id.
+ * [woo_vipps_buy_now sku=<SKU> id=<productid> variant=<variant id>] prints a "buy now" button given a SKU or an (product or variant) id. Just the SKU is sufficient.
 
 
 == Changelog ==
