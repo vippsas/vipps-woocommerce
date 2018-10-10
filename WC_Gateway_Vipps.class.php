@@ -352,7 +352,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
                         'type'        => 'select',
                         'options' => array(
-                              'none' => __('No products','woo-vips'),
+                              'none' => __('No products','woo-vipps'),
                               'some' => __('Some products', 'woo-vipps'),
                               'all' => __('All products','woo-vipps')
                         ), 

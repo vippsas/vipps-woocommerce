@@ -913,7 +913,7 @@ class Vipps {
 
         // Is there any errros that could be catched here?
 
-        $result = array('ok'=>1, 'msg'=>__('Behandler bestilling... ','woo-vipps'), 'url'=>$this->buy_product_url());
+        $result = array('ok'=>1, 'msg'=>__('Processing order... ','woo-vipps'), 'url'=>$this->buy_product_url());
         wp_send_json($result);
         exit();
     }
@@ -1323,7 +1323,7 @@ class Vipps {
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
-            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('Til Vipps-appen!','woo-vips') . "</div>";
+            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('To the Vipps app!','woo-vipps') . "</div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
             $this->fakepage(__('Order in progress','woo-vipps'), $content);
@@ -1335,7 +1335,7 @@ class Vipps {
             $title = __('Buy now with Vipps!', 'woo-vipps');
 
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
-            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('Til Vipps-appen!','woo-vips') . "</div>";
+            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('To the Vipps app!','woo-vipps') . "</div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
             $this->fakepage(__('Express checkout','woo-vipps'), $content);
