@@ -21,13 +21,25 @@ You can also do important back office tasks such as capture and refund directly 
 
 Read [information from Vipps](https://www.vipps.no/woocommerce ) about the plugin.
 
+=== Vipps Payment ===
+When you enable this plugin, your customers will be able to choose Vipps as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app. Customer info like name and address is sent to the store from Vipps.
+
 === Vipps Express Checkout ===
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
 
 Since Vipps knows who the customers are, they don't have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
 
-=== Vipps Payment ===
-When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app.
+The express checkout can be done in the following ways:
+
+* From the cart
+* From the category pages
+* From the product page
+* From shareable links distributed by email, banners etc
+* From QR codes distributed digitally or in print
+
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
+
+Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
 === How to get started ===
 * Sign up to use Vipps på Nett ([vipps.no/woocommerce](https://www.vipps.no/bedrift/vipps-pa-nett/woocommerce))
@@ -58,6 +70,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 == Screenshots ==
 1. Enable Vipps as a payment method.
 2. Enter your Vipps account keys and configure the plugin.
+3. Create shareable links and QR codes
 
 == Contributing on Github ==
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
