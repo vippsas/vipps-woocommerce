@@ -43,6 +43,7 @@ jQuery( document ).ready( function() {
  function buySingleProduct (event) {
    var element = jQuery(this);
    if (jQuery('body').hasClass('processing')) return; // Trying to stop doublecclickers. IOK 2018-09-27
+   if (jQuery(element).hasClass('disabled')) return; // Don't allow clicks when disabled
    jQuery('body').addClass('processing');
 
    removeErrorMessages();
