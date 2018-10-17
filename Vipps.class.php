@@ -297,7 +297,7 @@ class Vipps {
               echo "<button id='vipps-share-link' class='button'  onclick='return false;'>"; echo __("Create shareable link", 'woo-vipps'); "</button>";
             endif;
 ?>
-</div>
+</div> <!-- end blurb -->
  <div style="display:none;" id='woo_vipps_shareable_link_template'>
   <a class='shareable' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input class=deletemarker type=hidden  value=''>
 </div>
@@ -340,7 +340,8 @@ class Vipps {
 <?php endforeach; ?>
   </tbody>
 </table>   
-</div>
+</div> <!-- end blurb -->
+</div> <!-- end options-group -->
 <?php
     }
 
