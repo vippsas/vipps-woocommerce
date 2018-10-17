@@ -23,6 +23,7 @@ jQuery( document ).ready( function() {
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
+   jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
    if (purchasable) {
     jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
     jQuery('form .button.single-product.vipps-buy-now').removeClass('disabled');
@@ -34,16 +35,31 @@ jQuery( document ).ready( function() {
    }
  });
  jQuery('body').on('reset_data', function () {
+    jQuery('form .button.single-product.vipps-buy-now').removeClass('variation-found');
     jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
     jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
     removeErrorMessages();
  });
 
+
  // Using ajax, get a session and a key and redirect to the "buy single product using express checkout" page.
  function buySingleProduct (event) {
+   event.preventDefault(); 
+
    var element = jQuery(this);
    if (jQuery('body').hasClass('processing')) return; // Trying to stop doublecclickers. IOK 2018-09-27
-   if (jQuery(element).hasClass('disabled')) return; // Don't allow clicks when disabled
+
+   if (jQuery(element).hasClass('disabled'))  {
+     if (typeof wc_add_to_cart_variation_params != 'undefined') { 
+        if (jQuery(element).hasClass('variation-found'))  {
+          window.alert(wc_add_to_cart_variation_params.i18n_unavailable_text);
+        } else {
+          window.alert(wc_add_to_cart_variation_params.i18n_make_a_selection_text);
+        }
+     }
+     return false;
+   }
+
    jQuery('body').addClass('processing');
 
    removeErrorMessages();
