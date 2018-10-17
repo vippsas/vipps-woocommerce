@@ -1181,7 +1181,7 @@ class Vipps {
         }
         $title = __('Buy now with', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        $message = $title . "<img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
+        $message = $title . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
 
         $buttoncode .=  " class='single-product button vipps-buy-now $disabled' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
