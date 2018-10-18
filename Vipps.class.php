@@ -1295,7 +1295,7 @@ class Vipps {
             exit();
         }
 
-        do_action('woo_vipps_express_checkout_page',$order);
+        do_action('woo_vipps_express_checkout_page');
 
         $this->print_express_checkout_page($ok,'do_express_checkout');
     }
