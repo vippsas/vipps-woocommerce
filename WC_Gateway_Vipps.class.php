@@ -911,10 +911,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $costExTax= sprintf("%.2F",$cost-$tax);
 
         $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method);
-        $it = new WC_Order_Item_Shipping();
-        $it->set_shipping_rate($shipping_rate);
-        $it->set_order_id( $order->get_id() );
-        $order->add_item($it);
+        $shipping_rate = apply_filters('woo_vipps_express_checkout_shipping_rate',$shipping_rate,$costExTax,$tax,$method,$product);
+        if ($shipping_rate) {
+            $it = new WC_Order_Item_Shipping();
+            $it->set_shipping_rate($shipping_rate);
+            $it->set_order_id( $order->get_id() );
+            $order->add_item($it);
+        }
         $order->save(); 
         $order->calculate_totals(true);
         $order->save(); // I'm not sure why this is neccessary - but be sure.

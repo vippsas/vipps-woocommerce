@@ -106,6 +106,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
  * Filter: 'woo_vipps_shipping_methods': Takes an array of shipping methods, the order and a cart. Should return an array of shipping methods.
  * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
+ * Filter: 'woo_vipps_express_checkout_shipping_rate': The shipping rate to add on express checkout. Takes existing shipping_rate, cost ex tax, tax, shipping method and shipping product and must return a shipping_rate.
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
  * Filter: 'woo_vipps_show_capture_button': Takes a boolean and an order and returns whether or not to show the capture button in the backend
  * Filter: 'woo_vipps_captured_statues': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
