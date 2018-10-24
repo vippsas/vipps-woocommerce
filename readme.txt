@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.4.6
+WC tested up to: 3.5.0
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -130,6 +130,8 @@ There are several filters and hooks you can use to customize the behaviour of th
 = xxxx.xx.xx version 1.1.0 =
 * New feature: Buy directly using Vipps Express Checkout from product pages and catalog listings
 * New feature: Create 'shareable links' allowing customers to buy directly using Vipps Express Checkout from external links and banners
+* New filters, actions, shortcodes
+* Support for WooCommerce 3.5.0
 
 = 2018.10.09 version 1.0.7 =
 * Improvement: Add 'woo_vipps_show_express_checkout' filter
