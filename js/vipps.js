@@ -40,6 +40,11 @@ jQuery( document ).ready( function() {
     jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
     removeErrorMessages();
  });
+ // If this is triggered, somebody just loaded a variation form, so we need to redo the button init scripts
+ jQuery('body').on('wc_variation_form', function () {
+	 console.log("WC variation form loaded");
+	 vippsInit();
+ });
 
 
  // Using ajax, get a session and a key and redirect to the "buy single product using express checkout" page.
@@ -56,6 +61,8 @@ jQuery( document ).ready( function() {
         } else {
           window.alert(wc_add_to_cart_variation_params.i18n_make_a_selection_text);
         }
+     } else {
+	     console.log("Missing the wc_add_to_cart_variation_params");
      }
      return false;
    }
@@ -137,6 +144,11 @@ jQuery( document ).ready( function() {
  }
 
  // Hooks for the button itself
- jQuery('.button.single-product.vipps-buy-now').click(buySingleProduct);
+ function vippsInit() {
+   jQuery('.button.single-product.vipps-buy-now:not(.initialized)').click(buySingleProduct);
+   jQuery('.button.single-product.vipps-buy-now').addClass('initialized');
+ }
+ 
+ vippsInit();
  
 });
