@@ -1075,6 +1075,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return false;
     }
 
+   // Not present in WooCommerce until 3.4.0. Should be deleted when required versions are incremented. IOK 2018-10-26
+    public function update_option( $key, $value = '' ) {
+                if ( empty( $this->settings ) ) {
+                        $this->init_settings();
+                }
+                $this->settings[ $key ] = $value;
+                return update_option( $this->get_option_key(), apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $this->id, $this->settings ), 'yes' );
+    }
+
+
     public function admin_options() {
         if (!$this->can_be_activated()) {
             $this->update_option( 'enabled', 'no' );
