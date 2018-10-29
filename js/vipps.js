@@ -94,6 +94,12 @@ jQuery( document ).ready( function() {
     var varid = jQuery(form).find('input[name="variation_id"]');
     data['product_id'] = (prodid.length>0) ? prodid.val() : 0;
     data['variation_id'] = (varid.length>0) ? varid.val() : 0;
+    // Earlier versions, no variation:
+    if (prodid.length == 0) {
+      console.log("Product id in button in this version of Woo");
+      prodid = jQuery(form).find('button[name="add-to-cart"]');  
+      data['product_id'] =  (prodid.length>0) ? prodid.val() : 0;
+    }
    }
    data['action'] = 'vipps_buy_single_product';
 

@@ -127,6 +127,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 2018.10.29 version 1.1.1 =
+* Backwards compatibility to 3.3.x added for direct buys
+
 = 2018.10.29 version 1.1.0 =
 * New feature: Buy directly using Vipps Express Checkout from product pages and catalog listings
 * New feature: Create 'shareable links' allowing customers to buy directly using Vipps Express Checkout from external links and banners

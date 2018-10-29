@@ -1246,6 +1246,7 @@ class Vipps {
       $session = WC()->session;
       $posted = $session->get('__vipps_buy_product');
       $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
+
       if (!$posted) {
         // Find product/variation using an external shareable link
         if (array_key_exists('pr',$_REQUEST)) {
