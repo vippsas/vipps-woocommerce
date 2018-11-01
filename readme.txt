@@ -127,6 +127,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 2018.11.xx version 1.1.2 =
+* Support 'quantity' when buying products directly
+
 = 2018.10.29 version 1.1.1 =
 * Backwards compatibility to 3.3.x added for direct buys
 

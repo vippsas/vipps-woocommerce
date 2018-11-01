@@ -92,6 +92,8 @@ jQuery( document ).ready( function() {
     }
     var prodid = jQuery(form).find('input[name="product_id"]');
     var varid = jQuery(form).find('input[name="variation_id"]');
+    var quantity = jQuery(form).find('input[name="quantity"]');
+    data['quantity'] = (quantity.length>0) ? quantity.val() : 1;
     data['product_id'] = (prodid.length>0) ? prodid.val() : 0;
     data['variation_id'] = (varid.length>0) ? varid.val() : 0;
     // Earlier versions, no variation:

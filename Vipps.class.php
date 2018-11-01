@@ -878,12 +878,14 @@ class Vipps {
         do_action('woo_vipps_restoring_cart',$order,$cart);
         unset($carts[$order->get_id()]);
         $woocommerce->session->set('_vipps_carts',$carts);
-        foreach ($cart as $cart_item_key => $values) {
-            $id =$values['product_id'];
-            $quant=$values['quantity'];
-            $varid = @$values['variation_id'];
-            $variation = @$values['variation'];
-            $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
+        if (!empty($cart)) {
+           foreach ($cart as $cart_item_key => $values) {
+               $id =$values['product_id'];
+               $quant=$values['quantity'];
+               $varid = @$values['variation_id'];
+               $variation = @$values['variation'];
+               $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
+           }
         }
         do_action('woo_vipps_cart_restored');
     }
@@ -971,11 +973,15 @@ class Vipps {
         $varid = sprintf('%d',(@$_POST['variation_id']));
         $prodid = sprintf('%d',(@$_POST['product_id']));
         $sku = @$_POST['sku'];
+        $quant = sprintf('%d',(@$_POST['quantity']));
+
 
         $product = null;
         $variant = null;
         $parent = null;
         $parentid = null;
+        $quantity = 1;
+        if ($quant && $quant>1) $quantity=$quant;
 
         // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
         try {
@@ -1024,7 +1030,7 @@ class Vipps {
         // Now it should be safe to continue to the checkout process. IOK 2018-10-02
         // Create a new temporary cart for this order. It will eventually replace the normal cart, but we'll save that. IOK 2018-09-25
         $acart = new WC_Cart();
-        $quantity = 1; 
+
         if ($parent && $parent->get_type() == 'variable') {
             $acart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
         } else {
@@ -1274,9 +1280,11 @@ class Vipps {
 
       // Pass the productinfo to the express checkout form
       $args = array();
+      $args['quantity'] = 1;
       if (array_key_exists('product_id',$productinfo)) $args['product_id'] = sprintf("%d", $productinfo['product_id']);
       if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = sprintf("%d", $productinfo['variation_id']);
       if (array_key_exists('product_sku',$productinfo)) $args['sku'] = $productinfo['product_sku'];
+      if (array_key_exists('quantity',$productinfo)) $args['quantity'] = sprintf("%d", $productinfo['quantity']);
 
       $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
