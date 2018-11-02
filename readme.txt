@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 4.9.8
+Tested up to: 5.0.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.5.0
+WC tested up to: 3.5.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -129,6 +129,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 = 2018.11.xx version 1.1.2 =
 * Support 'quantity' when buying products directly
+* Support for WP5.0 and WooCommerce 3.5.1 tested
 
 = 2018.10.29 version 1.1.1 =
 * Backwards compatibility to 3.3.x added for direct buys
