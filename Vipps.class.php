@@ -425,7 +425,7 @@ class Vipps {
         $order = new WC_Order($post);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
-        $orderid=$order->ID;
+        $orderid=$order->get_id();
 
         $init =  intval($order->get_meta('_vipps_init_timestamp'));
         $callback =  intval($order->get_meta('_vipps_callback_timestamp'));
@@ -481,13 +481,14 @@ class Vipps {
          $details = $gw->get_payment_details($order);
         } catch (Exception $e) {
          print "<p>"; 
-         print __('Transaction details not retrievable: ','woo-vipps') . $e->get_message();
+         print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
          print "</p>";
          exit();
         }
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
         print __('Order id:', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
+	print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
             print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";
@@ -700,11 +701,16 @@ class Vipps {
         $status = $order->get_status();
 
         $show_capture_button = ($status == 'on-hold' || $status == 'processing');
-        if (!apply_filters('woo_vipps_show_capture_button', $show_capture_button, $order)) return; 
+	if (!apply_filters('woo_vipps_show_capture_button', $show_capture_button, $order)) {
+		return; 
+	}
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
-        if ($captured && !$capremain) return;
+	if ($captured && !$capremain) { 
+		print "<div><strong>" . __("The entire amount has been captured at Vipps", 'woo-vipps') . "</strong></div>";
+		return;
+	}
 
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
