@@ -146,5 +146,16 @@
  }
 })();
 
+function VippsGetPaymentDetails(orderid,nonce) {
+    var source = ajaxurl + '?vipps_paymentdetails_sec='+nonce+'&action=vipps_payment_details&orderid='+orderid;
+    var y = window.outerHeight / 4 + window.screenY - (320/2);
+    var x = window.outerWidth / 2 + window.screenX - (320/2);
+    var qrwin = window.open('','_blank','height=320,width=640,menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,copyhistory=no,top='+y+',left='+x);
+    qrwin.document.write('<p style="position:fixed;top:50%;left:50%"><i>loading...</i></p>');
+    qrwin.location.href = source;
+    qrwin.title ="Payment details";
+}
+
+
 
 console.log("Vipps admin scripts loaded");

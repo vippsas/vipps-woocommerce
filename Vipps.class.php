@@ -84,6 +84,7 @@ class Vipps {
         // Ajax just for the backend
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
         add_action('wp_ajax_vipps_link_qr', array($this, 'ajax_vipps_link_qr'));
+        add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
 
         if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE && $gw->enabled == 'yes') {
             add_action('admin_notices', function() {
@@ -424,6 +425,7 @@ class Vipps {
         $order = new WC_Order($post);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
+        $orderid=$order->ID;
 
         $init =  intval($order->get_meta('_vipps_init_timestamp'));
         $callback =  intval($order->get_meta('_vipps_callback_timestamp'));
@@ -439,8 +441,8 @@ class Vipps {
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
 
-// This is for debugging the API IOK 2019-09-21
-// $gw = $this->gateway(); print "<pre>";print_r($gw->get_payment_details($order)); print "</pre>";
+        $paymentdetailsnonce=wp_create_nonce('paymentdetails');
+
 
         print "<table border=0><thead></thead><tbody>";
         print "<tr><td>Status</td>";
@@ -455,8 +457,79 @@ class Vipps {
         print "<tr><td>Vipps refund</td><td align=right>";if ($refund) print date('Y-m-d H:i:s',$refund); print "</td></tr>";
         print "<tr><td>Vipps cancelled</td><td align=right>";if ($cancel) print date('Y-m-d H:i:s',$cancel); print "</td></tr>";
         print "</tbody></table>";
+        print "<a href='javascript:VippsGetPaymentDetails($orderid,\"$paymentdetailsnonce\");' class='button'>" . __('Show complete transaction details','woo-vipps') . "</a>";
     }
 
+    // This is for debugging and ensuring we have excact details correct for a transaction.
+    public function ajax_vipps_payment_details() {
+        check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');
+        $orderid = $_REQUEST['orderid'];
+        $gw = $this->gateway();
+        $order = new WC_Order($orderid);
+        if (!$order) {
+         print "<p>" . __("Unknown order", 'woo-vipps') . "</p>";
+         exit();
+        }
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') {
+         print "<p>" . __("The order is not a Vipps order", 'woo-vipps') . "</p>";
+         exit();
+        }
+      
+        $gw = $this->gateway();
+        try {
+         $details = $gw->get_payment_details($order);
+        } catch (Exception $e) {
+         print "<p>"; 
+         print __('Transaction details not retrievable: ','woo-vipps') . $e->get_message();
+         print "</p>";
+         exit();
+        }
+        print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
+        print "<p>";
+        print __('Order id:', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
+        if (!empty(@$details['transactionSummary'])) {
+            $ts = $details['transactionSummary'];
+            print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";
+            print __('Capured amount', 'woo-vipps') . ":" . @$ts['capturedAmount'] . "<br>";
+            print __('Remaining amount to capture', 'woo-vipps') . ":" . @$ts['remainingAmountToCapture'] . "<br>";
+            print __('Refunded amount', 'woo-vipps') . ":" . @$ts['refundedAmount'] . "<br>";
+            print __('Remaining amount to refund', 'woo-vipps') . ":" . @$ts['remainingAmountToRefund'] . "<br>";
+        }
+        if (!empty(@$details['shippingDetails'])) {
+            $ss = $details['shippingDetails'];
+            print "<h3>" . __('Shipping details', 'woo-vipps') . "</h3>";
+            print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_values(@$ss['address']))) . "<br>";
+            print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
+            print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
+            print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";
+        }
+        if (!empty(@$details['userDetails'])) {
+            $us = $details['userDetails'];
+            print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
+            print __('User ID', 'woo-vipps') . ": " . htmlspecialchars(@$us['userId']) . "<br>";
+            print __('First Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['firstName']) . "<br>"; 
+            print __('Last Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['lastName']) . "<br>";
+            print __('Mobile Number', 'woo-vipps') . ": " . htmlspecialchars(@$us['mobileNumber']) . "<br>";
+            print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
+        }
+        if (!empty(@$details['transactionLogHistory'])) {
+            print "<h3>" . __('Transaction Log', 'woo-vipps') . "</h3>";
+            $i = count($details['transactionLogHistory'])+1; 
+            foreach ($details['transactionLogHistory'] as $td) {
+                print "<br>";
+                print __('Operation','woo-vipps') . ": " . htmlspecialchars(@$td['operation']) . "<br>";
+                print __('Amount','woo-vipps') . ": " . htmlspecialchars(@$td['amount']) . "<br>";
+                print __('Success','woo-vipps') . ": " . @$td['operationSuccess'] . "<br>";
+                print __('Timestamp','woo-vipps') . ": " . htmlspecialchars(@$td['timeStamp']) . "<br>";
+                print __('Transaction text','woo-vipps') . ": " . htmlspecialchars(@$td['transactionText']) . "<br>";
+                print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['transactionId']) . "<br>";
+                print __('Request ID','woo-vipps') . ": " . htmlspecialchars(@$td['requestId']) . "<br>";
+            }
+        }
+        exit();
+    }
+  
     // This function will create a file with an obscure filename in the $callbackDirname directory.
     // When initiating payment, this file will be created with a zero value. When the response is reday,
     // it will be rewritten with the value 1.
