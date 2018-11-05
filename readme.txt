@@ -127,9 +127,11 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.11.xx version 1.1.2 =
+= 2018.11.05 version 1.1.2 =
 * Support 'quantity' when buying products directly
 * Support for WP5.0 and WooCommerce 3.5.1 tested
+* "Show complete transaction details" button in backend to verify status at Vipps
+* Added notification on order screen for orders that have been successfully captured
 
 = 2018.10.29 version 1.1.1 =
 * Backwards compatibility to 3.3.x added for direct buys
