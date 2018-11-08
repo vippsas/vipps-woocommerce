@@ -775,6 +775,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             try {
                 $statusdata = $this->api->payment_details($order);
+                do_action('woo_vipps_express_checkout_get_order_status', $statusdata);
             } catch (Exception $e) {
                 $this->log(__("Error getting payment details from Vipps for express checkout",'woo-vipps') . ": " . $e->getMessage(), 'error');
                 return $oldstatus; 
@@ -921,6 +922,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->save(); 
         $order->calculate_totals(true);
+
+        do_action('woo_vips_set_order_shipping_details', $order, $shipping, $user);
+
         $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
 

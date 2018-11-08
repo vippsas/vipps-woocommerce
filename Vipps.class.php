@@ -727,6 +727,8 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             return false;
         }
+        do_action('woo_vipps_callback', $result);
+
         $gw = $this->gateway();
         $gw->handle_callback($result);
         exit();

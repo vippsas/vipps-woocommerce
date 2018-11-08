@@ -118,7 +118,11 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
  * Action: 'woo_vipps_wait_for_payment_page': Run on the page shown on return from Vipps
  * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipp
+ * Action: 'woo_vips_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
+ * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
+ * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
  
+
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
  * [woo_vipps_express_checkout_banner] will print the express checkout banner normally shown on the checkout page for non-logged-in users
@@ -126,6 +130,11 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 
 == Changelog ==
+
+= 2018.11.xx version 1.1.3
+* New action on order shipping details method for express checkout
+* New action on callback from Vipps
+* New action when checking order status for express checkout
 
 = 2018.11.05 version 1.1.2 =
 * Support 'quantity' when buying products directly
