@@ -131,10 +131,11 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.11.xx version 1.1.3
+= 2018.11.12 version 1.1.3
 * New action on order shipping details method for express checkout
 * New action on callback from Vipps
 * New action when checking order status for express checkout
+* Removed "!important" from CSS for Vipps-buttons
 
 = 2018.11.05 version 1.1.2 =
 * Support 'quantity' when buying products directly
