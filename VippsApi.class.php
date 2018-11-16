@@ -112,7 +112,8 @@ class VippsApi {
         $transaction['orderId'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($order->get_total() * 100); 
-        $transaction['transactionText'] = __('Confirm your order from','woo-vipps') . ' ' . home_url(); 
+        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . home_url(); 
+        $transaction['transactionText'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
         $transaction['timeStamp'] = $date;
 
 

@@ -110,6 +110,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
  * Filter: 'woo_vipps_show_capture_button': Takes a boolean and an order and returns whether or not to show the capture button in the backend
  * Filter: 'woo_vipps_captured_statues': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
+ * Filter: 'woo_vipps_transaction_text': Takes a transaction text and an order object, must return a text to be passed to Vipps and displayed to the user along the lines of "Please confirm your order"
  * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
@@ -130,6 +131,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 
 == Changelog ==
+
+= 2018.11.xx version 1.1.4
+* New filter  'woo_vipps_transaction_text' to customize the text sent to Vipps
 
 = 2018.11.12 version 1.1.3
 * New action on order shipping details method for express checkout
