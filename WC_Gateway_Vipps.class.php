@@ -470,7 +470,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Vipps-terminal-page return url to poll/await return
         $returnurl= $Vipps->payment_return_url();
         // If we are using express checkout, use this to handle the address stuff
-        $authtoken = $this->express_checkout ?  $this->generate_authtoken() : '';
+        // IOK 2018-11-19 also when *not* using express checkout. This allows us to pass the order-id in the return URL and use this as a password in case the sesson has been lost.
+        $authtoken = $this->generate_authtoken();
+
+        // IOK 2019-11-19 We have to do this because even though we actually store the order ID in the session, we can a) be redirected to another browser than the one with
+        // the session, and b) some plugins wipe the session for guest purchases. So we might need to restore (enough of the) session to get to the than you page,
+        // even if the session is gone or in another castle.
+        $returnurl = add_query_arg('t',$authtoken,$returnurl);
 
         try {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
@@ -495,6 +501,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $sessionorders[$order_id] = 1;
         WC()->session->set('_vipps_session_orders',$sessionorders);
         WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
+        // IOK 2018-11-19 And because the session may be dead, or stored in another browser, store the authtoken in a transient, used to retrieve the order
+        // in the waiting screen if the session is dead. Note that the transients-api doesn't really guarantee that this value will exist, but
+        // this is meant as a failsafe.
+        set_transient('_vipps_pending_order_'.$authtoken, $order_id,20*MINUTE_IN_SECONDS);
 
         $order = new WC_Order( $order_id );
         if ($authtoken) {

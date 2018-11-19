@@ -1442,6 +1442,24 @@ class Vipps {
 
         $orderid = WC()->session->get('_vipps_pending_order');
         $order = null;
+
+        // Now we *should* have a session at this point, but the session may have been deleted, or the session may be in another browser,
+        // because we get here by the Vipps app opening the app. If so, we use a 'fake' session stored with the transient API and restore this session
+        // so we can reload the screen, but don't have to worry about leaking stuff
+        // IOK 2019-11-19
+        if (!$orderid) {
+           $authtoken = @$_GET['t'];
+           if ($authtoken) {
+             $orderid = get_transient('_vipps_pending_order_'.$authtoken);
+             if ($orderid) {
+               if (!$session->has_session()) {
+                 $session->set_customer_session_cookie(true);
+               }
+               $session->set('__vipps_pending_order', $orderid);
+             }
+           }
+        }
+
         if ($orderid) {
             $order = new WC_Order($orderid); 
         }
