@@ -1057,6 +1057,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->checkout->create_order_coupon_lines( $order, $thecart);
         $order->calculate_totals(true);
         $orderid = $order->save(); 
+
+        // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
+        do_action('woocommerce_checkout_update_order_meta', $orderid, array());
+
         return $orderid;
     }
 

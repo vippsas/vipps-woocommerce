@@ -132,8 +132,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.11.xx version 1.1.4
+= 2018.11.19 version 1.1.4
 * New filter  'woo_vipps_transaction_text' to customize the text sent to Vipps
+* Added call to 'woocommerce_checkout_update_order_meta' in create partial order
 
 = 2018.11.12 version 1.1.3
 * New action on order shipping details method for express checkout
