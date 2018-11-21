@@ -612,6 +612,14 @@ class Vipps {
         if ($consentremoval) return  $this->vipps_consent_removal_callback($consentremoval);
 
     }
+    // Template handling for special pages. IOK 2018-11-21
+    public function template_include($template) {
+        $special = $this->is_special_page() ;
+        if ($special) {
+          return apply_filters('woo_vipps_special_page_template', $template, $special);
+        }
+        return $template;
+    }
 
 
     // Can't use wc-api for this, as that does not support DELETE . IOK 2018-05-18
@@ -651,6 +659,8 @@ class Vipps {
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'));
+        // Allow overriding their templates
+        add_filter('template_include', array($this,'template_include'), 10, 1);
 
         // Ajax endpoints for checking the order status while waiting for confirmation
         add_action('wp_ajax_nopriv_check_order_status', array($this, 'ajax_check_order_status'));
