@@ -54,6 +54,8 @@ class Vipps {
 	// This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
         add_action('woocommerce_thankyou_vipps', array($this, 'maybe_restore_cart'), 10, 1); 
 
+        add_filter('woocommerce_my_account_my_orders_actions', array($this,'woocommerce_my_account_my_orders_actions'), 10, 2);
+
         $this->add_shortcodes();
     }
 
@@ -895,6 +897,20 @@ class Vipps {
     // Runs after set_session, so if the session is just created, we'll get called. IOK 2018-06-06
     public function woocommerce_cart_updated() {
         $this->maybe_set_vipps_as_default();
+    }
+
+    // We can't allow a customer to re-call the Vipps Express checkout payment thing twice -
+    // This would happen if a logged-in user tries to re-start the transaction after breaking it.
+    // But for express checkout this breaks because there is no shipping method or address, and of course,
+    // the order id is unique too.. IOK 2018-11-21
+    public function  woocommerce_my_account_my_orders_actions($actions, $order ) {
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') return $actions;
+        
+        if ($order->get_meta('_vipps_express_checkout')) {
+         unset($actions['pay']);
+        }
+        return $actions;
     }
 
     public function activate () {

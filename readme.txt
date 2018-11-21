@@ -132,6 +132,10 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 2018.11.xx version 1.1.5
+* Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)
+* Added a failsafe to retrieve the order id on return to the shop even when session has been destroyed or is in another browser
+
 = 2018.11.19 version 1.1.4
 * New filter  'woo_vipps_transaction_text' to customize the text sent to Vipps
 * Added call to 'woocommerce_checkout_update_order_meta' in create partial order
