@@ -1464,7 +1464,9 @@ class Vipps {
 
     public function vipps_wait_for_payment() {
         status_header(200,'OK');
-
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
 
         $orderid = WC()->session->get('_vipps_pending_order');
         $order = null;
