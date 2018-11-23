@@ -343,7 +343,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __( 'Enable Express Checkout in cart', 'woo-vipps' ),
                         'label'       => __( 'Enable Express Checkout in cart', 'woo-vipps' ),
                         'type'        => 'checkbox',
-                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woo-vipps'),
+                        'description' => __('Enable this to allow customers to shop using Express Checkout directly from the cart with no login or address input needed', 'woo-vipps') . '.<br>' .
+                        __('Please note that for Express Checkout, shipping must be calculated in a callback from the Vipps app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature.', 'woo-vipps'),
                         'default'     => 'yes',
                         ),
 

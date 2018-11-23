@@ -88,6 +88,17 @@ When the order is on-hold the payment is reserved, but not yet transferred to th
 
 There is an exception for orders where all items are both virtual and downloadable: These are not considered to need processing and will be captured automatically (and go directly to the 'Complete' status). It is possible to customize this property for your needs using the woocommerce_order_item_needs_processing filter.
 
+= Why is my shipping wrong when using express checkout? =
+Some shipping plugins and setups are not compatible with Vipps Express Checkout. 
+The problem is that WooCommerce does not support calculating shipping when done anonymously, as is the case when the shipping information comes from the App.
+
+We do our testing with the standard Woo shipping mechanism and Bring Fraktguiden for WooCommerce, and these should work. For any other plugin or setup we can unfortunately give no guarantee.
+
+It is therefore a very good idea to provide a fallback shipping method if you want to use Express Checkout. There is also a filter 'woo_vipps_shipping_methods' that can be used to customize what is sent to Vipps.
+
+It is therefore also important that you test your setup if you are using express checkout.
+
+
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
@@ -138,6 +149,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Added a failsafe to retrieve the order id on return to the shop even when session has been destroyed or is in another browser
 * Added filter 'woo_vipps_special_page_template' for choosing template of special pages
 * Added no-cache headers to return-from-vipps page
+* Added text about shipping and express checkout
 
 = 2018.11.19 version 1.1.4
 * New filter  'woo_vipps_transaction_text' to customize the text sent to Vipps
