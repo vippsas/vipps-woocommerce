@@ -144,7 +144,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.11.xx version 1.1.5
+= 2018.11.26 version 1.1.5
 * Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)
 * Added a failsafe to retrieve the order id on return to the shop even when session has been destroyed or is in another browser
 * Added filter 'woo_vipps_special_page_template' for choosing template of special pages
