@@ -6,7 +6,7 @@ Tested up to: 5.0.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.5.1
+WC tested up to: 3.5.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -143,6 +143,8 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 
 == Changelog ==
+
+= 2018.12.xx version 1.1.6 =
 
 = 2018.11.26 version 1.1.5
 * Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)
