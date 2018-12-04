@@ -106,6 +106,16 @@ jQuery(document).ready(function () {
      } else if (result["status"]=="failed") {
        console.log("Failure result");
        done=1;
+
+       // If provided, continue to custom 'order failed' page IOK 2018-12-04
+       var next = jQuery("#continueToOrderFailed").attr("href");
+       if (next != '') {
+          setTimeout(function () {
+             console.log("Redirecting to  " +next );
+             window.location.href = next;
+          }, 500);
+       }
+
       jQuery("#waiting").hide();
        jQuery("#success").hide(); 
        jQuery("#failure").show();

@@ -1528,9 +1528,15 @@ class Vipps {
         }
 
 	$content = "";
+	$failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
+
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $status == 'refunded') {
             $this->restore_cart($order);
+            if ($failure_redirect){
+                 wp_redirect($failure_redirect);
+                 exit();
+            }
             $content .= "<div id=failure><p>". __('Order cancelled', 'woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
@@ -1579,6 +1585,7 @@ class Vipps {
 
         $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woo-vipps') . '</p>';
         $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
+        $content .= "<a id='continueToOrderFailed' style='display:none' href='$failure_redirect'></a>";
         $content .= "</div>";
 
 
