@@ -39,6 +39,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $apiurl = null;
     public $api = null;
     public $supports = null;
+    public $express_checkout_supported_product_types;
 
     // Used to signal state to process_payment
     public $express_checkout = 0;
@@ -73,6 +74,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->api = new VippsApi($this);
 
         $this->supports = array('products','refunds');
+
+	// We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
+	$supported_types= array('simple','variable','variation');
+	$this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -129,11 +134,37 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
+    // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
+    public function product_supports_express_checkout($product) {
+	    $type = $product->get_type();
+	    $ok = in_array($type, $this->express_checkout_supported_product_types);
+	    $ok = apply_filters('woo_vipps_product_supports_express_checkout',$ok,$product);
+	    return $ok;
+    }
+
+    // Check to see if the cart passed (or the global one) can be bought with express checkout IOK 2018-12-04
+    public function cart_supports_express_checkout($cart=null) {
+	    if (!$cart) $cart = WC()->cart;
+	    $supports  = true;
+	    if (!$cart) return $supports;
+	    foreach($cart->get_cart() as $key=>$val) {
+		    $prod = $val['data'];
+		    if (!is_a($prod, 'WC_Product')) continue;
+		    $product_supported = $this->product_supports_express_checkout($prod);
+		    if ($product_supported) {
+			    $supports = false;
+			    break;
+		    }
+	    }
+	    $supports = apply_filters('woo_vipps_cart_supports_express_checkout', $supports, $cart);
+	    return $supports;
+    }
 
     // True if "Express checkout" should be displayed IOK 2018-06-18
     public function show_express_checkout() {
             if (!$this->express_checkout_available()) return false;
 	    $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
+	    $show = $show && $this->cart_supports_express_checkout();
             return apply_filters('woo_vipps_show_express_checkout', $show);
     }
     public function show_login_with_vipps() {

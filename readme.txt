@@ -124,6 +124,9 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_transaction_text': Takes a transaction text and an order object, must return a text to be passed to Vipps and displayed to the user along the lines of "Please confirm your order"
  * Filter: 'woo_vipps_special_page_template': Takes a (complete) template path as returned by locate_template and the ID of the Vipps special page, should return a new template path (using locate_template or similar).
  * Filter: 'woo_vipps_order_failed_redirect': Takes an empty string or an url and an order id. If URL is returned, go there on cancelled or failed orders.
+ * Filter: 'woo_vipps_product_supports_express_checkout': Takes a boolean and a product, returns true if the product can be bought with expres checkout
+ * Filter: 'woo_vipps_cart_supports_express_checkout': Takes a boolean and a cart, returns true if the cart can be bought with expres checkout
+ * Filter: 'woo_vipps_express_checkout_supported_product_types': Returns a list of product types (as strings) that can be bought with express checkout
  * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
@@ -147,6 +150,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 = 2018.12.xx version 1.1.6 =
 * Added filter 'woo_vipps_order_failed_redirect'
+* Added filters 'woo_vipps_express_checkout_supported_product_types', ''woo_vipps_product_supports_express_checkout', ''woo_vipps_order_failed_redirect' to control product types that cannot be bought by express checkout
 
 = 2018.11.26 version 1.1.5
 * Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)

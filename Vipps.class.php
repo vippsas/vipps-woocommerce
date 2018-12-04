@@ -1032,7 +1032,7 @@ class Vipps {
         check_ajax_referer('do_express','sec');
         $gw = $this->gateway();
 
-        if (!$gw->express_checkout_available()) {
+        if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
             $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
@@ -1121,6 +1121,12 @@ class Vipps {
             wp_send_json($result);
             exit();
         }
+	if (!$gw->product_supports_express_checkout($product)) {
+            $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
+            wp_send_json($result);
+            exit();
+	}
+
         // Somebody addded the wrong SKU
         if ($product->get_type() == 'variable'){
             $result = array('ok'=>0, 'msg'=>__('Selected product variant is not available for purchase','woo-vipps'), 'url'=>false);
@@ -1310,6 +1316,7 @@ class Vipps {
 
         global $product;
         $prodid = $product->get_id();
+	if (!$gw->product_supports_express_checkout($product)) return;
 
         $showit = true;
         if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) $showit = false;;
@@ -1331,6 +1338,7 @@ class Vipps {
 
         $gw = $this->gateway();
         if (!$gw->express_checkout_available()) return;
+	if (!$gw->product_supports_express_checkout($product)) return;
         if ($gw->get_option('singleproductexpressarchives') != 'yes') return;
 
         $how = $gw->get_option('singleproductexpress');
