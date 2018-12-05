@@ -759,6 +759,7 @@ class Vipps {
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
+        wc_nocache_headers();
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         $callback = @$_REQUEST['callback'];
@@ -892,6 +893,7 @@ class Vipps {
 
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {
+        wc_nocache_headers();
         // This feature is disabled - no customers are created by express checkout or login-with-vipps,
         // so there is nothing to do. IOK 2018-06-06
             print "1";
@@ -1013,6 +1015,7 @@ class Vipps {
 
 
     public function ajax_vipps_buy_single_product () {
+        wc_nocache_headers();
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         $session = WC()->session;
@@ -1030,6 +1033,7 @@ class Vipps {
 
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
+        wc_nocache_headers();
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -1066,6 +1070,7 @@ class Vipps {
     // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
+        wc_nocache_headers();
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
 
@@ -1181,6 +1186,7 @@ class Vipps {
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
+        wc_nocache_headers();
 
         $orderid= wc_get_order_id_by_order_key(@$_POST['key']);
         $transaction = wc_get_order_id_by_order_key(@$_POST['transaction']);
@@ -1362,6 +1368,7 @@ class Vipps {
     // The argument passed must be a shareable link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
+      wc_nocache_headers();
       do_action('woo_vipps_express_checkout_page');
 
       $session = WC()->session;
@@ -1426,6 +1433,7 @@ class Vipps {
 
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
     protected function print_express_checkout_page($execute,$action,$productinfo=null) {
+        wc_nocache_headers();
         wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
@@ -1472,9 +1480,7 @@ class Vipps {
 
     public function vipps_wait_for_payment() {
         status_header(200,'OK');
-        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-        header("Cache-Control: post-check=0, pre-check=0", false);
-        header("Pragma: no-cache");
+        wc_nocache_headers();
 
         $orderid = WC()->session->get('_vipps_pending_order');
         $order = null;

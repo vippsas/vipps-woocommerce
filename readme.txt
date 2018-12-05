@@ -151,6 +151,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 = 2018.12.xx version 1.1.6 =
 * Added filter 'woo_vipps_order_failed_redirect'
 * Added filters 'woo_vipps_express_checkout_supported_product_types', ''woo_vipps_product_supports_express_checkout', ''woo_vipps_order_failed_redirect' to control product types that cannot be bought by express checkout
+* Added lots of wc_nocache_headers() to avoid caching where sessions etc are missing
 
 = 2018.11.26 version 1.1.5
 * Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)
