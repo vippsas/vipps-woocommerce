@@ -116,11 +116,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // the capture may fail. IOK 2018-12-05
     // The intention is to provide this behaviour as a selectable checkbox in the backend in the future; it has to be
     // explicitly chosen so merchants can be aware of the possible isssues. IOK 2018-12-05
-    protected function after_vipps_order_status($order) {
+    public function after_vipps_order_status($order=null) {
       $defaultstatus = 'on-hold';
       $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $defaultstatus, $order);
-      if (in_array($newstatus, $this->captured_statutes)){
-             $this->log(sprintf(__("Cannot use %s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus));
+      if (in_array($newstatus, $this->captured_statuses)){
+             $this->log(sprintf(__("Cannot use %s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus),'debug');
              return  $defaultstatus;
       }
       return $newstatus;
