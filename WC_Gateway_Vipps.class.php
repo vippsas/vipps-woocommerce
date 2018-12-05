@@ -41,6 +41,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $supports = null;
     public $express_checkout_supported_product_types;
 
+    public $captured_statuses;
+
     // Used to signal state to process_payment
     public $express_checkout = 0;
     public $tempcart = 0;
@@ -84,7 +86,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         //  Capturing, refunding and cancelling the order when transitioning states:
         //   This are the statuses for which the Vipps plugin should try to ensure capture has been made.
         //   Normally, this is 'processing' and 'completed', but plugins may define other statuses. IOK 2018-10-05
+        //  It is also possible to remove 'processing' from this list. If you do, you may use it as the end-state of the
+        //  Vipps transaction (see below in after_vipps_order_status) IOK 2018-12-05
         $captured_statuses = apply_filters('woo_vipps_captured_statuses', array('processing', 'completed'));
+        $this->captured_statuses = $captured_statuses;
+
         $non_completed_captured_statuses = array_diff($captured_statuses, array('completed'));
 
         // This ensures that funds are captured when transitioning from 'on hold' to a status where the money
@@ -100,6 +106,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         add_action( 'woocommerce_order_status_on-hold_to_cancelled', array($this, 'maybe_cancel_payment'));
         add_action( 'woocommerce_order_status_on-hold_to_refunded', array($this, 'maybe_cancel_payment'));
+    }
+
+    // Return the status to use after return from Vipps for orders that are not both "virtual" and "downloadable".
+    // These orders are *not* complete, and payment is *not* captured, which is why the default status is 'on-hold'.
+    // If you use custom order statuses, or if you don't capture on 'processing' - see filter 'woo_vipps_captured_statuses' -
+    // you can instead use 'processing' here - which is much nicer. 
+    // If you do so, remember to capture *before* shipping is done on the order - if you send the package and then do 'complete', 
+    // the capture may fail. IOK 2018-12-05
+    // The intention is to provide this behaviour as a selectable checkbox in the backend in the future; it has to be
+    // explicitly chosen so merchants can be aware of the possible isssues. IOK 2018-12-05
+    protected function after_vipps_order_status($order) {
+      $defaultstatus = 'on-hold';
+      $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $defaultstatus, $order);
+      if (in_array($newstatus, $this->captured_statutes)){
+             $this->log(sprintf(__("Cannot use %s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus));
+             return  $defaultstatus;
+      }
+      return $newstatus;
     }
 
     // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
@@ -838,7 +862,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $autocapture = $this->maybe_complete_payment($order);
                     if (!$autocapture) {
                       wc_reduce_stock_levels($order->get_id());
-                      $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woo-vipps' ));
+                      $authorized_state = $this->after_vipps_order_status($order);
+                      $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
                     }
                     break;
                 case 'processing':
@@ -1056,7 +1081,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $autocapture = $this->maybe_complete_payment($order);
             if (!$autocapture) {
                wc_reduce_stock_levels($order->get_id());
-               $order->update_status('on-hold', __( 'Payment authorized at Vipps', 'woo-vipps' ));
+               $authorized_state = $this->after_vipps_order_status($order);
+               $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
             }
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));

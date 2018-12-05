@@ -733,8 +733,9 @@ class Vipps {
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
         $raw_post = @file_get_contents( 'php://input' );
-
         $result = @json_decode($raw_post,true);
+        do_action('woo_vipps_vipps_callback', $result,$raw_post);
+
         if (!$result) {
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             return false;

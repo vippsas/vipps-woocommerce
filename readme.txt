@@ -138,7 +138,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vips_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
  * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
  * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
- 
+ * Action 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
 
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
@@ -152,6 +152,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Added filter 'woo_vipps_order_failed_redirect'
 * Added filters 'woo_vipps_express_checkout_supported_product_types', ''woo_vipps_product_supports_express_checkout', ''woo_vipps_order_failed_redirect' to control product types that cannot be bought by express checkout
 * Added lots of wc_nocache_headers() to avoid caching where sessions etc are missing
+* Added new action 'woo_vipps_vipps_callback'
 
 = 2018.11.26 version 1.1.5
 * Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)
