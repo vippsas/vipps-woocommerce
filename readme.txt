@@ -148,6 +148,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 2018.12.10 version 1.1.7 =
+* Typo in 1.1.6 fixed
+
 = 2018.12.10 version 1.1.6 =
 * Added filter 'woo_vipps_order_failed_redirect'
 * Added filters 'woo_vipps_express_checkout_supported_product_types', ''woo_vipps_product_supports_express_checkout', ''woo_vipps_order_failed_redirect' to control product types that cannot be bought by express checkout

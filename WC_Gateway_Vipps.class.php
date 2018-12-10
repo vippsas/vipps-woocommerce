@@ -175,7 +175,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 		    $prod = $val['data'];
 		    if (!is_a($prod, 'WC_Product')) continue;
 		    $product_supported = $this->product_supports_express_checkout($prod);
-		    if ($product_supported) {
+		    if (!$product_supported) {
 			    $supports = false;
 			    break;
 		    }
