@@ -783,9 +783,12 @@ class Vipps {
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid);
             exit();
         }
-
+        if ($order->get_payment_method() != 'vipps') {
+            $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid);
+            exit();
+        }
         // a small bit of security
-        if ($order->get_meta('_vipps_authtoken') && !wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken'))){
+        if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
             $this->log("Wrong authtoken on shipping details callback");
             exit();
         }
