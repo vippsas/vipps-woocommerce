@@ -149,7 +149,7 @@ class Vipps {
 
     public function log ($what,$type='info') {
         $logger = wc_get_logger();
-        $context = array('source','Vipps Woo Gateway');
+        $context = array('source'=>'woo-vipps');
         $logger->log($type,$what,$context);
     }
 

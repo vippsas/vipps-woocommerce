@@ -148,6 +148,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 2018.12.xx version 1.1.8 =
+* Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report)
+
 = 2018.12.10 version 1.1.7 =
 * Typo in 1.1.6 fixed
 
