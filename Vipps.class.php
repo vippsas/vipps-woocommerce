@@ -972,8 +972,9 @@ class Vipps {
         }
     }
 
-    // We have to empty the cart when the user goes to Vipps, so
+    // In some situations we have to empty the cart when the user goes to Vipps, so
     // we store it in the session and restore it if the users cancels. IOK 2018-05-07
+    // Try to avoid this now 2018-12-10 - only do it for single-product checkouts. IOK 2018-10-12
     public function save_cart($order) {
         global $woocommerce;
         $cartcontents = $woocommerce->cart->get_cart();
@@ -1217,15 +1218,12 @@ class Vipps {
         }
 
         if ($order_status == 'failed') {
-            $this->restore_cart($order);
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
         }
         if ($order_status == 'cancelled') {
-            $this->restore_cart($order);
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
         }
         if ($order_status == 'refunded') {
-            $this->restore_cart($order);
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
         }
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
@@ -1550,7 +1548,6 @@ class Vipps {
 
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $status == 'refunded') {
-            $this->restore_cart($order);
             if ($failure_redirect){
                  wp_redirect($failure_redirect);
                  exit();

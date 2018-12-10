@@ -175,7 +175,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 		    $prod = $val['data'];
 		    if (!is_a($prod, 'WC_Product')) continue;
 		    $product_supported = $this->product_supports_express_checkout($prod);
-		    if ($product_supported) {
+		    if (!$product_supported) {
 			    $supports = false;
 			    break;
 		    }
@@ -589,20 +589,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Could not create a signal file, but that's ok.
         }
 
-        // Then empty the cart; we'll ressurect it if we can and have to, so store it in session indexed by order number. IOK 2018-04-24
-        // We really don't want any errors here for any reason, if we fail that's ok. IOK 2018-05-07
+        // If we have a temporary cart for a single product checkout, this will *replace* the current cart. In this case, we need to save the current cart,
+        // and restore it on return from Vipps.
         try {
              // This actually isn't neccessary *unless* there is a tempcart, so this could be rewritten in the future.
              // It saves the *current* order which will not include a single-product to be bought. On purchase, that cart will replace
              // the 'current' cart, so that this one will be empty and must be restored (both on success and failure). IOK 2019-10-02
-             $Vipps->save_cart($order); 
+             // IOK 2018-12-10 Finally implement this logic: Only save/restore the cart when the cart is temporary.
+             if ($this->tempcart)  $Vipps->save_cart($order); 
          } catch (Exception $e) {
          }
          // Emptying the current cart isn't strictly neccessary (and if done, we need to save the cart above) because it will be emptied on 
          // order complete. If this is a temporary cart for a single-product express checkout purchase; this cart will be *replaced* by the
          // single product cart. If it isn't, the cart will be emptied on purchase completion. For now I'm keeping this logic just to avoid
          // exhaustive testing. IOK 2018-10-02
-        if (!$this->tempcart) $woocommerce->cart->empty_cart(true); 
         do_action('woo_vipps_before_redirect_to_vipps',$order_id);
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
