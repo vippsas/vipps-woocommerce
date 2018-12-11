@@ -67,10 +67,10 @@ class VippsApi {
             $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
             return $result;
         } catch (TemporaryVippsAPIException $e) {
-            $this->log(__("Could not get Vipps access token",'woo-vipps') .' '. $e->getMessage());
+            $this->log(__("Could not get Vipps access token",'woo-vipps') .' '. $e->getMessage(), 'error');
             throw $e;
         } catch (Exception $e) {
-            $this->log(__("Could not get Vipps access token",'woo-vipps') .' '. $e->getMessage());
+            $this->log(__("Could not get Vipps access token",'woo-vipps') .' '. $e->getMessage(). "\n" . $e->getMessage(), 'error');
             throw new VippsAPIConfigurationException($e->getMessage());
         }
     }

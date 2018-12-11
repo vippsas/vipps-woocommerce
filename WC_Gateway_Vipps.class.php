@@ -305,7 +305,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $ok = $this->refund_payment($order,$amount);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not refund Vipps payment', 'woo-vipps') . ' ' .$e->getMessage(),'error');
+            $this->log(__('Could not refund Vipps payment for order id:', 'woo-vipps') . ' ' . $orderid . "\n" .$e->getMessage(),'error');
             return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
         } catch (Exception $e) {
             $msg = __('Could not refund Vipps payment','woo-vipps') . ' ' . $e->getMessage();
@@ -501,7 +501,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $at = $this->api->get_access_token();
         } catch (Exception $e) {
-            $this->log(__('Could not get access token when initiating Vipps payment','woo-vipps') .': ' . $e->getMessage(), 'error');
+            $this->log(__('Could not get access token when initiating Vipps payment for order id:','woo-vipps') . $order_id .":\n" . $e->getMessage(), 'error');
             wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','woo-vipps'),'error');
             return false;
         }
@@ -658,11 +658,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $content =  $this->api->capture_payment($order,$requestid,$amount);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not capture Vipps payment', 'woo-vipps') . ' ' .$e->getMessage(),'error');
-            $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
+            $this->log(__('Could not capture Vipps payment for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
+            $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . "\n" . $e->getMessage());
             return false;
         } catch (Exception $e) {
-            $msg = __('Could not capture Vipps payment','woo-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not capture Vipps payment for order_id:','woo-vipps') . ' ' . $order->get_id() . "\n" . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
             return false;
@@ -704,11 +704,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = "";
             $content =  $this->api->cancel_payment($order,$requestid);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not cancel Vipps payment', 'woo-vipps') . ' ' .$e->getMessage(),'error');
+            $this->log(__('Could not cancel Vipps payment for order_id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
             return false;
         } catch (Exception $e) {
-            $msg = __('Could not cancel Vipps payment','woo-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not cancel Vipps payment for order id:','woo-vipps') . $order->get_id() . "\n" . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
             return false;
@@ -836,21 +836,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
-            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps", 'woo-vipps'));
+            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps for order id:", 'woo-vipps') . ' ' . $orderid, 'warning');
 
 
             try {
                 $statusdata = $this->api->payment_details($order);
                 do_action('woo_vipps_express_checkout_get_order_status', $statusdata);
             } catch (Exception $e) {
-                $this->log(__("Error getting payment details from Vipps for express checkout",'woo-vipps') . ": " . $e->getMessage(), 'error');
+                $this->log(__("Error getting payment details from Vipps for express checkout for order_id:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
                 return $oldstatus; 
             }
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
             if (@$statusdata['shippingDetails']) {
                 $this->set_order_shipping_details($order,$statusdata['shippingDetails'], $statusdata['userDetails']);
             } else {
-                $this->log(__("No shipping details from Vipps for express checkout",'woo-vipps') . ": " . $e->getMessage(), 'error');
+                $this->log(__("No shipping details from Vipps for express checkout for order id:",'woo-vipps') . ' ' . $orderid, 'error');
                 return $oldstatus; 
             }
         }
@@ -892,19 +892,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try { 
             $statusdata = $this->api->order_status($order);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not get Vipps order status', 'woo-vipps') . ' ' .$e->getMessage(),'error');
+            $this->log(__('Could not get Vipps order status for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
             return null;
         } catch (VippsAPIException $e) {
             $msg = __('Could not get Vipps order status','woo-vipps') . ' ' . $e->getMessage();
             $this->log($msg,'error');
             if (intval($e->responsecode) == 402) {
-                $this->log(__('Order does not exist at Vipps - cancelling','woo-vipps'));
+                $this->log(__('Order does not exist at Vipps - cancelling','woo-vipps') . ' ' . $order->get_id(), 'warning');
                 return 'CANCEL'; 
             }
             if (!$iscallback) $this->adminerr($msg);
         } catch (Exception $e) {
-            $msg = __('Could not get Vipps order status','woo-vipps') . ' ' . $e->getMessage();
+            $msg = __('Could not get Vipps order status for order id:','woo-vipps') . ' ' . $order->get_id() . "\n" . $e->getMessage();
             $this->log($msg,'error');
             if (!$iscallback) $this->adminerr($msg);
             return null;
@@ -1007,27 +1007,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = new WC_Order($orderid);
         if (!$order) {
-            $this->log(__("Vipps callback for unknown order",'woo-vipps') . " " .  $orderid);
+            $this->log(__("Vipps callback for unknown order",'woo-vipps') . " " .  $orderid, 'warning');
             return false;
         }
 
         $merchant= $result['merchantSerialNumber'];
         $me = $this->get_option('merchantSerialNumber');
         if ($me != $merchant) {
-            $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'woo-vipps') . " " .  $orderid);
+            $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'woo-vipps') . " " .  $orderid, 'warning');
             return false;
         }
 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
         if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
-            $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woo-vipps'), 'error');
+            $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woo-vipps'), 'warning');
             exit();
         }
 
         $transaction = @$result['transactionInfo'];
         if (!$transaction) {
-            $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woo-vipps'),'error');
+            $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woo-vipps'),'warning');
             return false;
         }
 
@@ -1039,14 +1039,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
-            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woo-vipps'));
+            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woo-vipps') . ' ' . $orderid, 'notice');
             return;
         }
 
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','woo-vipps'));
+            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','woo-vipps') . ' ' . $orderid, 'notice');
             return;
         }
 

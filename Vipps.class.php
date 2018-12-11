@@ -772,24 +772,23 @@ class Vipps {
         do_action('woo_vipps_shipping_details_callback', $orderid, $vippsorderid);
 
         if (!$orderid) {
-            $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid);
-            $this->log(__('Callback was:', 'woo-vipps') . " " . $callback);
+            $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
             exit();
         }
 
 
         $order = new WC_Order($orderid);
         if (!$order) {
-            $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid);
+            $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
         if ($order->get_payment_method() != 'vipps') {
-            $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid);
+            $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
         // a small bit of security
         if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
-            $this->log("Wrong authtoken on shipping details callback");
+            $this->log("Wrong authtoken on shipping details callback", 'error');
             exit();
         }
 
@@ -856,7 +855,7 @@ class Vipps {
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
-            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps'));
+            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
         }
 
         // Then format for Vipps
@@ -961,13 +960,13 @@ class Vipps {
                 return $order_status;
             }
         }
-        $this->log("Checking order status on Vipps");
+        $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
         $gw = $this->gateway();
         try {
             $order_status = $gw->callback_check_order_status($order);
             return $order_status;
         } catch (Exception $e) {
-            $this->log($e->getMessage());
+            $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
             return null;
         }
     }
@@ -1198,7 +1197,7 @@ class Vipps {
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!isset($sessionorders[$orderid])) {
-            $this->log(__('The orderid passed is not from this session:','woo-vipps') . $orderid);
+            $this->log(__('The orderid passed is not from this session:','woo-vipps') . $orderid, 'warning');
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
 
@@ -1533,7 +1532,7 @@ class Vipps {
                     $status = $newstatus;
                 }
             } else {
-                $this->log(__('Vipps callback in progress, but not complete on shop return. You probably need to look at server or database performance.','woo-vipps'));
+                $this->log(__('Vipps callback in progress, but not complete on shop return for order id:','woo-vipps') . ' ' . $orderid, 'notice');
             }
         }
 
