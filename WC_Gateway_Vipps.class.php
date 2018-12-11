@@ -828,16 +828,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // and callbacks happen at the same time.
         if(get_transient('order_callback_'.$orderid)) return $oldstatus;
 
+        $statuschange = 0;
         if ($newstatus != $oldstatus) {
             // Again, because we have no way of handling locks portably in Woo or WP yet, we must reduce the risk of race conditions by doing a 'fast' operation 
             // If the status hasn't changed this is probably not the case, so we'll only do it in this case. IOK 2018-05-30
             set_transient('order_query_'.$orderid, 1, 30);
+            $statuschange = 1;
         }
 
-        // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
-        if (($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout') && !$order->get_billing_email()) {
-            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps for order id:", 'woo-vipps') . ' ' . $orderid, 'warning');
 
+        // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
+        if ($statuschange && ($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout')) {
+            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps for order id:", 'woo-vipps') . ' ' . $orderid, 'warning');
 
             try {
                 $statusdata = $this->api->payment_details($order);
@@ -1031,16 +1033,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        if (@$result['shippingDetails']) {
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
-        }
-
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
             $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woo-vipps') . ' ' . $orderid, 'notice');
             return;
+        }
+
+        if (@$result['shippingDetails']) {
+            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
 
         $oldstatus = $order->get_status();
