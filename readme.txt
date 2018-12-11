@@ -148,6 +148,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 2018.12.11 version 1.1.8 =
+* Fix bug in express checkout for logged-in customers
+
 = 2018.12.10 version 1.1.7 =
 * Typo in 1.1.6 fixed
 
