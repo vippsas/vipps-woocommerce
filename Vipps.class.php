@@ -1369,6 +1369,7 @@ class Vipps {
     // The argument passed must be a shareable link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
+      status_header(200,'OK');
       wc_nocache_headers();
       do_action('woo_vipps_express_checkout_page');
 
@@ -1414,6 +1415,8 @@ class Vipps {
 
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
     public function vipps_express_checkout() {
+        status_header(200,'OK');
+        wc_nocache_headers();
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = wp_verify_nonce($_REQUEST['sec'],'express');
@@ -1434,7 +1437,6 @@ class Vipps {
 
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
     protected function print_express_checkout_page($execute,$action,$productinfo=null) {
-        wc_nocache_headers();
         wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
