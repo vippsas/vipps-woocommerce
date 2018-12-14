@@ -149,10 +149,11 @@ There are several filters and hooks you can use to customize the behaviour of th
 == Changelog ==
 
 = 2018.12.xx version 1.1.9 =
-* Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report)
-* Improved logging in general (again thanks to E. Espelund)
-* Fix 404 response on certain pages (again thanks to the above)
-* Added code to try to reduce impact of race conditions on persistent object caches
+* Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report as well as the rest of the issues covered in this update)
+* Improved logging in general (Thanks to patch from E. Espelund) 
+* Fix 404 response on certain pages 
+* Added code to try to reduce impact of race conditions on persistent object caches 
+* Moved shipping-update into critical section in callback handler 
 
 = 2018.12.11 version 1.1.8 =
 * Fix bug in express checkout for logged-in customers
