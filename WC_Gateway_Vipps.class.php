@@ -814,9 +814,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $newstatus = 'processing'; 
                 break;
             case 'CANCEL':
+            case 'CANCELLED':
             case 'VOID':
             case 'AUTOREVERSAL':
             case 'AUTOCANCEL':
+            case 'RESERVE_FAILED':
             case 'FAILED':
             case 'REJECTED':
                 $newstatus = 'cancelled'; 
