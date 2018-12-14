@@ -424,7 +424,7 @@ class Vipps {
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post) {
-        $order = new WC_Order($post);
+        $order = wc_get_order($post);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
         $orderid=$order->get_id();
@@ -467,7 +467,7 @@ class Vipps {
         check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');
         $orderid = $_REQUEST['orderid'];
         $gw = $this->gateway();
-        $order = new WC_Order($orderid);
+        $order = wc_get_order($orderid);
         if (!$order) {
          print "<p>" . __("Unknown order", 'woo-vipps') . "</p>";
          exit();
@@ -685,7 +685,7 @@ class Vipps {
 
     public function save_order($postid,$post,$update) {
         if ($post->post_type != 'shop_order') return;
-        $order = new WC_Order($postid);
+        $order = wc_get_order($postid);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
 
@@ -777,7 +777,7 @@ class Vipps {
         }
 
 
-        $order = new WC_Order($orderid);
+        $order = wc_get_order($orderid);
         if (!$order) {
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
@@ -950,6 +950,8 @@ class Vipps {
     // IOK 2018-05-04
     public function check_order_status($order) {
         if (!$order) return null;
+        clean_post_cache($order->get_id());  // Get a fresh copy
+        $order = wc_get_order($order->get_id());
         $order_status = $order->get_status();
         if ($order_status != 'pending') return $order_status;
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
@@ -1008,7 +1010,7 @@ class Vipps {
 	    if (!$orderid) return;
 	    $o = null;
 	    try {
- 	     $o = new WC_Order($orderid);
+ 	     $o = wc_get_order($orderid);
 	    } catch (Exception $e) {
 	     // Well, we tried.
 	    }
@@ -1201,7 +1203,7 @@ class Vipps {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
 
-        $order = new WC_Order($orderid); 
+        $order = wc_get_order($orderid); 
         if (!$order) {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
@@ -1487,6 +1489,7 @@ class Vipps {
 
         $orderid = WC()->session->get('_vipps_pending_order');
         $order = null;
+        $gw = $this->gateway();
 
 	// Failsafe for when the session disappears IOK 2018-11-19
         $authtoken = @$_GET['t'];
@@ -1510,14 +1513,12 @@ class Vipps {
         delete_transient('_vipps_pending_order_'.$authtoken); 
 
         if ($orderid) {
-            $order = new WC_Order($orderid); 
+            clean_post_cache($orderid);
+            $order = wc_get_order($orderid); 
         }
         do_action('woo_vipps_wait_for_payment_page',$order);
 
         if (!$order) wp_die(__('Unknown order', 'woo-vipps'));
-
-
-        $gw = $this->gateway();
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $order->get_status();
@@ -1528,10 +1529,10 @@ class Vipps {
             // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
             // This then will check if the callback is in progress - the callback will do exactly the same on its part.
             if (!get_transient('order_callback_'.$orderid)) {
-                $trans = 'order_callback_'.$orderid;
                 $newstatus = $gw->callback_check_order_status($order);
                 if ($newstatus) {
                     $status = $newstatus;
+                    $order = wc_get_order(); // Reload order object
                 }
             } else {
                 $this->log(__('Vipps callback in progress, but not complete on shop return for order id:','woo-vipps') . ' ' . $orderid, 'notice');

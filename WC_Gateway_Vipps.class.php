@@ -197,7 +197,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     public function maybe_cancel_payment($orderid) {
-        $order = new WC_Order( $orderid );
+        $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
@@ -224,7 +224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Handle the transition from anything to "refund"
     public function maybe_refund_payment($orderid) {
-        $order = new WC_Order( $orderid );
+        $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
@@ -291,7 +291,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason='') {
-        $order = new WC_Order( $orderid );
+        $order = wc_get_order($orderid);
 
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
@@ -520,7 +520,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        $order = new WC_Order($order_id);
+        $order = wc_get_order($order_id);
         $content = null;
 
         // Vipps-terminal-page return url to poll/await return
@@ -562,7 +562,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // this is meant as a failsafe.
         set_transient('_vipps_pending_order_'.$authtoken, $order_id,20*MINUTE_IN_SECONDS);
 
-        $order = new WC_Order( $order_id );
+        $order = wc_get_order($order_id);
         if ($authtoken) {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
@@ -612,7 +612,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // This tries to capture a Vipps payment, and resets the status to 'on-hold' if it fails.  IOK 2018-05-07
     public function maybe_capture_payment($orderid) {
-        $order = new WC_Order( $orderid );
+        $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
         try {
@@ -794,7 +794,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
         $orderid = $order->get_id();
-        $order = new WC_Order($orderid); // Ensure a fresh copy is read.
+
+        clean_post_cache($order->get_id());
+        $order = wc_get_order($orderid); // Ensure a fresh copy is read.
 
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
@@ -848,6 +850,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 do_action('woo_vipps_express_checkout_get_order_status', $statusdata);
             } catch (Exception $e) {
                 $this->log(__("Error getting payment details from Vipps for express checkout for order_id:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
+                clean_post_cache($order->get_id());
                 return $oldstatus; 
             }
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
@@ -855,6 +858,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->set_order_shipping_details($order,$statusdata['shippingDetails'], $statusdata['userDetails']);
             } else {
                 $this->log(__("No shipping details from Vipps for express checkout for order id:",'woo-vipps') . ' ' . $orderid, 'error');
+                clean_post_cache($order->get_id());
                 return $oldstatus; 
             }
         }
@@ -878,6 +882,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     break;
             }
             $order->save();
+            clean_post_cache($order->get_id());
         }
         // Ensure this is gone so any callback can happen. IOK 2018-05-30
         delete_transient('order_query_'.$orderid);
@@ -1008,13 +1013,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsorderid = $result['orderId'];
         $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
 
-
-        $order = new WC_Order($orderid);
-        if (!$order) {
-            $this->log(__("Vipps callback for unknown order",'woo-vipps') . " " .  $orderid, 'warning');
-            return false;
-        }
-
         $merchant= $result['merchantSerialNumber'];
         $me = $this->get_option('merchantSerialNumber');
         if ($me != $merchant) {
@@ -1022,16 +1020,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
+        $order = wc_get_order($orderid);
+        if (!$order) {
+            $this->log(__("Vipps callback for unknown order",'woo-vipps') . " " .  $orderid, 'warning');
+            return false;
+        }
+
+
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
         if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
             $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woo-vipps'), 'warning');
+            clean_post_cache($order->get_id());
             exit();
         }
 
         $transaction = @$result['transactionInfo'];
         if (!$transaction) {
             $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woo-vipps'),'warning');
+            clean_post_cache($order->get_id());
             return false;
         }
 
@@ -1040,6 +1047,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
             $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woo-vipps') . ' ' . $orderid, 'notice');
+            clean_post_cache($order->get_id());
             return;
         }
 
@@ -1051,6 +1059,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
             $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','woo-vipps') . ' ' . $orderid, 'notice');
+            clean_post_cache($order->get_id());
             return;
         }
 
@@ -1092,6 +1101,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
         }
         $order->save();
+        clean_post_cache($order->get_id());
         delete_transient('order_callback_',$orderid);
     }
 

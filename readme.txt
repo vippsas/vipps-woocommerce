@@ -152,6 +152,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report)
 * Improved logging in general (again thanks to E. Espelund)
 * Fix 404 response on certain pages (again thanks to the above)
+* Added code to try to reduce impact of race conditions on persistent object caches
 
 = 2018.12.11 version 1.1.8 =
 * Fix bug in express checkout for logged-in customers
