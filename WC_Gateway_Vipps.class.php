@@ -1051,9 +1051,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
-        if (@$result['shippingDetails']) {
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
-        }
 
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
@@ -1065,6 +1062,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Entering critical area, so start with the fake locking mentioned above. IOK 2018-05-30
         set_transient('order_callback_'.$orderid,1, 60);
+
+        if (@$result['shippingDetails']) {
+            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
+        }
 
         $transactionid = $transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);
