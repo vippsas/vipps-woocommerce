@@ -148,7 +148,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2018.12.xx version 1.1.9 =
+= 2018.12.17 version 1.1.9 =
 * Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report as well as the rest of the issues covered in this update)
 * Improved logging in general (Thanks to patch from E. Espelund) 
 * Fix 404 response on certain pages 

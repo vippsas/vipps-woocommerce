@@ -1532,6 +1532,7 @@ class Vipps {
                 $newstatus = $gw->callback_check_order_status($order);
                 if ($newstatus) {
                     $status = $newstatus;
+                    clean_post_cache($orderid);
                     $order = wc_get_order($orderid); // Reload order object
                 }
             } else {
