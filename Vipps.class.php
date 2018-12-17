@@ -1532,7 +1532,7 @@ class Vipps {
                 $newstatus = $gw->callback_check_order_status($order);
                 if ($newstatus) {
                     $status = $newstatus;
-                    $order = wc_get_order(); // Reload order object
+                    $order = wc_get_order($orderid); // Reload order object
                 }
             } else {
                 $this->log(__('Vipps callback in progress, but not complete on shop return for order id:','woo-vipps') . ' ' . $orderid, 'notice');
