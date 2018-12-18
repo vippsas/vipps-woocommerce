@@ -63,7 +63,7 @@ Enter your Vipps account keys and configure the plugin
 
 You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
 
-# Does Vipps offer a test environment for Vipps for WooCommerce?
+## Does Vipps offer a test environment for Vipps for WooCommerce?
 
 No. We recommend that you "test in production" with a small amount, like 2 NOK.
 
