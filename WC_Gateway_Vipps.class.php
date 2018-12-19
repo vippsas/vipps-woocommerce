@@ -633,7 +633,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
-    public function capture_payment($order,$amount=0) {
+    public function capture_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $this->log(__('Trying to capture payment on order not made by Vipps:','woo-vipps'). ' ' . $order->get_id(), 'error');
@@ -641,8 +641,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
+        // Partial capture can happen if the order is edited IOK 2017-12-19
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $total = round($order->get_total()*100);
+        $amount = $total-$captured;
+        if ($amount<=0) {
+                $order->add_order_note(__('Payment already captured','woo-vipps'));
+                return true;
+        }
+
         // If we already have captured everything, then we are ok! IOK 2017-05-07
-        $captured = $order->get_meta('_vipps_captured');
         if ($captured) {
             $remaining = $order->get_meta('_vipps_capture_remaining');
             if (!$remaining) {
@@ -656,7 +664,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $requestidnr = intval($order->get_meta('_vipps_capture_transid'));
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
-            $content =  $this->api->capture_payment($order,$requestid,$amount);
+            $content =  $this->api->capture_payment($order,$amount,$requestid);
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not capture Vipps payment for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . "\n" . $e->getMessage());

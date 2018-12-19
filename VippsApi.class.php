@@ -167,10 +167,9 @@ class VippsApi {
         return $res;
     }
 
-    // Capture a payment made. Defaults to full capture only. IOK 2018-05-07
-    public function capture_payment($order,$requestid=1,$amount=0) {
+    // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
+    public function capture_payment($order,$amount,$requestid=1) {
         $orderid = $order->get_meta('_vipps_orderid');
-        $amount = $amount ? $amount : $order->get_total();
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
         $date = gmdate('c');
@@ -196,7 +195,7 @@ class VippsApi {
 
         $transaction = array();
         // Ignore refOrderId - for child-transactions 
-        $transaction['amount'] = round($amount * 100); 
+        $transaction['amount'] = round($amount);
         $transaction['transactionText'] = __('Order capture for order','woo-vipps') . ' ' . $orderid . ' ' . home_url(); 
 
 

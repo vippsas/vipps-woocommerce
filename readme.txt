@@ -148,6 +148,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
+= 201x.xx.xx version 1.1.10 =
+* Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only
+
 = 2018.12.17 version 1.1.9 =
 * Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report as well as the rest of the issues covered in this update)
 * Improved logging in general (Thanks to patch from E. Espelund) 
