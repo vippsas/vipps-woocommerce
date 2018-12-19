@@ -691,11 +691,18 @@ class Vipps {
 
         if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
             $gw = $this->gateway();
-            // 0 in amount means full payment, which is all we currently support. IOK 2018-05-7
-            $ok = $gw->capture_payment($order,0);
+            $ok = $gw->capture_payment($order);
             // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
             $this->store_admin_notices();
         }
+
+        if (isset($_POST['do_refund_superfluous_vipps']) && $_POST['do_refund_superfluous_vipps']) {
+            $gw = $this->gateway();
+            $ok = $gw->refund_superfluous_capture($order);
+            // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
+            $this->store_admin_notices();
+        }
+
     }
 
     // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
@@ -708,6 +715,11 @@ class Vipps {
 
 
     public function order_item_add_action_buttons ($order) {
+        $this->order_item_add_capture_button($order);
+        $this->order_item_refund_superfluous_captured_amount($order);
+    }
+
+    public function order_item_add_capture_button ($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
         $status = $order->get_status();
@@ -729,6 +741,28 @@ class Vipps {
         print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items"><img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','woo-vipps') . '</button>';
         print "<input id=docapture type=hidden name=do_capture_vipps value=0>"; 
     } 
+
+    public function order_item_refund_superfluous_captured_amount ($order) {
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') return;
+        $status = $order->get_status();
+ 
+        if ($status != 'completed') return;
+
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $total = intval(100*$order->get_total());
+        $refunded = $order->get_meta('_vipps_refunded');
+        $superfluous = $captured-$total-$refunded;
+
+
+	if ($superfluous<=0) {
+		return;
+	}
+        print "<div><strong>" . __('More funds than the order total has been captured at Vipps. Press this button to refund this amount at Vipps without editing this order', 'woo_vipps') . "</strong></div>";
+        print '<button type="button" onclick="document.getElementById(\'dorefundsuperfluous\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button generate-items">' .__('Refund superfluous payment','woo-vipps') . '</button>';
+        print "<input id=dorefundsuperfluous type=hidden name=do_refund_superfluous_vipps value=0>"; 
+    } 
+
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {

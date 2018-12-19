@@ -692,6 +692,56 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
+    public function refund_superfluous_capture($order) {
+        $status = $order->get_status();
+        if ($status != 'completed') {
+            $this->log(__('Cannot refund superfluous capture on non-completed order:','woo-vipps'). ' ' . $order->get_id(), 'error');
+            $this->adminerr(__('Order not completed, cannot refund superfluous capture','woo-vipps'));
+            return false;
+        }
+
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') {
+            $this->log(__('Trying to refund payment on order not made by Vipps:','woo-vipps'). ' ' . $order->get_id(), 'error');
+            $this->adminerr(__('Cannot refund payment on orders not made by Vipps','woo-vipps'));
+            return false;
+        }
+
+        $total = round($order->get_total()*100);
+        $captured = $order->get_meta('_vipps_captured');
+        $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        $refunded = $order->get_meta('_vipps_refunded');
+        $superfluous = $captured-$total-$refunded;
+
+
+        if ($captured <= $total) {
+            return false;
+        }
+        $superfluous = $captured-$total-$refunded;
+        if ($superfluous<=0) {
+            return false;
+        }
+        $refundvalue = min($to_refund,$superfluous);
+
+        $ok = 0;
+        try {
+            $ok = $this->refund_payment($order,$refundvalue,'cents');
+        } catch (TemporaryVippsApiException $e) {
+            $this->log(__('Could not refund Vipps payment for order id:', 'woo-vipps') . ' ' . $orderid . "\n" .$e->getMessage(),'error');
+            return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
+        } catch (Exception $e) {
+            $msg = __('Could not refund Vipps payment','woo-vipps') . ' ' . $e->getMessage();
+            $order->add_order_note($msg);
+            $this->log($msg,'error');
+            return new WP_Error('Vipps',$msg);
+        }
+
+        if ($ok) {
+            $order->add_order_note($refundvalue/100 . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'woo-vipps') . ' ' . $reason);
+        } 
+        return $ok;
+    }
+
     // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
     public function cancel_payment($order) {
         $pm = $order->get_payment_method();
