@@ -489,7 +489,8 @@ class Vipps {
         }
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
-        print __('Order id:', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
+        print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
+        print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
 	print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];

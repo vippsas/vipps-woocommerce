@@ -948,8 +948,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // This is primarily for debugging right now. Can be made callable to update the order status directley with Vipps status. IOK 2019-09-21
+    // IOK 2018-12-19 now as a side-effect refreshes all the postmeta values from Vipps
     public function get_payment_details($order) {
-      return $this->api->payment_details($order);
+      // First, update the Vips order status
+      $status = $this->get_vipps_order_status($order,false);
+      // Then the details, which include the transaction history
+      $result = $this->api->payment_details($order);
+      if ($result) {
+        $result['status'] = $status;
+        if (isset($result['transactionSummary'])) {
+        $transactionSummary= $result['transactionSummary'];
+        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+        }
+      }
+      $order->save();
+      return $result;
     }
 
     // Get the order status as defined by Vipps. If 'iscallback' is true, set timestamps etc as if this was a Vipps callback. IOK 2018-05-04 

@@ -151,6 +151,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 = 201x.xx.xx version 1.1.10 =
 * Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only
 * Added button to refund any accidently over-captured amount on a completed order
+* As a sideeffect of retrieving the complete payment history, update the order with the status and postmeta values directly from Vipps
 
 = 2018.12.17 version 1.1.9 =
 * Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report as well as the rest of the issues covered in this update)
