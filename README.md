@@ -2,7 +2,7 @@
 
 This repo contains "Checkout with Vipps for WooCommerce". For more information about this product, please see: https://wordpress.org/plugins/woo-vipps/
 
-The Vipps product page is here: https://www.vipps.no/bedrift/vipps-pa-nett/woocommerce 
+The Vipps product page is here: https://www.vipps.no/bedrift/vipps-pa-nett/woocommerce
 
 See the main GitHub page for Vipps contact information, etc: https://github.com/vippsas
 
@@ -33,7 +33,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 * Configure the plugin
 
 # Installation
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
+1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
@@ -46,7 +46,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 3. Click on "View Secret" to see “Client ID” and “Client Secret”
 4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
 
-_Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)._ 
+_Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)._
 
 See: [Getting Started](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-getting-started.md) with the Vipps Developer Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
 
@@ -60,7 +60,12 @@ Enter your Vipps account keys and configure the plugin
 # Frequently Asked Questions
 
 ## In which countries can I use Vipps?
+
 You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
+
+## Does Vipps offer a test environment for Vipps for WooCommerce?
+
+No. We recommend that you "test in production" with a small amount, like 2 NOK.
 
 ## How can I get help if I have any issues?
 
@@ -70,4 +75,3 @@ For issues with your WooCommerce installation you should use the [support forum 
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
-
