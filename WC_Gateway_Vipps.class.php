@@ -1073,7 +1073,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save(); 
         $order->calculate_totals(true);
 
-        do_action('woo_vips_set_order_shipping_details', $order, $shipping, $user);
+        do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
 
         $order->save(); // I'm not sure why this is neccessary - but be sure.
     }

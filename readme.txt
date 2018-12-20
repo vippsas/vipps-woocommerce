@@ -135,7 +135,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
  * Action: 'woo_vipps_wait_for_payment_page': Run on the page shown on return from Vipps
  * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipp
- * Action: 'woo_vips_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
+ * Action: 'woo_vipps_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
  * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
  * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
  * Action 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
@@ -152,6 +152,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only
 * Added button to refund any accidently over-captured amount on a completed order
 * As a sideeffect of retrieving the complete payment history, update the order with the status and postmeta values directly from Vipps
+* Fixed spelling error in 'woo_vipps_set_order_shipping_details'
 
 = 2018.12.17 version 1.1.9 =
 * Error in WC_Logger usage fixed (thanks to (Thanks to Espen Espelund @netthandelsgruppen.no for the report as well as the rest of the issues covered in this update)
