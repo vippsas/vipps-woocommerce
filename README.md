@@ -48,7 +48,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 
 _Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)._
 
-See: [Getting Started](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-getting-started.md) with the Vipps Developer Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
+See: [Getting Started](https://github.com/vippsas/vipps-developers/blob/master/vipps-developer-portal-getting-started.md) with the Vipps Developer Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
 
 # Screenshots
 Enable Vipps as a payment method
