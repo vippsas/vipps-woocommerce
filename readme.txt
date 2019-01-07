@@ -148,7 +148,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 201x.xx.xx version 1.1.10 =
+= 2019.01.01 version 1.1.10 =
 * Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only
 * Added button to refund any accidently over-captured amount on a completed order
 * As a sideeffect of retrieving the complete payment history, update the order with the status and postmeta values directly from Vipps
