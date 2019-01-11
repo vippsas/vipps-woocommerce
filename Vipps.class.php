@@ -799,6 +799,8 @@ class Vipps {
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         $callback = @$_REQUEST['callback'];
+        do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
+
 
         $data = array_reverse(explode("/",$callback));
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails

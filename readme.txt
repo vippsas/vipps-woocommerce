@@ -139,6 +139,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
  * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
  * Action 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
+ * Action 'woo_vipps_shipping_details_callback': Is ran when Vipps does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps, and the callback args. For debugging.
 
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
@@ -147,6 +148,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 
 == Changelog ==
+
+= 2019.0x.xx version 1.1.11 =
+* Improvements to logging
 
 = 2019.01.01 version 1.1.10 =
 * Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only
