@@ -88,7 +88,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         //   Normally, this is 'processing' and 'completed', but plugins may define other statuses. IOK 2018-10-05
         //  It is also possible to remove 'processing' from this list. If you do, you may use it as the end-state of the
         //  Vipps transaction (see below in after_vipps_order_status) IOK 2018-12-05
+        $resultstatus = $this->get_option('result_status');
         $captured_statuses = apply_filters('woo_vipps_captured_statuses', array('processing', 'completed'));
+        $captured_statuses = array_diff($captured_statuses, array($resultstatus));
+
         $this->captured_statuses = $captured_statuses;
 
         $non_completed_captured_statuses = array_diff($captured_statuses, array('completed'));
@@ -96,16 +99,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This ensures that funds are captured when transitioning from 'on hold' to a status where the money
         // should be captured, and refunded when moved from this status to cancelled or refunded
         foreach($captured_statuses as $capstatus) {
-           add_action( 'woocommerce_order_status_on-hold_to_' . $capstatus, array($this, 'maybe_capture_payment'));
-           add_action( 'woocommerce_order_status_' . $capstatus .'_to_cancelled', array($this, 'maybe_refund_payment'));
-           add_action( 'woocommerce_order_status_' . $capstatus .'_to_refunded', array($this, 'maybe_refund_payment'));
+           add_action( 'woocommerce_order_status_' . $capstatus, array($this, 'maybe_capture_payment'));
         }
-        // And this ensures that any partial capture be completed when going to 'completed'
-        foreach($non_completed_captured_statuses as $unfinishedstatus) {
-           add_action( 'woocommerce_order_status_'. $unfinishedstatus. '_to_completed', array($this, 'maybe_capture_payment'));
-        }
-        add_action( 'woocommerce_order_status_on-hold_to_cancelled', array($this, 'maybe_cancel_payment'));
-        add_action( 'woocommerce_order_status_on-hold_to_refunded', array($this, 'maybe_cancel_payment'));
+        add_action( 'woocommerce_order_status_cancelled', array($this, 'maybe_cancel_payment'));
+        add_action( 'woocommerce_order_status_refunded', array($this, 'maybe_refund_payment'));
+
     }
 
     // Return the status to use after return from Vipps for orders that are not both "virtual" and "downloadable".
@@ -118,6 +116,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // explicitly chosen so merchants can be aware of the possible isssues. IOK 2018-12-05
     public function after_vipps_order_status($order=null) {
       $defaultstatus = 'on-hold';
+      $chosen = $this->get_option('result_status');
+      if ($chosen == 'processing') $defaultstatus = $chosen;
       $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $defaultstatus, $order);
       if (in_array($newstatus, $this->captured_statuses)){
              $this->log(sprintf(__("Cannot use %s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus),'debug');
@@ -371,6 +371,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'password',
                         'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
+                        ),
+
+                'result_status' => array(
+                        'title'       => __( 'Order status on return from Vipps', 'woo-vipps' ),
+                        'label'       => __( 'Choose default order status for reserved (not captured) orders', 'woo-vipps' ),
+                        'type'        => 'select',
+                        'options' => array(
+                              'on-hold' => __('On hold','woo-vipps'),
+                              'processing' => __('Processing', 'woo-vipps'),
+                        ), 
+                        'description' => __('By default, orders that are <i>reserved</i> but not <i>captured</i> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\'. Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
+                        'default'     => 'on-hold',
                         ),
 
                 'title' => array(
