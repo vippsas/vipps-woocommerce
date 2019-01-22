@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.0.0
+Tested up to: 5.0.4
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.5.2
+WC tested up to: 3.5.4
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -151,6 +151,9 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 = 2019.0x.xx version 1.1.11 =
 * Improvements to logging
+* Tested with 5.1 beta 
+* Changed the express checkout shortcode methods to ignore the backend settings for express checkout - now only the cart will be verified when a short code is used
+
 
 = 2019.01.01 version 1.1.10 =
 * Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only

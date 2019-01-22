@@ -173,7 +173,10 @@ class Vipps {
     public function express_checkout_banner() {
         $gw = $this->gateway();
         if (!$gw->show_express_checkout()) return;
+        return $this->express_checkout_banner_html();
+    }
 
+    public function express_checkout_banner_html() {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
         $text = __('Skip entering your address and just checkout using', 'woo-vipps');
@@ -191,14 +194,18 @@ class Vipps {
     public function cart_express_checkout_button() {
         $gw = $this->gateway();
         if ($gw->show_express_checkout()){
-            $url = $this->express_checkout_url();
-            $url = wp_nonce_url($url,'express','sec');
-            $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
-            $title = __('Buy now with Vipps!', 'woo-vipps');
-            $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
-            $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
-            echo $button;
+            return $this->cart_express_checkout_button_html();
         }
+    }
+ 
+    public function cart_express_checkout_button_html() {
+        $url = $this->express_checkout_url();
+        $url = wp_nonce_url($url,'express','sec');
+        $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
+        $title = __('Buy now with Vipps!', 'woo-vipps');
+        $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
+        $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
+        echo $button;
     }
 
     // A shortcode for a single buy now button. Express checkout must be active; but I don't check for this here, as this button may be
@@ -208,13 +215,21 @@ class Vipps {
        return $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false);
     }
 
-    // The express checkout shortcode implementation
+    // The express checkout shortcode implementation. It does not need to check if we are to show the button, obviously, but needs to see if the cart works
     public function express_checkout_button_shortcode() {
-     $this->cart_express_checkout_button();
+       $gw = $this->gateway();
+       if (!$gw->cart_supports_express_checkout()) return;
+       ob_start();
+       $this->cart_express_checkout_button_html();
+       return ob_get_clean();
     }
-    // Show a banner normally shown for non-logged-in-users at the checkout page
+    // Show a banner normally shown for non-logged-in-users at the checkout page.  It does not need to check if we are to show the button, obviously, but needs to see if the cart works
     public function express_checkout_banner_shortcode() {
-      $this->express_checkout_banner();
+        $gw = $this->gateway();
+        if (!$gw->cart_supports_express_checkout()) return;
+        ob_start();
+        $this->express_checkout_banner_html();
+        return ob_get_clean();
     }
 
    // Manage the various product meta fields
