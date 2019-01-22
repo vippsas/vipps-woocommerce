@@ -381,7 +381,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                               'on-hold' => __('On hold','woo-vipps'),
                               'processing' => __('Processing', 'woo-vipps'),
                         ), 
-                        'description' => __('By default, orders that are <i>reserved</i> but not <i>captured</i> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\'. Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
+                        'description' => __('By default, orders that are <b>reserved</b> but not <b>captured</b> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\')<br> Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. <br>If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
                         'default'     => 'on-hold',
                         ),
 
