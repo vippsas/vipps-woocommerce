@@ -207,6 +207,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return $this->maybe_refund_payment($orderid);
         }
 
+        $payment = $this->check_payment_status($order);
+        if ($payment == 'initiated' || $payment == 'cancelled') {
+           return true; // Can't cancel these
+        }
+
         try {
             $ok = $this->cancel_payment($order);
         } catch (Exception $e) {
@@ -866,7 +871,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'INITIATE':
             case 'REGISTER':
             case 'REGISTERED':
-                return 'inititated';
+                return 'initiated';
                 break;
             case 'RESERVE':
             case 'RESERVED':
@@ -1191,7 +1196,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_amount',$vippsamount);
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
-        if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparenlty, the API uses *both* ! IOK 2018-05-03
+        if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
             // Orders not needing processing can be autocaptured, so try to do so now. This will reduce stock and mark the order 'completed' IOK 2019-09-21
             $autocapture = $this->maybe_complete_payment($order);
             if (!$autocapture) {

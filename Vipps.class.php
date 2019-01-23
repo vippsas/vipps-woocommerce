@@ -1018,6 +1018,7 @@ class Vipps {
         $gw = $this->gateway();
         try {
             $order_status = $gw->callback_check_order_status($order);
+            $this->log("order status $order_status ");
             return $order_status;
         } catch (Exception $e) {
             $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
@@ -1265,8 +1266,13 @@ class Vipps {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
         }
-
+        if ($order_status == 'cancelled') {
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
+            return false;
+        }
+ 
         // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
+        $order = wc_get_order($orderid); // Reload
         $gw = $this->gateway();
         $payment = $gw->check_payment_status($order);
         if ($payment == 'initiated') {
@@ -1285,7 +1291,7 @@ class Vipps {
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
             return false;
         }
-        wp_send_json(array('status'=>'error', 'msg'=> __('Unknown order status','woo-vipps') . $order_status));
+        wp_send_json(array('status'=>'error', 'msg'=> __('Unknown payment status','woo-vipps') . ' ' . $payment));
         return false;
     }
 
@@ -1599,14 +1605,14 @@ class Vipps {
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $status == 'complete') {
             wp_redirect($gw->get_return_url($order));
-            exit();
+           exit();
         }
 
 	$content = "";
 	$failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
         // We are done, but in failure. Don't poll.
-        if ($payment == 'cancelled') {
+        if ($status == 'cancelled' || $payment == 'cancelled') {
             if ($failure_redirect){
                  wp_redirect($failure_redirect);
                  exit();
