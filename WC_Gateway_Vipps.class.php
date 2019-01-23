@@ -862,7 +862,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Collapse several statuses to a known list IOK 2019-01-23
     public function interpret_vipps_order_status($status) {
-        switch ($vippsstatus) { 
+        switch ($status) { 
             case 'INITIATE':
             case 'REGISTER':
             case 'REGISTERED':
@@ -887,6 +887,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
          // Default should never happen,  but just to ensure we are in our enumeration
          return "initiated";
+    }
+
+    // This does not call Vipps, so if you need to refresh status, please use callback_check_order_status first. IOK 2019-01-23
+    public function check_payment_status($order) {
+        $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
+        return $status;
     }
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   

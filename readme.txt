@@ -154,6 +154,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 * Tested with 5.1 beta 
 * Changed the express checkout shortcode methods to ignore the backend settings for express checkout - now only the cart will be verified when a short code is used
 * In this version, it is possible to choose Processing as a non-captured status (with capture done either manually or on Complete), where shipping must be done after capture. This changes the status change hook usage in the plugin.
+* To facilitate custom order statuses and flow, use payment status instead with only four values (initiated/authorized/complete/cancelled) to check results
 
 
 = 2019.01.01 version 1.1.10 =

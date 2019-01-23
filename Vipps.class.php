@@ -1260,28 +1260,30 @@ class Vipps {
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
         $order_status = $this->check_order_status($order);
-        if ($order_status == 'on-hold') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment authorized', 'woo-vipps')));
-        }
-        if ($order_status == 'processing') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment captured', 'woo-vipps')));
-        }
-        if ($order_status == 'completed') {
-            wp_send_json(array('status'=>'ok', 'msg'=>__('Order complete', 'woo-vipps')));
-        }
-
-        if ($order_status == 'failed') {
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
-        }
-        if ($order_status == 'cancelled') {
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
-        }
-        if ($order_status == 'refunded') {
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
-        }
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
+            return false;
+        }
+
+        // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
+        $gw = $this->gateway();
+        $payment = $gw->check_payment_status($order);
+        if ($payment == 'initiated') {
+            wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
+            return false;
+        }
+        if ($payment == 'authorized') {
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment authorized', 'woo-vipps')));
+            return false;
+        }
+        if ($payment == 'complete') {
+            wp_send_json(array('status'=>'ok', 'msg'=>__('Payment captured', 'woo-vipps')));
+            return false;
+        }
+        if ($payment == 'cancelled') {
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
+            return false;
         }
         wp_send_json(array('status'=>'error', 'msg'=> __('Unknown order status','woo-vipps') . $order_status));
         return false;
@@ -1592,8 +1594,10 @@ class Vipps {
             }
         }
 
-        // All these statuses are successes so go to the thankyou page. 
-        if ($status == 'on-hold' || $status == 'processing' || $status == 'completed') {
+        $payment = $gw->check_payment_status($order);
+
+        // All these payment statuses are successes so go to the thankyou page. 
+        if ($payment == 'authorized' || $status == 'complete') {
             wp_redirect($gw->get_return_url($order));
             exit();
         }
@@ -1602,12 +1606,12 @@ class Vipps {
 	$failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
         // We are done, but in failure. Don't poll.
-        if ($status == 'cancelled' || $status == 'refunded') {
+        if ($payment == 'cancelled') {
             if ($failure_redirect){
                  wp_redirect($failure_redirect);
                  exit();
             }
-            $content .= "<div id=failure><p>". __('Order cancelled', 'woo-vipps') . '</p>';
+            $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
             $content .= "</div>";
             $this->fakepage(__('Order cancelled','woo-vipps'), $content);
@@ -1622,7 +1626,7 @@ class Vipps {
         // Check that order exists and belongs to our session. Can use WC()->session->get() I guess - set the orderid or a hash value in the session
         // and check that the order matches (and is 'pending') (and exists)
         $vippsstamp = $order->get_meta('_vipps_init_timestamp');
-        $vippsstatus = $order->get_meta('_vipps_init_status');
+        $vippsstatus = $order->get_meta('_vipps_status');
         $message = __($order->get_meta('_vipps_confirm_message'),'woo-vipps');
 
         $signal = $this->callbackSignal($order);
