@@ -860,6 +860,35 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
+    // Collapse several statuses to a known list IOK 2019-01-23
+    public function interpret_vipps_order_status($status) {
+        switch ($vippsstatus) { 
+            case 'INITIATE':
+            case 'REGISTER':
+            case 'REGISTERED':
+                return 'inititated';
+                break;
+            case 'RESERVE':
+            case 'RESERVED':
+                return 'authorized';
+            case 'SALE':
+                return 'complete';
+                break;
+            case 'CANCEL':
+            case 'CANCELLED':
+            case 'VOID':
+            case 'AUTOREVERSAL':
+            case 'AUTOCANCEL':
+            case 'RESERVE_FAILED':
+            case 'FAILED':
+            case 'REJECTED':
+                return 'cancelled';
+                break;
+            }
+         // Default should never happen,  but just to ensure we are in our enumeration
+         return "initiated";
+    }
+
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
@@ -870,32 +899,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
-        $vippsstatus = $this->get_vipps_order_status($order,'iscallback');
 
-        switch ($vippsstatus) { 
-            case 'INITIATE':
-            case 'REGISTER':
-            case 'REGISTERED':
-                $newstatus = 'pending';
-                break;
-            case 'RESERVE':
-            case 'RESERVED':
-                $newstatus = 'on-hold';
-                break;
-            case 'SALE':
-                $newstatus = 'processing'; 
-                break;
-            case 'CANCEL':
-            case 'CANCELLED':
-            case 'VOID':
-            case 'AUTOREVERSAL':
-            case 'AUTOCANCEL':
-            case 'RESERVE_FAILED':
-            case 'FAILED':
-            case 'REJECTED':
-                $newstatus = 'cancelled'; 
-                break;
-        }
+        $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
+        $vippsstatus = $this->interpret_vipps_order_status($this->get_vipps_order_status($order,'iscallback'));
+
 
         // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
         // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
@@ -903,7 +910,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if(get_transient('order_callback_'.$orderid)) return $oldstatus;
 
         $statuschange = 0;
-        if ($newstatus != $oldstatus) {
+
+        if ($oldvippsstatus != $vippsstatus) {
             // Again, because we have no way of handling locks portably in Woo or WP yet, we must reduce the risk of race conditions by doing a 'fast' operation 
             // If the status hasn't changed this is probably not the case, so we'll only do it in this case. IOK 2018-05-30
             set_transient('order_query_'.$orderid, 1, 30);
@@ -912,7 +920,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
-        if ($statuschange && ($newstatus == 'on-hold' || $newstatus=='processing') && $order->get_meta('_vipps_express_checkout')) {
+        if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
             $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps for order id:", 'woo-vipps') . ' ' . $orderid, 'warning');
 
             try {
@@ -933,9 +941,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        if ($oldstatus != $newstatus) {
-            switch ($newstatus) {
-                case 'on-hold':
+        if ($statuschange) {
+            switch ($vippsstatus) {
+                case 'authorized':
                     // Orders not needing processing can be autocaptured, so try to do so now. This will reduce stock and mark the order 'completed' IOK 2019-09-21
                     $autocapture = $this->maybe_complete_payment($order);
                     if (!$autocapture) {
@@ -944,7 +952,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                       $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
                     }
                     break;
-                case 'processing':
+                case 'complete':
                     $order->payment_complete();
                     break;
                 case 'cancelled':
@@ -953,6 +961,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             $order->save();
             clean_post_cache($order->get_id());
+            $newstatus = $order->get_status();
         }
         // Ensure this is gone so any callback can happen. IOK 2018-05-30
         delete_transient('order_query_'.$orderid);
