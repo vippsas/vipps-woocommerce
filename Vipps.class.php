@@ -802,7 +802,7 @@ class Vipps {
     public function country_to_code($countryname) {
         if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
         $mapped = @$this->countrymap[strtoupper($countryname)];
-        $code = $countryname;
+        $code = WC()->countries->get_base_country();
         if ($mapped) $code = $mapped;
         $code = apply_filters('woo_vipps_country_to_code', $code, $countryname);
         return  $code;
@@ -903,6 +903,7 @@ class Vipps {
 
         $packages = apply_filters('woo_vipps_shipping_callback_packages', array($package));
         $shipping =  WC()->shipping->calculate_shipping($packages);
+
         $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
