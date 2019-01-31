@@ -2,7 +2,7 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.0.4
+Tested up to: 5.0.3
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
@@ -149,12 +149,13 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 == Changelog ==
 
-= 2019.0x.xx version 1.1.11 =
+= 2019.02.04 version 1.1.11 =
 * Improvements to logging
 * Tested with 5.1 beta 
 * Changed the express checkout shortcode methods to ignore the backend settings for express checkout - now only the cart will be verified when a short code is used
 * In this version, it is possible to choose Processing as a non-captured status (with capture done either manually or on Complete), where shipping must be done after capture. This changes the status change hook usage in the plugin.
 * To facilitate custom order statuses and flow, use payment status instead with only four values (initiated/authorized/complete/cancelled) to check results
+* Bugs in the shipping callback for Express Checkout fixed
 
 
 = 2019.01.01 version 1.1.10 =

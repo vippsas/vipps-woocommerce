@@ -828,6 +828,13 @@ class Vipps {
             exit();
         }
 
+        // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31. 
+        // As an alternative, we would have to replace the session handler here with a new one.
+        $handler = wc()->session;
+        if (is_a($handler, 'WC_Session_Handler')) {
+            wc()->session->destroy_session();
+        }
+
 
         $order = wc_get_order($orderid);
         if (!$order) {
@@ -877,6 +884,10 @@ class Vipps {
             $quantity = $item['quantity'];
             $acart->add_to_cart($prodid,$quantity,$varid);
         }
+
+        // Some shipping methods will use the session cart no matter what you do, so make sure it is there IOK 2019-01-31
+        wc()->cart = $acart;
+      
       
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
