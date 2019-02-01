@@ -790,6 +790,13 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             return false;
         }
+        // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31.
+        // As an alternative, we would have to replace the session handler here with a new one.
+        $handler = wc()->session;
+        if (is_a($handler, 'WC_Session_Handler')) {
+            wc()->session->destroy_session();
+        }
+
         do_action('woo_vipps_callback', $result);
 
         $gw = $this->gateway();
