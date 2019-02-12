@@ -88,6 +88,11 @@ When the order is on-hold the payment is reserved, but not yet transferred to th
 
 There is an exception for orders where all items are both virtual and downloadable: These are not considered to need processing and will be captured automatically (and go directly to the 'Complete' status). It is possible to customize this property for your needs using the woocommerce_order_item_needs_processing filter.
 
+From version 1.1.11 on, you can choose "Processing" as the end state instead of "On Hold", but be aware that these orders will only have been reserved, not captured; so you should always then capture before shipping.
+
+= Can I refund orders or part of orders using Vipps =
+Yes, you can do refunds, including partial refunds, using the standard WooCommerce mechanism (https://docs.woocommerce.com/document/woocommerce-refunds/). Additionally, if you cancel an order that was already captured, the money will be refunded for the whole order. If automatic refund through the Vipps API should fail, you will need to refund manually; in this case an error message to this effect will be displayed and the order annotated.
+
 = Why is my shipping wrong when using express checkout? =
 Some shipping plugins and setups are not compatible with Vipps Express Checkout. 
 The problem is that WooCommerce does not support calculating shipping when done anonymously, as is the case when the shipping information comes from the App.
