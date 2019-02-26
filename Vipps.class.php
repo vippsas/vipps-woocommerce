@@ -1385,7 +1385,7 @@ class Vipps {
     }
 
    // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
-   public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false) {
+   public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='') {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
         if ($sku) $data['product_sku'] = $sku;
@@ -1401,7 +1401,13 @@ class Vipps {
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $message = $title . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
 
-        $buttoncode .=  " class='single-product button vipps-buy-now $disabled' title='$title'>$message</a>";
+        # Extra classes, if passed IOK 2019-02-26
+        if (is_array($classes)) {
+            $classes = join(" ", $classes);
+        }
+        if ($classes) $classes = " $classes";
+
+        $buttoncode .=  " class='single-product button vipps-buy-now $disabled$classes' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
    }
 
@@ -1425,7 +1431,16 @@ class Vipps {
         if ($product->is_type('variable')) {
           $disabled="disabled";
         }
-        echo $this->get_buy_now_button(false,false,false, $product->is_type('variable') ? 'disabled' : false);
+
+        # If true, add a class that signals that the button should be added in 'compat mode', which is compatible with
+        # more plugins because it does not handle tha product add itself. IOK 2019-02-26
+        $compat = apply_filters('woo_vipps_single_product_compat_mode', false, $product);
+
+        $classes = array();
+        if ($compat) $classes[] ='compat-mode';
+        $classes = apply_filters('woo_vipps_single_product_buy_now_classes', $classes, $product);
+
+        echo $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
    }
 
     // Print a "buy now with vipps" for products in the loop, like on a category page
