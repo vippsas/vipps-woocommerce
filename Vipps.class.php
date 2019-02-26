@@ -139,6 +139,16 @@ class Vipps {
         wp_enqueue_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_add_inline_script('vipps-gw','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
+
+        //  We are going to use the 'hooks' library introduced by WP 5.1, but we still support WP 4.7. So if this isn't enqueues 
+        //  (which it only is if Gutenberg is active) or not provided at all, add it now.
+        if (!wp_script_is( 'wp-hooks', 'registered')) {
+            wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
+        }
+        if (wp_script_is( 'wp-hooks', 'registered') && !wp_script_is( 'wp-hooks', 'enqueued')) {
+            wp_enqueue_script('wp-hooks');
+        }
+
     }
 
     public function add_shortcodes() {
