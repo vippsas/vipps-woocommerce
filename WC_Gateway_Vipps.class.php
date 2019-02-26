@@ -203,9 +203,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
-        if ($captured) {
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($captured || $vippsstatus == 'SALE') {
             return $this->maybe_refund_payment($orderid);
         }
+
 
         $payment = $this->check_payment_status($order);
         if ($payment == 'initiated' || $payment == 'cancelled') {
@@ -236,6 +238,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        $vippsstatus = $order->get_meta('_vipps_status');
+
+        // Ensure 'SALE' direct captured orders work
+        if (!$captured && $vippsstatus == 'SALE') {
+            $this->get_payment_details($order);
+            $captured = $order->get_meta('_vipps_captured');
+            $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        }
+
         if (!$captured) {
             return $this->maybe_cancel_payment($orderid);
         }
@@ -274,7 +285,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
         // IOK 2018-10-03 when implementing partial capture, this must be modified.
         $captured = $order->get_meta('_vipps_captured'); 
-        if ($captured) { 
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($captured || $vippsstatus == 'SALE') { 
           // IOK 2019-09-21 already captured, so just run 'payment complete'
           $order->payment_complete();
           return true;
@@ -300,6 +312,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
+
+        // Ensure 'SALE' direct captured orders work
+        if (!$captured && $vippsstatus == 'SALE') {
+            $this->get_payment_details($order);
+            $captured = $order->get_meta('_vipps_captured');
+            $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        }
+
         if (!$captured) {
             return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'woo-vipps'));
         }
@@ -352,28 +372,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'clientId' => array(
                         'title' => __('Client Id', 'woo-vipps'),
                         'label'       => __( 'Client Id', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','woo-vipps'),
                         'default'     => '',
                         ),
                 'secret' => array(
                         'title' => __('Application Secret', 'woo-vipps'),
                         'label'       => __( 'Application Secret', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','woo-vipps'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_AccessToken' => array(
                         'title' => __('Subscription key for Access Token', 'woo-vipps'),
                         'label'       => __( 'Subscription key for Access Token', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_eCommerce' => array(
                         'title' => __('Subscription key for eCommerce', 'woo-vipps'),
                         'label'       => __( 'Subscription key for eCommerce', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
                         ),
@@ -632,6 +652,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
+
+        # Shortcut orders that have been directly captured
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($vippsstatus == 'SALE') {
+            return true;
+        }
+
         try {
             $ok = $this->capture_payment($order);
         } catch (Exception $e) {
@@ -660,6 +687,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Partial capture can happen if the order is edited IOK 2017-12-19
         $captured = intval($order->get_meta('_vipps_captured'));
+        $vippsstatus = $order->get_meta('_vipps_status');
+
+        // Ensure 'SALE' direct captured orders work
+        if (!$captured && $vippsstatus == 'SALE') { 
+            $this->get_payment_details($order);
+            $captured = $order->get_meta('_vipps_captured');
+        }
+
         $total = round($order->get_total()*100);
         $amount = $total-$captured;
         if ($amount<=0) {
@@ -964,6 +999,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                     break;
                 case 'complete':
+                    $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
+                    $this->get_payment_details($order);
                     $order->payment_complete();
                     break;
                 case 'cancelled':
@@ -1043,6 +1080,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user) {
+        $done = $order->get_meta('_vipps_shipping_set');
+        if ($done) return true;
+        $order->update_meta_data('_vipps_shipping_set', true);
+
         global $Vipps;
         $address = $shipping['address'];
 
@@ -1062,6 +1103,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $postcode= $address['postalCode'];
         }
         $country = $Vipps->country_to_code($vippscountry);
+
 
         $order->set_billing_email($email);
         $order->set_billing_phone($phone);
@@ -1204,6 +1246,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $authorized_state = $this->after_vipps_order_status($order);
                $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
             }
+        } else if ($vippsstatus == 'SALE') {
+          // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
+          $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
+          $this->get_payment_details($order);
+          $order->payment_complete();
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
         }
