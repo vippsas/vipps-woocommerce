@@ -353,28 +353,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'clientId' => array(
                         'title' => __('Client Id', 'woo-vipps'),
                         'label'       => __( 'Client Id', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('Client Id from Developer Portal - Applications tab, "View Secret"','woo-vipps'),
                         'default'     => '',
                         ),
                 'secret' => array(
                         'title' => __('Application Secret', 'woo-vipps'),
                         'label'       => __( 'Application Secret', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','woo-vipps'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_AccessToken' => array(
                         'title' => __('Subscription key for Access Token', 'woo-vipps'),
                         'label'       => __( 'Subscription key for Access Token', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_eCommerce' => array(
                         'title' => __('Subscription key for eCommerce', 'woo-vipps'),
                         'label'       => __( 'Subscription key for eCommerce', 'woo-vipps' ),
-                        'type'        => 'password',
+                        'type'        => 'xpassword',
                         'description' => __('The Primary key for the eCommerce API subscription from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
                         ),
@@ -633,6 +633,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
+
+        # Shortcut orders that have been directly captured
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($vippsstatus == 'SALE') {
+            return true;
+        }
+
         try {
             $ok = $this->capture_payment($order);
         } catch (Exception $e) {
@@ -661,6 +668,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Partial capture can happen if the order is edited IOK 2017-12-19
         $captured = intval($order->get_meta('_vipps_captured'));
+        $vippsstatus = $order->get_meta('_vipps_status');
+
+        // Ensure 'SALE' direct captured orders work
+        if (!$captured && $vippsstatus == 'SALE') { 
+            $captured = $order->get_meta('_vipps_amount');
+            $order->update_meta_data('_vipps_captured',$captured);
+        }
+
         $total = round($order->get_total()*100);
         $amount = $total-$captured;
         if ($amount<=0) {
@@ -965,6 +980,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                     break;
                 case 'complete':
+                    $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
                     $order->payment_complete();
                     break;
                 case 'cancelled':
@@ -1207,8 +1223,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
-          wc_reduce_stock_levels($order->get_id());
-          $order->update_status($authorized_state, __( 'Payment captured directly at Vipps', 'woo-vipps' ));
+          $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
+          $order->update_meta_data('_vipps_captured',$vippsamount);
+          $order->update_meta_data('_vipps_refund_remaining',$vippsamount);
           $order->payment_complete();
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
