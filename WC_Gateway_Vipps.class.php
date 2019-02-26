@@ -274,7 +274,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
         // IOK 2018-10-03 when implementing partial capture, this must be modified.
         $captured = $order->get_meta('_vipps_captured'); 
-        if ($captured) { 
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($captured || $vippsstatus == 'SALE') { 
           // IOK 2019-09-21 already captured, so just run 'payment complete'
           $order->payment_complete();
           return true;
@@ -1204,6 +1205,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $authorized_state = $this->after_vipps_order_status($order);
                $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
             }
+        } else if ($vippsstatus == 'SALE') {
+          // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
+          wc_reduce_stock_levels($order->get_id());
+          $order->update_status($authorized_state, __( 'Payment captured directly at Vipps', 'woo-vipps' ));
+          $order->payment_complete();
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
         }
