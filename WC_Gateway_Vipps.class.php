@@ -203,9 +203,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
-        if ($captured) {
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($captured || $vippsstatus == 'SALE') {
             return $this->maybe_refund_payment($orderid);
         }
+
 
         $payment = $this->check_payment_status($order);
         if ($payment == 'initiated' || $payment == 'cancelled') {
@@ -236,6 +238,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        $vippsstatus = $order->get_meta('_vipps_status');
+
+        // Ensure 'SALE' direct captured orders work
+        if (!$captured && $vippsstatus == 'SALE') {
+            $this->get_payment_details($order);
+            $captured = $order->get_meta('_vipps_captured');
+            $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        }
+
         if (!$captured) {
             return $this->maybe_cancel_payment($orderid);
         }
@@ -301,6 +312,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
+
+        // Ensure 'SALE' direct captured orders work
+        if (!$captured && $vippsstatus == 'SALE') {
+            $this->get_payment_details($order);
+            $captured = $order->get_meta('_vipps_captured');
+            $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        }
+
         if (!$captured) {
             return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'woo-vipps'));
         }
@@ -672,8 +691,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Ensure 'SALE' direct captured orders work
         if (!$captured && $vippsstatus == 'SALE') { 
-            $captured = $order->get_meta('_vipps_amount');
-            $order->update_meta_data('_vipps_captured',$captured);
+            $this->get_payment_details($order);
+            $captured = $order->get_meta('_vipps_captured');
         }
 
         $total = round($order->get_total()*100);
@@ -981,6 +1000,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     break;
                 case 'complete':
                     $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
+                    $this->get_payment_details($order);
                     $order->payment_complete();
                     break;
                 case 'cancelled':
@@ -1060,6 +1080,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user) {
+        $done = $order->get_meta('_vipps_shipping_set');
+        if ($done) return true;
+        $order->update_meta_data('_vipps_shipping_set', true);
+
         global $Vipps;
         $address = $shipping['address'];
 
@@ -1079,6 +1103,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $postcode= $address['postalCode'];
         }
         $country = $Vipps->country_to_code($vippscountry);
+
 
         $order->set_billing_email($email);
         $order->set_billing_phone($phone);
@@ -1224,8 +1249,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
           $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
-          $order->update_meta_data('_vipps_captured',$vippsamount);
-          $order->update_meta_data('_vipps_refund_remaining',$vippsamount);
+          $this->get_payment_details($order);
           $order->payment_complete();
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));

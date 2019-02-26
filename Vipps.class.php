@@ -799,9 +799,8 @@ class Vipps {
 
         do_action('woo_vipps_callback', $result);
 
-// IOK FIXME
- //       $gw = $this->gateway();
-//        $gw->handle_callback($result);
+        $gw = $this->gateway();
+        $gw->handle_callback($result);
         exit();
     }
 
@@ -1663,9 +1662,10 @@ class Vipps {
         if ($signal && !is_file($signal)) $signal = '';
         $signalurl = $this->callbackSignalURL($signal);
 
-# IOK FIXME
-        $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
-        $content .= "<span id='vippstime'></span>";
+        # For debugging only IOK 2019-02-26
+        #$content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
+        #$content .= "<span id='vippstime'></span>";
+
         $content .= "</p></div>";
 
         $content .= "<form id='vippsdata'>";

@@ -156,6 +156,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 
 = 2019.02.26 version 1.1.12 =
 * Fixes bugs/issues with direct capture and the SALE status at Vipps
+* Fix bug that could lead to shipping address being set twice when doing express checkout
 * Tested to Woo 3.5.5 and WP 5.1
 
 = 2019.02.04 version 1.1.11 =
