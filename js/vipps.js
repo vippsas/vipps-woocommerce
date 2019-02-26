@@ -79,8 +79,9 @@ jQuery( document ).ready( function() {
    //  ourselves. This allows more filters and actions in existing plugins to run. IOK 2019-02-26
    if (jQuery(element).hasClass('compat-mode')) {
        console.log("Buing product in compat-mode");
-       var otherbutton =  jQuery(element).closest('form').find('.single_add_to_cart_button').first(); 
-       console.log("Button is %j", otherbutton);
+       var form =   jQuery(element).closest('form');
+       var otherbutton =  form.find('.single_add_to_cart_button').first(); 
+       form.prepend('<input type=hidden id="vipps_compat_mode" name="vipps_compat_mode" value="1">');
        if (otherbutton.length>0) otherbutton.click();
        return false;
    }

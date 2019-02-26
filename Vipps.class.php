@@ -56,6 +56,9 @@ class Vipps {
 
         add_filter('woocommerce_my_account_my_orders_actions', array($this,'woocommerce_my_account_my_orders_actions'), 10, 2);
 
+        // Used in 'compat mode' only to add products to the cart
+        add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
+
         $this->add_shortcodes();
     }
 
@@ -150,6 +153,7 @@ class Vipps {
         }
 
     }
+
 
     public function add_shortcodes() {
       add_shortcode('woo_vipps_buy_now', array($this, 'buy_now_button_shortcode'));
@@ -993,6 +997,16 @@ class Vipps {
     // Runs after set_session, so if the session is just created, we'll get called. IOK 2018-06-06
     public function woocommerce_cart_updated() {
         $this->maybe_set_vipps_as_default();
+    }
+
+    public function woocommerce_add_to_cart_redirect ($url) {
+        if ( empty($_REQUEST['add-to-cart']) || ! is_numeric($_REQUEST['add-to-cart']) || empty($_REQUEST['vipps_compat_mode']) || !$_REQUEST['vipps_compat_mode']) {
+                        return $url;
+        }
+        $url = $this->express_checkout_url();
+        $url = wp_nonce_url($url,'express','sec');
+
+        return $url;
     }
 
     // We can't allow a customer to re-call the Vipps Express checkout payment thing twice -
