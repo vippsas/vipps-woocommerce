@@ -78,7 +78,6 @@ jQuery( document ).ready( function() {
    //  In compatibility mode, we delegate to the existing buy now button instead of doing the logic
    //  ourselves. This allows more filters and actions in existing plugins to run. IOK 2019-02-26
    if (jQuery(element).hasClass('compat-mode')) {
-       console.log("Buing product in compat-mode");
        var form =   jQuery(element).closest('form');
        var otherbutton =  form.find('.single_add_to_cart_button').first(); 
        form.prepend('<input type=hidden id="vipps_compat_mode" name="vipps_compat_mode" value="1">');
