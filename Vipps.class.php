@@ -799,8 +799,9 @@ class Vipps {
 
         do_action('woo_vipps_callback', $result);
 
-        $gw = $this->gateway();
-        $gw->handle_callback($result);
+// IOK FIXME
+ //       $gw = $this->gateway();
+//        $gw->handle_callback($result);
         exit();
     }
 
@@ -1619,10 +1620,11 @@ class Vipps {
             }
         }
 
+
         $payment = $gw->check_payment_status($order);
 
         // All these payment statuses are successes so go to the thankyou page. 
-        if ($payment == 'authorized' || $status == 'complete') {
+        if ($payment == 'authorized' || $payment == 'complete') {
             wp_redirect($gw->get_return_url($order));
            exit();
         }
@@ -1661,6 +1663,7 @@ class Vipps {
         if ($signal && !is_file($signal)) $signal = '';
         $signalurl = $this->callbackSignalURL($signal);
 
+# IOK FIXME
         $content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
         $content .= "<span id='vippstime'></span>";
         $content .= "</p></div>";
