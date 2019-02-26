@@ -75,6 +75,16 @@ jQuery( document ).ready( function() {
    jQuery(element).addClass('disabled');
    jQuery(element).addClass('loading');
 
+   //  In compatibility mode, we delegate to the existing buy now button instead of doing the logic
+   //  ourselves. This allows more filters and actions in existing plugins to run. IOK 2019-02-26
+   if (jQuery(element).hasClass('compat-mode')) {
+       console.log("Buing product in compat-mode");
+       var otherbutton =  jQuery(element).closest('form').find('.single_add_to_cart_button').first(); 
+       console.log("Button is %j", otherbutton);
+       if (otherbutton.length>0) otherbutton.click();
+       return false;
+   }
+
    var data  =  {};
 
    if (element.data('product_id') || element.data('product_sku')) {
