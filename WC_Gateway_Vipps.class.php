@@ -460,6 +460,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
+                  'singleproductbuynowcompatmode' => array(
+                        'title'       => __( '"Buy now" compatibility mode', 'woo-vipps' ),
+                        'label'       => __( 'Activate compatibility mode for all "Buy now" buttons', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Choosing this will use a different method of handling the "Buy now" button on a single product, which will work for more product types and more plugins - while being <i>slightly</i> less smooth. Use this if your product needs more configuration thatn simple or standard variable products', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
+
+
                     );
 
         // This will be enabled on a later date . IOK 2018-06-05

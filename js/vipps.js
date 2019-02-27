@@ -68,25 +68,39 @@ jQuery( document ).ready( function() {
    }
 
    jQuery('body').addClass('processing');
-
    removeErrorMessages();
    jQuery(element).attr('disabled','disabled');
    jQuery(element).attr('inactive','inactive');
    jQuery(element).addClass('disabled');
    jQuery(element).addClass('loading');
 
+   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+      wp.hooks.doAction('vippsBuySingleProduct', element, event);
+   }
+
+   var compatMode = jQuery(element).hasClass('compat-mode');
+   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+      compatMode = wp.hooks.applyFilters('vippsBuySingleProductCompatMode', compatMode,  element, event);
+   }
+
    //  In compatibility mode, we delegate to the existing buy now button instead of doing the logic
    //  ourselves. This allows more filters and actions in existing plugins to run. IOK 2019-02-26
-   if (jQuery(element).hasClass('compat-mode')) {
+   if (compatMode) {
        var form =   jQuery(element).closest('form');
        var otherbutton =  form.find('.single_add_to_cart_button').first(); 
-       form.prepend('<input type=hidden id="vipps_compat_mode" name="vipps_compat_mode" value="1">');
-       if (otherbutton.length>0) otherbutton.click();
+       var compatAction = function () {
+           form.prepend('<input type=hidden id="vipps_compat_mode" name="vipps_compat_mode" value="1">');
+           if (otherbutton.length>0) otherbutton.click();
+        }
+       // If your theme or product is weird enough, you may need this
+       if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+         compatAction = wp.hooks.applyFilters('vippsBuySingleProductCompatModeAction', compatAction, element, event);
+       }
+       compatAction();
        return false;
    }
 
    var data  =  {};
-
    if (element.data('product_id') || element.data('product_sku')) {
      data = element.data();
    } else {
@@ -150,13 +164,23 @@ jQuery( document ).ready( function() {
  function removeErrorMessages () {
    jQuery('.woocommerce-error.vipps-error').fadeOut(300, function () {  jQuery(this).remove(); });
    jQuery(document).trigger('woo-vipps-remove-errors');
+   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+      wp.hooks.doAction('vippsRemoveErrorMessages');
+   }
  }
 
  // And add new ones
  function addErrorMessage(msg,element) {
    // Allow developers to customize error message by hiding vipps-default-error-message and hooking woo-vipps-error-message <messsage>,<element>
    var msg = "<p><ul class='woocommerce-error vipps-error vipps-default-error-message vipps-buy-now-error'><li>"+msg+"!</li></ul></p>";
+   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+      msg = wp.hooks.applyFilters('vippsErrorMessage',msg, element);
+   }
    jQuery(document).trigger('woo-vipps-error-message',[msg, element]);
+   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+      wp.hooks.doAction('vippsAddErrorMessage', msg, element);
+   }
+
    jQuery(msg).hide().insertAfter(element).fadeIn(300);
    jQuery('.woocommerce-error.vipps-error').click(removeErrorMessages);
  }
@@ -165,6 +189,9 @@ jQuery( document ).ready( function() {
  function vippsInit() {
    jQuery('.button.single-product.vipps-buy-now:not(.initialized)').click(buySingleProduct);
    jQuery('.button.single-product.vipps-buy-now').addClass('initialized');
+   if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+      wp.hooks.doAction('vippsInit');
+   }
  }
  
  vippsInit();

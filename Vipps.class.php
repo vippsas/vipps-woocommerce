@@ -149,7 +149,7 @@ class Vipps {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
         if (wp_script_is( 'wp-hooks', 'registered') && !wp_script_is( 'wp-hooks', 'enqueued')) {
-            wp_enqueue_script('wp-hooks');
+            wp_enqueue_script('wp-hooks'); // FIXME
         }
 
     }
@@ -1448,7 +1448,8 @@ class Vipps {
 
         # If true, add a class that signals that the button should be added in 'compat mode', which is compatible with
         # more plugins because it does not handle tha product add itself. IOK 2019-02-26
-        $compat = apply_filters('woo_vipps_single_product_compat_mode', false, $product);
+        $compat = ($gw->get_option('singleproductbuynowcompatmode') == 'yes');
+        $compat = apply_filters('woo_vipps_single_product_compat_mode', $compat, $product);
 
         $classes = array();
         if ($compat) $classes[] ='compat-mode';
