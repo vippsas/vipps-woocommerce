@@ -171,6 +171,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 	    if (!$cart) $cart = WC()->cart;
 	    $supports  = true;
 	    if (!$cart) return $supports;
+
+            # Not supported by Vipps
+            if ($cart->cart_contents_total <= 0) return false;
+
 	    foreach($cart->get_cart() as $key=>$val) {
 		    $prod = $val['data'];
 		    if (!is_a($prod, 'WC_Product')) continue;
