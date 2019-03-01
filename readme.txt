@@ -93,6 +93,9 @@ From version 1.1.11 on, you can choose "Processing" as the end state instead of 
 = Can I refund orders or part of orders using Vipps =
 Yes, you can do refunds, including partial refunds, using the standard WooCommerce mechanism (https://docs.woocommerce.com/document/woocommerce-refunds/). Additionally, if you cancel an order that was already captured, the money will be refunded for the whole order. If automatic refund through the Vipps API should fail, you will need to refund manually; in this case an error message to this effect will be displayed and the order annotated.
 
+= What is 'compatibility mode' in the settings? =
+Some plugins add new features to products or entirely new product types to WooCommerce; which the 'Express Checkout' function may not be able to handle. It can be possible to fix this using hooks and filters, but if you choose this feature, express checkout will be done in a different manner which is very much more likely to work for a given plugin. The cost is that the process will be _slightly_ less smooth.
+
 = Why is my shipping wrong when using express checkout? =
 Some shipping plugins and setups are not compatible with Vipps Express Checkout. 
 The problem is that WooCommerce does not support calculating shipping when done anonymously, as is the case when the shipping information comes from the App.
@@ -151,11 +154,24 @@ There are several filters and hooks you can use to customize the behaviour of th
  * [woo_vipps_express_checkout_banner] will print the express checkout banner normally shown on the checkout page for non-logged-in users
  * [woo_vipps_buy_now sku=<SKU> id=<productid> variant=<variant id>] prints a "buy now" button given a SKU or an (product or variant) id. Just the SKU is sufficient.
 
+= Javascript filters and actions =
+From version 1.1.13 you can also modify the javascript using the new WP hooks library for javascript:
+ * 'vippsBuySingleProduct' - action which is run whenever a customer tries to buy a single product using express checkout
+ * 'vippsBuySingleProductCompatMode' - filter which should return true or false, if true, the compatibility mode action will be run instead of the standard ajax.
+ * 'vippsBuySingleProductCompatModeAction' - filter which should return a javascript function to run when buying a product and compatibility mode is on. Will normally press the "Buy" button for you.
+ * 'vippsRemoveErrorMessages' - runs when Vipps error messages are to be removed.
+ * 'vippsErrorMessage' - runs for every Vipps error message added with Javascript. Takes the message as an argument
+ * 'vippsAddErrorMessage' - runs when an error message is about to be added. Takes the message as an argument
+ * 'vippsInit'  - runs when a page with a Vipps button is initialzed
 
 == Changelog ==
 
 = 2019.03.xx version 1.1.13 =
+* New compatibility mode for "Buy now" for products that need special configuration. You can choose this in the backend, and the purchase will be made in a more compatible manner which is _slightly_ less smooth.
 * Disable "Buy now" buttons if products or cart have total value 0 - Vipps can't handle free products.
+* Added support for WP hooks in javascript (with backwards compatibility for 4.7-4.9).
+* New filters/actions: 'woo_vipps_single_product_compat_mode', 'woo_vipps_single_product_buy_now_classes'
+* Javascript filters/actions: 'vippsBuySingleProduct' 'vippsBuySingleProductCompatMode' 'vippsBuySingleProductCompatModeAction' 'vippsRemoveErrorMessages' 'vippsErrorMessage' 'vippsAddErrorMessage' 'vippsInit'
 
 = 2019.02.26 version 1.1.12 =
 * Fixes bugs/issues with direct capture and the SALE status at Vipps
