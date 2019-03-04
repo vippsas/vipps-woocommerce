@@ -172,6 +172,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 * Added support for WP hooks in javascript (with backwards compatibility for 4.7-4.9).
 * New filters/actions: 'woo_vipps_single_product_compat_mode', 'woo_vipps_single_product_buy_now_classes'
 * Javascript filters/actions: 'vippsBuySingleProduct' 'vippsBuySingleProductCompatMode' 'vippsBuySingleProductCompatModeAction' 'vippsRemoveErrorMessages' 'vippsErrorMessage' 'vippsAddErrorMessage' 'vippsInit'
+* Add a transaction ID (the prefix pluss the order id) to orders
 
 = 2019.02.26 version 1.1.12 =
 * Fixes bugs/issues with direct capture and the SALE status at Vipps
