@@ -96,6 +96,7 @@ class VippsApi {
         $vippsorderid =  $prefix.($order->get_id());
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
+        $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
         $order->save();
 
         $headers = array();
