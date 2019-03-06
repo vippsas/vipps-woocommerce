@@ -1409,9 +1409,10 @@ class Vipps {
          $value = sanitize_text_field($value);
          $buttoncode .= " data-$key='$value' ";
         }
-        $title = __('Buy now with', 'woo-vipps');
+        $buynow = __('Buy now with', 'woo-vipps');
+        $title = __('Buy now with Vipps', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        $message = $title . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
+        $message = $buynow . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
 
         # Extra classes, if passed IOK 2019-02-26
         if (is_array($classes)) {

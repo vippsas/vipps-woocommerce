@@ -173,6 +173,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 * New filters/actions: 'woo_vipps_single_product_compat_mode', 'woo_vipps_single_product_buy_now_classes'
 * Javascript filters/actions: 'vippsBuySingleProduct' 'vippsBuySingleProductCompatMode' 'vippsBuySingleProductCompatModeAction' 'vippsRemoveErrorMessages' 'vippsErrorMessage' 'vippsAddErrorMessage' 'vippsInit'
 * Add a transaction ID (the prefix pluss the order id) to orders
+* Fix title of "Buy now with Vipps" button (thanks to @redaksjonen)
 
 = 2019.02.26 version 1.1.12 =
 * Fixes bugs/issues with direct capture and the SALE status at Vipps
