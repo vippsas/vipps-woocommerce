@@ -157,6 +157,7 @@ There are several filters and hooks you can use to customize the behaviour of th
 = 2019.03.xx version 1.1.13 =
 * Disable "Buy now" buttons if products or cart have total value 0 - Vipps can't handle free products.
 * Add a transaction ID (the prefix pluss the order id) to orders
+* Fix title of "Buy now with Vipps" button (thanks to @redaksjonen)
 
 = 2019.02.26 version 1.1.12 =
 * Fixes bugs/issues with direct capture and the SALE status at Vipps
