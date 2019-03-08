@@ -166,7 +166,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.03.xx version 1.1.13 =
+= 2019.03.11 version 1.1.13 =
 * New compatibility mode for "Buy now" for products that need special configuration. You can choose this in the backend, and the purchase will be made in a more compatible manner which is _slightly_ less smooth.
 * Disable "Buy now" buttons if products or cart have total value 0 - Vipps can't handle free products.
 * Added support for WP hooks in javascript (with backwards compatibility for 4.7-4.9).
