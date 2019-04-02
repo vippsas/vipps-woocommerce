@@ -1412,7 +1412,7 @@ class Vipps {
         $buynow = __('Buy now with', 'woo-vipps');
         $title = __('Buy now with Vipps', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        $message = $buynow . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
+        $message = "<span class='vippsbuynow'>" . $buynow . "</span>" . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
 
         # Extra classes, if passed IOK 2019-02-26
         if (is_array($classes)) {
