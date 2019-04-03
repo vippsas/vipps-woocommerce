@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.1
+Tested up to: 5.1.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.5.6
+WC tested up to: 3.5.7
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -165,6 +165,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsInit'  - runs when a page with a Vipps button is initialzed
 
 == Changelog ==
+
+= 2019.04.xx version 1.1.14 =
+* Wrapped "Buy now"-text in buttons in a SPAN to allow for easier styling
+* Fixed error in instantiating Shipping Rates for Express Checkout orders (Thanks to Gaute Terland Nilsen @ ewn.no for reporting and debugging)
+* Small bugfixes
 
 = 2019.03.11 version 1.1.13 =
 * New compatibility mode for "Buy now" for products that need special configuration. You can choose this in the backend, and the purchase will be made in a more compatible manner which is _slightly_ less smooth.

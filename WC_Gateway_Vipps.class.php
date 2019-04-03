@@ -1149,7 +1149,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $cost = sprintf("%.2F",$shipping['shippingCost']); // This is inclusive of tax
         $costExTax= sprintf("%.2F",$cost-$tax);
 
-        $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method);
+        $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method, $product);
         $shipping_rate = apply_filters('woo_vipps_express_checkout_shipping_rate',$shipping_rate,$costExTax,$tax,$method,$product);
         if ($shipping_rate) {
             $it = new WC_Order_Item_Shipping();
