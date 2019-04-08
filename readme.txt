@@ -166,7 +166,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.04.xx version 1.1.14 =
+= 2019.04.08 version 1.1.14 =
 * Wrapped "Buy now"-text in buttons in a SPAN to allow for easier styling
 * Fixed error in instantiating Shipping Rates for Express Checkout orders (Thanks to Gaute Terland Nilsen @ ewn.no for reporting and debugging)
 * Small bugfixes
