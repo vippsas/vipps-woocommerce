@@ -135,7 +135,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_product_supports_express_checkout': Takes a boolean and a product, returns true if the product can be bought with expres checkout
  * Filter: 'woo_vipps_cart_supports_express_checkout': Takes a boolean and a cart, returns true if the cart can be bought with expres checkout
  * Filter: 'woo_vipps_express_checkout_supported_product_types': Returns a list of product types (as strings) that can be bought with express checkout
- * Action: 'woo_vipps_shipping_details_callback': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
+ * Action: 'woo_vipps_shipping_details_callback_order': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
  ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
@@ -165,6 +165,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsInit'  - runs when a page with a Vipps button is initialzed
 
 == Changelog ==
+
+= 2019.04.08 version 1.1.15 =
+* Renamed second of two actions in the shipping details callback
 
 = 2019.04.08 version 1.1.14 =
 * Wrapped "Buy now"-text in buttons in a SPAN to allow for easier styling
