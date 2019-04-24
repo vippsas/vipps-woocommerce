@@ -6,7 +6,7 @@ Tested up to: 5.1.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.5.7
+WC tested up to: 3.6.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -166,8 +166,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.04.08 version 1.1.15 =
+= 2019.04.xx version 1.1.15 =
 * Renamed second of two actions in the shipping details callback
+* Tested with WooCommerce 3.6.1
 
 = 2019.04.08 version 1.1.14 =
 * Wrapped "Buy now"-text in buttons in a SPAN to allow for easier styling
