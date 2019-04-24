@@ -840,7 +840,7 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-        do_action('woo_vipps_shipping_details_callback', $orderid, $vippsorderid);
+        do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
