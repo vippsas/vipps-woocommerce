@@ -169,6 +169,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 = 2019.04.xx version 1.1.15 =
 * Renamed second of two actions in the shipping details callback
 * Tested with WooCommerce 3.6.1
+* Changed help text for Ocp_Apim_Key_AccessToken to reflect that for some users, the eCommerce key should be used
 
 = 2019.04.08 version 1.1.14 =
 * Wrapped "Buy now"-text in buttons in a SPAN to allow for easier styling
