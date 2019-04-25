@@ -391,7 +391,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title' => __('Subscription key for Access Token', 'woo-vipps'),
                         'label'       => __( 'Subscription key for Access Token', 'woo-vipps' ),
                         'type'        => 'password',
-                        'description' => __('The Primary key for the Access Token subscription from your profile on the developer portal','woo-vipps'),
+                        'description' => __('The Primary key for the Access Token subscription OR the Primary key for your "eCommerce-Services-API", both from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_eCommerce' => array(

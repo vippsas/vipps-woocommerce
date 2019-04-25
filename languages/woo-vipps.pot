@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-06 09:14+0000\n"
+"POT-Creation-Date: 2019-04-25 07:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -583,8 +583,9 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:394
 msgid ""
-"The Primary key for the Access Token subscription from your profile on the "
-"developer portal"
+"The Primary key for the Access Token subscription OR the Primary key for "
+"your \"eCommerce-Services-API\", both from your profile on the developer "
+"portal"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:398 WC_Gateway_Vipps.class.php:399
