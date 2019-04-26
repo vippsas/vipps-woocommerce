@@ -932,6 +932,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'VOID':
             case 'AUTOREVERSAL':
             case 'AUTOCANCEL':
+            case 'AUTO_CANCEL':
             case 'RESERVE_FAILED':
             case 'FAILED':
             case 'REJECTED':
