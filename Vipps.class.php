@@ -1196,20 +1196,22 @@ class Vipps {
         if ($quant && $quant>1) $quantity=$quant;
 
         // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
+        // Moved rules around as the _sku variant broke in 3.6.1 for stores that didn't bothered to update the database IOK 2019-04-24
         try {
-           if ($sku) {
-               $skuid = wc_get_product_id_by_sku($sku);
-               $product = wc_get_product($skuid);
+           if ($prodid) {
+               $product = wc_get_product($prodid);
            } elseif ($varid) {
                $product = wc_get_product($varid);
-           } elseif ($prodid) {
-               $product = wc_get_product($prodid);
+           } elseif ($sku) {
+               $skuid = wc_get_product_id_by_sku($sku);
+               $product = wc_get_product($skuid);
            }
         } catch (Exception $e) {
             $result = array('ok'=>0, 'msg'=>__('Error finding product - cannot create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
         }
+
 
         if (!$product) {
             $result = array('ok'=>0, 'msg'=>__('Unknown product, cannot create order','woo-vipps'), 'url'=>false);
