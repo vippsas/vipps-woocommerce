@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.1.1
+Tested up to: 5.2.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.6.1
+WC tested up to: 3.6.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -166,9 +166,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.04.xx version 1.1.15 =
+= 2019.04.29 version 1.1.15 =
 * Renamed second of two actions in the shipping details callback
-* Tested with WooCommerce 3.6.1
+* Tested with WooCommerce 3.6.2 and WordPress 3.5.2
 * Changed help text for Ocp_Apim_Key_AccessToken to reflect that for some users, the eCommerce key should be used
 
 = 2019.04.08 version 1.1.14 =
