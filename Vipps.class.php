@@ -135,7 +135,14 @@ class Vipps {
 
     public function add_meta_boxes () {
         // Metabox showing order status at Vipps IOK 2018-05-07
-        add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+        global $post;
+        if ($post && get_post_type($post) == 'shop_order' ) {
+           $order = wc_get_order($post);
+           $pm = $order->get_payment_method();
+           if ($pm == 'vipps') { 
+             add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+           }
+        }
     }
 
     public function wp_enqueue_scripts() {
