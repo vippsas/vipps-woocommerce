@@ -166,6 +166,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2019.05.xx version 1.1.16 =
+* Disabled Vipps metabox for non-vipps shop_orders
+
 = 2019.04.29 version 1.1.15 =
 * Renamed second of two actions in the shipping details callback
 * Tested with WooCommerce 3.6.2 and WordPress 3.5.2
