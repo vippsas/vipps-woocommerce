@@ -2,7 +2,7 @@
 
 This repo contains "Checkout with Vipps for WooCommerce". For more information about this product, please see: https://wordpress.org/plugins/woo-vipps/
 
-The Vipps product page is here: https://www.vipps.no/bedrift/vipps-pa-nett/woocommerce
+The Vipps product page is here: https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/
 
 See the main GitHub page for Vipps contact information, etc: https://github.com/vippsas
 
@@ -14,7 +14,7 @@ This is the official Vipps plugin that provides a direct integration with the Vi
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
-Read [information from Vipps](https://www.vipps.no/woocommerce) about the plugin.
+Read [information from Vipps](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/) about the plugin.
 
 # Vipps Express Checkout
 
@@ -27,7 +27,7 @@ Since Vipps knows who the customers are, they don't have to enter all their pers
 When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app.
 
 # How to get started
-* Sign up to use Vipps på Nett ([vipps.no/woocommerce](https://www.vipps.no/bedrift/vipps-pa-nett/woocommerce))
+* Sign up to use Vipps på Nett ([vipps.no/woocommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
