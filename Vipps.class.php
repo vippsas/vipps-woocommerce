@@ -1203,12 +1203,13 @@ class Vipps {
         if ($quant && $quant>1) $quantity=$quant;
 
         // Find the product, or variation, and get everything in order so we can check existence, availability etc. IOK 2018-10-02
-        // Moved rules around as the _sku variant broke in 3.6.1 for stores that didn't bothered to update the database IOK 2019-04-24
+        // Moved rules around as the _sku variant broke in 3.6.1 for stores that didn't bother to update the database IOK 2019-04-24
+        // This broke single-product purchases for variable products; fixed IOK 2019-05-21 thanks to Gaute Terland Nilsen @ Easyweb for the report
         try {
-           if ($prodid) {
-               $product = wc_get_product($prodid);
-           } elseif ($varid) {
+           if ($varid) {
                $product = wc_get_product($varid);
+           } elseif ($prodid) {
+               $product = wc_get_product($prodid);
            } elseif ($sku) {
                $skuid = wc_get_product_id_by_sku($sku);
                $product = wc_get_product($skuid);

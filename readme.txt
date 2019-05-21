@@ -6,7 +6,7 @@ Tested up to: 5.2.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.6.2
+WC tested up to: 3.6.3
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -166,8 +166,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.05.xx version 1.1.16 =
+= 2019.05.21 version 1.1.16 =
 * Disabled Vipps metabox for non-vipps shop_orders
+* Fixed bug in Express Checkout for single variable products - thanks to Gaute Terland Nilsen @ Easyweb for the report
+* Fixed links in readme.txt
 
 = 2019.04.29 version 1.1.15 =
 * Renamed second of two actions in the shipping details callback
