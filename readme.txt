@@ -65,7 +65,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
    - Password is sent via SMS
 2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
 3. Click on "View Secret" to see “Client ID” and “Client Secret”
-4. Click on customer name (top-right corner) and select "Profile" to see “Default accesstoken” and “Ecommerce API” (click on “Show” to see the primary key)
+4. Click on customer name (top-right corner) and select "Profile" to see your subscriptions. You will here find the product "Vipps eCommerce Services API" - click on 'Show' to see the primary key, which you will use for both the access token key and subscription key.
+5. If you don't have 'Vipps eCommerce Services API', but instead an Ecommerce API and a separate 'Default accesstoken' subscription, you have an older subscription where you will need to use both these primary keys separately: the 'Default accesstoken' for the access token, and the Ecommerce API for the eCommerce key.
 
 == Screenshots ==
 1. Enable Vipps as a payment method.
@@ -165,6 +166,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsInit'  - runs when a page with a Vipps button is initialzed
 
 == Changelog ==
+
+= 2019.05.21 version 1.1.17 =
+* Changed documentation and screenshots to correspond with new subscription key setup at Vipps
 
 = 2019.05.21 version 1.1.16 =
 * Disabled Vipps metabox for non-vipps shop_orders
