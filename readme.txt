@@ -167,7 +167,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.06.xx version 1.1.17 =
+= 2019.06.17 version 1.1.17 =
 * Changed documentation and screenshots to correspond with new subscription key setup at Vipps
 
 = 2019.05.21 version 1.1.16 =
