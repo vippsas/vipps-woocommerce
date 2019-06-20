@@ -93,7 +93,7 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
-        $vippsorderid =  $prefix.($order->get_id());
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.($order->get_id()), $prefix, $order);
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
@@ -148,7 +148,6 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
         $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $prefix = $this->get_option('orderprefix');
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');

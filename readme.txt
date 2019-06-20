@@ -2,7 +2,7 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.2.1
+Tested up to: 5.2.2
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
@@ -136,6 +136,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_product_supports_express_checkout': Takes a boolean and a product, returns true if the product can be bought with expres checkout
  * Filter: 'woo_vipps_cart_supports_express_checkout': Takes a boolean and a cart, returns true if the cart can be bought with expres checkout
  * Filter: 'woo_vipps_express_checkout_supported_product_types': Returns a list of product types (as strings) that can be bought with express checkout
+ * Filter: 'woo_vipps_orderid': Takes default Vipps orderid, the order prefix, and an order object. Must return an unique (at Vipps) order ID with 30 chars or less. Default is the prefix + orderid, e.g. 'Woo364'.
  * Action: 'woo_vipps_shipping_details_callback_order': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
@@ -166,6 +167,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsInit'  - runs when a page with a Vipps button is initialzed
 
 == Changelog ==
+
+= 2019.06.xx version 1.1.18 =
+* Version bump
+* New filter woo_vipps_orderid - lets you generate your own (unique) orderid at Vipps
 
 = 2019.06.17 version 1.1.17 =
 * Changed documentation and screenshots to correspond with new subscription key setup at Vipps
