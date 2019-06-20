@@ -165,12 +165,14 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsErrorMessage' - runs for every Vipps error message added with Javascript. Takes the message as an argument
  * 'vippsAddErrorMessage' - runs when an error message is about to be added. Takes the message as an argument
  * 'vippsInit'  - runs when a page with a Vipps button is initialzed
+ * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
 
 = 2019.06.xx version 1.1.18 =
 * Version bump
 * New filter woo_vipps_orderid - lets you generate your own (unique) orderid at Vipps
+* New javascript filter for customizing the status check error handler
 
 = 2019.06.17 version 1.1.17 =
 * Changed documentation and screenshots to correspond with new subscription key setup at Vipps

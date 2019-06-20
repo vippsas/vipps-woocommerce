@@ -1654,7 +1654,7 @@ class Vipps {
         $status = $order->get_status();
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-        if ($status == 'pending') { 
+        if ($status == 'pending') {
             // Unfortunately, Woo or WP has no locking system, and creating one portably is not currently feasible. Therefore
             // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
             // This then will check if the callback is in progress - the callback will do exactly the same on its part.
@@ -1675,8 +1675,8 @@ class Vipps {
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
-            wp_redirect($gw->get_return_url($order));
-           exit();
+         wp_redirect($gw->get_return_url($order));
+         exit();
         }
 
 	$content = "";

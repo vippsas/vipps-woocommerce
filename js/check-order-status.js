@@ -77,16 +77,23 @@ jQuery(document).ready(function () {
     "cache":false,
     "dataType": "json",
     "error": function (xhr, statustext, error) {
-      console.log("Error checking order status " + statustext + " " + error);
-      done=1;
-      jQuery("#waiting").hide();
-      jQuery("#success").hide();
-      jQuery("#failure").hide();
-      jQuery("#error").show();
-    },
+       console.log("Error checking order status " + statustext + " " + error);
+       done=1;
+       var errorhandler = function (statustext, error) { 
+                           jQuery("#waiting").hide();
+                           jQuery("#success").hide();
+                           jQuery("#failure").hide();
+                           jQuery("#error").show();
+                          };
+
+       if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+         errorhandler = wp.hooks.applyFilters('vippsStatusCheckErrorHandler', errorhandler);
+       }
+       return errorhandler(statustext, error); 
+      },
+
     "success": function (result, statustext, xhr) {
      if (result["status"] == "waiting") {
-       console.log("Waiting reuslt result");
        console.log("Waiting for Vipps callback..");
        // Do some update here.
        done=0;
@@ -123,10 +130,17 @@ jQuery(document).ready(function () {
      } else {
        console.log("Error result %j",result);
        done=1;
-       jQuery("#waiting").hide();
-       jQuery("#success").hide(); 
-       jQuery("#failure").hide();
-       jQuery("#error").show();
+       var errorhandler = function (statustext, error) { 
+                           jQuery("#waiting").hide();
+                           jQuery("#success").hide();
+                           jQuery("#failure").hide();
+                           jQuery("#error").show();
+                          };
+
+       if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+         errorhandler = wp.hooks.applyFilters('vippsStatusCheckErrorHandler', errorhandler);
+       }
+       return errorhandler("Unknown result from WooCommerce", result);
      }
     },
     "timeout": 0
