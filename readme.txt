@@ -169,7 +169,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.06.xx version 1.1.18 =
+= 2019.06.24 version 1.1.18 =
 * Version bump
 * New filter woo_vipps_orderid - lets you generate your own (unique) orderid at Vipps
 * New javascript filter for customizing the status check error handler
