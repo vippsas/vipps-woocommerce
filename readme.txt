@@ -116,6 +116,8 @@ add_filter('woo_vipps_order_id', function ($default, $prefix, $order) {
 }, 10, 3);
 ```
 
+= Firewall ports =
+Ensure *outgoing* traffic to port 443 is open. This is used to communicate with Vipps servers.
 
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
