@@ -61,7 +61,7 @@ class VippsApi {
     private function get_access_token_from_vipps() { 
         $clientid=$this->get_option('clientId');
         $secret=$this->get_option('secret');
-        $at = $this->get_option('Ocp_Apim_Key_AccessToken');
+        $at = $this->get_option('Ocp_Apim_Key_eCommerce');
         $command = 'accessToken/get';
         try {
             $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');

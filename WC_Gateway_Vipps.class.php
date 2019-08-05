@@ -383,15 +383,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'secret' => array(
                         'title' => __('Application Secret', 'woo-vipps'),
                         'label'       => __( 'Application Secret', 'woo-vipps' ),
-                        'type'        => 'password',
+                       'type'        => 'password',
                         'description' => __('Application secret from Developer Portal - Applications tab, "View Secret"','woo-vipps'),
-                        'default'     => '',
-                        ),
-                'Ocp_Apim_Key_AccessToken' => array(
-                        'title' => __('Subscription key for Access Token', 'woo-vipps'),
-                        'label'       => __( 'Subscription key for Access Token', 'woo-vipps' ),
-                        'type'        => 'password',
-                        'description' => __('If you have a separate Access Token subscription on the developer portal, enter the Primary Key for this here.  If not, use the Primary key for the for your "Vipps-API" subscription, also from your profile on the developer portal','woo-vipps'),
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_eCommerce' => array(
@@ -1326,7 +1319,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Used by the ajax thing that 'sets activated' - checks that it can be activated and that all keys are present. IOK 2018-06-06
     function needs_setup() {
         if (!$this->can_be_activated()) return true;
-        $required = array( 'merchantSerialNumber','clientId', 'secret', 'Ocp_Apim_Key_AccessToken', 'Ocp_Apim_Key_eCommerce'); 
+        $required = array( 'merchantSerialNumber','clientId', 'secret',  'Ocp_Apim_Key_eCommerce'); 
         foreach ($required as $key) {
             if (!$this->get_option($key)) return true;
         }
@@ -1400,7 +1393,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Handle options updates
         $saved = parent::process_admin_options();
 
-        $at = $this->get_option('Ocp_Apim_Key_AccessToken');
+        $at = $this->get_option('Ocp_Apim_Key_eCommerce');
         $s = $this->get_option('secret');
         $c = $this->get_option('clientId');
         if ($at && $s && $c) {
