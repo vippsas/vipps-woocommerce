@@ -43,7 +43,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 
 === How to get started ===
 * Sign up to use Vipps på Nett ([WooCommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
-* After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
+* After 1-2 days you will get an email with login details to https://portal.vipps.no, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
 
@@ -51,22 +51,18 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys.
+4. Go the settings page for the Vipps plugin and enter your Vipps account keys. You will find these on https://portal.vipps.no - see below for the details
 
 == Installation ==
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
+4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Portal (detailed info in the section below)
 
 === How to get Vipps account keys from Vipps Developer Portal ===
-1. Sign in to Vipps Developer Portal at [https://api-portal.vipps.no/](https://api-portal.vipps.no/)
-   - Username is sent via email
-   - Password is sent via SMS
-2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
-3. Click on "View Secret" to see “Client ID” and “Client Secret”
-4. Click on customer name (top-right corner) and select "Profile" to see your subscriptions. You will here find the product "Vipps API" - click on 'Show' to see the primary key, which you will use for both the access token key and subscription key.
-5. If you don't have 'Vipps API', but instead an Ecommerce API and a separate 'Default accesstoken' subscription, you have an older subscription where you will need to use both these primary keys separately: the 'Default accesstoken' for the access token, and the Ecommerce API for the eCommerce key.
+1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
+2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
+3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
 == Screenshots ==
 1. Enable Vipps as a payment method.
@@ -182,7 +178,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2019.08.06 version 1.2.0 =
 * Removed separate Access Key subscription, now only one subscription key is required
-* Documentation updated to reflect portal.vipps.no
+* Documentation updated to reflect that the keys are now to be fetched from portal.vipps.no, and that the separate Access Key subscription is no longer neccessary
 
 
 = 2019.06.24 version 1.1.18 =
