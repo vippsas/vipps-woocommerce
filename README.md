@@ -39,17 +39,12 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 # How to get Vipps account keys from Vipps Developer Portal
-1. Sign in to Vipps Developer Portal at [https://api-portal.vipps.no/](https://api-portal.vipps.no/)
-   - Username is sent via email
-   - Password is sent via SMS
-2. Select the "Applications" tab. Here you can find the merchant/saleunit serial number (6 figures)
-3. Click on "View Secret" to see “Client ID” and “Client Secret”
-4. Click on customer name (top-right corner) and select "Profile" to see your subscriptions. You will here find the product "Vipps API" - click on 'Show' to see the primary key, which you will use for both the access token key and subscription key.
-5. If you don't have 'Vipps API', but instead an Ecommerce API and a separate 'Default accesstoken' subscription, you have an older subscription where you will need to use both these primary keys separately: the 'Default accesstoken' for the access token, and the Ecommerce API for the eCommerce key.
+1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
+2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
+3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
-_Please note that you should use the *production* environment (api-portal.vipps.no) for WooCommerce, not the *test* environment (apitest-portal.vipps.no)._
 
-See: [Getting Started](https://github.com/vippsas/vipps-developers/blob/master/vipps-developer-portal-getting-started.md) with the Vipps Developer Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
+See: [Getting Started](https://github.com/vippsas/vipps-developers/blob/master/vipps-developer-portal-getting-started.md) with the Vipps Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
 
 # Screenshots
 Enable Vipps as a payment method
@@ -66,7 +61,9 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## Does Vipps offer a test environment for Vipps for WooCommerce?
 
-No. We recommend that you "test in production" with a small amount, like 2 NOK.
+Yes, but to use it you will need both separate test keys/accounts and a device on which to install a special test version of the Vipps app, available through Testflight. It is therefore only practically usable for developers. To use this, you will also need to set the constant VIPPS_TEST_MODE to true.
+
+Instead, we recommend that you "test in production" with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ## How can I get help if I have any issues?
 
@@ -76,3 +73,4 @@ For issues with your WooCommerce installation you should use the [support forum 
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
+* The port 443 must not be blocked for outward traffic
