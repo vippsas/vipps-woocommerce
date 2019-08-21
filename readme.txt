@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.2.2
+Tested up to: 5.3.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.6.5
+WC tested up to: 3.7.0
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -176,6 +176,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2019.08.06 version 1.2.1 =
+* Tested with WordPress 5.3, WooCommerce 3.7 and Bring Fraktguiden for WooCommerce 1.6.5
 
 = 2019.08.06 version 1.2.0 =
 * Removed separate Access Key subscription, now only one subscription key is required
