@@ -107,11 +107,9 @@ It is therefore also important that you test your setup if you are using express
 = I'd like to use sequential order numbers at Vipps instead of the WooCommerce order-ids using a sequential order number plugin. Does this plugins support that?
 Yes, though you need to ensure that the order-id's you produce like this are unique for your Vipps account, and you currently have to use a filter in your themes' functions.php file. We recommend using a prefix for your order ids, so a filter that will work with sequential order numbers would look like
 
-```
-add_filter('woo_vipps_order_id', function ($default, $prefix, $order) {
+`add_filter('woo_vipps_order_id', function ($default, $prefix, $order) {
     return $prefix . $order->get_order_number();
-}, 10, 3);
-```
+}, 10, 3);`
 
 = Firewall ports =
 Ensure *outgoing* traffic to port 443 is open. This is used to communicate with Vipps servers.
