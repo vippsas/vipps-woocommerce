@@ -175,7 +175,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.08.06 version 1.2.1 =
+= 2019.08.26 version 1.2.1 =
 * Tested with WordPress 5.3, WooCommerce 3.7 and Bring Fraktguiden for WooCommerce 1.6.5
 
 = 2019.08.06 version 1.2.0 =
