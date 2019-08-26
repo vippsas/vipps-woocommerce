@@ -104,7 +104,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action( 'woocommerce_order_status_cancelled', array($this, 'maybe_cancel_payment'));
         add_action( 'woocommerce_order_status_refunded', array($this, 'maybe_refund_payment'));
 
+        add_action( 'woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
+
     }
+
+    // Delete express checkout orders with no customer information - these were abandonend before the app started.
+    // IOK 2019-08-26
+    public function maybe_delete_order ($orderid) {
+        $order = wc_get_order($orderid);
+        if (!$order) return;
+        if ('vipps' != $order->get_payment_method()) return false;
+        $express = $order->get_meta('_vipps_express_checkout');
+        if (!$express) return false;
+        $email = $order->get_billing_email($email);
+        if ($email) return false;
+        // Note that this order is to be deleted. We can't delete it just yet, because it will be used on the 'welcome back' page
+        // and possibly by other hooks.
+        $order->update_meta_data('_vipps_delendum',1);
+        $order->save();
+    }
+
 
     // Return the status to use after return from Vipps for orders that are not both "virtual" and "downloadable".
     // These orders are *not* complete, and payment is *not* captured, which is why the default status is 'on-hold'.
@@ -938,6 +957,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // This does not call Vipps, so if you need to refresh status, please use callback_check_order_status first. IOK 2019-01-23
     public function check_payment_status($order) {
+        if (!$order) return 'cancelled';
         $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         return $status;
     }
@@ -1101,6 +1121,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $addressline1 = $address['addressLine1'];
         $addressline2 = @$address['addressLine2'];
+      
+        // This apparently happens a lot IOK 2019-08-26 
+        if ($addressline1 == $addressline2) $addressline2 = ''; 
+
+
         $vippscountry = $address['country'];
         $city = $address['city'];
         $postcode= @$address['zipCode'];

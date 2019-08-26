@@ -175,6 +175,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2019.09.02 version 1.2.2 =
+ * Ensure situations where the first and second addresslines are duplicates are silently fixed
+ * Add option for deleting Express Checkout orders that are abandoned (from 'Pending' to 'Cancelled' without any customer or address info)
+
+
 = 2019.08.26 version 1.2.1 =
 * Tested with WordPress 5.3, WooCommerce 3.7 and Bring Fraktguiden for WooCommerce 1.6.5
 
