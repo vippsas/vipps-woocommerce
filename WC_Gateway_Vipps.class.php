@@ -122,10 +122,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Note that this order is to be deleted. We can't delete it just yet, because it will be used on the 'welcome back' page
         // and possibly by other hooks.
 
-        wp_delete_post($orderid, true); // FIXME
-
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
+
+        wp_delete_post($orderid, true); // FIXME
     }
 
 
@@ -493,6 +493,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This will be enabled on a later date . IOK 2018-06-05
         if (false) {
+
             $this->form_fields['expresscreateuser'] = array (
                     'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
                     'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
@@ -508,6 +509,36 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => 'yes',
                     );
         }
+        $this->form_fields['developermode'] = array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
+                    'title'       => __( 'Enable developer mode', 'woo-vipps' ),
+                    'label'       => __( 'Enable developer mode', 'woo-vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('Enable this to enter developer mode. This gives you access to the test-api and other tools not yet ready for general consumption', 'woo-vipps'),
+                    'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+        );
+
+
+
+        if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
+            $this->form_fields['developertitle'] = array(
+                    'title' => __('Developer mode settings', 'woo-vipps'),
+                    'type'  => 'title',
+                    'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
+                    );
+            $this->form_fields['testmode'] = array(
+                    'title' => __('Test mode', 'woo-vipps'),
+                    'title' => __('Enable test mode', 'woo-vipps'),
+                    'type'  => 'checkbox',
+                    'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
+                                         accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
+                    'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+                    );
+
+
+
+
+        }
+   
     }
 
 
