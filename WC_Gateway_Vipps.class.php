@@ -109,6 +109,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Delete express checkout orders with no customer information - these were abandonend before the app started.
+    // This only marks these orders for deletion, the actual deletion happens later.
     // IOK 2019-08-26
     public function maybe_delete_order ($orderid) {
         $order = wc_get_order($orderid);
@@ -120,6 +121,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($email) return false;
         // Note that this order is to be deleted. We can't delete it just yet, because it will be used on the 'welcome back' page
         // and possibly by other hooks.
+
+        wp_delete_post($orderid, true); // FIXME
+
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
     }

@@ -99,6 +99,8 @@ class Vipps {
         }
 
 
+
+/*
         // IOK FIXME Warp this up better and make it depend on WC_Gateway setting
         global $wpdb;
         $cutoff = gmdate('Y-m-d H:i:s', time() - (5 * 60));
@@ -107,6 +109,7 @@ class Vipps {
         foreach($delenda as $delendum) {
           wp_delete_post($delendum['post_id'],true);
         }
+*/
 
     }
 
@@ -1663,10 +1666,17 @@ class Vipps {
         }
         do_action('woo_vipps_wait_for_payment_page',$order);
 
-        if (!$order) wp_die(__('Unknown order', 'woo-vipps'));
+        $deleted_order=0;
+        if ($orderid && !$order) {
+          // If this happens, we actually did have an order, but it has been deleted, which must mean that it was cancelled.
+          // Concievably a hook on the 'cancel'-transition or in the callback handlers could clean that up before we get here. IOK 2019-09-26
+          $deleted_order=1;
+        }
+
+        if (!$order && !$deleted_order) wp_die(__('Unknown order', 'woo-vipps'));
 
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
-        $status = $order->get_status();
+        $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
@@ -1686,7 +1696,7 @@ class Vipps {
         }
 
 
-        $payment = $gw->check_payment_status($order);
+        $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
