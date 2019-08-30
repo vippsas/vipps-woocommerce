@@ -91,7 +91,7 @@ class Vipps {
         add_action('wp_ajax_vipps_link_qr', array($this, 'ajax_vipps_link_qr'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
 
-        if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE && $gw->enabled == 'yes') {
+        if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
             add_action('admin_notices', function() {
                     $what = __('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps');
                     echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";

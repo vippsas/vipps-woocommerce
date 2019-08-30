@@ -37,6 +37,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $title = 'Vipps';
     public $method_description = "";
     public $apiurl = null;
+    public $testapiurl = null;
     public $api = null;
     public $supports = null;
     public $express_checkout_supported_product_types;
@@ -58,13 +59,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 	    
 
     public function __construct() {
-
-        // This can be set in your wp-config.php file. IOK 2018-05-31
-        if (defined('VIPPS_TEST_MODE') && VIPPS_TEST_MODE) {
-            $this->apiurl = 'https://apitest.vipps.no';
-        } else {
-            $this->apiurl = 'https://api.vipps.no';
-        }
+        $this->testapiurl = 'https://apitest.vipps.no';
+        $this->apiurl = 'https://api.vipps.no';
 
         $this->method_description = __('Offer Vipps as a payment method', 'woo-vipps');
         $this->method_title = __('Vipps','woo-vipps');
@@ -111,10 +107,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True iff this gateway is currently in test mode. IOK 2019-08-30
     public function is_test_mode() {
        if (VIPPS_TEST_MODE) return true;
-       if ($this->get_option('developermode') && $this->get_option('testmode')) return true;
+       if ($this->get_option('developermode') == 'yes' && $this->get_option('testmode') == 'yes') return true;
        return false;
     }
     // These abstraction gets the correct client id and so forth based on whether or not test mode is on
+    public function apiurl () {
+       if ($this->is_test_mode()) return $this->testapiurl;
+       return $this->apiurl;
+    }
     public function get_merchant_serial() {
         $merch = $this->get_option('merchantSerialNumber');
         $testmerch = @$this->get_option('merchantSerialNumber_test');
@@ -564,7 +564,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'title'       => __( 'Enable developer mode', 'woo-vipps' ),
                     'label'       => __( 'Enable developer mode', 'woo-vipps' ),
                     'type'        => 'checkbox',
-                    'description' => __('Enable this to enter developer mode. This gives you access to the test-api and other tools not yet ready for general consumption', 'woo-vipps'),
+                    'description' => __('Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption', 'woo-vipps'),
                     'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
         );
 
@@ -1552,9 +1552,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Handle options updates
         $saved = parent::process_admin_options();
 
-        $at = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $s = $this->get_option('secret');
-        $c = $this->get_option('clientId');
+        $at = $this->get_key();
+        $s = $this->get_secret();
+        $c = $this->get_clientid();
         if ($at && $s && $c) {
             try {
                 $token = $this->api->get_access_token('force');

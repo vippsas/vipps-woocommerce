@@ -44,7 +44,8 @@ class VippsApi {
         return $this->gateway->get_secret();
     }
     public function get_key() {
-        return $this->gateway->get_key();
+        $key = $this->gateway->get_key(); 
+        return $key;
     }
     public function get_orderprefix() {
         return $this->gateway->get_orderprefix();
@@ -342,7 +343,7 @@ class VippsApi {
 
     // Conveniently call Vipps IOK 2018-04-18
     private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){
-        $server=$this->gateway->apiurl;
+        $server=$this->gateway->apiurl();
         $url = $server . "/" . $command; 
 
         if (!$headers) $headers=array();

@@ -61,9 +61,15 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## Does Vipps offer a test environment for Vipps for WooCommerce?
 
-Yes, but to use it you will need both separate test keys/accounts and a device on which to install a special test version of the Vipps app, available through Testflight. It is therefore only practically usable for developers. To use this, you will also need to set the constant VIPPS_TEST_MODE to true.
+Yes, but you will need a separate account, and you will need to install a special test version of the Vipps app, available trough Testflight. For your test account, the keys will be at https://portal-test.vipps.no; you will configure these in the developer mode settings. 
 
-Instead, we recommend that you "test in production" with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
+Contact Vipps for access to the test app. This app must be installed on a device that does not have the normal Vipps app installed, or there will be conflicts.
+
+To use test mode, switch "Developer mode" on. There you can input the test keys from portal-test.vipps.no and turn test mode on and off.
+
+If you have defined the constant VIPPS_TEST_MODE to true, test mode will be forced on.
+
+If this isn't practical for your usage, we recommend that you "test in production" with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ## How can I get help if I have any issues?
 

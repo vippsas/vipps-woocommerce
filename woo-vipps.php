@@ -35,6 +35,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+// Legacy way of starting test mode - please use developer- and test-modes from now on. IOK 2019-08-30
+if ( ! defined('VIPPS_TEST_MODE' )) {
+    define('VIPPS_TEST_MODE', false);
+}
 
 // Only be active if Woocommerce is active, either on site or network activated IOK 2018-08-29
 $activeplugins =  apply_filters( 'active_plugins', get_option( 'active_plugins' ));
