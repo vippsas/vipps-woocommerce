@@ -98,19 +98,6 @@ class Vipps {
                     });
         }
 
-
-
-/*
-        // IOK FIXME Warp this up better and make it depend on WC_Gateway setting
-        global $wpdb;
-        $cutoff = gmdate('Y-m-d H:i:s', time() - (5 * 60));
-        $q = $wpdb->prepare("SELECT m.post_id FROM {$wpdb->prefix}posts p JOIN {$wpdb->prefix}postmeta m ON (m.post_id = p.ID AND meta_key = '_vipps_delendum') WHERE m.meta_value=1 AND p.post_type='shop_order' AND p.post_status='wc-cancelled' AND p.post_modified_gmt<%s", $cutoff);
-        $delenda = $wpdb->get_results($q, ARRAY_A);
-        foreach($delenda as $delendum) {
-          wp_delete_post($delendum['post_id'],true);
-        }
-*/
-
     }
 
     public function admin_head() {

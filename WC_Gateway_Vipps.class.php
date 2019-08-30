@@ -108,10 +108,48 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     }
 
+    // True iff this gateway is currently in test mode. IOK 2019-08-30
+    public function is_test_mode() {
+       if (VIPPS_TEST_MODE) return true;
+       if ($this->get_option('developermode') && $this->get_option('testmode')) return true;
+       return false;
+    }
+    // These abstraction gets the correct client id and so forth based on whether or not test mode is on
+    public function get_merchant_serial() {
+        $merch = $this->get_option('merchantSerialNumber');
+        $testmerch = @$this->get_option('merchantSerialNumber_test');
+        if (!empty($testmerch) && $this->is_test_mode()) return $testmerch;
+        return $merch;
+    }
+    public function get_clientid() {
+        $clientid=$this->get_option('clientId');
+        $testclientid=$this->get_option('clientId_test');
+        if (!empty($testclientid) && $this->is_test_mode()) return $testclientid;
+        return $clientid;
+    }
+    public function get_secret() {
+        $secret=$this->get_option('secret');
+        $testsecret=$this->get_option('secret_test');
+        if (!empty($testsecret) && $this->is_test_mode()) return $testsecret;
+        return $secret;
+    }
+    public function get_key() {
+        $key = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $testkey = $this->get_option('Ocp_Apim_Key_eCommerce_test');
+        if (!empty($testkey) && $this->is_test_mode()) return $testkey;
+        return $key;
+    }
+    public function get_orderprefix() {
+        $prefix = $this->get_option('orderprefix');
+        return $prefix;
+    }
+
+
     // Delete express checkout orders with no customer information - these were abandonend before the app started.
     // This only marks these orders for deletion, the actual deletion happens later.
     // IOK 2019-08-26
     public function maybe_delete_order ($orderid) {
+        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
@@ -119,13 +157,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$express) return false;
         $email = $order->get_billing_email($email);
         if ($email) return false;
+
         // Note that this order is to be deleted. We can't delete it just yet, because it will be used on the 'welcome back' page
         // and possibly by other hooks.
-
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
-
+        // Or just delete it.  Not sure yet.
         wp_delete_post($orderid, true); // FIXME
+        return true;
     }
 
 
@@ -398,6 +437,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
                 'clientId' => array(
                         'title' => __('Client Id', 'woo-vipps'),
+                        'class' => 'vippspw',
                         'label'       => __( 'Client Id', 'woo-vipps' ),
                         'type'        => 'password',
                         'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
@@ -406,6 +446,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'secret' => array(
                         'title' => __('Client Secret', 'woo-vipps'),
                         'label'       => __( 'Client Secret', 'woo-vipps' ),
+                        'class' => 'vippspw',
                        'type'        => 'password',
                         'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
                         'default'     => '',
@@ -413,6 +454,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'Ocp_Apim_Key_eCommerce' => array(
                         'title' => __('Vipps Subscription Key', 'woo-vipps'),
                         'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
+                        'class' => 'vippspw',
                         'type'        => 'password',
                         'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
                         'default'     => '',
@@ -488,6 +530,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
+                  'deletefailedexpressorders' => array(
+                        'title'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
+                        'label'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('As Express Checkout orders are anonymous, failed orders will end up as "cancelled" orders with no information in them. Enable this to delete these automatically when cancelled - but test to make sure no other plugin needs them for anything.', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
+
 
                     );
 
@@ -509,6 +559,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => 'yes',
                     );
         }
+
         $this->form_fields['developermode'] = array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
                     'title'       => __( 'Enable developer mode', 'woo-vipps' ),
                     'label'       => __( 'Enable developer mode', 'woo-vipps' ),
@@ -518,26 +569,66 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         );
 
 
+        // Developer mode settings: Only shown when active. IOK 2019-08-30
+	if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
+		$devfields = array(
+				'developertitle' => array(
+					'title' => __('Developer mode settings', 'woo-vipps'),
+					'type'  => 'title',
+					'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
+					),
+				'testmode' => array(
+					'title' => __('Test mode', 'woo-vipps'),
+					'title' => __('Enable test mode', 'woo-vipps'),
+					'type'  => 'checkbox',
+					'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
+						accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
+					'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+					),
+				'merchantSerialNumber_test' => array(
+					'title' => __('Merchant Serial Number', 'woo-vipps'),
+                                        'class' => 'vippspw',
+					'label'       => __( 'Merchant Serial Number', 'woo-vipps' ),
+					'type'        => 'number',
+					'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal-test.vipps.no','woo-vipps'),
+					'default'     => '',
+					),
+				'clientId_test' => array(
+						'title' => __('Client Id', 'woo-vipps'),
+						'label'       => __( 'Client Id', 'woo-vipps' ),
+						'type'        => 'password',
+                                                'class' => 'vippspw',
+						'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+						'default'     => '',
+						),
+				'secret_test' => array(
+						'title' => __('Client Secret', 'woo-vipps'),
+						'label'       => __( 'Client Secret', 'woo-vipps' ),
+						'type'        => 'password',
+                                                'class' => 'vippspw',
+						'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+						'default'     => '',
+						),
+				'Ocp_Apim_Key_eCommerce_test' => array(
+						'title' => __('Vipps Subscription Key', 'woo-vipps'),
+						'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
+						'type'        => 'password',
+                                                'class' => 'vippspw',
+						'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+						'default'     => '',
+						),
+				);
+		$this->form_fields = array_merge($this->form_fields,$devfields);
 
-        if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-            $this->form_fields['developertitle'] = array(
-                    'title' => __('Developer mode settings', 'woo-vipps'),
-                    'type'  => 'title',
-                    'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
-                    );
-            $this->form_fields['testmode'] = array(
-                    'title' => __('Test mode', 'woo-vipps'),
-                    'title' => __('Enable test mode', 'woo-vipps'),
-                    'type'  => 'checkbox',
-                    'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
-                                         accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
-                    'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
-                    );
+                if (VIPPS_TEST_MODE) {
+                   $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
+                   $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
+                }
 
 
 
 
-        }
+	}
    
     }
 
@@ -1229,7 +1320,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
 
         $merchant= $result['merchantSerialNumber'];
-        $me = $this->get_option('merchantSerialNumber');
+       
+        $me = $this->get_merchant_serial();
+
         if ($me != $merchant) {
             $this->log(__("Vipps callback with wrong merchantSerialNumber - might be forged",'woo-vipps') . " " .  $orderid, 'warning');
             return false;
@@ -1444,9 +1537,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $value;
     }
     function validate_checkbox_field($key,$value) {
-        if ($key != 'enabled') return parent::validate_checkbox_field($key,$value);
-        if ($value && $this->can_be_activated()) return 'yes';
-        return 'no';
+        if ($key == 'testmode' && VIPPS_TEST_MODE) {
+              return "yes";    
+        } else if ($key == 'developermode' && VIPPS_TEST_MODE) {
+              return "yes";    
+        } else if ($key == 'enabled') { 
+              if ($value && $this->can_be_activated()) return 'yes';
+              return "no";
+        }
+        return parent::validate_checkbox_field($key,$value);
     }
 
     function process_admin_options () {

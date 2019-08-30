@@ -33,6 +33,24 @@ class VippsApi {
         $this->gateway = $gateway;
     }
 
+    // These abstraction gets the correct client id and so forth based on whether or not test mode is on
+    public function get_merchant_serial() {
+        return $this->gateway->get_merchant_serial();
+    }
+    public function get_clientid() {
+        return $this->gateway->get_clientid();
+    }
+    public function get_secret() {
+        return $this->gateway->get_secret();
+    }
+    public function get_key() {
+        return $this->gateway->get_key();
+    }
+    public function get_orderprefix() {
+        return $this->gateway->get_orderprefix();
+    }
+
+
     public function get_option($optionname) {
         return $this->gateway->get_option($optionname);
     }
@@ -59,9 +77,9 @@ class VippsApi {
 
     // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
     private function get_access_token_from_vipps() { 
-        $clientid=$this->get_option('clientId');
-        $secret=$this->get_option('secret');
-        $at = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $clientid=$this->get_clientid();
+        $secret=$this->get_secret();
+        $at = $this->get_key();
         $command = 'accessToken/get';
         try {
             $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
@@ -80,9 +98,9 @@ class VippsApi {
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
-        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $merch = $this->get_option('merchantSerialNumber');
-        $prefix = $this->get_option('orderprefix');
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        $prefix = $this->get_orderprefix();
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
@@ -139,7 +157,7 @@ class VippsApi {
     }
 
     public function order_status($order) {
-        $merch = $this->get_option('merchantSerialNumber');
+        $merch = $this->get_merchant_serial();
         $vippsorderid = $order->get_meta('_vipps_orderid');
 	$requestid = 1;
 
@@ -147,7 +165,7 @@ class VippsApi {
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
-        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
+        $subkey = $this->get_key();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -175,8 +193,8 @@ class VippsApi {
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
-        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $merch = $this->get_option('merchantSerialNumber');
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -215,8 +233,8 @@ class VippsApi {
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
-        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $merch = $this->get_option('merchantSerialNumber');
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -252,8 +270,8 @@ class VippsApi {
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
-        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $merch = $this->get_option('merchantSerialNumber');
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -297,8 +315,8 @@ class VippsApi {
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
-        $subkey = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $merch = $this->get_option('merchantSerialNumber');
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
