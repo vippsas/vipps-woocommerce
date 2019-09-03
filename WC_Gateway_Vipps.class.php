@@ -30,6 +30,7 @@ require_once(dirname(__FILE__) . "/VippsApi.class.php");
 
 class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $form_fields = null;
+    public $dev_form_fields = null;
     public $id = 'vipps';
     public $icon = ''; 
     public $has_fields = true;
@@ -568,67 +569,63 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
         );
 
+	$this->dev_form_fields = array(
+			'developertitle' => array(
+				'title' => __('Developer mode settings', 'woo-vipps'),
+				'type'  => 'title',
+				'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
+				),
+			'testmode' => array(
+				'title' => __('Test mode', 'woo-vipps'),
+				'title' => __('Enable test mode', 'woo-vipps'),
+				'type'  => 'checkbox',
+				'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
+					accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
+				'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+				),
+			'merchantSerialNumber_test' => array(
+				'title' => __('Merchant Serial Number', 'woo-vipps'),
+				'class' => 'vippspw',
+				'label'       => __( 'Merchant Serial Number', 'woo-vipps' ),
+				'type'        => 'number',
+				'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal-test.vipps.no','woo-vipps'),
+				'default'     => '',
+				),
+			'clientId_test' => array(
+					'title' => __('Client Id', 'woo-vipps'),
+					'label'       => __( 'Client Id', 'woo-vipps' ),
+					'type'        => 'password',
+					'class' => 'vippspw',
+					'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+					'default'     => '',
+					),
+			'secret_test' => array(
+					'title' => __('Client Secret', 'woo-vipps'),
+					'label'       => __( 'Client Secret', 'woo-vipps' ),
+					'type'        => 'password',
+					'class' => 'vippspw',
+					'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+					'default'     => '',
+					),
+			'Ocp_Apim_Key_eCommerce_test' => array(
+					'title' => __('Vipps Subscription Key', 'woo-vipps'),
+					'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
+					'type'        => 'password',
+					'class' => 'vippspw',
+					'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+					'default'     => '',
+					),
+			);
 
         // Developer mode settings: Only shown when active. IOK 2019-08-30
 	if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-		$devfields = array(
-				'developertitle' => array(
-					'title' => __('Developer mode settings', 'woo-vipps'),
-					'type'  => 'title',
-					'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
-					),
-				'testmode' => array(
-					'title' => __('Test mode', 'woo-vipps'),
-					'title' => __('Enable test mode', 'woo-vipps'),
-					'type'  => 'checkbox',
-					'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
-						accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
-					'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
-					),
-				'merchantSerialNumber_test' => array(
-					'title' => __('Merchant Serial Number', 'woo-vipps'),
-                                        'class' => 'vippspw',
-					'label'       => __( 'Merchant Serial Number', 'woo-vipps' ),
-					'type'        => 'number',
-					'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal-test.vipps.no','woo-vipps'),
-					'default'     => '',
-					),
-				'clientId_test' => array(
-						'title' => __('Client Id', 'woo-vipps'),
-						'label'       => __( 'Client Id', 'woo-vipps' ),
-						'type'        => 'password',
-                                                'class' => 'vippspw',
-						'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-						'default'     => '',
-						),
-				'secret_test' => array(
-						'title' => __('Client Secret', 'woo-vipps'),
-						'label'       => __( 'Client Secret', 'woo-vipps' ),
-						'type'        => 'password',
-                                                'class' => 'vippspw',
-						'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-						'default'     => '',
-						),
-				'Ocp_Apim_Key_eCommerce_test' => array(
-						'title' => __('Vipps Subscription Key', 'woo-vipps'),
-						'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
-						'type'        => 'password',
-                                                'class' => 'vippspw',
-						'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-						'default'     => '',
-						),
-				);
-		$this->form_fields = array_merge($this->form_fields,$devfields);
-
+		$this->form_fields = array_merge($this->form_fields,$this->dev_form_fields);
                 if (VIPPS_TEST_MODE) {
                    $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
                    $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
                 }
-
-
-
-
 	}
+
    
     }
 
@@ -1551,6 +1548,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     function process_admin_options () {
         // Handle options updates
         $saved = parent::process_admin_options();
+        // We may have changed the number of form fields at this point if dev mode was changed 
+        // from off to on,so re-nitialize the form fields here. IOK 2019-09-03
+        $this->init_form_fields();
 
         $at = $this->get_key();
         $s = $this->get_secret();
