@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-13 18:17+0000\n"
-"PO-Revision-Date: 2019-09-13 18:19+0000\n"
+"PO-Revision-Date: 2019-09-13 18:20+0000\n"
 "Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
 "Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
@@ -151,7 +151,7 @@ msgstr ""
 #: WC_Gateway_Vipps.class.php:457 WC_Gateway_Vipps.class.php:458
 #: WC_Gateway_Vipps.class.php:612 WC_Gateway_Vipps.class.php:613
 msgid "Vipps Subscription Key"
-msgstr "Vipps Subscripion Key"
+msgstr "Vipps Subscription Key"
 
 #: WC_Gateway_Vipps.class.php:461
 msgid ""
