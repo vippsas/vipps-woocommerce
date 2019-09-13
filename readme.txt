@@ -2,7 +2,7 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.3.0
+Tested up to: 5.2.3
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
@@ -114,6 +114,17 @@ Yes, though you need to ensure that the order-id's you produce like this are uni
 = Firewall ports =
 Ensure *outgoing* traffic to port 443 is open. This is used to communicate with Vipps servers.
 
+= Does Vipps offer a test environment for Vipps for WooCommerce? =
+
+Yes, but you will need a separate account, and you will need to install a special test version of the Vipps app, available trough Testflight. For your test account, the keys will be at https://portal-test.vipps.no; you will configure these in the developer mode settings.
+
+Contact Vipps for access to the test app. This app must be installed on a device that does not have the normal Vipps app installed, or there will be conflicts.
+
+To use test mode, switch "Developer mode" on. There you can input the test keys from portal-test.vipps.no and turn test mode on and off.
+
+If this isn't practical for your usage, we recommend that you "test in production" with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
+
+
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
@@ -175,7 +186,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.09.xx version 1.2.2 =
+= 2019.09.16 version 1.2.2 =
  * Ensure situations where the first and second addresslines are duplicates are silently fixed
  * Add option for deleting Express Checkout orders that are abandoned (from 'Pending' to 'Cancelled' without any customer or address info)
  * Add 'developer mode' and in this, 'test mode' with a separate set of keys for testing Vipps. Remember, you will also need to install a test Vipps app from Testflight on a separate device from your normal Vipps-device.

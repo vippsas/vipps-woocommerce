@@ -147,10 +147,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     // Delete express checkout orders with no customer information - these were abandonend before the app started.
-    // This only marks these orders for deletion, the actual deletion happens later.
     // IOK 2019-08-26
     public function maybe_delete_order ($orderid) {
-        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
@@ -159,12 +157,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $email = $order->get_billing_email($email);
         if ($email) return false;
 
-        // Note that this order is to be deleted. We can't delete it just yet, because it will be used on the 'welcome back' page
-        // and possibly by other hooks.
+        // Mark this order that an order that wasn't completed with any user info - it can be deleted. IOK 2019-11-13
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
-        // Or just delete it.  Not sure yet.
-        wp_delete_post($orderid, true); // FIXME
+
+        // Only delete if we have to
+        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
+
+        // Delete it at once. In the future, we may move this to a periodic job so that orders aren't deleted until a somewhat later point.
+        wp_delete_post($orderid, true); 
         return true;
     }
 
@@ -1549,7 +1550,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Handle options updates
         $saved = parent::process_admin_options();
         // We may have changed the number of form fields at this point if dev mode was changed 
-        // from off to on,so re-nitialize the form fields here. IOK 2019-09-03
+        // from off to on,so re-initialize the form fields here. IOK 2019-09-03
         $this->init_form_fields();
 
         $at = $this->get_key();
