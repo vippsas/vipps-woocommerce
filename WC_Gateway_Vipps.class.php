@@ -589,7 +589,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 				'class' => 'vippspw',
 				'label'       => __( 'Merchant Serial Number', 'woo-vipps' ),
 				'type'        => 'number',
-				'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal-test.vipps.no','woo-vipps'),
+				'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
 				'default'     => '',
 				),
 			'clientId_test' => array(
@@ -597,7 +597,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 					'label'       => __( 'Client Id', 'woo-vipps' ),
 					'type'        => 'password',
 					'class' => 'vippspw',
-					'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+					'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
 					'default'     => '',
 					),
 			'secret_test' => array(
@@ -605,7 +605,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 					'label'       => __( 'Client Secret', 'woo-vipps' ),
 					'type'        => 'password',
 					'class' => 'vippspw',
-					'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+					'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
 					'default'     => '',
 					),
 			'Ocp_Apim_Key_eCommerce_test' => array(
@@ -613,7 +613,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 					'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
 					'type'        => 'password',
 					'class' => 'vippspw',
-					'description' => __('Find your account under the "Developer" tab on https://portal-test.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+					'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
 					'default'     => '',
 					),
 			);
