@@ -191,6 +191,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2019.10.07 version 1.2.3 =
  * Added actions and filters when creating Express Checkout order: 'woo_vipps_before_create_express_checkout_order' 'woo_vipps_create_express_checkout_cart_contents' and 'woo_vipps_express_checkout_order_created'
+ * Added a call to 'get_payment_details' before capturing or refunding money - this ensures that orders are synched with Vipps before this is done and eliminates a difficult error that previously only was fixable by pressing "Show complete transaction details".
 
 = 2019.09.16 version 1.2.2 =
  * Ensure situations where the first and second addresslines are duplicates are silently fixed
