@@ -303,17 +303,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
+        // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
+        // the order is capturable by getting full payment details.
+        try {
+                $this->get_payment_details($order);
+                $order = wc_get_order($orderid); // Grap theorder again
+       } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
+        $vippsstatus = $order->get_meta('_vipps_status');
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
-        $vippsstatus = $order->get_meta('_vipps_status');
-
-        // Ensure 'SALE' direct captured orders work
-        if (!$captured && $vippsstatus == 'SALE') {
-            $this->get_payment_details($order);
-            $captured = $order->get_meta('_vipps_captured');
-            $to_refund =  $order->get_meta('_vipps_refund_remaining');
-        }
 
         if (!$captured) {
             return $this->maybe_cancel_payment($orderid);
@@ -378,15 +380,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function process_refund($orderid,$amount=null,$reason='') {
         $order = wc_get_order($orderid);
 
+        try {
+                $this->get_payment_details($order);
+                $order = wc_get_order($orderid); // Grap theorder again
+        } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
-
-        // Ensure 'SALE' direct captured orders work
-        if (!$captured && $vippsstatus == 'SALE') {
-            $this->get_payment_details($order);
-            $captured = $order->get_meta('_vipps_captured');
-            $to_refund =  $order->get_meta('_vipps_refund_remaining');
-        }
 
         if (!$captured) {
             return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'woo-vipps'));
@@ -803,6 +806,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($vippsstatus == 'SALE') {
             return true;
         }
+
+        // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
+        // the order is capturable by getting full payment details.
+        try {
+                $this->get_payment_details($order);
+                $order = wc_get_order($orderid); // Grap theorder again
+       } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing capture: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
 
         try {
             $ok = $this->capture_payment($order);

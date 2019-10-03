@@ -727,7 +727,7 @@ class Vipps {
 
         if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
             $gw = $this->gateway();
-            $ok = $gw->capture_payment($order);
+            $ok = $gw->maybe_capture_payment($postid);
             // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
             $this->store_admin_notices();
         }
