@@ -752,10 +752,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($authtoken) {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
-        // Needed to ensure we have orderinfo
-        if ($this->express_checkout) {
-            $order->update_meta_data('_vipps_express_checkout',1);
-        }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','woo-vipps'));
@@ -1422,18 +1418,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function create_partial_order($thecart=null) {
         if (!$thecart) {
          $thecart = WC()->cart;
-         $contents = $thecart->get_cart_for_session();
-        } else {
-            // if ( ! did_action( 'woocommerce_cart_loaded_from_session' ) ) 
-         $contents = $thecart->get_cart_contents();
         }
+        do_action('woo_vipps_before_create_express_checkout_order', $thecart);
+        $contents = $thecart->get_cart_contents();
+        $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
+        
+
         $cart_hash = md5(json_encode(wc_clean($contents)) . $thecart->total);
         $order = new WC_Order();
         $order->set_status('pending');
         $order->set_payment_method($this);
 	$order->set_created_via('Vipps Express Checkout');
 	$order->set_payment_method_title('Vipps Express Checkout');
-	$dummy = __('Vipps Express Checkout', 'woo-vipps');
+	$dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
+
+        $order->update_meta_data('_vipps_express_checkout',1);
 
         $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
         $order->set_currency( get_woocommerce_currency() );
@@ -1451,6 +1450,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->checkout->create_order_coupon_lines( $order, $thecart);
         $order->calculate_totals(true);
         $orderid = $order->save(); 
+
+        do_action('woo_vipps_express_checkout_order_created', $orderid);
 
         // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
         do_action('woocommerce_checkout_update_order_meta', $orderid, array());

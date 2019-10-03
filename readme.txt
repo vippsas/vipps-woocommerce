@@ -159,6 +159,9 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
  ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
  * Action: 'woo_vipps_before_redirect_to_vipps': Takes an order-id, called at the end of process_payment right before the redirect to Vipps
+ * Action: 'woo_vipps_before_create_express_checkout_order': Takes the cart to do express checkout for, run before the order is created 
+ * Filter : 'woo_vipps_create_express_checkout_cart_contents': Takes a cart contents array from which an express checkout order will be created . Should return a like array.
+ * Action: 'woo_vipps_express_checkout_order_created': Takes an order ID, run right after an express checkout order has been created, but before it is processed'
  * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
  * Action: 'woo_vipps_wait_for_payment_page': Run on the page shown on return from Vipps
  * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipp
@@ -185,6 +188,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2019.10.07 version 1.2.3 =
+ * Added actions and filters when creating Express Checkout order: 'woo_vipps_before_create_express_checkout_order' 'woo_vipps_create_express_checkout_cart_contents' and 'woo_vipps_express_checkout_order_created'
 
 = 2019.09.16 version 1.2.2 =
  * Ensure situations where the first and second addresslines are duplicates are silently fixed
