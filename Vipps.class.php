@@ -904,6 +904,10 @@ class Vipps {
         $order->set_shipping_country($country);
         $order->save();
 
+        // If you need to do something before the cart is manipulated, this is where it must be done.
+        // It is possible for a plugin to require a session when manipulating the cart, which could 
+        // currently crash the system. This could be used to avoid that. IOK 2019-10-09
+        do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $result);
 
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
         // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,

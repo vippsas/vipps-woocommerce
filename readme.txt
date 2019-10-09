@@ -170,6 +170,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
  * Action 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
  * Action 'woo_vipps_shipping_details_callback': Is ran when Vipps does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps, and the callback args. For debugging.
+ * Action 'woo_vipps_shipping_details_before_cart_creation': Run after order is updated but before a cart is created to do shipping calculations. Takes an order, The order-id at Vipps and the callback arguments from Vipps
 
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
@@ -188,6 +189,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2019.10.14 version 1.2.4 =
+ *  Added action 'woo_vipps_shipping_details_before_cart_creation' to assist sites where the Cart cannot be manipulated when no session is active.
 
 = 2019.10.07 version 1.2.3 =
  * Added actions and filters when creating Express Checkout order: 'woo_vipps_before_create_express_checkout_order' 'woo_vipps_create_express_checkout_cart_contents' and 'woo_vipps_express_checkout_order_created'
