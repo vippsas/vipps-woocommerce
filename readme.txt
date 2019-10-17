@@ -146,7 +146,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_express_checkout_shipping_rate': The shipping rate to add on express checkout. Takes existing shipping_rate, cost ex tax, tax, shipping method and shipping product and must return a shipping_rate.
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
  * Filter: 'woo_vipps_show_capture_button': Takes a boolean and an order and returns whether or not to show the capture button in the backend
- * Filter: 'woo_vipps_captured_statues': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
+ * Filter: 'woo_vipps_captured_statuses': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
  * Filter: 'woo_vipps_transaction_text': Takes a transaction text and an order object, must return a text to be passed to Vipps and displayed to the user along the lines of "Please confirm your order"
  * Filter: 'woo_vipps_special_page_template': Takes a (complete) template path as returned by locate_template and the ID of the Vipps special page, should return a new template path (using locate_template or similar).
  * Filter: 'woo_vipps_order_failed_redirect': Takes an empty string or an url and an order id. If URL is returned, go there on cancelled or failed orders.
