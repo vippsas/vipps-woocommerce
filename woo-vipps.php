@@ -7,7 +7,7 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.2.4
+   Version: 1.2.5
    License: AGPLv3 or later
    License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
