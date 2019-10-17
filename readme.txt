@@ -168,9 +168,10 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Action: 'woo_vipps_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
  * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
  * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
- * Action 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
- * Action 'woo_vipps_shipping_details_callback': Is ran when Vipps does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps, and the callback args. For debugging.
- * Action 'woo_vipps_shipping_details_before_cart_creation': Run after order is updated but before a cart is created to do shipping calculations. Takes an order, The order-id at Vipps and the callback arguments from Vipps
+ * Action: 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
+ * Action: 'woo_vipps_shipping_details_callback': Is ran when Vipps does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps, and the callback args. For debugging.
+ * Action: 'woo_vipps_shipping_details_before_cart_creation': Run after order is updated but before a cart is created to do shipping calculations. Takes an order, The order-id at Vipps and the callback arguments from Vipps
+ * Filter: 'woo_vipps_transaction_text_shop_id': This is used to identify your shop in the transaction texts sent to Vipps (and shown to the user). Default is home_url(), but there is a length limit, so this filter allows you to keep it short.
 
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid

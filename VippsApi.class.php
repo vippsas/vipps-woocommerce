@@ -132,7 +132,8 @@ class VippsApi {
         $transaction['orderId'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($order->get_total() * 100); 
-        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . home_url(); 
+        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
+        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
         $transaction['transactionText'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
         $transaction['timeStamp'] = $date;
 
@@ -215,7 +216,12 @@ class VippsApi {
         $transaction = array();
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($amount);
-        $transaction['transactionText'] = __('Order capture for order','woo-vipps') . ' ' . $orderid . ' ' . home_url(); 
+
+        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
+
+        $transaction['transactionText'] = __('Order capture for order','woo-vipps') . ' ' . $orderid . ' ' . $shop_identification;
+
+        
 
 
         $data = array();
