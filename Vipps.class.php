@@ -642,6 +642,8 @@ class Vipps {
     public function template_redirect() {
         // Handle special callbacks
         $special = $this->is_special_page() ;
+
+
         if ($special) return $this->$special();
 
         $consentremoval = $this->is_consent_removal();
@@ -838,6 +840,15 @@ class Vipps {
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
         wc_nocache_headers();
+  
+        require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
+        add_filter('woocommerce_session_handler', function ($handler) { error_log("Yes sir we can session handle"); return "VippsCallbackSessionHandler";});
+        WC()->initialize_session(); // Should replace the old one
+        $handler = WC()->session;
+        error_log("Got a session now yes sirree bob: " . is_a($handler,'WC_Session_Handler'));
+        error_log("And is it?: " . is_a($handler,'VippsCallbackSessionHandler'));
+        
+
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         $callback = @$_REQUEST['callback'];
@@ -1645,7 +1656,7 @@ class Vipps {
                if (!$session->has_session()) {
                  $session->set_customer_session_cookie(true);
                }
-               $session->set('__vipps_pending_order', $orderid);
+               $session->set('_vipps_pending_order', $orderid);
              }
            }
         }
