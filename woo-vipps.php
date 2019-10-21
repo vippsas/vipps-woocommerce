@@ -52,7 +52,7 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 
     /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
     global $Vipps;
-    $Vipps = new Vipps();
+    $Vipps = Vipps::instance();
     register_activation_hook(__FILE__,array($Vipps,'activate'));
     register_uninstall_hook(__FILE__, 'Vipps::uninstall');
 

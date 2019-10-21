@@ -31,6 +31,8 @@ class Vipps {
     private $callbackDirname = 'wc-vipps-status';
     private static $instance = null;
     private $countrymap = null;
+    // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
+    public $callbackorder = 0;
 
     function __construct() {
     }
@@ -812,6 +814,10 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             return false;
         }
+
+        $vippsorderid = $result['orderId'];
+        $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
+
         // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31.
         // As an alternative, we would have to replace the session handler here with a new one.
         $handler = wc()->session;
@@ -840,14 +846,6 @@ class Vipps {
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
         wc_nocache_headers();
-  
-        require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
-        add_filter('woocommerce_session_handler', function ($handler) { error_log("Yes sir we can session handle"); return "VippsCallbackSessionHandler";});
-        WC()->initialize_session(); // Should replace the old one
-        $handler = WC()->session;
-        error_log("Got a session now yes sirree bob: " . is_a($handler,'WC_Session_Handler'));
-        error_log("And is it?: " . is_a($handler,'VippsCallbackSessionHandler'));
-        
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
@@ -859,20 +857,22 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
+        error_log("Setting orderid to $orderid");
+        $this->callbackorder = $orderid;
+        require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
+        add_filter('woocommerce_session_handler', function ($handler) { error_log("Yes sir we can session handle"); return "VippsCallbackSessionHandler";});
+        WC()->initialize_session(); // Should replace the old one
+        $handler = WC()->session;
+        error_log("Got a session now yes sirree bob: " . is_a($handler,'WC_Session_Handler'));
+        error_log("And is it?: " . is_a($handler,'VippsCallbackSessionHandler'));
+        error_log("Value of foo is " . WC()->session->get('foo'));
+        
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
             exit();
         }
-
-        // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31. 
-        // As an alternative, we would have to replace the session handler here with a new one.
-        $handler = wc()->session;
-        if (is_a($handler, 'WC_Session_Handler')) {
-            wc()->session->destroy_session();
-        }
-
 
         $order = wc_get_order($orderid);
         if (!$order) {
