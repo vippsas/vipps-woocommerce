@@ -1645,7 +1645,7 @@ class Vipps {
                if (!$session->has_session()) {
                  $session->set_customer_session_cookie(true);
                }
-               $session->set('__vipps_pending_order', $orderid);
+               $session->set('_vipps_pending_order', $orderid);
              }
            }
         }
