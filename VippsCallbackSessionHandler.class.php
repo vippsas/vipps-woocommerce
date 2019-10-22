@@ -39,7 +39,7 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
         error_log("Checking has_session");
         return !empty($this->sessiondata);
     }
- 
+
     public function forget_session() {
           error_log("Forgetting session");
           if (!$this->has_session()) return;

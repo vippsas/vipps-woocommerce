@@ -62,6 +62,9 @@ class Vipps {
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
         $this->add_shortcodes();
+
+
+
     }
 
     public function admin_init () {
@@ -100,6 +103,20 @@ class Vipps {
                     });
         }
 
+        $this->delete_old_cancelled_orders();
+    }
+
+    // This function will delete old orders that were cancelled before the Vipps action was completed. We keep them for
+    // 10 minutes so we can work with them in hooks and callbacks after they are cancelled. IOK 2019-10-22
+    protected function delete_old_cancelled_orders() {
+        global $wpdb;
+        $cutoff = time() - 600; // Ten minutes old orders: Delete them
+        $delendaq = $wpdb->prepare("SELECT o.ID from {$wpdb->postmeta} m join {$wpdb->posts} o on (m.meta_key='_vipps_delendum' and o.id=m.post_id)
+WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancelled' && o.post_modified_gmt < %s", gmdate('Y-m-d H:i:s', $cutoff));
+        $delenda = $wpdb->get_results($delendaq, ARRAY_A);
+        foreach ($delenda as $del) {
+           wp_delete_post($del['ID']);
+        }
     }
 
     public function admin_head() {
@@ -215,6 +232,7 @@ class Vipps {
     // Show the express button if reasonable to do so
     public function cart_express_checkout_button() {
         $gw = $this->gateway();
+
         if ($gw->show_express_checkout()){
             return $this->cart_express_checkout_button_html();
         }
@@ -816,7 +834,7 @@ class Vipps {
         }
 
         $vippsorderid = $result['orderId'];
-        $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
+        $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
         // Ensure we use the same session as for the original order IOK 2019-01-30
         $this->callback_restore_session($orderid);
@@ -917,6 +935,8 @@ class Vipps {
         $order->set_shipping_postcode($postcode);
         $order->set_shipping_country($country);
         $order->save();
+
+error_log(print_r($order->get_used_coupons(), true));
 
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
@@ -1728,7 +1748,6 @@ class Vipps {
             $this->fakepage(__('Order cancelled','woo-vipps'), $content);
 
             return;
-
         }
 
         // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27

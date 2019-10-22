@@ -157,15 +157,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $email = $order->get_billing_email($email);
         if ($email) return false;
 
+        // Only delete if we have to
+        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
         // Mark this order that an order that wasn't completed with any user info - it can be deleted. IOK 2019-11-13
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
-
-        // Only delete if we have to
-        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
-
-        // Delete it at once. In the future, we may move this to a periodic job so that orders aren't deleted until a somewhat later point.
-        wp_delete_post($orderid, true); 
         return true;
     }
 
@@ -1433,11 +1429,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$thecart) {
          $thecart = WC()->cart;
         }
+
         do_action('woo_vipps_before_create_express_checkout_order', $thecart);
         $contents = $thecart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         
-
         $cart_hash = md5(json_encode(wc_clean($contents)) . $thecart->total);
         $order = new WC_Order();
         $order->set_status('pending');
