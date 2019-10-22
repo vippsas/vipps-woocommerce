@@ -1466,11 +1466,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderid = $order->save(); 
 
         // The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
+        // The Vipps class will restore the session from this on callbacks.
         // IOK 2019-10-21
         $sessioncookie = array();
         $sessionhandler = WC()->session;
         if ($sessionhandler && is_a($sessionhandler, 'WC_Session_Handler')) {
-         WC()->session->set('foo','bar' . $orderid);
          $sessioncookie=$sessionhandler->get_session_cookie();
         }
         if (!empty($sessioncookie)) {
@@ -1478,7 +1478,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->update_meta_data('_vipps_sessiondata',json_encode($sessioncookie));
           $order->save();
         }
-        
 
         do_action('woo_vipps_express_checkout_order_created', $orderid);
 

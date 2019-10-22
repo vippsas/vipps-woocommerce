@@ -818,17 +818,16 @@ class Vipps {
         $vippsorderid = $result['orderId'];
         $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
 
-        // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31.
-        // As an alternative, we would have to replace the session handler here with a new one.
-        $handler = wc()->session;
-        if (is_a($handler, 'WC_Session_Handler')) {
-            wc()->session->destroy_session();
-        }
+        // Ensure we use the same session as for the original order IOK 2019-01-30
+        $this->callback_restore_session($orderid);
 
         do_action('woo_vipps_callback', $result);
 
         $gw = $this->gateway();
         $gw->handle_callback($result);
+
+        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
+        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
         exit();
     }
 
@@ -841,6 +840,18 @@ class Vipps {
         if ($mapped) $code = $mapped;
         $code = apply_filters('woo_vipps_country_to_code', $code, $countryname);
         return  $code;
+    }
+
+    // When we get callbacks from Vipps, we want to restore the Woo session in place for the order.
+    // For many plugins this is strictly neccessary because they don't check to see if there is a session
+    // or not - and for many others, wrong results are produced without the (correct) session. IOK 2019-10-22
+    protected function callback_restore_session ($orderid) {
+        $this->callbackorder = $orderid;
+        require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
+        add_filter('woocommerce_session_handler', function ($handler) { return "VippsCallbackSessionHandler";});
+        // This will replace the old session with this one. IOK 2019-10-22
+        WC()->initialize_session(); // Should replace the old one
+        return WC()->session;
     }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
@@ -857,16 +868,8 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-        error_log("Setting orderid to $orderid");
-        $this->callbackorder = $orderid;
-        require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
-        add_filter('woocommerce_session_handler', function ($handler) { error_log("Yes sir we can session handle"); return "VippsCallbackSessionHandler";});
-        WC()->initialize_session(); // Should replace the old one
-        $handler = WC()->session;
-        error_log("Got a session now yes sirree bob: " . is_a($handler,'WC_Session_Handler'));
-        error_log("And is it?: " . is_a($handler,'VippsCallbackSessionHandler'));
-        error_log("Value of foo is " . WC()->session->get('foo'));
-        
+        $this->callback_restore_session($orderid);       
+ 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         if (!$orderid) {
@@ -1001,6 +1004,10 @@ class Vipps {
         $json = json_encode($return);
         header("Content-type: application/json; charset=UTF-8");
         print $json;
+
+        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
+        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
+
         exit();
     }
 
