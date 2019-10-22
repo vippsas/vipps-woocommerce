@@ -997,9 +997,6 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         // Then format for Vipps
         $methods = array();
-        $howmany = count($methods);
-        $priority=0;
-        $isdefault = 1;
 
         // This way of calculating the results will always produce the cost as if it was
         // not including tax. This means that it will be wrong in all those cases - it will 
@@ -1007,11 +1004,21 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $pricesincludetax = 0;
         if (get_option('woocommerce_prices_include_tax') == 'yes') $pricesincludetax=1;
 
+        $cheapest = null;
+        $chosen = null;
+        if (is_a(WC()->session, 'WC_Session_Handler')) {
+          $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+          if (!empty($all_chosen)) $chosen= $all_chosen[0];
+        }
+
         foreach ($shipping_methods as  $rate) {
-            $priority++;
-            $method['isDefault'] = $isdefault ? 'Y' : 'N';
-            $isdefault=0;
-            $method['priority'] = $priority;
+            $rateid = $rate->get_id();
+            if ($chosen == $rateid) {
+              $method['isDefault'] = 'Y';
+            } else {
+              $method['isDefault'] = 'N';
+            }
+            $method['priority'] = 0;
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
 
@@ -1020,6 +1027,19 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             // We may not really need the tax stashed here, but just to be sure.
             $method['shippingMethodId'] = $rate->get_id() . ";" . $tax; 
             $methods[]= $method;
+        }
+
+        usort($methods, function($method1, $method2) {
+            return $method1['shippingCost'] - $method2['shippingCost'];
+        });
+
+        $priority=0;
+        foreach($methods as &$method) {
+          $method['priority']=$priority;
+          $priority++;
+        }
+        if(!$chosen && !empty($methods)) {
+            $methods[0]['isDefault'] = 'Y';
         }
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
