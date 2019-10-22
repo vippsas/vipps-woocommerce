@@ -5,21 +5,17 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
 
     public function init() { 
        global $Vipps;
-       error_log("In init: " . $Vipps->callbackorder);
        $this->callbackorder = $Vipps->callbackorder;
        return parent::init();
     }
 
     public function get_session_cookie() {
-       error_log("Session for {$this->callbackorder}");
        if (!$this->callbackorder) return false;
        $order = wc_get_order($this->callbackorder);
-       error_log("Order for {$this->callbackorder}");
        if (empty($order) && is_wp_error($order))  {
-          error_log("That's no order or something");
+          return false;
        }
        $sessionjson = $order->get_meta('_vipps_sessiondata');
-       error_log("Session ->$sessionjson<-");
        if (empty($sessionjson)) return false;
        $sessiondata = @json_decode($sessionjson,true);
        if (empty($sessiondata)) return false;
@@ -36,12 +32,10 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
     }
 
     public function has_session () {
-        error_log("Checking has_session");
         return !empty($this->sessiondata);
     }
 
     public function forget_session() {
-          error_log("Forgetting session");
           if (!$this->has_session()) return;
           $order = wc_get_order($this->callbackorder);
           if (empty($order) && is_wp_error($order)) return false;

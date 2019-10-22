@@ -935,8 +935,8 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $order->set_shipping_postcode($postcode);
         $order->set_shipping_country($country);
         $order->save();
-
-error_log(print_r($order->get_used_coupons(), true));
+        $coupons = $order->get_used_coupons();
+         
 
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
@@ -947,6 +947,8 @@ error_log(print_r($order->get_used_coupons(), true));
         // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
         // so this needs to be maintained. IOK 2018.
         $acart = new WC_Cart();
+        foreach($coupons as $coupon) $acart->apply_coupon($coupon);
+
         foreach($order->get_items() as $item) {
             $varid = $item['variation_id'];
             $prodid = $item['product_id'];
