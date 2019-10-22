@@ -946,8 +946,10 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
         // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
         // so this needs to be maintained. IOK 2018.
+        // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
         $acart = new WC_Cart();
         foreach($coupons as $coupon) $acart->apply_coupon($coupon);
+        wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
 
         foreach($order->get_items() as $item) {
             $varid = $item['variation_id'];
