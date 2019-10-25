@@ -836,7 +836,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $vippsorderid = $result['orderId'];
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-        // Ensure we use the same session as for the original order IOK 2019-01-30
+        // Ensure we use the same session as for the original order IOK 2019-10-21
         $this->callback_restore_session($orderid);
 
         do_action('woo_vipps_callback', $result);
@@ -869,7 +869,22 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         add_filter('woocommerce_session_handler', function ($handler) { return "VippsCallbackSessionHandler";});
         // This will replace the old session with this one. IOK 2019-10-22
         WC()->initialize_session(); // Should replace the old one
+ 
+        $customerid= 0;
+        if (WC()->session && is_a(WC()->session, 'WC_Session_Handler')) {
+           $customerid = WC()->session->get('express_customer_id');
+        }
+        if ($customerid) {
+          WC()->customer = new WC_Customer($customerid); // Reset from session, logged in user
+        } else {
+          WC()->customer = new WC_Customer(); // Reset from session
+        }
+        // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
+        WC()->customer->set_billing_address_to_base();
+        WC()->customer->set_shipping_address_to_base();
+
         return WC()->session;
+
     }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
@@ -936,6 +951,10 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $order->set_shipping_country($country);
         $order->save();
         $coupons = $order->get_used_coupons();
+
+        // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
+        WC()->customer->set_billing_location($country,'',$postcode,$city);
+        WC()->customer->set_shipping_location($country,'',$postcode,$city);
          
 
         // If you need to do something before the cart is manipulated, this is where it must be done.
@@ -948,6 +967,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // so this needs to be maintained. IOK 2018.
         // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
         $acart = new WC_Cart();
+
         foreach($coupons as $coupon) $acart->apply_coupon($coupon);
         wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
 
@@ -1736,7 +1756,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             // Unfortunately, Woo or WP has no locking system, and creating one portably is not currently feasible. Therefore
             // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
             // This then will check if the callback is in progress - the callback will do exactly the same on its part.
-            if (!get_transient('order_callback_'.$orderid)) {
+            if (!get_transient('order_callback_'.$orderid)) { 
                 $newstatus = $gw->callback_check_order_status($order);
                 if ($newstatus) {
                     $status = $newstatus;

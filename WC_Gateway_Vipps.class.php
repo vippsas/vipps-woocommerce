@@ -1286,6 +1286,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_shipping_country($country);
         $order->save();
 
+        // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
+        WC()->customer->set_billing_location($country,'',$postcode,$city);
+        WC()->customer->set_shipping_location($country,'',$postcode,$city);
+
         // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
         // method name - including any tax.
         $method = $shipping['shippingMethodId'];
@@ -1469,6 +1473,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($sessionhandler && is_a($sessionhandler, 'WC_Session_Handler')) {
          $sessioncookie=$sessionhandler->get_session_cookie();
         }
+
+        // If customer is actually logged in, take note IOK 2019-10-25
+        if ($sessionhandler) WC()->session->set('express_customer_id',get_current_user_id());
+
         if (!empty($sessioncookie)) {
           // Customer id, session expiration, session-epiring and cookie-hash is the contents. IOK 2019-10-21
           $order->update_meta_data('_vipps_sessiondata',json_encode($sessioncookie));
