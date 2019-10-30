@@ -191,7 +191,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.10.xx version 1.3.0 =
+= 2019.11.04 version 1.3.0 =
  * Finally, added a session handler for the Vipps callbacks so these happen with the same session and context as the user interactions. Furthermore added handling for coupons and any previous chosen shipping method in the shipping callback, and added sorting to this so cheapest appear first.
  * Changed logic of maybe_delete_order so that it just marks the order as deleted and then does the actual delete 10 minutes later. This way, hooks and stuff can manipulate the order before it is deleted.
 
