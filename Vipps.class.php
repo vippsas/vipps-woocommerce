@@ -950,7 +950,14 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $order->set_shipping_postcode($postcode);
         $order->set_shipping_country($country);
         $order->save();
-        $coupons = $order->get_used_coupons();
+
+        // Deprecated in 3.7.0. The versy first #ifdef! IOK 2019-10-30
+        $coupons = array();
+        if (version_compare(WC_VERSION, '3.7', '>=')) {
+          $coupons = $order->get_coupon_codes();
+        } else {
+          $coupons = $order->get_used_coupons();
+        }
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
         WC()->customer->set_billing_location($country,'',$postcode,$city);
