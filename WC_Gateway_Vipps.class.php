@@ -157,15 +157,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $email = $order->get_billing_email($email);
         if ($email) return false;
 
+        // Only delete if we have to
+        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
         // Mark this order that an order that wasn't completed with any user info - it can be deleted. IOK 2019-11-13
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
-
-        // Only delete if we have to
-        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
-
-        // Delete it at once. In the future, we may move this to a periodic job so that orders aren't deleted until a somewhat later point.
-        wp_delete_post($orderid, true); 
         return true;
     }
 
@@ -1290,6 +1286,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_shipping_country($country);
         $order->save();
 
+        // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
+        WC()->customer->set_billing_location($country,'',$postcode,$city);
+        WC()->customer->set_shipping_location($country,'',$postcode,$city);
+
         // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
         // method name - including any tax.
         $method = $shipping['shippingMethodId'];
@@ -1433,11 +1433,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$thecart) {
          $thecart = WC()->cart;
         }
+
         do_action('woo_vipps_before_create_express_checkout_order', $thecart);
         $contents = $thecart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         
-
         $cart_hash = md5(json_encode(wc_clean($contents)) . $thecart->total);
         $order = new WC_Order();
         $order->set_status('pending');
@@ -1464,6 +1464,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->checkout->create_order_coupon_lines( $order, $thecart);
         $order->calculate_totals(true);
         $orderid = $order->save(); 
+
+        // The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
+        // The Vipps class will restore the session from this on callbacks.
+        // IOK 2019-10-21
+        $sessioncookie = array();
+        $sessionhandler = WC()->session;
+        if ($sessionhandler && is_a($sessionhandler, 'WC_Session_Handler')) {
+         $sessioncookie=$sessionhandler->get_session_cookie();
+        }
+
+        // If customer is actually logged in, take note IOK 2019-10-25
+        if ($sessionhandler) WC()->session->set('express_customer_id',get_current_user_id());
+
+        if (!empty($sessioncookie)) {
+          // Customer id, session expiration, session-epiring and cookie-hash is the contents. IOK 2019-10-21
+          $order->update_meta_data('_vipps_sessiondata',json_encode($sessioncookie));
+          $order->save();
+        }
 
         do_action('woo_vipps_express_checkout_order_created', $orderid);
 

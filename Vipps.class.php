@@ -31,6 +31,8 @@ class Vipps {
     private $callbackDirname = 'wc-vipps-status';
     private static $instance = null;
     private $countrymap = null;
+    // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
+    public $callbackorder = 0;
 
     function __construct() {
     }
@@ -60,6 +62,9 @@ class Vipps {
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
         $this->add_shortcodes();
+
+
+
     }
 
     public function admin_init () {
@@ -98,6 +103,20 @@ class Vipps {
                     });
         }
 
+        $this->delete_old_cancelled_orders();
+    }
+
+    // This function will delete old orders that were cancelled before the Vipps action was completed. We keep them for
+    // 10 minutes so we can work with them in hooks and callbacks after they are cancelled. IOK 2019-10-22
+    protected function delete_old_cancelled_orders() {
+        global $wpdb;
+        $cutoff = time() - 600; // Ten minutes old orders: Delete them
+        $delendaq = $wpdb->prepare("SELECT o.ID from {$wpdb->postmeta} m join {$wpdb->posts} o on (m.meta_key='_vipps_delendum' and o.id=m.post_id)
+WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancelled' && o.post_modified_gmt < %s", gmdate('Y-m-d H:i:s', $cutoff));
+        $delenda = $wpdb->get_results($delendaq, ARRAY_A);
+        foreach ($delenda as $del) {
+           wp_delete_post($del['ID']);
+        }
     }
 
     public function admin_head() {
@@ -213,6 +232,7 @@ class Vipps {
     // Show the express button if reasonable to do so
     public function cart_express_checkout_button() {
         $gw = $this->gateway();
+
         if ($gw->show_express_checkout()){
             return $this->cart_express_checkout_button_html();
         }
@@ -642,6 +662,8 @@ class Vipps {
     public function template_redirect() {
         // Handle special callbacks
         $special = $this->is_special_page() ;
+
+
         if ($special) return $this->$special();
 
         $consentremoval = $this->is_consent_removal();
@@ -810,17 +832,20 @@ class Vipps {
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             return false;
         }
-        // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31.
-        // As an alternative, we would have to replace the session handler here with a new one.
-        $handler = wc()->session;
-        if (is_a($handler, 'WC_Session_Handler')) {
-            wc()->session->destroy_session();
-        }
+
+        $vippsorderid = $result['orderId'];
+        $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
+
+        // Ensure we use the same session as for the original order IOK 2019-10-21
+        $this->callback_restore_session($orderid);
 
         do_action('woo_vipps_callback', $result);
 
         $gw = $this->gateway();
         $gw->handle_callback($result);
+
+        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
+        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
         exit();
     }
 
@@ -835,9 +860,37 @@ class Vipps {
         return  $code;
     }
 
+    // When we get callbacks from Vipps, we want to restore the Woo session in place for the order.
+    // For many plugins this is strictly neccessary because they don't check to see if there is a session
+    // or not - and for many others, wrong results are produced without the (correct) session. IOK 2019-10-22
+    protected function callback_restore_session ($orderid) {
+        $this->callbackorder = $orderid;
+        require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
+        add_filter('woocommerce_session_handler', function ($handler) { return "VippsCallbackSessionHandler";});
+        // This will replace the old session with this one. IOK 2019-10-22
+        WC()->initialize_session(); // Should replace the old one
+ 
+        $customerid= 0;
+        if (WC()->session && is_a(WC()->session, 'WC_Session_Handler')) {
+           $customerid = WC()->session->get('express_customer_id');
+        }
+        if ($customerid) {
+          WC()->customer = new WC_Customer($customerid); // Reset from session, logged in user
+        } else {
+          WC()->customer = new WC_Customer(); // Reset from session
+        }
+        // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
+        WC()->customer->set_billing_address_to_base();
+        WC()->customer->set_shipping_address_to_base();
+
+        return WC()->session;
+
+    }
+
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
         wc_nocache_headers();
+
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         $callback = @$_REQUEST['callback'];
@@ -848,20 +901,14 @@ class Vipps {
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
+        $this->callback_restore_session($orderid);       
+ 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
             exit();
         }
-
-        // Ensure we are not caching anything in a callback-session here. IOK 2019-01-31. 
-        // As an alternative, we would have to replace the session handler here with a new one.
-        $handler = wc()->session;
-        if (is_a($handler, 'WC_Session_Handler')) {
-            wc()->session->destroy_session();
-        }
-
 
         $order = wc_get_order($orderid);
         if (!$order) {
@@ -904,6 +951,19 @@ class Vipps {
         $order->set_shipping_country($country);
         $order->save();
 
+        // Deprecated in 3.7.0. The versy first #ifdef! IOK 2019-10-30
+        $coupons = array();
+        if (version_compare(WC_VERSION, '3.7', '>=')) {
+          $coupons = $order->get_coupon_codes();
+        } else {
+          $coupons = $order->get_used_coupons();
+        }
+
+        // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
+        WC()->customer->set_billing_location($country,'',$postcode,$city);
+        WC()->customer->set_shipping_location($country,'',$postcode,$city);
+         
+
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
@@ -912,7 +972,12 @@ class Vipps {
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
         // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
         // so this needs to be maintained. IOK 2018.
+        // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
         $acart = new WC_Cart();
+
+        foreach($coupons as $coupon) $acart->apply_coupon($coupon);
+        wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
+
         foreach($order->get_items() as $item) {
             $varid = $item['variation_id'];
             $prodid = $item['product_id'];
@@ -959,9 +1024,6 @@ class Vipps {
 
         // Then format for Vipps
         $methods = array();
-        $howmany = count($methods);
-        $priority=0;
-        $isdefault = 1;
 
         // This way of calculating the results will always produce the cost as if it was
         // not including tax. This means that it will be wrong in all those cases - it will 
@@ -969,11 +1031,21 @@ class Vipps {
         $pricesincludetax = 0;
         if (get_option('woocommerce_prices_include_tax') == 'yes') $pricesincludetax=1;
 
+        $cheapest = null;
+        $chosen = null;
+        if (is_a(WC()->session, 'WC_Session_Handler')) {
+          $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+          if (!empty($all_chosen)) $chosen= $all_chosen[0];
+        }
+
         foreach ($shipping_methods as  $rate) {
-            $priority++;
-            $method['isDefault'] = $isdefault ? 'Y' : 'N';
-            $isdefault=0;
-            $method['priority'] = $priority;
+            $rateid = $rate->get_id();
+            if ($chosen == $rateid) {
+              $method['isDefault'] = 'Y';
+            } else {
+              $method['isDefault'] = 'N';
+            }
+            $method['priority'] = 0;
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
 
@@ -984,12 +1056,29 @@ class Vipps {
             $methods[]= $method;
         }
 
+        usort($methods, function($method1, $method2) {
+            return $method1['shippingCost'] - $method2['shippingCost'];
+        });
+
+        $priority=0;
+        foreach($methods as &$method) {
+          $method['priority']=$priority;
+          $priority++;
+        }
+        if(!$chosen && !empty($methods)) {
+            $methods[0]['isDefault'] = 'Y';
+        }
+
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
 
         $json = json_encode($return);
         header("Content-type: application/json; charset=UTF-8");
         print $json;
+
+        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
+        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
+
         exit();
     }
 
@@ -1674,7 +1763,7 @@ class Vipps {
             // Unfortunately, Woo or WP has no locking system, and creating one portably is not currently feasible. Therefore
             // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
             // This then will check if the callback is in progress - the callback will do exactly the same on its part.
-            if (!get_transient('order_callback_'.$orderid)) {
+            if (!get_transient('order_callback_'.$orderid)) { 
                 $newstatus = $gw->callback_check_order_status($order);
                 if ($newstatus) {
                     $status = $newstatus;
@@ -1710,7 +1799,6 @@ class Vipps {
             $this->fakepage(__('Order cancelled','woo-vipps'), $content);
 
             return;
-
         }
 
         // Still pending and order is supposed to exist, so wait for Vipps. This happens all the time, so logging is removed. IOK 2018-09-27
