@@ -96,7 +96,6 @@ Some plugins add new features to products or entirely new product types to WooCo
 
 = Why is my shipping wrong when using express checkout? =
 Some shipping plugins and setups are not compatible with Vipps Express Checkout. 
-The problem is that WooCommerce does not support calculating shipping when done anonymously, as is the case when the shipping information comes from the App.
 
 We do our testing with the standard Woo shipping mechanism and Bring Fraktguiden for WooCommerce, and these should work. For any other plugin or setup we can unfortunately give no guarantee.
 
