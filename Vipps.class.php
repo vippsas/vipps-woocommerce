@@ -1453,7 +1453,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         } else {
             $url = "/$what/";
         }
-        return set_url_scheme(home_url(),'https') . $url;
+        return untrailingslashit(set_url_scheme(home_url(),'https')) . $url;
     }
     public function payment_return_url() {
         return $this->make_return_url('vipps-betaling');
