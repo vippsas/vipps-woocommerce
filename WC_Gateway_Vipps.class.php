@@ -196,9 +196,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
-            return set_url_scheme(home_url(),'https') . "/?wc-api=$forwhat&$tk&callback=";
+            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/?wc-api=$forwhat&$tk&callback=";
         } else {
-            return set_url_scheme(home_url(),'https') . "/wc-api/$forwhat?$tk&callback=";
+            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/wc-api/$forwhat?$tk&callback=";
         }
     }
     // The main payment callback
