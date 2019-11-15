@@ -154,7 +154,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ('vipps' != $order->get_payment_method()) return false;
         $express = $order->get_meta('_vipps_express_checkout');
         if (!$express) return false;
-        $email = $order->get_billing_email($email);
+        $email = $order->get_billing_email($orderid);
         if ($email) return false;
 
         // Only delete if we have to

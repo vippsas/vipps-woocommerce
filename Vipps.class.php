@@ -1031,20 +1031,15 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $pricesincludetax = 0;
         if (get_option('woocommerce_prices_include_tax') == 'yes') $pricesincludetax=1;
 
-        $cheapest = null;
         $chosen = null;
         if (is_a(WC()->session, 'WC_Session_Handler')) {
           $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
           if (!empty($all_chosen)) $chosen= $all_chosen[0];
         }
 
+        $free = 0;
         foreach ($shipping_methods as  $rate) {
-            $rateid = $rate->get_id();
-            if ($chosen == $rateid) {
-              $method['isDefault'] = 'Y';
-            } else {
-              $method['isDefault'] = 'N';
-            }
+            $method = array();
             $method['priority'] = 0;
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
@@ -1054,6 +1049,12 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             // We may not really need the tax stashed here, but just to be sure.
             $method['shippingMethodId'] = $rate->get_id() . ";" . $tax; 
             $methods[]= $method;
+
+            // If we qualify for free shipping, make it the default. Thanks to Emely Bakke for reporting. IOK 2019-11-15
+            if (preg_match("!^free_shipping!",$rate->get_id())) {
+              $free=1;
+              $chosen = $rateid;
+            }
         }
 
         usort($methods, function($method1, $method2) {
@@ -1062,10 +1063,17 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $priority=0;
         foreach($methods as &$method) {
+          $rateid = explode(";",$method['shippingMethodId'],2);
+          if (!empty($rateid) && $rateid[0] == $chosen) {
+              $method['isDefault'] = 'Y';
+          } else {
+              $method['isDefault'] = 'N';
+          }
           $method['priority']=$priority;
           $priority++;
         }
-        if(!$chosen && !empty($methods)) {
+
+        if(!$free && !$chosen && !empty($methods)) {
             $methods[0]['isDefault'] = 'Y';
         }
 
