@@ -691,6 +691,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
+
         // From the request, get either    [billing_phone] =>  or [vipps phone]
         $phone = '';
         if (isset($_POST['vippsphone'])) {
@@ -699,6 +700,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$phone && isset($_POST['billing_phone'])) {
             $phone = trim($_POST['billing_phone']);
         }
+
+        // This is for express checkout if we know the customers' phone.
+        // thanks to sOndre @ github for reporting , https://github.com/vippsas/vipps-woocommerce/issues/22
+        if (!$phone && WC()->customer) {
+            $phone = WC()->customer->get_billing_phone();
+        }
+
         // No longer the case for V2 of the API
         if (false && !$phone) {
             wc_add_notice(__('You need to enter your phone number to pay with Vipps','woo-vipps') ,'error');

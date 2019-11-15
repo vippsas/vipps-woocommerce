@@ -192,6 +192,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2019.11.xx version 1.3.2 =
  * Ensured free_shipping is set as default shipping method in Express Checkout if the user qualifies. Thanks to Emily Bakke for reporting.
+ * When using express checkout, use the customers' phone number as default if we know it https://github.com/vippsas/vipps-woocommerce/issues/22. Thanks to sOndre for reporting.
 
 = 2019.11.13 version 1.3.1 =
  * Added code to ensure that wpml doesn't ruin callback urls with extra slashes
