@@ -716,6 +716,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         $content = null;
 
+        // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
+        $this->save_session_in_order($order);
+
         // Vipps-terminal-page return url to poll/await return
         $returnurl= $Vipps->payment_return_url();
         // If we are using express checkout, use this to handle the address stuff
@@ -1473,6 +1476,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->calculate_totals(true);
         $orderid = $order->save(); 
 
+        do_action('woo_vipps_express_checkout_order_created', $orderid);
+
+        // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
+        do_action('woocommerce_checkout_update_order_meta', $orderid, array());
+
+        return $orderid;
+    }
+
+    protected function save_session_in_order($order) {
         // The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
         // The Vipps class will restore the session from this on callbacks.
         // IOK 2019-10-21
@@ -1491,12 +1503,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->save();
         }
 
-        do_action('woo_vipps_express_checkout_order_created', $orderid);
-
-        // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
-        do_action('woocommerce_checkout_update_order_meta', $orderid, array());
-
-        return $orderid;
     }
 
     // Using this internally to allow the 'enable' button or not. Checks SSL in addition to currency,

@@ -39,6 +39,7 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
             return false;
         }
         $sessionjson = $order->get_meta('_vipps_sessiondata');
+
         if (empty($sessionjson)) return false;
         $sessiondata = @json_decode($sessionjson,true);
         if (empty($sessiondata)) return false;
@@ -51,6 +52,7 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
             return false;
         }
         $this->sessiondata = $sessiondata;
+
         return array($customer_id, $session_expiration, $session_expiring, $cookie_hash); 
     }
 
