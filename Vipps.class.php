@@ -1038,6 +1038,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         }
 
         $free = 0;
+        $defaultset = 0;
         foreach ($shipping_methods as  $rate) {
             $method = array();
             $method['priority'] = 0;
@@ -1053,7 +1054,8 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             // If we qualify for free shipping, make it the default. Thanks to Emely Bakke for reporting. IOK 2019-11-15
             if (preg_match("!^free_shipping!",$rate->get_id())) {
               $free=1;
-              $chosen = $rateid;
+              $defaultset=1;
+              $chosen = $rate->get_id();
             }
         }
 
@@ -1065,6 +1067,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         foreach($methods as &$method) {
           $rateid = explode(";",$method['shippingMethodId'],2);
           if (!empty($rateid) && $rateid[0] == $chosen) {
+              $defaultset=1;
               $method['isDefault'] = 'Y';
           } else {
               $method['isDefault'] = 'N';
@@ -1072,10 +1075,20 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
           $method['priority']=$priority;
           $priority++;
         }
-
-        if(!$free && !$chosen && !empty($methods)) {
-            $methods[0]['isDefault'] = 'Y';
+        // If we don't have free shipping, select the first (cheapest) option, unless that is 'local pickup'. IOK 2019-11-26
+        if(!$defaultset && !empty($methods)) {
+            foreach($methods as &$method) {
+            	if (!preg_match("!^local_pickup!",$method['shippingMethodId'])) {
+                  $defaultset=1;
+                  $method['isDefault'] = 'Y';
+                  break;
+                }
+            }
         }
+        // Or the first if we stil have no default method.
+	if (!$defaultset &&!empty($methods)) {
+		$methods[0]['isDefault'] = 'Y';
+	}
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
