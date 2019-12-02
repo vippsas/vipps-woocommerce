@@ -190,7 +190,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.11.2x version 1.3.3 =
+= 2019.12.02 version 1.3.3 =
  * Add callback session handling to normal non-express checkout flow as well
  * Ensure local_pickup does not get set as default, even if free - unless it is the only option
 
