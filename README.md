@@ -8,7 +8,7 @@ See the main GitHub page for Vipps contact information, etc: https://github.com/
 
 # Description
 
-*Official Vipps Express Checkout and Payment for WooCommerce. More than 3 millon Norwegians use Vipps. Give them a fast and familiar shopping experience.*
+*Official Vipps Express Checkout and Payment for WooCommerce. More than 3.6 millon Norwegians use Vipps. Give them a fast and familiar shopping experience.*
 
 This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
 
@@ -61,21 +61,50 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 
 ## Does Vipps offer a test environment for Vipps for WooCommerce?
 
-Yes, but you will need a separate account, and you will need to install a special test version of the Vipps app, available trough Testflight. For your test account, the keys will be at https://portal-test.vipps.no; you will configure these in the developer mode settings. 
+Yes, for developers that want to contribute to the development of the plugin.
+Vipps does not offer a test account for normal users of the plugin.
 
-Contact Vipps for access to the test app. This app must be installed on a device that does not have the normal Vipps app installed, or there will be conflicts.
+You will need a "Vipps på nett" account for direct integration with the Vipps
+eCom API v2, which can be ordered
+[here](https://vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/).
 
-To use test mode, switch "Developer mode" on. There you can input the test keys from portal-test.vipps.no and turn test mode on and off.
+If you already have a Vipps account for WooCommerce, and want to contribute to
+the development of the plugin, you can contact
+[customer service](https://www.vipps.no/kontakt-oss/bedrift/)
+to "upgrade" your account with access to the test environment.
 
-If you have defined the constant VIPPS_TEST_MODE to true, test mode will be forced on.
+You will also need to install a special test version of the Vipps app, available
+trough Testflight. See
+[Vipps test apps](https://github.com/vippsas/vipps-developers#vipps-test-apps)
+for more information.
 
-If this isn't practical for your usage, we recommend that you "test in production" with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
+API keys for both the test and production environment are available on
+[portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
+See [Getting the API keys](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys)
+in the
+[Getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md)
+guide for more information.
+
+To use test mode in WooCommerce, switch "Developer mode" on. There you can input
+the API keys for the test environment, and turn test mode on and off.
+
+If you have defined the constant `VIPPS_TEST_MODE` to true, test mode will be forced on.
+
+If this isn't practical for your usage, we recommend that you "test in production"
+with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ## How can I get help if I have any issues?
 
 For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
 
+## Vipps FAQ
+
+See the
+[Vipps eCom API FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+for more help with Vipps eCommerce.
+
 # What are the requirements?
+
 * WooCommerce 3.3.4 or newer is required
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
