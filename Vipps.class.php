@@ -867,8 +867,17 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $this->callbackorder = $orderid;
         require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
         add_filter('woocommerce_session_handler', function ($handler) { return "VippsCallbackSessionHandler";});
-        // This will replace the old session with this one. IOK 2019-10-22
-        WC()->initialize_session(); // Should replace the old one
+
+        // Support older versions of Woo by inlining initialize session IOK 2019-12-12
+        if (version_compare(WC_VERSION, '3.6.4', '>=')) {
+           // This will replace the old session with this one. IOK 2019-10-22
+           WC()->initialize_session(); 
+        } else {
+           // Do this manually for 3.6.3 and below
+           $session_class = "VippsCallbackSessionHandler";
+           $this->session = new $session_class();
+           $this->session->init();
+        }
  
         $customerid= 0;
         if (WC()->session && is_a(WC()->session, 'WC_Session_Handler')) {
