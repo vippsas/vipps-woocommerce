@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.3.0
+Tested up to: 5.3.2
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.8.0
+WC tested up to: 3.9.0
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -189,6 +189,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2019.12.12 version 1.3.5 =
+ * Tested up to version 3.9.0 of WooCommerce and 5.3.2 of WP
 
 = 2019.12.12 version 1.3.4 =
  * Backwards compatibility for the callback session handler added
