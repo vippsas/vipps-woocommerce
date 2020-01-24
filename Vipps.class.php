@@ -1043,6 +1043,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $chosen = null;
         if (is_a(WC()->session, 'WC_Session_Handler')) {
           $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+          $this->log("And logging " . print_r($all_chosen,true), 'debug');
           if (!empty($all_chosen)) $chosen= $all_chosen[0];
         }
 
@@ -1681,7 +1682,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // IOK 2018-05-28
         $ok = wp_verify_nonce($_REQUEST['sec'],'express');
 
-        $backurl = wp_validate_redirect($_SERVER['HTTP_REFERER']);
+        $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
 
         if ( WC()->cart->get_cart_contents_count() == 0 ) {
@@ -1702,11 +1703,80 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // to actually perform the express checkout.
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
 
+        // BEGIN VALIDATIONS OF ORDER
+        // Orders active in this session IOK 2020-01-24
+        $sessionorders = array();
+        $sessionorderdata = WC()->session->get('_vipps_session_orders');
+        if ($sessionorderdata) {
+          foreach(array_keys($sessionorderdata) as $oid) {
+             $orderobject = wc_get_order($oid);
+             $sessionorders[] = $orderobject;
+          }
+        }
+
+        $debug = "";
+        $probably_duplicate_order = false;
+        foreach ($sessionorders as $open_order) {
+          $status = $open_order->get_status();
+//          if ($status == 'cancelled' || $status == 'pending') continue;
+          $debugdata = array(); 
+          foreach($open_order->get_items() as $item) {
+            $searchkey = $item->get_product_id() . ':' . $item->get_variation_id() . ':' . $item->get_quantity();
+            $debugdata[$searchkey] = 1;
+          }
+          $debug .= print_r($debugdata,true);
+         }  
+
+
+         // Cartitemdata will be a hash from productid:variationid:quantity to a truth value. This will be used to check against current orders. IOK 2020-01-24
+         $cartitemdata = array();
+         if ($productinfo) {
+             $variantid = 0;
+             $productid = 0;
+             $quantity = intval(@$productinfo['quantity']);
+             if (!$quantity) $quantity = 1;
+             if (isset($productinfo['sku']) && $productinfo['sku']) {
+                 $skuid = wc_get_product_id_by_sku($sku);
+                 $product = wc_get_product($skuid);
+                 $parentid = $product ? $product->get_parent_id() : null;
+                 if ($product) {
+                     if ($parentid) {   
+                         $variantid = $skuid; $productid = $parentid;
+                     } else {
+                         $productid = $skuid;
+                     }
+                 }
+             } else if (isset($productinfo['product_id']) && $productinfo['product_id']) {
+                 $productid = intval($productinfo['product_id']);
+                 $variantid = intval(@$productinfo['variation_id']);
+             }
+             if ($productid) $cartitemdata["$productid:$variantid:$quantity"] = 1;
+         } else {
+             // If no productinfo, this will produce an orderspec from the current cart IOK 2020-01-24
+             $cartitems = WC()->cart->get_cart();
+             foreach($cartitems as $item => $values) {
+                 $cartitemdata[$values['product_id'] .  ':' . $values['variation_id'] . ":" . $values['quantity']] = 1; 
+             }
+         }
+         $debug .= print_r($cartitemdata,true);
+         // END VALIDATION OF ORDERS
+
+        // Should we go directly to checkout, or do we need to stop and ask the user something (for instance?) IOK 2010-01-20
+        $execute = apply_filters('woo_vipps_checkout_directly_to_vipps', $execute, $productinfo);
+        $execute = false;
+
         $content = $this->spinner();
         $content .= "<form id='vippsdata'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
+    
+        // Include shop terms 
+        ob_start();
+        wc_get_template('checkout/terms.php');
+        $content .= ob_get_clean();
+
+       $content .= "<pre>" . print_r($debug,true) . "</pre>";
 
         if ($productinfo) {
           foreach($productinfo as $key=>$value) {
@@ -1716,6 +1786,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
           }
         }
         $content .= "</form>";
+
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
