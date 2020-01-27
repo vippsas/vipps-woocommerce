@@ -44,8 +44,8 @@ class Vipps {
 
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
-      require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-      return WC_Gateway_Vipps::instance();
+        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+        return WC_Gateway_Vipps::instance();
     }
 
     public function init () {
@@ -53,7 +53,7 @@ class Vipps {
         $this->cleanupCallbackSignals();
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
-	// This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
+        // This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
         add_action('woocommerce_thankyou_vipps', array($this, 'maybe_restore_cart'), 10, 1); 
 
         add_filter('woocommerce_my_account_my_orders_actions', array($this,'woocommerce_my_account_my_orders_actions'), 10, 2);
@@ -72,7 +72,7 @@ class Vipps {
 
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
- 
+
         // Styling etc
         add_action('admin_head', array($this, 'admin_head'));
 
@@ -112,39 +112,39 @@ class Vipps {
         global $wpdb;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $delendaq = $wpdb->prepare("SELECT o.ID from {$wpdb->postmeta} m join {$wpdb->posts} o on (m.meta_key='_vipps_delendum' and o.id=m.post_id)
-WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancelled' && o.post_modified_gmt < %s", gmdate('Y-m-d H:i:s', $cutoff));
+                WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancelled' && o.post_modified_gmt < %s", gmdate('Y-m-d H:i:s', $cutoff));
         $delenda = $wpdb->get_results($delendaq, ARRAY_A);
         foreach ($delenda as $del) {
-           wp_delete_post($del['ID']);
+            wp_delete_post($del['ID']);
         }
     }
 
     public function admin_head() {
-      // Add some styling to the Vipps product-meta box
-      $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
-    ?>
-<style>
-@media only screen and (max-width: 900px) {
-        #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
-          background: url(<?php echo $smile ?>) center center no-repeat;
-          content: " " !important;
-          background-size: 20px 20px;
-        }
-}
-@media only screen and (min-width: 900px) {
-        #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
-           background: url(<?php echo $smile ?>) center center no-repeat;
-           content: " " !important;
-           background-size:100%;
-           width:13px;height:13px;display:inline-block;line-height:1;
-        }
-}
-</style>
+        // Add some styling to the Vipps product-meta box
+        $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
+        ?>
+            <style>
+            @media only screen and (max-width: 900px) {
+               #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
+                       background: url(<?php echo $smile ?>) center center no-repeat;
+                       content: " " !important;
+                       background-size: 20px 20px;
+               }
+            }
+            @media only screen and (min-width: 900px) {
+               #woocommerce-product-data ul.wc-tabs li.vipps_tab a:before {
+                    background: url(<?php echo $smile ?>) center center no-repeat;
+                    content: " " !important;
+                    background-size:100%;
+                    width:13px;height:13px;display:inline-block;line-height:1;
+               }
+            }
+            </style>
     <?php
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
-       wp_enqueue_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
+        wp_enqueue_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
     }
 
     public function notice_is_test_mode() {
@@ -157,11 +157,11 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // Metabox showing order status at Vipps IOK 2018-05-07
         global $post;
         if ($post && get_post_type($post) == 'shop_order' ) {
-           $order = wc_get_order($post);
-           $pm = $order->get_payment_method();
-           if ($pm == 'vipps') { 
-             add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
-           }
+            $order = wc_get_order($post);
+            $pm = $order->get_payment_method();
+            if ($pm == 'vipps') { 
+                add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
+            }
         }
     }
 
@@ -181,9 +181,9 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
 
     public function add_shortcodes() {
-      add_shortcode('woo_vipps_buy_now', array($this, 'buy_now_button_shortcode'));
-      add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
-      add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
+        add_shortcode('woo_vipps_buy_now', array($this, 'buy_now_button_shortcode'));
+        add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
+        add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
     }
 
     public function log ($what,$type='info') {
@@ -208,7 +208,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         if (is_user_logged_in()) return;
         $this->express_checkout_banner();
     }
- 
+
     public function express_checkout_banner() {
         $gw = $this->gateway();
         if (!$gw->show_express_checkout()) return;
@@ -237,7 +237,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             return $this->cart_express_checkout_button_html();
         }
     }
- 
+
     public function cart_express_checkout_button_html() {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
@@ -251,17 +251,17 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
     // A shortcode for a single buy now button. Express checkout must be active; but I don't check for this here, as this button may be
     // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
     public function buy_now_button_shortcode ($atts) {
-       $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
-       return $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false);
+        $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
+        return $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false);
     }
 
     // The express checkout shortcode implementation. It does not need to check if we are to show the button, obviously, but needs to see if the cart works
     public function express_checkout_button_shortcode() {
-       $gw = $this->gateway();
-       if (!$gw->cart_supports_express_checkout()) return;
-       ob_start();
-       $this->cart_express_checkout_button_html();
-       return ob_get_clean();
+        $gw = $this->gateway();
+        if (!$gw->cart_supports_express_checkout()) return;
+        ob_start();
+        $this->cart_express_checkout_button_html();
+        return ob_get_clean();
     }
     // Show a banner normally shown for non-logged-in-users at the checkout page.  It does not need to check if we are to show the button, obviously, but needs to see if the cart works
     public function express_checkout_banner_shortcode() {
@@ -272,41 +272,41 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         return ob_get_clean();
     }
 
-   // Manage the various product meta fields
+    // Manage the various product meta fields
     public function process_product_meta ($id, $post) {
-      // This is for the 'buy now' button
-      if (isset($_POST['woo_vipps_add_buy_now_button'])) {
-        update_post_meta($id, '_vipps_buy_now_button', $_POST['woo_vipps_add_buy_now_button']);
-      }
-      // This is for the shareable links.
-      if (isset($_POST['woo_vipps_shareable_delenda'])) {
-         $delenda = $_POST['woo_vipps_shareable_delenda'];
-         foreach($delenda as $delendum) {
-            // This will delete the actual link
-            delete_post_meta($post->ID, '_vipps_shareable_link_'.$delendum);
-         }
-         // This will delete the item from the list of links for the product
-         $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
-         foreach ($shareables as $shareable) {
-                 if (in_array($shareable['key'], $delenda)) {
-                     delete_post_meta($post->ID,'_vipps_shareable_links', $shareable);
-                 }
-         }
-      }
+        // This is for the 'buy now' button
+        if (isset($_POST['woo_vipps_add_buy_now_button'])) {
+            update_post_meta($id, '_vipps_buy_now_button', $_POST['woo_vipps_add_buy_now_button']);
+        }
+        // This is for the shareable links.
+        if (isset($_POST['woo_vipps_shareable_delenda'])) {
+            $delenda = $_POST['woo_vipps_shareable_delenda'];
+            foreach($delenda as $delendum) {
+                // This will delete the actual link
+                delete_post_meta($post->ID, '_vipps_shareable_link_'.$delendum);
+            }
+            // This will delete the item from the list of links for the product
+            $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+            foreach ($shareables as $shareable) {
+                if (in_array($shareable['key'], $delenda)) {
+                    delete_post_meta($post->ID,'_vipps_shareable_links', $shareable);
+                }
+            }
+        }
     }
 
     // An extra product meta tab for Vipps 
     public function woocommerce_product_data_tabs ($tabs) {
-       $img =  plugins_url('img/vipps_logo.png',__FILE__);
-       $tabs['vipps'] = array( 'label' =>  __('Vipps', 'woo-vipps'), 'priority'=>100, 'target'=>'woo-vipps', 'class'=>array());
-       return $tabs;
+        $img =  plugins_url('img/vipps_logo.png',__FILE__);
+        $tabs['vipps'] = array( 'label' =>  __('Vipps', 'woo-vipps'), 'priority'=>100, 'target'=>'woo-vipps', 'class'=>array());
+        return $tabs;
     }
     public function woocommerce_product_data_panels() {
-       global $post;
-       echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
-       $this->product_options_vipps();
-       $this->product_options_vipps_shareable_link();
-       echo "</div>";
+        global $post;
+        echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
+        $this->product_options_vipps();
+        $this->product_options_vipps_shareable_link();
+        echo "</div>";
     }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
     public function product_options_vipps() {
@@ -319,88 +319,87 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             echo "<h4></div>";
             echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
             woocommerce_wp_checkbox( array(
-             'id'      => 'woo_vipps_add_buy_now_button',
-             'value'   => $button,
-             'label'   => __('Add  \'Buy now with Vipps\' button', 'woo-vipps'),
-             'desc_tip' => true,
-             'description' => __('Add a \'Buy now with Vipps\'-button to this product','woo-vipps')
-            ) ); 
+                        'id'      => 'woo_vipps_add_buy_now_button',
+                        'value'   => $button,
+                        'label'   => __('Add  \'Buy now with Vipps\' button', 'woo-vipps'),
+                        'desc_tip' => true,
+                        'description' => __('Add a \'Buy now with Vipps\'-button to this product','woo-vipps')
+                        ) ); 
             echo '</div>';
         }
     }
     public function product_options_vipps_shareable_link() {
-            global $post;
-            $product = wc_get_product($post->ID);
-            $variable = ($product->get_type() == 'variable');
-            $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
-?>
+        global $post;
+        $product = wc_get_product($post->ID);
+        $variable = ($product->get_type() == 'variable');
+        $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+        ?>
             <div class="options_group">
             <div class='blurb' style='margin-left:13px'>
-             <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
+            <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
             <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
             <input type=hidden id=vipps_sharelink_id value='<?php echo $product->get_id(); ?>'>
-        <?php 
-              echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
-              if ($variable):
-              $variations = $product->get_available_variations(); 
-              echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
-              echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
-              foreach($variations as $var) {
-                echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
-                echo sanitize_text_field($var['sku']);
-                echo "</option>";
-              }
-              echo "</select>";
-            else:
-              echo "<button id='vipps-share-link' class='button'  onclick='return false;'>"; echo __("Create shareable link", 'woo-vipps'); "</button>";
-            endif;
-?>
-</div> <!-- end blurb -->
- <div style="display:none;" id='woo_vipps_shareable_link_template'>
-  <a class='shareable' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input class=deletemarker type=hidden  value=''>
-</div>
- <div style="display:none;" id='woo_vipps_shareable_command_template'>
-   <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
-   <a class="qraction" href='javascript:void(0)'>[QR]</a>
-   <a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
- </div>
-<style>
- #woo_vipps_shareables a.deleted {
-   text-decoration: line-through;
- }
-</style>
-<div class='blurb' style='margin-left:13px;margin-right:13px'>
-
-<div id="message-area" style="min-height:2em">
-<div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?>
- <span id="vipps-shareable-link-error"></span> </div>
-<div id="vipps-shareable-link-delete-message" style="display:none"><em><?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?> </em></div>
-</div>
-
- <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
-  <thead>
-   <tr>
-     <?php if ($variable): ?><th align=left><?php echo __('Variant','woo-vipps'); ?></th><?php endif; ?>
-     <th align=left><?php echo __('Link','woo-vipps'); ?></th>
-    <th><?php echo __('Action','woo-vipps'); ?></th></tr>
-  </thead>
-  <tbody>
-   <tr>
-<?php foreach ($shareables as $shareable): ?>
-     <?php if ($variable): ?><td><?php echo sanitize_text_field($shareable['variant']); ?></td><?php endif; ?>
-     <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
-     <td align=center>
-<a class="copyaction" title="<?php echo __('Click to copy','woo-vipps'); ?>" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
-<a class="qraction" title="<?php echo __('Create QR-code for link','woo-vipps'); ?>" href='javascript:void(0)'>[QR]</a>
-<a class="deleteaction" title="<?php echo __('Mark this link for deletion', 'woo-vipps'); ?>" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
-</td>
-   </tr>
-<?php endforeach; ?>
-  </tbody>
-</table>   
-</div> <!-- end blurb -->
-</div> <!-- end options-group -->
-<?php
+            <?php 
+            echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
+        if ($variable):
+            $variations = $product->get_available_variations(); 
+        echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
+        echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
+        foreach($variations as $var) {
+            echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
+            echo sanitize_text_field($var['sku']);
+            echo "</option>";
+        }
+        echo "</select>";
+else:
+        echo "<button id='vipps-share-link' class='button'  onclick='return false;'>"; echo __("Create shareable link", 'woo-vipps'); "</button>";
+        endif;
+        ?>
+            </div> <!-- end blurb -->
+            <div style="display:none;" id='woo_vipps_shareable_link_template'>
+            <a class='shareable' title="<?php echo __('Click to copy', 'woo-vipps'); ?>" href="javascrip:void(0)"></a><input class=deletemarker type=hidden  value=''>
+            </div>
+            <div style="display:none;" id='woo_vipps_shareable_command_template'>
+            <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
+            <a class="qraction" href='javascript:void(0)'>[QR]</a>
+            <a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
+            </div>
+            <style>
+            #woo_vipps_shareables a.deleted {
+                 text-decoration: line-through;
+            }
+            </style>
+            <div class='blurb' style='margin-left:13px;margin-right:13px'>
+            <div id="message-area" style="min-height:2em">
+              <div class="vipps-shareable-link-error" style="display:none"><?php echo __('An error occured while creating a shareable link', 'woo-vipps');?>
+              <span id="vipps-shareable-link-error"></span>
+           </div>
+           <div id="vipps-shareable-link-delete-message" style="display:none"><em><?php echo __('Link(s) will be deleted when you save the product', 'woo-vipps');?> </em></div>
+           </div>
+           <table id='woo_vipps_shareables' class='woo-vipps-link-table' style="width:100% <?php if (empty($shareables)) echo ';display:none;'?>">
+           <thead>
+           <tr>
+           <?php if ($variable): ?><th align=left><?php echo __('Variant','woo-vipps'); ?></th><?php endif; ?>
+              <th align=left><?php echo __('Link','woo-vipps'); ?></th>
+              <th><?php echo __('Action','woo-vipps'); ?></th></tr>
+           </thead>
+           <tbody>
+           <tr>
+           <?php foreach ($shareables as $shareable): ?>
+           <?php if ($variable): ?><td><?php echo sanitize_text_field($shareable['variant']); ?></td><?php endif; ?>
+           <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
+           <td align=center>
+           <a class="copyaction" title="<?php echo __('Click to copy','woo-vipps'); ?>" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
+           <a class="qraction" title="<?php echo __('Create QR-code for link','woo-vipps'); ?>" href='javascript:void(0)'>[QR]</a>
+           <a class="deleteaction" title="<?php echo __('Mark this link for deletion', 'woo-vipps'); ?>" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
+           </td>
+           </tr>
+           <?php endforeach; ?>
+           </tbody>
+           </table>   
+           </div> <!-- end blurb -->
+           </div> <!-- end options-group -->
+    <?php
     }
 
     // This creates and stores a shareable link that when followed will allow external buyers to buy the specified product direclty.
@@ -409,8 +408,8 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
     public function ajax_vipps_create_shareable_link() {
         check_ajax_referer('share_link_nonce','vipps_share_sec');
         if (!current_user_can('manage_woocommerce')) {
-           echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
-           wp_die();
+            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
+            wp_die();
         }
         $prodid = sprintf("%d",$_POST['prodid']);
         $varid = sprintf("%d",$_POST['varid']);
@@ -423,24 +422,24 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             $variant = $varid ? wc_get_product($varid) : null;
             $varname = $variant ? $variant->get_id() : '';
             if ($variant && $variant->get_sku()) {
-              $varname .= ":" . sanitize_text_field($variant->get_sku());
+                $varname .= ":" . sanitize_text_field($variant->get_sku());
             }
         } catch (Exception $e) {
-           echo json_encode(array('ok'=>0,'msg'=>$e->getMessage()));
-           wp_die();
+            echo json_encode(array('ok'=>0,'msg'=>$e->getMessage()));
+            wp_die();
         }
         if (!$product) {
-           echo json_encode(array('ok'=>0,'msg'=>__('The product doesn\'t exist', 'woo-vipps')));
-           wp_die();
+            echo json_encode(array('ok'=>0,'msg'=>__('The product doesn\'t exist', 'woo-vipps')));
+            wp_die();
         }
- 
+
         // Find a free shareable link by generating a hash and testing it. Normally there won't be any collisions at all.
         $key = '';
         while (!$key) {
-         global $wpdb;
-         $key = substr(sha1(mt_rand() . ":" . $prodid . ":" . $varid),0,8);
-         $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='_vipps_shareable_link_$key' limit 1",'ARRAY_A');
-         if (!empty($existing)) $key = '';
+            global $wpdb;
+            $key = substr(sha1(mt_rand() . ":" . $prodid . ":" . $varid),0,8);
+            $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='_vipps_shareable_link_$key' limit 1",'ARRAY_A');
+            if (!empty($existing)) $key = '';
         }
 
         $url = add_query_arg('pr',$key,$this->buy_product_url());
@@ -456,25 +455,25 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
     // Create a QR code for a shareable link for printing on posters and such.. or just for demos
     public function ajax_vipps_link_qr() {
-       $ok = check_ajax_referer('share_link_nonce','vipps_share_sec',false);
-       if (!$ok) {
-         wp_die(__("You are not allowed to use this link to create QR codes",'woo-vipps'));
-       }
-       $url = $_GET['url']; 
-       $key = $_GET['key']; 
-       if (!$url) {
-         wp_die(__("The requested link does not exist", 'woo-vipps'));
-       }
-       // External library, may have been included by other parties IOK 2018-10-04
-       if (!class_exists('QRcode')) {
-        require_once(dirname(__FILE__) ."/tools/phpqrcode/phpqrcode.php");
-       }
-       if (!method_exists('QRcode','png')) {
-         wp_die(__("Cannot create QR code - library is missing or does not work", 'woo-vipps'));
-       }
-       header("Content-disposition: inline; filename='qr-$key.png'");
-       QRcode::png($url,false, QR_ECLEVEL_H, 4);
-       wp_die();
+        $ok = check_ajax_referer('share_link_nonce','vipps_share_sec',false);
+        if (!$ok) {
+            wp_die(__("You are not allowed to use this link to create QR codes",'woo-vipps'));
+        }
+        $url = $_GET['url']; 
+        $key = $_GET['key']; 
+        if (!$url) {
+            wp_die(__("The requested link does not exist", 'woo-vipps'));
+        }
+        // External library, may have been included by other parties IOK 2018-10-04
+        if (!class_exists('QRcode')) {
+            require_once(dirname(__FILE__) ."/tools/phpqrcode/phpqrcode.php");
+        }
+        if (!method_exists('QRcode','png')) {
+            wp_die(__("Cannot create QR code - library is missing or does not work", 'woo-vipps'));
+        }
+        header("Content-disposition: inline; filename='qr-$key.png'");
+        QRcode::png($url,false, QR_ECLEVEL_H, 4);
+        wp_die();
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
@@ -524,29 +523,29 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $gw = $this->gateway();
         $order = wc_get_order($orderid);
         if (!$order) {
-         print "<p>" . __("Unknown order", 'woo-vipps') . "</p>";
-         exit();
+            print "<p>" . __("Unknown order", 'woo-vipps') . "</p>";
+            exit();
         }
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-         print "<p>" . __("The order is not a Vipps order", 'woo-vipps') . "</p>";
-         exit();
+            print "<p>" . __("The order is not a Vipps order", 'woo-vipps') . "</p>";
+            exit();
         }
-      
+
         $gw = $this->gateway();
         try {
-         $details = $gw->get_payment_details($order);
+            $details = $gw->get_payment_details($order);
         } catch (Exception $e) {
-         print "<p>"; 
-         print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
-         print "</p>";
-         exit();
+            print "<p>"; 
+            print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
+            print "</p>";
+            exit();
         }
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
-	print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
+        print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
             print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";
@@ -588,7 +587,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         }
         exit();
     }
-  
+
     // This function will create a file with an obscure filename in the $callbackDirname directory.
     // When initiating payment, this file will be created with a zero value. When the response is reday,
     // it will be rewritten with the value 1.
@@ -674,7 +673,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
     public function template_include($template) {
         $special = $this->is_special_page() ;
         if ($special) {
-          return apply_filters('woo_vipps_special_page_template', $template, $special);
+            return apply_filters('woo_vipps_special_page_template', $template, $special);
         }
         return $template;
     }
@@ -783,16 +782,16 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $status = $order->get_status();
 
         $show_capture_button = ($status == 'on-hold' || $status == 'processing');
-	if (!apply_filters('woo_vipps_show_capture_button', $show_capture_button, $order)) {
-		return; 
-	}
+        if (!apply_filters('woo_vipps_show_capture_button', $show_capture_button, $order)) {
+            return; 
+        }
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
-	if ($captured && !$capremain) { 
-		print "<div><strong>" . __("The entire amount has been captured at Vipps", 'woo-vipps') . "</strong></div>";
-		return;
-	}
+        if ($captured && !$capremain) { 
+            print "<div><strong>" . __("The entire amount has been captured at Vipps", 'woo-vipps') . "</strong></div>";
+            return;
+        }
 
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
@@ -804,7 +803,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
         $status = $order->get_status();
- 
+
         if ($status != 'completed') return;
 
         $captured = intval($order->get_meta('_vipps_captured'));
@@ -813,9 +812,9 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $superfluous = $captured-$total-$refunded;
 
 
-	if ($superfluous<=0) {
-		return;
-	}
+        if ($superfluous<=0) {
+            return;
+        }
         print "<div><strong>" . __('More funds than the order total has been captured at Vipps. Press this button to refund this amount at Vipps without editing this order', 'woo_vipps') . "</strong></div>";
         print '<button type="button" onclick="document.getElementById(\'dorefundsuperfluous\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button generate-items">' .__('Refund superfluous payment','woo-vipps') . '</button>';
         print "<input id=dorefundsuperfluous type=hidden name=do_refund_superfluous_vipps value=0>"; 
@@ -849,7 +848,6 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         exit();
     }
 
-
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
     public function country_to_code($countryname) {
         if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
@@ -870,23 +868,23 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         // Support older versions of Woo by inlining initialize session IOK 2019-12-12
         if (version_compare(WC_VERSION, '3.6.4', '>=')) {
-           // This will replace the old session with this one. IOK 2019-10-22
-           WC()->initialize_session(); 
+            // This will replace the old session with this one. IOK 2019-10-22
+            WC()->initialize_session(); 
         } else {
-           // Do this manually for 3.6.3 and below
-           $session_class = "VippsCallbackSessionHandler";
-           $this->session = new $session_class();
-           $this->session->init();
+            // Do this manually for 3.6.3 and below
+            $session_class = "VippsCallbackSessionHandler";
+            $this->session = new $session_class();
+            $this->session->init();
         }
- 
+
         $customerid= 0;
         if (WC()->session && is_a(WC()->session, 'WC_Session_Handler')) {
-           $customerid = WC()->session->get('express_customer_id');
+            $customerid = WC()->session->get('express_customer_id');
         }
         if ($customerid) {
-          WC()->customer = new WC_Customer($customerid); // Reset from session, logged in user
+            WC()->customer = new WC_Customer($customerid); // Reset from session, logged in user
         } else {
-          WC()->customer = new WC_Customer(); // Reset from session
+            WC()->customer = new WC_Customer(); // Reset from session
         }
         // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
         WC()->customer->set_billing_address_to_base();
@@ -911,7 +909,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
         $this->callback_restore_session($orderid);       
- 
+
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         if (!$orderid) {
@@ -939,7 +937,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $addressid = $result['addressId'];
         $addressline1 = $result['addressLine1'];
         $addressline2 = $result['addressLine2'];
- 
+
         // IOK 2019-08-26 apparently the apps contain a lot of addresses with duplicate lines
         if ($addressline1 == $addressline2) $addressline2 = '';
 
@@ -963,15 +961,15 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // Deprecated in 3.7.0. The versy first #ifdef! IOK 2019-10-30
         $coupons = array();
         if (version_compare(WC_VERSION, '3.7', '>=')) {
-          $coupons = $order->get_coupon_codes();
+            $coupons = $order->get_coupon_codes();
         } else {
-          $coupons = $order->get_used_coupons();
+            $coupons = $order->get_used_coupons();
         }
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
         WC()->customer->set_billing_location($country,'',$postcode,$city);
         WC()->customer->set_shipping_location($country,'',$postcode,$city);
-         
+
 
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
@@ -996,16 +994,16 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         // Some shipping methods will use the session cart no matter what you do, so make sure it is there IOK 2019-01-31
         wc()->cart = $acart;
-      
-      
+
+
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
-           $methods = array(array('isDefault'=>'Y','priority'=>'0','shippingCost'=>'0.00','shippingMethod'=>__('No shipping required','woo-vipps'),'shippingMethodId'=>'Free:Free;0'));
-           $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
-           $json = json_encode($return);
-           header("Content-type: application/json; charset=UTF-8");
-           print $json;
-           exit();
+            $methods = array(array('isDefault'=>'Y','priority'=>'0','shippingCost'=>'0.00','shippingMethod'=>__('No shipping required','woo-vipps'),'shippingMethodId'=>'Free:Free;0'));
+            $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
+            $json = json_encode($return);
+            header("Content-type: application/json; charset=UTF-8");
+            print $json;
+            exit();
         }
 
         $package = array();
@@ -1042,9 +1040,8 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $chosen = null;
         if (is_a(WC()->session, 'WC_Session_Handler')) {
-          $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
-          $this->log("And logging " . print_r($all_chosen,true), 'debug');
-          if (!empty($all_chosen)) $chosen= $all_chosen[0];
+            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+            if (!empty($all_chosen)) $chosen= $all_chosen[0];
         }
 
         $free = 0;
@@ -1063,42 +1060,42 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
             // If we qualify for free shipping, make it the default. Thanks to Emely Bakke for reporting. IOK 2019-11-15
             if (preg_match("!^free_shipping!",$rate->get_id())) {
-              $free=1;
-              $defaultset=1;
-              $chosen = $rate->get_id();
+                $free=1;
+                $defaultset=1;
+                $chosen = $rate->get_id();
             }
         }
 
         usort($methods, function($method1, $method2) {
-            return $method1['shippingCost'] - $method2['shippingCost'];
-        });
+                return $method1['shippingCost'] - $method2['shippingCost'];
+                });
 
         $priority=0;
         foreach($methods as &$method) {
-          $rateid = explode(";",$method['shippingMethodId'],2);
-          if (!empty($rateid) && $rateid[0] == $chosen) {
-              $defaultset=1;
-              $method['isDefault'] = 'Y';
-          } else {
-              $method['isDefault'] = 'N';
-          }
-          $method['priority']=$priority;
-          $priority++;
+            $rateid = explode(";",$method['shippingMethodId'],2);
+            if (!empty($rateid) && $rateid[0] == $chosen) {
+                $defaultset=1;
+                $method['isDefault'] = 'Y';
+            } else {
+                $method['isDefault'] = 'N';
+            }
+            $method['priority']=$priority;
+            $priority++;
         }
         // If we don't have free shipping, select the first (cheapest) option, unless that is 'local pickup'. IOK 2019-11-26
         if(!$defaultset && !empty($methods)) {
             foreach($methods as &$method) {
-            	if (!preg_match("!^local_pickup!",$method['shippingMethodId'])) {
-                  $defaultset=1;
-                  $method['isDefault'] = 'Y';
-                  break;
+                if (!preg_match("!^local_pickup!",$method['shippingMethodId'])) {
+                    $defaultset=1;
+                    $method['isDefault'] = 'Y';
+                    break;
                 }
             }
         }
         // Or the first if we stil have no default method.
-	if (!$defaultset &&!empty($methods)) {
-		$methods[0]['isDefault'] = 'Y';
-	}
+        if (!$defaultset &&!empty($methods)) {
+            $methods[0]['isDefault'] = 'Y';
+        }
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
@@ -1118,8 +1115,8 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         wc_nocache_headers();
         // This feature is disabled - no customers are created by express checkout or login-with-vipps,
         // so there is nothing to do. IOK 2018-06-06
-            print "1";
-            exit();
+        print "1";
+        exit();
     }
 
     public function woocommerce_payment_gateways($methods) {
@@ -1135,7 +1132,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
     public function woocommerce_add_to_cart_redirect ($url) {
         if ( empty($_REQUEST['add-to-cart']) || ! is_numeric($_REQUEST['add-to-cart']) || empty($_REQUEST['vipps_compat_mode']) || !$_REQUEST['vipps_compat_mode']) {
-                        return $url;
+            return $url;
         }
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
@@ -1150,9 +1147,9 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
     public function  woocommerce_my_account_my_orders_actions($actions, $order ) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return $actions;
-        
+
         if ($order->get_meta('_vipps_express_checkout')) {
-         unset($actions['pay']);
+            unset($actions['pay']);
         }
         return $actions;
     }
@@ -1224,29 +1221,29 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         unset($carts[$order->get_id()]);
         $woocommerce->session->set('_vipps_carts',$carts);
         if (!empty($cart)) {
-           foreach ($cart as $cart_item_key => $values) {
-               $id =$values['product_id'];
-               $quant=$values['quantity'];
-               $varid = @$values['variation_id'];
-               $variation = @$values['variation'];
-               $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
-           }
+            foreach ($cart as $cart_item_key => $values) {
+                $id =$values['product_id'];
+                $quant=$values['quantity'];
+                $varid = @$values['variation_id'];
+                $variation = @$values['variation'];
+                $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
+            }
         }
         do_action('woo_vipps_cart_restored');
     }
 
     // This restores the cart on order complete, but only if the current order was a single product buy with an active cart.
     public function maybe_restore_cart($orderid) {
-	    if (!$orderid) return;
-	    $o = null;
-	    try {
- 	     $o = wc_get_order($orderid);
-	    } catch (Exception $e) {
-	     // Well, we tried.
-	    }
-	    if (!$o) return;
-	    if (!$o->get_meta('_vipps_single_product_express')) return;
-	    $this->restore_cart($o);
+        if (!$orderid) return;
+        $o = null;
+        try {
+            $o = wc_get_order($orderid);
+        } catch (Exception $e) {
+            // Well, we tried.
+        }
+        if (!$o) return;
+        if (!$o->get_meta('_vipps_single_product_express')) return;
+        $this->restore_cart($o);
     }
 
 
@@ -1256,7 +1253,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         $session = WC()->session;
         if (!$session->has_session()) {
-          $session->set_customer_session_cookie(true);
+            $session->set_customer_session_cookie(true);
         }
         $session->set('__vipps_buy_product', json_encode($_REQUEST));
 
@@ -1335,14 +1332,14 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // Moved rules around as the _sku variant broke in 3.6.1 for stores that didn't bother to update the database IOK 2019-04-24
         // This broke single-product purchases for variable products; fixed IOK 2019-05-21 thanks to Gaute Terland Nilsen @ Easyweb for the report
         try {
-           if ($varid) {
-               $product = wc_get_product($varid);
-           } elseif ($prodid) {
-               $product = wc_get_product($prodid);
-           } elseif ($sku) {
-               $skuid = wc_get_product_id_by_sku($sku);
-               $product = wc_get_product($skuid);
-           }
+            if ($varid) {
+                $product = wc_get_product($varid);
+            } elseif ($prodid) {
+                $product = wc_get_product($prodid);
+            } elseif ($sku) {
+                $skuid = wc_get_product_id_by_sku($sku);
+                $product = wc_get_product($skuid);
+            }
         } catch (Exception $e) {
             $result = array('ok'=>0, 'msg'=>__('Error finding product - cannot create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
@@ -1365,11 +1362,11 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             wp_send_json($result);
             exit();
         }
-	if (!$gw->product_supports_express_checkout($product)) {
+        if (!$gw->product_supports_express_checkout($product)) {
             $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
-	}
+        }
 
         // Somebody addded the wrong SKU
         if ($product->get_type() == 'variable'){
@@ -1383,7 +1380,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             wp_send_json($result);
             exit();
         }
-        
+
         // Now it should be safe to continue to the checkout process. IOK 2018-10-02
         // Create a new temporary cart for this order. It will eventually replace the normal cart, but we'll save that. IOK 2018-09-25
         $acart = new WC_Cart();
@@ -1450,7 +1447,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
             return false;
         }
- 
+
         // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
         $order = wc_get_order($orderid); // Reload
         $gw = $this->gateway();
@@ -1535,8 +1532,8 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
 
-   // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
-   public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='') {
+    // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
+    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='') {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
         if ($sku) $data['product_sku'] = $sku;
@@ -1545,15 +1542,15 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {
-         $value = sanitize_text_field($value);
-         $buttoncode .= " data-$key='$value' ";
+            $value = sanitize_text_field($value);
+            $buttoncode .= " data-$key='$value' ";
         }
         $buynow = __('Buy now with', 'woo-vipps');
         $title = __('Buy now with Vipps', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $message = "<span class='vippsbuynow'>" . $buynow . "</span>" . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
 
-        # Extra classes, if passed IOK 2019-02-26
+# Extra classes, if passed IOK 2019-02-26
         if (is_array($classes)) {
             $classes = join(" ", $classes);
         }
@@ -1561,10 +1558,10 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $buttoncode .=  " class='single-product button vipps-buy-now $disabled$classes' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
-   }
+    }
 
-   // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
-   public function single_product_buy_now_button () {
+    // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
+    public function single_product_buy_now_button () {
         $gw = $this->gateway();
         $how = $gw->get_option('singleproductexpress');
         if ($how == 'none') return;
@@ -1572,7 +1569,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         global $product;
         $prodid = $product->get_id();
-	if (!$gw->product_supports_express_checkout($product)) return;
+        if (!$gw->product_supports_express_checkout($product)) return;
 
         $showit = true;
         if ($product->get_price() <= 0)  $showit = false; 
@@ -1582,11 +1579,11 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $disabled="";
         if ($product->is_type('variable')) {
-          $disabled="disabled";
+            $disabled="disabled";
         }
 
-        # If true, add a class that signals that the button should be added in 'compat mode', which is compatible with
-        # more plugins because it does not handle tha product add itself. IOK 2019-02-26
+# If true, add a class that signals that the button should be added in 'compat mode', which is compatible with
+# more plugins because it does not handle tha product add itself. IOK 2019-02-26
         $compat = ($gw->get_option('singleproductbuynowcompatmode') == 'yes');
         $compat = apply_filters('woo_vipps_single_product_compat_mode', $compat, $product);
 
@@ -1595,7 +1592,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $classes = apply_filters('woo_vipps_single_product_buy_now_classes', $classes, $product);
 
         echo $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
-   }
+    }
 
     // Print a "buy now with vipps" for products in the loop, like on a category page
     public function loop_single_product_buy_now_button() {
@@ -1605,7 +1602,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $gw = $this->gateway();
         if (!$gw->express_checkout_available()) return;
-	if (!$gw->product_supports_express_checkout($product)) return;
+        if (!$gw->product_supports_express_checkout($product)) return;
         if ($gw->get_option('singleproductexpressarchives') != 'yes') return;
 
         $how = $gw->get_option('singleproductexpress');
@@ -1630,48 +1627,48 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
     // The argument passed must be a shareable link created for a given product - so this in effect acts as a landing page for 
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
-      status_header(200,'OK');
-      wc_nocache_headers();
-      do_action('woo_vipps_express_checkout_page');
+        status_header(200,'OK');
+        wc_nocache_headers();
+        do_action('woo_vipps_express_checkout_page');
 
-      $session = WC()->session;
-      $posted = $session->get('__vipps_buy_product');
-      $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
+        $session = WC()->session;
+        $posted = $session->get('__vipps_buy_product');
+        $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
 
-      if (!$posted) {
-        // Find product/variation using an external shareable link
-        if (array_key_exists('pr',$_REQUEST)) {
-           global $wpdb;
-           $externalkey = $_REQUEST['pr'];
-           $search = '_vipps_shareable_link_'.esc_sql($externalkey);
-           $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='$search' limit 1",'ARRAY_A');
-           if (!empty($existing)) {
-            $posted = get_post_meta($existing['post_id'], $search, true);
-           }
+        if (!$posted) {
+            // Find product/variation using an external shareable link
+            if (array_key_exists('pr',$_REQUEST)) {
+                global $wpdb;
+                $externalkey = $_REQUEST['pr'];
+                $search = '_vipps_shareable_link_'.esc_sql($externalkey);
+                $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='$search' limit 1",'ARRAY_A');
+                if (!empty($existing)) {
+                    $posted = get_post_meta($existing['post_id'], $search, true);
+                }
+            }
         }
-      }
-      $productinfo = false;
-      if (is_array($posted)) {
-       $productinfo = $posted;
-      } else {
-       $productinfo = $posted ? @json_decode($posted,true) : false; 
-      }
+        $productinfo = false;
+        if (is_array($posted)) {
+            $productinfo = $posted;
+        } else {
+            $productinfo = $posted ? @json_decode($posted,true) : false; 
+        }
 
-      if (!$productinfo) {
-         $title = __("Product is no longer available",'woo-vipps');
-         $content =  __("The link you have followed is for a product that is no longer available at this location. Please return to the store and try again",'woo-vipps');
-         return $this->fakepage($title,$content);
-      }
+        if (!$productinfo) {
+            $title = __("Product is no longer available",'woo-vipps');
+            $content =  __("The link you have followed is for a product that is no longer available at this location. Please return to the store and try again",'woo-vipps');
+            return $this->fakepage($title,$content);
+        }
 
-      // Pass the productinfo to the express checkout form
-      $args = array();
-      $args['quantity'] = 1;
-      if (array_key_exists('product_id',$productinfo)) $args['product_id'] = sprintf("%d", $productinfo['product_id']);
-      if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = sprintf("%d", $productinfo['variation_id']);
-      if (array_key_exists('product_sku',$productinfo)) $args['sku'] = $productinfo['product_sku'];
-      if (array_key_exists('quantity',$productinfo)) $args['quantity'] = sprintf("%d", $productinfo['quantity']);
+        // Pass the productinfo to the express checkout form
+        $args = array();
+        $args['quantity'] = 1;
+        if (array_key_exists('product_id',$productinfo)) $args['product_id'] = sprintf("%d", $productinfo['product_id']);
+        if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = sprintf("%d", $productinfo['variation_id']);
+        if (array_key_exists('product_sku',$productinfo)) $args['sku'] = $productinfo['product_sku'];
+        if (array_key_exists('quantity',$productinfo)) $args['quantity'] = sprintf("%d", $productinfo['quantity']);
 
-      $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
+        $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
 
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
@@ -1696,6 +1693,92 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $this->print_express_checkout_page($ok,'do_express_checkout');
     }
 
+    // This method tries to ensure that a customer does not 'lose' the return page and
+    // starts ordering the same products twice. IOK 2020-01-22
+    protected function validate_express_checkout_orderspec ($orderspec) {
+        if (empty($orderspec)) return true; // It's not a duplicate, it's nothing.
+
+        // First build for the current order an array of hash-tables keyed by prodid, varid and quantity. 
+        $orderset = array();
+        foreach($orderspec as $entry) $orderset[] = join(':', $entry);
+
+        // Then get open orders
+        $sessionorders = array();
+        $sessionorderdata = WC()->session->get('_vipps_session_orders');
+        if ($sessionorderdata) {
+            foreach(array_keys($sessionorderdata) as $oid) {
+                $orderobject = wc_get_order($oid);
+                $sessionorders[] = $orderobject;
+            }
+        }
+        // And create a similar hash table for each of the open orders
+        $openorderdata = array();
+        foreach ($sessionorders as $open_order) {
+            $status = $open_order->get_status();
+            if ($status == 'cancelled' || $status == 'pending') continue;
+            $when = strtotime($open_order->get_date_modified());
+            $cutoff = $when + apply_filters('woo_vipps_recent_order_cutoff', 3 * (5*60));
+            if (time() > $cutoff) {
+                continue;
+            }
+            $orderdata = array(); 
+            foreach($open_order->get_items() as $item) {
+                $productspec = $item->get_product_id() . ':' . $item->get_variation_id() . ':' . $item->get_quantity();
+                $orderdata[] = $productspec;
+            }
+            $openorderdata[]=$orderdata;
+        }
+
+        // Now: For each entry in the orderhash, check if there is an order that has a) all of them and b) not any more of them.
+        foreach($openorderdata as $prevorder) {
+            $a = array_diff($prevorder, $orderset);
+            $b  = array_diff($orderset, $prevorder);
+            if (empty($a) && empty($b)) { 
+                $this->log(__("It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation", 'woo-vipps'), 'info');
+                return false; 
+            }
+        }
+        // Else, order is good.
+        return true;
+    }
+
+    // Returns a triple of productid, variantid and quantity from an array of arguments which can pass either these or a SKU value.  
+    // Return value is like in a cart.
+    // Used to create an order in express checkout, and to see that this order isn't a repeat. IOK 2020-01-22
+    protected function get_orderspec_from_arguments ($productinfo) {
+        if (!$productinfo) return array();
+        $variantid = 0;
+        $productid = 0;
+        $quantity = intval(@$productinfo['quantity']);
+        if (!$quantity) $quantity = 1;
+        if (isset($productinfo['sku']) && $productinfo['sku']) {
+            $skuid = wc_get_product_id_by_sku($sku);
+            $product = wc_get_product($skuid);
+            $parentid = $product ? $product->get_parent_id() : null;
+            if ($product) {
+                if ($parentid) {   
+                    $variantid = $skuid; $productid = $parentid;
+                } else {
+                    $productid = $skuid;
+                }
+            }
+        } else if (isset($productinfo['product_id']) && $productinfo['product_id']) {
+            $productid = intval($productinfo['product_id']);
+            $variantid = intval(@$productinfo['variation_id']);
+        }
+        if ($productid) return array(array('product_id'=>$productid, 'variation_id'=>$variantid, 'quantity'=>$quantity));
+        return array();
+    }
+    // If no productinfo, this will produce an orderspec from the current cart IOK 2020-01-24
+    protected function get_orderspec_from_cart () {
+        $cartitems = WC()->cart->get_cart();
+        $orderspec = array();
+        foreach($cartitems as $item => $values) {
+            $orderspec[] = array('product_id'=>$values['product_id'], 'variation_id'=>$values['variation_id'], 'quantity'=>$values['quantity']);
+        }
+        return $orderspec;
+    }
+
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
     protected function print_express_checkout_page($execute,$action,$productinfo=null) {
         wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
@@ -1703,90 +1786,50 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // to actually perform the express checkout.
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
 
-        // BEGIN VALIDATIONS OF ORDER
-        // Orders active in this session IOK 2020-01-24
-        $sessionorders = array();
-        $sessionorderdata = WC()->session->get('_vipps_session_orders');
-        if ($sessionorderdata) {
-          foreach(array_keys($sessionorderdata) as $oid) {
-             $orderobject = wc_get_order($oid);
-             $sessionorders[] = $orderobject;
-          }
+
+        $orderspec = $this->get_orderspec_from_arguments($productinfo);
+        if (empty($orderspec)) { 
+            $orderspec = $this->get_orderspec_from_cart();
+        }
+        $orderisOK = $this->validate_express_checkout_orderspec($orderspec);
+        $orderisOK = apply_filters('woo_vipps_validate_express_checkout_orderspec', $orderisOK, $orderspec);
+
+        $askForConfirmationHTML = '';
+        if (!$orderisOK) {
+            $header = __("Are you sure?",'woo-vipps');
+            $body = __("You just completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+            $askForConfirmationHTML = apply_filters('woo_vipps_ask_user_to_confirm_repurchase', "<h2>$header</h2><p>$body</p>");
         }
 
-        $debug = "";
-        $probably_duplicate_order = false;
-        foreach ($sessionorders as $open_order) {
-          $status = $open_order->get_status();
-//          if ($status == 'cancelled' || $status == 'pending') continue;
-          $debugdata = array(); 
-          foreach($open_order->get_items() as $item) {
-            $searchkey = $item->get_product_id() . ':' . $item->get_variation_id() . ':' . $item->get_quantity();
-            $debugdata[$searchkey] = 1;
-          }
-          $debug .= print_r($debugdata,true);
-         }  
-
-
-         // Cartitemdata will be a hash from productid:variationid:quantity to a truth value. This will be used to check against current orders. IOK 2020-01-24
-         $cartitemdata = array();
-         if ($productinfo) {
-             $variantid = 0;
-             $productid = 0;
-             $quantity = intval(@$productinfo['quantity']);
-             if (!$quantity) $quantity = 1;
-             if (isset($productinfo['sku']) && $productinfo['sku']) {
-                 $skuid = wc_get_product_id_by_sku($sku);
-                 $product = wc_get_product($skuid);
-                 $parentid = $product ? $product->get_parent_id() : null;
-                 if ($product) {
-                     if ($parentid) {   
-                         $variantid = $skuid; $productid = $parentid;
-                     } else {
-                         $productid = $skuid;
-                     }
-                 }
-             } else if (isset($productinfo['product_id']) && $productinfo['product_id']) {
-                 $productid = intval($productinfo['product_id']);
-                 $variantid = intval(@$productinfo['variation_id']);
-             }
-             if ($productid) $cartitemdata["$productid:$variantid:$quantity"] = 1;
-         } else {
-             // If no productinfo, this will produce an orderspec from the current cart IOK 2020-01-24
-             $cartitems = WC()->cart->get_cart();
-             foreach($cartitems as $item => $values) {
-                 $cartitemdata[$values['product_id'] .  ':' . $values['variation_id'] . ":" . $values['quantity']] = 1; 
-             }
-         }
-         $debug .= print_r($cartitemdata,true);
-         // END VALIDATION OF ORDERS
-
         // Should we go directly to checkout, or do we need to stop and ask the user something (for instance?) IOK 2010-01-20
+        $execute = $execute && $orderisOK;
         $execute = apply_filters('woo_vipps_checkout_directly_to_vipps', $execute, $productinfo);
-        $execute = false;
 
         $content = $this->spinner();
         $content .= "<form id='vippsdata'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
-    
+
         // Include shop terms 
         ob_start();
         wc_get_template('checkout/terms.php');
-        $content .= ob_get_clean();
-
-       $content .= "<pre>" . print_r($debug,true) . "</pre>";
+        $termsHTML = ob_get_clean();
 
         if ($productinfo) {
-          foreach($productinfo as $key=>$value) {
-            $k = sanitize_text_field($key);
-            $v = sanitize_text_field($value);
-            $content .= "<input type='hidden' name='$k' value='$v' />";
-          }
+            foreach($productinfo as $key=>$value) {
+                $k = sanitize_text_field($key);
+                $v = sanitize_text_field($value);
+                $content .= "<input type='hidden' name='$k' value='$v' />";
+            }
         }
         $content .= "</form>";
 
+        $pressTheButtonHTML =  "";
+        if (empty($termsHTML) && $orderisOK)  {
+            $pressTheButtonHTML =  "<p id=waiting>" . __("Ready for express checkout - press the button", 'woo-vipps') . "</p>";
+        }
+        apply_filters('woo_vipps_express_checkout_final_html', $pressTheButtonHTML,$termsHTML,$askForConfirmationHTML);
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
@@ -1796,16 +1839,17 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
             $this->fakepage(__('Order in progress','woo-vipps'), $content);
             return;
         } else {
-            $content .= "<p id=waiting>" . __("Ready for express checkout - press the button", 'woo-vipps') . "</p>";
+            $content .= $askForConfirmationHTML;
+
+            $content .= $termsHTML;
 
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
             $title = __('Buy now with Vipps!', 'woo-vipps');
-
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
             $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('To the Vipps app!','woo-vipps') . "</div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
             $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
-            $this->fakepage(__('Express checkout','woo-vipps'), $content);
+            $this->fakepage(__('Vipps Express Checkout','woo-vipps'), $content);
             return;
         }
     }
@@ -1820,7 +1864,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $order = null;
         $gw = $this->gateway();
 
-	// Failsafe for when the session disappears IOK 2018-11-19
+        // Failsafe for when the session disappears IOK 2018-11-19
         $authtoken = @$_GET['t'];
 
         // Now we *should* have a session at this point, but the session may have been deleted, or the session may be in another browser,
@@ -1828,16 +1872,16 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         // so we can reload the screen, but don't have to worry about leaking stuff
         // IOK 2019-11-19
         if (!$orderid) {
-           if ($authtoken) {
-             $orderid = get_transient('_vipps_pending_order_'.$authtoken);
-             if ($orderid) {
-               $session = WC()->session;
-               if (!$session->has_session()) {
-                 $session->set_customer_session_cookie(true);
-               }
-               $session->set('_vipps_pending_order', $orderid);
-             }
-           }
+            if ($authtoken) {
+                $orderid = get_transient('_vipps_pending_order_'.$authtoken);
+                if ($orderid) {
+                    $session = WC()->session;
+                    if (!$session->has_session()) {
+                        $session->set_customer_session_cookie(true);
+                    }
+                    $session->set('_vipps_pending_order', $orderid);
+                }
+            }
         }
         delete_transient('_vipps_pending_order_'.$authtoken); 
 
@@ -1849,9 +1893,9 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         $deleted_order=0;
         if ($orderid && !$order) {
-          // If this happens, we actually did have an order, but it has been deleted, which must mean that it was cancelled.
-          // Concievably a hook on the 'cancel'-transition or in the callback handlers could clean that up before we get here. IOK 2019-09-26
-          $deleted_order=1;
+            // If this happens, we actually did have an order, but it has been deleted, which must mean that it was cancelled.
+            // Concievably a hook on the 'cancel'-transition or in the callback handlers could clean that up before we get here. IOK 2019-09-26
+            $deleted_order=1;
         }
 
         if (!$order && !$deleted_order) wp_die(__('Unknown order', 'woo-vipps'));
@@ -1872,7 +1916,7 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
                     $order = wc_get_order($orderid); // Reload order object
                 }
             } else {
-                $this->log(__('Vipps callback in progress, but not complete on shop return for order id:','woo-vipps') . ' ' . $orderid, 'notice');
+                // No need to do anyting here. IOK 2020-01-26
             }
         }
 
@@ -1881,18 +1925,18 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
-         wp_redirect($gw->get_return_url($order));
-         exit();
+            wp_redirect($gw->get_return_url($order));
+            exit();
         }
 
-	$content = "";
-	$failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
+        $content = "";
+        $failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $payment == 'cancelled') {
             if ($failure_redirect){
-                 wp_redirect($failure_redirect);
-                 exit();
+                wp_redirect($failure_redirect);
+                exit();
             }
             $content .= "<div id=failure><p>". __('Order cancelled','woo-vipps') . '</p>';
             $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
@@ -1914,15 +1958,11 @@ WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancel
         $message = __($order->get_meta('_vipps_confirm_message'),'woo-vipps');
 
         $signal = $this->callbackSignal($order);
-	$content = "";
+        $content = "";
         $content .= "<div id='waiting'><p>" . __('Waiting for confirmation of purchase from Vipps','woo-vipps');
 
         if ($signal && !is_file($signal)) $signal = '';
         $signalurl = $this->callbackSignalURL($signal);
-
-        # For debugging only IOK 2019-02-26
-        #$content .= '<span id=vippsstatus>'.htmlspecialchars("$message\n$vippsstatus\n" . date('Y-m-d H:i:s',$vippsstamp)) .'</span>';
-        #$content .= "<span id='vippstime'></span>";
 
         $content .= "</p></div>";
 
