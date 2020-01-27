@@ -31,7 +31,7 @@ li.wc_payment_method.payment_method_vipps img {
 	max-width: 145px;
 }
 
-a.button.vipps-buy-now {
+.woocommerce ul.products li.product .button.vipps-buy-now, a.button.vipps-buy-now {
  color: #fff;
  background-color: #fe5b24;
 }
