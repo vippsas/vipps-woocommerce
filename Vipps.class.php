@@ -1797,8 +1797,10 @@ else:
             $orderspec = $this->get_orderspec_from_cart();
         }
         $orderisOK = $this->validate_express_checkout_orderspec($orderspec);
-        $orderisOK = false;
         $orderisOK = apply_filters('woo_vipps_validate_express_checkout_orderspec', $orderisOK, $orderspec);
+
+        $askForTerms = wc_terms_and_conditions_checkbox_enabled();
+        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
 
         $askForConfirmationHTML = '';
         if (!$orderisOK) {
@@ -1807,7 +1809,7 @@ else:
             $askForConfirmationHTML = apply_filters('woo_vipps_ask_user_to_confirm_repurchase', "<h2 class='confirmVippsExpressCheckoutHeader'>$header</h2><p>$body</p>");
         }
         // Should we go directly to checkout, or do we need to stop and ask the user something (for instance?) IOK 2010-01-20
-        $execute = $execute && $orderisOK;
+        $execute = $execute && $orderisOK && !$askForTerms;
         $execute = apply_filters('woo_vipps_checkout_directly_to_vipps', $execute, $productinfo);
 
         $content = $this->spinner();
@@ -1815,8 +1817,6 @@ else:
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
-        $askForTerms = wc_terms_and_conditions_checkbox_enabled();
-        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
         $termsHtml = '';
         if ($askForTerms) {
             // Include shop terms 
