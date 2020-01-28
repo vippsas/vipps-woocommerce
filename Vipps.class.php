@@ -1803,10 +1803,9 @@ else:
         $askForConfirmationHTML = '';
         if (!$orderisOK) {
             $header = __("Are you sure?",'woo-vipps');
-            $body = __("You just completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
+            $body = __("You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
             $askForConfirmationHTML = apply_filters('woo_vipps_ask_user_to_confirm_repurchase', "<h2 class='confirmVippsExpressCheckoutHeader'>$header</h2><p>$body</p>");
         }
-
         // Should we go directly to checkout, or do we need to stop and ask the user something (for instance?) IOK 2010-01-20
         $execute = $execute && $orderisOK;
         $execute = apply_filters('woo_vipps_checkout_directly_to_vipps', $execute, $productinfo);
@@ -1816,11 +1815,17 @@ else:
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
-
-        // Include shop terms 
-        ob_start();
-        wc_get_template('checkout/terms.php');
-        $termsHTML = ob_get_clean();
+        $askForTerms = wc_terms_and_conditions_checkbox_enabled();
+        $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
+        $termsHtml = '';
+        if ($askForTerms) {
+            // Include shop terms 
+           ob_start();
+           wc_get_template('checkout/terms.php');
+           $termsHTML = ob_get_clean();
+           $termsHTML = apply_filters('woo_vipps_express_checkout_terms_and_conditions_html',$termsHTML);
+        }
+        $termsHTML = apply_filters('woo_vipps_express_checkout_terms_and_conditions_html',$termsHTML);
 
         if ($productinfo) {
             foreach($productinfo as $key=>$value) {
@@ -1829,6 +1834,9 @@ else:
                 $content .= "<input type='hidden' name='$k' value='$v' />";
             }
         }
+        ob_start();
+        $content .= do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
+        $content = ob_get_clean();
         $content .= "</form>";
 
         $pressTheButtonHTML =  "";
@@ -1846,9 +1854,8 @@ else:
             return;
         } else {
             $content .= $askForConfirmationHTML;
-
             $content .= $termsHTML;
-
+            $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
             $title = __('Buy now with Vipps!', 'woo-vipps');
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
