@@ -190,7 +190,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.12.12 version 1.3.5 =
+= 2020.01.22 version 1.3.5 =
  * Tested up to version 3.9.0 of WooCommerce and 5.3.2 of WP
 
 = 2019.12.12 version 1.3.4 =
