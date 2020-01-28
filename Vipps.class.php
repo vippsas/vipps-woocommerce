@@ -1836,7 +1836,7 @@ else:
         }
         ob_start();
         $content .= do_action('woo_vipps_express_checkout_orderspec_form', $productinfo);
-        $content = ob_get_clean();
+        $content .= ob_get_clean();
         $content .= "</form>";
 
         $pressTheButtonHTML =  "";
