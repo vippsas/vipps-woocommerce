@@ -1781,7 +1781,12 @@ else:
 
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
     protected function print_express_checkout_page($execute,$action,$productinfo=null) {
-        wp_enqueue_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
+
+        $expressCheckoutMessages = array();
+        $expressCheckoutMessages['termsAndConditionsError'] = __( 'Please read and accept the terms and conditions to proceed with your order.', 'woocommerce' );
+        wp_register_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
+        wp_localize_script('vipps-express-checkout', 'VippsCheckoutMessages', $expressCheckoutMessages);
+        wp_enqueue_script('vipps-express-checkout');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
         $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
@@ -1792,13 +1797,14 @@ else:
             $orderspec = $this->get_orderspec_from_cart();
         }
         $orderisOK = $this->validate_express_checkout_orderspec($orderspec);
+        $orderisOK = false;
         $orderisOK = apply_filters('woo_vipps_validate_express_checkout_orderspec', $orderisOK, $orderspec);
 
         $askForConfirmationHTML = '';
         if (!$orderisOK) {
             $header = __("Are you sure?",'woo-vipps');
             $body = __("You just completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?",'woo-vipps');
-            $askForConfirmationHTML = apply_filters('woo_vipps_ask_user_to_confirm_repurchase', "<h2>$header</h2><p>$body</p>");
+            $askForConfirmationHTML = apply_filters('woo_vipps_ask_user_to_confirm_repurchase', "<h2 class='confirmVippsExpressCheckoutHeader'>$header</h2><p>$body</p>");
         }
 
         // Should we go directly to checkout, or do we need to stop and ask the user something (for instance?) IOK 2010-01-20
@@ -1995,6 +2001,9 @@ else:
 
 
     public function fakepage($title,$content) {
+        // We don't want this here.
+        remove_filter ('the_content', 'wpautop'); 
+ 
         global $wp, $wp_query;
         $post = new stdClass();
         $post->ID = -99;
