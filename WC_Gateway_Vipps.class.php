@@ -1141,8 +1141,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
-            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps for order id:", 'woo-vipps') . ' ' . $orderid, 'warning');
-
             try {
                 $statusdata = $this->api->payment_details($order);
                 do_action('woo_vipps_express_checkout_get_order_status', $statusdata);
