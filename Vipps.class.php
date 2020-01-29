@@ -1781,6 +1781,7 @@ else:
 
     // Used as a landing page for launching express checkout - borh for the cart and for single products. IOK 2018-09-28
     protected function print_express_checkout_page($execute,$action,$productinfo=null) {
+        $gw = $this->gateway();
 
         $expressCheckoutMessages = array();
         $expressCheckoutMessages['termsAndConditionsError'] = __( 'Please read and accept the terms and conditions to proceed with your order.', 'woocommerce' );
@@ -1800,6 +1801,7 @@ else:
         $orderisOK = apply_filters('woo_vipps_validate_express_checkout_orderspec', $orderisOK, $orderspec);
 
         $askForTerms = wc_terms_and_conditions_checkbox_enabled();
+        $askForTerms = $askForTerms && ($gw->get_option('expresscheckout_termscheckbox') == 'yes');
         $askForTerms = apply_filters('woo_vipps_express_checkout_terms_and_conditions_checkbox_enabled', $askForTerms);
 
         $askForConfirmationHTML = '';
@@ -1817,7 +1819,7 @@ else:
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
-        $termsHtml = '';
+        $termsHTML = '';
         if ($askForTerms) {
             // Include shop terms 
            ob_start();

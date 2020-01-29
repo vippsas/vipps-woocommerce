@@ -522,7 +522,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('If Express Checkout is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'),
                         'default'     => 'no',
                         ),
-
+                 'expresscheckout_termscheckbox' => array(
+                        'title'       => __( 'Add terms and conditions checkbox on Express Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Always ask for confirmation on Express Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('When using Express Checkout, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
                   'singleproductbuynowcompatmode' => array(
                         'title'       => __( '"Buy now" compatibility mode', 'woo-vipps' ),
                         'label'       => __( 'Activate compatibility mode for all "Buy now" buttons', 'woo-vipps' ),
