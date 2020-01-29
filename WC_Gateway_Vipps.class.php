@@ -1377,7 +1377,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
-            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woo-vipps') . ' ' . $orderid, 'notice');
             clean_post_cache($order->get_id());
             return;
         }
@@ -1386,7 +1385,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','woo-vipps') . ' ' . $orderid, 'notice');
             clean_post_cache($order->get_id());
             return;
         }

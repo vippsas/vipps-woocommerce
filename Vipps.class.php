@@ -828,7 +828,9 @@ else:
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
 
         if (!$result) {
+            $error = json_last_error_msg();
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
+            $this->log(sprintf(__("Error was: %s",'woo-vipps'), $error));
             return false;
         }
 
@@ -900,6 +902,12 @@ else:
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
+        if (!$result) {
+           $error = json_last_error_msg();
+           $this->log(sprintf(__("Error getting customer data in the Vipps shipping details callback: %s",'woo-vipps'), $error));
+           $this->log(__("Raw input was ", 'woo-vipps'));
+           $this->log($raw_post);
+        }
         $callback = @$_REQUEST['callback'];
         do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
 
