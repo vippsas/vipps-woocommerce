@@ -1448,7 +1448,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $thecart->calculate_fees();
-        $thecart->calculate_totals(); 
+        $thecart->calculate_totals();
 
         do_action('woo_vipps_before_create_express_checkout_order', $thecart);
         $contents = $thecart->get_cart_contents();
