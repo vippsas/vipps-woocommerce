@@ -194,6 +194,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * Added protection for repeat orders from customers who don't get enough feedback that their order is complete
  * Added terms-and-conditions checkbox to the interstitial screen on Vipps Express Checkout
  * Added filters and hooks to facilitate validation of an express checkout order
+ * Fixed fee calculations for carts in express checkout (thanks to Shattique @ netthandelsgruppen for reporting & fixing)
 
 = 2020.01.22 version 1.3.5 =
  * Tested up to version 3.9.0 of WooCommerce and 5.3.2 of WP
