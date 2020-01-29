@@ -1717,7 +1717,7 @@ else:
             $status = $open_order->get_status();
             if ($status == 'cancelled' || $status == 'pending') continue;
             $when = strtotime($open_order->get_date_modified());
-            $cutoff = $when + apply_filters('woo_vipps_recent_order_cutoff', 3 * (5*60));
+            $cutoff = $when + apply_filters('woo_vipps_recent_order_cutoff', (5*60));
             if (time() > $cutoff) {
                 continue;
             }
@@ -1841,11 +1841,11 @@ else:
         $content .= ob_get_clean();
         $content .= "</form>";
 
+        $extraHTML = apply_filters('woo_vipps_express_checkout_final_html', '', $termsHTML,$askForConfirmationHTML);
         $pressTheButtonHTML =  "";
-        if (empty($termsHTML) && $orderisOK)  {
+        if (empty($termsHTML) && empty($askForConfirmationHTML) && empty($extraHTML)) {
             $pressTheButtonHTML =  "<p id=waiting>" . __("Ready for express checkout - press the button", 'woo-vipps') . "</p>";
         }
-        apply_filters('woo_vipps_express_checkout_final_html', $pressTheButtonHTML,$termsHTML,$askForConfirmationHTML);
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
@@ -1856,6 +1856,7 @@ else:
             return;
         } else {
             $content .= $askForConfirmationHTML;
+            $content .= $extraHTML;
             $content .= $termsHTML;
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
