@@ -1760,6 +1760,7 @@ else:
         $quantity = intval(@$productinfo['quantity']);
         if (!$quantity) $quantity = 1;
         if (isset($productinfo['sku']) && $productinfo['sku']) {
+            $sku = $productinfo['sku'];
             $skuid = wc_get_product_id_by_sku($sku);
             $product = wc_get_product($skuid);
             $parentid = $product ? $product->get_parent_id() : null;
