@@ -190,7 +190,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.02.xx version 1.3.6 =
+= 2020.02.03 version 1.3.6 =
  * Added protection for repeat orders from customers who don't get enough feedback that their order is complete
  * Added terms-and-conditions checkbox to the interstitial screen on Vipps Express Checkout
  * Added filters and hooks to facilitate validation of an express checkout order
