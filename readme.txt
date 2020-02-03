@@ -6,7 +6,7 @@ Tested up to: 5.3.2
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 3.9.0
+WC tested up to: 3.9.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -190,7 +190,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2019.12.12 version 1.3.5 =
+= 2020.02.03 version 1.3.6 =
+ * Added protection for repeat orders from customers who don't get enough feedback that their order is complete
+ * Added terms-and-conditions checkbox to the interstitial screen on Vipps Express Checkout
+ * Added filters and hooks to facilitate validation of an express checkout order
+ * Fixed fee calculations for carts in express checkout (thanks to Shattique @ netthandelsgruppen for reporting & fixing)
+
+= 2020.01.22 version 1.3.5 =
  * Tested up to version 3.9.0 of WooCommerce and 5.3.2 of WP
 
 = 2019.12.12 version 1.3.4 =

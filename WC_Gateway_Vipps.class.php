@@ -522,7 +522,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('If Express Checkout is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'),
                         'default'     => 'no',
                         ),
-
+                 'expresscheckout_termscheckbox' => array(
+                        'title'       => __( 'Add terms and conditions checkbox on Express Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Always ask for confirmation on Express Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('When using Express Checkout, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
                   'singleproductbuynowcompatmode' => array(
                         'title'       => __( '"Buy now" compatibility mode', 'woo-vipps' ),
                         'label'       => __( 'Activate compatibility mode for all "Buy now" buttons', 'woo-vipps' ),
@@ -1135,8 +1141,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
-            $this->log(__("Express checkout - no callback yet, so getting payment details from Vipps for order id:", 'woo-vipps') . ' ' . $orderid, 'warning');
-
             try {
                 $statusdata = $this->api->payment_details($order);
                 do_action('woo_vipps_express_checkout_get_order_status', $statusdata);
@@ -1373,7 +1377,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if(get_transient('order_query_'.$orderid))  {
-            $this->log(__('Vipps callback ignored because we are currently updating the order using get order status', 'woo-vipps') . ' ' . $orderid, 'notice');
             clean_post_cache($order->get_id());
             return;
         }
@@ -1382,7 +1385,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
-            $this->log(__('Vipps callback recieved for order no longer pending. Ignoring callback.','woo-vipps') . ' ' . $orderid, 'notice');
             clean_post_cache($order->get_id());
             return;
         }
@@ -1444,6 +1446,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$thecart) {
          $thecart = WC()->cart;
         }
+
+        $thecart->calculate_fees();
+        $thecart->calculate_totals();
 
         do_action('woo_vipps_before_create_express_checkout_order', $thecart);
         $contents = $thecart->get_cart_contents();
