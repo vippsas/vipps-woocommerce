@@ -867,7 +867,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $captured = $order->get_meta('_vipps_captured');
         }
 
-        $total = round($order->get_total()*100);
+        $total = round(wc_format_decimal($order->get_total(),'')*100);
         $amount = $total-$captured;
         if ($amount<=0) {
                 $order->add_order_note(__('Payment already captured','woo-vipps'));
@@ -931,7 +931,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        $total = round($order->get_total()*100);
+        $total = round(wc_format_decimal($order->get_total(),'')*100);
         $captured = $order->get_meta('_vipps_captured');
         $to_refund =  $order->get_meta('_vipps_refund_remaining');
         $refunded = $order->get_meta('_vipps_refunded');

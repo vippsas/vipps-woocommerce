@@ -807,7 +807,7 @@ else:
         if ($status != 'completed') return;
 
         $captured = intval($order->get_meta('_vipps_captured'));
-        $total = intval(100*$order->get_total());
+        $total = intval(100*wc_format_decimal($order->get_total(),''));
         $refunded = $order->get_meta('_vipps_refunded');
         $superfluous = $captured-$total-$refunded;
 
@@ -1016,7 +1016,7 @@ else:
 
         $package = array();
         $package['contents'] = $acart->cart_contents;
-        $package['contents_cost'] = $order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax();
+        $package['contents_cost'] = wc_format_decimal($order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax(),'');
         $package['destination'] = array();
         $package['destination']['country']  = $country;
         $package['destination']['state']    = '';
@@ -1060,7 +1060,7 @@ else:
             $tax  = $rate->get_shipping_tax();
             $cost = $rate->get_cost();
 
-            $method['shippingCost'] = sprintf("%.2F",$cost+$tax);
+            $method['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
             $method['shippingMethod'] = $rate->get_label();
             // We may not really need the tax stashed here, but just to be sure.
             $method['shippingMethodId'] = $rate->get_id() . ";" . $tax; 

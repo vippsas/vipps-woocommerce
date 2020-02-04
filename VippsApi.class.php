@@ -131,7 +131,7 @@ class VippsApi {
         $transaction = array();
         $transaction['orderId'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
-        $transaction['amount'] = round($order->get_total() * 100); 
+        $transaction['amount'] = round(wc_format_decimal($order->get_total(),'') * 100); 
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
         $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
         $transaction['transactionText'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
@@ -287,7 +287,7 @@ class VippsApi {
     // Refund a captured payment.  IOK 2018-05-08
     public function refund_payment($order,$requestid=1,$amount=0,$cents=false) {
         $orderid = $order->get_meta('_vipps_orderid');
-        $amount = $amount ? $amount : $order->get_total();
+        $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/refund';
         $date = gmdate('c');
