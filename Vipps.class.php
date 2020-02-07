@@ -1716,9 +1716,15 @@ else:
         if ($sessionorderdata) {
             foreach(array_keys($sessionorderdata) as $oid) {
                 $orderobject = wc_get_order($oid);
-                $sessionorders[] = $orderobject;
+                // Check to see that this hasn't been deleted yet IOK 2020-01-07
+                if ($orderobject instanceof WC_Order) {
+                   $sessionorders[] = $orderobject;
+                }
             }
         }
+        // Nothing more to do here
+        if (empty($sessionorders)) return true;
+
         // And create a similar hash table for each of the open orders
         $openorderdata = array();
         foreach ($sessionorders as $open_order) {
