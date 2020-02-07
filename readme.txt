@@ -191,7 +191,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 == Changelog ==
 
 = 2020.02.xx version 1.3.7 =
- * Properly round prices with wc_format_decimals (Thanks to Shattique @ netthandlesgruppen for reporting)
+ * Properly round prices with wc_format_decimal (Thanks to Shattique @ netthandlesgruppen for reporting)
 
 
 = 2020.02.03 version 1.3.6 =
