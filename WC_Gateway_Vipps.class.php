@@ -632,6 +632,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
 	}
 
+        // New shipping in express checkout is available, but merchant has overridden the old shipping callback. Ask what to do! IOK 2020-02-12
+        if (has_action('woo_vipps_shipping_methods')) {
+            $shippingoptions = array( 
+                    'newshippingcallback' => array(
+                        'title'       => __( 'Use old-style shipping callback for express checkout', 'woo-vipps' ),
+                        'label'       => __( 'Use your current shipping filters', 'woo-vipps' ),
+                        'type'        => 'select',
+                        'options' => array(
+                            'none' => __('Select one','woo-vipps'),
+                            'old' => __('Keep using old shipping callback with my custom filter', 'woo-vipps'),
+                            'new' => __('Use new shipping callback','woo-vipps')
+                            ),
+                        'description' => __('Since version 1.4 this plugin uses a new method of providing shipping methods to Vipps when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <oode>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'),
+                        'default'     => 'none',
+                        )
+                    );
+            $this->form_fields = array_merge(array_slice($this->form_fields,0,1), $shippingoptions, array_slice($this->form_fields,1));
+        }
+
+
    
     }
 
