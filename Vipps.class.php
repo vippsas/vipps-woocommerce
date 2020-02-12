@@ -102,6 +102,12 @@ class Vipps {
                     echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
                     });
         }
+        if (has_action('woo_vipps_shipping_methods')) {
+            add_action('admin_notices', function() {
+                    $what = __('Your theme or a plugin is currently overriding the \'woo_vipps_shipping_methods\' filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata.', 'woo-vipps');
+                    echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
+                    });
+        }
 
         $this->delete_old_cancelled_orders();
     }
