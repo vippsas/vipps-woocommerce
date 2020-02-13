@@ -111,11 +111,21 @@ img.inline {
 }
 
 .vippsspinner {
+    width:125px;
+    height:125px;
     display: none;
     position:absolute;
     top:50%;
     left:50%;
+    margin-left: -62px;
+    margin-top: -62px;
+    transform:scale(0.6);
+        -o-transform:scale(0.6);
+        -ms-transform:scale(0.6);
+        -webkit-transform:scale(0.6);
+        -moz-transform:scale(0.6);
 }
+
 .vippsoverlay {
     background: #e9e9e9;
     position:fixed;
@@ -137,16 +147,6 @@ body.processing {
         display:block;
 }
 
-.vippsspinner {
-    width:125px;
-    height:125px;
-    margin:auto;
-    transform:scale(0.6);
-        -o-transform:scale(0.6);
-        -ms-transform:scale(0.6);
-        -webkit-transform:scale(0.6);
-        -moz-transform:scale(0.6);
-}
 
 .f_circleG{
     position:absolute;
