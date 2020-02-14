@@ -1110,6 +1110,8 @@ else:
            $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
 
            $vippsmethod = array();
+
+           $vippsmethod['isDefault'] = $method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
            $vippsmethod['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
            $vippsmethod['shippingMethod'] = $rate->get_label();
