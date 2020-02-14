@@ -104,7 +104,6 @@ class Vipps {
         }
         if (has_action('woo_vipps_shipping_methods')) {
             $option = $gw->get_option('newshippingcallback');
-            error_log("option is $option");
             if ($option != 'old' && $option != 'new') {
                 add_action('admin_notices', function() use ($option) {
                         $what = __('Your theme or a plugin is currently overriding the \'woo_vipps_shipping_methods\' filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%s">settings page</a>', 'woo-vipps');
@@ -1014,6 +1013,133 @@ else:
         // Some shipping methods will use the session cart no matter what you do, so make sure it is there IOK 2019-01-31
         wc()->cart = $acart;
 
+        $shipping_methods = array();
+        // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
+        if (!$acart->needs_shipping()) {
+            $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,array(array('total'=>0)), 'none_required', 0);
+        } else {
+            $package = array();
+            $package['contents'] = $acart->cart_contents;
+            $package['contents_cost'] = wc_format_decimal($order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax(),'');
+            $package['destination'] = array();
+            $package['destination']['country']  = $country;
+            $package['destination']['state']    = '';
+            $package['destination']['postcode'] = $postcode;
+            $package['destination']['city']     = $city;
+            $package['destination']['address']  = $addressline1;
+            if ($addressline2 && !$addressline2 == 'null') {
+                $package['destination']['address_2']= $addressline2;
+            }
+
+            $packages = apply_filters('woo_vipps_shipping_callback_packages', array($package));
+            $shipping =  WC()->shipping->calculate_shipping($packages);
+            $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
+         }
+        // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
+        if (empty($shipping_methods)) {
+            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
+        }
+
+        $chosen = null;
+        if (is_a(WC()->session, 'WC_Session_Handler')) {
+            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+            if (!empty($all_chosen)) $chosen= $all_chosen[0];
+        }
+
+        // Merchant is using the old 'woo_vipps_shipping_methods' filter, and hasn't chosen to disable it. Use legacy methd.
+        if (has_action('woo_vipps_shipping_methods') &&  $this->gateway()->get_option('newshippingcallback') != 'new') {
+            $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $cart);
+            exit();
+        }
+
+        // Default 'priority' is based on cost, so sort this thing
+        uasort($shipping_methods, function($a, $b) { return $a->get_cost() - $b->get_cost(); });
+
+        // IOK 2020-02-13 Ok, new method!  We are going to provide a list full of metadata for the users to process this time, which we will massage into the final
+        // Vipps method list
+        $methods = array();
+        $i=-1;
+
+
+        foreach ($shipping_methods as  $key=>$rate) {
+            $i++;
+            $method = array();
+            $method['priority'] = $i;
+            $method['default'] = false;
+            $method['rate'] = $rate;
+            $methods[$key]= $method;
+        }
+        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order);
+        if (!isset($methods[$chosen]))  {
+            $chosen = null; // Actually that isn't available
+            $this->log(__("Unavailable shipping method set as default in the Vipps Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'));
+        }
+        if (!$chosen) {
+            // Find first method that isn't 'local_pickup'
+            foreach($methods as $key=>&$data) {
+              if ($data['rate']->get_method_id() != 'local_pickup') {
+                 $chosen = $key;
+                 $break;
+              }
+            }
+            // Ok, just pick the first
+            if (!$chosen) {
+               foreach($methods as $key=>&$data) {
+                 $chosen = $key;
+                 break;
+               }
+             
+            }
+        }
+        $methods[$chosen]['default'] = true;
+
+        $methods = apply_filters('woo_vipps_express_checkout_shipping_rates', $methods, $order, $acart);
+
+        $vippsmethods = array();
+        $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+        if (!$storedmethods) $storedmethods= array();
+
+        foreach($methods as $method) {
+           $rate = $method['rate'];
+           $tax  = $rate->get_shipping_tax();
+           $cost = $rate->get_cost();
+           $label = $rate->get_label();
+           // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
+           // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
+           $serialized = serialize($rate);
+           $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
+
+           $vippsmethod = array();
+           $vippsmethod['priority'] = $method['priority'];
+           $vippsmethod['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
+           $vippsmethod['shippingMethod'] = $rate->get_label();
+           $vippsmethod['shippingMethodId'] = $key;
+
+           $vippsmethods[]=$vippsmethod;
+
+           // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
+           $storedmethods[$key] = $serialized;
+        }
+        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
+        $order->save();
+        
+        $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
+        $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
+
+        $json = json_encode($return);
+        header("Content-type: application/json; charset=UTF-8");
+        print $json;
+        exit();
+    }
+
+
+    // IOK 2020-02-13 This method implements the *old* style of providing shipping methods to Vipps Express Checkout.
+    // It is 'stateless' in that it doesn't need to serialize shipping methods or anything like that - but precisely because of this,
+    // metadata isn't possible to provide, and it reqires to send VAT separately coded into the shipping method ID which is pretty
+    // clumsy. This method will currently only be used if a merchant has overridden the 'woo_vipps_shipping_methods' filter and hasn't chosen
+    // the setting that overrides this.
+    public function legacy_shipping_callback_handler ($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $acart) {
+        do_action('woo_vipps_legacy_shipping_methods', $order); // This will probably be mostly for debugging.
 
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
@@ -1025,46 +1151,9 @@ else:
             exit();
         }
 
-        $package = array();
-        $package['contents'] = $acart->cart_contents;
-        $package['contents_cost'] = wc_format_decimal($order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax(),'');
-        $package['destination'] = array();
-        $package['destination']['country']  = $country;
-        $package['destination']['state']    = '';
-        $package['destination']['postcode'] = $postcode;
-        $package['destination']['city']     = $city;
-        $package['destination']['address']  = $addressline1;
-        if ($addressline2 && !$addressline2 == 'null') {
-            $package['destination']['address_2']= $addressline2;
-        }
-
-        $packages = apply_filters('woo_vipps_shipping_callback_packages', array($package));
-        $shipping =  WC()->shipping->calculate_shipping($packages);
-
-        $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
-
-        // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
-        if (empty($shipping_methods)) {
-            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
-        }
-
-        // Then format for Vipps
-        $methods = array();
-
-        // This way of calculating the results will always produce the cost as if it was
-        // not including tax. This means that it will be wrong in all those cases - it will 
-        // for a cost of 50 have cost '50' and tax 12.5 instead of 10. So we need to redo the tax. IOK 2018-05-25
-        $pricesincludetax = 0;
-        if (get_option('woocommerce_prices_include_tax') == 'yes') $pricesincludetax=1;
-
-        $chosen = null;
-        if (is_a(WC()->session, 'WC_Session_Handler')) {
-            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
-            if (!empty($all_chosen)) $chosen= $all_chosen[0];
-        }
-
         $free = 0;
         $defaultset = 0;
+        $methods = array();
         foreach ($shipping_methods as  $rate) {
             $method = array();
             $method['priority'] = 0;
@@ -1084,11 +1173,9 @@ else:
                 $chosen = $rate->get_id();
             }
         }
-
         usort($methods, function($method1, $method2) {
                 return $method1['shippingCost'] - $method2['shippingCost'];
                 });
-
         $priority=0;
         foreach($methods as &$method) {
             $rateid = explode(";",$method['shippingMethodId'],2);
@@ -1118,16 +1205,17 @@ else:
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
+        
 
         $json = json_encode($return);
         header("Content-type: application/json; charset=UTF-8");
         print $json;
-
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
         if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
-
         exit();
     }
+
+
 
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {

@@ -190,8 +190,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.02.xx version 1.3.8 =
+= 2020.02.xx version 1.4.0 =
  * Properly round prices with wc_format_decimal (Thanks to Shattique @ netthandlesgruppen for reporting)
+ * Ensure 'spinner' on page forwarding to Vipps is centered
+ * New shipping handling of shipping callbacks in Express Checkout makes shipping methods using meta data work
 
 = 2020.02.07 version 1.3.7 =
  * Improved error-handling in validate-express-checkout; thanks to lykkelig @wp.org

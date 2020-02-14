@@ -1325,20 +1325,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->customer->set_billing_location($country,'',$postcode,$city);
         WC()->customer->set_shipping_location($country,'',$postcode,$city);
 
-        // Because Woocommerce is so difficult wrt shipping, we will have 'packed' some data into the
-        // method name - including any tax.
         $method = $shipping['shippingMethodId'];
-        list ($rate,$tax) = explode(";",$method);
-        // The method ID is encoded in the rate ID but we apparently must still send it to the WC_Shipping_Rate constructor. IOK 2018-06-01
-        // Unfortunately, Vipps won't accept long enought 'shipingMethodId' for us to actually stash all the information we need. IOK 2018-06-01
-        list ($method,$product) = explode(":",$rate);
-        $tax = sprintf("%.2F",$tax);
-        $label = $shipping['shippingMethod'];
-        $cost = sprintf("%.2F",$shipping['shippingCost']); // This is inclusive of tax
-        $costExTax= sprintf("%.2F",$cost-$tax);
 
-        $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method, $product);
-        $shipping_rate = apply_filters('woo_vipps_express_checkout_shipping_rate',$shipping_rate,$costExTax,$tax,$method,$product);
+        $shipping_rate=null;
+        if (substr($method,0,1) != '$') {
+            $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($method);
+        } else { 
+            $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+            if (is_array($shipping_table) && isset($shipping_table[$method])) {
+                $shipping_rate = @unserialize($shipping_table[$method]);
+                if (!$shipping_rate) {
+                   $this->log(sprintf(__("Vipps Express Checkout: Could not deserialize the chosen shipping method %s for order %d", 'woo-vipps'), $method, $order->get_id()), 'error');
+                } else {
+                   // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
+                   $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
+                }
+            } 
+        }
+        $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
+       
         if ($shipping_rate) {
             $it = new WC_Order_Item_Shipping();
             $it->set_shipping_rate($shipping_rate);
@@ -1351,6 +1356,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
 
         $order->save(); // I'm not sure why this is neccessary - but be sure.
+    }
+
+  
+    // Previously, shipping rates were added by creating them here with metadata packed into the shippingMethodId. This is from 1.4.0 only 
+    // used when the woo_vipps_shipping_methods filter has been overriden by the merchant. IOK 2020-02-14
+    private function get_legacy_express_checkout_shipping_rate($shipping) {
+        $method = $shipping['shippingMethodId'];
+        list ($rate,$tax) = explode(";",$method);
+        // The method ID is encoded in the rate ID but we apparently must still send it to the WC_Shipping_Rate constructor. IOK 2018-06-01
+        // Unfortunately, Vipps won't accept long enought 'shipingMethodId' for us to actually stash all the information we need. IOK 2018-06-01
+        list ($method,$product) = explode(":",$rate);
+        $tax = wc_format_decimal($tax,'');
+        $label = $shipping['shippingMethod'];
+        $cost = wc_format_decimal($shipping['shippingCost'],''); // This is inclusive of tax
+        $costExTax= wc_format_decimal($cost-$tax,'');
+        $shipping_rate = new WC_Shipping_Rate($rate,$label,$costExTax,array(array('total'=>$tax)), $method, $product);
+        $shipping_rate = apply_filters('woo_vipps_express_checkout_shipping_rate',$shipping_rate,$costExTax,$tax,$method,$product);
+        return $shipping_rate;
     }
 
     // Handle the callback from Vipps.
@@ -1416,7 +1439,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
 
-        $transactionid = $transaction['transactionId'];
+        $transactionid = @$transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);
         $vippsamount = $transaction['amount'];
         $vippsstatus = $transaction['status'];
