@@ -1,4 +1,6 @@
 
+TODO: Add producs before evaluating coupons
+
 1. Create exactly the same array as before if filters exist
 2. After filters run, check if the result is the same, if so, use new method
 3. If filters are active, notify users. Provide text for how-to

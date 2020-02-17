@@ -1343,18 +1343,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             } 
         }
         $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
-       
+        $it = null;       
         if ($shipping_rate) {
             $it = new WC_Order_Item_Shipping();
             $it->set_shipping_rate($shipping_rate);
             $it->set_order_id( $order->get_id() );
+            // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
+            // Therefore, do it manually/forcefully IOK 2020-02-17
+            foreach($shipping_rate->get_meta_data() as $key => $value) {
+              $it->add_meta_data($key,$value,true);
+            }
             $order->add_item($it);
+            $it->save();
         }
         $order->save(); 
         $order->calculate_totals(true);
-
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
-
         $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
 

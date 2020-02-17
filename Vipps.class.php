@@ -1051,7 +1051,6 @@ else:
             $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $cart);
             exit();
         }
-
         // Default 'priority' is based on cost, so sort this thing
         uasort($shipping_methods, function($a, $b) { return $a->get_cost() - $b->get_cost(); });
 
@@ -1124,6 +1123,8 @@ else:
         }
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save();
+ 
+
         
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
