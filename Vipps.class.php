@@ -1000,15 +1000,15 @@ else:
         // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
         $acart = new WC_Cart();
 
-        foreach($coupons as $coupon) $acart->apply_coupon($coupon);
-        wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
-
         foreach($order->get_items() as $item) {
             $varid = $item['variation_id'];
             $prodid = $item['product_id'];
             $quantity = $item['quantity'];
             $acart->add_to_cart($prodid,$quantity,$varid);
         }
+
+        foreach($coupons as $coupon) $acart->apply_coupon($coupon);
+        wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
 
         // Some shipping methods will use the session cart no matter what you do, so make sure it is there IOK 2019-01-31
         wc()->cart = $acart;
@@ -1103,9 +1103,16 @@ else:
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
            $label = $rate->get_label();
+           // We need to store the WC_Shipping_Rate object with all its meta data in the database until return from Vipps. IOK 2020-02-17
+           $serialized = '';
+           try {
+               $serialized = serialize($rate);
+           } catch (Exception $e) {
+               $this->log(sprintf(__("Cannot use shipping method %s in Vipps Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $label));
+               continue;
+           }
            // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
-           $serialized = serialize($rate);
            $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
 
            $vippsmethod = array();
