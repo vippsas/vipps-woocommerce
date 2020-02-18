@@ -1329,7 +1329,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $shipping_rate=null;
         if (substr($method,0,1) != '$') {
-            $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($method);
+            $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
         } else { 
             $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
             if (is_array($shipping_table) && isset($shipping_table[$method])) {
