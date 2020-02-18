@@ -1562,7 +1562,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // but if so, admin should definitely be HTTPS so we just check that. IOK 2018-06-06
     public function can_be_activated () {
         if (!is_ssl() && !preg_match("!^https!i",home_url())) return false;
-        if (!ini_get('allow_url_fopen')) return false;
         return true;
     }
 
@@ -1614,13 +1613,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 </div>
         <?php endif; ?>
     
-        <?php if (! ini_get('allow_url_fopen')): ?>
-                <div class="inline error">
-                <p><strong><?php _e( 'Gateway disabled', 'woocommerce' ); ?></strong>:
-                <?php _e( 'Vipps requires that your PHP configuraton has <b>allow_url_fopen</b> set to true.', 'woo-vipps' ); ?>
-                </p>
-                </div>
-        <?php endif; ?>
 
                 <table class="form-table">
                 <?php $this->generate_settings_html(); ?>

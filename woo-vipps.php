@@ -7,14 +7,14 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.3.7
+   Version: 1.4.0
 
    Requires at least: 4.7
    Tested up to: 5.3.2
    Stable tag: trunk
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 3.9.1
+   WC tested up to: 3.9.2
 
    License: AGPLv3 or later
    License URI: http://www.gnu.org/licenses/agpl-3.0.html
