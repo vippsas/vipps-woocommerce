@@ -196,13 +196,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 = 2020.02.xx version 1.4.0 =
  * Properly round prices with wc_format_decimal (Thanks to Shattique @ netthandlesgruppen for reporting)
  * Ensure 'spinner' on page forwarding to Vipps is centered
+ * New option in settings: Override the page template used for the Vipps special pages (choose 'full width' and so forth here.)
  * New shipping handling of shipping callbacks in Express Checkout makes shipping methods using meta data work - that is, all shipping methods that have added meta data for for instance integration with transport companies and so forth.t
  * DEPRECATION: The filter 'woo_vipps_shipping_methods' is _deprecated_ as of version 1.4.0. If you use it, it will continue to work as before, but it will disable the new Express Checkout Shipping mechanism, and thus will not support metadata in the shipping methods; which certain shipping methods need - in particular those with integration with other services. A notice will be printed on the admin screen, and an option will be shown in the settings that will allow you to silence this warning (and then everything will work as before) or to disable this filter if you prefer to use the new method.
  * New filter 'woo_vipps_express_checkout_shipping_rates' which replaces the filter above, taking the same arguments (a list of shippinig methods, and order, and a cart). The format of the shipping methods is however different: They will consist of an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
  * New filter 'woo_vipps_default_shipping_method' taking the default shipping method ID, a list of the shipping methods available (as a table from method id to WC_Shipping_Rate object) and the order. Return a shipping rate id, like 'local_pickup:5'.
  * New filter 'woo_vipps_vipps_formatted_shipping_methods'. This will take an array of the methods to be sent to Vipps, formatted as required by Vipps. This is mostly for debugging.
  * DEPRECATION: the filter 'woo_vipps_express_checkout_shipping_rate' will only be applied if you use the old method of doing shipping for express checkout; thus you will have to have overridden the  'woo_vipps_shipping_methods' filter too. This is replaced by the filter 'woo_vipps_express_checkout_final_shipping_rate', which takes an WC_Shipping_Rate object, the order and the shipping info from Vipps and must return a WC_Shipping_Rate object.
-
  * Replace use of file_get_contents with the WP http api methods, thus there is no longer any requirement for having allow_url_fopen true
 
 = 2020.02.07 version 1.3.7 =

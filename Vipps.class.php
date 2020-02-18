@@ -110,6 +110,12 @@ class Vipps {
             }
         }
 
+        $temps = wp_get_theme()->get_page_templates(); 
+        $out = "";
+        foreach($temps as $filename=>$tempname) {
+          $out .= $tempname . ":" . $filename . ":" . locate_template($filename, false, false) . "<br>"; 
+        }
+
         $this->delete_old_cancelled_orders();
     }
 
@@ -691,6 +697,11 @@ else:
     public function template_include($template) {
         $special = $this->is_special_page() ;
         if ($special) {
+            // Get any special template override from the options IOK 2020-02-18
+            $specific = $this->gateway()->get_option('vippsspecialpagetemplate');
+            $found = locate_template($specific,false,false);
+            if ($found) $template=$found;
+
             return apply_filters('woo_vipps_special_page_template', $template, $special);
         }
         return $template;

@@ -218,6 +218,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
+    // Allow user to select the template to be used for the special Vipps pages. IOK 2020-02-17
+    public function get_theme_page_templates() {
+         $current = $this->get_option('vippsspecialpagetemplate');
+         $choices = array('' => __('Use default template', 'woo-vipps'));
+         foreach(wp_get_theme()->get_page_templates() as $filename=>$name) {
+             //$choices[$filename]=$name;
+             $choices[$filename]=$name;
+         }
+         if ($current && !isset($choices[$current])) $choices[$current] = $current;
+        
+         return $choices;
+     }
+
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
 	    $type = $product->get_type();
@@ -414,6 +427,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     public function init_form_fields() { 
+        $page_templates = $this->get_theme_page_templates();
         $this->form_fields = array(
                 'enabled' => array(
                     'title'       => __( 'Enable/Disable', 'woocommerce' ),
@@ -537,6 +551,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
+
                   'deletefailedexpressorders' => array(
                         'title'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
                         'label'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
@@ -545,8 +560,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
+                  'vippsspecialpagetemplate' => array(
+                        'title'       => __( 'Override page template used for the special Vipps pages', 'woo-vipps' ),
+                        'label'       => __( 'Use specific template for Vipps', 'woo-vipps' ),
+                        'type'        => 'select',
+                        'options' =>  $page_templates,
+                        'description' => __('Use this template from your theme or child-theme to display all the special Vipps pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'),
+                        ),
+
 
                     );
+
 
         // This will be enabled on a later date . IOK 2018-06-05
         if (false) {
@@ -556,13 +580,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
                     'type'        => 'checkbox',
                     'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'woo-vipps'),
-                    'default'     => 'yes',
-                    );
-            $this->form_fields['vippslogin']  = array (
-                    'title'       => __( 'Enable "Login with Vipps"', 'woo-vipps' ),
-                    'label'       => __( 'Enable "Login with Vipps"', 'woo-vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => __('Enable this to allow customers (and yourself!) to log in with Vipps', 'woo-vipps'),
                     'default'     => 'yes',
                     );
         }
