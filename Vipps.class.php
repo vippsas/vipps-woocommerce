@@ -921,7 +921,6 @@ else:
         $callback = @$_REQUEST['callback'];
         do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
 
-
         $data = array_reverse(explode("/",$callback));
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
@@ -1131,8 +1130,6 @@ else:
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save();
  
-
-        
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 

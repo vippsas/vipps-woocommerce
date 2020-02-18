@@ -378,13 +378,6 @@ class VippsApi {
         }
         $data_len = strlen ($data_encoded);
         $http_response_header = null;
-        $sslparams = array();
-
-        // Always verify peer etc IOK 2018-04-18
-        if (true) {
-            $sslparams['verify_peer'] = false;
-            $sslparams['verify_peer_name'] = false;
-        }
 
         $headers['Connection'] = 'close';
         if ($verb=='POST' || $verb == 'PATCH' || $verb == 'PUT') {
@@ -395,43 +388,36 @@ class VippsApi {
                 $headers['Content-type'] = 'application/json';
             }
         }
-        $headerstring = '';
-        $hh = array();
-        foreach($headers as $key=>$value) {
-            array_push($hh,"$key: $value");
-        }
-        $headerstring = join("\r\n",$hh);
-        $headerstring .= "\r\n";
-
-
-        $httpparams = array('method'=>$verb,'header'=>$headerstring,'ignore_errors'=>true);
+        $args = array();
+        $args['method'] = $verb;
+        $args['headers'] = $headers;
         if ($verb == 'POST' || $verb == 'PATCH' || $verb == 'PUT') {
-            $httpparams['content'] = $data_encoded;
+            $args['body'] = $data_encoded;
         }
         if ($verb == 'GET' && $data_encoded) {
             $url .= "?$data_encoded";
         }
-        $params = array('http'=>$httpparams,'ssl'=>$sslparams);
+        $return = wp_remote_request($url,$args);
+        $headers = array();
+        $content=NULL;
+        $response=0;
 
-        $context = stream_context_create($params);
-        $content = null;
-
-
-        $contenttext = @file_get_contents($url,false,$context);
-
-        if ($contenttext) {
-            $content = json_decode($contenttext,true);
-        }
-        $response = 0;
-        if ($http_response_header && isset($http_response_header[0])) {
-            $match = array();
-            $ok = preg_match('!^HTTP/... (...) !i',$http_response_header[0],$match);
-            if ($ok) {
-                $response = 1 * $match[1];
+        if (is_wp_error($return))  {
+            $headers['status'] = "500 " . $return->get_error_message();
+            $response = 500;
+        } else {
+            $response = wp_remote_retrieve_response_code($return);
+            $message =  wp_remote_retrieve_response_message($return);
+            $headers = wp_remote_retrieve_headers($return);
+            $headers['status'] = "$response $message";
+            $contenttext = wp_remote_retrieve_body($return);
+            if ($contenttext) {
+                $content = json_decode($contenttext,true);
             }
         }
+
         // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
-        return $this->handle_http_response($response,$http_response_header,$content);
+        return $this->handle_http_response($response,$headers,$content);
     }
 
     // Read the response from Vipps - if any - and convert errors (null results, results over 299)
@@ -449,7 +435,7 @@ class VippsApi {
             return $content; 
         }
         // Now errorhandling. Default to use just the error header IOK 2018-05-11
-        $msg = $headers[0];
+        $msg = $headers['status'];
 
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
