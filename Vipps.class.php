@@ -97,23 +97,30 @@ class Vipps {
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
 
         if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
-            add_action('admin_notices', function() {
-                    $what = __('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps');
-                    echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
-                    });
+            $what = __('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps');
+            $this->add_vipps_admin_notice($what,'info');
         }
+
+        // This requires merchants using the old shipping callback filter to choose between this or the new shipping method mechanism. IOK 2020-02-17
         if (has_action('woo_vipps_shipping_methods')) {
             $option = $gw->get_option('newshippingcallback');
             if ($option != 'old' && $option != 'new') {
-                add_action('admin_notices', function() use ($option) {
-                        $what = __('Your theme or a plugin is currently overriding the \'woo_vipps_shipping_methods\' filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%s">settings page</a>', 'woo-vipps');
-                        $message = sprintf($what, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
-                        echo "<div class='notice notice-info is-dismissible'><p>$message</p></div>";
-                        });
+                        $what = __('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%s">settings page</a>', 'woo-vipps');
+                        $this->add_vipps_admin_notice($what,'info');
             }
         }
 
         $this->delete_old_cancelled_orders();
+    }
+
+    // Add a backend notice to stand out a bit, using a Vipps logo and the Vipps color for info-level messages. IOK 2020-02-16
+    public function add_vipps_admin_notice ($text, $type='info') {
+                add_action('admin_notices', function() use ($text,$type) {
+                        $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
+                        $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
+                        $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
+                        echo "<div class='notice notice-vipps notice-$type is-dismissible'><p>$message</p></div>";
+                        });
     }
 
     // This function will delete old orders that were cancelled before the Vipps action was completed. We keep them for
@@ -155,6 +162,7 @@ class Vipps {
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
         wp_enqueue_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
+        wp_enqueue_style('vipps-admin-style',plugins_url('css/vipps-admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps-admin.css"), 'all');
     }
 
     public function notice_is_test_mode() {
