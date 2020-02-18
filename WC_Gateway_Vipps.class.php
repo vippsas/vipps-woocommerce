@@ -661,7 +661,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'old' => __('Keep using old shipping callback with my custom filter', 'woo-vipps'),
                             'new' => __('Use new shipping callback','woo-vipps')
                             ),
-                        'description' => __('Since version 1.4 this plugin uses a new method of providing shipping methods to Vipps when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <oode>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'),
+                        'description' => __('Since version 1.4 this plugin uses a new method of providing shipping methods to Vipps when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'),
                         'default'     => 'none',
                         )
                     );

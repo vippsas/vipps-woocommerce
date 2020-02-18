@@ -1562,7 +1562,6 @@ else:
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!isset($sessionorders[$orderid])) {
-            $this->log(__('The orderid passed is not from this session:','woo-vipps') . $orderid, 'warning');
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
 
