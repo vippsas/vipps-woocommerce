@@ -95,13 +95,13 @@ Yes, you can do refunds, including partial refunds, using the standard WooCommer
 Some plugins add new features to products or entirely new product types to WooCommerce; which the 'Express Checkout' function may not be able to handle. It can be possible to fix this using hooks and filters, but if you choose this feature, express checkout will be done in a different manner which is very much more likely to work for a given plugin. The cost is that the process will be _slightly_ less smooth.
 
 = Why is my shipping wrong when using express checkout? =
-Some shipping plugins and setups are not compatible with Vipps Express Checkout. 
+It may be that the shipping method you are using some how does not work when calculated from the Vipps app, where the customer is somewhat anonymous. However, since version 1.4.0 this problem ought to be greatly reduced, so if you still have this problem, report this on the forum and we'll try to fix it. 
 
-We do our testing with the standard Woo shipping mechanism and Bring Fraktguiden for WooCommerce, and these should work. For any other plugin or setup we can unfortunately give no guarantee.
+If you have shipping methods that add additional information on the 'normal' checkout page they will not be able to provide that information to Express Checkout plugin, since that page is bypassed. You may be able to add those options on a different page; but you may want to remove those options when using Express Checkout.
 
-It is therefore a very good idea to provide a fallback shipping method if you want to use Express Checkout. There is also a filter 'woo_vipps_shipping_rates' that can be used to customize what is sent to Vipps.
+Formerly, there was a filter used to work around this, namely 'woo_vipps_shipping_methods'. This still works, but if you use it, it will disable the 'new' shipping method calculation. You may still customize the Express Checkout shipping; the new filter is called 'woo_vipps_shipping_rates'.
 
-It is therefore also important that you test your setup if you are using express checkout.
+To be sure, you should test your shipping methods in Express Checkout before going live.
 
 = I'd like to use sequential order numbers at Vipps instead of the WooCommerce order-ids using a sequential order number plugin. Does this plugins support that?
 Yes, though you need to ensure that the order-id's you produce like this are unique for your Vipps account, and you currently have to use a filter in your themes' functions.php file. We recommend using a prefix for your order ids, so a filter that will work with sequential order numbers would look like
