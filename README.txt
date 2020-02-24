@@ -6,8 +6,8 @@ Requires at least: 5.0.0
 Tested up to: 5.3.2
 Stable tag: trunk
 Requires PHP: 7.1
-License: GNU Affero General Public License v3.0 or later
-License URI: https://www.gnu.org/licenses/agpl-3.0.en.html
+License: AGPLv3.0 or later
+License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
 Get paid through recurring payments with Vipps and WooCommerce (pilot-project).
 
