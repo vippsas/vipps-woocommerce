@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Vipps Recurring Payments Gateway for WooCommerce Subscriptions
+ * Plugin Name: Vipps Recurring Payments Gateway for WooCommerce
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no

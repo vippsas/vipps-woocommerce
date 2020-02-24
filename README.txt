@@ -9,7 +9,7 @@ Requires PHP: 7.1
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
-Get paid through recurring payments with Vipps and WooCommerce (pilot-project).
+Get paid through recurring payments with Vipps and WooCommerce.
 
 == Vipps Recurring Payments for WooCommerce ==
 
