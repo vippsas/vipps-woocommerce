@@ -1,6 +1,6 @@
 {
     "name": "vippsas/vipps-recurring-woocommerce",
-    "license": "GPL-2.0",
+    "license": "AGPL-3.0-or-later",
     "type": "library",
     "description": "",
     "authors": [
