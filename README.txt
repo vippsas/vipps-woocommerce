@@ -1,58 +1,106 @@
 === Vipps Recurring Payments for WooCommerce ===
-Contributors: everyday.no
+Contributors: Vipps, Everyday
 Donate link:
-Tags: vipps, recurring payments, membership, subscription, woocommerce
+Tags: vipps, recurring payments, subscriptions, woocommerce
 Requires at least: 5.0.0
-Tested up to: 5.2.4
+Tested up to: 5.3.2
 Stable tag: trunk
-Requires PHP: 5.6
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-
-(WORK IN PROGRESS. Currently writing README.md which will replace major parts of this README.txt file. This file is for WordPress.org while README.md will be for GitHub)
+Requires PHP: 7.1
+License: GNU Affero General Public License v3.0
+License URI: https://www.gnu.org/licenses/agpl-3.0.en.html
 
 Get paid through recurring payments with Vipps and WooCommerce (pilot-project).
 
+== Vipps Recurring Payments for WooCommerce ==
+
+**This plugin is currently a test pilot (pre-release). It is very likely that you will encounter bugs or scenarios that are not yet supported.**
+
+**We encourage you to create an issue here or on the WordPress plugin page if you require assistance or run in to a problem.**
+
+For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas)
+
 == Description ==
 
-⚠️ **Important information** ⚠️｜This plugin is currently published as a pilot-project. Please be aware that errors can occur during this time.
+This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by Vipps AS and maintained by Everyday AS.
 
-**WHAT IS VIPPS RECURRING PAYMENTS?**
+Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
-Vipps recurring payments lets you charge for subscriptions, repeating shipments or memberships - quite simply!
-
-With Vipps recurring payments for WooCommerce you can:
+With Vipps Recurring Payments for WooCommerce you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
 
-**GET STARTED WITH VIPPS**
+== Requirements ==
 
-To use this plugin you need to have a registered company with Vipps.
+* WooCommerce 3.3.4 or newer
+* [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
+* PHP 7.1 or higher
+* An SSL certificate must be installed and configured
+* Port 443 must not be blocked for outgoing traffic
 
-📝 [Click here to register a company account](https://vippsbedrift.no/signup/vippspanett/ "Go to registration form") at vipps.no.
+== Getting started ==
 
+* Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
+* After 1-2 days you will get an email with login details to Vipps Developer Portal. This is where you can retrieve the API credentials used to configure the plugin in WooCommerce.
+* Proceed to "Installation" below
 
 == Installation ==
 
 To use the plugin you need to do the following:
 
-1. Install og activate the plugin on your WordPress installation.
-2. Enable the Vipps Recurring Payments (Vipps faste betalinger) payment method in WooCommerce -> Payments (Betalinger).
-3. Hit "manage" and fill in the Client ID, Secret Key and Subscription Key. These keys can all be found in the Vipps Portal's Developer (utvikler) area.
+1. Download and activate the plugin from this GitHub repository or Wordpress.org
+2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce -> Settings -> Payments (Betalinger).
+3. Click "Manage" on the Vipps Recurring Payments payment method
+4. Proceed to "Retrieving Vipps API Keys" below
 
+== Retrieving Vipps API Keys ==
+
+1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
+2. Select the "Utvikler" ("Developer") tab and choose Production Keys
+3. Click on "Show keys" under the API keys column to see "Client ID", "Client Secret" and "Subscription Key"
+4. Proceed to "Configuration of the plugin" below
+
+== Configuration of the plugin ==
+
+1. Fill in the `Client ID`, `Secret Key` and `Subscription Key` found in the previous step. You should fill the fields with the prefix "Live" if you are using the production keys.
+2. That's it! You can now move on to "Configuring products"
+
+== Screenshots ==
+
+1. Setup and activate the payment gateway in WooCommerce
+2. Configure the plugin settings
 
 == Frequently Asked Questions ==
 
-We will keep an updated FAQ [here](https://vipps-woocommerce.groovehq.com/help "Go to FAQ").
+= Does this plugin work alongside the Vipps for WooCommerce plugin? =
 
-= Does this plugin work without WooCommerce? =
+Yes! You can use both plugins at the same time alongside each other.
 
-No, this plugin is made specifically for WordPress installations that use WooCommerce.
+= Do I need to have a license for WooCommerce Subscriptions in order to use this plugin? =
 
-= Is this plugin official? =
+Yes, you do.
 
-No! At the current point in time this plugin is only a pilot-project with a goal of becoming an official plugin supported by Vipps.
+= Does this plugin work with the WooCommerce Memberships-plugin? =
+
+No, it's for WooCommerce Subscriptions only.
+
+You can however use both WooCommerce Subscriptions and WooCommerce Memberships at the same time as explained [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
+
+= How can I get help if I have any issues? =
+
+For issues with the plugin you can submit an issue on GitHub or ask on the support forum on wordpress.org. For other unrelated issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
+
+= Where can I use Vipps? =
+
+Vipps is only available in Norway at the moment and only users who have Vipps will be able to pay with Vipps.
+
+= How can I test that the plugin works correctly? =
+
+If you have access to the Vipps test environment you are able to use the test mode found in the plugin settings.
+See the [getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md) guide for details about how to get started using the test environment.
+
+Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
+You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
