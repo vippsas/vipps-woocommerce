@@ -193,7 +193,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.02.xx version 1.4.0 =
+= 2020.02.24 version 1.4.0 =
  * Properly round prices with wc_format_decimal (Thanks to Shattique @ netthandlesgruppen for reporting)
  * Ensure 'spinner' on page forwarding to Vipps is centered
  * New option in settings: Override the page template used for the Vipps special pages (choose 'full width' and so forth here.)
