@@ -32,7 +32,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 # Requirements
 
 * WooCommerce 3.3.4 or newer
-* [https://woocommerce.com/products/woocommerce-subscriptions/](WooCommerce Subscriptions)
+* [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
 * PHP 7.1 or higher
 * An SSL certificate must be installed and configured
 * Port 443 must not be blocked for outgoing traffic
@@ -59,7 +59,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 ## Configuration of the plugin
 
-1. Fill in the Client ID, Secret Key and Subscription Key found in the previous step. You should fill the fields with the prefix "Live" if you are using the production keys.
+1. Fill in the `Client ID`, `Secret Key` and `Subscription Key` found in the previous step. You should fill the fields with the prefix "Live" if you are using the production keys.
 2. That's it! You can now move on to "Configuring products"
 
 ## Configuring products
