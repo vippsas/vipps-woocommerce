@@ -59,7 +59,7 @@ The documentation for retrieving your Vipps API Keys can be found [here](https:/
 
 == Configuration of the plugin ==
 
-1. Fill in the `Client ID`, `Secret Key` and `Subscription Key` found in the previous step. You should fill the fields with the prefix "Live" if you are using the production keys.
+1. Fill in the `client_id`, `client_secret` and `Vipps-Subscription-Key` found in the previous step. You should fill the fields with the prefix "Live" if you are using the production keys.
 2. That's it! You can now move on to "Configuring products"
 
 == Screenshots ==
