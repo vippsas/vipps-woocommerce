@@ -55,10 +55,7 @@ To use the plugin you need to do the following:
 
 == Retrieving Vipps API Keys ==
 
-1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
-2. Select the "Utvikler" ("Developer") tab and choose Production Keys
-3. Click on "Show keys" under the API keys column to see "Client ID", "Client Secret" and "Subscription Key"
-4. Proceed to "Configuration of the plugin" below
+The documentation for retrieving your Vipps API Keys can be found [here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
 
 == Configuration of the plugin ==
 
