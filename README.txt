@@ -108,4 +108,4 @@ You can then refund or cancel the purchase afterwards.
 * Fix: Constant overrides now work properly.
 
 = 1.0.2 =
-* Initial WordPress plugin repository release
+* Initial GitHub release
