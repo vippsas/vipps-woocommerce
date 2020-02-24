@@ -1,0 +1,15 @@
+{
+    "name": "vippsas/vipps-recurring-woocommerce",
+    "license": "GPL-2.0",
+    "type": "library",
+    "description": "",
+    "authors": [
+        {
+            "name": "Vipps AS"
+        }
+    ],
+    "require": {
+        "wp-cli/wp-cli-bundle": "2.3.*",
+        "php": ">=7.1.0"
+    }
+}

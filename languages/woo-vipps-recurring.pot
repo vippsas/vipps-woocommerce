@@ -1,0 +1,198 @@
+# Copyright (C) 2019 Everyday AS
+# This file is distributed under the same license as the WooCommerce Vipps Recurring Payments Gateway plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WooCommerce Vipps Recurring Payments Gateway 1.0.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vipps-reccuring-payments\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2019-11-12T10:44:03+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.3.0\n"
+"X-Domain: woo-vipps-recurring\n"
+
+#. Plugin Name of the plugin
+msgid "WooCommerce Vipps Recurring Payments Gateway"
+msgstr ""
+
+#. Description of the plugin
+msgid "Offer recurring payments with Vipps for WooCommerce Subscriptions"
+msgstr ""
+
+#. Author of the plugin
+msgid "Everyday AS"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://everyday.no/"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:11
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:12
+msgid "Enable Vipps Recurring Payments"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:18
+msgid "Title"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:20
+msgid "This controls the title which the user sees during checkout."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:21
+msgid "Vipps"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:25
+msgid "Description"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:27
+msgid "This controls the description which the user sees during checkout."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:28
+msgid "Pay with Vipps."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:32
+msgid "Test mode"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:33
+msgid "Enable Test Mode"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:35
+msgid "Place the payment gateway in test mode using test API keys."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:40
+msgid "Test Client ID"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:42
+#: includes/admin/vipps-recurring-settings.php:49
+#: includes/admin/vipps-recurring-settings.php:56
+#: includes/admin/vipps-recurring-settings.php:63
+#: includes/admin/vipps-recurring-settings.php:70
+#: includes/admin/vipps-recurring-settings.php:77
+msgid "Get your API keys from your Vipps developer portal."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:47
+msgid "Test Secret Key"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:54
+msgid "Test Subscription Key"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:61
+msgid "Live Client ID"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:68
+msgid "Live Secret Key"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:75
+msgid "Live Subscription Key"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:82
+msgid "Logging"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:83
+msgid "Log debug messages"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:85
+msgid "Save debug messages to the WooCommerce System Status log."
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:73
+msgid "Vipps Recurring Payments"
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:74
+msgid "Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:100
+msgid "Pay with Vipps"
+msgstr ""
+
+#. translators: Vipps Charge ID
+#: includes/class-wc-gateway-vipps-recurring.php:264
+msgid "Vipps charge captured instantly (Charge ID: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:269
+msgid "Vipps awaiting manual capture"
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:279
+msgid "The agreement was cancelled or expired in Vipps"
+msgstr ""
+
+#. translators: Vipps Charge ID
+#: includes/class-wc-gateway-vipps-recurring.php:313
+msgid "Vipps charge completed (Charge ID: %s)"
+msgstr ""
+
+#. translators: Vipps Charge ID
+#: includes/class-wc-gateway-vipps-recurring.php:329
+#: includes/class-wc-gateway-vipps-recurring.php:519
+msgid "Vipps charge awaiting payment: %s. The amount will be drawn from your customer in 6 days."
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:334
+msgid "Vipps payment cancelled."
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:340
+msgid "Vipps payment failed."
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:445
+msgid "You can not refund a pending or due Vipps charge. Please wait till the payment clears first!"
+msgstr ""
+
+#: includes/class-wc-gateway-vipps-recurring.php:539
+msgid "Vipps failed to create charge"
+msgstr ""
+
+#: includes/class-wc-vipps-recurring-api.php:84
+#: includes/class-wc-vipps-recurring-api.php:88
+msgid "Could not get Vipps access token"
+msgstr ""
+
+#: includes/class-wc-vipps-recurring-api.php:322
+msgid "No response from Vipps"
+msgstr ""
+
+#. translators: 1. URL link.
+#: woo-vipps-recurring.php:30
+msgid "Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here."
+msgstr ""
+
+#: woo-vipps-recurring.php:184
+msgid "Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this <a href=\"admin.php?page=wc-settings&tab=checkout&section=vipps_recurring\" target=\"_blank\">here</a> when you are ready to go live!"
+msgstr ""
+
+#: woo-vipps-recurring.php:222
+msgid "Capture payment"
+msgstr ""
+
+#: woo-vipps-recurring.php:298
+msgid "Settings"
+msgstr ""
