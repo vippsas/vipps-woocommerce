@@ -50,6 +50,8 @@ With Vipps Recurring Payments for WooCommerce you can:
 3. Click "Manage" on the Vipps Recurring Payments payment method
 4. Proceed to "Retrieving Vipps API Keys" below
 
+![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/wp-org-assets/setup.png)
+
 ## Retrieving Vipps API Keys
 
 1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
@@ -61,6 +63,8 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 1. Fill in the `Client ID`, `Secret Key` and `Subscription Key` found in the previous step. You should fill the fields with the prefix "Live" if you are using the production keys.
 2. That's it! You can now move on to "Configuring products"
+
+![Settings](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/wp-org-assets/settings.png)
 
 ## Configuring products
 
