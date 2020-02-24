@@ -93,10 +93,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->title             = $this->get_option( 'title' );
 		$this->description       = $this->get_option( 'description' );
 		$this->enabled           = $this->get_option( 'enabled' );
-		$this->testmode          = 'yes' === $this->get_option( 'testmode' );
-		$this->secret_key        = $this->testmode ? $this->get_option( 'test_secret_key' ) : $this->get_option( 'secret_key' );
-		$this->client_id         = $this->testmode ? $this->get_option( 'test_client_id' ) : $this->get_option( 'client_id' );
-		$this->subscription_key  = $this->testmode ? $this->get_option( 'test_subscription_key' ) : $this->get_option( 'subscription_key' );
+		$this->testmode          = WC_VIPPS_RECURRING_TEST_MODE;
+		$this->secret_key        = $this->get_option( 'secret_key' );
+		$this->client_id         = $this->get_option( 'client_id' );
+		$this->subscription_key  = $this->get_option( 'subscription_key' );
 		$this->order_button_text = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';

@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.0.2
+ * Version: 1.0.3
  * Requires at least: 4.4
  * Tested up to: 5.2.4
  * WC requires at least: 5.0.0
@@ -78,7 +78,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.0.2' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.0.3' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.1.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '5.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -88,13 +88,25 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Amount of days to retry a payment when creating a charge in the Vipps API
 		 */
-		define('WC_VIPPS_RECURRING_RETRY_DAYS', 3);
+		if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
+			define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 3 );
+		}
 
 		/*
-		 * Minimum amount of days to charge in advance when renewing a subscription.
+		 * Amount of days to charge in advance when renewing a subscription.
 		 * Currently this value has to be 6 days or more as per Vipps' specification.
 		 */
-		define('WC_VIPPS_RECURRING_DUE_MINIMUM_DAYS', 6);
+		if ( ! defined( 'WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS' ) ) {
+			define( 'WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS', 6 );
+		}
+
+
+		/*
+		 * Whether or not to put the plugin into test mode. This is only useful for developers.
+		 */
+		if ( ! defined( 'WC_VIPPS_RECURRING_TEST_MODE' ) ) {
+			define( 'WC_VIPPS_RECURRING_TEST_MODE', false );
+		}
 
 		class WC_Vipps_Recurring {
 			/**
@@ -209,7 +221,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( $gateway->testmode ) {
 					add_action( 'admin_notices', static function () {
-						$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this <a href="admin.php?page=wc-settings&tab=checkout&section=vipps_recurring" target="_blank">here</a> when you are ready to go live!', 'woo-vipps-recurring' );
+						$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
 						echo "<div class='notice notice-info is-dismissible'><p>$notice</p></div>";
 					} );
 				}

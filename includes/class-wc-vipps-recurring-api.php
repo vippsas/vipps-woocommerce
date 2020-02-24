@@ -21,7 +21,7 @@ class VippsRecurringApi {
 	 *
 	 * @var int $due_minimum_days
 	 */
-	public $due_minimum_days = WC_VIPPS_RECURRING_DUE_MINIMUM_DAYS;
+	public $due_minimum_days = WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS;
 
 	/**
 	 * Amount of days to retry a payment for when creating a charge

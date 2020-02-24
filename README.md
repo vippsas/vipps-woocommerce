@@ -4,11 +4,11 @@
 
 **We encourage you to create an issue here or on the WordPress plugin page if you require assistance or run in to a problem.**
 
-For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas)
+For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
 
 # Description
 
-This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by Vipps AS and maintained by Everyday AS.
+This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
 Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
@@ -87,11 +87,16 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 
 The amount of days Vipps will retry a charge for before it fails. Documentation can be found [here](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-retries).
 
-`WC_VIPPS_RECURRING_DUE_MINIMUM_DAYS`: (integer) default: 6
+`WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS`: (integer) default: 6
 
-When a charge is created it will be the status of `DUE` in the Vipps API for 6 days, this value makes it so the plugin creates the charge 6 days before the due date.
+The purpose of this value is to make sure money is drawn from the customer inline with the customer's billing date in WooCommerce.
+A value of `6` means the plugin will create a charge six days in advance when renewing a subscription to counteract the Recurring API's six day grace period before a charge is charged.
 
-Typically you do not want to edit this value, but if you want the charge to be created at the billing date you should change this constant to 0.
+Typically you do not want to edit this value, but if you want the charge to be created at the billing date you should change this constant to `0`. In this case you will receive the money six days later than the customer's billing date.
+
+`WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
+
+Enables someone with access to Vipps developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
 
 # Frequently Asked Questions
 
@@ -119,7 +124,7 @@ Vipps is only available in Norway at the moment and only users who have Vipps wi
 
 ## How can I test that the plugin works correctly?
 
-If you have access to the Vipps test environment you are able to use the test mode found in the plugin settings. 
+If you have access to the Vipps test environment you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`. 
 See the [getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md) guide for details about how to get started using the test environment.
 
 Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys. 

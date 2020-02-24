@@ -17,11 +17,11 @@ Get paid through recurring payments with Vipps and WooCommerce.
 
 **We encourage you to create an issue here or on the WordPress plugin page if you require assistance or run in to a problem.**
 
-For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas)
+For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
 
 == Description ==
 
-This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by Vipps AS and maintained by Everyday AS.
+This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
 Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
@@ -93,7 +93,7 @@ Vipps is only available in Norway at the moment and only users who have Vipps wi
 
 = How can I test that the plugin works correctly? =
 
-If you have access to the Vipps test environment you are able to use the test mode found in the plugin settings.
+If you have access to the Vipps test environment you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
 See the [getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md) guide for details about how to get started using the test environment.
 
 Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
@@ -101,4 +101,11 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
-1.0.2 - Initial WordPress plugin repository release
+= 1.0.3 =
+* Improvement: Removed test fields from settings in favour of a the `WC_VIPPS_RECURRING_TEST_MODE` constant.
+* Improvement: Renamed test fields to be the same as found in your Vipps Portal
+* Change: Renamed `WC_VIPPS_RECURRING_DUE_MINIMUM_DAYS` constant to `WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS`.
+* Fix: Constant overrides now work properly.
+
+= 1.0.2 =
+* Initial WordPress plugin repository release
