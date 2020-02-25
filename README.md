@@ -68,7 +68,7 @@ The documentation for retrieving your Vipps API Keys can be found [here](https:/
 Configuring products for use with the Vipps Recurring Payments plugin is not any different from default WooCommerce, with one exception.
 
 The configuration for whether or not the product is virtual or physical is important to consider. 
-If a product is virtual the customer will be charged immediately but if the product is not virtual you will have to capture the payment manually through the order in WooCommerce when you have shipped the product.
+If a product is virtual the customer will be charged immediately but if the product is physical you will have to capture the payment manually through the order in WooCommerce when you have shipped the product.
 
 In most cases your products should be virtual when using subscriptions but it is possible to use the plugin with physical products if you need to do so.
 

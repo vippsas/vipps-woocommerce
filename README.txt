@@ -9,17 +9,13 @@ Requires PHP: 7.1
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
-Get paid through recurring payments with Vipps and WooCommerce.
-
-== Vipps Recurring Payments for WooCommerce ==
+== Description ==
 
 **This plugin is currently a test pilot (pre-release). It is very likely that you will encounter bugs or scenarios that are not yet supported.**
 
 **We encourage you to create an issue here or on the WordPress plugin page if you require assistance or run in to a problem.**
 
 For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
-
-== Description ==
 
 This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
@@ -53,14 +49,23 @@ To use the plugin you need to do the following:
 3. Click "Manage" on the Vipps Recurring Payments payment method
 4. Proceed to "Retrieving Vipps API Keys" below
 
-== Retrieving Vipps API Keys ==
+= Retrieving Vipps API Keys =
 
 The documentation for retrieving your Vipps API Keys can be found [here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
 
-== Configuration of the plugin ==
+= Configuration of the plugin =
 
 1. Fill in the `client_id`, `client_secret` and `Vipps-Subscription-Key` found in the previous step.
 2. That's it! You can now move on to "Configuring products"
+
+= Configuring products =
+
+Configuring products for use with the Vipps Recurring Payments plugin is not any different from default WooCommerce, with one exception.
+
+The configuration for whether or not the product is virtual or physical is important to consider.
+If a product is virtual the customer will be charged immediately but if the product is physical you will have to capture the payment manually through the order in WooCommerce when you have shipped the product.
+
+In most cases your products should be virtual when using subscriptions but it is possible to use the plugin with physical products if you need to do so.
 
 == Screenshots ==
 
