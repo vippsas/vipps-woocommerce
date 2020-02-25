@@ -193,6 +193,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2020.02.25 version 1.4.1 =
+ * Bugfix: The template chooser mechanism caused WP_DEBUG to print out error messages if the option wasn't set.
+
 = 2020.02.24 version 1.4.0 =
  * Properly round prices with wc_format_decimal (Thanks to Shattique @ netthandlesgruppen for reporting)
  * Ensure 'spinner' on page forwarding to Vipps is centered

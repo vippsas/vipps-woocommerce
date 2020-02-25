@@ -220,14 +220,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Allow user to select the template to be used for the special Vipps pages. IOK 2020-02-17
     public function get_theme_page_templates() {
-         $current = $this->get_option('vippsspecialpagetemplate');
          $choices = array('' => __('Use default template', 'woo-vipps'));
          foreach(wp_get_theme()->get_page_templates() as $filename=>$name) {
              //$choices[$filename]=$name;
              $choices[$filename]=$name;
          }
-         if ($current && !isset($choices[$current])) $choices[$current] = $current;
-        
          return $choices;
      }
 
@@ -428,6 +425,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function init_form_fields() { 
         $page_templates = $this->get_theme_page_templates();
+
         $this->form_fields = array(
                 'enabled' => array(
                     'title'       => __( 'Enable/Disable', 'woocommerce' ),

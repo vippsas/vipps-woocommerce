@@ -1135,7 +1135,7 @@ else:
 
            $vippsmethod = array();
 
-           $vippsmethod['isDefault'] = $method['default'] ? 'Y' :'N';
+           $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
            $vippsmethod['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
            $vippsmethod['shippingMethod'] = $rate->get_label();
