@@ -110,9 +110,11 @@ Yes, you do.
 
 ## Does this plugin work with the WooCommerce Memberships-plugin?
 
-No, it's for WooCommerce Subscriptions only.
+WooCommerce Subscriptions and WooCommerce Memberships are able to work together for access to recurring memberships that unlock content.
 
-You can however use both WooCommerce Subscriptions and WooCommerce Memberships at the same time as explained [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
+**WooCommerce Subscriptions is required in order to use Vipps Recurring Payments for WooCommerce, but Memberships is not.**
+
+You can read about how WooCommerce Subscriptions and WooCommerce Memberships work together [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
 
 ## How can I get help if I have any issues?
 
