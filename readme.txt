@@ -193,6 +193,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2020.03.03 version 1.4.2 =
+ * Tiny change to avoid logging non-errors if no shipping method has been chosen at all
+
 = 2020.02.25 version 1.4.1 =
  * Bugfix: The template chooser mechanism caused WP_DEBUG to print out error messages if the option wasn't set.
 
