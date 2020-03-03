@@ -107,6 +107,9 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
+= 1.0.4 =
+* Fix: Achieve true PHP 7.0 compatibility. Void return types and nullable return types do not exist in this version.
+
 = 1.0.3 =
 * Improvement: Removed test fields from settings in favour of a the `WC_VIPPS_RECURRING_TEST_MODE` constant.
 * Improvement: Renamed test fields to be the same as found in your Vipps Portal

@@ -186,7 +186,7 @@ class VippsRecurringApi {
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function cancel_charge( $agreement_id, $charge_id ): void {
+	public function cancel_charge( $agreement_id, $charge_id ) {
 		$token = $this->get_access_token();
 
 		$headers = [

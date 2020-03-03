@@ -124,7 +124,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function process_redirect_payment( $order_id ): void {
+	public function process_redirect_payment( $order_id ) {
 		if ( empty( $order_id ) ) {
 			return;
 		}
@@ -154,7 +154,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function maybe_process_redirect_order( $order_id ): void {
+	public function maybe_process_redirect_order( $order_id ) {
 		if ( ! is_order_received_page() ) {
 			return;
 		}
@@ -228,7 +228,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function check_charge_status( $order_id ): void {
+	public function check_charge_status( $order_id ) {
 		if ( empty( $order_id ) || absint( $order_id ) <= 0 ) {
 			return;
 		}
@@ -293,7 +293,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $order
 	 * @param $charge
 	 */
-	public function process_order_charge( $order, $charge ): void {
+	public function process_order_charge( $order, $charge ) {
 		if ( ! $charge ) {
 			// No charge
 			return;
@@ -347,7 +347,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * Proceed with current request using new login session (to ensure consistent nonce).
 	 */
-	public function set_cookie_on_current_request( $cookie ): void {
+	public function set_cookie_on_current_request( $cookie ) {
 		$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
 	}
 
@@ -390,7 +390,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function scheduled_subscription_payment( $amount_to_charge, $order ): void {
+	public function scheduled_subscription_payment( $amount_to_charge, $order ) {
 		$this->process_subscription_payment( $amount_to_charge, $order, false, true );
 	}
 
@@ -401,7 +401,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function cancel_subscription( $subscription ): void {
+	public function cancel_subscription( $subscription ) {
 		$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $subscription->payment_method : $subscription->get_payment_method();
 		if ( $payment_method !== $this->id ) {
 			// If this is not the payment method, an agreement would not be available.
@@ -472,7 +472,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $amount
 	 * @param $renewal_order
 	 */
-	public function process_subscription_payment( $amount, $renewal_order ): void {
+	public function process_subscription_payment( $amount, $renewal_order ) {
 		try {
 			// create charge logic
 			$agreement_id = $renewal_order->get_meta( '_agreement_id' );
@@ -500,7 +500,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param $order
 	 */
-	public function capture_payment( $order ): void {
+	public function capture_payment( $order ) {
 		try {
 			$agreement_id = $order->get_meta( '_agreement_id' );
 			$agreement    = $this->api->get_agreement( $agreement_id );
@@ -545,7 +545,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @return array|null
 	 */
-	public function process_payment( $order_id, $retry = true, $previous_error = false ): ?array {
+	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
 		$order = wc_get_order( $order_id );
 
 		$subscriptions = wcs_get_subscriptions_for_order( $order );
@@ -653,7 +653,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * Initialise Gateway Settings Form Fields
 	 */
-	public function init_form_fields(): void {
+	public function init_form_fields() {
 		$this->form_fields = require( __DIR__ . '/admin/vipps-recurring-settings.php' );
 	}
 }

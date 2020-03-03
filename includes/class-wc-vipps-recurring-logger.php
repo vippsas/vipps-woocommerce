@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Vipps_Recurring_Logger {
 
 	public static $logger;
-	public const WC_LOG_FILENAME = 'woocommerce-gateway-vipps-recurring';
+	const WC_LOG_FILENAME = 'woocommerce-gateway-vipps-recurring';
 
 	/**
 	 * @uses WC_Logger class
@@ -25,7 +25,7 @@ class WC_Vipps_Recurring_Logger {
 	 * @param null $start_time
 	 * @param null $end_time
 	 */
-	public static function log( $message, $start_time = null, $end_time = null ): void {
+	public static function log( $message, $start_time = null, $end_time = null ) {
 		if ( ! class_exists( 'WC_Logger' ) ) {
 			return;
 		}

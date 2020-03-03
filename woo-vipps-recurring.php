@@ -5,9 +5,9 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.0.3
+ * Version: 1.0.4
  * Requires at least: 4.4
- * Tested up to: 5.2.4
+ * Tested up to: 5.3.2
  * WC requires at least: 5.0.0
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  * @since 4.1.2
  */
-function woocommerce_vipps_recurring_missing_wc_notice(): void {
+function woocommerce_vipps_recurring_missing_wc_notice() {
 	/* translators: 1. URL link. */
 	echo '<div class="error"><p><strong>' . sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' ) . '</strong></p></div>';
 }
@@ -36,7 +36,7 @@ function woocommerce_vipps_recurring_missing_wc_notice(): void {
  * @return void
  * @since 4.1.2
  */
-function woocommerce_vipps_recurring_missing_wc_subscriptions_notice(): void {
+function woocommerce_vipps_recurring_missing_wc_subscriptions_notice() {
 	/* translators: 1. URL link. */
 	echo '<div class="error"><p><strong>' . sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' ) . '</strong></p></div>';
 }
@@ -167,7 +167,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @since 1.0.0
 			 * @version 4.0.0
 			 */
-			public function init(): void {
+			public function init() {
 				require_once __DIR__ . '/includes/class-wc-vipps-recurring-helper.php';
 				require_once __DIR__ . '/includes/class-wc-vipps-recurring-logger.php';
 				require_once __DIR__ . '/includes/class-wc-gateway-vipps-recurring.php';
@@ -208,7 +208,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Admin only dashboard
 			 */
-			public function admin_init(): void {
+			public function admin_init() {
 				$gateway = $this->gateway();
 
 				// add capture button if order is not captured
@@ -230,14 +230,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * @param $order
 			 */
-			public function order_item_add_action_buttons( $order ): void {
+			public function order_item_add_action_buttons( $order ) {
 				$this->order_item_add_capture_button( $order );
 			}
 
 			/**
 			 * @param $order
 			 */
-			public function order_item_add_capture_button( $order ): void {
+			public function order_item_add_capture_button( $order ) {
 				$gateway = $this->gateway();
 
 				$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
@@ -268,7 +268,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @param $postid
 			 * @param $post
 			 */
-			public function save_order( $postid, $post ): void {
+			public function save_order( $postid, $post ) {
 				if ( $post->post_type !== 'shop_order' ) {
 					return;
 				}
@@ -292,7 +292,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Make admin notices persistent
 			 */
-			public function store_admin_notices(): void {
+			public function store_admin_notices() {
 				ob_start();
 				do_action( 'admin_notices' );
 
@@ -304,7 +304,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Check charge statuses scheduled action
 			 * Returns nothing
 			 */
-			public function check_order_statuses(): void {
+			public function check_order_statuses() {
 				$gateway = $this->gateway();
 
 				$order_ids = wc_get_orders( [
@@ -346,7 +346,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @since 3.1.0
 			 * @version 3.1.0
 			 */
-			public function install(): void {
+			public function install() {
 				// there are no upgrades yet
 			}
 
@@ -390,7 +390,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Enqueue our CSS and other assets.
 			 */
-			public function wp_enqueue_scripts(): void {
+			public function wp_enqueue_scripts() {
 				wp_enqueue_style( 'vipps-recurring-gateway', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
 			}
