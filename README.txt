@@ -107,6 +107,8 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
+= 1.0.5 =
+* Fix: Error messages are now returned properly when checking out.
 = 1.0.4 =
 * Fix: Achieve true PHP 7.0 compatibility. Void return types and nullable return types do not exist in this version.
 

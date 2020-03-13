@@ -323,15 +323,15 @@ class VippsRecurringApi {
 		// There are different Vipps error responses we can expect to receive.
 		if ( $body ) {
 			// On initial payment
-			if ( isset( $content['message'] ) ) {
+			if ( isset( $body['message'] ) ) {
 				$msg = $body['message'];
-			} elseif ( isset( $content['error'] ) ) {
+			} elseif ( isset( $body['error'] ) ) {
 				// Access token
 				$msg = $body['error'];
 			} elseif ( isset( $body['responseInfo'] ) ) {
 				// API layer
 				$msg = $response . ' ' . $body['responseInfo']['responseMessage'];
-			} elseif ( isset( $content['errorInfo'] ) ) {
+			} elseif ( isset( $body['errorInfo'] ) ) {
 				$msg = $response . ' ' . $body['errorInfo']['errorMessage'];
 			} else {
 				// Otherwise concat all body keys as one giant error
