@@ -513,6 +513,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// get charge
 			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
 
+			/* translators: Vipps Charge ID */
 			$message = sprintf( __( 'Vipps charge awaiting payment: %s. The amount will be drawn from your customer in 6 days.', 'woo-vipps-recurring' ), $charge['id'] );
 			$order->add_order_note( $message );
 
@@ -598,6 +599,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
 			update_post_meta( $subscriptions[ array_key_first( $subscriptions ) ]->get_id(), '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_agreement_id', $response['agreementId'] );
+			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
+
+			/* translators: Vipps Agreement ID */
+			$message = sprintf( __( 'Vipps agreement created: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
+			$order->add_order_note( $message );
+
 			$order->save();
 
 			// redirect to Vipps

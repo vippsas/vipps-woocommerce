@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-02-24T14:35:12+00:00\n"
-"PO-Revision-Date: 2020-02-24 14:58+0000\n"
+"POT-Creation-Date: 2020-03-13T10:26:39+00:00\n"
+"PO-Revision-Date: 2020-03-13 10:27+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -132,7 +132,7 @@ msgstr "Vipps betaling fullført (Charge ID: %s)"
 
 #. translators: Vipps Charge ID
 #: includes/class-wc-gateway-vipps-recurring.php:329
-#: includes/class-wc-gateway-vipps-recurring.php:516
+#: includes/class-wc-gateway-vipps-recurring.php:517
 msgid ""
 "Vipps charge awaiting payment: %s. The amount will be drawn from your "
 "customer in 6 days."
@@ -156,9 +156,14 @@ msgstr ""
 "Du kan ikke refundere betalinger som ikke har blitt fullført ennå. Vent til "
 "betalingen er fullført!"
 
-#: includes/class-wc-gateway-vipps-recurring.php:536
+#: includes/class-wc-gateway-vipps-recurring.php:537
 msgid "Vipps failed to create charge"
 msgstr "Vipps mislyktes med å opprette en betaling"
+
+#. translators: Vipps Agreement ID
+#: includes/class-wc-gateway-vipps-recurring.php:605
+msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
+msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 
 #: includes/class-wc-vipps-recurring-api.php:82
 #: includes/class-wc-vipps-recurring-api.php:86
@@ -187,7 +192,7 @@ msgstr ""
 "Vipps faste betalinger krever at WooCommerce Subscriptions er installert. Du "
 "kan laste ned %s her."
 
-#: woo-vipps-recurring.php:224
+#: woo-vipps-recurring.php:223
 msgid ""
 "Vipps Recurring Payments is currently in test mode - no real transactions "
 "will occur. Disable this in your wp_config when you are ready to go live!"
@@ -195,10 +200,10 @@ msgstr ""
 "Vipps faste betalinger er foreløpig i testmodus - ingen ekte betalinger vil "
 "finne sted. Skru av denne i wp_config når du er klar for å gå live."
 
-#: woo-vipps-recurring.php:262
+#: woo-vipps-recurring.php:261
 msgid "Capture payment"
 msgstr "Capture (Trekk beløp)"
 
-#: woo-vipps-recurring.php:337
+#: woo-vipps-recurring.php:336
 msgid "Settings"
 msgstr "Innstillinger"

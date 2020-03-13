@@ -108,7 +108,10 @@ You can then refund or cancel the purchase afterwards.
 == Changelog ==
 
 = 1.0.5 =
+* Fix: Initial purchases are now checked hourly in case the customer closes their browser prematurely. This uses the same logic and code as checking renewal payments.
+* Improvement: Added a note to orders when a customer has been sent to Vipps for agreement confirmation containing the Agreement ID.
 * Fix: Error messages are now returned properly when checking out.
+
 = 1.0.4 =
 * Fix: Achieve true PHP 7.0 compatibility. Void return types and nullable return types do not exist in this version.
 
