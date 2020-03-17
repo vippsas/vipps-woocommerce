@@ -69,7 +69,6 @@ class Vipps {
 
     public function admin_init () {
         $gw = $this->gateway();
-
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
@@ -767,6 +766,17 @@ else:
         add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
         add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
 
+        // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
+        // that any user hasn't already installed the free plugin for this created by Krokedil. If they have, this filter will be present:
+        if (has_filter('kco_wc_api_request_args', 'kcoepm_create_order_vipps')) {
+           // Already installed. Notify the user, then do nothing.
+           if (is_admin()) {
+            $this->add_vipps_admin_notice(__("It seems you have installed the plugin Klarna Checkout (V3) Vipps External Payment Method for WooCommerce. The functionality of this plugin is now provided in the standard Checkout with Vipps for WooCommerce plugin, so it is no longer needed.","woo-vipps"));
+           }
+        } else {
+           error_log("iverok It is NOT installed");
+           // Here, add static methods from the Vipps gateway
+        }
     }
 
     public function save_order($postid,$post,$update) {

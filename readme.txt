@@ -193,6 +193,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2020.0x.xx version 1.4.x =
+ * Added support for Klarna Checkout based on code provided by Krokedil at https://github.com/krokedil/klarna-checkout-vipps-external-payment-method
+
 = 2020.03.03 version 1.4.2 =
  * Tiny change to avoid logging non-errors if no shipping method has been chosen at all
 
