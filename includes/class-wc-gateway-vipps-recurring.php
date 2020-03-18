@@ -620,7 +620,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// if the price of the order and the price of the product differ we should create a campaign
 			// but only if $order->get_total() is 0 or $charge_immediately is false
-			if ( $product->get_price() !== $order->get_total() && ( ! $charge_immediately || $is_zero_amount ) ) {
+			if ( (float) $product->get_price() !== (float) $order->get_total() && ( ! $charge_immediately || $is_zero_amount ) ) {
 				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
 

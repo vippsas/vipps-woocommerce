@@ -107,6 +107,9 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
+= 1.0.7 =
+* Fix: Physical products no longer always have a campaign.
+
 = 1.0.6 =
 * Fix: I accidentally left debug code in. Oops! That's embarrassing.
 
@@ -125,6 +128,3 @@ You can then refund or cancel the purchase afterwards.
 * Improvement: Renamed test fields to be the same as found in your Vipps Portal
 * Change: Renamed `WC_VIPPS_RECURRING_DUE_MINIMUM_DAYS` constant to `WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS`.
 * Fix: Constant overrides now work properly.
-
-= 1.0.2 =
-* Initial GitHub release
