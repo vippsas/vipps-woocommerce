@@ -33,7 +33,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 * WooCommerce 3.3.4 or newer
 * [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
-* PHP 7.1 or higher
+* PHP 7.0 or higher
 * An SSL certificate must be installed and configured
 * Port 443 must not be blocked for outgoing traffic
 
