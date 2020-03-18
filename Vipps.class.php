@@ -981,19 +981,29 @@ else:
             $this->log("Wrong authtoken on shipping details callback", 'error');
             exit();
         }
+        
+        $return = $this->vipps_shipping_details_callback_handler($order, $result);
+        $json = json_encode($return);
+        header("Content-type: application/json; charset=UTF-8");
+        print $json;
+        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
+        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
+    }
+   
+    public function vipps_shipping_details_callback_handler($order, $vippsdata) {
 
         // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
         // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
-        $addressid = $result['addressId'];
-        $addressline1 = $result['addressLine1'];
-        $addressline2 = $result['addressLine2'];
+        $addressid = $vippsdata['addressId'];
+        $addressline1 = $vippsdata['addressLine1'];
+        $addressline2 = $vippsdata['addressLine2'];
 
         // IOK 2019-08-26 apparently the apps contain a lot of addresses with duplicate lines
         if ($addressline1 == $addressline2) $addressline2 = '';
 
-        $vippscountry = $result['country'];
+        $vippscountry = $vippsdata['country'];
         $city = $result['city'];
-        $postcode= $result['postCode'];
+        $postcode= $vippsdata['postCode'];
         $country = $this->country_to_code($vippscountry);
 
         $order->set_billing_address_1($addressline1);
@@ -1024,7 +1034,7 @@ else:
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
-        do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $result);
+        do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $vippsdata);
 
         // We need unfortunately to create a fake cart to be able to send a 'package' to the
         // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
@@ -1080,8 +1090,7 @@ else:
 
         // Merchant is using the old 'woo_vipps_shipping_methods' filter, and hasn't chosen to disable it. Use legacy methd.
         if (has_action('woo_vipps_shipping_methods') &&  $this->gateway()->get_option('newshippingcallback') != 'new') {
-            $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $acart);
-            exit();
+            return $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $acart);
         }
         // Default 'priority' is based on cost, so sort this thing
         uasort($shipping_methods, function($a, $b) { return $a->get_cost() - $b->get_cost(); });
@@ -1166,10 +1175,7 @@ else:
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
-        $json = json_encode($return);
-        header("Content-type: application/json; charset=UTF-8");
-        print $json;
-        exit();
+        return $return;
     }
 
 
@@ -1185,10 +1191,7 @@ else:
         if (!$acart->needs_shipping()) {
             $methods = array(array('isDefault'=>'Y','priority'=>'0','shippingCost'=>'0.00','shippingMethod'=>__('No shipping required','woo-vipps'),'shippingMethodId'=>'Free:Free;0'));
             $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
-            $json = json_encode($return);
-            header("Content-type: application/json; charset=UTF-8");
-            print $json;
-            exit();
+            return $return;
         }
 
         $free = 0;
@@ -1245,14 +1248,7 @@ else:
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
-        
-
-        $json = json_encode($return);
-        header("Content-type: application/json; charset=UTF-8");
-        print $json;
-        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
-        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
-        exit();
+        return $return;
     }
 
 
