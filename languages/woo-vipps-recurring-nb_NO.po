@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-03-13T10:26:39+00:00\n"
-"PO-Revision-Date: 2020-03-13 10:27+0000\n"
+"POT-Creation-Date: 2020-03-18T13:04:32+00:00\n"
+"PO-Revision-Date: 2020-03-18 13:04+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -112,27 +112,31 @@ msgstr ""
 msgid "Pay with Vipps"
 msgstr "Betal med Vipps"
 
+#: includes/class-wc-gateway-vipps-recurring.php:255
+msgid "The subtotal is zero, the order is free for this subscription period."
+msgstr "Delsummen er lik null, ordren er gratis i denne abonnementsperiode."
+
 #. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:264
+#: includes/class-wc-gateway-vipps-recurring.php:275
 msgid "Vipps charge captured instantly (Charge ID: %s)"
 msgstr "Vipps betaling trukket ummidelbart. (Charge ID: %s)"
 
-#: includes/class-wc-gateway-vipps-recurring.php:269
+#: includes/class-wc-gateway-vipps-recurring.php:280
 msgid "Vipps awaiting manual capture"
 msgstr "Vipps venter på manuelt trekk av beløp"
 
-#: includes/class-wc-gateway-vipps-recurring.php:279
+#: includes/class-wc-gateway-vipps-recurring.php:290
 msgid "The agreement was cancelled or expired in Vipps"
 msgstr "Betalingsavtalen utløp eller var avbrutt i Vipps"
 
 #. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:313
+#: includes/class-wc-gateway-vipps-recurring.php:332
 msgid "Vipps charge completed (Charge ID: %s)"
 msgstr "Vipps betaling fullført (Charge ID: %s)"
 
 #. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:329
-#: includes/class-wc-gateway-vipps-recurring.php:517
+#: includes/class-wc-gateway-vipps-recurring.php:348
+#: includes/class-wc-gateway-vipps-recurring.php:538
 msgid ""
 "Vipps charge awaiting payment: %s. The amount will be drawn from your "
 "customer in 6 days."
@@ -140,15 +144,15 @@ msgstr ""
 "Vipps betaling reservert (%s), venter på at pengene blir trukket fra kunden. "
 "Dette kan ta 6 dager."
 
-#: includes/class-wc-gateway-vipps-recurring.php:334
+#: includes/class-wc-gateway-vipps-recurring.php:353
 msgid "Vipps payment cancelled."
 msgstr "Vipps betaling kansellert."
 
-#: includes/class-wc-gateway-vipps-recurring.php:340
+#: includes/class-wc-gateway-vipps-recurring.php:359
 msgid "Vipps payment failed."
 msgstr "Vipps betaling mislyktes."
 
-#: includes/class-wc-gateway-vipps-recurring.php:444
+#: includes/class-wc-gateway-vipps-recurring.php:463
 msgid ""
 "You can not refund a pending or due Vipps charge. Please wait till the "
 "payment clears first!"
@@ -156,12 +160,12 @@ msgstr ""
 "Du kan ikke refundere betalinger som ikke har blitt fullført ennå. Vent til "
 "betalingen er fullført!"
 
-#: includes/class-wc-gateway-vipps-recurring.php:537
+#: includes/class-wc-gateway-vipps-recurring.php:558
 msgid "Vipps failed to create charge"
 msgstr "Vipps mislyktes med å opprette en betaling"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:605
+#: includes/class-wc-gateway-vipps-recurring.php:640
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 

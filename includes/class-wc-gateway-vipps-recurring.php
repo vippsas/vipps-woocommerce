@@ -135,7 +135,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
-		if ( 'processing' === $order->get_status() || 'completed' === $order->get_status() || 'on-hold' === $order->get_status() ) {
+		if ( 'processing' === $order->get_status() || 'completed' === $order->get_status() ) {
 			return;
 		}
 
@@ -247,6 +247,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$initial        = empty( $order->get_meta( '_vipps_recurring_initial' ) );
 		$pending_charge = $initial ? 1 : $order->get_meta( '_vipps_recurring_pending_charge' );
 
+		// if there's a campaign with a price of 0 we can complete the order
+		$zero_campaign = isset( $agreement['campaign'] ) ? $agreement['campaign']['campaignPrice'] === 0 : false;
+		if ( $zero_campaign && $agreement['status'] === 'ACTIVE' ) {
+			$this->complete_order( $order, $agreement['id'] );
+
+			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
+			$order->save();
+
+			return;
+		}
+
 		// If payment has already been captured, this function is redundant.
 		if ( ! $pending_charge ) {
 			return;
@@ -291,6 +302,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	/**
 	 * @param $order
+	 * @param $transaction_id
+	 */
+	public function complete_order( $order, $transaction_id ) {
+		$order->payment_complete( $transaction_id );
+		$order->update_meta_data( '_vipps_recurring_pending_charge', false );
+	}
+
+	/**
+	 * @param $order
 	 * @param $charge
 	 */
 	public function process_order_charge( $order, $charge ) {
@@ -306,8 +326,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// check if status is CHARGED
 		if ( 'CHARGED' === $charge['status'] ) {
-			$order->payment_complete( $charge['id'] );
-			$order->update_meta_data( '_vipps_recurring_pending_charge', false );
+			$this->complete_order( $order, $charge['id'] );
 
 			/* translators: Vipps Charge ID */
 			$message = sprintf( __( 'Vipps charge completed (Charge ID: %s)', 'woo-vipps-recurring' ), $charge['id'] );
@@ -585,21 +604,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
 			}
 
-			// if item total is different from the product total then there has been a discount and we need to pass a campaign
-			if ( $product->get_price() !== $order->get_total() ) {
+			// if the order total is 0 we need to pass a campaign to make it a little more obvious to the user
+			// that the first payment is free
+			if ( (int) $order->get_total() === 0 ) {
 				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
 					'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
-					'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() )
+					'campaignPrice' => 0
 				];
 			}
 
 			// virtual items need to have an initialCharge (DIRECT CAPTURE)
 			// do not create an initialCharge if $order->get_total() is 0
-			if ( $product->is_virtual( 'yes' ) && (int) $item->get_total() !== 0 ) {
+			if ( $product->is_virtual( 'yes' ) && (int) $order->get_total() !== 0 ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
