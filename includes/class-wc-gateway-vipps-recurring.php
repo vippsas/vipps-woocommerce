@@ -631,8 +631,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				];
 			}
 
-			die(var_dump($agreement_body));
-
 			$response = $this->api->create_agreement( $agreement_body );
 
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
