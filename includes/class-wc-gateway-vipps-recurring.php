@@ -499,6 +499,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * Capture an initial payment manually
 	 *
 	 * @param $order
+	 *
+	 * @throws Exception
 	 */
 	public function capture_payment( $order ) {
 		try {
@@ -545,6 +547,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param bool $previous_error
 	 *
 	 * @return array|null
+	 * @throws Exception
 	 */
 	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
 		$order = wc_get_order( $order_id );
@@ -582,8 +585,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
 			}
 
+			// if item total is different from the product total then there has been a discount and we need to pass a campaign
+			if ( $product->get_price() !== $order->get_total() ) {
+				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
+				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
+
+				$agreement_body['campaign'] = [
+					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
+					'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
+					'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() )
+				];
+			}
+
 			// virtual items need to have an initialCharge (DIRECT CAPTURE)
-			if ( $product->is_virtual( 'yes' ) ) {
+			// do not create an initialCharge if $order->get_total() is 0
+			if ( $product->is_virtual( 'yes' ) && (int) $item->get_total() !== 0 ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),

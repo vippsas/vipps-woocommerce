@@ -69,9 +69,19 @@ class WC_Vipps_Recurring_Helper {
 	 * Checks if a phone number is valid according to Vipps standards
 	 *
 	 * @param $phone_number
+	 *
 	 * @return bool
 	 */
 	public static function is_valid_phone_number( $phone_number ): bool {
-		return strlen($phone_number) >= 8 && strlen($phone_number) <= 16;
+		return strlen( $phone_number ) >= 8 && strlen( $phone_number ) <= 16;
+	}
+
+	/**
+	 * @param DateTime $date
+	 *
+	 * @return string
+	 */
+	public static function get_rfc_3999_date( DateTime $date ): string {
+		return $date->format('Y-m-d\TH:i:s\Z');
 	}
 }
