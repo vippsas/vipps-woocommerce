@@ -604,22 +604,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
 			}
 
-			// if the order total is 0 we need to pass a campaign to make it a little more obvious to the user
-			// that the first payment is free
-			if ( (int) $order->get_total() === 0 ) {
-				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
-				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
+			$is_zero_amount     = (int) $order->get_total() === 0;
+			$charge_immediately = $product->is_virtual( 'yes' );
 
-				$agreement_body['campaign'] = [
-					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
-					'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
-					'campaignPrice' => 0
-				];
-			}
-
-			// virtual items need to have an initialCharge (DIRECT CAPTURE)
-			// do not create an initialCharge if $order->get_total() is 0
-			if ( $product->is_virtual( 'yes' ) && (int) $order->get_total() !== 0 ) {
+			if ( $charge_immediately && ! $is_zero_amount ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
@@ -629,6 +617,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					],
 				] );
 			}
+
+			// if the price of the order and the price of the product differ we should create a campaign
+			// but only if $order->get_total() is 0 or $charge_immediately is false
+			if ( $product->get_price() !== $order->get_total() && ( ! $charge_immediately || $is_zero_amount ) ) {
+				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
+				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
+
+				$agreement_body['campaign'] = [
+					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
+					'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
+					'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
+				];
+			}
+
+			die(var_dump($agreement_body));
 
 			$response = $this->api->create_agreement( $agreement_body );
 

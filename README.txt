@@ -112,6 +112,7 @@ You can then refund or cancel the purchase afterwards.
 * Improvement: Added a note to orders when a customer has been sent to Vipps for agreement confirmation containing the Agreement ID.
 * Fix: Error messages are now returned properly when checking out.
 * Improvement: Campaigns in app are now properly created and showed to the user when using a discount. This is far more logical for the customer.
+* Fix: The above improvement also happens to fix synchronised subscriptions.
 
 = 1.0.4 =
 * Fix: Achieve true PHP 7.0 compatibility. Void return types and nullable return types do not exist in this version.
