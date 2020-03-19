@@ -407,7 +407,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $amount_to_charge
 	 * @param $order
 	 *
-	 * @throws WC_Vipps_Recurring_Exception
 	 */
 	public function scheduled_subscription_payment( $amount_to_charge, $order ) {
 		$this->process_subscription_payment( $amount_to_charge, $order, false, true );
@@ -503,6 +502,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotence_key, $amount );
 			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
+
+			$renewal_order->update_meta_data('_vipps_recurring_pending_charge', true);
+			$renewal_order->save();
 
 			$this->process_order_charge( $renewal_order, $charge );
 

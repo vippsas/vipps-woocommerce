@@ -107,6 +107,9 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
+= 1.0.8 =
+* Fix: Fixed critical bug with renewals not working due to a specific meta key not being set on automatic renewal. Update ASAP.
+
 = 1.0.7 =
 * Fix: Physical products no longer always have a campaign.
 
