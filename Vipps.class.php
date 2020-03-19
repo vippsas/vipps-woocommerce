@@ -953,8 +953,8 @@ else:
               $defaultdata['city'] = $address['city'];
               $defaultdata['postalCode'] = $address['postcode'];
               $defaultdata['postCode'] = $address['postcode'];
-              $defaultdata['addressLine1'] = $address['address_1'];
-              $defaultdata['addressLine2'] = $address['address_2'];
+              $defaultdata['addressLine1'] = @$address['address_1'];
+              $defaultdata['addressLine2'] = @$address['address_2'];
            }
          } 
          if (!$addressok) {
@@ -1454,6 +1454,7 @@ else:
         try {
             $orderid = $gw->create_partial_order();
         } catch (Exception $e) {
+            $this->log($e->getMessage(),'error');
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
             wp_send_json($result);
             exit();
@@ -1462,6 +1463,17 @@ else:
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
             exit();
+        }
+
+        try {
+            $this->maybe_add_static_shipping($gw,$orderid); 
+        } catch (Exception $e) {
+                $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
+                $this->log($e->getMessage(),'error');
+                $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+                wp_send_json($result);
+                exit();
+            }
         }
 
         $gw->express_checkout = 1;
@@ -1580,6 +1592,17 @@ else:
             exit();
         }
 
+        try {
+            $this->maybe_add_static_shipping($gw,$orderid); 
+        } catch (Exception $e) {
+                $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
+                $this->log($e->getMessage(),'error');
+                $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
+                wp_send_json($result);
+                exit();
+            }
+        }
+
         // We want to process payments using a temporary cart, with express checkout. The main session cart should remain unchanged. IOK 2018-09-25
         $gw->express_checkout = 1;
         $gw->tempcart = 1;         
@@ -1593,6 +1616,21 @@ else:
         $result = array('ok'=>0, 'msg'=> __('Vipps is temporarily unavailable.','woo-vipps'), 'url'=>'');
         wp_send_json($result);
         exit();
+    }
+
+    // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
+    protected function maybe_add_static_shipping($gw,$orderid) {
+        if ($gw->get_option('enablestaticshipping') == 'yes') {
+            $order = wc_get_order($orderid);
+            $prefix  = $gw->get_orderprefix();
+            $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
+            $addressinfo = $this->get_static_shipping_address_data();
+            $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
+            if ($options) {
+                $order->update_meta_data('_vipps_static_shipping', $options);
+                $order->save();
+            }
+        }
     }
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04

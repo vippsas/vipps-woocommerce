@@ -102,6 +102,8 @@ class VippsApi {
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
+        $static_shipping = $order->get_meta('_vipps_static_shipping');
+
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
@@ -116,6 +118,7 @@ class VippsApi {
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
+        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
         $order->save();
 
         $headers = array();
@@ -160,8 +163,15 @@ class VippsApi {
             $data['merchantInfo']["paymentType"] = "eComm Express Payment";
             $data['merchantInfo']["consentRemovalPrefix"] = $this->gateway->consent_removal_callback_url();
             $data['merchantInfo']['shippingDetailsPrefix'] = $shippingcallback;
+
+            if ($static_shipping) {
+                $data['merchantInfo']['staticShippingDetails'] = $static_shipping["shippingDetails"];
+            }
+
         }
         $data['transaction'] = $transaction;
+
+
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
