@@ -195,6 +195,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2020.0x.xx version 1.4.3 =
  * Added support for Klarna Checkout based on the code provided by Krokedil at https://github.com/krokedil/klarna-checkout-vipps-external-payment-method
+ * Added support for static shipping: Much quicker express checkout if your shipping method don't depend on the customers address (or if your customers are logged in.) This precalculates the shipping options before sending the user to Vipps, but be aware: All the options must be static (like fixed price and so forth).
 
 = 2020.03.03 version 1.4.2 =
  * Tiny change to avoid logging non-errors if no shipping method has been chosen at all
