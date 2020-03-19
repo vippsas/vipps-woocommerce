@@ -62,9 +62,6 @@ class Vipps {
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
         $this->add_shortcodes();
-
-
-
     }
 
     public function admin_init () {
@@ -937,6 +934,40 @@ else:
 
         return WC()->session;
 
+    }
+
+    // Based on either a logged-in user, or the stores' default address, get the address to use when using
+    // the Express Checkout static shipping feature
+    // This is neccessary because WC()->customer->set_shipping_address_to_base() only sets country and state.
+    // IOK 2020-03-18
+    public function get_static_shipping_address_data () {
+         // This is the format used by the Vipps callback, we are going to mimic this.
+         $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"Norway", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
+         $addressok=false;
+         if (WC()->customer) {
+           $address = WC()->customer->get_shipping();
+           if (empty($address['country']) || empty($address['city']) || empty($address['postcode'])) $address = WC()->customer->get_billing();
+           if ($address['country'] && $address['city'] && $address['postcode']) {
+              $addressok = true;
+              $defaultdata['country'] = $address['country'];
+              $defaultdata['city'] = $address['city'];
+              $defaultdata['postalCode'] = $address['postcode'];
+              $defaultdata['postCode'] = $address['postcode'];
+              $defaultdata['addressLine1'] = $address['address_1'];
+              $defaultdata['addressLine2'] = $address['address_2'];
+           }
+         } 
+         if (!$addressok) {
+             $countries=new WC_Countries();
+             $defaultdata['country'] = $countries->get_base_country();
+             $defaultdata['city'] = $countries->get_base_city(); 
+             $defaultdata['postalCode'] = $countries->get_base_postcode();
+             $defaultdata['postCode'] =   $countries->get_base_postcode();
+             $defaultdata['addressLine1'] = $countries->get_base_address();
+             $defaultdata['addressLine2'] = $countries->get_base_address_2();
+             $addressok=true;
+         }
+         return $defaultdata;
     }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
