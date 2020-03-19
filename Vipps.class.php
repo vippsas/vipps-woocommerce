@@ -946,8 +946,8 @@ else:
          $addressok=false;
          if (WC()->customer) {
            $address = WC()->customer->get_shipping();
-           if (empty($address['country']) || empty($address['city']) || empty($address['postcode'])) $address = WC()->customer->get_billing();
-           if ($address['country'] && $address['city'] && $address['postcode']) {
+           if (empty(@$address['country']) || empty(@$address['city']) || empty(@$address['postcode'])) $address = WC()->customer->get_billing();
+           if (@$address['country'] && @$address['city'] && @$address['postcode']) {
               $addressok = true;
               $defaultdata['country'] = $address['country'];
               $defaultdata['city'] = $address['city'];
@@ -1013,15 +1013,17 @@ else:
             exit();
         }
         
-        $return = $this->vipps_shipping_details_callback_handler($order, $result);
+        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid);
+
         $json = json_encode($return);
         header("Content-type: application/json; charset=UTF-8");
         print $json;
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
         if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
+        exit();
     }
    
-    public function vipps_shipping_details_callback_handler($order, $vippsdata) {
+    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
 
         // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
         // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
@@ -1033,7 +1035,7 @@ else:
         if ($addressline1 == $addressline2) $addressline2 = '';
 
         $vippscountry = $vippsdata['country'];
-        $city = $result['city'];
+        $city = $vippsdata['city'];
         $postcode= $vippsdata['postCode'];
         $country = $this->country_to_code($vippscountry);
 
