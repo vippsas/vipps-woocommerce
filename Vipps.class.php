@@ -1073,6 +1073,8 @@ else:
         // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
         // so this needs to be maintained. IOK 2018.
         // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
+        // First, we must save the current cart however, as there is no way to avoid manipulating that. IOK 2020-03-19
+        $saved_cart = WC()->cart;
         $acart = new WC_Cart();
 
         foreach($order->get_items() as $item) {
@@ -1086,7 +1088,7 @@ else:
         wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
 
         // Some shipping methods will use the session cart no matter what you do, so make sure it is there IOK 2019-01-31
-        wc()->cart = $acart;
+        WC()->cart = $acart;
 
         $shipping_methods = array();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
@@ -1110,6 +1112,10 @@ else:
             $shipping =  WC()->shipping->calculate_shipping($packages);
             $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
          }
+
+        // We're done calculating stuff, so revert to the original cart. IOK 2020-03-19
+        WC()->cart = $saved_cart;
+
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
@@ -1625,6 +1631,7 @@ else:
             $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
             $addressinfo = $this->get_static_shipping_address_data();
             $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
+
             if ($options) {
                 $order->update_meta_data('_vipps_static_shipping', $options);
                 $order->save();
