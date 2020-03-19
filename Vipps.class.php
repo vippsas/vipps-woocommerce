@@ -1473,9 +1473,8 @@ else:
                 $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
                 wp_send_json($result);
                 exit();
-            }
         }
-
+        
         $gw->express_checkout = 1;
         $ok = $gw->process_payment($orderid);
         if ($ok && $ok['result'] == 'success') {
@@ -1600,8 +1599,8 @@ else:
                 $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
                 wp_send_json($result);
                 exit();
-            }
-        }
+       }
+        
 
         // We want to process payments using a temporary cart, with express checkout. The main session cart should remain unchanged. IOK 2018-09-25
         $gw->express_checkout = 1;
