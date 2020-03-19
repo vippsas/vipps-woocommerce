@@ -540,6 +540,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$message = sprintf( __( 'Vipps charge awaiting payment: %s. The amount will be drawn from your customer in 6 days.', 'woo-vipps-recurring' ), $charge['id'] );
 			$order->add_order_note( $message );
 
+			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
 			$order->update_meta_data( '_vipps_recurring_captured', true );
 			$order->save();
 
