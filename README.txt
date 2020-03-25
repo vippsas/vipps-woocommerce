@@ -107,7 +107,7 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
-= 1.0.10 =
+= 1.1.0 =
 * Fix: The action for woocommerce_thankyou should now be first in the pecking order.
 * Enhancement: Added a custom cron schedule so we can check pending payments every 5 minutes. This is because we check only 5 at a time, and every hour would take too long. This ratio will continue to be tweaked as we go.
 * Change: Renamed `WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS` to `WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING` and clarify what it does. We do not actually want anyone to change this unless they know what they're doing.
