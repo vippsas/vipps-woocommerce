@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-03-18T13:04:32+00:00\n"
-"PO-Revision-Date: 2020-03-18 13:04+0000\n"
+"POT-Creation-Date: 2020-03-25T15:11:15+00:00\n"
+"PO-Revision-Date: 2020-03-25 15:13+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -95,7 +95,7 @@ msgstr "Logg feilsøkingsmeldinger"
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr "Lagre feilsøkingsmeldinger i WooCommerce sin System Status logg."
 
-#: includes/class-wc-gateway-vipps-recurring.php:73
+#: includes/class-wc-gateway-vipps-recurring.php:73 woo-vipps-recurring.php:262
 msgid "Vipps Recurring Payments"
 msgstr "Vipps faste betalinger"
 
@@ -136,7 +136,7 @@ msgstr "Vipps betaling fullført (Charge ID: %s)"
 
 #. translators: Vipps Charge ID
 #: includes/class-wc-gateway-vipps-recurring.php:348
-#: includes/class-wc-gateway-vipps-recurring.php:538
+#: includes/class-wc-gateway-vipps-recurring.php:540
 msgid ""
 "Vipps charge awaiting payment: %s. The amount will be drawn from your "
 "customer in 6 days."
@@ -152,7 +152,7 @@ msgstr "Vipps betaling kansellert."
 msgid "Vipps payment failed."
 msgstr "Vipps betaling mislyktes."
 
-#: includes/class-wc-gateway-vipps-recurring.php:463
+#: includes/class-wc-gateway-vipps-recurring.php:462
 msgid ""
 "You can not refund a pending or due Vipps charge. Please wait till the "
 "payment clears first!"
@@ -160,21 +160,21 @@ msgstr ""
 "Du kan ikke refundere betalinger som ikke har blitt fullført ennå. Vent til "
 "betalingen er fullført!"
 
-#: includes/class-wc-gateway-vipps-recurring.php:558
+#: includes/class-wc-gateway-vipps-recurring.php:561
 msgid "Vipps failed to create charge"
 msgstr "Vipps mislyktes med å opprette en betaling"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:640
+#: includes/class-wc-gateway-vipps-recurring.php:645
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 
-#: includes/class-wc-vipps-recurring-api.php:82
-#: includes/class-wc-vipps-recurring-api.php:86
+#: includes/class-wc-vipps-recurring-api.php:83
+#: includes/class-wc-vipps-recurring-api.php:87
 msgid "Could not get Vipps access token"
 msgstr "Mislykes med å hente tilgangsnøkkel fra Vipps"
 
-#: includes/class-wc-vipps-recurring-api.php:307
+#: includes/class-wc-vipps-recurring-api.php:308
 msgid "No response from Vipps"
 msgstr "Ingen svar fra Vipps API-et"
 
@@ -196,7 +196,7 @@ msgstr ""
 "Vipps faste betalinger krever at WooCommerce Subscriptions er installert. Du "
 "kan laste ned %s her."
 
-#: woo-vipps-recurring.php:223
+#: woo-vipps-recurring.php:247
 msgid ""
 "Vipps Recurring Payments is currently in test mode - no real transactions "
 "will occur. Disable this in your wp_config when you are ready to go live!"
@@ -204,10 +204,23 @@ msgstr ""
 "Vipps faste betalinger er foreløpig i testmodus - ingen ekte betalinger vil "
 "finne sted. Skru av denne i wp_config når du er klar for å gå live."
 
-#: woo-vipps-recurring.php:261
+#: woo-vipps-recurring.php:280
+msgid "Capture payment instantly"
+msgstr "Trekk betaling umiddelbart"
+
+#: woo-vipps-recurring.php:281
+msgid ""
+"Capture payment instantly even if the product is not virtual. Please make "
+"sure you are following Norwegian law when using this option."
+msgstr ""
+"Trekk en betaling umiddelbart selv om produktet ikke er digitalt. Vær sikker "
+"på at du følger norsk lov når du bruker denne innstillingen. Du skal ikke "
+"trekke penger før forsendelse er sendt."
+
+#: woo-vipps-recurring.php:329
 msgid "Capture payment"
 msgstr "Capture (Trekk beløp)"
 
-#: woo-vipps-recurring.php:336
+#: woo-vipps-recurring.php:404
 msgid "Settings"
 msgstr "Innstillinger"
