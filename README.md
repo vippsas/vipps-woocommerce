@@ -87,13 +87,6 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 
 The amount of days Vipps will retry a charge for before it fails. Documentation can be found [here](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-retries).
 
-`WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS`: (integer) default: 6
-
-The purpose of this value is to make sure money is drawn from the customer inline with the customer's billing date in WooCommerce.
-A value of `6` means the plugin will create a charge six days in advance when renewing a subscription to counteract the Recurring API's six day grace period before a charge is charged.
-
-Typically you do not want to edit this value, but if you want the charge to be created at the billing date you should change this constant to `0`. In this case you will receive the money six days later than the customer's billing date.
-
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
 
 Enables someone with access to Vipps developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).

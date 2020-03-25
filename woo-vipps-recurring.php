@@ -93,11 +93,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 		}
 
 		/*
-		 * Amount of days to charge in advance when renewing a subscription.
+		 * Amount of days to add to due_at for a charge in the recurring API.
 		 * Currently this value has to be 6 days or more as per Vipps' specification.
+		 * https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-states
+		 *
+		 * DO NOT MODIFY UNLESS YOU KNOW WHAT YOU'RE DOING.
 		 */
-		if ( ! defined( 'WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS' ) ) {
-			define( 'WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS', 6 );
+		if ( ! defined( 'WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING' ) ) {
+			define( 'WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING', 6 );
 		}
 
 		/*

@@ -16,12 +16,13 @@ class VippsRecurringApi {
 	public $gateway;
 
 	/**
-	 * Minimum amount of days to charge in advance when renewing a subscription.
-	 * Currently this value has to be 6 days or more as per Vipps' specification
+	 * Amount of days to add to due_at for a charge in the recurring API.
+	 * Currently this value has to be 6 days or more as per Vipps' specification.
+	 * https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-states
 	 *
 	 * @var int $due_minimum_days
 	 */
-	public $due_minimum_days = WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS;
+	public $due_minimum_days = WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING;
 
 	/**
 	 * Amount of days to retry a payment for when creating a charge
