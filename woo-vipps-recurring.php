@@ -221,6 +221,11 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$this,
 					'check_order_statuses'
 				] );
+
+				// Add custom product settings for Vipps Recurring.
+				add_filter( 'woocommerce_product_data_tabs', [ $this, 'woocommerce_product_data_tabs' ] );
+				add_filter( 'woocommerce_product_data_panels', [ $this, 'woocommerce_product_data_panels' ] );
+				add_filter( 'woocommerce_process_product_meta', [ $this, 'woocommerce_process_product_meta' ] );
 			}
 
 			/**
@@ -243,6 +248,50 @@ function woocommerce_gateway_vipps_recurring_init() {
 						echo "<div class='notice notice-info is-dismissible'><p>$notice</p></div>";
 					} );
 				}
+
+				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+			}
+
+			/**
+			 * @param $tabs
+			 *
+			 * @return mixed
+			 */
+			public function woocommerce_product_data_tabs( $tabs ) {
+				$tabs['wc_vipps_recurring'] = [
+					'label'    => __( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
+					'target'   => 'wc_vipps_recurring_product_data',
+					'priority' => 100,
+				];
+
+				return $tabs;
+			}
+
+
+			/**
+			 * Tab content
+			 */
+			public function woocommerce_product_data_panels() {
+				echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
+
+				woocommerce_wp_checkbox( [
+					'id'          => '_vipps_recurring_direct_capture',
+					'value'       => get_post_meta( get_the_ID(), '_vipps_recurring_direct_capture', true ),
+					'label'       => __( 'Capture payment instantly', 'woo-vipps-recurring' ),
+					'description' => __( 'Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option.', 'woo-vipps-recurring' )
+				] );
+
+				echo '</div>';
+			}
+
+			/**
+			 * Save our custom fields
+			 *
+			 * @param $post_id
+			 */
+			public function woocommerce_process_product_meta( $post_id ) {
+				$capture_instantly = isset( $_POST['_vipps_recurring_direct_capture'] ) ? 'yes' : 'no';
+				update_post_meta( $post_id, '_vipps_recurring_direct_capture', $capture_instantly );
 			}
 
 			/**
@@ -409,8 +458,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Enqueue our CSS and other assets.
 			 */
 			public function wp_enqueue_scripts() {
-				wp_enqueue_style( 'vipps-recurring-gateway', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
+				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
+			}
+
+			/**
+			 * Enqueue our CSS and other assets.
+			 */
+			public function admin_enqueue_scripts() {
+				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring-admin.css', __FILE__ ), [],
+					filemtime( __DIR__ . '/assets/css/vipps-recurring-admin.css' ) );
 			}
 
 			/**

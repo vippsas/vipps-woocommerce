@@ -116,7 +116,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this,
 			'cancel_subscription',
 		] );
-		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1);
+		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1 );
 	}
 
 	/**
@@ -503,7 +503,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotence_key, $amount );
 			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
 
-			$renewal_order->update_meta_data('_vipps_recurring_pending_charge', true);
+			$renewal_order->update_meta_data( '_vipps_recurring_pending_charge', true );
 			$renewal_order->save();
 
 			$this->process_order_charge( $renewal_order, $charge );
@@ -607,10 +607,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
 			}
 
-			$is_zero_amount     = (int) $order->get_total() === 0;
-			$charge_immediately = $product->is_virtual( 'yes' );
+			$is_zero_amount      = (int) $order->get_total() === 0;
+			$capture_immediately = $product->is_virtual( 'yes' ) || $product->get_meta( '_vipps_recurring_direct_capture' ) === 'yes';
 
-			if ( $charge_immediately && ! $is_zero_amount ) {
+			if ( $capture_immediately && ! $is_zero_amount ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
@@ -623,7 +623,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// if the price of the order and the price of the product differ we should create a campaign
 			// but only if $order->get_total() is 0 or $charge_immediately is false
-			if ( (float) $product->get_price() !== (float) $order->get_total() && ( ! $charge_immediately || $is_zero_amount ) ) {
+			if ( (float) $product->get_price() !== (float) $order->get_total() && ( ! $capture_immediately || $is_zero_amount ) ) {
 				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
 
