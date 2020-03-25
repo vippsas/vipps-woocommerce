@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.0.9
+ * Version: 1.0.10
  * Requires at least: 4.4
  * Tested up to: 5.4.0
  * WC tested up to: 4.0.0
@@ -78,8 +78,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.0.9' );
-		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.1.0' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.0.10' );
+		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '5.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
 		define( 'WC_VIPPS_RECURRING_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
@@ -188,14 +188,30 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'plugin_action_links'
 				] );
 
+				// add custom cron schedules for Vipps charge polling
+				add_filter( 'cron_schedules', [
+					$this,
+					'woocommerce_vipps_recurring_add_cron_schedules'
+				] );
+
 				// testing code
-//				wp_clear_scheduled_hook('woocommerce_vipps_recurring_check_order_statuses');
-//				add_action( 'woocommerce_view_order', [ $this, 'check_order_statuses' ], PHP_INT_MAX );
+//				if (WC_VIPPS_RECURRING_TEST_MODE) {
+//					wp_clear_scheduled_hook('woocommerce_vipps_recurring_check_order_statuses');
+//					add_action( 'woocommerce_view_order', [ $this, 'check_order_statuses' ], PHP_INT_MAX );
+//				    die(var_dump(wp_next_scheduled( 'woocommerce_vipps_recurring_check_order_statuses' )));
+//				}
 				// end testing code
 
-				// schedule hook
+				// reschedule recurring payment charge status checking event if the occurrence is not five_minutes
+				$scheduled_event = wp_get_scheduled_event( 'woocommerce_vipps_recurring_check_order_statuses' );
+
+				if ( $scheduled_event === 'hourly' ) {
+					wp_reschedule_event( time(), 'five_minutes', 'woocommerce_vipps_recurring_check_order_statuses' );
+				}
+
+				// schedule recurring payment charge status checking event
 				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_order_statuses' ) ) {
-					wp_schedule_event( time(), 'hourly', 'woocommerce_vipps_recurring_check_order_statuses' );
+					wp_schedule_event( time(), 'five_minutes', 'woocommerce_vipps_recurring_check_order_statuses' );
 				}
 
 				add_action( 'woocommerce_vipps_recurring_check_order_statuses', [
@@ -258,8 +274,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( $show_capture_button && ! $is_captured ) {
 					$logo = plugins_url( 'assets/images/vipps_logo_negative_rgb_transparent.png', __FILE__ );
 
-					print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vipps-button generate-items"><img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="' . $logo . '"/> ' . __( 'Capture payment', 'woo-vipps-recurring' ) . '</button>';
-					print '<input id=docapture type=hidden name=do_capture_vipps_recurring value=0>';
+					print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vipps-button generate-items"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'woo-vipps-recurring' ) . '</button>';
+					print '<input id="docapture" type="hidden" name="do_capture_vipps_recurring" value="0">';
 				}
 			}
 
@@ -393,6 +409,21 @@ function woocommerce_gateway_vipps_recurring_init() {
 				wp_enqueue_style( 'vipps-recurring-gateway', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
 			}
+
+			/**
+			 * @param $schedules
+			 *
+			 * @return mixed
+			 */
+			public function woocommerce_vipps_recurring_add_cron_schedules( $schedules ) {
+				$schedules['five_minutes'] = [
+					'interval' => 300,
+					'display'  => esc_html__( 'Every Five Minutes' ),
+				];
+
+				return $schedules;
+			}
+
 		}
 
 		WC_Vipps_Recurring::get_instance();

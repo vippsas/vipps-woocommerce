@@ -116,7 +116,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this,
 			'cancel_subscription',
 		] );
-		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ] );
+		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1);
 	}
 
 	/**
@@ -409,7 +409,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 */
 	public function scheduled_subscription_payment( $amount_to_charge, $order ) {
-		$this->process_subscription_payment( $amount_to_charge, $order, false, true );
+		$this->process_subscription_payment( $amount_to_charge, $order );
 	}
 
 	/**

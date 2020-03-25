@@ -107,6 +107,10 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
+= 1.0.10 =
+* Fix: The action for woocommerce_thankyou should now be first in the pecking order.
+* Enhancement: Added a custom cron schedule so we can check pending payments every 5 minutes. This is because we check only 5 at a time, and every hour would take too long. This ratio will continue to be tweaked as we go.
+
 = 1.0.9 =
 * Fix: Fix manual captures. This is in many ways 1.0.8's lost brother.
 
@@ -118,19 +122,3 @@ You can then refund or cancel the purchase afterwards.
 
 = 1.0.6 =
 * Fix: I accidentally left debug code in. Oops! That's embarrassing.
-
-= 1.0.5 =
-* Fix: Initial purchases are now checked hourly in case the customer closes their browser prematurely. This uses the same logic and code as checking renewal payments.
-* Improvement: Added a note to orders when a customer has been sent to Vipps for agreement confirmation containing the Agreement ID.
-* Fix: Error messages are now returned properly when checking out.
-* Improvement: Campaigns in app are now properly created and showed to the user when using a discount. This is far more logical for the customer.
-* Fix: The above improvement also happens to fix synchronised subscriptions.
-
-= 1.0.4 =
-* Fix: Achieve true PHP 7.0 compatibility. Void return types and nullable return types do not exist in this version.
-
-= 1.0.3 =
-* Improvement: Removed test fields from settings in favour of a the `WC_VIPPS_RECURRING_TEST_MODE` constant.
-* Improvement: Renamed test fields to be the same as found in your Vipps Portal
-* Change: Renamed `WC_VIPPS_RECURRING_DUE_MINIMUM_DAYS` constant to `WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS`.
-* Fix: Constant overrides now work properly.
