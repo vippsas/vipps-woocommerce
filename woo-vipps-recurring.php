@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.1.0
+ * Version: 1.1.1
  * Requires at least: 4.4
  * Tested up to: 5.4.0
  * WC tested up to: 4.0.0
@@ -78,7 +78,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.1.0' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.1.1' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '5.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -206,9 +206,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 				// end testing code
 
 				// reschedule recurring payment charge status checking event if the occurrence is not five_minutes
-				$scheduled_event = wp_get_scheduled_event( 'woocommerce_vipps_recurring_check_order_statuses' );
+				$event_schedule = wp_get_schedule( 'woocommerce_vipps_recurring_check_order_statuses' );
 
-				if ( $scheduled_event === 'hourly' ) {
+				if ( $event_schedule === 'hourly' ) {
 					wp_reschedule_event( time(), 'five_minutes', 'woocommerce_vipps_recurring_check_order_statuses' );
 				}
 

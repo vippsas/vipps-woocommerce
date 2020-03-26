@@ -107,6 +107,9 @@ You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
 
+= 1.1.1 =
+* Fix: `wp_get_scheduled_event()` is not available in WP < 5.1, so we should not use this for earlier versions. Instead we now use `wp_get_schedule()` which has been available since WP 2.1.0.
+
 = 1.1.0 =
 * Fix: The action for woocommerce_thankyou should now be first in the pecking order.
 * Enhancement: Added a custom cron schedule so we can check pending payments every 5 minutes. This is because we check only 5 at a time, and every hour would take too long. This ratio will continue to be tweaked as we go.

@@ -59,10 +59,24 @@ class WC_Vipps_Recurring_Helper {
 	 * @param string $version Version to check against.
 	 *
 	 * @return bool
-	 * @since 4.1.11
+	 * @since 1.0.0
 	 */
 	public static function is_wc_lt( $version ): bool {
 		return version_compare( WC_VERSION, $version, '<' );
+	}
+
+	/**
+	 * Checks if WP version is less than passed in version.
+	 *
+	 * @param string $version Version to check against.
+	 *
+	 * @return bool
+	 * @since 1.1.1
+	 */
+	public static function is_wp_lt( $version ): bool {
+		global $wp_version;
+
+		return version_compare( $wp_version, $version, '<' );
 	}
 
 	/**
@@ -82,6 +96,6 @@ class WC_Vipps_Recurring_Helper {
 	 * @return string
 	 */
 	public static function get_rfc_3999_date( DateTime $date ): string {
-		return $date->format('Y-m-d\TH:i:s\Z');
+		return $date->format( 'Y-m-d\TH:i:s\Z' );
 	}
 }
