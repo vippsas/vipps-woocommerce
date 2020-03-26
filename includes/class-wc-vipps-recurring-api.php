@@ -228,7 +228,7 @@ class VippsRecurringApi {
 
 		$headers = [
 			'Authorization'  => 'Bearer ' . $token,
-			'Idempotent-Key' => wp_generate_password( 12 ),
+			'Idempotent-Key' => wp_generate_password( 24, false, false ),
 		];
 
 		$data = [
