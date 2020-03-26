@@ -1074,8 +1074,10 @@ else:
         // so this needs to be maintained. IOK 2018.
         // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
         // First, we must save the current cart however, as there is no way to avoid manipulating that. IOK 2020-03-19
+        // IOK 2020-03-26 changed to use the main cart everywhere instead of creating a WC_Cart: Some plugins override this class.
         $saved_cart = WC()->cart;
-        $acart = new WC_Cart();
+        WC()->cart->empty_cart();
+        $acart = WC()->cart;
 
         foreach($order->get_items() as $item) {
             $varid = $item['variation_id'];
