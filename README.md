@@ -127,4 +127,12 @@ See the [getting started](https://github.com/vippsas/vipps-developers/blob/maste
 Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys. 
 You can then refund or cancel the purchase afterwards.
 
+## Why do I have to capture payments for physical products manually?
+
+This is because of the Norwegian law. You are not allowed to charge for a physical product before you ship it, without a valid reason to do so.
+
+You can read about it [here](https://www.forbrukertilsynet.no/english/guidelines/guidelines-the-standard-sales-conditions-consumer-purchases-of-goods-the-internet#chapter-7).
+
+If you have a valid reason to do so you can use the "Capture payment instantly" option from the "Vipps Recurring Payments" settings in your product's settings.
+
 
