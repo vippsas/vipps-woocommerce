@@ -574,12 +574,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
 		$order = wc_get_order( $order_id );
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
-		$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
-
-		$period = $subscription->get_billing_period();
-
 		try {
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
+
+			$period = $subscription->get_billing_period();
+
 			$items = array_reverse( $order->get_items() );
 
 			// there should ever only be one with this gateway

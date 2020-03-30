@@ -126,6 +126,27 @@ class VippsRecurringApi {
 	 * @param $agreement
 	 *
 	 * @return mixed
+	 * @throws Exception
+	 */
+	public function get_price_from_agreement( $agreement ) {
+		$amount = $agreement['price'];
+
+		if ( isset( $agreement['campaign'] ) ) {
+			$now = new DateTime();
+			$end = new DateTime($agreement['campaign']['end']);
+
+			if ($end > $now) {
+				$amount = $agreement['campaign']['campaignPrice'];
+			}
+		}
+
+		return $amount;
+	}
+
+	/**
+	 * @param $agreement
+	 *
+	 * @return mixed
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
 	public function cancel_agreement( $agreement ) {
@@ -153,6 +174,7 @@ class VippsRecurringApi {
 	 *
 	 * @return mixed
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws Exception
 	 */
 	public function create_charge( $agreement, $order, $idempotence_key, $amount = null ) {
 		$token = $this->get_access_token();
@@ -162,19 +184,23 @@ class VippsRecurringApi {
 			'Idempotent-Key' => $idempotence_key,
 		];
 
-		if ( $amount === null ) {
-			$amount = $agreement['price'];
+		$has_price_changed = false;
+		$agreement_price   = $this->get_price_from_agreement( $agreement );
+
+		if ( $amount !== null ) {
+			$has_price_changed = $amount !== $agreement_price;
+		} else {
+			$amount = $agreement_price;
 		}
 
-		$hasPriceChanged = $amount !== $agreement['price'];
-		$due_at          = date( 'Y-m-d', time() + ( 24 * 3600 * $this->due_minimum_days ) );
+		$due_at = date( 'Y-m-d', time() + ( 24 * 3600 * $this->due_minimum_days ) );
 
 		$data = [
 			'amount'          => $amount,
 			'currency'        => $order->get_currency(),
 			'description'     => $agreement['productDescription'],
 			'due'             => $due_at,
-			'hasPriceChanged' => $hasPriceChanged,
+			'hasPriceChanged' => $has_price_changed,
 			'retryDays'       => $this->retry_days,
 		];
 
