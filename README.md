@@ -2,7 +2,9 @@
 
 **This plugin is currently a test pilot (pre-release). It is very likely that you will encounter bugs or scenarios that are not yet supported.**
 
-**We encourage you to create an issue here or on the WordPress plugin page if you require assistance or run in to a problem.**
+**Please keep up to date with updates as soon as they happen. They are very important in this pre-release period.**
+
+**We encourage you to create an issue here if you require assistance or run in to a problem.**
 
 For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
 

@@ -12,7 +12,9 @@ License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
 **This plugin is currently a test pilot (pre-release). It is very likely that you will encounter bugs or scenarios that are not yet supported.**
 
-**We encourage you to create an issue here or on the WordPress plugin page if you require assistance or run in to a problem.**
+**Please keep up to date with updates as soon as they happen. They are very important in this pre-release period.**
+
+**We encourage you to create an issue here or on the [GitHub page](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.**
 
 For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
 
@@ -106,6 +108,9 @@ Vipps does not offer test accounts for regular users of the plugin but you can s
 You can then refund or cancel the purchase afterwards.
 
 == Changelog ==
+
+= 1.1.3 =
+* Fix: Fixed a critical bug where physical purchases with discounts would be charged in full instead of the discounted price when manually captured.
 
 = 1.1.2 =
 * Fix: Creation of payments sometimes failed due to an invalid Idempotency key. No longer use special chars in this key.
