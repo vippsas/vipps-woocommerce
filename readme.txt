@@ -193,8 +193,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.04.xx version 1.4.4 =
+= 2020.04.06 version 1.4.4 =
  * Changed freight calculation to ensure plugins that override the WC_Cart's class will continue working.
+ * Changed handling of signal file cleanup and deletion of cancelled express checkout orders to wp-cron to avoid problems on sites with heavy load
 
 = 2020.03.23 version 1.4.3 =
  * Added support for Klarna Checkout based on the code provided by Krokedil at https://github.com/krokedil/klarna-checkout-vipps-external-payment-method

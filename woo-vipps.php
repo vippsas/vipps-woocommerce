@@ -7,7 +7,7 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.4.3
+   Version: 1.4.4
 
    Requires at least: 4.7
    Tested up to: 5.4.0
@@ -62,6 +62,7 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     global $Vipps;
     $Vipps = Vipps::instance();
     register_activation_hook(__FILE__,array($Vipps,'activate'));
+    register_deactivation_hook(__FILE__,array('Vipps','deactivate'));
     register_uninstall_hook(__FILE__, 'Vipps::uninstall');
 
     if (is_admin()) {

@@ -49,8 +49,6 @@ class Vipps {
     }
 
     public function init () {
-        // IOK move this to a wp-cron job so it doesn't run like every time 2018-05-03
-        $this->cleanupCallbackSignals();
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
         // This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
@@ -62,6 +60,9 @@ class Vipps {
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
         $this->add_shortcodes();
+
+        // Offload work to wp-cron so it can be done in the background on sites with heavy load IOK 2020-04-01
+        add_action('vipps_cron_cleanup_hook', array($this, 'cron_cleanup_hook'));
     }
 
     public function admin_init () {
@@ -106,13 +107,12 @@ class Vipps {
             }
         }
 
-        $temps = wp_get_theme()->get_page_templates(); 
-        $out = "";
-        foreach($temps as $filename=>$tempname) {
-          $out .= $tempname . ":" . $filename . ":" . locate_template($filename, false, false) . "<br>"; 
+        // IOK 2020-04-01 If the plugin is updated, the normal 'activate' hook may not run. Add the scheduled events if not present.
+        // Normal updates will not need this, but if updates are 'sideloaded', it is neccessary still. This call will only do work if the
+        // jobs are not scheduled. We'll ensure the action is active first time an admin logs in.
+        if (!defined('DOING_AJAX') || !DOING_AJAX) {
+            static::maybe_add_cron_event();
         }
-
-        $this->delete_old_cancelled_orders();
     }
 
     // Add a backend notice to stand out a bit, using a Vipps logo and the Vipps color for info-level messages. IOK 2020-02-16
@@ -639,7 +639,7 @@ else:
         return $uploaddir['baseurl'] . '/' . $this->callbackDirname . '/' . basename($signal);
     }
 
-    // Clean up old signals. IOK 2018-05-04. They should contain no useful information, but still. IOK 2018-05-04
+    // Clean up old signal files. If there gets to be a lot of them, this may take some time. IOK 2018-05-04.
     public function cleanupCallbackSignals() {
         $dir = $this->callbackDir();
         if (!is_dir($dir)) return;
@@ -650,7 +650,7 @@ else:
             if (is_dir($path)) continue;
             if (is_file($path)) {
                 $age = @filemtime($path);
-                $halfhour = 30*60*60;
+                $halfhour = 30*60;
                 if (($age+$halfhour) < $now) {
                     @unlink($path);
                 }
@@ -777,6 +777,7 @@ else:
                 VippsKCSupport::init();
             }
         }
+
     }
     
 
@@ -1338,12 +1339,34 @@ else:
         return $actions;
     }
 
-    public function activate () {
-
+    // This job runs in the wp-cron context, and is intended to clean up signal files and other temporariy data. IOK 2020-04-01
+    public function cron_cleanup_hook () {
+       $this->cleanupCallbackSignals(); // Remove old callback signals (files in uploads)
+       $this->delete_old_cancelled_orders(); // Remove cancelled express checkout orders if selected
     }
+
+    // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on plugins_loaded. IOK 2020-04-01
+    public static function maybe_add_cron_event() {
+       if (!wp_next_scheduled('vipps_cron_cleanup_hook')) {
+          wp_schedule_event(time(), 'hourly', 'vipps_cron_cleanup_hook');
+       }
+    }
+
+    public function activate () {
+       static::maybe_add_cron_event();
+    }
+
+    // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
+    public static function deactivate() {
+       $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
+       wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
+    }
+
     public static function uninstall() {
+       // Nothing yet
     }
     public function footer() {
+       // Nothing yet
     }
 
 
