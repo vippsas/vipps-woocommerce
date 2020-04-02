@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Vipps Recurring Payments Gateway for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Vipps Recurring Payments Gateway for WooCommerce 1.0.10\n"
+"Project-Id-Version: Vipps Recurring Payments Gateway for WooCommerce 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-03-25T15:11:15+00:00\n"
+"POT-Creation-Date: 2020-04-02T14:17:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: woo-vipps-recurring\n"
@@ -28,6 +28,27 @@ msgstr ""
 
 #. Author URI of the plugin
 msgid "https://vipps.no"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings-page.php:3
+#: includes/class-wc-gateway-vipps-recurring.php:73
+#: woo-vipps-recurring.php:262
+#: woo-vipps-recurring.php:263
+#: woo-vipps-recurring.php:294
+msgid "Vipps Recurring Payments"
+msgstr ""
+
+#. translators: link to the plugin's settings page
+#: includes/admin/vipps-recurring-settings-page.php:8
+msgid "This area is for special actions that aren't settings. If you are looking for the plugin's settings, click <a href='%s'>here</a>."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings-page.php:13
+msgid "If you have a lot of Vipps subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it's job."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings-page.php:21
+msgid "Check status of all Vipps subscription orders now"
 msgstr ""
 
 #: includes/admin/vipps-recurring-settings.php:11
@@ -92,11 +113,6 @@ msgstr ""
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
-#: includes/class-wc-gateway-vipps-recurring.php:73
-#: woo-vipps-recurring.php:262
-msgid "Vipps Recurring Payments"
-msgstr ""
-
 #: includes/class-wc-gateway-vipps-recurring.php:74
 msgid "Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify."
 msgstr ""
@@ -129,7 +145,7 @@ msgstr ""
 
 #. translators: Vipps Charge ID
 #: includes/class-wc-gateway-vipps-recurring.php:348
-#: includes/class-wc-gateway-vipps-recurring.php:540
+#: includes/class-wc-gateway-vipps-recurring.php:542
 msgid "Vipps charge awaiting payment: %s. The amount will be drawn from your customer in 6 days."
 msgstr ""
 
@@ -145,12 +161,12 @@ msgstr ""
 msgid "You can not refund a pending or due Vipps charge. Please wait till the payment clears first!"
 msgstr ""
 
-#: includes/class-wc-gateway-vipps-recurring.php:561
+#: includes/class-wc-gateway-vipps-recurring.php:563
 msgid "Vipps failed to create charge"
 msgstr ""
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:645
+#: includes/class-wc-gateway-vipps-recurring.php:647
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr ""
 
@@ -159,7 +175,7 @@ msgstr ""
 msgid "Could not get Vipps access token"
 msgstr ""
 
-#: includes/class-wc-vipps-recurring-api.php:308
+#: includes/class-wc-vipps-recurring-api.php:334
 msgid "No response from Vipps"
 msgstr ""
 
@@ -173,22 +189,27 @@ msgstr ""
 msgid "Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can download %s here."
 msgstr ""
 
-#: woo-vipps-recurring.php:247
+#: woo-vipps-recurring.php:252
 msgid "Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!"
 msgstr ""
 
-#: woo-vipps-recurring.php:280
+#: woo-vipps-recurring.php:312
 msgid "Capture payment instantly"
 msgstr ""
 
-#: woo-vipps-recurring.php:281
+#: woo-vipps-recurring.php:313
 msgid "Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option."
 msgstr ""
 
-#: woo-vipps-recurring.php:329
+#: woo-vipps-recurring.php:361
 msgid "Capture payment"
 msgstr ""
 
-#: woo-vipps-recurring.php:404
+#: woo-vipps-recurring.php:444
 msgid "Settings"
+msgstr ""
+
+#. translators: Amount of orders checked
+#: assets/js/vipps-recurring-admin.js:13
+msgid "Done. Checked the status of %s orders"
 msgstr ""

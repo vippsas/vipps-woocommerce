@@ -178,6 +178,11 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( is_admin() ) {
 					add_action( 'admin_init', [ $this, 'admin_init' ] );
+					add_action( 'admin_menu', [ $this, 'admin_menu' ] );
+					add_action( 'wp_ajax_vipps_recurring_force_check_charge_statuses', [
+						$this,
+						'wp_ajax_vipps_recurring_force_check_charge_statuses'
+					] );
 				}
 
 				// add our gateway
@@ -250,6 +255,33 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+			}
+
+			public function admin_menu() {
+				add_menu_page(
+					__( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
+					__( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
+					'manage_options',
+					'woo-vipps-recurring',
+					[ $this, 'options_page_html' ]
+				);
+			}
+
+			public function options_page_html() {
+				if ( ! current_user_can( 'manage_options' ) ) {
+					return;
+				}
+
+				include __DIR__ . '/includes/admin/vipps-recurring-settings-page.php';
+			}
+
+			/**
+			 * Force check status of all pending charges
+			 */
+			public function wp_ajax_vipps_recurring_force_check_charge_statuses() {
+				echo count( $this->check_order_statuses( - 1 ) );
+
+				wp_die();
 			}
 
 			/**
@@ -372,12 +404,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Check charge statuses scheduled action
 			 * Returns nothing
+			 *
+			 * @param int $limit
+			 *
+			 * @return array
 			 */
-			public function check_order_statuses() {
+			public function check_order_statuses( $limit = 5 ): array {
 				$gateway = $this->gateway();
 
 				$order_ids = wc_get_orders( [
-					'limit'          => 5,
+					'limit'          => $limit,
 					'order'          => 'rand',
 					'type'           => 'shop_order',
 					'meta_key'       => '_vipps_recurring_pending_charge',
@@ -393,6 +429,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				WC_Vipps_Recurring_Logger::log( 'checking order statuses of pending payments: ' . implode( ',', $order_ids ) );
+
+				return $order_ids;
 			}
 
 			/**
@@ -462,6 +500,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function wp_enqueue_scripts() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
+
+				wp_set_script_translations( 'woo-vipps-recurring', 'woo-vipps-recurring' );
 			}
 
 			/**
@@ -470,6 +510,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function admin_enqueue_scripts() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring-admin.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring-admin.css' ) );
+
+				wp_enqueue_script( 'woo-vipps-recurring', plugins_url( 'assets/js/vipps-recurring-admin.js', __FILE__ ), [ 'wp-i18n' ] );
 			}
 
 			/**

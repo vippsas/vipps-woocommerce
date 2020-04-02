@@ -126,6 +126,7 @@ We unfortunately can not charge ahead of time to counteract this as that would n
 == Changelog ==
 
 = 1.2.0 =
+* Enhancement: Added an admin menu area for "Vipps Recurring Payments". From here you can force check the status of all pending Vipps subscription orders.
 * Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
 
 = 1.1.3 =

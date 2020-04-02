@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-04-02T14:17:17+00:00\n"
-"PO-Revision-Date: 2020-04-02 14:17+0000\n"
+"POT-Creation-Date: 2020-04-02T14:12:00+00:00\n"
+"PO-Revision-Date: 2020-04-02 14:14+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -39,16 +39,7 @@ msgstr "https://vipps.no"
 msgid "Vipps Recurring Payments"
 msgstr "Vipps faste betalinger"
 
-#. translators: link to the plugin's settings page
-#: includes/admin/vipps-recurring-settings-page.php:8
-msgid ""
-"This area is for special actions that aren't settings. If you are looking "
-"for the plugin's settings, click <a href='%s'>here</a>."
-msgstr ""
-"Dette området er for handlinger som ikke er vanlige innstillinger. Hvis du "
-"leter etter utvidelsen sine innstillinger finner du de <a href='%s'>her</a>."
-
-#: includes/admin/vipps-recurring-settings-page.php:13
+#: includes/admin/vipps-recurring-settings-page.php:10
 msgid ""
 "If you have a lot of Vipps subscription orders that are currently on-hold "
 "you might want to force check the status of all the orders instead of "
@@ -58,7 +49,7 @@ msgstr ""
 "kan det hende du har lyst til å sjekke status på alle ordre med en gang i "
 "stedet for å vente på at wp-cron skal gjøre jobben sin."
 
-#: includes/admin/vipps-recurring-settings-page.php:21
+#: includes/admin/vipps-recurring-settings-page.php:18
 msgid "Check status of all Vipps subscription orders now"
 msgstr "Sjekk status på alle Vipps faste betalinger ordre nå"
 

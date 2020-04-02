@@ -489,6 +489,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * @param $amount
 	 * @param $renewal_order
+	 *
+	 * @throws Exception
 	 */
 	public function process_subscription_payment( $amount, $renewal_order ) {
 		try {
