@@ -141,4 +141,4 @@ This is because when an order is charged in Vipps it takes 6 days before the pay
 
 After 6 days it will move to the "Processing" status.
 
-We unfortunately can not charge ahead of time to counteract this as that would not be able to use WooCommerce's payment schedules.
+To counteract this you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/)
