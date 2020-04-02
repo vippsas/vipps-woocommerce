@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.1.3
+ * Version: 1.2.0
  * Requires at least: 4.4
  * Tested up to: 5.4.0
  * WC tested up to: 4.0.0
@@ -78,7 +78,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.1.3' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.2.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '5.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -205,16 +205,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 //				}
 				// end testing code
 
-				// reschedule recurring payment charge status checking event if the occurrence is not five_minutes
+				// reschedule recurring payment charge status checking event if the occurrence is not one_minute
 				$event_schedule = wp_get_schedule( 'woocommerce_vipps_recurring_check_order_statuses' );
 
-				if ( $event_schedule === 'hourly' ) {
-					wp_reschedule_event( time(), 'five_minutes', 'woocommerce_vipps_recurring_check_order_statuses' );
+				if ( $event_schedule === 'hourly' || $event_schedule === 'five_minutes' ) {
+					wp_reschedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_order_statuses' );
 				}
 
 				// schedule recurring payment charge status checking event
 				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_order_statuses' ) ) {
-					wp_schedule_event( time(), 'five_minutes', 'woocommerce_vipps_recurring_check_order_statuses' );
+					wp_schedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_order_statuses' );
 				}
 
 				add_action( 'woocommerce_vipps_recurring_check_order_statuses', [
@@ -478,9 +478,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @return mixed
 			 */
 			public function woocommerce_vipps_recurring_add_cron_schedules( $schedules ) {
-				$schedules['five_minutes'] = [
-					'interval' => 300,
-					'display'  => esc_html__( 'Every Five Minutes' ),
+				$schedules['one_minute'] = [
+					'interval' => 60,
+					'display'  => esc_html__( 'Every One Minute' ),
 				];
 
 				return $schedules;

@@ -117,6 +117,9 @@ If you have a valid reason to do so you can use the "Capture payment instantly" 
 
 == Changelog ==
 
+= 1.2.0 =
+* Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
+
 = 1.1.3 =
 * Fix: Fixed a critical bug where physical purchases with discounts would be charged in full instead of the discounted price when manually captured.
 
