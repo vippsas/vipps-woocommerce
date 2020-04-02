@@ -257,22 +257,28 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 			}
 
+			/**
+			 * Make admin menu entry
+			 */
 			public function admin_menu() {
 				add_menu_page(
 					__( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
 					__( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
 					'manage_options',
 					'woo-vipps-recurring',
-					[ $this, 'options_page_html' ]
+					[ $this, 'admin_menu_page_html' ]
 				);
 			}
 
-			public function options_page_html() {
+			/**
+			 * Admin menu page HTML
+			 */
+			public function admin_menu_page_html() {
 				if ( ! current_user_can( 'manage_options' ) ) {
 					return;
 				}
 
-				include __DIR__ . '/includes/admin/vipps-recurring-settings-page.php';
+				include __DIR__ . '/includes/admin/vipps-recurring-admin-menu-page.php';
 			}
 
 			/**
@@ -298,7 +304,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				return $tabs;
 			}
-
 
 			/**
 			 * Tab content
@@ -460,6 +465,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Add the gateways to WooCommerce.
 			 *
+			 * @param $methods
+			 *
+			 * @return array
 			 * @since 1.0.0
 			 * @version 4.0.0
 			 */
@@ -527,7 +535,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				return $schedules;
 			}
-
 		}
 
 		WC_Vipps_Recurring::get_instance();
