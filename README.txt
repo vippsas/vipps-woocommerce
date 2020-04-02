@@ -115,6 +115,14 @@ You can read about it [here](https://www.forbrukertilsynet.no/english/guidelines
 
 If you have a valid reason to do so you can use the "Capture payment instantly" option from the "Vipps Recurring Payments" settings in your product's settings.
 
+= When a renewal happens, why is the order on hold? =
+
+This is because when an order is charged in Vipps it takes 6 days before the payment has been fully captured from the customer's bank account.
+
+After 6 days it will move to the "Processing" status.
+
+We unfortunately can not charge ahead of time to counteract this as that would not be able to use WooCommerce's payment schedules.
+
 == Changelog ==
 
 = 1.2.0 =
