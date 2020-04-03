@@ -48,6 +48,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public $api_url;
 
 	/**
+	 * The page to redirect to for cancelled orders
+	 *
+	 * @var integer
+	 */
+	public $cancelled_order_page;
+
+	/**
 	 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
 	 */
 	private static $instance;
@@ -90,14 +97,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Load the settings.
 		$this->init_settings();
 
-		$this->title             = $this->get_option( 'title' );
-		$this->description       = $this->get_option( 'description' );
-		$this->enabled           = $this->get_option( 'enabled' );
-		$this->testmode          = WC_VIPPS_RECURRING_TEST_MODE;
-		$this->secret_key        = $this->get_option( 'secret_key' );
-		$this->client_id         = $this->get_option( 'client_id' );
-		$this->subscription_key  = $this->get_option( 'subscription_key' );
-		$this->order_button_text = __( 'Pay with Vipps', 'woo-vipps-recurring' );
+		$this->title                = $this->get_option( 'title' );
+		$this->description          = $this->get_option( 'description' );
+		$this->enabled              = $this->get_option( 'enabled' );
+		$this->testmode             = WC_VIPPS_RECURRING_TEST_MODE;
+		$this->secret_key           = $this->get_option( 'secret_key' );
+		$this->client_id            = $this->get_option( 'client_id' );
+		$this->subscription_key     = $this->get_option( 'subscription_key' );
+		$this->cancelled_order_page = $this->get_option( 'cancelled_order_page' );
+		$this->order_button_text    = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new VippsRecurringApi( $this );
@@ -146,7 +154,87 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// check latest charge status
-		$this->check_charge_status( $order_id );
+		$status = $this->check_charge_status( $order_id );
+
+		$this->maybe_redirect_to_cancelled_order_page( $status );
+	}
+
+	/**
+	 * @param $status
+	 */
+	public function maybe_redirect_to_cancelled_order_page( $status ) {
+		if ( $status !== 'CANCELLED' ) {
+			return;
+		}
+
+		// redirect to checkout or cancelled page?
+		$page = $this->ensure_cancelled_order_page();
+		wp_redirect( $page->guid . '?vipps_recurring_order_cancelled=true' );
+	}
+
+	/**
+	 * @return array|WC_Vipps_Recurring_Exception|WP_Post|null
+	 */
+	public function ensure_cancelled_order_page() {
+		if ( $this->cancelled_order_page ) {
+			$page = get_post( $this->cancelled_order_page );
+
+			if ( $page ) {
+				return $page;
+			}
+
+			if ( ! $page ) {
+				$this->update_option( 'cancelled_order_page', 0 );
+			}
+		}
+
+		/**
+		 * Create page
+		 */
+
+		// Determine what author to use by the currently logged in user
+		$author = null;
+		if ( current_user_can( 'manage_options' ) ) {
+			$author = wp_get_current_user();
+		}
+
+		// If author is null it means it was not installed through the UI, wp-cli maybe
+		// Set author to random administrator
+		if ( ! $author ) {
+			$all_admins = get_users( [
+				'role' => 'administrator'
+			] );
+
+			if ( $all_admins ) {
+				$all_admins = array_reverse( $all_admins );
+				$author     = $all_admins[0];
+			}
+		}
+
+		$author_id = 0;
+		if ( $author ) {
+			$author_id = $author->ID;
+		}
+
+		$content = __( 'It looks like you cancelled your order in Vipps. If this was a mistake you can try again by checking out again :)', 'woo-vipps-recurring' );
+
+		$page_data = [
+			'post_title'   => __( 'Cancelled Vipps Purchase', 'woo-vipps-recurring' ),
+			'post_status'  => 'publish',
+			'post_author'  => $author_id,
+			'post_type'    => 'page',
+			'post_content' => $content
+		];
+
+		$post_id = wp_insert_post( $page_data );
+
+		if ( is_wp_error( $post_id ) ) {
+			return new WC_Vipps_Recurring_Exception( __( 'Could not create or find the "Cancelled Vipps Purchase" page', 'woo-vipps-recurring' ) . ": " . $post_id->get_error_message() );
+		}
+
+		$this->update_option( 'cancelled_order_page', $post_id );
+
+		return get_post( $post_id );
 	}
 
 	/**
@@ -226,11 +314,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * @param $order_id
 	 *
+	 * @return string state of the payment
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function check_charge_status( $order_id ) {
+	public function check_charge_status( $order_id ): string {
 		if ( empty( $order_id ) || absint( $order_id ) <= 0 ) {
-			return;
+			return 'INVALID';
 		}
 
 		$order = wc_get_order( absint( $order_id ) );
@@ -238,7 +327,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
 		if ( $payment_method !== $this->id ) {
 			// If this is not the payment method, an agreement would not be available.
-			return;
+			return 'INVALID';
 		}
 
 		$agreement = $this->get_agreement_from_order( $order );
@@ -255,12 +344,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
 			$order->save();
 
-			return;
+			return 'SUCCESS';
 		}
 
 		// If payment has already been captured, this function is redundant.
 		if ( ! $pending_charge ) {
-			return;
+			return 'SUCCESS';
 		}
 
 		$is_captured = $charge !== false;
@@ -295,9 +384,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$order->save();
 				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
 			}
+
+			return 'CANCELLED';
 		} elseif ( $is_captured ) {
 			$this->process_order_charge( $order, $charge );
 		}
+
+		return 'SUCCESS';
 	}
 
 	/**
@@ -407,6 +500,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $amount_to_charge
 	 * @param $order
 	 *
+	 * @throws Exception
 	 */
 	public function scheduled_subscription_payment( $amount_to_charge, $order ) {
 		$this->process_subscription_payment( $amount_to_charge, $order );
@@ -697,6 +791,57 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$icons_str = $icons['vipps'];
 
 		return apply_filters( 'woocommerce_gateway_icon', $icons_str, $this->id );
+	}
+
+	/**
+	 * @param $key
+	 * @param $data
+	 *
+	 * @return false|string
+	 */
+	public function generate_page_dropdown_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = [
+			'title'            => '',
+			'class'            => '',
+			'type'             => 'page_dropdown',
+			'desc_tip'         => false,
+			'description'      => '',
+			'show_option_none' => ''
+		];
+
+		$data = wp_parse_args( $data, $defaults );
+
+		$dropdown_pages = wp_dropdown_pages( [
+			'echo'             => 0,
+			'show_option_none' => $data['show_option_none'],
+			'selected'         => $this->get_option( $key ),
+			'id'               => $field_key,
+			'name'             => $field_key,
+			'class'            => $data['class']
+		] );
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th
+				scope="row"
+				class="titledesc"
+			>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?><?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+			</th>
+			<td class="forminp">
+				<fieldset>
+					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span>
+					</legend>
+					<?php echo $dropdown_pages; ?>
+					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+				</fieldset>
+			</td>
+		</tr>
+		<?php
+
+		return ob_get_clean();
 	}
 
 	/**

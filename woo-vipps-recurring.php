@@ -278,7 +278,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					return;
 				}
 
-				include __DIR__ . '/includes/admin/vipps-recurring-admin-menu-page.php';
+				include __DIR__ . '/includes/pages/admin/vipps-recurring-admin-menu-page.php';
 			}
 
 			/**
@@ -459,7 +459,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @version 3.1.0
 			 */
 			public function install() {
-				// there are no upgrades yet
+				$this->gateway()->ensure_cancelled_order_page();
 			}
 
 			/**

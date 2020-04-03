@@ -1,6 +1,6 @@
 <div class="wrap">
 	<h1>
-		<?php echo __( 'Vipps Recurring Payments', 'woo-vipps-recurring' ) ?>
+		<?php echo __( 'Vipps Recurring Payments', 'woo-vipps-recurring' ); ?>
 	</h1>
 
 	<?php
@@ -10,7 +10,7 @@
 
 	<div class="card">
 		<p>
-			<?php echo __( 'If you have a lot of Vipps subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it\'s job.', 'woo-vipps-recurring' ) ?>
+			<?php echo __( 'If you have a lot of Vipps subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it\'s job.', 'woo-vipps-recurring' ); ?>
 		</p>
 
 		<button
@@ -18,7 +18,7 @@
 			type="submit"
 			id="check_charge_statuses_now"
 		>
-			<?php echo __( 'Check status of all Vipps subscription orders now', 'woo-vipps-recurring' ) ?>
+			<?php echo __( 'Check status of all Vipps subscription orders now', 'woo-vipps-recurring' ); ?>
 		</button>
 	</div>
 </div>
