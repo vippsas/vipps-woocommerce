@@ -671,10 +671,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 
 		try {
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$subscriptions = wcs_order_contains_renewal( $order ) ? wcs_get_subscriptions_for_renewal_order( $order ) : wcs_get_subscriptions_for_order( $order );
 			$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
-
-			$period = $subscription->get_billing_period();
+			$period        = $subscription->get_billing_period();
 
 			$items = array_reverse( $order->get_items() );
 
@@ -732,7 +731,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$response = $this->api->create_agreement( $agreement_body );
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
 			update_post_meta( $subscriptions[ array_key_first( $subscriptions ) ]->get_id(), '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
