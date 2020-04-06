@@ -5,7 +5,7 @@
 
 	<?php
 	/* translators: link to the plugin's settings page */
-	echo sprintf( __( "This area is for special actions that aren't settings. If you are looking for the plugin's settings, click <a href='%s'>here</a>.", 'woo-vipps-recurring' ), '?page=wc-settings&tab=checkout&section=vipps_recurring' );
+	echo sprintf( __( "This area is for special actions that aren't settings. If you are looking for the plugin's settings, click <a href='%s'>here</a>.", 'woo-vipps-recurring' ), admin_url( 'admin.php?page=wc-settings&tab=checkout&section=vipps_recurring' ) );
 	?>
 
 	<div class="card">

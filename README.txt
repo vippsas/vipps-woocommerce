@@ -126,7 +126,7 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 == Changelog ==
 
 = 1.2.0 =
-* Enhancement: Added an admin menu area for "Vipps Recurring Payments". From here you can force check the status of all pending Vipps subscription orders.
+* Enhancement: Added an admin options area for "Vipps Recurring Payments". From here you can force check the status of all pending Vipps subscription orders.
 * Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
 * Enhancement: Added page for when an order was cancelled as explained [here](https://github.com/vippsas/vipps-recurring-woocommerce/issues/6). You can configure where this goes in the plugin settings.
 

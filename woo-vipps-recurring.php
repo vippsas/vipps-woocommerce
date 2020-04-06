@@ -261,7 +261,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Make admin menu entry
 			 */
 			public function admin_menu() {
-				add_menu_page(
+				add_options_page(
 					__( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
 					__( 'Vipps Recurring Payments', 'woo-vipps-recurring' ),
 					'manage_options',
