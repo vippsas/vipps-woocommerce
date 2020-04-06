@@ -649,7 +649,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// cancel subscription if not an idempotency error
 			if ( ! $e->is_idempotent_error ) {
-				$subscriptions = wcs_get_subscriptions_for_order( $order );
+				$subscriptions = $this->get_subscriptions_for_order( $order );
+
 				foreach ( $subscriptions as $subscription ) {
 					$subscription->update_status( 'cancelled', __( 'Subscription cancelled due to failed Vipps payment capture', 'woocommerce-gateways-vipps-recurring' ) );
 				}
@@ -657,6 +658,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
 			}
 		}
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return array
+	 */
+	public function get_subscriptions_for_order( $order ): array {
+		return wcs_order_contains_renewal( $order ) ? wcs_get_subscriptions_for_renewal_order( $order ) : wcs_get_subscriptions_for_order( $order );
 	}
 
 	/**
@@ -671,7 +681,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 
 		try {
-			$subscriptions = wcs_order_contains_renewal( $order ) ? wcs_get_subscriptions_for_renewal_order( $order ) : wcs_get_subscriptions_for_order( $order );
+			$subscriptions = $this->get_subscriptions_for_order( $order );
 			$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
 			$period        = $subscription->get_billing_period();
 
