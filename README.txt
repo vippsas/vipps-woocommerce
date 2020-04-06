@@ -131,6 +131,7 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 * Enhancement: Added page for when an order was cancelled as explained [here](https://github.com/vippsas/vipps-recurring-woocommerce/issues/6). You can configure where this goes in the plugin settings.
 * Fix: Fixed manual renewal orders.
 * Fix: Do not allow capturing of a subscription, only shop orders.
+* Fix: Fixed an issue where renewal orders would act as initial orders.
 
 = 1.1.3 =
 * Fix: Fixed a critical bug where physical purchases with discounts would be charged in full instead of the discounted price when manually captured.

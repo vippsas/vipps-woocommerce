@@ -333,7 +333,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = $this->get_agreement_from_order( $order );
 		$charge    = $this->get_latest_charge_from_order( $order );
 
-		$initial        = empty( $order->get_meta( '_vipps_recurring_initial' ) );
+		$initial        = empty( $order->get_meta( '_vipps_recurring_initial' ) ) && ! wcs_order_contains_renewal( $order );
 		$pending_charge = $initial ? 1 : $order->get_meta( '_vipps_recurring_pending_charge' );
 
 		// if there's a campaign with a price of 0 we can complete the order
