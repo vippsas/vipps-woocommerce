@@ -132,6 +132,7 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 * Fix: Fixed manual renewal orders.
 * Fix: Do not allow capturing of a subscription, only shop orders.
 * Fix: Fixed an issue where renewal orders would act as initial orders.
+* Fix: Fixed yet another IdempotentKey problem that could occur sometimes when communicating with the Vipps API.
 
 = 1.1.3 =
 * Fix: Fixed a critical bug where physical purchases with discounts would be charged in full instead of the discounted price when manually captured.

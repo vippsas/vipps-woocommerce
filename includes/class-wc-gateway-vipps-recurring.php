@@ -571,7 +571,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$idempotence_key = $order->get_meta( '_idempotency_key' );
 
 		if ( ! $idempotence_key ) {
-			$idempotence_key = wp_generate_password( 12 );
+			$idempotence_key = $this->api->generate_idempotency_key();
 		}
 
 		$order->update_meta_data( '_idempotency_key', $idempotence_key );

@@ -91,6 +91,13 @@ class VippsRecurringApi {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function generate_idempotency_key(): string {
+		return wp_generate_password( 24, false, false );
+	}
+
+	/**
 	 * @param $agreement_body
 	 *
 	 * @return mixed
@@ -254,7 +261,7 @@ class VippsRecurringApi {
 
 		$headers = [
 			'Authorization'  => 'Bearer ' . $token,
-			'Idempotent-Key' => wp_generate_password( 24, false, false ),
+			'Idempotent-Key' => $this->generate_idempotency_key(),
 		];
 
 		$data = [
