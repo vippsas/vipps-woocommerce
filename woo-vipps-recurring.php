@@ -344,6 +344,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function order_item_add_capture_button( $order ) {
 				$gateway = $this->gateway();
 
+				if ( $order->get_type() !== 'shop_order' ) {
+					return;
+				}
+
 				$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
 				if ( $payment_method !== $gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
