@@ -1161,7 +1161,7 @@ else:
             foreach($methods as $key=>&$data) {
               if ($data['rate']->get_method_id() != 'local_pickup') {
                  $chosen = $key;
-                 $break;
+                 break;
               }
             }
             // Ok, just pick the first
