@@ -358,7 +358,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$show_capture_button = ( $order_status === 'on-hold' || $order_status === 'processing' )
 				                       && ! (bool) $order->get_transaction_id();
 
-				if ( ! apply_filters( 'woocommerce_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
+				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;
 				}
 
