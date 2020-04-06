@@ -29,6 +29,7 @@ With Vipps Recurring Payments for WooCommerce you can:
   * [ Configuring products ](#configuring-products)
 * [ Extending the plugin ](#extending-the-plugin)
   * [ Constants ](#constants)
+  * [ Filters ](#filters)
 * [ Frequently Asked Questions ](#frequently-asked-questions)
 
 # Requirements
@@ -92,6 +93,22 @@ The amount of days Vipps will retry a charge for before it fails. Documentation 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
 
 Enables someone with access to Vipps developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
+
+## Filters
+
+Available filters:
+
+`wc_vipps_recurring_supported_currencies($currencies: array)`
+
+- This filter takes an array of supported currenices in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
+
+`wc_vipps_recurring_payment_icons($icons: array)`
+
+- This filter takes an array of icons that a WooCommerce payment gateway can have. Currently it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
+
+`wc_vipps_recurring_show_capture_button($show_capture_button: bool, $order: WC_Order)`
+
+- This filter decides whether or not the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current decision on whether or not it shall be displayed. `$order` contains the current `WC_Order` being viewed.
 
 # Frequently Asked Questions
 
