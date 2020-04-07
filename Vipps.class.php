@@ -1410,30 +1410,43 @@ else:
     // In some situations we have to empty the cart when the user goes to Vipps, so
     // we store it in the session and restore it if the users cancels. IOK 2018-05-07
     // Try to avoid this now 2018-12-10 - only do it for single-product checkouts. IOK 2018-10-12
-    public function save_cart($order) {
-        global $woocommerce;
-        $cartcontents = $woocommerce->cart->get_cart();
-        $carts = $woocommerce->session->get('_vipps_carts');
+    // Changed to use a serialized cart, which should be more compatible with subclassed carts and cart metadata.
+    // Serialization errors are not yet handled - they can't be fixed but they could be signalled. IOK 2020-04-07
+    public function save_cart($order,$cart_to_save) {
+        $carts = WC()->session->get('_vipps_carts');
         if (!$carts) $carts = array();
-        $carts[$order->get_id()] = $cartcontents;
-        $woocommerce->session->set('_vipps_carts',$carts); 
+        $serialized = base64_encode(@serialize($cart_to_save->get_cart_contents()));
+        $carts[$order->get_id()] = $serialized;
+        WC()->session->set('_vipps_carts',$carts); 
         do_action('woo_vipps_cart_saved');
     }
     public function restore_cart($order) {
         global $woocommerce;
         $carts = $woocommerce->session->get('_vipps_carts');
         if (empty($carts)) return;
-        $cart = @$carts[$order->get_id()];
+        $cart = null;
+        $cartdata = @$carts[$order->get_id()];
+        if ($cartdata) {
+            $cart = @unserialize(@base64_decode($cartdata));
+        }
         do_action('woo_vipps_restoring_cart',$order,$cart);
         unset($carts[$order->get_id()]);
         $woocommerce->session->set('_vipps_carts',$carts);
+        // It will absolutely not work to just use set_cart_contents, because this will not
+        // correctly initialize this 'new' cart. So we *have* to use add_to_cart at least once.  IOK 2020-04-07
         if (!empty($cart)) {
-            foreach ($cart as $cart_item_key => $values) {
+            foreach ($cart  as $cart_item_key => $values) {
                 $id =$values['product_id'];
                 $quant=$values['quantity'];
                 $varid = @$values['variation_id'];
                 $variation = @$values['variation'];
-                $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation);
+                // .. and there may be any number of other attributes, which we need to pass on.
+                $cart_item_data = array();
+                foreach($values as $key=>$value) {
+                    if (in_array($key,array('product_id','quantity','variation_id','variation'))) continue;
+                    $cart_item_data[$key] = $value;
+                }
+                $woocommerce->cart->add_to_cart($id,$quant,$varid,$variation,$cart_item_data);
             }
         }
         do_action('woo_vipps_cart_restored');
@@ -1600,8 +1613,12 @@ else:
         }
 
         // Now it should be safe to continue to the checkout process. IOK 2018-10-02
-        // Create a new temporary cart for this order. It will eventually replace the normal cart, but we'll save that. IOK 2018-09-25
-        $acart = new WC_Cart();
+
+        // Create a new temporary cart for this order. We need to get (and save) the real session cart,
+        // because some plugins actually override this.
+        $current_cart = clone WC()->cart;
+        WC()->cart->empty_cart();
+        $acart = WC()->cart;
 
         if ($parent && $parent->get_type() == 'variable') {
             $acart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
@@ -1616,6 +1633,7 @@ else:
             wp_send_json($result);
             exit();
         } 
+
         if (!$orderid) {
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps'), 'url'=>false);
             wp_send_json($result);
@@ -1631,12 +1649,15 @@ else:
                 wp_send_json($result);
                 exit();
        }
-        
 
-        // We want to process payments using a temporary cart, with express checkout. The main session cart should remain unchanged. IOK 2018-09-25
+
+        // Single product purchase, so save any contents of the real cart
+        $order = wc_get_order($orderid);
+        $order->update_meta_data('_vipps_single_product_express',true);
+        $order->save();
+        $this->save_cart($order,$current_cart);
+
         $gw->express_checkout = 1;
-        $gw->tempcart = 1;         
-
         $ok = $gw->process_payment($orderid);
         if ($ok && $ok['result'] == 'success') {
             $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);

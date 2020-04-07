@@ -47,7 +47,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Used to signal state to process_payment
     public $express_checkout = 0;
-    public $tempcart = 0;
+
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
     // This returns the singleton instance of this class
@@ -815,12 +815,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','woo-vipps'));
         $order->add_order_note(__('Awaiting Vipps payment confirmation','woo-vipps'));
-
-        //  Annotate this order as a single-product express checkout thing. This is done to ensure the 'real' cart is not emptied after a successful purchase. IOK 2019-10-01
-	if ($this->tempcart) {
-           $order->update_meta_data('_vipps_single_product_express',true); 
-	}
-
         $order->save();
 
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
@@ -830,20 +824,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Could not create a signal file, but that's ok.
         }
 
-        // If we have a temporary cart for a single product checkout, this will *replace* the current cart. In this case, we need to save the current cart,
-        // and restore it on return from Vipps.
-        try {
-             // This actually isn't neccessary *unless* there is a tempcart, so this could be rewritten in the future.
-             // It saves the *current* order which will not include a single-product to be bought. On purchase, that cart will replace
-             // the 'current' cart, so that this one will be empty and must be restored (both on success and failure). IOK 2019-10-02
-             // IOK 2018-12-10 Finally implement this logic: Only save/restore the cart when the cart is temporary.
-             if ($this->tempcart)  $Vipps->save_cart($order); 
-         } catch (Exception $e) {
-         }
-         // Emptying the current cart isn't strictly neccessary (and if done, we need to save the cart above) because it will be emptied on 
-         // order complete. If this is a temporary cart for a single-product express checkout purchase; this cart will be *replaced* by the
-         // single product cart. If it isn't, the cart will be emptied on purchase completion. For now I'm keeping this logic just to avoid
-         // exhaustive testing. IOK 2018-10-02
         do_action('woo_vipps_before_redirect_to_vipps',$order_id);
 
         // This will send us to a receipt page where we will do the actual work. IOK 2018-04-20
