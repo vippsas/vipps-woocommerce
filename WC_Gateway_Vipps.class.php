@@ -1544,7 +1544,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $sessioncookie = array();
         $sessionhandler = WC()->session;
         if ($sessionhandler && is_a($sessionhandler, 'WC_Session_Handler')) {
-         $sessioncookie=$sessionhandler->get_session_cookie();
+            WC()->session->save_data();
+            $sessioncookie=$sessionhandler->get_session_cookie();
+        }  else {
+            // This actually can't happen. IOK 2020-04-08. Branch added for debugging only.
         }
 
         // If customer is actually logged in, take note IOK 2019-10-25

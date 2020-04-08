@@ -908,7 +908,6 @@ else:
         $this->callbackorder = $orderid;
         require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
         add_filter('woocommerce_session_handler', function ($handler) { return "VippsCallbackSessionHandler";});
-
         // Support older versions of Woo by inlining initialize session IOK 2019-12-12
         if (version_compare(WC_VERSION, '3.6.4', '>=')) {
             // This will replace the old session with this one. IOK 2019-10-22
@@ -916,10 +915,9 @@ else:
         } else {
             // Do this manually for 3.6.3 and below
             $session_class = "VippsCallbackSessionHandler";
-            $this->session = new $session_class();
-            $this->session->init();
+            WC()->session = new $session_class();
+            WC()->session->init();
         }
-
         $customerid= 0;
         if (WC()->session && is_a(WC()->session, 'WC_Session_Handler')) {
             $customerid = WC()->session->get('express_customer_id');
@@ -929,12 +927,26 @@ else:
         } else {
             WC()->customer = new WC_Customer(); // Reset from session
         }
+
+        // The normal "restore cart from session" thing runs on wp_loaded, and only there, and cannot
+        // be called from outside the WC_Cart object. We cannot easily run this on wp_loaded, and it does 
+        // do much more than it should for this particular use:
+        // We have already created the order, so we only want this cart for the shipping calculations.
+        // Therefore, we will just recreate the 'data' bit of the contents and set the cart contents directly
+        // from the now restored session. IOK 2020-04-08
+        $newcart = array();
+        foreach(WC()->session->get('cart',true) as $key => $values) {
+            $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
+            $values['data'] = $product;
+            $newcart[$key] = $values;
+        }
+        WC()->cart->set_cart_contents($newcart);
+
         // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
         WC()->customer->set_billing_address_to_base();
         WC()->customer->set_shipping_address_to_base();
 
         return WC()->session;
-
     }
 
     // Based on either a logged-in user, or the stores' default address, get the address to use when using
@@ -1025,7 +1037,6 @@ else:
     }
    
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
-
         // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
         // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
         $addressid = $vippsdata['addressId'];
@@ -1051,14 +1062,6 @@ else:
         $order->set_shipping_postcode($postcode);
         $order->set_shipping_country($country);
         $order->save();
-
-        // Deprecated in 3.7.0. The versy first #ifdef! IOK 2019-10-30
-        $coupons = array();
-        if (version_compare(WC_VERSION, '3.7', '>=')) {
-            $coupons = $order->get_coupon_codes();
-        } else {
-            $coupons = $order->get_used_coupons();
-        }
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
         WC()->customer->set_billing_location($country,'',$postcode,$city);
@@ -1435,7 +1438,7 @@ else:
     }
 
     // This restores the cart on order complete, but only if the current order was a single product buy with an active cart.
-    public function maybe_restore_cart($orderid) {
+    public function maybe_restore_cart($orderid,$failed=false) {
         if (!$orderid) return;
         $o = null;
         try {
@@ -1445,6 +1448,8 @@ else:
         }
         if (!$o) return;
         if (!$o->get_meta('_vipps_single_product_express')) return;
+        if ($failed && !apply_filters('woo_vipps_restore_cart_on_express_checkout_failure', true, $o)) return;
+        if ($failed) WC()->cart->empty_cart();
         $this->restore_cart($o);
     }
 
@@ -1690,6 +1695,7 @@ else:
             return false;
         }
         if ($order_status == 'cancelled') {
+            $this->maybe_restore_cart($orderid,'failed');
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
             return false;
         }
@@ -1711,6 +1717,7 @@ else:
             return false;
         }
         if ($payment == 'cancelled') {
+            $this->maybe_restore_cart($orderid,'failed');
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
             return false;
         }
@@ -2203,6 +2210,7 @@ else:
 
         // We are done, but in failure. Don't poll.
         if ($status == 'cancelled' || $payment == 'cancelled') {
+            $this->maybe_restore_cart($orderid,'failed');
             if ($failure_redirect){
                 wp_redirect($failure_redirect);
                 exit();

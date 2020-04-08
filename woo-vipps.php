@@ -76,5 +76,4 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 
 }
 
-
 ?>
