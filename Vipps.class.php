@@ -1070,28 +1070,13 @@ else:
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
         do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $vippsdata);
 
-        // We need unfortunately to create a fake cart to be able to send a 'package' to the
-        // shipping calculation environment.  This will however not sufficiently handle tax issues and so forth,
-        // so this needs to be maintained. IOK 2018.
-        // This will work even for when coupon restrictions apply, because the order hasn't been finalized yet.
-        // First, we must save the current cart however, as there is no way to avoid manipulating that. IOK 2020-03-19
-        // IOK 2020-03-26 changed to use the main cart everywhere instead of creating a WC_Cart: Some plugins override this class.
-        $saved_cart = WC()->cart;
-        WC()->cart->empty_cart();
+
+        //  Previously, we would create a shoppingcart at this point, because we would not have access to the 'live' one,
+        // but it turns out this isn't actually possible. Any cart so created will become "the" cart for the Woo front end,
+        // and anyway, some plugins override the class of the cart, so just using WC_Cart will sometimes break.
+        //  Now however, the session is stored in the order, and the cart will not have been deleted, so we should
+        // now be able to calculate shipping for the actual cart with no further manipulation. IOK 2020-04-08
         $acart = WC()->cart;
-
-        foreach($order->get_items() as $item) {
-            $varid = $item['variation_id'];
-            $prodid = $item['product_id'];
-            $quantity = $item['quantity'];
-            $acart->add_to_cart($prodid,$quantity,$varid);
-        }
-
-        foreach($coupons as $coupon) $acart->apply_coupon($coupon);
-        wc_clear_notices(); // Each coupon added adds a message we don't need IOK 2019-10-22
-
-        // Some shipping methods will use the session cart no matter what you do, so make sure it is there IOK 2019-01-31
-        WC()->cart = $acart;
 
         $shipping_methods = array();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
@@ -1115,9 +1100,6 @@ else:
             $shipping =  WC()->shipping->calculate_shipping($packages);
             $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
          }
-
-        // We're done calculating stuff, so revert to the original cart. IOK 2020-03-19
-        WC()->cart = $saved_cart;
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
@@ -1618,16 +1600,15 @@ else:
         // because some plugins actually override this.
         $current_cart = clone WC()->cart;
         WC()->cart->empty_cart();
-        $acart = WC()->cart;
 
         if ($parent && $parent->get_type() == 'variable') {
-            $acart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
+            WC()->cart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
         } else {
-            $acart->add_to_cart($product->get_id(),$quantity);
+            WC()->cart->add_to_cart($product->get_id(),$quantity);
         }
 
         try {
-            $orderid = $gw->create_partial_order($acart);
+            $orderid = $gw->create_partial_order();
         } catch (Exception $e) {
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
             wp_send_json($result);

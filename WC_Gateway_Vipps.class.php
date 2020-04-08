@@ -1492,10 +1492,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
     // IOK 2018-05-25
-    public function create_partial_order($thecart=null) {
-        if (!$thecart) {
-         $thecart = WC()->cart;
-        }
+    public function create_partial_order() {
+        $thecart = WC()->cart;
 
         $thecart->calculate_fees();
         $thecart->calculate_totals();
