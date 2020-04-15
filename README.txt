@@ -125,6 +125,9 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 == Changelog ==
 
+= 1.2.1 =
+* Fix: Fixed compatibility with WP < 5.0.0. No longer using the `wp_set_script_translations` function it's a WP 5+ function only.
+
 = 1.2.0 =
 * Enhancement: Added an admin options area for "Vipps Recurring Payments". From here you can force check the status of all pending Vipps subscription orders.
 * Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
@@ -142,15 +145,3 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 = 1.1.1 =
 * Fix: `wp_get_scheduled_event()` is not available in WP < 5.1, so we should not use this for earlier versions. Instead we now use `wp_get_schedule()` which has been available since WP 2.1.0.
-
-= 1.1.0 =
-* Fix: The action for woocommerce_thankyou should now be first in the pecking order.
-* Enhancement: Added a custom cron schedule so we can check pending payments every 5 minutes. This is because we check only 5 at a time, and every hour would take too long. This ratio will continue to be tweaked as we go.
-* Change: Renamed `WC_VIPPS_RECURRING_CHARGE_BEFORE_DUE_DAYS` to `WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING` and clarify what it does. We do not actually want anyone to change this unless they know what they're doing.
-* Enhancement: Add a useful product option for products that are both digital and physical that allows instantly capturing a payment.
-
-= 1.0.9 =
-* Fix: Fix manual captures. This is in many ways 1.0.8's lost brother.
-
-= 1.0.8 =
-* Fix: Fixed critical bug with renewals not working due to a specific meta key not being set on automatic renewal. Update ASAP.

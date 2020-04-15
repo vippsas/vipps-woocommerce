@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.2.0
+ * Version: 1.2.1
  * Requires at least: 4.4
  * Tested up to: 5.4.0
  * WC tested up to: 4.0.1
@@ -78,9 +78,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.2.0' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.2.1' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
-		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '5.0.0' );
+		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
 		define( 'WC_VIPPS_RECURRING_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 		define( 'WC_VIPPS_RECURRING_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
@@ -285,7 +285,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Force check status of all pending charges
 			 */
 			public function wp_ajax_vipps_recurring_force_check_charge_statuses() {
-				echo count( $this->check_order_statuses( - 1 ) );
+				echo sprintf( __( 'Done. Checked the status of %s orders', 'woo-vipps-recurring' ), count( $this->check_order_statuses( - 1 ) ) );
 
 				wp_die();
 			}
@@ -512,8 +512,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function wp_enqueue_scripts() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
-
-				wp_set_script_translations( 'woo-vipps-recurring', 'woo-vipps-recurring' );
 			}
 
 			/**

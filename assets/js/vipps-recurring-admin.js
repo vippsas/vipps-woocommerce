@@ -1,5 +1,3 @@
-const { __, sprintf } = wp.i18n;
-
 jQuery(document).ready(function ($) {
   $('#check_charge_statuses_now').on('click', function () {
     var $button = $(this);
@@ -10,7 +8,7 @@ jQuery(document).ready(function ($) {
     }, function (response) {
       $button.removeClass('disabled');
       // translators: Amount of orders checked
-      alert(sprintf(__('Done. Checked the status of %s orders', 'woo-vipps-recurring'), response));
+      alert(response);
     });
   })
 });
