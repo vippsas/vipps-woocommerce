@@ -5,10 +5,12 @@ jQuery(document).ready(function ($) {
 
     $.post(ajaxurl, {
       action: 'vipps_recurring_force_check_charge_statuses'
-    }, function (response) {
+    }).done(function (response) {
       $button.removeClass('disabled');
-      // translators: Amount of orders checked
       alert(response);
+    }).fail(function (xhr, status, error) {
+      $button.removeClass('disabled');
+      alert(error);
     });
   })
 });

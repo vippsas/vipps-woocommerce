@@ -125,6 +125,10 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 == Changelog ==
 
+= 1.2.2 =
+* Fix: Fixed enqueuing the admin JavaScript on WP < 5.0.0.
+* Enhancement: Return an error on screen if the checking all statuses fail.
+
 = 1.2.1 =
 * Fix: Fixed compatibility with WP < 5.0.0. No longer using the `wp_set_script_translations` function it's a WP 5+ function only.
 
