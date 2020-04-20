@@ -125,6 +125,9 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 == Changelog ==
 
+= 1.2.3 =
+* Fix: Fixed synchronised payments going straight to processing when they should be on-hold on all non first time payments.
+
 = 1.2.2 =
 * Fix: Fixed enqueuing the admin JavaScript on WP < 5.0.0.
 * Enhancement: Return an error on screen if the checking all statuses fail.

@@ -338,7 +338,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// if there's a campaign with a price of 0 we can complete the order
 		$zero_campaign = isset( $agreement['campaign'] ) ? $agreement['campaign']['campaignPrice'] === 0 : false;
-		if ( $zero_campaign && $agreement['status'] === 'ACTIVE' ) {
+		if ( $zero_campaign && $agreement['status'] === 'ACTIVE' && $initial ) {
 			$this->complete_order( $order, $agreement['id'] );
 
 			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
