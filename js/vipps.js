@@ -17,12 +17,33 @@
 */
 
 jQuery( document ).ready( function() {
+
+ // This is for WooCommerce Product Bundles, which potentially have *several* variant-products or configurable products, so
+ // the standard Woo hooks don't apply. Luckily, we have other, simpler events to use.
+ // For this to work, we also have to force the compat-mode thing on. IOK 2020-04-21
+ jQuery('.cart.bundle_data').on('woocommerce-product-bundle-hide', function (e, variant) {
+     jQuery('form .button.single-product.vipps-buy-now').removeClass('variation-found');
+     jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
+     jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
+     // We don't know why the button is hidden, so ensure we use compatibility-mode IOK 2020-04-21
+     jQuery('.button.single-product.vipps-buy-now').addClass('compat-mode');
+     removeErrorMessages();
+ });
+ jQuery('.cart.bundle_data').on('woocommerce-product-bundle-show', function (e, variant) {
+     jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
+     jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
+     jQuery('form .button.single-product.vipps-buy-now').removeClass('disabled');
+     removeErrorMessages();
+ });
+ 
  // Hooks for the 'buy now with vipps' button on product pages etc
  jQuery('body').on('found_variation', function (e,variation) {
+
    var purchasable=true;
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
+   console.log("found variation, purchasable is " + purchasable);
    jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
    if (purchasable) {
     jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');

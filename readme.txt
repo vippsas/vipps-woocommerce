@@ -73,6 +73,12 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 == Contributing on Github ==
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
+== Upgrade Notice ==
+
+= 1.4.5  =
+This version rewrites all cart-manipulation so that just the main session cart is used for all operations. This should improve shipping calculations, compatibility and cart handling for aborted orders with Express Checkout. As a bonus, WooCommerce Product Bundles bundles are now supported (though this is a bit experimental).
+
+
 == Frequently Asked Questions ==
 
 = In which countries can I use Vipps? =
@@ -197,6 +203,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * Changed all uses of "WC_Cart" to use the main WC-cart
  * Changed the shipping callback to use the real cart from the Session; with no "temporary" cart created from the order
  * Changed cart saving and restoring for single product express checkout to use PHP serialization
+ * Experimentally support the 'bundle' product type of WooCommerce Product Bundles
 
 = 2020.04.06 version 1.4.4 =
  * Changed freight calculation to ensure plugins that override the WC_Cart's class will continue working.

@@ -75,7 +75,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->supports = array('products','refunds');
 
 	// We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
-	$supported_types= array('simple','variable','variation');
+        // IOK 2020-04-21 Add support for WooCommerce Product Bundles
+	$supported_types= array('simple','variable','variation','bundle');
 	$this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
