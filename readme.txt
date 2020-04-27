@@ -199,7 +199,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.04.xx version 1.4.5 =
+= 2020.04.27 version 1.4.5 =
  * Changed all uses of "WC_Cart" to use the main WC-cart
  * Changed the shipping callback to use the real cart from the Session; with no "temporary" cart created from the order
  * Changed cart saving and restoring for single product express checkout to use PHP serialization
