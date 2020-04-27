@@ -125,6 +125,9 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 == Changelog ==
 
+= 1.2.4 =
+* Fix: Fixed synchronised payments never completing when the user leaves the payment flow on the web too early.
+
 = 1.2.3 =
 * Fix: Fixed synchronised payments going straight to processing when they should be on-hold on all non first time payments.
 
@@ -143,12 +146,3 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 * Fix: Do not allow capturing of a subscription, only shop orders.
 * Fix: Fixed an issue where renewal orders would act as initial orders.
 * Fix: Fixed yet another IdempotentKey problem that could occur sometimes when communicating with the Vipps API.
-
-= 1.1.3 =
-* Fix: Fixed a critical bug where physical purchases with discounts would be charged in full instead of the discounted price when manually captured.
-
-= 1.1.2 =
-* Fix: Creation of payments sometimes failed due to an invalid Idempotency key. No longer use special chars in this key.
-
-= 1.1.1 =
-* Fix: `wp_get_scheduled_event()` is not available in WP < 5.1, so we should not use this for earlier versions. Instead we now use `wp_get_schedule()` which has been available since WP 2.1.0.

@@ -338,7 +338,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// if there's a campaign with a price of 0 we can complete the order
 		$zero_campaign = isset( $agreement['campaign'] ) ? $agreement['campaign']['campaignPrice'] === 0 : false;
-		if ( $zero_campaign && $agreement['status'] === 'ACTIVE' && $initial ) {
+		if ( $zero_campaign && $agreement['status'] === 'ACTIVE' && ! wcs_order_contains_renewal( $order ) ) {
 			$this->complete_order( $order, $agreement['id'] );
 
 			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
@@ -356,19 +356,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order->update_meta_data( '_vipps_recurring_captured', $is_captured );
 
 		if ( $initial ) {
-			$order->update_meta_data( '_vipps_recurring_initial', true );
-			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
-
 			if ( $is_captured ) {
 				/* translators: Vipps Charge ID */
 				$message = sprintf( __( 'Vipps charge captured instantly (Charge ID: %s)', 'woo-vipps-recurring' ), $charge['id'] );
 				$order->add_order_note( $message );
 			} else {
-				// not auto captured (because item is not virtual), so we need to put the order on hold
+				// not auto captured, so we need to put the order on hold
 				$order->update_status( 'on-hold' );
 				$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
 				$order->add_order_note( $message );
 			}
+
+			$order->update_meta_data( '_vipps_recurring_initial', true );
+			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
 		}
 
 		$order->save();
@@ -386,7 +386,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			return 'CANCELLED';
-		} elseif ( $is_captured ) {
+		}
+
+		if ( $is_captured ) {
 			$this->process_order_charge( $order, $charge );
 		}
 
@@ -831,22 +833,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		ob_start();
 		?>
-		<tr valign="top">
-			<th
-				scope="row"
-				class="titledesc"
-			>
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?><?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
-			</th>
-			<td class="forminp">
-				<fieldset>
-					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span>
-					</legend>
+        <tr valign="top">
+            <th
+                    scope="row"
+                    class="titledesc"
+            >
+                <label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?><?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+            </th>
+            <td class="forminp">
+                <fieldset>
+                    <legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span>
+                    </legend>
 					<?php echo $dropdown_pages; ?>
 					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
-				</fieldset>
-			</td>
-		</tr>
+                </fieldset>
+            </td>
+        </tr>
 		<?php
 
 		return ob_get_clean();
