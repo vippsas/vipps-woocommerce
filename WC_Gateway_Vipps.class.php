@@ -971,11 +971,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $refundvalue = min($to_refund,$superfluous);
 
+        $reason = __("The value of the order is less than the amount captured.", "woo-vipps");
+
         $ok = 0;
         try {
             $ok = $this->refund_payment($order,$refundvalue,'cents');
         } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not refund Vipps payment for order id:', 'woo-vipps') . ' ' . $orderid . "\n" .$e->getMessage(),'error');
+            $this->log(__('Could not refund Vipps payment for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             return new WP_Error('Vipps',__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
         } catch (Exception $e) {
             $msg = __('Could not refund Vipps payment','woo-vipps') . ' ' . $e->getMessage();
