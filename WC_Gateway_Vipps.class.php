@@ -1445,7 +1445,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Entering critical area, so start with the fake locking mentioned above. IOK 2018-05-30
         set_transient('order_callback_'.$orderid,1, 60);
 
-        if (@$result['shippingDetails']) {
+        if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
 

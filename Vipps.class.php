@@ -883,6 +883,12 @@ else:
 
         do_action('woo_vipps_callback', $result);
 
+        // a small bit of security
+        $order = wc_get_order($orderid);
+        if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
+            $this->log("Wrong authtoken on Vipps payment details callback", 'error');
+            exit();
+        }
         $gw = $this->gateway();
         $gw->handle_callback($result);
 
