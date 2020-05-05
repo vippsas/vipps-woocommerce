@@ -2,7 +2,7 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.4.0
+Tested up to: 5.4.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
