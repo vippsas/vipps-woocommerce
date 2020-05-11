@@ -21,4 +21,14 @@
 			<?php echo __( 'Check status of all Vipps subscription orders now', 'woo-vipps-recurring' ); ?>
 		</button>
 	</div>
+
+	<h2>
+		<?php echo __( 'Pending Charges', 'woo-vipps-recurring' ); ?>
+	</h2>
+
+	<?php
+		global $wc_vipps_recurring_list_table;
+		$wc_vipps_recurring_list_table->prepare_items();
+		echo $wc_vipps_recurring_list_table->display();
+	?>
 </div>

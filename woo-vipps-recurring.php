@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.2.4
+ * Version: 1.3.0
  * Requires at least: 4.4
  * Tested up to: 5.4.0
  * WC tested up to: 4.0.1
@@ -78,7 +78,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.2.4' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -256,6 +256,34 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+
+				// Load correct list table classes for current screen.
+				add_action( 'current_screen', array( $this, 'setup_screen' ) );
+			}
+
+			public function setup_screen () {
+				global $wc_vipps_recurring_list_table;
+
+				$screen_id = false;
+
+				if ( function_exists( 'get_current_screen' ) ) {
+					$screen    = get_current_screen();
+					$screen_id = isset( $screen, $screen->id ) ? $screen->id : '';
+				}
+
+				if ( ! empty( $_REQUEST['screen'] ) ) { // WPCS: input var ok.
+					$screen_id = wc_clean( wp_unslash( $_REQUEST['screen'] ) ); // WPCS: input var ok, sanitization ok.
+				}
+
+				switch ( $screen_id ) {
+					case 'settings_page_woo-vipps-recurring':
+						include_once 'includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php';
+						$wc_vipps_recurring_list_table = new WC_Vipps_Recurring_Admin_List_Pending_Charges();
+						break;
+				}
+
+				// Ensure the table handler is only loaded once. Prevents multiple loads if a plugin calls check_ajax_referer many times.
+				remove_action( 'current_screen', array( $this, 'setup_screen' ) );
 			}
 
 			/**
