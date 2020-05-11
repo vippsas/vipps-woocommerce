@@ -259,17 +259,20 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				// Load correct list table classes for current screen.
 				add_action( 'current_screen', [ $this, 'setup_screen' ] );
-				add_action( 'admin_notices', [
-					$this,
-					'vipps_recurring_check_statuses_bulk_action_notice'
-				] );
+
+				if (isset($_REQUEST['statuses_checked'])) {
+					add_action( 'admin_notices', [
+						$this,
+						'vipps_recurring_check_statuses_bulk_action_notice'
+					] );
+				}
 			}
 
 			/**
 			 * Show bulk update notice for statuses check
 			 */
 			public function vipps_recurring_check_statuses_bulk_action_notice() {
-				echo '<div class="updated"><p><strong>' . __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) . '</p></div>';
+				echo '<div class="updated"><p>' . __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) . '</p></div>';
 			}
 
 			/**
