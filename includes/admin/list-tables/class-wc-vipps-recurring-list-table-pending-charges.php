@@ -16,8 +16,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 *
 	 * @see WP_List_Table::__construct() for more information on default arguments.
 	 *
-	 * @since 3.1.0
-	 *
 	 */
 	public function __construct( $args = array() ) {
 		parent::__construct(
@@ -33,7 +31,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 * Check the current user's permissions.
 	 *
 	 * @return bool
-	 * @since 3.1.0
 	 *
 	 */
 	public function ajax_user_can() {
@@ -86,10 +83,8 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		 * @param array $args Arguments passed to WP_User_Query to retrieve items for the current
 		 *                    users list table.
 		 *
-		 * @since 4.4.0
-		 *
 		 */
-		$args = apply_filters( 'woo_vipps_recurring_pending_charges_list_table_query_args', $args );
+		$args = apply_filters( 'wc_vipps_recurring_pending_charges_list_table_query_args', $args );
 
 		// Query the user IDs for this page.
 		$wp_pending_order_search = new WC_Order_Query( $args );
@@ -106,8 +101,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 
 	/**
 	 * Output 'no users' message.
-	 *
-	 * @since 3.1.0
 	 */
 	public function no_items() {
 		_e( 'No pending charges found.' );
@@ -117,17 +110,12 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 * Retrieve an associative array of bulk actions available on this table.
 	 *
 	 * @return string[] Array of bulk action labels keyed by their action.
-	 * @since 3.1.0
 	 *
 	 */
 	protected function get_bulk_actions() {
-		$actions = array();
-
-		if ( current_user_can( 'activate_plugins' ) ) {
-			$actions['check_status'] = __( 'Check Status', 'woo_vipps_recurring' );
-		}
-
-		return $actions;
+		return [
+			'check_status' => __( 'Check Status', 'woo-vipps-recurring' )
+		];
 	}
 
 	/**
@@ -135,8 +123,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 *
 	 * @param string $which Whether this is being invoked above ("top")
 	 *                      or below the table ("bottom").
-	 *
-	 * @since 3.1.0
 	 *
 	 */
 	protected function extra_tablenav( $which ) {
@@ -176,7 +162,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 
 	/**
 	 * Get a list of columns for the list table.
-	 *
 	 */
 	public function get_columns() {
 		return [
@@ -184,6 +169,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'order'        => __( 'Order', 'woocommerce' ),
 			'agreement_id' => __( 'Agreement ID', 'woo-vipps-recurring' ),
 			'charge_id'    => __( 'Charge ID', 'woo-vipps-recurring' ),
+			'captured'     => __( 'Captured', 'woo-vipps-recurring' ),
 			'created_at'   => __( 'Created At', 'woo-vipps-recurring' ),
 		];
 	}
@@ -194,14 +180,13 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	protected function get_sortable_columns() {
 		return [
 			'order'      => 'order',
+			'captured'   => 'captured',
 			'created_at' => 'created_at',
 		];
 	}
 
 	/**
 	 * Generate the list table rows.
-	 *
-	 * @since 3.1.0
 	 */
 	public function display_rows() {
 		foreach ( $this->items as $post_id => $order_object ) {
@@ -214,8 +199,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 *
 	 * @param WC_Order $order_object The current user object.
 	 * @param string $style Deprecated. Not used.
-	 * @param string $role Deprecated. Not used.
-	 * @param int $numposts Optional. Post count to display for this user. Defaults
 	 * to zero, as in, a new user has made zero posts.
 	 *
 	 * @return string
@@ -226,17 +209,16 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		}
 
 		$order_object->filter = 'display';
-		$url                  = 'options-general.php?page=woo-vipps-recurring&';
 
 		// Set up the hover actions for this user.
-		$actions = array();
+		$actions = [];
 
 		$checkbox = sprintf(
 			'<label class="screen-reader-text" for="order_%1$s">%2$s</label>' .
 			'<input type="checkbox" name="orders[]" id="order_%1$s" value="%1$s" />',
 			$order_object->get_id(),
 			/* translators: %s: Order ID. */
-			sprintf( __( 'Select order %s' ), $order_object->get_id(), 'woo_vipps_recurring' )
+			sprintf( __( 'Select order %s' ), $order_object->get_id(), 'woo-vipps-recurring' )
 		);
 
 		$edit = "<strong>{$order_object->get_id()}</strong>";
@@ -254,7 +236,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 				$classes .= ' num'; // Special case for that column.
 			}
 
-			if ( in_array( $column_name, $hidden ) ) {
+			if ( in_array( $column_name, $hidden, true ) ) {
 				$classes .= ' hidden';
 			}
 
@@ -274,10 +256,26 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 						$r .= $order_object->get_meta( '_agreement_id' );
 						break;
 					case 'charge_id':
-						$r .= $order_object->get_meta( '_charge_id' ) ?: __( "Charge ID not available. Check the order's notes instead", 'woo_vipps_recurring' );
+						$r .= $order_object->get_meta( '_charge_id' ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
+						break;
+					case 'captured':
+						$r .= $order_object->get_meta( '_vipps_recurring_captured' ) ? __( 'Yes', 'woo-vipps-recurring' ) : __( 'No', 'woo-vipps-recurring' );
 						break;
 					case 'created_at':
-						$r .= wc_format_datetime( $order_object->get_date_created() );
+						$order_post = wcs_get_objects_property( $order_object, 'post' );
+
+						$timestamp_gmt = wcs_get_objects_property( $order_object, 'date_created' )->getTimestamp();
+						// translators: php date format
+						$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order_post );
+						$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
+
+						$t_esc_time = esc_attr( $t_time );
+						$esc_time   = esc_html( apply_filters( 'post_date_column_time', $date_to_display, $order_post ) );
+
+						$r .= "<abbr title='$t_esc_time'>
+							$esc_time
+						</abbr>";
+
 						break;
 					default:
 						/**
@@ -290,7 +288,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 						 * @since 2.8.0
 						 *
 						 */
-						$r .= apply_filters( 'woo_vipps_recurring_manage_pending_charges_custom_column', '', $column_name, $order_object->get_id() );
+						$r .= apply_filters( 'wc_vipps_recurring_manage_pending_charges_custom_column', '', $column_name, $order_object->get_id() );
 				}
 
 				if ( $primary === $column_name ) {
@@ -307,47 +305,10 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	/**
 	 * Gets the name of the default primary column.
 	 *
-	 * @return string Name of the default primary column, in this case, 'username'.
-	 * @since 4.3.0
+	 * @return string Name of the default primary column, in this case, 'order'.
 	 *
 	 */
 	protected function get_default_primary_column_name() {
-		return 'Order ID';
-	}
-
-	/**
-	 * Returns an array of user roles for a given user object.
-	 *
-	 * @param WP_User $user_object The WP_User object.
-	 *
-	 * @return string[] An array of user roles.
-	 * @since 4.4.0
-	 *
-	 */
-	protected function get_role_list( $user_object ) {
-		$wp_roles = wp_roles();
-
-		$role_list = array();
-
-		foreach ( $user_object->roles as $role ) {
-			if ( isset( $wp_roles->role_names[ $role ] ) ) {
-				$role_list[ $role ] = translate_user_role( $wp_roles->role_names[ $role ] );
-			}
-		}
-
-		if ( empty( $role_list ) ) {
-			$role_list['none'] = _x( 'None', 'no user roles' );
-		}
-
-		/**
-		 * Filters the returned array of roles for a user.
-		 *
-		 * @param string[] $role_list An array of user roles.
-		 * @param WP_User $user_object A WP_User object.
-		 *
-		 * @since 4.4.0
-		 *
-		 */
-		return apply_filters( 'get_role_list', $role_list, $user_object );
+		return 'order';
 	}
 }

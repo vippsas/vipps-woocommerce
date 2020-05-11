@@ -125,6 +125,10 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 == Changelog ==
 
+= 1.3.0 =
+* Enhancement: There's now a table available to check what individual orders have pending Vipps charges.
+* Fix: Cancelled charges should also be marked as no longer pending.
+
 = 1.2.4 =
 * Fix: Fixed synchronised payments never completing when the user leaves the payment flow on the web too early.
 

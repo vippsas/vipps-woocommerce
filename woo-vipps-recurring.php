@@ -258,10 +258,44 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 
 				// Load correct list table classes for current screen.
-				add_action( 'current_screen', array( $this, 'setup_screen' ) );
+				add_action( 'current_screen', [ $this, 'setup_screen' ] );
+				add_action( 'admin_notices', [
+					$this,
+					'vipps_recurring_check_statuses_bulk_action_notice'
+				] );
 			}
 
-			public function setup_screen () {
+			/**
+			 * Show bulk update notice for statuses check
+			 */
+			public function vipps_recurring_check_statuses_bulk_action_notice() {
+				echo '<div class="updated"><p><strong>' . __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) . '</p></div>';
+			}
+
+			/**
+			 * @return string
+			 */
+			public function handle_check_statuses_bulk_action(): string {
+				$sendback = remove_query_arg( array( 'orders' ), wp_get_referer() );
+
+				if ( isset( $_GET['orders'] ) ) {
+					$order_ids = $_GET['orders'];
+
+					foreach ( $order_ids as $order_id ) {
+						// check charge status
+						$this->gateway()->check_charge_status( $order_id );
+					}
+
+					$sendback = add_query_arg( 'statuses_checked', 1, $sendback );
+				}
+
+				return $sendback;
+			}
+
+			/**
+			 *
+			 */
+			public function setup_screen() {
 				global $wc_vipps_recurring_list_table;
 
 				$screen_id = false;
@@ -275,11 +309,24 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$screen_id = wc_clean( wp_unslash( $_REQUEST['screen'] ) ); // WPCS: input var ok, sanitization ok.
 				}
 
+				add_filter( 'handle_bulk_actions-settings_page_woo-vipps-recurring', [
+					$this,
+					'settings_page_bulk_action_handler'
+				], 10, 3 );
+
 				switch ( $screen_id ) {
 					case 'settings_page_woo-vipps-recurring':
 						include_once 'includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php';
 						$wc_vipps_recurring_list_table = new WC_Vipps_Recurring_Admin_List_Pending_Charges();
 						break;
+				}
+
+				if ( $wc_vipps_recurring_list_table
+				     && $wc_vipps_recurring_list_table->current_action()
+				     && $wc_vipps_recurring_list_table->current_action() === 'check_status' ) {
+					$sendback = $this->handle_check_statuses_bulk_action();
+
+					wp_redirect( $sendback );
 				}
 
 				// Ensure the table handler is only loaded once. Prevents multiple loads if a plugin calls check_ajax_referer many times.
@@ -317,7 +364,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				try {
 					/* translators: amount of orders checked */
 					echo sprintf( __( 'Done. Checked the status of %s orders', 'woo-vipps-recurring' ), count( $this->check_order_statuses( - 1 ) ) );
-				} catch (Exception $e) {
+				} catch ( Exception $e ) {
 					echo __( 'Failed to finish checking the status of all orders. Please try again.', 'woo-vipps-recurring' );
 				}
 
