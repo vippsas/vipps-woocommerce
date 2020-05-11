@@ -382,7 +382,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps', 'woo-vipps-recurring' ) );
 
 			// cancel charge
-			if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
+			if ( in_array( $charge['status'], [ 'DUE', 'PENDING', 'CANCELLED' ] ) ) {
 				$order->update_meta_data( '_vipps_recurring_pending_charge', false );
 				$order->save();
 				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
