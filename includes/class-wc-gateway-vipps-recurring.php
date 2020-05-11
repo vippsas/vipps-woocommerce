@@ -424,6 +424,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
+		$order->update_meta_data( '_charge_id', $charge['id'] );
+
 		// check if status is CHARGED
 		if ( 'CHARGED' === $charge['status'] ) {
 			$this->complete_order( $order, $charge['id'] );
