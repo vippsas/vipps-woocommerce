@@ -693,6 +693,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$subscriptions = $this->get_subscriptions_for_order( $order );
 			$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
 			$period        = $subscription->get_billing_period();
+			$interval      = $subscription->get_billing_interval();
 
 			$items = array_reverse( $order->get_items() );
 
@@ -708,7 +709,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'currency'             => $order->get_currency(),
 				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $product->get_price() ),
 				'interval'             => strtoupper( $period ),
-				'intervalCount'        => 1,
+				'intervalCount'        => (int) $interval,
 				'productName'          => $item->get_name(),
 				'productDescription'   => $item->get_name(),
 				'isApp'                => false,

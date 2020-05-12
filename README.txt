@@ -126,6 +126,7 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 == Changelog ==
 
 = 1.3.0 =
+* Fix: Billing interval is now properly displayed in the Vipps app payment screen.
 * Enhancement: Added support for variable subscriptions.
 * Enhancement: There's now a table available to check what individual orders have pending Vipps charges.
 * Fix: Cancelled charges should also be marked as no longer pending.
