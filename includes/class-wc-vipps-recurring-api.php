@@ -140,9 +140,9 @@ class VippsRecurringApi {
 
 		if ( isset( $agreement['campaign'] ) ) {
 			$now = new DateTime();
-			$end = new DateTime($agreement['campaign']['end']);
+			$end = new DateTime( $agreement['campaign']['end'] );
 
-			if ($end > $now) {
+			if ( $end > $now ) {
 				$amount = $agreement['campaign']['campaignPrice'];
 			}
 		}
@@ -351,38 +351,44 @@ class VippsRecurringApi {
 		}
 
 		// error handling
-		$msg                 = '';
-		$is_idempotent_error = false;
+		$msg                           = '';
+		$is_idempotent_error           = false;
+		$is_merchant_not_allowed_error = false;
 
-		// There are different Vipps error responses we can expect to receive.
 		if ( $body ) {
-			// On initial payment
 			if ( isset( $body['message'] ) ) {
 				$msg = $body['message'];
 			} elseif ( isset( $body['error'] ) ) {
-				// Access token
+				// access token
 				$msg = $body['error'];
-			} elseif ( isset( $body['responseInfo'] ) ) {
-				// API layer
-				$msg = $response . ' ' . $body['responseInfo']['responseMessage'];
-			} elseif ( isset( $body['errorInfo'] ) ) {
-				$msg = $response . ' ' . $body['errorInfo']['errorMessage'];
-			} else {
-				// Otherwise concat all body keys as one giant error
+			} elseif ( is_array( $body ) ) {
 				$msg = '';
 				foreach ( $body as $entry ) {
-					$msg .= $entry['field'] . ': ' . $entry['message'] . "\n";
+					if ( isset( $entry['code'] ) ) {
+						$msg .= $entry['field'] . ': ' . $entry['message'] . "\n";
 
-					if ( $entry['code'] === 'idempotentkey.hash.mismatch' ) {
-						$is_idempotent_error = true;
+						if ( $entry['code'] === 'idempotentkey.hash.mismatch' ) {
+							$is_idempotent_error = true;
+						}
+
+						if ( $entry['code'] === 'merchant.not.allowed.for.recurring.operation' ) {
+							$is_merchant_not_allowed_error = true;
+						}
 					}
 				}
+			} else {
+				$msg = $body;
 			}
+		}
+
+		$localized_msg = '';
+		if ( $is_merchant_not_allowed_error ) {
+			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
 		}
 
 		WC_Vipps_Recurring_Logger::log( 'Error: ' . $msg );
 
-		$exception                      = new WC_Vipps_Recurring_Exception( $msg, $msg );
+		$exception                      = new WC_Vipps_Recurring_Exception( $msg, $localized_msg );
 		$exception->response_code       = $status;
 		$exception->is_idempotent_error = $is_idempotent_error;
 
