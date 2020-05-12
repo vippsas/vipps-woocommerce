@@ -56,10 +56,10 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		$paged = $this->get_pagenum();
 
 		$args = [
-			'number'         => $orders_per_page,
+			'limit'          => $orders_per_page,
 			'offset'         => ( $paged - 1 ) * $orders_per_page,
 			'search'         => $ordersearch,
-			'fields'         => 'all_with_meta',
+			'paginate'       => true,
 			'type'           => 'shop_order',
 			'meta_key'       => '_vipps_recurring_pending_charge',
 			'meta_compare'   => '=',
@@ -89,13 +89,13 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		$args = apply_filters( 'wc_vipps_recurring_pending_charges_list_table_query_args', $args );
 
 		// Query the user IDs for this page.
-		$wp_pending_order_search = new WC_Order_Query( $args );
+		$wp_pending_order_search = wc_get_orders( $args );
 
-		$this->items = $wp_pending_order_search->get_orders();
+		$this->items = $wp_pending_order_search->orders;
 
 		$this->set_pagination_args(
 			[
-				'total_items' => count( (array) $wp_pending_order_search ),
+				'total_items' => $wp_pending_order_search->total,
 				'per_page'    => $orders_per_page,
 			]
 		);
