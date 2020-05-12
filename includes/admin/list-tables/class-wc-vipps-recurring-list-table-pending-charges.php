@@ -17,13 +17,13 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 * @see WP_List_Table::__construct() for more information on default arguments.
 	 *
 	 */
-	public function __construct( $args = array() ) {
+	public function __construct( $args = [] ) {
 		parent::__construct(
-			array(
+			[
 				'singular' => 'pending charge',
 				'plural'   => 'pending charges',
-				'screen'   => isset( $args['screen'] ) ? $args['screen'] : null,
-			)
+				'screen'   => $args['screen'] ?? null,
+			]
 		);
 	}
 
@@ -53,7 +53,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 
 		$paged = $this->get_pagenum();
 
-		$args = array(
+		$args = [
 			'number'         => $orders_per_page,
 			'offset'         => ( $paged - 1 ) * $orders_per_page,
 			'search'         => $ordersearch,
@@ -63,7 +63,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'meta_compare'   => '=',
 			'meta_value'     => 1,
 			'payment_method' => 'vipps_recurring'
-		);
+		];
 
 		if ( '' !== $args['search'] ) {
 			$args['search'] = '*' . $args['search'] . '*';
@@ -92,10 +92,10 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		$this->items = $wp_pending_order_search->get_orders();
 
 		$this->set_pagination_args(
-			array(
+			[
 				'total_items' => count( (array) $wp_pending_order_search ),
 				'per_page'    => $orders_per_page,
-			)
+			]
 		);
 	}
 

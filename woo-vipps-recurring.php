@@ -260,7 +260,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				// Load correct list table classes for current screen.
 				add_action( 'current_screen', [ $this, 'setup_screen' ] );
 
-				if (isset($_REQUEST['statuses_checked'])) {
+				if ( isset( $_REQUEST['statuses_checked'] ) ) {
 					add_action( 'admin_notices', [
 						$this,
 						'vipps_recurring_check_statuses_bulk_action_notice'
@@ -279,7 +279,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @return string
 			 */
 			public function handle_check_statuses_bulk_action(): string {
-				$sendback = remove_query_arg( array( 'orders' ), wp_get_referer() );
+				$sendback = remove_query_arg( [ 'orders' ], wp_get_referer() );
 
 				if ( isset( $_GET['orders'] ) ) {
 					$order_ids = $_GET['orders'];
@@ -333,7 +333,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				// Ensure the table handler is only loaded once. Prevents multiple loads if a plugin calls check_ajax_referer many times.
-				remove_action( 'current_screen', array( $this, 'setup_screen' ) );
+				remove_action( 'current_screen', [ $this, 'setup_screen' ] );
 			}
 
 			/**
