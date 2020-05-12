@@ -258,7 +258,12 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 						$r .= $order_object->get_meta( '_agreement_id' );
 						break;
 					case 'charge_id':
-						$r .= $order_object->get_meta( '_charge_id' ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
+						if ( $order_object->get_meta( '_vipps_recurring_captured' ) ) {
+							$r .= $order_object->get_meta( '_charge_id' ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
+						} else {
+							$r .= __( 'This order has not yet been captured.', 'woo-vipps-recurring' );
+						}
+
 						break;
 					case 'captured':
 						$r .= $order_object->get_meta( '_vipps_recurring_captured' ) ? __( 'Yes', 'woo-vipps-recurring' ) : __( 'No', 'woo-vipps-recurring' );

@@ -126,6 +126,7 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 == Changelog ==
 
 = 1.3.0 =
+* Fix: Fixed a race condition that made orders sometimes have multiples of the same note.
 * Fix: No longer cancel subscription if a charge fails to capture, the merchant should decide what to do with this themselves.
 * Enhancement: If you change an uncaptured orders status to completed or processing it will now try to capture it.
 * Fix: Billing interval is now properly displayed in the Vipps app payment screen.

@@ -345,6 +345,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'INVALID';
 		}
 
+		// CHECK IF ORDER IS LOCKED
+		clean_post_cache( $order->get_id() );
+
+		if ( (int) $order->get_meta( '_vipps_recurring_locked' ) ) {
+			return 'SUCCESS';
+		}
+
+		// LOCK ORDER FOR CHECKING
+		$order->update_meta_data( '_vipps_recurring_locked', true );
+		$order->save();
+
 		$agreement = $this->get_agreement_from_order( $order );
 		$charge    = $this->get_latest_charge_from_order( $order );
 
@@ -356,9 +367,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_meta_data( '_charge_id', $charge['id'] );
 		}
 
-		// if there's a campaign with a price of 0 we can complete the order
-		$zero_campaign = isset( $agreement['campaign'] ) ? $agreement['campaign']['campaignPrice'] === 0 : false;
-		if ( $zero_campaign && $agreement['status'] === 'ACTIVE' && ! wcs_order_contains_renewal( $order ) ) {
+		// if there's a campaign with a price of 0 we can complete the order immediately
+		if ( $order->get_meta( '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
 			$this->complete_order( $order, $agreement['id'] );
 
 			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
@@ -391,6 +401,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
 		}
 
+		$order->update_meta_data( '_vipps_recurring_locked', false );
+
 		$order->save();
 		clean_post_cache( $order->get_id() );
 
@@ -422,6 +434,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function complete_order( $order, $transaction_id ) {
 		$order->payment_complete( $transaction_id );
 		$order->update_meta_data( '_vipps_recurring_pending_charge', false );
+		$order->update_meta_data( '_vipps_recurring_locked', false );
 	}
 
 	/**
@@ -637,21 +650,33 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
-     * Maybe capture a payment if it has not already been captured
-     *
+	 * Maybe capture a payment if it has not already been captured
+	 *
 	 * @param $order_id
 	 *
 	 * @throws Exception
 	 */
-	public function maybe_capture_payment ($order_id) {
-	    $order = wc_get_order($order_id);
+	public function maybe_capture_payment( $order_id ) {
+		$order = wc_get_order( $order_id );
 
-		if ( $order->get_meta( '_vipps_recurring_captured' ) === 1 ) {
+		if ( wcs_order_contains_renewal( $order ) ) {
 			return;
 		}
 
-		$this->capture_payment($order);
-    }
+		if ( (int) $order->get_meta( '_vipps_recurring_pending_charge' ) !== 1 ) {
+			return;
+		}
+
+		if ( (int) $order->get_meta( '_vipps_recurring_captured' ) === 1 ) {
+			return;
+		}
+
+		if ( (int) $order->get_meta( '_vipps_recurring_zero_amount' ) ) {
+			return;
+		}
+
+		$this->capture_payment( $order );
+	}
 
 	/**
 	 * Capture an initial payment manually
@@ -765,7 +790,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// if the price of the order and the price of the product differ we should create a campaign
 			// but only if $order->get_total() is 0 or $charge_immediately is false
-			if ( (float) $product->get_price() !== (float) $order->get_total() && ( ! $capture_immediately || $is_zero_amount ) ) {
+			if ( ( ! $capture_immediately || $is_zero_amount ) && (float) $product->get_price() !== (float) $order->get_total() ) {
 				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
 
@@ -781,6 +806,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			update_post_meta( $subscriptions[ array_key_first( $subscriptions ) ]->get_id(), '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
+
+			if ( $is_zero_amount ) {
+				$order->update_meta_data( '_vipps_recurring_zero_amount', true );
+			}
 
 			/* translators: Vipps Agreement ID */
 			$message = sprintf( __( 'Vipps agreement created: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
