@@ -688,16 +688,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
 			WC_Vipps_Recurring_Logger::log( 'Error: ' . $e->getMessage() );
 
-			// cancel subscription if not an idempotency error
-			if ( ! $e->is_idempotent_error ) {
-				$subscriptions = $this->get_subscriptions_for_order( $order );
-
-				foreach ( $subscriptions as $subscription ) {
-					$subscription->update_status( 'cancelled', __( 'Subscription cancelled due to failed Vipps payment capture', 'woocommerce-gateways-vipps-recurring' ) );
-				}
-
-				$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
-			}
+			// mark charge as failed
+			$order->update_meta_data( '_vipps_recurring_pending_charge', false );
+			$order->update_meta_data( '_vipps_recurring_captured', false );
+			$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
+			$order->save();
 		}
 	}
 
