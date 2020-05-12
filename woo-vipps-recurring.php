@@ -582,7 +582,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				foreach ( WC()->cart->get_cart_contents() as $key => $values ) {
 					$product = wc_get_product( $values['product_id'] );
 
-					if ( ! $product->is_type( 'subscription' ) ) {
+					if ( ! $product->is_type( [ 'subscription', 'variable-subscription' ] ) ) {
 						unset( $methods['vipps_recurring'] );
 					}
 				}
