@@ -108,20 +108,37 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new VippsRecurringApi( $this );
 
+		// when transitioning an order to these statuses we should
+		// automatically try to capture the charge if it's not already captured
+		$statuses_to_attempt_capture = apply_filters( 'wc_vipps_recurring_captured_statuses', [
+			'processing',
+			'completed'
+		] );
+
+		// if we change a status that is currently on-hold to any of the $capture_statuses we should attempt to capture it
+		foreach ( $statuses_to_attempt_capture as $status ) {
+			add_action( 'woocommerce_order_status_' . $status, [ $this, 'maybe_capture_payment' ] );
+		}
+
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [
 			$this,
 			'process_admin_options'
 		] );
+
 		add_action( 'woocommerce_account_view-order_endpoint', [ $this, 'check_charge_status' ], 1 );
+
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [
 			$this,
 			'scheduled_subscription_payment'
 		], 1, 2 );
+
 		add_action( 'woocommerce_subscription_status_cancelled', [
 			$this,
 			'cancel_subscription',
 		] );
+
 		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1 );
 	}
 
@@ -618,6 +635,23 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$renewal_order->update_status( 'failed' );
 		}
 	}
+
+	/**
+     * Maybe capture a payment if it has not already been captured
+     *
+	 * @param $order_id
+	 *
+	 * @throws Exception
+	 */
+	public function maybe_capture_payment ($order_id) {
+	    $order = wc_get_order($order_id);
+
+		if ( $order->get_meta( '_vipps_recurring_captured' ) === 1 ) {
+			return;
+		}
+
+		$this->capture_payment($order);
+    }
 
 	/**
 	 * Capture an initial payment manually
