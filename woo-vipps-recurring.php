@@ -13,9 +13,7 @@
  * Domain Path: /languages
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
