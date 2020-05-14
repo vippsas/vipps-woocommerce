@@ -8,7 +8,7 @@
 
 This plugin provides support for Vipps recurring payments for WooCommerce.
 
-Document version: 2.0.0.
+Document version: 2.0.1.
 
 # Description
 
@@ -24,6 +24,10 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
+
+See
+[How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-howitworks.md)
+for an overview.
 
 # Table of contents
 
@@ -88,6 +92,8 @@ In most cases your products should be virtual when using subscriptions but it is
 possible to use the plugin with physical products if you need to do so.
 
 See the
+[Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md),
+and the
 [Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
 for more details:
 [What is the difference between "Reserve Capture" and "Direct Capture"?](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md#what-is-the-difference-between-reserve-capture-and-direct-capture).
@@ -139,6 +145,8 @@ If your question is not answered on this page:
   page, and also the main
   [Vipps GitHub page](https://github.com/vippsas).
   The
+  [Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md)
+  and the
   [Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md) may also be useful.
 
 ## Does this plugin work alongside the Vipps for WooCommerce plugin?
