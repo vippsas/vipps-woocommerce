@@ -133,7 +133,8 @@ If your question is not answered on this page:
 
 ## Does this plugin work alongside the Vipps for WooCommerce plugin?
 
-Yes! You can use both plugins at the same time alongside each other.
+Yes! You can use this plugin at the same time as
+[Vipps for WooCommerce](https://github.com/vippsas/vipps-woocommerce).
 
 ## Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 
