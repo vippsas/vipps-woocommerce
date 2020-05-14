@@ -636,6 +636,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
 
 			$renewal_order->update_meta_data( '_vipps_recurring_pending_charge', true );
+			$renewal_order->update_meta_data( '_vipps_recurring_captured', true );
 			$renewal_order->save();
 
 			$this->process_order_charge( $renewal_order, $charge );
@@ -706,16 +707,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// idempotency key
 			$idempotency_key = $this->get_idempotence_key( $order );
 
-			$charges = $this->api->get_charges_for($agreement['id']);
-			$latest_charge = $charges[count($charges) - 1];
+			$charges  = $this->api->get_charges_for( $agreement['id'] );
+			$captured = false;
 
-			if ($latest_charge['status'] === 'RESERVED') {
-				// capture reserved charge
-				$this->api->capture_reserved_charge($agreement, $latest_charge, $idempotency_key);
+			if ( count( $charges ) > 0 ) {
+				$latest_charge = $charges[ count( $charges ) - 1 ];
 
-				// get charge
-				$charge = $this->api->get_charge( $agreement_id, $latest_charge['id'] );
-			} else {
+				if ( $latest_charge['status'] === 'RESERVED' ) {
+					// capture reserved charge
+					$this->api->capture_reserved_charge( $agreement, $latest_charge, $idempotency_key );
+
+					// get charge
+					$charge = $this->api->get_charge( $agreement_id, $latest_charge['id'] );
+
+					$captured = true;
+				}
+			}
+
+			if ( ! $captured ) {
 				// create charge
 				$charge = $this->api->create_charge( $agreement, $order, $idempotency_key );
 
