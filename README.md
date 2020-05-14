@@ -6,11 +6,17 @@
 
 **We encourage you to create an issue here if you require assistance or run in to a problem.**
 
-For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
+This plugin provides support for Vipps recurring payments for WooCommerce.
+
+Document version: 2.0.1.
 
 # Description
 
-This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
+This is the official
+[Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
+plugin for
+[WooCommerce](https://woocommerce.com).
+It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
 Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
@@ -18,6 +24,10 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
+
+See
+[How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-howitworks.md)
+for an overview.
 
 # Table of contents
 
@@ -43,13 +53,14 @@ With Vipps Recurring Payments for WooCommerce you can:
 # Getting started
 
 * Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
-* After 1-2 days you will get an email with login details to Vipps Developer Portal. This is where you can retrieve the API credentials used to configure the plugin in WooCommerce.
+* After 1-2 days you will get an email with login details to the [Vipps customer portal](https://portal.vipps.no).
+  This is where you can [retrieve the API credentials](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys) used to configure the plugin in WooCommerce.
 * Proceed to "Installation" below
 
 ## Installation
 
-1. Download and activate the plugin from this GitHub repository or Wordpress.org
-2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce -> Settings -> Payments (Betalinger).
+1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
+2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce: `Settings` -> `Payments (Betalinger)`.
 3. Click "Manage" on the Vipps Recurring Payments payment method
 4. Proceed to "Retrieving Vipps API Keys" below
 
@@ -57,7 +68,8 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 ## Retrieving Vipps API Keys
 
-The documentation for retrieving your Vipps API Keys can be found [here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
+The documentation for retrieving your Vipps API Keys can be found
+[here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
 
 ## Configuration of the plugin
 
@@ -68,16 +80,27 @@ The documentation for retrieving your Vipps API Keys can be found [here](https:/
 
 ## Configuring products
 
-Configuring products for use with the Vipps Recurring Payments plugin is not any different from default WooCommerce, with one exception.
+Configuring products for use with the Vipps Recurring Payments plugin is not any
+different from default WooCommerce, with one exception: The configuration for
+whether or not the product is virtual or physical is important to consider.
 
-The configuration for whether or not the product is virtual or physical is important to consider. 
-If a product is virtual the customer will be charged immediately but if the product is physical you will have to capture the payment manually through the order in WooCommerce when you have shipped the product.
+If a product is virtual the customer will be charged immediately but if the
+product is physical you will have to capture the payment manually through the
+order in WooCommerce when you have shipped the product.
 
-In most cases your products should be virtual when using subscriptions but it is possible to use the plugin with physical products if you need to do so.
+In most cases your products should be virtual when using subscriptions but it is
+possible to use the plugin with physical products if you need to do so.
+
+See the
+[Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md),
+and the
+[Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+for more details:
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 # Extending the plugin
 
-WooCommerce and WooCommerce Subscriptions has a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow so there should not be any need to extend this plugin directly, 
+WooCommerce and WooCommerce Subscriptions has a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow so there should not be any need to extend this plugin directly,
 but if you need an action or filter added to the plugin don't hesitate to create an issue on GitHub and we will look into this as soon as possible.
 
 The plugin is currently in a pre-release phase and will have more filters, actions and features further down the road.
@@ -112,25 +135,40 @@ Available filters:
 
 # Frequently Asked Questions
 
+## How can I get help?
+
+If your question is not answered on this page:
+
+* For help with the plugin: Please use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
+* For help with Vipps: Please see the
+  [contact us](https://github.com/vippsas/vipps-developers/blob/master/contact.md)
+  page, and also the main
+  [Vipps GitHub page](https://github.com/vippsas).
+  The
+  [Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md)
+  and the
+  [Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md) may also be useful.
+
 ## Does this plugin work alongside the Vipps for WooCommerce plugin?
 
-Yes! You can use both plugins at the same time alongside each other.
+Yes! You can use this plugin at the same time as
+[Vipps for WooCommerce](https://github.com/vippsas/vipps-woocommerce).
 
 ## Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 
-Yes, you do.
+Yes, you do. Get it
+[here](https://woocommerce.com/products/woocommerce-subscriptions/).
 
 ## Does this plugin work with the WooCommerce Memberships-plugin?
 
-WooCommerce Subscriptions and WooCommerce Memberships are able to work together for access to recurring memberships that unlock content.
+[WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
+and
+[WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
+are able to work together for access to recurring memberships that unlock content.
 
 **WooCommerce Subscriptions is required in order to use Vipps Recurring Payments for WooCommerce, but Memberships is not.**
 
 You can read about how WooCommerce Subscriptions and WooCommerce Memberships work together [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
-
-## How can I get help if I have any issues?
-
-For issues with the plugin you can submit an issue on GitHub or ask on the support forum on wordpress.org. For other unrelated issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
 
 ## Where can I use Vipps?
 
@@ -138,10 +176,10 @@ Vipps is only available in Norway at the moment and only users who have Vipps wi
 
 ## How can I test that the plugin works correctly?
 
-If you have access to the Vipps test environment you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`. 
+If you have access to the Vipps test environment you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
 See the [getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md) guide for details about how to get started using the test environment.
 
-Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys. 
+Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
 You can then refund or cancel the purchase afterwards.
 
 ## Why do I have to capture payments for physical products manually?
