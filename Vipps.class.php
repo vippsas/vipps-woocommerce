@@ -2278,25 +2278,40 @@ else:
 
 
     public function fakepage($title,$content) {
+        global $wp, $wp_query;
         // We don't want this here.
         remove_filter ('the_content', 'wpautop'); 
+
+        $specialid = $this->gateway()->get_option('vippsspecialpageid');
+        $wp_post = null;
+        if ($specialid) {
+          $wp_post = get_post($specialid);
+          $wp_post->post_title = $title;
+          $wp_post->post_content = $content;
+          // Normalize a bit
+          $wp_post->filter = 'raw'; // important
+          $wp_post->post_status = 'publish';
+          $wp_post->comment_status= 'closed';
+          $wp_tpost->ping_status= 'closed';
+	}
+        if (!$wp_post || is_wp_error($wp_post)) {
+            $post = new stdClass();
+            $post->ID = -99;
+            $post->post_author = 1;
+            $post->post_date = current_time( 'mysql' );
+            $post->post_date_gmt = current_time( 'mysql', 1 );
+            $post->post_title = $title;
+            $post->post_content = $content;
+            $post->post_status = 'publish';
+            $post->comment_status = 'closed';
+            $post->ping_status = 'closed';
+            $post->post_name = 'vippsconfirm-fake-page-name';
+            $post->post_type = 'page';
+            $post->filter = 'raw'; // important
+            $wp_post = new WP_Post($post);
+            wp_cache_add( -99, $wp_post, 'posts' );
+        }
  
-        global $wp, $wp_query;
-        $post = new stdClass();
-        $post->ID = -99;
-        $post->post_author = 1;
-        $post->post_date = current_time( 'mysql' );
-        $post->post_date_gmt = current_time( 'mysql', 1 );
-        $post->post_title = $title;
-        $post->post_content = $content;
-        $post->post_status = 'publish';
-        $post->comment_status = 'closed';
-        $post->ping_status = 'closed';
-        $post->post_name = 'vippsconfirm-fake-page-name';
-        $post->post_type = 'page';
-        $post->filter = 'raw'; // important
-        $wp_post = new WP_Post($post);
-        wp_cache_add( -99, $wp_post, 'posts' );
         // Update the main query
         $wp_query->post = $wp_post;
         $wp_query->posts = array( $wp_post );

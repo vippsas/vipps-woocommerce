@@ -426,6 +426,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function init_form_fields() { 
         $page_templates = $this->get_theme_page_templates();
+        $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
+        foreach(get_pages() as $page) $page_list[$page->ID] = $page->post_title;
 
         $this->form_fields = array(
                 'enabled' => array(
@@ -574,6 +576,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'options' =>  $page_templates,
                         'description' => __('Use this template from your theme or child-theme to display all the special Vipps pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'),
                         ),
+
+                  'vippsspecialpageid' =>  array(
+                        'title' => __('Use a real page ID for the special Vipps pages - neccessary for some themes', 'woo-vipps'),
+                        'label' => __('Use a real page ID', 'woo-vipps'),
+                        'type'  => 'select',
+                        'options' => $page_list,
+                        'description' => __('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special Vipps pages.', 'woo-vipps'),
+                        'default'=>'')
 
 
                     );
