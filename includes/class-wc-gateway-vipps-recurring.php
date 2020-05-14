@@ -659,9 +659,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$timestamp_gmt   = WC_Vipps_Recurring_Helper::rfc_3999_date_to_unix( $charge['due'] );
 		$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
 
-		/* translators: Vipps Charge ID and human diff timestamp */
-
-		return sprintf( __( 'Vipps charge created: %s. The charge will be complete %s.', 'woo-vipps-recurring' ), $charge['id'], strtolower( $date_to_display ) );
+		/* translators: Vipps Charge ID, human diff timestamp */
+		return sprintf( __( 'Vipps charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps-recurring' ), $charge['id'], strtolower( $date_to_display ) );
 	}
 
 	/**
