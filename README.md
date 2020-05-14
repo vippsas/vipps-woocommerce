@@ -29,6 +29,8 @@ See
 [How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-howitworks.md)
 for an overview.
 
+![The Vipps Recurring process](https://github.com/vippsas/vipps-recurring-api/blob/master/images/vipps-recurring-process.svg)
+
 # Table of contents
 
 * [ Requirements ](#requirements)
