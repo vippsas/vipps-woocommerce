@@ -382,7 +382,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
-		$is_captured = $charge !== false && $charge['status'] === 'CHARGED';
+		$is_captured = $charge !== false && $charge['status'] !== 'RESERVED';
 		$order->update_meta_data( '_vipps_recurring_captured', $is_captured );
 
 		if ( $initial ) {
@@ -474,6 +474,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? update_post_meta( $order->get_id(), '_transaction_id', $charge['id'] ) : $order->set_transaction_id( $charge['id'] );
 
+			$order->update_meta_data( '_vipps_recurring_captured', true );
 			$order->update_status( 'on-hold', $this->get_pending_charge_note( $charge ) );
 		}
 
