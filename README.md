@@ -194,8 +194,8 @@ If you have a valid reason to do so you can use the "Capture payment instantly" 
 
 ## When a renewal happens, why is the order on hold?
 
-This is because when an order is charged in Vipps it takes 6 days before the payment has been fully captured from the customer's bank account.
+This is because when an order is charged in Vipps it takes 2 days before the payment has been fully captured from the customer's bank account.
 
-After 6 days it will move to the "Processing" status.
+After 2 days it will move to the "Processing" status.
 
 To counteract this you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/)
