@@ -106,7 +106,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->order_button_text    = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
-		$this->api     = new VippsRecurringApi( $this );
+		$this->api     = new WC_Vipps_Recurring_Api( $this );
 
 		// when transitioning an order to these statuses we should
 		// automatically try to capture the charge if it's not already captured

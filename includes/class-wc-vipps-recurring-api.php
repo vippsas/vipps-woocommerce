@@ -5,9 +5,9 @@ defined( 'ABSPATH' ) || exit;
 require_once( __DIR__ . '/class-wc-vipps-recurring-exceptions.php' );
 
 /**
- * Class VippsRecurringApi
+ * Class WC_Vipps_Recurring_Api
  */
-class VippsRecurringApi {
+class WC_Vipps_Recurring_Api {
 	/**
 	 * @var $gateway
 	 */
@@ -30,7 +30,7 @@ class VippsRecurringApi {
 	public $retry_days = WC_VIPPS_RECURRING_RETRY_DAYS;
 
 	/**
-	 * VippsRecurringApi constructor.
+	 * WC_Vipps_Recurring_Api constructor.
 	 *
 	 * @param $gateway
 	 */
