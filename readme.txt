@@ -199,6 +199,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2020.05.xx version 1.4.7 =
+ * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
+
 = 2020.04.27 version 1.4.6 =
  * More robustness and checks in callbacks
 
