@@ -382,7 +382,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
-		$is_captured = $charge !== false;
+		$is_captured = $charge !== false && $charge['status'] === 'CHARGED';
 		$order->update_meta_data( '_vipps_recurring_captured', $is_captured );
 
 		if ( $initial ) {
@@ -474,8 +474,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? update_post_meta( $order->get_id(), '_transaction_id', $charge['id'] ) : $order->set_transaction_id( $charge['id'] );
 
-			/* translators: Vipps Charge ID */
-			$order->update_status( 'on-hold', sprintf( __( 'Vipps charge awaiting payment: %s. The amount will be drawn from your customer in 6 days.', 'woo-vipps-recurring' ), $charge['id'] ) );
+			$order->update_status( 'on-hold', $this->get_pending_charge_note( $charge ) );
 		}
 
 		// check if CANCELLED
@@ -650,6 +649,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * @param $charge
+	 *
+	 * @return string
+	 */
+	private function get_pending_charge_note( $charge ): string {
+		$timestamp_gmt   = WC_Vipps_Recurring_Helper::rfc_3999_date_to_unix( $charge['due'] );
+		$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
+
+		/* translators: Vipps Charge ID and human diff timestamp */
+
+		return sprintf( __( 'Vipps charge created: %s. The charge will be complete %s.', 'woo-vipps-recurring' ), $charge['id'], strtolower( $date_to_display ) );
+	}
+
+	/**
 	 * Maybe capture a payment if it has not already been captured
 	 *
 	 * @param $order_id
@@ -693,14 +706,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// idempotency key
 			$idempotency_key = $this->get_idempotence_key( $order );
 
-			$charge = $this->api->create_charge( $agreement, $order, $idempotency_key );
+			$charges = $this->api->get_charges_for($agreement['id']);
+			$latest_charge = $charges[count($charges) - 1];
 
-			// get charge
-			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
+			if ($latest_charge['status'] === 'RESERVED') {
+				// capture reserved charge
+				$this->api->capture_reserved_charge($agreement, $latest_charge, $idempotency_key);
 
-			/* translators: Vipps Charge ID */
-			$message = sprintf( __( 'Vipps charge awaiting payment: %s. The amount will be drawn from your customer in 6 days.', 'woo-vipps-recurring' ), $charge['id'] );
-			$order->add_order_note( $message );
+				// get charge
+				$charge = $this->api->get_charge( $agreement_id, $latest_charge['id'] );
+			} else {
+				// create charge
+				$charge = $this->api->create_charge( $agreement, $order, $idempotency_key );
+
+				// get charge
+				$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
+
+				$order->add_order_note( $this->get_pending_charge_note( $charge ) );
+			}
 
 			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
 			$order->update_meta_data( '_vipps_recurring_captured', true );
@@ -777,15 +800,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_zero_amount      = (int) $order->get_total() === 0;
 			$capture_immediately = $product->is_virtual( 'yes' ) || $product->get_meta( '_vipps_recurring_direct_capture' ) === 'yes';
 
-			if ( $capture_immediately && ! $is_zero_amount ) {
+			if ( ! $is_zero_amount ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
 						'description'     => $item->get_name(),
-						'transactionType' => 'DIRECT_CAPTURE',
+						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
+
+				if ( ! $capture_immediately ) {
+					$order->update_meta_data( '_vipps_recurring_reserved_capture', true );
+				}
 			}
 
 			// if the price of the order and the price of the product differ we should create a campaign

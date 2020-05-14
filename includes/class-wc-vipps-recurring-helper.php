@@ -96,4 +96,13 @@ class WC_Vipps_Recurring_Helper {
 	public static function get_rfc_3999_date( DateTime $date ): string {
 		return $date->format( 'Y-m-d\TH:i:s\Z' );
 	}
+
+	/**
+	 * @param string $date
+	 *
+	 * @return string
+	 */
+	public static function rfc_3999_date_to_unix( string $date ): string {
+		return strtotime( $date );
+	}
 }

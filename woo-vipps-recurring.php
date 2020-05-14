@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.3.0
+ * Version: 1.3.1
  * Requires at least: 4.4
  * Tested up to: 5.4.0
  * WC tested up to: 4.0.1
@@ -76,7 +76,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.0' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.1' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -88,17 +88,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 		 */
 		if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
 			define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 3 );
-		}
-
-		/*
-		 * Amount of days to add to due_at for a charge in the recurring API.
-		 * Currently this value has to be 6 days or more as per Vipps' specification.
-		 * https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-states
-		 *
-		 * DO NOT MODIFY UNLESS YOU KNOW WHAT YOU'RE DOING.
-		 */
-		if ( ! defined( 'WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING' ) ) {
-			define( 'WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING', 6 );
 		}
 
 		/*

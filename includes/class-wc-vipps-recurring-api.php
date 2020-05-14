@@ -14,15 +14,6 @@ class WC_Vipps_Recurring_Api {
 	public $gateway;
 
 	/**
-	 * Amount of days to add to due_at for a charge in the recurring API.
-	 * Currently this value has to be 6 days or more as per Vipps' specification.
-	 * https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-states
-	 *
-	 * @var int $due_minimum_days
-	 */
-	public $due_minimum_days = WC_VIPPS_RECURRING_CHARGE_DUE_DAYS_PADDING;
-
-	/**
 	 * Amount of days to retry a payment for when creating a charge
 	 *
 	 * @var int $retry_days
@@ -173,6 +164,25 @@ class WC_Vipps_Recurring_Api {
 
 	/**
 	 * @param $agreement
+	 * @param $charge
+	 * @param $idempotency_key
+	 *
+	 * @return mixed
+	 * @throws WC_Vipps_Recurring_Exception
+	 */
+	public function capture_reserved_charge( $agreement, $charge, $idempotency_key ) {
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization'  => 'Bearer ' . $token,
+			'Idempotent-Key' => $idempotency_key,
+		];
+
+		return $this->http_call( 'recurring/v2/agreements/' . $agreement['id'] . '/charges/' . $charge['id'] . '/capture', 'POST', [], $headers );
+	}
+
+	/**
+	 * @param $agreement
 	 * @param $order
 	 * @param $idempotence_key
 	 * @param null $amount
@@ -198,7 +208,8 @@ class WC_Vipps_Recurring_Api {
 			$amount = $agreement_price;
 		}
 
-		$due_at = date( 'Y-m-d', time() + ( 24 * 3600 * $this->due_minimum_days ) );
+		// minimum of 2 days
+		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
 		$data = [
 			'amount'          => $amount,
