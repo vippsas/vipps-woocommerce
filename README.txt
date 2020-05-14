@@ -16,7 +16,7 @@ License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
 **We encourage you to create an issue here or on the [GitHub page](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.**
 
-For Vipps contact information check the main Vipps GitHub page: [https://github.com/vippsas](https://github.com/vippsas).
+This plugin provides support for Vipps recurring payments for WooCommerce.
 
 This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
@@ -26,6 +26,10 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
+
+See [How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-howitworks.md) for an overview.
+
+<img src="https://raw.githubusercontent.com/vippsas/vipps-recurring-api/master/images/vipps-recurring-process.svg?sanitize=true" alt="Vipps Recurring Process" />
 
 == Requirements ==
 
@@ -46,7 +50,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 To use the plugin you need to do the following:
 
 1. Download and activate the plugin from this GitHub repository or Wordpress.org
-2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce -> Settings -> Payments (Betalinger).
+2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce: `Settings` -> `Payments (Betalinger)`.
 3. Click "Manage" on the Vipps Recurring Payments payment method
 4. Proceed to "Retrieving Vipps API Keys" below
 
@@ -61,12 +65,23 @@ The documentation for retrieving your Vipps API Keys can be found [here](https:/
 
 = Configuring products =
 
-Configuring products for use with the Vipps Recurring Payments plugin is not any different from default WooCommerce, with one exception.
+Configuring products for use with the Vipps Recurring Payments plugin is not any
+different from default WooCommerce, with one exception: The configuration for
+whether or not the product is virtual or physical is important to consider.
 
-The configuration for whether or not the product is virtual or physical is important to consider.
-If a product is virtual the customer will be charged immediately but if the product is physical you will have to capture the payment manually through the order in WooCommerce when you have shipped the product.
+If a product is virtual the customer will be charged immediately but if the
+product is physical you will have to capture the payment manually through the
+order in WooCommerce when you have shipped the product.
 
-In most cases your products should be virtual when using subscriptions but it is possible to use the plugin with physical products if you need to do so.
+In most cases your products should be virtual when using subscriptions but it is
+possible to use the plugin with physical products if you need to do so.
+
+See the
+[Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md),
+and the
+[Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+for more details:
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 == Screenshots ==
 
@@ -75,17 +90,35 @@ In most cases your products should be virtual when using subscriptions but it is
 
 == Frequently Asked Questions ==
 
+= How can I get help? =
+
+If your question is not answered on this page:
+
+* For help with the plugin: Please use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
+* For help with Vipps: Please see the
+  [contact us](https://github.com/vippsas/vipps-developers/blob/master/contact.md)
+  page, and also the main
+  [Vipps GitHub page](https://github.com/vippsas).
+  The
+  [Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md)
+  and the
+  [Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md) may also be useful.
+
 = Does this plugin work alongside the Vipps for WooCommerce plugin? =
 
-Yes! You can use both plugins at the same time alongside each other.
+Yes! You can use this plugin at the same time as [Vipps for WooCommerce](https://github.com/vippsas/vipps-woocommerce).
 
 = Do I need to have a license for WooCommerce Subscriptions in order to use this plugin? =
 
-Yes, you do.
+Yes, you do. Get it
+[here](https://woocommerce.com/products/woocommerce-subscriptions/).
 
 = Does this plugin work with the WooCommerce Memberships-plugin? =
 
-WooCommerce Subscriptions and WooCommerce Memberships are able to work together for access to recurring memberships that unlock content.
+[WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
+and
+[WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
+are able to work together for access to recurring memberships that unlock content.
 
 **WooCommerce Subscriptions is required in order to use Vipps Recurring Payments for WooCommerce, but Memberships is not.**
 
@@ -124,6 +157,10 @@ After 6 days it will move to the "Processing" status.
 To counteract this you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/)
 
 == Changelog ==
+
+= 1.3.1 =
+* Enhancement: Altered charge behaviour to reflect Vipps changes. A renewal or manual capture will now only take 2 days to process as opposed to 6.
+* Enhancement: Made the note associated with a pending charge less cryptic.
 
 = 1.3.0 =
 * Fix: Fixed a race condition that made orders sometimes have multiples of the same note.
