@@ -138,11 +138,15 @@ Yes! You can use this plugin at the same time as
 
 ## Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 
-Yes, you do.
+Yes, you do. Get it
+[here](https://woocommerce.com/products/woocommerce-subscriptions/).
 
 ## Does this plugin work with the WooCommerce Memberships-plugin?
 
-WooCommerce Subscriptions and WooCommerce Memberships are able to work together for access to recurring memberships that unlock content.
+[WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
+and
+[WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
+are able to work together for access to recurring memberships that unlock content.
 
 **WooCommerce Subscriptions is required in order to use Vipps Recurring Payments for WooCommerce, but Memberships is not.**
 
