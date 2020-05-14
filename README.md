@@ -56,7 +56,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 ## Installation
 
 1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
-2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce -> Settings -> Payments (Betalinger).
+2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce: `Settings` -> `Payments (Betalinger)`.
 3. Click "Manage" on the Vipps Recurring Payments payment method
 4. Proceed to "Retrieving Vipps API Keys" below
 
@@ -64,7 +64,8 @@ With Vipps Recurring Payments for WooCommerce you can:
 
 ## Retrieving Vipps API Keys
 
-The documentation for retrieving your Vipps API Keys can be found [here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
+The documentation for retrieving your Vipps API Keys can be found
+[here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
 
 ## Configuration of the plugin
 
@@ -75,12 +76,21 @@ The documentation for retrieving your Vipps API Keys can be found [here](https:/
 
 ## Configuring products
 
-Configuring products for use with the Vipps Recurring Payments plugin is not any different from default WooCommerce, with one exception.
+Configuring products for use with the Vipps Recurring Payments plugin is not any
+different from default WooCommerce, with one exception: The configuration for
+whether or not the product is virtual or physical is important to consider.
 
-The configuration for whether or not the product is virtual or physical is important to consider.
-If a product is virtual the customer will be charged immediately but if the product is physical you will have to capture the payment manually through the order in WooCommerce when you have shipped the product.
+If a product is virtual the customer will be charged immediately but if the
+product is physical you will have to capture the payment manually through the
+order in WooCommerce when you have shipped the product.
 
-In most cases your products should be virtual when using subscriptions but it is possible to use the plugin with physical products if you need to do so.
+In most cases your products should be virtual when using subscriptions but it is
+possible to use the plugin with physical products if you need to do so.
+
+See the
+[Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+for more details:
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 # Extending the plugin
 
