@@ -52,6 +52,10 @@ class Vipps {
     }
 
     public function init () {
+// IOK FIXME EXPERIMENTAL
+        add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
+        add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
+
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
         // This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
@@ -680,24 +684,73 @@ else:
     // Returns true if lock succeeds, or false.
     public function lockOrder($order) {
         $orderid = $order->get_id();
-        if(get_transient('order_lock_'.$orderid)) return false;
-error_log("Get lock for $orderid");
-        $this->lockKey = uniqid();
-        set_transient('order_lock_' . $orderid, $this->lockKey, 30);
+        if (has_filter('woo_vipps_lock_order')) {
+            $ok = apply_filters('woo_vipps_lock_order', $order);
+            if (!$ok) return false;
+        } else {
+            if(get_transient('order_lock_'.$orderid)) return false;
+            error_log("Get lock for $orderid");
+            $this->lockKey = uniqid();
+            set_transient('order_lock_' . $orderid, $this->lockKey, 30);
+        }
         add_action('shutdown', function () use ($order) { global $Vipps; $Vipps->unlockOrder($order); });
         return true;
     }
     public function unlockOrder($order) {
         $orderid = $order->get_id();
-error_log("Unlocking $orderid");
-        if(get_transient('order_lock_'.$orderid) == $this->lockKey) {
-error_log("Doing it");
-error_log("The tranisent before is " . get_transient('order_lock_'.$orderid));
-           delete_transient('order_lock_'.$orderid);
-error_log("The tranisent is now " . get_transient('order_lock_'.$orderid));
+        if (has_action('woo_vipps_unlock_order')) {
+            do_action('woo_vipps_unlock_order', $order); 
+        } else {
+            error_log("Unlocking $orderid");
+            if(get_transient('order_lock_'.$orderid) == $this->lockKey) {
+                error_log("Doing it");
+                error_log("The transient before is " . get_transient('order_lock_'.$orderid));
+                delete_transient('order_lock_'.$orderid);
+                error_log("The transient is now " . get_transient('order_lock_'.$orderid));
+            }
         }
     }
 
+    // Functions using flock() and files to lock orders. This is only guaranteed to work on certain setups, ie, non-distributed setups
+    // using Unix with normal filesystems (not NFS).
+    public function flock_lock_order($order) {
+       global $_orderlocks;
+       if (!$_orderlocks) $_orderlocks = array();
+       $dir = $this->callbackDir();
+       if (!$dir) { 
+         $this->log(__("Cannot use flock() to lock orders: cannot create or write to directory", "woo-vipps"), 'error');
+         return true;
+       }
+       $fname = '.ht-vipps-lock-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
+       $path = $dir .  DIRECTORY_SEPARATOR . $fname;
+       touch($path);
+       if (!is_writable($path)) {
+         $this->log(__("Cannot use flock() to lock orders: cannot create lockfiles ", "woo-vipps"), 'error');
+         return true;
+       }
+error_log("Locking $path for $orderid");
+       $handle = fopen($path, 'w+');
+       if (flock($handle, LOCK_EX | LOCK_NB)) {
+          error_log("Locked");
+          $_orderlocks[$order->get_id()] = array($handle,$path);
+          return true;
+       }
+error_log("Couldnt get lock");
+       return false;
+    }
+    public function flock_unlock_order($order) {
+       $orderid=$order->get_id();
+       global $_orderlocks;
+       if (!$_orderlocks) return;
+       if (!isset($_orderlocks[$orderid])) return;
+       list($handle, $path) = $_orderlocks[$orderid];
+error_log("Unlocking $orderid at $path");
+       unset($_orderlocks[$orderid]);
+       flock($handle, LOCK_UN);
+       fclose($handle);
+       @unlink($path);
+    }
+   
 
     // Because the prefix used to create the Vipps order id is editable
     // by the user, we will store that as a meta and use this for callbacks etc.
