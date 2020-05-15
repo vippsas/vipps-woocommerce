@@ -34,6 +34,9 @@ class Vipps {
     // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
     public $callbackorder = 0;
 
+    // used in the fake locking mechanism using transients
+    private $lockKey = null; 
+
     function __construct() {
     }
 
@@ -667,6 +670,30 @@ else:
         $ok = mkdir($callbackdir, 0755);
         if ($ok) return $callbackdir; 
         return null;
+    }
+
+    // Unfortunately, we cannot do any form of portable locking, and we may get callbacks from Vipps arriving at the same moment as we check the status at Vipps,
+    // which in the very worst case, for Express Checkout orders, may lead to a double shipping line. Changing this to a queue system is non-trivial, because some of
+    // the operations done when modifying the order actually requires the customers session to be active. This operation will make conflicts a litte less probable
+    // by implementing something that isn't quite a lock, and the filter may be used to implement proper locking, using e.g. flock, where this can be used 
+    // (non-distributed environments using unix on standard filesystems. IOK 2020-05-15
+    // Returns true if lock succeeds, or false.
+    public function lockOrder($order) {
+        $orderid = $order->get_id();
+        if(get_transient('order_callback_'.$orderid)) return false;
+error_log("Get lock for $orderid");
+        $this->lockKey = uniqid();
+        set_transient('order_callback_' . $orderid, $this->lockKey, 30);
+        add_action('shutdown', function () use ($order) { $Vipps->unlockOrder($order); });
+        return true;
+    }
+    public function unlockOrder($order) {
+        $orderid = $order->get_id();
+error_log("Unlocking $orderid");
+        if(get_transient('order_callback_'.$orderid) == $this->lockKey) {
+error_log("Doing it");
+           delete_transient('order_callback_',$orderid);
+        }
     }
 
 
@@ -2187,20 +2214,17 @@ else:
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
-            // Unfortunately, Woo or WP has no locking system, and creating one portably is not currently feasible. Therefore
-            // we need to reduce as much as possible the window of the race condition here so that the callback isn't in progress at this point.
-            // This then will check if the callback is in progress - the callback will do exactly the same on its part.
-            if (!get_transient('order_callback_'.$orderid)) { 
-                $newstatus = $gw->callback_check_order_status($order);
-                if ($newstatus) {
-                    $status = $newstatus;
-                    clean_post_cache($orderid);
-                    $order = wc_get_order($orderid); // Reload order object
-                }
-            } else {
-                // No need to do anyting here. IOK 2020-01-26
+            // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
+            $newstatus = $gw->callback_check_order_status($order);
+            if ($status != $newstatus) {
+                $status = $newstatus;
+                clean_post_cache($orderid);
+                $order = wc_get_order($orderid); // Reload order object
             }
+        } else {
+                // No need to do anyting here. IOK 2020-01-26
         }
+        
 
 
         $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
