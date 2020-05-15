@@ -52,10 +52,6 @@ class Vipps {
     }
 
     public function init () {
-// IOK FIXME EXPERIMENTAL
-        add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
-        add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
-
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
         // This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
@@ -689,7 +685,6 @@ else:
             if (!$ok) return false;
         } else {
             if(get_transient('order_lock_'.$orderid)) return false;
-            error_log("Get lock for $orderid");
             $this->lockKey = uniqid();
             set_transient('order_lock_' . $orderid, $this->lockKey, 30);
         }
@@ -701,12 +696,8 @@ else:
         if (has_action('woo_vipps_unlock_order')) {
             do_action('woo_vipps_unlock_order', $order); 
         } else {
-            error_log("Unlocking $orderid");
             if(get_transient('order_lock_'.$orderid) == $this->lockKey) {
-                error_log("Doing it");
-                error_log("The transient before is " . get_transient('order_lock_'.$orderid));
                 delete_transient('order_lock_'.$orderid);
-                error_log("The transient is now " . get_transient('order_lock_'.$orderid));
             }
         }
     }
@@ -728,14 +719,11 @@ else:
          $this->log(__("Cannot use flock() to lock orders: cannot create lockfiles ", "woo-vipps"), 'error');
          return true;
        }
-error_log("Locking $path for $orderid");
        $handle = fopen($path, 'w+');
        if (flock($handle, LOCK_EX | LOCK_NB)) {
-          error_log("Locked");
           $_orderlocks[$order->get_id()] = array($handle,$path);
           return true;
        }
-error_log("Couldnt get lock");
        return false;
     }
     public function flock_unlock_order($order) {
@@ -744,7 +732,6 @@ error_log("Couldnt get lock");
        if (!$_orderlocks) return;
        if (!isset($_orderlocks[$orderid])) return;
        list($handle, $path) = $_orderlocks[$orderid];
-error_log("Unlocking $orderid at $path");
        unset($_orderlocks[$orderid]);
        flock($handle, LOCK_UN);
        fclose($handle);
