@@ -680,19 +680,19 @@ else:
     // Returns true if lock succeeds, or false.
     public function lockOrder($order) {
         $orderid = $order->get_id();
-        if(get_transient('order_callback_'.$orderid)) return false;
+        if(get_transient('order_lock_'.$orderid)) return false;
 error_log("Get lock for $orderid");
         $this->lockKey = uniqid();
-        set_transient('order_callback_' . $orderid, $this->lockKey, 30);
-        add_action('shutdown', function () use ($order) { $Vipps->unlockOrder($order); });
+        set_transient('order_lock_' . $orderid, $this->lockKey, 30);
+        add_action('shutdown', function () use ($order) { global $Vipps; $Vipps->unlockOrder($order); });
         return true;
     }
     public function unlockOrder($order) {
         $orderid = $order->get_id();
 error_log("Unlocking $orderid");
-        if(get_transient('order_callback_'.$orderid) == $this->lockKey) {
+        if(get_transient('order_lock_'.$orderid) == $this->lockKey) {
 error_log("Doing it");
-           delete_transient('order_callback_',$orderid);
+           delete_transient('order_lock_',$orderid);
         }
     }
 
@@ -2316,7 +2316,7 @@ error_log("Doing it");
           $wp_post->filter = 'raw'; // important
           $wp_post->post_status = 'publish';
           $wp_post->comment_status= 'closed';
-          $wp_tpost->ping_status= 'closed';
+          $wp_post->ping_status= 'closed';
 	}
         if (!$wp_post || is_wp_error($wp_post)) {
             $post = new stdClass();

@@ -1161,6 +1161,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
         // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
         // and callbacks happen at the same time.
+        global $Vipps;
         if (!$Vipps->lockOrder($order)) return $oldstatus;
      
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
@@ -1440,6 +1441,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
+        global $Vipps;
         if (!$Vipps->lockOrder($order)) {
             clean_post_cache($order->get_id());
             return;
