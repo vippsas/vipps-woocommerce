@@ -1162,7 +1162,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
         // and callbacks happen at the same time.
         global $Vipps;
-        if (!$Vipps->lockOrder($order)) return $oldstatus;
+error_log("Check order getting lock...");
+        if (!$Vipps->lockOrder($order)) {
+error_log("Nope");
+            return $oldstatus;
+        }
+error_log("Yarp!");
      
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = $this->interpret_vipps_order_status($this->get_vipps_order_status($order,'iscallback'));
@@ -1443,9 +1448,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         global $Vipps;
         if (!$Vipps->lockOrder($order)) {
+error_log("Callback couldn't get lock");
             clean_post_cache($order->get_id());
             return;
         }
+error_log("Callback got lock");
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }

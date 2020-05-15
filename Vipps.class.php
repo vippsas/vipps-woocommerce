@@ -692,7 +692,9 @@ error_log("Get lock for $orderid");
 error_log("Unlocking $orderid");
         if(get_transient('order_lock_'.$orderid) == $this->lockKey) {
 error_log("Doing it");
-           delete_transient('order_lock_',$orderid);
+error_log("The tranisent before is " . get_transient('order_lock_'.$orderid));
+           delete_transient('order_lock_'.$orderid);
+error_log("The tranisent is now " . get_transient('order_lock_'.$orderid));
         }
     }
 
