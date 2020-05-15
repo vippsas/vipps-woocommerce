@@ -2292,7 +2292,7 @@ else:
           $wp_post->filter = 'raw'; // important
           $wp_post->post_status = 'publish';
           $wp_post->comment_status= 'closed';
-          $wp_tpost->ping_status= 'closed';
+          $wp_post->ping_status= 'closed';
 	}
         if (!$wp_post || is_wp_error($wp_post)) {
             $post = new stdClass();
