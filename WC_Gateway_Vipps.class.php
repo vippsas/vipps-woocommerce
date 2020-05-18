@@ -1156,24 +1156,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
 
-        $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
-        $vippsstatus = $this->interpret_vipps_order_status($this->get_vipps_order_status($order,'iscallback'));
-
+        if ($oldstatus != 'pending') return $oldstatus;
 
         // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
         // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
         // and callbacks happen at the same time.
-        if(get_transient('order_callback_'.$orderid)) return $oldstatus;
+        global $Vipps;
+        if (!$Vipps->lockOrder($order)) {
+            return $oldstatus;
+        }
+     
+        $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
+        $vippsstatus = $this->interpret_vipps_order_status($this->get_vipps_order_status($order,'iscallback'));
 
         $statuschange = 0;
 
         if ($oldvippsstatus != $vippsstatus) {
-            // Again, because we have no way of handling locks portably in Woo or WP yet, we must reduce the risk of race conditions by doing a 'fast' operation 
-            // If the status hasn't changed this is probably not the case, so we'll only do it in this case. IOK 2018-05-30
-            set_transient('order_query_'.$orderid, 1, 30);
             $statuschange = 1;
         }
-
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
@@ -1219,8 +1219,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             $newstatus = $order->get_status();
         }
-        // Ensure this is gone so any callback can happen. IOK 2018-05-30
-        delete_transient('order_query_'.$orderid);
+        $Vipps->unlockOrder($order);
         return $newstatus;
     }
 
@@ -1291,6 +1290,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
         $order->update_meta_data('_vipps_shipping_set', true);
+        $order->save(); // Limit the window for double shipping as much as possible.
 
         global $Vipps;
         $address = $shipping['address'];
@@ -1306,7 +1306,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This apparently happens a lot IOK 2019-08-26 
         if ($addressline1 == $addressline2) $addressline2 = ''; 
 
-
         $vippscountry = $address['country'];
         $city = $address['city'];
         $postcode= @$address['zipCode'];
@@ -1316,7 +1315,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $postcode= $address['postalCode'];
         }
         $country = $Vipps->country_to_code($vippscountry);
-
 
         $order->set_billing_email($email);
         $order->set_billing_phone($phone);
@@ -1377,7 +1375,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
-
   
     // Previously, shipping rates were added by creating them here with metadata packed into the shippingMethodId. This is from 1.4.0 only 
     // used when the woo_vipps_shipping_methods filter has been overriden by the merchant. IOK 2020-02-14
@@ -1435,16 +1432,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return false;
         }
-
-        // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
-        // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
-        // when callbacks happen while we are polling for results. IOK 2018-05-30
-        if(get_transient('order_query_'.$orderid))  {
-            clean_post_cache($order->get_id());
-            return;
-        }
-
-
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
@@ -1452,9 +1439,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
-        // Entering critical area, so start with the fake locking mentioned above. IOK 2018-05-30
-        set_transient('order_callback_'.$orderid,1, 60);
 
+        // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
+        // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
+        // when callbacks happen while we are polling for results. IOK 2018-05-30
+        global $Vipps;
+        if (!$Vipps->lockOrder($order)) {
+            clean_post_cache($order->get_id());
+            return;
+        }
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
@@ -1500,7 +1493,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->save();
         clean_post_cache($order->get_id());
-        delete_transient('order_callback_',$orderid);
+        $Vipps->unlockOrder($order);
     }
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
