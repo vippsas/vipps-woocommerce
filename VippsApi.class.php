@@ -128,6 +128,11 @@ class VippsApi {
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
         $callback = $this->gateway->payment_callback_url($authtoken);
         $fallback = $returnurl;
 

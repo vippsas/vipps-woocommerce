@@ -39,6 +39,10 @@
 
  */
 
+
+// Report version externally
+define('WOO_VIPPS_VERSION', '1.4.7');
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
