@@ -1654,21 +1654,32 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // from off to on,so re-initialize the form fields here. IOK 2019-09-03
         $this->init_form_fields();
 
+        list($ok,$msg)  = $this->check_connection();
+        if ($ok) {
+                $this->adminnotify(__("Connection to Vipps OK", 'woo-vipps'));
+        } else {
+                $this->adminerr(__("Could not connect to Vipps", 'woo-vipps') . ": $msg");
+        }
+        return $saved;
+    }
+
+    public function check_connection () {
         $at = $this->get_key();
         $s = $this->get_secret();
         $c = $this->get_clientid();
         if ($at && $s && $c) {
             try {
                 $token = $this->api->get_access_token('force');
-                $this->adminnotify(__("Connection to Vipps OK", 'woo-vipps'));
+                update_option('woo-vipps-configured', 1, true);
+                return array(true,'');
+
             } catch (Exception $e) {
-                $msg = $e->getMessage();
-                $this->adminerr(__("Could not connect to Vipps", 'woo-vipps') . ": $msg");
+                update_option('woo-vipps-configured', 0, true);
+                return array(false, $e->getMessage());
             }
         }
-
-        return $saved;
-    }
+        return array(false, ''); // No configuration
+    } 
 
     public function log ($what,$type='info') {
         $logger = wc_get_logger();

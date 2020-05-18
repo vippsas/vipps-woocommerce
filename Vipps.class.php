@@ -115,6 +115,17 @@ class Vipps {
         // jobs are not scheduled. We'll ensure the action is active first time an admin logs in.
         if (!defined('DOING_AJAX') || !DOING_AJAX) {
             static::maybe_add_cron_event();
+            if (!get_option('woo-vipps-configured')) {
+                list($ok, $msg) = $gw->check_connection();
+                if (!$ok){ 
+                    if ($msg) {
+                        $this->add_vipps_admin_notice(sprintf(__("<p>Vipps not yet correctly configured:  please go to <a href='%s'>the Vipps settings</a> to complete your setup:<br> %s</p>", 'woo-vipps'), admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'), $msg));
+                    } else {
+                        $this->add_vipps_admin_notice(sprintf(__("<p>Vipps not yet configured:  please go to <a href='%s'>the Vipps settings</a> to complete your setup!</p>", 'woo-vipps'), admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')));
+                    }
+                } 
+
+            }
         }
     }
 
