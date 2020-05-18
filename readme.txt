@@ -202,6 +202,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 = 2020.05.xx version 1.4.7 =
  * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
  * Improve the race-condition avoidance code, and make it possible to implement real locking for systems that support it
+ * If Klarna Checkout uses Vipps as external payment gateway, ensure that Klarna Checkout is still the default payment method afterwards
 
 = 2020.04.27 version 1.4.6 =
  * More robustness and checks in callbacks
