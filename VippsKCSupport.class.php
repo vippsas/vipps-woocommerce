@@ -88,6 +88,9 @@ class VippsKCSupport {
         $klarna_external_payment            = array( $klarna_external_payment );
         $create['external_payment_methods'] = $klarna_external_payment;
 
+        // Ensure we don't do Vipps as the default pament method. This is checked in "woocommerce_checkout_order_processed" hook.
+        WC()->session->set('vipps_via_klarna', 1);
+
         return $create;
     }
 
@@ -100,8 +103,6 @@ class VippsKCSupport {
             // Check terms and conditions to prevent error.
             $('input#legal').prop('checked', true);
             <?php
-            // Ensure we don't do Vipps as the default pament method. This is checked in "woocommerce_checkout_order_processed" hook.
-            WC()->session->set('vipps_via_klarna', 1);
             // In case other actions are needed, add more Javascript to this hook
             do_action('woo_vipps_klarna_checkout_support_on_submit_javascript');
         }
