@@ -127,6 +127,35 @@ class Vipps {
 
             }
         }
+
+    }
+
+    // Requested by Vipps: It is a feature of this plugin that a prefix is added to the order number, in order to make it possible to use several different stores
+    // that may use the same ordre number ranges. The prefix used to be just "Woo" by default, but Vipps felt it would be easier to respond to support request by
+    // (trying to) identify the store/site directly in the order prefix. So this does that: It creates a prefix "woo-" + 8 chars derived from the domain of the siteurl.
+    // The result should be "woo-abcdefgh-" which should leave 18 digits for the actual order number. IOK 2020-05-19 
+    public function generate_order_prefix() {
+        $parts = parse_url(site_url());
+        if (!$parts) return 'Woo';
+        $domain = explode(".", $parts['host']);
+        if (empty($domain)) return 'Woo';
+        $first = strtolower($domain[0]);
+        $second = isset($domain[1]) ? $domain[1] : ''; 
+        $key = 'Woo';
+        // Select first part of domain unless that has no content, otherwise second. Default to Woo again.
+        if (in_array($first, array('www','test','dev','vdev')) && !empty($second)) { 
+           $key = $second;
+        } else {
+           $key = $first;
+        }
+        // Use only 8 chars for the site. Try to make it so by dropping vowels, if that doesn't succeed, just chop it.
+        $key = $key;
+        $key = sanitize_title($key);
+        $len = strlen($key);
+        if ($len <= 8) return "woo-$key-";
+        $kzk = preg_replace("/[aeiouæøåüö]/i","",$key);
+        if (strlen($kzk) <= 8) return "woo-$kzk-";
+        return "woo-" . substr($key,0,8) . "-";
     }
 
     // Add a backend notice to stand out a bit, using a Vipps logo and the Vipps color for info-level messages. IOK 2020-02-16
@@ -1425,6 +1454,12 @@ else:
 
     public function activate () {
        static::maybe_add_cron_event();
+       $gw = $this->gateway();
+
+       // If store is using the default "Woo" orderprefix, generate a new one, this time using the stores' sitename if possible. IOK 2020-05-19
+       if ($gw->get_option('orderprefix') == 'Woo') {
+         $gw->update_option('orderprefix', $this->generate_order_prefix()); 
+       }
     }
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01

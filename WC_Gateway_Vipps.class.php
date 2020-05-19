@@ -425,9 +425,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     public function init_form_fields() { 
+        global $Vipps;
         $page_templates = $this->get_theme_page_templates();
         $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
         foreach(get_pages() as $page) $page_list[$page->ID] = $page->post_title;
+
+        $orderprefix = $Vipps->generate_order_prefix();
 
         $this->form_fields = array(
                 'enabled' => array(
@@ -442,7 +445,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'label'       => __( 'Order-id Prefix', 'woo-vipps' ),
                     'type'        => 'string',
                     'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woo-vipps'),
-                    'default'     => 'Woo',
+                    'default'     => $orderprefix
                     ),
                 'merchantSerialNumber' => array(
                     'title' => __('Merchant Serial Number', 'woo-vipps'),
