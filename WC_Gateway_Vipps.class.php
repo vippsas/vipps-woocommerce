@@ -618,6 +618,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 				'type'  => 'title',
 				'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
 				),
+                        'use_flock' => array (
+                            'title'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
+                            'label'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
+                            'type'        => 'checkbox',
+                            'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
+                            'default'     => 'no',
+                            ),
+
+
+
 			'testmode' => array(
 				'title' => __('Test mode', 'woo-vipps'),
 				'title' => __('Enable test mode', 'woo-vipps'),

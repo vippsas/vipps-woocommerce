@@ -66,6 +66,13 @@ class Vipps {
 
         // Offload work to wp-cron so it can be done in the background on sites with heavy load IOK 2020-04-01
         add_action('vipps_cron_cleanup_hook', array($this, 'cron_cleanup_hook'));
+
+        // This is a developer-mode level feature because flock() is not portable. This ensures callbacks and shopreturns do not
+        // simultaneously update the orders, in particular not the express checkout order lines wrt shipping. IOK 2020-05-19
+        if ($this->gateway()->get_option('use_flock') == 'yes') {
+            add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
+            add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
+        }
     }
 
     public function admin_init () {
@@ -95,6 +102,9 @@ class Vipps {
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
         add_action('wp_ajax_vipps_link_qr', array($this, 'ajax_vipps_link_qr'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
+
+        // Link to the settings page from the plugin list
+        add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
 
         if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
             $what = __('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps');
@@ -128,6 +138,13 @@ class Vipps {
             }
         }
 
+    }
+
+    // Add a link to the settings page from the plugin list
+    public function plugin_action_links ($links) {
+        $link = '<a href="'.esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')). '">'.__('Settings', 'woo-vipps').'</a>';
+        array_unshift( $links, $link);
+        return $links;
     }
 
     // Requested by Vipps: It is a feature of this plugin that a prefix is added to the order number, in order to make it possible to use several different stores
