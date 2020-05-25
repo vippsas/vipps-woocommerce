@@ -76,7 +76,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 == Upgrade Notice ==
 
 = 1.4.7  =
-Improves Klarna Checkout integration by preserving Klarna as default checkout method; supports themes that have their own templating systems and improves the race condition handling for order confirmations.
+Fixed a bug in express checkout shipping calculations where cart totals could be wrong, affecting free shipping.
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.0x.xx version 1.4.8 =
+ * Fixed a bug in express checkout shipping calculations where cart totals could be wrong 
 
 = 2020.05.25 version 1.4.7 =
  * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
