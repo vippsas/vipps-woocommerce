@@ -1073,6 +1073,7 @@ else:
             $newcart[$key] = $values;
         }
         WC()->cart->set_cart_contents($newcart);
+        WC()->cart->calculate_totals();
 
         // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
         WC()->customer->set_billing_address_to_base();
