@@ -75,9 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.4.5  =
-This version rewrites all cart-manipulation so that just the main session cart is used for all operations. This should improve shipping calculations, compatibility and cart handling for aborted orders with Express Checkout. As a bonus, WooCommerce Product Bundles bundles are now supported (though this is a bit experimental).
-
+= 1.4.7  =
+Improves Klarna Checkout integration by preserving Klarna as default checkout method; supports themes that have their own templating systems and improves the race condition handling for order confirmations.
 
 == Frequently Asked Questions ==
 
