@@ -6,7 +6,7 @@ Tested up to: 5.4.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.0.1
+WC tested up to: 4.1.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -199,7 +199,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.05.xx version 1.4.7 =
+= 2020.05.25 version 1.4.7 =
  * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
  * Improve the race-condition avoidance code, and make it possible to implement real locking for systems that support it (open the developer settings to enable)
  * If Klarna Checkout uses Vipps as external payment gateway, ensure that Klarna Checkout is still the default payment method afterwards
