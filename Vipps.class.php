@@ -1876,7 +1876,7 @@ else:
         return untrailingslashit(set_url_scheme(home_url(),'https')) . $url;
     }
     public function payment_return_url() {
-        return $this->make_return_url('vipps-betaling');
+        return apply_filters('woo_vipps_payment_return_url', $this->make_return_url('vipps-betaling')); 
     }
     public function express_checkout_url() {
         return $this->make_return_url('vipps-express-checkout');
