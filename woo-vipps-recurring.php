@@ -508,8 +508,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$gateway->check_charge_status( $order_id );
 				}
 
-				WC_Vipps_Recurring_Logger::log( 'checking order statuses of pending payments: ' . implode( ',', $order_ids ) );
-
 				return $order_ids;
 			}
 
