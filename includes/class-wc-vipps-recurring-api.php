@@ -274,7 +274,7 @@ class WC_Vipps_Recurring_Api {
 		];
 
 		$data = [
-			'description' => $reason ?? 'Refund',
+			'description' => $reason ?: 'Refund',
 		];
 
 		if ( $amount !== null ) {

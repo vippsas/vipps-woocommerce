@@ -158,6 +158,10 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 
 == Changelog ==
 
+= 1.3.2 =
+* Fix: Fixed refunds not working when a reason is not passed.
+* Enhancement: Added some version and plugin detail headers to Vipps API requests so we can identify issues more effectively.
+
 = 1.3.1 =
 * Enhancement: Altered charge behaviour to reflect Vipps changes. A renewal or manual capture will now only take 2 days to process as opposed to 6.
 * Enhancement: Made the note associated with a pending charge less cryptic.
