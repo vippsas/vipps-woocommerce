@@ -365,9 +365,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// CHECK IF ORDER IS LOCKED
 		clean_post_cache( $order->get_id() );
 
-//		if ( (int) $order->get_meta( '_vipps_recurring_locked_for_update' ) ) {
-//			return 'SUCCESS';
-//		}
+		if ( (int) $order->get_meta( '_vipps_recurring_locked_for_update' ) ) {
+			return 'SUCCESS';
+		}
 
 		// LOCK ORDER FOR CHECKING
 		$order->update_meta_data( '_vipps_recurring_locked_for_update', true );
