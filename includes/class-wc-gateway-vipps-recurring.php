@@ -495,7 +495,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// check if status is DUE
 		// when DUE we need to check that it becomes another status in a cron
-		if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
+		$transaction_id = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? get_post_meta( $order->get_id(), '_transaction_id' ) : $order->get_transaction_id();
+
+		if ( ! $transaction_id && in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
 			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? update_post_meta( $order->get_id(), '_transaction_id', $charge['id'] ) : $order->set_transaction_id( $charge['id'] );
 
 			$order->update_meta_data( '_vipps_recurring_captured', true );
