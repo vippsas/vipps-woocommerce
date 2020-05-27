@@ -411,10 +411,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps', 'woo-vipps-recurring' ) );
 
 			// cancel charge
-			if ( in_array( $charge['status'], [ 'DUE', 'PENDING', 'CANCELLED' ] ) ) {
+			if ( ! $charge || in_array( $charge['status'], [ 'DUE', 'PENDING', 'CANCELLED' ] ) ) {
 				$order->update_meta_data( '_vipps_recurring_pending_charge', false );
 				$order->save();
-				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
+
+				if ( $charge !== false ) {
+					$this->api->cancel_charge( $agreement['id'], $charge['id'] );
+				}
 			}
 
 			return 'CANCELLED';
@@ -660,6 +663,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
 
 		/* translators: Vipps Charge ID, human diff timestamp */
+
 		return sprintf( __( 'Vipps charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps-recurring' ), $charge['id'], strtolower( $date_to_display ) );
 	}
 
