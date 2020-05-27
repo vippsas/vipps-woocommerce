@@ -319,10 +319,14 @@ class WC_Vipps_Recurring_Api {
 		$subscription_key = $this->gateway->subscription_key;
 
 		$headers = array_merge( [
-			'client_id'                 => $client_id,
-			'client_secret'             => $secret_key,
-			'Ocp-Apim-Subscription-Key' => $subscription_key,
-			'Content-Type'              => 'application/json',
+			'client_id'                   => $client_id,
+			'client_secret'               => $secret_key,
+			'Ocp-Apim-Subscription-Key'   => $subscription_key,
+			'Content-Type'                => 'application/json',
+			'Vipps-System-Name'           => 'woocommerce',
+			'Vipps-System-Version'        => get_bloginfo( 'version' ) . '/' . WC_VERSION,
+			'Vipps-System-Plugin-Name'    => 'woo-vipps-recurring',
+			'Vipps-System-Plugin-Version' => WC_VIPPS_RECURRING_VERSION
 		], $headers );
 
 		$args = [
