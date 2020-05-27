@@ -152,15 +152,16 @@ If you have a valid reason to do so you can use the "Capture payment instantly" 
 
 This is because when an order is charged in Vipps it takes 2 days before the payment has been fully captured from the customer's bank account.
 
-After 2 days it will move to the "Processing" status.
+After 2 days it will move to the "Processing" status. You can however change the behaviour of this by using the "Default status to give pending renewals" option in the plugin settings.
 
-To counteract this you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/)
+Alternatively you you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
 
 == Changelog ==
 
 = 1.3.2 =
-* Fix: Fixed refunds not working when a reason is not passed.
 * Enhancement: Added some version and plugin detail headers to Vipps API requests so we can identify issues more effectively.
+* Enhancement: Added an option to choose what default status to give pending renewals.
+* Fix: Fixed refunds not working when a reason is not passed.
 * Fix: Fixes an edge cases with checking of orders described in this issue: https://github.com/vippsas/vipps-recurring-woocommerce/issues/15
 
 = 1.3.1 =
@@ -168,14 +169,14 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 * Enhancement: Made the note associated with a pending charge less cryptic.
 
 = 1.3.0 =
-* Fix: Fixed a race condition that made orders sometimes have multiples of the same note.
-* Fix: No longer cancel subscription if a charge fails to capture, the merchant should decide what to do with this themselves.
 * Enhancement: If you change an uncaptured orders status to completed or processing it will now try to capture it.
-* Fix: Billing interval is now properly displayed in the Vipps app payment screen.
 * Enhancement: Added support for variable subscriptions.
 * Enhancement: There's now a table available to check what individual orders have pending Vipps charges.
-* Fix: Cancelled charges should also be marked as no longer pending.
 * Enhancement: Added a localized translation and a link explaining the merchant not allowed error message.
+* Fix: Fixed a race condition that made orders sometimes have multiples of the same note.
+* Fix: No longer cancel subscription if a charge fails to capture, the merchant should decide what to do with this themselves.
+* Fix: Billing interval is now properly displayed in the Vipps app payment screen.
+* Fix: Cancelled charges should also be marked as no longer pending.
 
 = 1.2.4 =
 * Fix: Fixed synchronised payments never completing when the user leaves the payment flow on the web too early.
@@ -184,16 +185,16 @@ To counteract this you could look into using WooCommerce "Early renewals": [http
 * Fix: Fixed synchronised payments going straight to processing when they should be on-hold on all non first time payments.
 
 = 1.2.2 =
-* Fix: Fixed enqueuing the admin JavaScript on WP < 5.0.0.
 * Enhancement: Return an error on screen if the checking all statuses fail.
+* Fix: Fixed enqueuing the admin JavaScript on WP < 5.0.0.
 
 = 1.2.1 =
 * Fix: Fixed compatibility with WP < 5.0.0. No longer using the `wp_set_script_translations` function it's a WP 5+ function only.
 
 = 1.2.0 =
 * Enhancement: Added an admin options area for "Vipps Recurring Payments". From here you can force check the status of all pending Vipps subscription orders.
-* Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
 * Enhancement: Added page for when an order was cancelled as explained [here](https://github.com/vippsas/vipps-recurring-woocommerce/issues/6). You can configure where this goes in the plugin settings.
+* Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
 * Fix: Fixed manual renewal orders.
 * Fix: Do not allow capturing of a subscription, only shop orders.
 * Fix: Fixed an issue where renewal orders would act as initial orders.

@@ -196,6 +196,6 @@ If you have a valid reason to do so you can use the "Capture payment instantly" 
 
 This is because when an order is charged in Vipps it takes 2 days before the payment has been fully captured from the customer's bank account.
 
-After 2 days it will move to the "Processing" status.
+After 2 days it will move to the "Processing" status. You can however change the behaviour of this by using the "Default status to give pending renewals" option in the plugin settings.
 
-To counteract this you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/)
+Alternatively you you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.

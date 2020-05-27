@@ -52,12 +52,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public $cancelled_order_page;
 
+
+	/**
+	 * The default status to give pending renewals
+	 *
+	 * @var string
+	 */
+	public $default_renewal_status;
+
 	/**
 	 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
 	 */
 	private static $instance;
 
-	/**
+	/**f
 	 * Returns the *Singleton* instance of this class.
 	 *
 	 * @return WC_Gateway_Vipps_Recurring The *Singleton* instance.
@@ -95,15 +103,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Load the settings.
 		$this->init_settings();
 
-		$this->title                = $this->get_option( 'title' );
-		$this->description          = $this->get_option( 'description' );
-		$this->enabled              = $this->get_option( 'enabled' );
-		$this->testmode             = WC_VIPPS_RECURRING_TEST_MODE;
-		$this->secret_key           = $this->get_option( 'secret_key' );
-		$this->client_id            = $this->get_option( 'client_id' );
-		$this->subscription_key     = $this->get_option( 'subscription_key' );
-		$this->cancelled_order_page = $this->get_option( 'cancelled_order_page' );
-		$this->order_button_text    = __( 'Pay with Vipps', 'woo-vipps-recurring' );
+		$this->title                  = $this->get_option( 'title' );
+		$this->description            = $this->get_option( 'description' );
+		$this->enabled                = $this->get_option( 'enabled' );
+		$this->testmode               = WC_VIPPS_RECURRING_TEST_MODE;
+		$this->secret_key             = $this->get_option( 'secret_key' );
+		$this->client_id              = $this->get_option( 'client_id' );
+		$this->subscription_key       = $this->get_option( 'subscription_key' );
+		$this->cancelled_order_page   = $this->get_option( 'cancelled_order_page' );
+		$this->default_renewal_status = $this->get_option( 'default_renewal_status' );
+		$this->order_button_text      = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new WC_Vipps_Recurring_Api( $this );
@@ -457,6 +466,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$order->update_meta_data( '_charge_id', $charge['id'] );
 
+		// Reduce stock
+		$reduce_stock = 'CHARGED' === $charge['status'] || in_array( $charge['status'], [ 'DUE', 'PENDING' ] );
+		if ( $reduce_stock ) {
+			$order_stock_reduced = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? get_post_meta( $order->get_id(), '_order_stock_reduced', true ) : $order->get_meta( '_order_stock_reduced', true );
+
+			if ( ! $order_stock_reduced ) {
+				WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->reduce_order_stock() : wc_reduce_stock_levels( $order->get_id() );
+			}
+		}
+
 		// check if status is CHARGED
 		if ( 'CHARGED' === $charge['status'] ) {
 			$this->complete_order( $order, $charge['id'] );
@@ -469,16 +488,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// check if status is DUE
 		// when DUE we need to check that it becomes another status in a cron
 		if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
-			$order_stock_reduced = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? get_post_meta( $order->get_id(), '_order_stock_reduced', true ) : $order->get_meta( '_order_stock_reduced', true );
-
-			if ( ! $order_stock_reduced ) {
-				WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->reduce_order_stock() : wc_reduce_stock_levels( $order->get_id() );
-			}
-
 			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? update_post_meta( $order->get_id(), '_transaction_id', $charge['id'] ) : $order->set_transaction_id( $charge['id'] );
 
 			$order->update_meta_data( '_vipps_recurring_captured', true );
-			$order->update_status( 'on-hold', $this->get_pending_charge_note( $charge ) );
+			$order->update_status( $this->default_renewal_status, $this->get_pending_charge_note( $charge ) );
 		}
 
 		// check if CANCELLED
@@ -662,8 +675,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$timestamp_gmt   = WC_Vipps_Recurring_Helper::rfc_3999_date_to_unix( $charge['due'] );
 		$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
 
-		/* translators: Vipps Charge ID, human diff timestamp */
-
+		// translators: Vipps Charge ID, human diff timestamp
 		return sprintf( __( 'Vipps charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps-recurring' ), $charge['id'], strtolower( $date_to_display ) );
 	}
 
