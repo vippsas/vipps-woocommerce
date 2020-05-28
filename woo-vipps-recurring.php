@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.3.4
+ * Version: 1.3.5
  * Requires at least: 4.4
  * Tested up to: 5.4.1
  * WC tested up to: 4.1.0
@@ -76,7 +76,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.4' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.5' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -190,10 +190,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				// testing code
-//				if (WC_VIPPS_RECURRING_TEST_MODE) {
-//					add_action( 'wp', [
+//				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+//					add_action( 'wp_loaded', [
 //						$this,
-//						'check_order_statuses'
+//						'check_gateway_change_agreement_statuses'
 //					] );
 //				}
 				// end testing code
@@ -213,6 +213,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'woocommerce_vipps_recurring_check_order_statuses', [
 					$this,
 					'check_order_statuses'
+				] );
+
+				// schedule checking if gateway change went through
+				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_gateway_change_request' ) ) {
+					wp_schedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_gateway_change_request' );
+				}
+
+				add_action( 'woocommerce_vipps_recurring_check_gateway_change_request', [
+					$this,
+					'check_gateway_change_agreement_statuses'
 				] );
 
 				// Add custom product settings for Vipps Recurring.
@@ -483,7 +493,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 			/**
 			 * Check charge statuses scheduled action
-			 * Returns nothing
 			 *
 			 * @param int $limit
 			 *
@@ -509,6 +518,27 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				return $order_ids;
+			}
+
+			/**
+			 * Check the status of gateway change requests
+			 */
+			public function check_gateway_change_agreement_statuses() {
+				$gateway = $this->gateway();
+
+				$posts = get_posts( [
+					'post_type'      => 'shop_subscription',
+					'post_status'    => 'wc-active',
+					'meta_key'       => '_vipps_recurring_waiting_for_gateway_change',
+					'meta_compare'   => '=',
+					'meta_value'     => 1,
+					'return'         => 'ids',
+				] );
+
+				foreach ( $posts as $post ) {
+					// check charge status
+					$gateway->maybe_process_gateway_change( $post->ID );
+				}
 			}
 
 			/**

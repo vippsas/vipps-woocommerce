@@ -140,12 +140,12 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
-	 * @param $agreement
+	 * @param $agreement_id
 	 *
 	 * @return mixed
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function cancel_agreement( $agreement ) {
+	public function cancel_agreement( $agreement_id ) {
 		$token = $this->get_access_token();
 
 		$headers = [
@@ -153,13 +153,10 @@ class WC_Vipps_Recurring_Api {
 		];
 
 		$data = [
-			'productName'        => $agreement['productName'],
-			'price'              => $agreement['price'],
-			'productDescription' => $agreement['productDescription'],
-			'status'             => 'STOPPED',
+			'status' => 'STOPPED',
 		];
 
-		return $this->http_call( 'recurring/v2/agreements/' . $agreement['id'], 'PUT', $data, $headers );
+		return $this->http_call( 'recurring/v2/agreements/' . $agreement_id, 'PATCH', $data, $headers );
 	}
 
 	/**

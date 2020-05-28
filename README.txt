@@ -158,6 +158,10 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.5 =
+* Fix: Properly deal with cancelled payment gateway change requests in Vipps, do not change gateway if the user cancelled.
+* Enhancement: Use the PATCH method for cancellation of agreements in the Vipps API instead of PUT.
+
 = 1.3.4 =
 * Fix: Fix an issue with payment gateway changes.
 
