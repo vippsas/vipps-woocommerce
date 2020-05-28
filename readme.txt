@@ -7,8 +7,8 @@ Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 4.1.1
-License: AGPLv3 or later
-License URI: http://www.gnu.org/licenses/agpl-3.0.html
+License: MIT
+License URI: https://choosealicense.com/licenses/mit/
 
 
 == Description ==
@@ -200,6 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2020.0x.xx version 1.4.8 =
  * Fixed a bug in express checkout shipping calculations where cart totals could be wrong 
+ * Changed license from AGPLv3 (http://www.gnu.org/licenses/agpl-3.0.html) to MIT (https://choosealicense.com/licenses/mit/)
 
 = 2020.05.25 version 1.4.7 =
  * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
