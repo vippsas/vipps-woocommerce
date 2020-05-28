@@ -95,8 +95,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'subscription_reactivation',
 			'subscription_amount_changes',
 			'subscription_date_changes',
-            'subscription_payment_method_change',
-            'subscription_payment_method_change_customer'
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_customer'
 		];
 
 		// Load the form fields.
@@ -799,13 +799,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws Exception
 	 */
 	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
+		$is_gateway_change = wcs_is_subscription( $order_id );
+
 		$order = wc_get_order( $order_id );
 
 		try {
-			$subscriptions = $this->get_subscriptions_for_order( $order );
-			$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
-			$period        = $subscription->get_billing_period();
-			$interval      = $subscription->get_billing_interval();
+			if ( ! $is_gateway_change ) {
+				$subscriptions = $this->get_subscriptions_for_order( $order );
+				$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
+			} else {
+				$subscription = $order;
+			}
+
+			$period   = $subscription->get_billing_period();
+			$interval = $subscription->get_billing_interval();
 
 			$items = array_reverse( $order->get_items() );
 
@@ -834,7 +841,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
 			}
 
-			$is_zero_amount      = (int) $order->get_total() === 0;
+			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
 			$capture_immediately = $product->is_virtual( 'yes' ) || $product->get_meta( '_vipps_recurring_direct_capture' ) === 'yes';
 
 			if ( ! $is_zero_amount ) {
@@ -855,8 +862,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// if the price of the order and the price of the product differ we should create a campaign
 			// but only if $order->get_total() is 0 or $charge_immediately is false
 			if ( ( ! $capture_immediately || $is_zero_amount ) && (float) $product->get_price() !== (float) $order->get_total() ) {
-				$start_date   = new DateTime( (string) '@' . $subscription->get_time( 'start' ) );
-				$next_payment = new DateTime( (string) '@' . $subscription->get_time( 'next_payment' ) );
+				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
+				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
@@ -867,7 +874,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$response = $this->api->create_agreement( $agreement_body );
 
-			update_post_meta( $subscriptions[ array_key_first( $subscriptions ) ]->get_id(), '_agreement_id', $response['agreementId'] );
+			update_post_meta( $subscription->get_id(), '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_agreement_id', $response['agreementId'] );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
 

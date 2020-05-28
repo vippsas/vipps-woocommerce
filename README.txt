@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.4 =
+* Fix: Fix an issue with payment gateway changes.
+
 = 1.3.3 =
 * Enhancement: Allow customers to change payment method when using Vipps.
 
