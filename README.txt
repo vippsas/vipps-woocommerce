@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.3 =
+* Enhancement: Allow customers to change payment method when using Vipps.
+
 = 1.3.2 =
 * Enhancement: Added some version and plugin detail headers to Vipps API requests so we can identify issues more effectively.
 * Enhancement: Added an option to choose what default status to give pending renewals.

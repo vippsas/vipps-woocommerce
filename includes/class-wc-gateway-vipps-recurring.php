@@ -95,6 +95,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'subscription_reactivation',
 			'subscription_amount_changes',
 			'subscription_date_changes',
+            'subscription_payment_method_change',
+            'subscription_payment_method_change_customer'
 		];
 
 		// Load the form fields.
