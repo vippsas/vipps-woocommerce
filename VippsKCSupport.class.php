@@ -130,7 +130,15 @@ class VippsKCSupport {
     public static function maybe_remove_other_gateway_button() {
         $kco_settings   = get_option( 'woocommerce_kco_settings' );
         $disable_button = isset( $kco_settings['epm_vipps_disable_button'] ) ? $kco_settings['epm_vipps_disable_button'] : 'no';
-        if ( 'yes' === $disable_button ) {
+        $remove = ('yes' === $disable_button)   
+
+        // Can't do these IOK 2020-05-29
+        $remove = $remove || (class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription()); 
+
+        // Let the user decide IOK 2020-05-29
+        $remove = apply_filters('woo_vipps_remove_klarna_another_payment_button', $remove);
+
+        if ($remove) {
             remove_action( 'kco_wc_after_order_review', 'kco_wc_show_another_gateway_button', 20 );
         }
     }
