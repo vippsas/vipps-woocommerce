@@ -75,8 +75,10 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.4.7  =
+= 1.4.8  =
 Fixed a bug in express checkout shipping calculations where cart totals could be wrong, affecting free shipping.
+Added filter 'woo_vipps_payment_return_url' to allow plugins to add extra arguments to return URL
+Changed license to MIT from AGPL
 
 == Frequently Asked Questions ==
 
@@ -202,7 +204,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * Fixed a bug in express checkout shipping calculations where cart totals could be wrong 
  * Changed license from AGPLv3 (http://www.gnu.org/licenses/agpl-3.0.html) to MIT (https://choosealicense.com/licenses/mit/)
  * Added filter to remove Vipps as option in Klarna Checkout, and added a check for unsupported carts.
- * Added filter 'woo_vipps_payment_return_url' to allow plugins to add extra arugments to return URL
+ * Added filter 'woo_vipps_payment_return_url' to allow plugins to add extra arguments to return URL
 
 = 2020.05.25 version 1.4.7 =
  * Support themes that use their own templating-mechanism by allowing the use of a real page ID to handle the Vipps special pages
