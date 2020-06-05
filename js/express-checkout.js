@@ -78,11 +78,17 @@ jQuery(document).ready(function () {
    jQuery('.woocommerce-error.vipps-error').click(removeErrorMessages);
  }
 
+ // Show a success message, allow overriding using hooks
  function vippsSuccess() {
-     jQuery('#do-express-checkout').hide();
-     jQuery('#vipps-status-message').empty();
+    var msgcontent = VippsCheckoutMessages['successMessage'];
+    jQuery('.vipps-express-checkout').blur();
+    jQuery('#do-express-checkout').hide();
 
-     var msgcontent = VippsCheckoutMessages['successMessage'];
+    if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined' && wp.hooks.hasAction('vippsSuccessMessage')) {
+      wp.hooks.doAction('vippsSuccessMessage', msgcontent);
+      return;
+    }
+     jQuery('#vipps-status-message').empty();
      var msg = jQuery('<div id=\'success\' class="woocommerce-info">'+ msgcontent +'</div>');
      jQuery('#vipps-status-message').append(msg);
      jQuery('.vipps-express-checkout').blur();
@@ -90,19 +96,31 @@ jQuery(document).ready(function () {
  // The default no-info "temporarily unavailable" message
  function vippsError() {
      jQuery('#do-express-checkout').hide();
-     jQuery('#vipps-status-message').empty();
+     jQuery('.vipps-express-checkout').blur();
      var msgcontent = VippsCheckoutMessages['temporaryError'];
+
+     if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined' && wp.hooks.hasAction('vippsSuccessMessage')) {
+       wp.hooks.doAction('vippsErrorMessage', msgcontent);
+       return;
+     }
+
+     jQuery('#vipps-status-message').empty();
      var msg = jQuery('<div id=\'error\' class="woocommerce-message woocommerce-error">'+ msgcontent +'</div>');
      jQuery('#vipps-status-message').append(msg);
-     jQuery('.vipps-express-checkout').blur();
  } 
  // An actual failure message from the backend
  function vippsFailure(msgcontent) {
      jQuery('#do-express-checkout').hide();
+     jQuery('.vipps-express-checkout').blur();
+
+     if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined' && wp.hooks.hasAction('vippsFailureMessage')) {
+       wp.hooks.doAction('vippsFailureMessage', msgcontent);
+       return;
+     }
+
      jQuery('#vipps-status-message').empty();
      var msg = jQuery('<div id=\'failure\' class="woocommerce-message woocommerce-error">'+ msgcontent +'</div>');
      jQuery('#vipps-status-message').append(msg);
-     jQuery('.vipps-express-checkout').blur();
  } 
 
  function doExpressCheckout () {
