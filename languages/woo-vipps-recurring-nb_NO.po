@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-05-28T11:49:11+00:00\n"
-"PO-Revision-Date: 2020-05-28 11:51+0000\n"
+"POT-Creation-Date: 2020-06-05T12:07:03+00:00\n"
+"PO-Revision-Date: 2020-06-05 12:21+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -192,37 +192,32 @@ msgstr "Avlyst Vippsbetaling"
 msgid "Could not create or find the \"Cancelled Vipps Purchase\" page"
 msgstr "Kunne ikke opprette eller finne \"Avlyst Vippsbetaling\" siden"
 
-#: includes/class-wc-gateway-vipps-recurring.php:439
+#: includes/class-wc-gateway-vipps-recurring.php:440
 msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr "Delsummen er lik null, ordren er gratis i denne abonnementsperiode."
 
-#. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:458
-msgid "Vipps charge captured instantly (Charge ID: %s)"
-msgstr "Vipps betaling trukket ummidelbart. (Charge ID: %s)"
-
-#: includes/class-wc-gateway-vipps-recurring.php:463
+#: includes/class-wc-gateway-vipps-recurring.php:461
 msgid "Vipps awaiting manual capture"
 msgstr "Vipps venter på manuelt trekk av beløp"
 
-#: includes/class-wc-gateway-vipps-recurring.php:478
+#: includes/class-wc-gateway-vipps-recurring.php:476
 msgid "The agreement was cancelled or expired in Vipps"
 msgstr "Betalingsavtalen utløp eller var avbrutt i Vipps"
 
 #. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:540
+#: includes/class-wc-gateway-vipps-recurring.php:538
 msgid "Vipps charge completed (Charge ID: %s)"
 msgstr "Vipps betaling fullført (Charge ID: %s)"
 
-#: includes/class-wc-gateway-vipps-recurring.php:557
+#: includes/class-wc-gateway-vipps-recurring.php:558
 msgid "Vipps payment cancelled."
 msgstr "Vipps betaling kansellert."
 
-#: includes/class-wc-gateway-vipps-recurring.php:563
+#: includes/class-wc-gateway-vipps-recurring.php:564
 msgid "Vipps payment failed."
 msgstr "Vipps betaling mislyktes."
 
-#: includes/class-wc-gateway-vipps-recurring.php:666
+#: includes/class-wc-gateway-vipps-recurring.php:667
 msgid ""
 "You can not refund a pending or due Vipps charge. Please wait till the "
 "payment clears first!"
@@ -231,20 +226,20 @@ msgstr ""
 "betalingen er fullført!"
 
 #. translators: Vipps Charge ID, human diff timestamp
-#: includes/class-wc-gateway-vipps-recurring.php:736
+#: includes/class-wc-gateway-vipps-recurring.php:737
 msgid "Vipps charge created: %1$s. The charge will be complete %2$s."
 msgstr "Vipps trekk opprettet: %1$s. Trekket blir fullført %2$s."
 
-#: includes/class-wc-gateway-vipps-recurring.php:824
+#: includes/class-wc-gateway-vipps-recurring.php:825
 msgid "Vipps failed to create charge"
 msgstr "Vipps mislyktes med å opprette en betaling"
 
-#: includes/class-wc-gateway-vipps-recurring.php:862
+#: includes/class-wc-gateway-vipps-recurring.php:863
 msgid "Payment gateway change request cancelled in Vipps"
 msgstr "Forespørsel om bytte av betalingsmiddel avbrutt i Vipps"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:956
+#: includes/class-wc-gateway-vipps-recurring.php:957
 msgid ""
 "Request to change gateway to Vipps with agreement ID: %s. Customer sent to "
 "Vipps for confirmation."
@@ -253,7 +248,7 @@ msgstr ""
 "ID: %s)"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:970
+#: includes/class-wc-gateway-vipps-recurring.php:971
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 
