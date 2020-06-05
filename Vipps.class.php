@@ -2194,6 +2194,9 @@ else:
 
         $expressCheckoutMessages = array();
         $expressCheckoutMessages['termsAndConditionsError'] = __( 'Please read and accept the terms and conditions to proceed with your order.', 'woocommerce' );
+        $expressCheckoutMessages['temporaryError'] = __('Vipps is temporarily unavailable.','woo-vipps');
+        $expressCheckoutMessages['successMessage'] = __('To the Vipps app!','woo-vipps');
+
         wp_register_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
         wp_localize_script('vipps-express-checkout', 'VippsCheckoutMessages', $expressCheckoutMessages);
         wp_enqueue_script('vipps-express-checkout');
@@ -2258,9 +2261,7 @@ else:
 
         if ($execute) {
             $content .= "<p id=waiting>" . __("Please wait while we are preparing your order", 'woo-vipps') . "</p>";
-            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('To the Vipps app!','woo-vipps') . "</div>";
-            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
-            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
+            $content .= "<div id='vipps-status-message'></div>";
             $this->fakepage(__('Order in progress','woo-vipps'), $content);
             return;
         } else {
@@ -2271,9 +2272,7 @@ else:
             $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
             $title = __('Buy now with Vipps!', 'woo-vipps');
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
-            $content .= "<div class='woocommerce-info' style='display:none' id='success'>" . __('To the Vipps app!','woo-vipps') . "</div>";
-            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='failure'></div>";
-            $content .= "<div class='woocommerce-message woocommerce-error' style='display:none' id='error'>". __('Vipps is temporarily unavailable.','woo-vipps')  . "</div>";
+            $content .= "<div id='vipps-status-message'></div>";
             $this->fakepage(__('Vipps Express Checkout','woo-vipps'), $content);
             return;
         }

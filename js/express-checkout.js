@@ -78,7 +78,32 @@ jQuery(document).ready(function () {
    jQuery('.woocommerce-error.vipps-error').click(removeErrorMessages);
  }
 
- 
+ function vippsSuccess() {
+     jQuery('#do-express-checkout').hide();
+     jQuery('#vipps-status-message').empty();
+
+     var msgcontent = VippsCheckoutMessages['successMessage'];
+     var msg = jQuery('<div id=\'success\' class="woocommerce-info">'+ msgcontent +'</div>');
+     jQuery('#vipps-status-message').append(msg);
+     jQuery('.vipps-express-checkout').blur();
+ } 
+ // The default no-info "temporarily unavailable" message
+ function vippsError() {
+     jQuery('#do-express-checkout').hide();
+     jQuery('#vipps-status-message').empty();
+     var msgcontent = VippsCheckoutMessages['temporaryError'];
+     var msg = jQuery('<div id=\'error\' class="woocommerce-message woocommerce-error">'+ msgcontent +'</div>');
+     jQuery('#vipps-status-message').append(msg);
+     jQuery('.vipps-express-checkout').blur();
+ } 
+ // An actual failure message from the backend
+ function vippsFailure(msgcontent) {
+     jQuery('#do-express-checkout').hide();
+     jQuery('#vipps-status-message').empty();
+     var msg = jQuery('<div id=\'failure\' class="woocommerce-message woocommerce-error">'+ msgcontent +'</div>');
+     jQuery('#vipps-status-message').append(msg);
+     jQuery('.vipps-express-checkout').blur();
+ } 
 
  function doExpressCheckout () {
    if (validating) return false;
@@ -90,7 +115,6 @@ jQuery(document).ready(function () {
     validating=false;
     return false;
    }
-
    jQuery('#do-express-checkout').prop('disabled',true);
    jQuery('#do-express-checkout').prop('inactive',true);
    jQuery('body').addClass('processing');
@@ -103,34 +127,19 @@ jQuery(document).ready(function () {
     "dataType": "json",
     "error": function (xhr, statustext, error) {
       console.log("Error creating express checkout:" + statustext + " " + error);
-      jQuery('#do-express-checkout').hide();
-      jQuery("#waiting").hide();
-      jQuery("#success").hide();
-      jQuery("#failure").hide();
-      jQuery("#error").show();
+      vippsError();
       jQuery('body').removeClass('processing');
-      jQuery('.vipps-express-checkout').blur();
       validating=0;
     },
     "success": function (result, statustext, xhr) {
      if (result["ok"]) {
-       console.log("We created the order!");
-       jQuery('#do-express-checkout').hide();
-       jQuery("#waiting").hide();
-       jQuery("#success").show();
-       jQuery("#failure").hide();
-       jQuery("#error").hide();
-       jQuery('.vipps-express-checkout').blur();
+       vippsSuccess();
        validating=0;
        window.location.href = result["url"];
      } else {
        console.log("Failure!");
        jQuery('#do-express-checkout').hide();
-       jQuery('#failure').html(result['msg']);
-       jQuery("#waiting").hide();
-       jQuery("#success").hide(); 
-       jQuery("#failure").show();
-       jQuery("#error").hide();
+       vippsFailure(result['msg']);
        jQuery('body').removeClass('processing');
        jQuery('.vipps-express-checkout').blur();
        validating=0;
