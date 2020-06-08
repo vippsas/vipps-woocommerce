@@ -130,7 +130,7 @@ class VippsKCSupport {
     public static function maybe_remove_other_gateway_button() {
         $kco_settings   = get_option( 'woocommerce_kco_settings' );
         $disable_button = isset( $kco_settings['epm_vipps_disable_button'] ) ? $kco_settings['epm_vipps_disable_button'] : 'no';
-        $remove = ('yes' === $disable_button)   
+        $remove = ('yes' === $disable_button);
 
         // Can't do these IOK 2020-05-29
         $remove = $remove || (class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription()); 
