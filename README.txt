@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.7 =
+* Enhancement: Re-throw WP_Error if it somehow ends up in Api->handle_http_response so we can see why something failed.
+
 = 1.3.6 =
 * Enhancement: Reduced the amount of superfluous order notes.
 * Fix: Increased atomicity for purchases that are not yet done. Due to a bug with the previously added feature in 1.3.2 about selection of default order status, the order would move to that status before it's considered done. This has been fixed.
@@ -191,25 +194,3 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: No longer cancel subscription if a charge fails to capture, the merchant should decide what to do with this themselves.
 * Fix: Billing interval is now properly displayed in the Vipps app payment screen.
 * Fix: Cancelled charges should also be marked as no longer pending.
-
-= 1.2.4 =
-* Fix: Fixed synchronised payments never completing when the user leaves the payment flow on the web too early.
-
-= 1.2.3 =
-* Fix: Fixed synchronised payments going straight to processing when they should be on-hold on all non first time payments.
-
-= 1.2.2 =
-* Enhancement: Return an error on screen if the checking all statuses fail.
-* Fix: Fixed enqueuing the admin JavaScript on WP < 5.0.0.
-
-= 1.2.1 =
-* Fix: Fixed compatibility with WP < 5.0.0. No longer using the `wp_set_script_translations` function it's a WP 5+ function only.
-
-= 1.2.0 =
-* Enhancement: Added an admin options area for "Vipps Recurring Payments". From here you can force check the status of all pending Vipps subscription orders.
-* Enhancement: Added page for when an order was cancelled as explained [here](https://github.com/vippsas/vipps-recurring-woocommerce/issues/6). You can configure where this goes in the plugin settings.
-* Change: The cron jobs now run every minute instead of every five minutes. This means it now checks 5 orders every minute.
-* Fix: Fixed manual renewal orders.
-* Fix: Do not allow capturing of a subscription, only shop orders.
-* Fix: Fixed an issue where renewal orders would act as initial orders.
-* Fix: Fixed yet another IdempotentKey problem that could occur sometimes when communicating with the Vipps API.

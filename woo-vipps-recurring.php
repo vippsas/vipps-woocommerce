@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Vipps AS
  * Author URI: https://vipps.no
- * Version: 1.3.6
+ * Version: 1.3.7
  * Requires at least: 4.4
  * Tested up to: 5.4.1
  * WC tested up to: 4.1.0
@@ -76,7 +76,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.6' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.7' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -274,6 +274,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 			/**
 			 * @return string
+			 * @throws WC_Vipps_Recurring_Exception
 			 */
 			public function handle_check_statuses_bulk_action(): string {
 				$sendback = remove_query_arg( [ 'orders' ], wp_get_referer() );

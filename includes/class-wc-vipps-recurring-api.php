@@ -352,6 +352,10 @@ class WC_Vipps_Recurring_Api {
 			throw new WC_Vipps_Recurring_Exception( $msg );
 		}
 
+		if ( is_wp_error( $response ) ) {
+			throw new $response;
+		}
+
 		$status = (int) wp_remote_retrieve_response_code( $response );
 		$body   = json_decode( $response['body'], true );
 
