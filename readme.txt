@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.4.1
+Tested up to: 5.4.2
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.2.0
+WC tested up to: 4.2.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -113,7 +113,7 @@ To be sure, you should test your shipping methods in Express Checkout before goi
 = I'd like to use sequential order numbers at Vipps instead of the WooCommerce order-ids using a sequential order number plugin. Does this plugins support that?
 Yes, though you need to ensure that the order-id's you produce like this are unique for your Vipps account, and you currently have to use a filter in your themes' functions.php file. We recommend using a prefix for your order ids, so a filter that will work with sequential order numbers would look like
 
-`add_filter('woo_vipps_order_id', function ($default, $prefix, $order) {
+`add_filter('woo_vipps_orderid', function ($default, $prefix, $order) {
     return $prefix . $order->get_order_number();
 }, 10, 3);`
 
@@ -200,7 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.06.08 version 1.4.8 =
+= 2020.06.29 version 1.4.8 =
  * Fixed a bug in express checkout shipping calculations where cart totals could be wrong 
  * Changed license from AGPLv3 (http://www.gnu.org/licenses/agpl-3.0.html) to MIT (https://choosealicense.com/licenses/mit/)
  * Added filter to remove Vipps as option in Klarna Checkout, and added a check for unsupported carts.
