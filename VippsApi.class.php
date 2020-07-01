@@ -246,7 +246,6 @@ class VippsApi {
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
-
         $transaction = array();
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = round($amount);
@@ -422,6 +421,7 @@ class VippsApi {
         if ($verb == 'GET' && $data_encoded) {
             $url .= "?$data_encoded";
         }
+
         $return = wp_remote_request($url,$args);
         $headers = array();
         $content=NULL;

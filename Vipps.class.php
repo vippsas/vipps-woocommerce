@@ -1069,6 +1069,9 @@ else:
         } else {
             WC()->customer = new WC_Customer(); // Reset from session
         }
+        // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
+        WC()->customer->set_billing_address_to_base();
+        WC()->customer->set_shipping_address_to_base();
 
         // The normal "restore cart from session" thing runs on wp_loaded, and only there, and cannot
         // be called from outside the WC_Cart object. We cannot easily run this on wp_loaded, and it does 
@@ -1077,6 +1080,7 @@ else:
         // Therefore, we will just recreate the 'data' bit of the contents and set the cart contents directly
         // from the now restored session. IOK 2020-04-08
         $newcart = array();
+
         foreach(WC()->session->get('cart',true) as $key => $values) {
             $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
             $values['data'] = $product;
@@ -1085,9 +1089,8 @@ else:
         WC()->cart->set_cart_contents($newcart);
         WC()->cart->calculate_totals();
 
-        // This is to provide defaults; real address will come from Vipps in this sitation. IOK 2019-10-25
-        WC()->customer->set_billing_address_to_base();
-        WC()->customer->set_shipping_address_to_base();
+        // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
+        do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
 
         return WC()->session;
     }
@@ -1222,6 +1225,7 @@ else:
         // and anyway, some plugins override the class of the cart, so just using WC_Cart will sometimes break.
         //  Now however, the session is stored in the order, and the cart will not have been deleted, so we should
         // now be able to calculate shipping for the actual cart with no further manipulation. IOK 2020-04-08
+        WC()->cart->calculate_totals();
         $acart = WC()->cart;
 
         $shipping_methods = array();
