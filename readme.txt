@@ -75,7 +75,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.4.9  =
+= 1.4.10  =
 Fixed a bug in the session-restore code for Express Checkout that could affect pricing of shipping
 Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to allow dynamic pricing plugins to run their code
 
@@ -198,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.07.01 version 1.4.10  =
+ Added yet another call to calculate_totals on the cart after the woocommerce_cart_loaded_from_session action
 
 = 2020.07.01 version 1.4.9  =
 Fixed a bug in the session-restore code for Express Checkout that could affect pricing of shipping

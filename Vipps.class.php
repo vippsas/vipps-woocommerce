@@ -1091,6 +1091,7 @@ else:
 
         // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
         do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
+        WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
 
         return WC()->session;
     }
