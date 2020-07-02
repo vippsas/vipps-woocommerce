@@ -551,7 +551,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				: $order->set_transaction_id( $charge['id'] );
 
 			$order->update_meta_data( '_vipps_recurring_captured', true );
-			
+
 			$order->update_status( $this->default_renewal_status, $this->get_due_charge_note( $charge ) );
 		}
 
@@ -846,26 +846,33 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function maybe_process_gateway_change( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
 
-		$new_agreement_id = $subscription->get_meta( '_new_agreement_id' );
-		$agreement        = $this->api->get_agreement( $new_agreement_id );
+		if ( $subscription->meta_exists( '_new_agreement_id' ) ) {
+			$new_agreement_id = $subscription->get_meta( '_new_agreement_id' );
+			$agreement        = $this->api->get_agreement( $new_agreement_id );
 
-		if ( $agreement['status'] === 'ACTIVE' ) {
-			$old_agreement_id = $subscription->get_meta( '_agreement_id' );
+			if ( $agreement['status'] === 'ACTIVE' ) {
+				$old_agreement_id = $subscription->get_meta( '_agreement_id' );
 
-			$subscription->update_meta_data( '_agreement_id', $new_agreement_id );
-			$subscription->delete_meta_data( '_new_agreement_id' );
-			WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $this->id );
+				$subscription->update_meta_data( '_agreement_id', $new_agreement_id );
+				WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $this->id );
 
-			$this->api->cancel_agreement( $old_agreement_id );
-		}
+				$this->api->cancel_agreement( $old_agreement_id );
+			}
 
-		if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] ) ) {
+			if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] ) ) {
+				$subscription->add_order_note( __( 'Payment gateway change request cancelled in Vipps', 'woo-vipps-recurring' ) );
+			}
+
+			if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED', 'ACTIVE' ] ) ) {
+				$subscription->delete_meta_data( '_vipps_recurring_waiting_for_gateway_change' );
+				$subscription->delete_meta_data( '_new_agreement_id' );
+			}
+
+			$subscription->save();
+		} else {
+		    // this exists as there was previously an issue where this value was never unset
 			$subscription->delete_meta_data( '_vipps_recurring_waiting_for_gateway_change' );
-			$subscription->delete_meta_data( '_new_agreement_id' );
-			$subscription->add_order_note( __( 'Payment gateway change request cancelled in Vipps', 'woo-vipps-recurring' ) );
 		}
-
-		$subscription->save();
 	}
 
 	/**
@@ -953,11 +960,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$response = $this->api->create_agreement( $agreement_body );
 
 			if ( $is_gateway_change ) {
-				update_post_meta( $subscription->get_id(), '_new_agreement_id', $response['agreementId'] );
-
 				/* translators: Vipps Agreement ID */
 				$message = sprintf( __( 'Request to change gateway to Vipps with agreement ID: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
 				$order->add_order_note( $message );
+				$order->update_meta_data( '_new_agreement_id', $response['agreementId'] );
 				$order->update_meta_data( '_vipps_recurring_waiting_for_gateway_change', true );
 			} else {
 				update_post_meta( $subscription->get_id(), '_agreement_id', $response['agreementId'] );

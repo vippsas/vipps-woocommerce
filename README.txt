@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.8 =
+* Fix: Solved an issue where it would attempt to swap gateway even though it had already finished doing so. This time it would throw an internal server error because it's passing a blank Agreement ID to the Vipps API.
+
 = 1.3.7 =
 * Enhancement: Re-throw WP_Error if it somehow ends up in Api->handle_http_response so we can see why something failed.
 
