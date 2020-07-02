@@ -60,7 +60,11 @@ class WC_Vipps_Recurring_Helper {
 	 * @since 1.0.0
 	 */
 	public static function is_wc_lt( $version ): bool {
-		return version_compare( WC_VERSION, $version, '<' );
+		if ( defined( 'WC_VERSION' ) ) {
+			return version_compare( WC_VERSION, $version, '<' );
+		}
+
+		return true;
 	}
 
 	/**

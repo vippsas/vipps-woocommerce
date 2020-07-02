@@ -321,7 +321,7 @@ class WC_Vipps_Recurring_Api {
 			'Ocp-Apim-Subscription-Key'   => $subscription_key,
 			'Content-Type'                => 'application/json',
 			'Vipps-System-Name'           => 'woocommerce',
-			'Vipps-System-Version'        => get_bloginfo( 'version' ) . '/' . WC_VERSION,
+			'Vipps-System-Version'        => get_bloginfo( 'version' ) . '/' . ( defined( 'WC_VERSION' ) ? WC_VERSION : '0.0.0' ),
 			'Vipps-System-Plugin-Name'    => 'woo-vipps-recurring',
 			'Vipps-System-Plugin-Version' => WC_VIPPS_RECURRING_VERSION
 		], $headers );
