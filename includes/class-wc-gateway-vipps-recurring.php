@@ -870,7 +870,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$subscription->save();
 		} else {
-		    // this exists as there was previously an issue where this value was never unset
+			// this exists as there was previously an issue where this value was never unset
 			$subscription->delete_meta_data( '_vipps_recurring_waiting_for_gateway_change' );
 		}
 	}
