@@ -528,12 +528,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$gateway = $this->gateway();
 
 				$posts = get_posts( [
-					'post_type'      => 'shop_subscription',
-					'post_status'    => 'wc-active',
-					'meta_key'       => '_vipps_recurring_waiting_for_gateway_change',
-					'meta_compare'   => '=',
-					'meta_value'     => 1,
-					'return'         => 'ids',
+					'post_type'    => 'shop_subscription',
+					'post_status'  => 'wc-active',
+					'meta_key'     => '_vipps_recurring_waiting_for_gateway_change',
+					'meta_compare' => '=',
+					'meta_value'   => 1,
+					'return'       => 'ids',
 				] );
 
 				foreach ( $posts as $post ) {
