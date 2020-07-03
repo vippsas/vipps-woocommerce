@@ -1517,16 +1517,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
     // IOK 2018-05-25
     public function create_partial_order() {
-        $thecart = WC()->cart;
+        // This is neccessary for some plugins, like Yith Dynamic Pricing, that adds filters to get_price depending on whether or not is_checkout is true.
+        // so basically, since we are impersonating WC_Checkout here, we should define this constant too. IOK 2020-07-03
+        wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+        WC()->cart->calculate_fees();
+        WC()->cart->calculate_totals();
 
-        $thecart->calculate_fees();
-        $thecart->calculate_totals();
-
-        do_action('woo_vipps_before_create_express_checkout_order', $thecart);
-        $contents = $thecart->get_cart_contents();
+        do_action('woo_vipps_before_create_express_checkout_order', WC()->cart);
+        $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         
-        $cart_hash = md5(json_encode(wc_clean($contents)) . $thecart->total);
+        $cart_hash = md5(json_encode(wc_clean($contents)) . WC()->cart->total);
         $order = new WC_Order();
         $order->set_status('pending');
         $order->set_payment_method($this);
@@ -1541,16 +1542,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
         $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
         $order->set_customer_user_agent( wc_get_user_agent() );
-        $order->set_discount_total( $thecart->get_discount_total()); 
-        $order->set_discount_tax( $thecart->get_discount_tax() );
-        $order->set_cart_tax( $thecart->get_cart_contents_tax() + $thecart->get_fee_tax() );
+        $order->set_discount_total( WC()->cart->get_discount_total()); 
+        $order->set_discount_tax( WC()->cart->get_discount_tax() );
+        $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
 
         // Use these methods directly - they should be safe.
-        WC()->checkout->create_order_line_items( $order, $thecart);
-        WC()->checkout->create_order_fee_lines( $order, $thecart);
-        WC()->checkout->create_order_tax_lines( $order, $thecart);
-        WC()->checkout->create_order_coupon_lines( $order, $thecart);
+        WC()->checkout->create_order_line_items( $order, WC()->cart);
+        WC()->checkout->create_order_fee_lines( $order, WC()->cart);
+        WC()->checkout->create_order_tax_lines( $order, WC()->cart);
+        WC()->checkout->create_order_coupon_lines( $order, WC()->cart);
         $order->calculate_totals(true);
+
+        // Added to support third-party plugins that wants to do stuff with the order before it is saved. IOK 2020-07-03
+        do_action( 'woocommerce_checkout_create_order', $order, array()); 
+
         $orderid = $order->save(); 
 
         do_action('woo_vipps_express_checkout_order_created', $orderid);

@@ -7,7 +7,7 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.4.10
+   Version: 1.4.11
 
    Requires at least: 4.7
    Tested up to: 5.4.2
@@ -87,5 +87,13 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
 
 }
+
+add_action ('before_woocommerce_init', function () {
+ $url = $_SERVER['REQUEST_URI'];
+ # This removes cookies for the wc-api callback events for the vipps plugin, to be 100% sure no sessions are restored when they ought not be IOK 2020-07-01
+ if (preg_match("!\bvipps\b!", $url) && preg_match("!\bwc-api\b!", $url)) {
+    foreach($_COOKIE as $key=>$value) unset($_COOKIE[$key]);
+ }
+},1);
 
 ?>
