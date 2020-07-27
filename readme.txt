@@ -200,6 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2020.07.xx version 1.4.11  =
  Added the WOOCOMMERCE_CHECKOUT constant to create_partial_order, because some plugins act differently on checkout and on normal page views.
+ Improved compatibility with KCO external payments
 
 = 2020.07.01 version 1.4.10  =
  Added yet another call to calculate_totals on the cart after the woocommerce_cart_loaded_from_session action

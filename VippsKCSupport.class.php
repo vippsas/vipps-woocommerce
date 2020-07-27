@@ -38,7 +38,7 @@ class VippsKCSupport {
     // To be run in "plugins_loaded" - extend Klarna Checkout with support for the Vipps external payment method.
     public static function init() {
         add_filter( 'kco_wc_gateway_settings',        array('VippsKCSupport','form_fields'));
-        add_filter( 'kco_wc_api_request_args',        array('VippsKCSupport','create_order_vipps' ));
+        add_filter( 'kco_wc_api_request_args',        array('VippsKCSupport','create_order_vipps' ), 90);
         add_filter( 'kco_wc_klarna_order_pre_submit', array('VippsKCSupport','canonicalize_phone_number'), 11 );
         add_action( 'init',                           array('VippsKCSupport','maybe_remove_other_gateway_button' ));
         add_action( 'kco_wc_before_submit',           array('VippsKCSupport','add_vipps_payment_method' ));
@@ -94,8 +94,10 @@ class VippsKCSupport {
                 'description'  => $description,
                 );
 
-        $klarna_external_payment            = array( $klarna_external_payment );
-        $create['external_payment_methods'] = $klarna_external_payment;
+        if (!isset($create['external_payment_methods']) || !is_array($create['external_payment_methods'])) {
+           $create['external_payment_methods'] = array();
+        }
+        $create['external_payment_methods'][] = $klarna_external_payment;
 
         // Ensure we don't do Vipps as the default pament method. This is checked in "woocommerce_checkout_order_processed" hook.
         WC()->session->set('vipps_via_klarna', 1);
