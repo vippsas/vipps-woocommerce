@@ -96,4 +96,21 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
+add_action('plugins_loaded', function () {
+ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+//   error_log("We have gutenberg blocks");
+/*  $container = Automattic\WooCommerce\Blocks\Package::container();
+    $container->register(
+                        Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::class,
+                        function( Container $container ) {
+                                $asset_api = $container->get( AssetApi::class );
+                                return new Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps( $asset_api );
+                        }
+                );
+
+ }
+ */
+});
+
+
 ?>
