@@ -10,6 +10,7 @@ namespace Automattic\WooCommerce\Blocks\Payments\Integrations;
 
 use Automattic\WooCommerce\Blocks\Assets\Api;
 
+
 final class Vipps extends AbstractPaymentMethodType {
 	protected $name = 'vipps';
 	private $asset_api;
@@ -20,6 +21,7 @@ final class Vipps extends AbstractPaymentMethodType {
 		$this->settings = get_option( 'woocommerce_vipps_settings', [] );
 	}
 	public function is_active() {
+                return true;
 		return filter_var( $this->get_setting( 'enabled', false ), FILTER_VALIDATE_BOOLEAN );
 	}
 	public function get_payment_method_script_handles() {
@@ -29,7 +31,9 @@ final class Vipps extends AbstractPaymentMethodType {
 		);
 		return [ 'wc-payment-method-vipps' ];
 	}
+
 	public function get_payment_method_data() {
+                return array('title'=>'Vipps', 'description'=>'Vippsetest');
 		return [
 			'title'                    => $this->get_setting( 'title' ),
 			'description'              => $this->get_setting( 'description' )
