@@ -25,10 +25,7 @@ final class Vipps extends AbstractPaymentMethodType {
 		return filter_var( $this->get_setting( 'enabled', false ), FILTER_VALIDATE_BOOLEAN );
 	}
 	public function get_payment_method_script_handles() {
-		$this->asset_api->register_script(
-			'wc-payment-method-vipps',
-			'js/wc-payment-method-vipps.js'
-		);
+                wp_register_script('wc-payment-method-vipps', plugins_url('js/wc-payment-method-vipps.js', __FILE__), [], filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js"));
 		return [ 'wc-payment-method-vipps' ];
 	}
 
