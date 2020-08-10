@@ -46,6 +46,7 @@ const VippsPaymentMethod = {
 	ariaLabel: label
 };
 
+
 registerPaymentMethod(Config => new Config(VippsPaymentMethod));
 
 }());
