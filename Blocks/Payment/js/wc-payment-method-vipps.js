@@ -1,7 +1,6 @@
 
 (function () { 
 
-console.log("Doing it");
 
 // Imports
 const  __  = wp.i18n.__;
@@ -12,7 +11,7 @@ const registerPaymentMethod = wc.wcBlocksRegistry.registerPaymentMethod;
 
 // Data
 const settings = getSetting('vipps_data', {});
-const defaultLabel = __('Vipps', 'woo-gutenberg-products-block');
+const defaultLabel = __('Vipps', 'woo-vipps');
 const label = decodeEntities(settings.title) || defaultLabel;
 
 
@@ -37,13 +36,17 @@ const canMakePayment = (args) => {
  * Cash on Delivery (COD) payment method config object.
  */
 const VippsPaymentMethod = {
-	name: 'vipps',
-	label: React.createElement(Label, null),
-	content: React.createElement(Content, null),
-	edit: React.createElement(Content, null),
-	icons: null,
-	canMakePayment,
-	ariaLabel: label
+name: 'vipps',
+      label: React.createElement(Label, null),
+      content: React.createElement(Content, null),
+      edit: React.createElement(Content, null),
+      placeOrderButtonLabel: __(
+              'Continue with Vipps',
+              'woo-vipps'
+              ),
+      	icons: [],
+      canMakePayment: canMakePayment,
+      ariaLabel: label
 };
 
 
