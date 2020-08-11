@@ -96,28 +96,4 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-add_action('plugins_loaded', function () {
- if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
-    require_once(dirname(__FILE__) . "/Blocks/Payment/Vipps.class.php");
-    $container = Automattic\WooCommerce\Blocks\Package::container();
-    $container->register(
-                        Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::class,
-                        function( $container ) {
-                                $asset_api = $container->get( Automattic\WooCommerce\Blocks\Assets\Api::class );
-                                return new Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps( $asset_api );
-                        }
-    );
 
-    add_action( 'woocommerce_blocks_payment_method_type_registration', function ($registry) {
-       $container = Automattic\WooCommerce\Blocks\Package::container();
-       $registry->register(
-                        $container->get( Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::class )
-                );
-    });
-
- }
-}
-);
-
-
-?>

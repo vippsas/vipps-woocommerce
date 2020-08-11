@@ -888,9 +888,6 @@ else:
         add_action('wp_ajax_nopriv_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
         add_action('wp_ajax_vipps_buy_single_product', array($this, 'ajax_vipps_buy_single_product'));
 
-
-
-
         // This is for express checkout which we will also do asynchronously IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_express_checkout', array($this, 'ajax_do_express_checkout'));
         add_action('wp_ajax_do_express_checkout', array($this, 'ajax_do_express_checkout'));
@@ -912,6 +909,12 @@ else:
                 require_once(dirname(__FILE__) . "/VippsKCSupport.class.php");
                 VippsKCSupport::init();
             }
+        }
+
+        // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
+        if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+            require_once(dirname(__FILE__) . "/Blocks/Payment/Vipps.class.php");
+            Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::register();
         }
 
     }
