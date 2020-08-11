@@ -24,8 +24,11 @@ const Content = () => {
 };
 
 const Label = props => {
-	const { PaymentMethodLabel } = props.components;
-	return React.createElement(PaymentMethodLabel, { text: label });
+//	const { PaymentMethodLabel } = props.components;
+        const icon = React.createElement('img', { alt: label, title: label, className: 'vipps-payment-logo', src:"https://vdev.digitalt.org/wp-content/plugins/woo-vipps/img/vipps_logo_rgb.png"});
+
+        return icon;
+//	return React.createElement(PaymentMethodLabel, { text: label, icon: icon });
 };
 
 const canMakePayment = (args) => {
@@ -41,12 +44,31 @@ name: 'vipps',
       content: React.createElement(Content, null),
       edit: React.createElement(Content, null),
       placeOrderButtonLabel: VippsLocale['Continue with Vipps'],
-     icons: [],
+      icons: [],
       canMakePayment: canMakePayment,
       ariaLabel: label
 };
 
 
 registerPaymentMethod(Config => new Config(VippsPaymentMethod));
+
+
+/*
+export const PaymentMethodLabel = ( { icon = '', text = '' } ) => {
+        const hasIcon = !! icon;
+        const hasNamedIcon =
+                hasIcon && typeof icon === 'string' && namedIcons[ icon ];
+        const className = classnames( 'wc-block-components-payment-method-label', {
+                'wc-block-components-payment-method-label--with-icon': hasIcon,
+        } );
+
+        return (
+                <span className={ className }>
+                        { hasNamedIcon ? <Icon srcElement={ namedIcons[ icon ] } /> : icon }
+                        { text }
+                </span>
+        );
+};
+*/
 
 }());
