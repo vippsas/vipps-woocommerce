@@ -12,6 +12,7 @@ use Automattic\WooCommerce\Blocks\Assets\Api;
 
 
 final class Vipps extends AbstractPaymentMethodType {
+        private $localized=0;
 	protected $name = 'vipps';
 	private $asset_api;
 	public function __construct( Api $asset_api ) {
@@ -29,8 +30,13 @@ final class Vipps extends AbstractPaymentMethodType {
                                     filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js"));
                 // Will not use wp_set_script_translations yet, it seems to be not fully compatible with Loco Translate etc IOK 2020-08-11
                 // wp_set_script_translations( 'wc-payment-method-vipps', 'woo-vipps' );
-                $strings = array('Continue with Vipps'=>__('Continue with Vipps', 'woo-vipps'),'Vipps'=> __('Vipps', 'woo-vipps'));
-                wp_localize_script('wc-payment-method-vipps', 'VippsLocale', $strings);
+               
+                // This script gets called several times; localize only once.  IOK 2020-08-11
+                if (!$this->localized) {
+                    $strings = array('Continue with Vipps'=>__('Continue with Vipps', 'woo-vipps'),'Vipps'=> __('Vipps', 'woo-vipps'));
+                    wp_localize_script('wc-payment-method-vipps', 'VippsLocale', $strings);
+                    $this->localized=1;
+                }
 		return [ 'wc-payment-method-vipps' ];
 	}
 
