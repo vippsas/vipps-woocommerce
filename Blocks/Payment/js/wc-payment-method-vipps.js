@@ -11,7 +11,7 @@ const registerPaymentMethod = wc.wcBlocksRegistry.registerPaymentMethod;
 
 // Data
 const settings = getSetting('vipps_data', {});
-const defaultLabel = __('Vipps', 'woo-vipps');
+const defaultLabel = VippsLocale['Vipps'];
 const label = decodeEntities(settings.title) || defaultLabel;
 
 
@@ -40,11 +40,8 @@ name: 'vipps',
       label: React.createElement(Label, null),
       content: React.createElement(Content, null),
       edit: React.createElement(Content, null),
-      placeOrderButtonLabel: __(
-              'Continue with Vipps',
-              'woo-vipps'
-              ),
-      	icons: [],
+      placeOrderButtonLabel: VippsLocale['Continue with Vipps'],
+     icons: [],
       canMakePayment: canMakePayment,
       ariaLabel: label
 };

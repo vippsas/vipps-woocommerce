@@ -19,13 +19,18 @@ final class Vipps extends AbstractPaymentMethodType {
 	}
 	public function initialize() {
 		$this->settings = get_option( 'woocommerce_vipps_settings', [] );
-error_log("iverok settings " . print_r($this->settings,true));
 	}
 	public function is_active() {
 		return filter_var( $this->get_setting( 'enabled', false ), FILTER_VALIDATE_BOOLEAN );
 	}
 	public function get_payment_method_script_handles() {
-                wp_register_script('wc-payment-method-vipps', plugins_url('js/wc-payment-method-vipps.js', __FILE__), array('wc-blocks-registry', 'wc-settings', 'wp-html-entities', 'wp-i18n', 'wp-polyfill'), filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js"));
+                wp_register_script('wc-payment-method-vipps', plugins_url('js/wc-payment-method-vipps.js', __FILE__), 
+                                    array('wc-blocks-registry', 'wc-settings', 'wp-html-entities', 'wp-i18n', 'wp-polyfill'), 
+                                    filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js"));
+                // Will not use wp_set_script_translations yet, it seems to be not fully compatible with Loco Translate etc IOK 2020-08-11
+                // wp_set_script_translations( 'wc-payment-method-vipps', 'woo-vipps' );
+                $strings = array('Continue with Vipps'=>__('Continue with Vipps', 'woo-vipps'),'Vipps'=> __('Vipps', 'woo-vipps'));
+                wp_localize_script('wc-payment-method-vipps', 'VippsLocale', $strings);
 		return [ 'wc-payment-method-vipps' ];
 	}
 
