@@ -3,10 +3,10 @@
 
 
 // Imports
-const  __  = wp.i18n.__;
-const decodeEntities  = wp.htmlEntities.decodeEntities;
-const getSetting  = wc.wcSettings.getSetting;
-const registerPaymentMethod = wc.wcBlocksRegistry.registerPaymentMethod;
+const { __ } = wp.i18n;
+const { decodeEntities }  = wp.htmlEntities;
+const { getSetting }  = wc.wcSettings;
+const { registerPaymentMethod }  = wc.wcBlocksRegistry;
 
 
 // Data
@@ -41,7 +41,7 @@ const canMakePayment = (args) => {
 };
 
 /**
- * Cash on Delivery (COD) payment method config object.
+ * Vipps  payment method config object.
  */
 const VippsPaymentMethod = {
       name: 'vipps',

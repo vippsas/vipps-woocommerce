@@ -8,8 +8,6 @@
 
 namespace Automattic\WooCommerce\Blocks\Payments\Integrations;
 
-use Automattic\WooCommerce\Blocks\Package;
-
 final class Vipps extends AbstractPaymentMethodType {
         private $localized=0;
 	protected $name = 'vipps';
