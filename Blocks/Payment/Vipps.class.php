@@ -32,8 +32,7 @@ final class Vipps extends AbstractPaymentMethodType {
                 $version = filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js");
                 $path = plugins_url('js/wc-payment-method-vipps.js', __FILE__);
                 $handle = 'wc-payment-method-vipps';
-                $dependencies = array('wc-vendors', 'wc-blocks' );
-                $dependencies = apply_filters('woocommerce_blocks_register_script_dependencies', $dependencies, $handle );
+                $dependencies = array();
 
                 wp_register_script($handle, $path, $dependencies,$version,true);
 
