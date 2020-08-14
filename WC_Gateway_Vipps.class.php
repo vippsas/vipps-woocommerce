@@ -1160,6 +1160,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function check_payment_status($order) {
         if (!$order) return 'cancelled';
         $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
+        // This can happen if the vipps status is set from the back end for instance. IOK 2020-08-14
+        if ($order->get_status() == 'pending' && $status != 'initiated') {
+           $this->callback_check_order_status($order);
+        }
         return $status;
     }
 
@@ -1191,6 +1195,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($oldvippsstatus != $vippsstatus) {
             $statuschange = 1;
+        }
+        if ($oldstatus == 'pending' && $vippsstatus != 'initiated') {
+            $statuschange = 1; // This is not supposed to happen, but if it does: The vippsstatus changed without the woo status changing.
         }
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
