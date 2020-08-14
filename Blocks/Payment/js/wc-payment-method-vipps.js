@@ -7,6 +7,7 @@ const { __ } = wp.i18n;
 const { decodeEntities }  = wp.htmlEntities;
 const { getSetting }  = wc.wcSettings;
 const { registerPaymentMethod }  = wc.wcBlocksRegistry;
+const { registerExpressPaymentMethod }  = wc.wcBlocksRegistry;
 
 
 // Data
@@ -36,6 +37,14 @@ const Label = props => {
 	return React.createElement(PaymentMethodLabel, { text: label, icon: icon });
 };
 
+const ExpressCheckoutButton = props => {
+ return React.createElement('div', {dangerouslySetInnerHTML: {__html: settings.expressbutton  },  className: 'vipps-express-container'}, null);
+}
+
+const canMakeExpressPayment = (args) => {
+ return settings.expressbutton != "";
+};
+
 const canMakePayment = (args) => {
  return true;
 };
@@ -53,9 +62,17 @@ const VippsPaymentMethod = {
       canMakePayment: canMakePayment,
       ariaLabel: label
 };
+const VippsExpressPaymentMethod = {
+      name: 'vippsexpress',
+      content: React.createElement(ExpressCheckoutButton, null),
+      edit: React.createElement(ExpressCheckoutButton, null),
+      paymentMethodId: 'vipps',
+      canMakePayment: canMakeExpressPayment,
+};
 
 
 registerPaymentMethod(Config => new Config(VippsPaymentMethod));
+registerExpressPaymentMethod(Config => new Config(VippsExpressPaymentMethod));
 
 
 }());

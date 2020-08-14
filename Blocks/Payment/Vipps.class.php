@@ -50,11 +50,17 @@ final class Vipps extends AbstractPaymentMethodType {
 		return [ 'wc-payment-method-vipps' ];
 	}
 
+        public function get_express_checkout_button () {
+            $button = \Vipps::instance()->express_checkout_button_shortcode();
+            return  $button;
+        }
+
 	public function get_payment_method_data() {
 		return [
 			'title'                    => $this->get_setting( 'title' ),
 			'description'              => $this->get_setting( 'description' ),
-                        'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', plugins_url('../../img/vipps_logo_rgb.png', __FILE__))
+                        'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', plugins_url('../../img/vipps_logo_rgb.png', __FILE__)),
+                        'expressbutton' => $this->get_express_checkout_button()
 		];
 	}
 }
