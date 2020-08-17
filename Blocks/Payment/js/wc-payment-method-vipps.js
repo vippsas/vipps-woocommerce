@@ -26,7 +26,7 @@ const Content = () => {
 		null,
 		decodeEntities(settings.description || '')
 	);
-        applyFilters('woo_vipps_checkout_description', content, settings);
+       return applyFilters('woo_vipps_checkout_description', content, settings);
 };
 
 const Label = props => {
