@@ -8,6 +8,9 @@ const { decodeEntities }  = wp.htmlEntities;
 const { getSetting }  = wc.wcSettings;
 const { registerPaymentMethod }  = wc.wcBlocksRegistry;
 const { registerExpressPaymentMethod }  = wc.wcBlocksRegistry;
+const { applyFilters } = wp.hooks;
+
+//( 'hookName', content, arg1, arg2, ... )
 
 
 // Data
@@ -18,35 +21,40 @@ const iconsrc = settings.iconsrc;
 
 
 const Content = () => {
-	return React.createElement(
+        var content = React.createElement(
 		'div',
 		null,
 		decodeEntities(settings.description || '')
 	);
+        applyFilters('woo_vipps_checkout_description', content, settings);
 };
 
 const Label = props => {
-
+        var label = null;
         if (iconsrc != '') {
             const icon = React.createElement('img', { alt: label, title: label, className: 'vipps-payment-logo', src:iconsrc});
-            return icon;
+            label = icon;
+        } else {
+          // Just do a text label if no icon is passed (this is filterable) IOK 2020-08-10
+	  const { PaymentMethodLabel } = props.components;
+          label = React.createElement(PaymentMethodLabel, { text: label, icon: icon });
         }
-
-        // Just do a text label if no icon is passed (this is filterable) IOK 2020-08-10
-	const { PaymentMethodLabel } = props.components;
-	return React.createElement(PaymentMethodLabel, { text: label, icon: icon });
+        return applyFilters('woo_vipps_checkout_label', label, settings);
 };
 
 const ExpressCheckoutButton = props => {
- return React.createElement('div', {dangerouslySetInnerHTML: {__html: settings.expressbutton  },  className: 'vipps-express-container'}, null);
+ var expressbutton = React.createElement('div', {dangerouslySetInnerHTML: {__html: settings.expressbutton  },  className: 'vipps-express-container'}, null);
+ return applyFilters('woo_vipps_checkout_block_express_button', expressbutton, settings);
 }
 
 const canMakeExpressPayment = (args) => {
- return settings.expressbutton != "";
+ var candoit = settings.show_express_checkout;
+ return applyFilters('woo_vipps_checkout_block_show_express_checkout', candoit, settings);
 };
 
 const canMakePayment = (args) => {
- return true;
+ var candoit = true;
+ return applyFilters('woo_vipps_checkout_block_show_vipps', candoit, settings);
 };
 
 /**

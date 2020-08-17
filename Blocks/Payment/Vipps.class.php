@@ -32,7 +32,7 @@ final class Vipps extends AbstractPaymentMethodType {
                 $version = filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js");
                 $path = plugins_url('js/wc-payment-method-vipps.js', __FILE__);
                 $handle = 'wc-payment-method-vipps';
-                $dependencies = array();
+                $dependencies = array('wp-hooks');
 
                 wp_register_script($handle, $path, $dependencies,$version,true);
 
@@ -54,12 +54,18 @@ final class Vipps extends AbstractPaymentMethodType {
             $button = \Vipps::instance()->express_checkout_button_shortcode();
             return  $button;
         }
+        public function show_express_checkout_button () {
+            $gw = \Vipps::instance()->gateway();
+            if (!$gw->cart_supports_express_checkout()) return false;
+            return $gw->show_express_checkout();
+        }
 
 	public function get_payment_method_data() {
 		return [
 			'title'                    => $this->get_setting( 'title' ),
 			'description'              => $this->get_setting( 'description' ),
                         'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', plugins_url('../../img/vipps_logo_rgb.png', __FILE__)),
+                        'show_express_checkout' => $this->show_express_checkout_button(),
                         'expressbutton' => $this->get_express_checkout_button()
 		];
 	}
