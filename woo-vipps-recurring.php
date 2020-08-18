@@ -3,12 +3,12 @@
 /**
  * Plugin Name: Vipps Recurring Payments Gateway for WooCommerce
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
- * Author: Vipps AS
- * Author URI: https://vipps.no
- * Version: 1.3.8
+ * Author: Everyday AS
+ * Author URI: https://everyday.no
+ * Version: 1.3.9
  * Requires at least: 4.4
- * Tested up to: 5.4.2
- * WC tested up to: 4.2.2
+ * Tested up to: 5.5
+ * WC tested up to: 4.3.1
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
  */
@@ -76,7 +76,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.8' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.3.9' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
