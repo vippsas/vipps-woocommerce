@@ -326,46 +326,57 @@ class WC_Vipps_Recurring_Api {
 			'Vipps-System-Plugin-Version' => WC_VIPPS_RECURRING_VERSION
 		], $headers );
 
+		$body = $method === 'GET' ? $data : json_encode( $data );
+
 		$args = [
 			'method'  => $method,
 			'timeout' => 30,
 			'headers' => $headers,
-			'body'    => $method === 'GET' ? $data : json_encode( $data ),
+			'body'    => $body,
 		];
 
 		$response = wp_safe_remote_post( $url, $args );
 
+		// throw WP error as a WC_Vipps_Recurring_Exception if response is not valid
+		$default_error = '';
+
+		if ( is_wp_error( $response ) ) {
+			$default_error = "500 " . $response->get_error_message();
+		}
+
 		// Parse the result, converting it to exceptions if necessary
-		return $this->handle_http_response( $response );
+		return $this->handle_http_response( $response, $body, $default_error );
 	}
 
 	/**
 	 * @param $response
+	 * @param $request_body
+	 * @param $default_error
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	private function handle_http_response( $response ) {
+	private function handle_http_response( $response, $request_body, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
 			$msg = __( 'No response from Vipps', 'woo-vipps-recurring' );
 			throw new WC_Vipps_Recurring_Exception( $msg );
 		}
 
-		if ( is_wp_error( $response ) ) {
-			throw new $response;
+		$status = (int) wp_remote_retrieve_response_code( $response );
+
+		$body = wp_remote_retrieve_body( $response );
+		if ( $body ) {
+			$body = json_decode( $body, true );
 		}
 
-		$status = (int) wp_remote_retrieve_response_code( $response );
-		$body   = json_decode( $response['body'], true );
-
 		// As long as the status code is less than 300 and greater than 199 we can return the body
-		if ( $status < 300 && $status > 199 ) {
+		if ( $status < 300 ) {
 			return $body;
 		}
 
 		// error handling
-		$msg                           = '';
+		$msg                           = $default_error;
 		$is_idempotent_error           = false;
 		$is_merchant_not_allowed_error = false;
 
@@ -401,7 +412,7 @@ class WC_Vipps_Recurring_Api {
 			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
 		}
 
-		WC_Vipps_Recurring_Logger::log( 'Error: ' . $msg );
+		WC_Vipps_Recurring_Logger::log( 'Error: ' . $msg . ' - request body: ' . $request_body );
 
 		$exception                      = new WC_Vipps_Recurring_Exception( $msg, $localized_msg );
 		$exception->response_code       = $status;
