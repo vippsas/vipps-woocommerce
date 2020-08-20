@@ -30,12 +30,11 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
-	 * Get an API Access Token or create a new one
-	 *
 	 * @param int $force
 	 *
-	 * @return mixed|null
-	 * @throws WC_Vipps_Recurring_Exception
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function get_access_token( $force = 0 ) {
 		// First, get a stored token if it exists
@@ -60,22 +59,21 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
-	 * Fetch Access Token from Vipps
-	 *
-	 * @return mixed
-	 * @throws WC_Vipps_Recurring_Exception
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	private function get_access_token_from_vipps() {
 		try {
 			return $this->http_call( 'accessToken/get', 'POST' );
-		} catch ( WC_Vipps_Recurring_Exception $e ) {
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
 			WC_Vipps_Recurring_Logger::log( __( 'Could not get Vipps access token', 'woo-vipps-recurring' ) . ' ' . $e->getMessage() );
 
 			throw $e;
 		} catch ( Exception $e ) {
 			WC_Vipps_Recurring_Logger::log( __( 'Could not get Vipps access token', 'woo-vipps-recurring' ) . ' ' . $e->getMessage() );
 
-			throw new WC_Vipps_Recurring_Exception( $e->getMessage() );
+			throw new WC_Vipps_Recurring_Config_Exception( $e->getMessage() );
 		}
 	}
 
@@ -89,8 +87,10 @@ class WC_Vipps_Recurring_Api {
 	/**
 	 * @param $agreement_body
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function create_agreement( $agreement_body ) {
 		$token = $this->get_access_token();
@@ -105,8 +105,10 @@ class WC_Vipps_Recurring_Api {
 	/**
 	 * @param $agreement_id
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function get_agreement( $agreement_id ) {
 		$token = $this->get_access_token();
@@ -142,8 +144,10 @@ class WC_Vipps_Recurring_Api {
 	/**
 	 * @param $agreement_id
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function cancel_agreement( $agreement_id ) {
 		$token = $this->get_access_token();
@@ -164,8 +168,10 @@ class WC_Vipps_Recurring_Api {
 	 * @param $charge
 	 * @param $idempotency_key
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function capture_reserved_charge( $agreement, $charge, $idempotency_key ) {
 		$token = $this->get_access_token();
@@ -184,8 +190,10 @@ class WC_Vipps_Recurring_Api {
 	 * @param $idempotence_key
 	 * @param null $amount
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws Exception
 	 */
 	public function create_charge( $agreement, $order, $idempotence_key, $amount = null ) {
@@ -208,10 +216,15 @@ class WC_Vipps_Recurring_Api {
 		// minimum of 2 days
 		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
+		$charge_description = $agreement['productDescription'];
+		if ( strlen( $charge_description ) > 99 ) {
+			$charge_description = substr( $charge_description, 0, 90 );
+		}
+
 		$data = [
 			'amount'          => $amount,
 			'currency'        => $order->get_currency(),
-			'description'     => $agreement['productDescription'],
+			'description'     => $charge_description,
 			'due'             => $due_at,
 			'hasPriceChanged' => $has_price_changed,
 			'retryDays'       => $this->retry_days,
@@ -224,7 +237,9 @@ class WC_Vipps_Recurring_Api {
 	 * @param $agreement_id
 	 * @param $charge_id
 	 *
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function cancel_charge( $agreement_id, $charge_id ) {
 		$token = $this->get_access_token();
@@ -240,8 +255,10 @@ class WC_Vipps_Recurring_Api {
 	 * @param $agreement_id
 	 * @param $charge_id
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function get_charge( $agreement_id, $charge_id ) {
 		$token = $this->get_access_token();
@@ -257,10 +274,12 @@ class WC_Vipps_Recurring_Api {
 	 * @param $agreement_id
 	 * @param $charge_id
 	 * @param null $amount
-	 * @param string $reason
+	 * @param null $reason
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function refund_charge( $agreement_id, $charge_id, $amount = null, $reason = null ) {
 		$token = $this->get_access_token();
@@ -269,6 +288,10 @@ class WC_Vipps_Recurring_Api {
 			'Authorization'  => 'Bearer ' . $token,
 			'Idempotent-Key' => $this->generate_idempotency_key(),
 		];
+
+		if ( $reason !== null && strlen( $reason ) > 99 ) {
+			$reason = substr( $reason, 0, 90 );
+		}
 
 		$data = [
 			'description' => $reason ?: 'Refund',
@@ -286,8 +309,10 @@ class WC_Vipps_Recurring_Api {
 	/**
 	 * @param $agreement_id
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function get_charges_for( $agreement_id ) {
 		$token = $this->get_access_token();
@@ -305,8 +330,10 @@ class WC_Vipps_Recurring_Api {
 	 * @param array $data
 	 * @param array $headers
 	 *
-	 * @return mixed
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	private function http_call( $endpoint, $method, $data = [], $headers = [] ) {
 		$url = $this->gateway->api_url . '/' . $endpoint;
@@ -314,6 +341,10 @@ class WC_Vipps_Recurring_Api {
 		$client_id        = $this->gateway->client_id;
 		$secret_key       = $this->gateway->secret_key;
 		$subscription_key = $this->gateway->subscription_key;
+
+		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
+			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps Recurring Payments gateway is not correctly configured.', 'woo-vipps-recurring' ) );
+		}
 
 		$headers = array_merge( [
 			'client_id'                   => $client_id,
@@ -355,12 +386,15 @@ class WC_Vipps_Recurring_Api {
 	 *
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	private function handle_http_response( $response, $request_body, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
 			$msg = __( 'No response from Vipps', 'woo-vipps-recurring' );
-			throw new WC_Vipps_Recurring_Exception( $msg );
+			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $msg, $request_body ) );
+
+			throw new WC_Vipps_Recurring_Temporary_Exception( $msg );
 		}
 
 		$status = (int) wp_remote_retrieve_response_code( $response );
@@ -412,7 +446,7 @@ class WC_Vipps_Recurring_Api {
 			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
 		}
 
-		WC_Vipps_Recurring_Logger::log( 'Error: ' . $msg . ' - request body: ' . $request_body );
+		WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Error: %s with request body: %s', $msg, $request_body ) );
 
 		$exception                      = new WC_Vipps_Recurring_Exception( $msg, $localized_msg );
 		$exception->response_code       = $status;

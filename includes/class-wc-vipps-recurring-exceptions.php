@@ -33,3 +33,13 @@ class WC_Vipps_Recurring_Exception extends Exception {
 		return $this->localized_message;
 	}
 }
+
+// Temporary errors like 500-class errors
+class WC_Vipps_Recurring_Temporary_Exception extends WC_Vipps_Recurring_Exception {
+	//
+}
+
+// Misconfigurations
+class WC_Vipps_Recurring_Config_Exception extends WC_Vipps_Recurring_Exception {
+	//
+}
