@@ -65,6 +65,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	private static $instance;
 
+	/**
+	 * @var WC_Vipps_Recurring_Api
+	 */
+	private $api;
+
 	/**f
 	 * Returns the *Singleton* instance of this class.
 	 *
@@ -546,8 +551,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$transaction_id = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? get_post_meta( $order->get_id(), '_transaction_id' ) : $order->get_transaction_id();
 
 		if ( ! $transaction_id && ( $charge['status'] === 'DUE'
-									|| ( $charge['status'] === 'PENDING'
-										 && wcs_order_contains_renewal( $order ) ) ) ) {
+		                            || ( $charge['status'] === 'PENDING'
+		                                 && wcs_order_contains_renewal( $order ) ) ) ) {
 			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )
 				? update_post_meta( $order->get_id(), '_transaction_id', $charge['id'] )
 				: $order->set_transaction_id( $charge['id'] );
@@ -653,8 +658,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param null $amount
 	 * @param string $reason
 	 *
-	 * @return bool|void
-	 * @throws WC_Vipps_Recurring_Exception
+	 * @return bool
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order        = wc_get_order( $order_id );
@@ -727,7 +731,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$idempotence_key = $this->get_idempotence_key( $renewal_order );
 
 			$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotence_key, $amount );
-			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
+			$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
 
 			$renewal_order->update_meta_data( '_vipps_recurring_pending_charge', true );
 			$renewal_order->update_meta_data( '_vipps_recurring_captured', true );
@@ -735,7 +739,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$this->process_order_charge( $renewal_order, $charge );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge['chargeId'], $agreement_id ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge['id'], $agreement['id'] ) );
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
 			$renewal_order->update_status( 'failed' );
 
@@ -761,7 +765,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param $order_id
 	 *
-	 * @throws Exception
+	 * @throws WC_Vipps_Recurring_Exception
 	 */
 	public function maybe_capture_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -791,84 +795,127 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $order
 	 *
 	 * @return bool
+	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function capture_payment( $order ) {
+	public function capture_payment( $order ): bool {
 		$agreement_id = $order->get_meta( '_agreement_id' );
-		$agreement    = $this->api->get_agreement( $agreement_id );
+		$charge       = false;
 
-		// idempotency key
-		$idempotency_key = $this->get_idempotence_key( $order );
+		try {
+			$agreement = $this->api->get_agreement( $agreement_id );
 
-		$charges  = $this->api->get_charges_for( $agreement['id'] );
-		$captured = false;
+			// idempotency key
+			$idempotency_key = $this->get_idempotence_key( $order );
 
-		if ( count( $charges ) > 0 ) {
-			$latest_charge = $charges[ count( $charges ) - 1 ];
+			$charges = $this->api->get_charges_for( $agreement['id'] );
 
-			if ( $latest_charge['status'] === 'RESERVED' ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Attempting to capture reserve charge: %s for agreement: %s', $order->get_id(), $latest_charge['id'], $agreement_id ) );
+			// if a charge exists and the status is RESERVED we need to simply capture it
+			$charges_amount = count( $charges );
+			if ( $charges_amount > 0 ) {
+				$latest_charge = $charges[ array_key_last( $charges ) ];
 
-				// capture reserved charge
-				try {
-					$this->api->capture_reserved_charge( $agreement, $latest_charge, $idempotency_key );
-				} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error when capturing reserved payment in capture_payment: %s', $order->get_id(), $e->getMessage() ) );
-					$this->admin_error( __( 'Vipps is temporarily unavailable.', 'woo-vipps-recurring' ) );
-
-					return false;
-				} catch ( Exception $e ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error when capturing reserved payment in capture_payment: %s', $order->get_id(), $e->getMessage() ) );
-
-					/* translators: %s order id */
-					$this->admin_error( sprintf( __( 'Could not capture Vipps payment for order id: %s', 'woo-vipps-recurring' ), $order->get_id() ) );
-
-					return false;
+				if ( $latest_charge['status'] === 'RESERVED' ) {
+					$charge = $this->capture_reserved_charge( $latest_charge, $agreement, $order, $idempotency_key );
 				}
-
-				// get charge
-				$charge = $this->api->get_charge( $agreement_id, $latest_charge['id'] );
-
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', $order->get_id(), $latest_charge['id'], $agreement_id ) );
-
-				$captured = true;
 			}
+
+			// if a charge was never captured we need to create one
+			if ( ! $charge ) {
+				$this->create_charge( $agreement, $order, $idempotency_key );
+			}
+
+			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
+			$order->update_meta_data( '_vipps_recurring_captured', true );
+			$order->save();
+
+			$this->process_order_charge( $order, $charge );
+			clean_post_cache( $order->get_id() );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Finished running capture_payment successfully', $order->get_id() ) );
+
+			return true;
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error in capture_payment: %s', $order->get_id(), $e->getMessage() ) );
+			$this->admin_error( __( 'Vipps is temporarily unavailable.', 'woo-vipps-recurring' ) );
+
+			return false;
+		} catch ( WC_Vipps_Recurring_Config_Exception $e ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Configuration error in capture_payment: %s', $order->get_id(), $e->getMessage() ) );
+			$this->admin_error( $e->getMessage() );
+
+			return false;
 		}
+	}
 
-		if ( ! $captured ) {
-			// create charge
-			try {
-				$charge = $this->api->create_charge( $agreement, $order, $idempotency_key );
-			} catch ( Exception $e ) {
-				// mark charge as failed
-				$order->update_meta_data( '_vipps_recurring_pending_charge', false );
-				$order->update_meta_data( '_vipps_recurring_captured', false );
-				$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
-				$order->save();
+	/**
+	 * @param $charge
+	 * @param $agreement
+	 * @param $order
+	 * @param $idempotency_key
+	 *
+	 * @return false|mixed|string|null
+	 */
+	public function capture_reserved_charge( $charge, $agreement, $order, $idempotency_key ) {
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Attempting to capture reserve charge: %s for agreement: %s', $order->get_id(), $charge['id'], $agreement['id'] ) );
 
-				/* translators: %s order id */
-				$this->admin_error( sprintf( __( 'Could not capture Vipps payment for order id: %s', 'woo-vipps-recurring' ), $order->get_id() ) );
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in capture_payment when creating charge: %s', $order->get_id(), $e->getMessage() ) );
+		// capture reserved charge
+		try {
+			$this->api->capture_reserved_charge( $agreement, $charge, $idempotency_key );
 
-				return false;
-			}
+			// get charge
+			$charge = $this->api->get_charge( $agreement['id'], $charge['id'] );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', $order->get_id(), $charge['id'], $agreement['id'] ) );
+
+			return $charge;
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error when capturing reserved payment in capture_reserved_charge: %s', $order->get_id(), $e->getMessage() ) );
+			$this->admin_error( __( 'Vipps is temporarily unavailable.', 'woo-vipps-recurring' ) );
+
+			return false;
+		} catch ( Exception $e ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error when capturing reserved payment in capture_reserved_charge: %s', $order->get_id(), $e->getMessage() ) );
+
+			/* translators: %s order id */
+			$this->admin_error( sprintf( __( 'Could not capture Vipps payment for order id: %s', 'woo-vipps-recurring' ), $order->get_id() ) );
+
+			return false;
+		}
+	}
+
+	/**
+	 * Creates a charge on an agreement, order and idempotency_key
+	 *
+	 * @param $agreement
+	 * @param $order
+	 * @param $idempotency_key
+	 *
+	 * @return bool
+	 */
+	public function create_charge( $agreement, $order, $idempotency_key ) {
+		try {
+			$charge = $this->api->create_charge( $agreement, $order, $idempotency_key );
 
 			// add due charge note
-			$charge = $this->api->get_charge( $agreement_id, $charge['chargeId'] );
+			$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
 			$order->add_order_note( $this->get_due_charge_note( $charge ) );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', $order->get_id(), $charge['id'], $agreement_id ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', $order->get_id(), $charge['id'], $agreement['id'] ) );
+
+			return true;
+		} catch ( Exception $e ) {
+			// mark charge as failed
+			$order->update_meta_data( '_vipps_recurring_pending_charge', false );
+			$order->update_meta_data( '_vipps_recurring_captured', false );
+			$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
+			$order->save();
+
+			/* translators: %s order id */
+			$this->admin_error( sprintf( __( 'Could not capture Vipps payment for order id: %s', 'woo-vipps-recurring' ), $order->get_id() ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in capture_payment when creating charge: %s', $order->get_id(), $e->getMessage() ) );
+
+			return false;
 		}
-
-		$order->update_meta_data( '_vipps_recurring_pending_charge', true );
-		$order->update_meta_data( '_vipps_recurring_captured', true );
-		$order->save();
-
-		$this->process_order_charge( $order, $charge );
-		clean_post_cache( $order->get_id() );
-
-		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Finished running capture_payment successfully', $order->get_id() ) );
-
-		return true;
 	}
 
 	/**
@@ -928,7 +975,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
 		$is_gateway_change = wcs_is_subscription( $order_id );
 
-		$order = wc_get_order( $order_id );
+		$order     = wc_get_order( $order_id );
+		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
 		try {
 			if ( ! $is_gateway_change ) {
@@ -1009,7 +1057,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$order->update_meta_data( '_new_agreement_id', $response['agreementId'] );
 				$order->update_meta_data( '_vipps_recurring_waiting_for_gateway_change', true );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Request to change gateway to Vipps with agreement ID: %s', $order_id, $response['agreementId'] ) );
+				$debug_msg .= 'Request to change gateway to Vipps' . "\n";
 			} else {
 				update_post_meta( $subscription->get_id(), '_agreement_id', $response['agreementId'] );
 
@@ -1024,10 +1072,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$message = sprintf( __( 'Vipps agreement created: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
 				$order->add_order_note( $message );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created agreement with agreement ID: %s', $order_id, $response['agreementId'] ) );
+				$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
 			}
 
 			$order->save();
+
+			$debug_msg .= sprintf( 'Debug body: %s', json_encode( $agreement_body ) ) . "\n";
+			$debug_msg .= sprintf( 'Debug response: %s', json_encode( $response ) );
+			WC_Vipps_Recurring_Logger::log( $debug_msg );
 
 			// redirect to Vipps
 			return [
