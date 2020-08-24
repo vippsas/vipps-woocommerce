@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.9 =
+* Enhancement: Error handling and logging has been completely redone in order to more easily debug future errors.
+
 = 1.3.8 =
 * Fix: Solved an issue where it would attempt to swap gateway even though it had already finished doing so. This time it would throw an internal server error because it's passing a blank Agreement ID to the Vipps API.
 * Fix: No longer use the `WC_VERSION` constant in a way that would throw an error if WooCommerce is missing (It shouldn't ever be missing, but just in case)
@@ -172,29 +175,3 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 = 1.3.5 =
 * Fix: Properly deal with cancelled payment gateway change requests in Vipps, do not change gateway if the user cancelled.
 * Enhancement: Use the PATCH method for cancellation of agreements in the Vipps API instead of PUT.
-
-= 1.3.4 =
-* Fix: Fix an issue with payment gateway changes.
-
-= 1.3.3 =
-* Enhancement: Allow customers to change payment method when using Vipps.
-
-= 1.3.2 =
-* Enhancement: Added some version and plugin detail headers to Vipps API requests so we can identify issues more effectively.
-* Enhancement: Added an option to choose what default status to give pending renewals.
-* Fix: Fixed refunds not working when a reason is not passed.
-* Fix: Fixes an edge cases with checking of orders described in this issue: https://github.com/vippsas/vipps-recurring-woocommerce/issues/15
-
-= 1.3.1 =
-* Enhancement: Altered charge behaviour to reflect Vipps changes. A renewal or manual capture will now only take 2 days to process as opposed to 6.
-* Enhancement: Made the note associated with a pending charge less cryptic.
-
-= 1.3.0 =
-* Enhancement: If you change an uncaptured orders status to completed or processing it will now try to capture it.
-* Enhancement: Added support for variable subscriptions.
-* Enhancement: There's now a table available to check what individual orders have pending Vipps charges.
-* Enhancement: Added a localized translation and a link explaining the merchant not allowed error message.
-* Fix: Fixed a race condition that made orders sometimes have multiples of the same note.
-* Fix: No longer cancel subscription if a charge fails to capture, the merchant should decide what to do with this themselves.
-* Fix: Billing interval is now properly displayed in the Vipps app payment screen.
-* Fix: Cancelled charges should also be marked as no longer pending.
