@@ -677,21 +677,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			return true;
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			$this->admin_error( __( 'A temporary error occurred when refunding a payment through Vipps. Please ensure the order is refunded manually or reset the order to "Processing" and try again.', 'woo-vipps-recurring' ) );
-
-			return false;
+			$msg = __( 'A temporary error occurred when refunding a payment through Vipps. Please ensure the order is refunded manually or reset the order to "Processing" and try again.', 'woo-vipps-recurring' );
+			throw new Exception( $msg );
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
-			// refund failed
 			$err = __( 'You can not refund a pending or due Vipps charge. Please wait till the payment clears first!', 'woo-vipps-recurring' );
-			$this->admin_error( $err );
 			throw new Exception( $err );
-		} catch ( Exception $e ) {
-			$order->add_order_note( __( "An error occurred when refunding payment through Vipps:", 'woo-vipps-recurring' ) . ' ' . $e->getMessage() );
-			$order->save();
-
-			$this->admin_error( $e->getMessage() );
-
-			return false;
 		}
 	}
 
