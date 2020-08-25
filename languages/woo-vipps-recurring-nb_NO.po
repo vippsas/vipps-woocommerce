@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-08-25T12:57:37+00:00\n"
-"PO-Revision-Date: 2020-08-25 13:03+0000\n"
+"POT-Creation-Date: 2020-08-25T13:59:12+00:00\n"
+"PO-Revision-Date: 2020-08-25 14:00+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -226,45 +226,50 @@ msgstr ""
 "En midlertidig feil oppstod hos Vipps. Vennligst dobbeltsjekk at ordren er "
 "refundert manuelt eller tilbakestill ordren til \"Behandler\" og prøvd igjen."
 
-#: includes/class-wc-gateway-vipps-recurring.php:683
+#: includes/class-wc-gateway-vipps-recurring.php:695
 msgid ""
-"You can not refund a pending or due Vipps charge. Please wait till the "
-"payment clears first!"
+"You can not partially refund a pending or due Vipps charge. Please wait till "
+"the payment clears first or refund the full amount instead."
 msgstr ""
-"Du kan ikke refundere betalinger som ikke har blitt fullført ennå. Vent til "
-"betalingen er fullført!"
+"Du kan ikke delvis refundere betalinger som ikke har blitt fullført ennå. "
+"Vent til betalingen er fullført eller gi en refusjon på hele beløpet i "
+"stedet."
+
+#: includes/class-wc-gateway-vipps-recurring.php:699
+msgid "An unexpected error occurred while refunding a payment in Vipps."
+msgstr "En uforventet feil oppstod ved opprettelse av refusjon i Vipps."
 
 #. translators: Error message
-#: includes/class-wc-gateway-vipps-recurring.php:761
+#: includes/class-wc-gateway-vipps-recurring.php:756
 msgid "Failed creating a Vipps charge: %s"
 msgstr "Mislyktes med å opprette et Vipps-trekk: %s"
 
 #. translators: Vipps Charge ID, human diff timestamp
-#: includes/class-wc-gateway-vipps-recurring.php:780
+#: includes/class-wc-gateway-vipps-recurring.php:787
 msgid "Vipps charge created: %1$s. The charge will be complete %2$s."
 msgstr "Vipps trekk opprettet: %1$s. Trekket blir fullført %2$s."
 
-#: includes/class-wc-gateway-vipps-recurring.php:862
-#: includes/class-wc-gateway-vipps-recurring.php:896
+#: includes/class-wc-gateway-vipps-recurring.php:869
+#: includes/class-wc-gateway-vipps-recurring.php:903
 msgid "Vipps is temporarily unavailable."
 msgstr "Vipps er midlertidig utilgjengelig."
 
 #. translators: %s order id
-#: includes/class-wc-gateway-vipps-recurring.php:903
-#: includes/class-wc-gateway-vipps-recurring.php:937
+#: includes/class-wc-gateway-vipps-recurring.php:910
+#: includes/class-wc-gateway-vipps-recurring.php:944
 msgid "Could not capture Vipps payment for order id: %s"
 msgstr "Kunne ikke trekke betaling i Vipps for betaling med ordre ID: %s"
 
-#: includes/class-wc-gateway-vipps-recurring.php:933
+#: includes/class-wc-gateway-vipps-recurring.php:940
 msgid "Vipps failed to create charge"
 msgstr "Vipps mislyktes med å opprette en betaling"
 
-#: includes/class-wc-gateway-vipps-recurring.php:975
+#: includes/class-wc-gateway-vipps-recurring.php:982
 msgid "Payment gateway change request cancelled in Vipps"
 msgstr "Forespørsel om bytte av betalingsmiddel avbrutt i Vipps"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:1077
+#: includes/class-wc-gateway-vipps-recurring.php:1084
 msgid ""
 "Request to change gateway to Vipps with agreement ID: %s. Customer sent to "
 "Vipps for confirmation."
@@ -273,7 +278,7 @@ msgstr ""
 "ID: %s)"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:1095
+#: includes/class-wc-gateway-vipps-recurring.php:1102
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 

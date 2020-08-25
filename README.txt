@@ -160,6 +160,8 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 = 1.3.9 =
 * Enhancement: Error handling and logging has been completely redone in order to more easily debug future errors.
+* Enhancement: You can now fully "refund" an order where the associated charge has not yet been completed in Vipps.
+* Fix: Potentially fix some small inconsistencies as error handling is now much better.
 
 = 1.3.8 =
 * Fix: Solved an issue where it would attempt to swap gateway even though it had already finished doing so. This time it would throw an internal server error because it's passing a blank Agreement ID to the Vipps API.

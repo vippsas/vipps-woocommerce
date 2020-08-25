@@ -680,7 +680,23 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$msg = __( 'A temporary error occurred when refunding a payment through Vipps. Please ensure the order is refunded manually or reset the order to "Processing" and try again.', 'woo-vipps-recurring' );
 			throw new Exception( $msg );
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
-			$err = __( 'You can not refund a pending or due Vipps charge. Please wait till the payment clears first!', 'woo-vipps-recurring' );
+			// attempt to cancel charge instead
+			if ( (float) $order->get_remaining_refund_amount() === 0.00 ) {
+				$this->api->cancel_charge( $agreement_id, $charge_id );
+
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_refund cancelled charge instead of refunding: %s and agreement: %s', $order_id, $charge_id, $agreement_id ) );
+
+				return true;
+			}
+
+			// if the remaining refund amount is not equal to the amount we're trying to refund
+			// that probably means we are trying to partially refund a charge that hasn't yet cleared
+			if ( (float) $order->get_remaining_refund_amount() !== 0.00 ) {
+				$err = __( 'You can not partially refund a pending or due Vipps charge. Please wait till the payment clears first or refund the full amount instead.', 'woo-vipps-recurring' );
+				throw new Exception( $err );
+			}
+
+			$err = __( 'An unexpected error occurred while refunding a payment in Vipps.', 'woo-vipps-recurring' );
 			throw new Exception( $err );
 		}
 	}
@@ -709,12 +725,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @return bool
 	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function process_subscription_payment( $amount, $renewal_order ): bool {
-		$error_type = null;
-		$error      = null;
-
 		try {
 			// create charge logic
 			$agreement_id = $renewal_order->get_meta( '_agreement_id' );
@@ -728,43 +742,36 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotence_key, $amount );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
-
-			$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
-
 			$renewal_order->update_meta_data( '_vipps_recurring_pending_charge', true );
 			$renewal_order->update_meta_data( '_vipps_recurring_captured', true );
 			$renewal_order->save();
 
-			$this->process_order_charge( $renewal_order, $charge );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge['id'], $agreement['id'] ) );
-
-			return true;
-		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			$error_type = 'temporary';
-			$error      = $e;
-		} catch ( WC_Vipps_Recurring_Config_Exception $e ) {
-			$error_type = 'temporary';
-			$error      = $e;
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
 		} catch ( Exception $e ) {
-			$error_type = 'major';
-			$error      = $e;
-		}
+			// if we reach this point we consider the error the be completely unrecoverable
 
-		if ( $error_type === 'major' ) {
 			$renewal_order->update_status( 'failed' );
 
 			/* translators: Error message */
-			$message = sprintf( __( 'Failed creating a Vipps charge: %s', 'woo-vipps-recurring' ), $error->getMessage() );
+			$message = sprintf( __( 'Failed creating a Vipps charge: %s', 'woo-vipps-recurring' ), $e->getMessage() );
 			$renewal_order->add_order_note( $message );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in process_subscription_payment: %s', $renewal_order->get_id(), $e->getMessage() ) );
+
+			throw new $e;
 		}
 
-		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error (error_type: %s) in process_subscription_payment: %s', $renewal_order->get_id(), $error_type, $error->getMessage() ) );
+		// if creating a charge was OK in the above code, we can assume we will have no further errors,
+		// if we do they will at least not affect the rest of the logic or payment flow as the following is recoverable
+		$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
 
-		throw new $e;
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
+
+		$this->process_order_charge( $renewal_order, $charge );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge['id'], $agreement['id'] ) );
+
+		return true;
 	}
 
 	/**
