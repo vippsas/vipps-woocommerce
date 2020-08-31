@@ -177,7 +177,3 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 = 1.3.6 =
 * Enhancement: Reduced the amount of superfluous order notes.
 * Fix: Increased atomicity for purchases that are not yet done. Due to a bug with the previously added feature in 1.3.2 about selection of default order status, the order would move to that status before it's considered done. This has been fixed.
-
-= 1.3.5 =
-* Fix: Properly deal with cancelled payment gateway change requests in Vipps, do not change gateway if the user cancelled.
-* Enhancement: Use the PATCH method for cancellation of agreements in the Vipps API instead of PUT.
