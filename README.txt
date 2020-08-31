@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.3.11 =
+* Fix: When a refund happens on a pending charge we need to set `_vipps_recurring_pending_charge` to `false`
+
 = 1.3.10 =
 * Fix: Synchronised orders where the Vipps agreement was never accepted would not clear from the job queue.
 * Fix: Solved an edge case where certain orders would end up in an unrecoverable 'locked' state when rate limits or other Vipps gateway errors occurred.

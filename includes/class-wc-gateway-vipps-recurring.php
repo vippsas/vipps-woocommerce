@@ -684,6 +684,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( (float) $order->get_remaining_refund_amount() === 0.00 ) {
 				$this->api->cancel_charge( $agreement_id, $charge_id );
 
+				$order->update_meta_data( '_vipps_recurring_pending_charge', false );
+				$order->save();
+
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_refund cancelled charge instead of refunding: %s and agreement: %s', $order_id, $charge_id, $agreement_id ) );
 
 				return true;
