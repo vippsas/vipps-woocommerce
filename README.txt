@@ -162,6 +162,8 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Enhancement: Added a "Default status to give orders with a reserved charge" option.
 * Enhancement: Improved safety of reserved charges, they should never be put in an unrecoverable state anymore. Un-nested payment logic so we should never run into a similar case again.
 * Fix: Refunding a reversed charge now works, just like pending charges in version 1.3.9.
+* Change: "Default status to give pending renewal orders" default is now "processing" instead of "on hold"
+* Change: Removed "completed" as a possible default status for the "Default status to give pending renewal orders" setting as this status is conventionally used for orders that are completely finished.
 
 = 1.3.11 =
 * Fix: When a refund happens on a pending charge we need to set `_vipps_recurring_pending_charge` to `false`
