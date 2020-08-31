@@ -392,7 +392,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $order
 	 */
 	public function unlock_order( $order ) {
-		$order->update_meta_data( '_vipps_recurring_locked_for_update', false );
+		$order->update_meta_data( '_vipps_recurring_locked_for_update_time', 0 );
 		$order->save();
 	}
 
@@ -415,15 +415,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'INVALID';
 		}
 
-		// CHECK IF ORDER IS LOCKED
+		// CHECK IF ORDER IS TEMPORARILY LOCKED
 		clean_post_cache( $order->get_id() );
 
-		if ( (int) $order->get_meta( '_vipps_recurring_locked_for_update' ) ) {
+		// HOLD ON TO THE LOCK FOR 15 SECONDS
+		$lock = (int) $order->get_meta( '_vipps_recurring_locked_for_update_time' );
+		if ( $lock && $lock > time() - 15 ) {
 			return 'SUCCESS';
 		}
 
 		// LOCK ORDER FOR CHECKING
-		$order->update_meta_data( '_vipps_recurring_locked_for_update', true );
+		$order->update_meta_data( '_vipps_recurring_locked_for_update_time', time() );
 		$order->save();
 
 		$agreement = $this->get_agreement_from_order( $order );
@@ -438,13 +440,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// if there's a campaign with a price of 0 we can complete the order immediately
-		if ( $order->get_meta( '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
-			if ( $agreement['status'] === 'ACTIVE' ) {
-				$this->complete_order( $order, $agreement['id'] );
+		if ( $agreement['status'] === 'ACTIVE' && $order->get_meta( '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
+			$this->complete_order( $order, $agreement['id'] );
 
-				$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
-				$order->save();
-			}
+			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
+			$order->save();
 
 			return 'SUCCESS';
 		}
