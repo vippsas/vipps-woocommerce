@@ -158,6 +158,11 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.4.0 =
+* Enhancement: Added a "Default status to give orders with a reserved charge" option.
+* Enhancement: Improved safety of reserved charges, they should never be put in an unrecoverable state anymore. Un-nested payment logic so we should never run into a similar case again.
+* Fix: Refunding a reversed charge now works, just like pending charges in version 1.3.9.
+
 = 1.3.11 =
 * Fix: When a refund happens on a pending charge we need to set `_vipps_recurring_pending_charge` to `false`
 
@@ -173,10 +178,3 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 = 1.3.8 =
 * Fix: Solved an issue where it would attempt to swap gateway even though it had already finished doing so. This time it would throw an internal server error because it's passing a blank Agreement ID to the Vipps API.
 * Fix: No longer use the `WC_VERSION` constant in a way that would throw an error if WooCommerce is missing (It shouldn't ever be missing, but just in case)
-
-= 1.3.7 =
-* Enhancement: Re-throw WP_Error if it somehow ends up in Api->handle_http_response so we can see why something failed.
-
-= 1.3.6 =
-* Enhancement: Reduced the amount of superfluous order notes.
-* Fix: Increased atomicity for purchases that are not yet done. Due to a bug with the previously added feature in 1.3.2 about selection of default order status, the order would move to that status before it's considered done. This has been fixed.

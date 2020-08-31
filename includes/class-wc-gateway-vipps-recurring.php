@@ -52,13 +52,26 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public $cancelled_order_page;
 
-
 	/**
 	 * The default status to give pending renewals
 	 *
 	 * @var string
 	 */
 	public $default_renewal_status;
+
+	/**
+	 * The default status pending orders that have yet to be captured (reserved charges in Vipps) should be given
+	 *
+	 * @var string
+	 */
+	public $default_reserved_charge_status;
+
+	/**
+	 * Status where when transitioned to we will attempt to capture the payment
+	 *
+	 * @var array
+	 */
+	public $statuses_to_attempt_capture;
 
 	/**
 	 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
@@ -110,29 +123,39 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Load the settings.
 		$this->init_settings();
 
-		$this->title                  = $this->get_option( 'title' );
-		$this->description            = $this->get_option( 'description' );
-		$this->enabled                = $this->get_option( 'enabled' );
-		$this->testmode               = WC_VIPPS_RECURRING_TEST_MODE;
-		$this->secret_key             = $this->get_option( 'secret_key' );
-		$this->client_id              = $this->get_option( 'client_id' );
-		$this->subscription_key       = $this->get_option( 'subscription_key' );
-		$this->cancelled_order_page   = $this->get_option( 'cancelled_order_page' );
-		$this->default_renewal_status = $this->get_option( 'default_renewal_status' );
-		$this->order_button_text      = __( 'Pay with Vipps', 'woo-vipps-recurring' );
+		$this->title                          = $this->get_option( 'title' );
+		$this->description                    = $this->get_option( 'description' );
+		$this->enabled                        = $this->get_option( 'enabled' );
+		$this->testmode                       = WC_VIPPS_RECURRING_TEST_MODE;
+		$this->secret_key                     = $this->get_option( 'secret_key' );
+		$this->client_id                      = $this->get_option( 'client_id' );
+		$this->subscription_key               = $this->get_option( 'subscription_key' );
+		$this->cancelled_order_page           = $this->get_option( 'cancelled_order_page' );
+		$this->default_renewal_status         = $this->get_option( 'default_renewal_status' );
+		$this->default_reserved_charge_status = $this->get_option( 'default_reserved_charge_status' );
+		$this->order_button_text              = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new WC_Vipps_Recurring_Api( $this );
 
 		// when transitioning an order to these statuses we should
 		// automatically try to capture the charge if it's not already captured
-		$statuses_to_attempt_capture = apply_filters( 'wc_vipps_recurring_captured_statuses', [
-			'processing',
-			'completed'
-		] );
+		$capture_statuses = [
+			'completed',
+			'processing'
+		];
+
+		// we have to remove the status corresponding to `$this->default_reserved_charge_status` otherwise we end up
+		// prematurely capturing this reserved Vipps charge
+		$capture_status_transition_id = array_search( str_replace( 'wc-', '', $this->default_reserved_charge_status ), $capture_statuses, true );
+		if ( $capture_status_transition_id ) {
+			unset( $capture_statuses[ $capture_status_transition_id ] );
+		}
+
+		$this->statuses_to_attempt_capture = apply_filters( 'wc_vipps_recurring_captured_statuses', $capture_statuses );
 
 		// if we change a status that is currently on-hold to any of the $capture_statuses we should attempt to capture it
-		foreach ( $statuses_to_attempt_capture as $status ) {
+		foreach ( $this->statuses_to_attempt_capture as $status ) {
 			add_action( 'woocommerce_order_status_' . $status, [ $this, 'maybe_capture_payment' ] );
 		}
 
@@ -459,14 +482,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$is_captured = $charge !== false && $charge['status'] !== 'RESERVED';
 		$order->update_meta_data( '_vipps_recurring_captured', $is_captured );
 
-		if ( $initial ) {
-			if ( ! $is_captured ) {
-				// not auto captured, so we need to put the order on hold
-				$order->update_status( 'on-hold' );
-				$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
-				$order->add_order_note( $message );
-			}
-
+		if ( (int) $initial ) {
 			$order->update_meta_data( '_vipps_recurring_initial', true );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', true );
 		}
@@ -491,9 +507,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'CANCELLED';
 		}
 
-		if ( $is_captured ) {
-			$this->process_order_charge( $order, $charge );
-		}
+		$this->process_order_charge( $order, $charge );
 
 		return 'SUCCESS';
 	}
@@ -524,6 +538,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$order->update_meta_data( '_charge_id', $charge['id'] );
+		$transaction_id = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )
+			? get_post_meta( $order->get_id(), '_transaction_id' )
+			: $order->get_transaction_id();
 
 		// Reduce stock
 		$reduce_stock = 'CHARGED' === $charge['status'] || in_array( $charge['status'], [ 'DUE', 'PENDING' ] );
@@ -535,7 +552,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 		}
 
-		// check if status is CHARGED
+		// status: CHARGED
 		if ( 'CHARGED' === $charge['status'] ) {
 			$this->complete_order( $order, $charge['id'] );
 
@@ -546,10 +563,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Completed order for charge: %s', $order->get_id(), $charge['id'] ) );
 		}
 
-		// check if status is DUE
-		// when DUE we need to check that it becomes another status in a cron
-		$transaction_id = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? get_post_meta( $order->get_id(), '_transaction_id' ) : $order->get_transaction_id();
+		// status: RESERVED
+		// not auto captured, so we need to put the order status to `$this->default_reserved_charge_status`
+		if ( ! $transaction_id && $charge['status'] === 'RESERVED'
+			 && ! wcs_order_contains_renewal( $order ) ) {
+			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )
+				? update_post_meta( $order->get_id(), '_transaction_id', $charge['id'] )
+				: $order->set_transaction_id( $charge['id'] );
 
+			$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
+			$order->update_status( $this->default_reserved_charge_status, $message );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge reserved: %s (%s)', $order->get_id(), $charge['id'], $charge['status'] ) );
+		}
+
+		// status: DUE or PENDING
+		// when DUE we need to check that it becomes another status in a cron
 		if ( ! $transaction_id && ( $charge['status'] === 'DUE'
 									|| ( $charge['status'] === 'PENDING'
 										 && wcs_order_contains_renewal( $order ) ) ) ) {
@@ -564,7 +592,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge due or pending: %s (%s)', $order->get_id(), $charge['id'], $charge['status'] ) );
 		}
 
-		// check if CANCELLED
+		// status: CANCELLED
 		if ( 'CANCELLED' === $charge['status'] ) {
 			$order->update_status( 'cancelled', __( 'Vipps payment cancelled.', 'woo-vipps-recurring' ) );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', false );
@@ -572,7 +600,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge cancelled: %s', $order->get_id(), $charge['id'] ) );
 		}
 
-		// check if FAILED
+		// status: FAILED
 		if ( 'FAILED' === $charge['status'] ) {
 			$order->update_status( 'failed', __( 'Vipps payment failed.', 'woo-vipps-recurring' ) );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', false );

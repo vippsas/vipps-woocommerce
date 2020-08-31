@@ -45,27 +45,36 @@ return apply_filters(
 			'default'     => '',
 			'desc_tip'    => true,
 		],
-		'logging'                => [
-			'title'       => __( 'Logging', 'woo-vipps-recurring' ),
-			'label'       => __( 'Log debug messages', 'woo-vipps-recurring' ),
-			'type'        => 'checkbox',
-			'description' => __( 'Save debug messages to the WooCommerce System Status log.', 'woo-vipps-recurring' ),
-			'default'     => 'no',
-		],
 		'cancelled_order_page'   => [
 			'type'             => 'page_dropdown',
 			'title'            => __( 'Cancelled order redirect page', 'woo-vipps-recurrinsg' ),
 			'description'      => __( 'The page to redirect cancelled orders to.', 'woo-vipps-recurring' ),
 			'show_option_none' => __( 'Create a new page', 'woo-vipps-recurring' )
 		],
-		'default_renewal_status' => [
+		'default_reserved_charge_status' => [
 			'type'        => 'select',
-			'title'       => __( 'Default status to give pending renewals', 'woo-vipps-recurring' ),
-			'description' => __( 'When a renewal happens we have to wait a few days for the money to be drawn from the customer. You might want such orders to be on hold, or maybe you require them to be processing or completed. A failed charge will still become "failed" regardless of this setting.', 'woo-vipps-recurring' ),
+			'title'       => __( 'Default status to give orders with a reserved charge', 'woo-vipps-recurring' ),
+			'description' => __( 'The status to give orders when the charge is reserved in Vipps (i.e. tangible goods). Notice: This option only counts for newly signed agreements by the customer. Use the setting below to set the default status for renewal orders.', 'woo-vipps-recurring' ),
 			'default'     => 'wc-on-hold',
 			'options'     => array_filter( wc_get_order_statuses(), static function ( $key ) {
-				return in_array( $key, [ 'wc-processing', 'wc-on-hold', 'wc-completed' ] );
+				return in_array( $key, [ 'wc-processing', 'wc-on-hold' ] );
 			}, ARRAY_FILTER_USE_KEY )
+		],
+		'default_renewal_status' => [
+			'type'        => 'select',
+			'title'       => __( 'Default status to give pending renewal orders', 'woo-vipps-recurring' ),
+			'description' => __( 'When a renewal order happens we have to wait a few days for the money to be drawn from the customer. This settings controls the status to give these renewal orders before the charge completes.', 'woo-vipps-recurring' ),
+			'default'     => 'wc-on-hold',
+			'options'     => array_filter( wc_get_order_statuses(), static function ( $key ) {
+				return in_array( $key, [ 'wc-processing', 'wc-on-hold' ] );
+			}, ARRAY_FILTER_USE_KEY )
+		],
+		'logging'                => [
+			'title'       => __( 'Logging', 'woo-vipps-recurring' ),
+			'label'       => __( 'Log debug messages', 'woo-vipps-recurring' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Save debug messages to the WooCommerce System Status log.', 'woo-vipps-recurring' ),
+			'default'     => 'no',
 		],
 	]
 );
