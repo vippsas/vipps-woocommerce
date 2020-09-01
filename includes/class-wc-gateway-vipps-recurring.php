@@ -243,7 +243,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
-		if ( 'processing' === $order->get_status() || 'completed' === $order->get_status() ) {
+		$order_status = $order->get_status();
+		if ( in_array( $order_status, [ 'processing', 'completed' ] ) ) {
 			return;
 		}
 
