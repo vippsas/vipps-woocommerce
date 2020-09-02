@@ -2004,30 +2004,36 @@ else:
         echo $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
     }
 
-    // Print a "buy now with vipps" for products in the loop, like on a category page
-    public function loop_single_product_buy_now_button() {
-        global $product;
-        if (!$product) return;
-        if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->supports( 'ajax_add_to_cart' )) return;
 
+    // True for products that are purchasable using Vipps Express Checkout
+    public function loop_single_product_is_express_checkout_purchasable($product) {
+        if (!$product) return false;
+        if (!$product->is_purchasable() || !$product->is_in_stock() || !$product->supports( 'ajax_add_to_cart' )) return false;
         $gw = $this->gateway();
-        if (!$gw->express_checkout_available()) return;
-        if (!$gw->product_supports_express_checkout($product)) return;
-        if ($gw->get_option('singleproductexpressarchives') != 'yes') return;
+
+        if (!$gw->express_checkout_available()) return false;
+        if (!$gw->product_supports_express_checkout($product)) return false;
+        if ($gw->get_option('singleproductexpressarchives') != 'yes') return false;
 
         $how = $gw->get_option('singleproductexpress');
-        if ($how == 'none') return;
+        if ($how == 'none') return false;
         $prodid = $product->get_id();
 
         $showit = true;
-        if ($product->get_price() <= 0)  $showit = false; 
+        if ($product->get_price() <= 0)  $showit = false;
         if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) $showit = false;
         $showit = apply_filters('woo_vipps_show_single_product_buy_now', $showit, $product);
         $showit = apply_filters('woo_vipps_show_single_product_buy_now_in_loop', $showit, $product);
-        if (!$showit) return;
+        return $showit;
+    }
 
+    // Print a "buy now with vipps" for products in the loop, like on a category page
+    public function loop_single_product_buy_now_button() {
+        global $product;
+
+        if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return;
+       
         $sku = $product->get_sku();
-        $label = $product->add_to_cart_description();
 
         echo $this->get_buy_now_button($product->get_id(),false,$sku);
     }
