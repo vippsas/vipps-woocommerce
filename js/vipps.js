@@ -54,7 +54,6 @@ jQuery( document ).ready( function() {
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
-   console.log("found variation, purchasable is " + purchasable);
    jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
    if (purchasable) {
     jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
@@ -76,6 +75,10 @@ jQuery( document ).ready( function() {
  jQuery('body').on('wc_variation_form', function () {
 	 console.log("WC variation form loaded");
 	 vippsInit();
+ });
+ // Allow other guys to do this too
+ jQuery('body').on('vippsInit', function () {
+  vippsInit(); 
  });
 
 
