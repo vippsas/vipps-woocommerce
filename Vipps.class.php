@@ -853,6 +853,25 @@ else:
         return false;
     }
 
+    public function woocommerce_loaded () {
+
+        // This is for product blocks - augment the description when using the StoreAPI so that we know that a button should be added
+        add_filter('woocommerce_product_get_description', function ($description, $product) {
+                   // This is basically the store_api init, but as that calls no action, we need to replicate the logic of its protected function
+                   // here for the time being. IOK 2020-09-02
+                   if (empty($_SERVER['REQUEST_URI'])) return $description;
+                   if (!did_action('rest_api_init')) return $description;
+                   $request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+                   $storeapi = "wc/store/products";
+                   if (false === strpos($request_uri, $rest_prefix . 'wc/store')) return $description;;
+
+                   // Now add a small tag to product descriptions if this product should be purchasable.
+                   if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $description;
+                   return $description . "<span class='_product_metadata _vipps_metadata _prod_{$product->get_id()}' data-vipps-purchasable='1'></span>";
+                   },10,2);
+
+    } 
+
     public function plugins_loaded() {
         $ok = load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
 

@@ -85,6 +85,7 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     }
     add_action('init',array($Vipps,'init'));
     add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
+    add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
 
 }
 
