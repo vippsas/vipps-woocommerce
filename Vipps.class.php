@@ -263,8 +263,14 @@ class Vipps {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
 
-        wp_enqueue_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
-        wp_add_inline_script('vipps-gw','var vippsajaxurl="'.admin_url('admin-ajax.php').'";', 'before');
+        wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        $vippsConfig = array();
+        $vippsConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
+        $vippsConfig['BuyNowWithVipps'] = __('Buy now with', 'woo-vipps');
+        $vippsConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+        wp_localize_script('vipps-gw', 'VippsConfig', $vippsConfig);
+        wp_enqueue_script('vipps-gw');
+
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
 
     }
