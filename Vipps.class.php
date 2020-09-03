@@ -864,7 +864,7 @@ else:
     }
 
     public function woocommerce_loaded () {
-
+        /* IOK 2020-09-03 experimental support for the All Products type product block */
         // This is for product blocks - augment the description when using the StoreAPI so that we know that a button should be added
         add_filter('woocommerce_product_get_description', function ($description, $product) {
                    // This is basically the store_api init, but as that calls no action, we need to replicate the logic of its protected function
@@ -879,8 +879,16 @@ else:
                    if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $description;
                    return $description . "<span class='_product_metadata _vipps_metadata _prod_{$product->get_id()}' data-vipps-purchasable='1'></span>";
                    },10,2);
+        add_action( 'enqueue_block_editor_assets', function () {
+                wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-admin' ), '1.0.0', true );
+                wp_enqueue_script( 'create-block-vipps-products-block-editor', plugins_url( 'Blocks/Products/js/editor.js', __FILE__ ), array( 'wc-blocks','wp-i18n','wp-element','vipps-admin'), '1.0.0', true );
+        });
+        add_action( 'wp_enqueue_scripts', function () {
+           wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), '1.0.0', true );
+        });
+        /* End product blocks support */
 
-    } 
+    }
 
     public function plugins_loaded() {
         $ok = load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
@@ -932,7 +940,8 @@ else:
         $this->vippsJSConfig['BuyNowWithVipps'] = __('Buy now with Vipps', 'woo-vipps');
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
-
+        $this->vippsJSConfig['vippsbuynowbutton'] = __( 'Vipps Buy Now button', 'woo-vipps' );
+        $this->vippsJSConfig['vippsbuynowdescription'] =  __( 'Add a Vipps Buy Now-button to the product block', 'woo-vipps');
 
 
         // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check

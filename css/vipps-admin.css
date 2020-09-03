@@ -26,3 +26,8 @@
  vertical-align: text-bottom;
 }
 
+
+.editor-styles-wrapper .block-editor-block-icon .vipps-component-icon {
+ max-width: 32px;
+ max-height: 32px;
+}
