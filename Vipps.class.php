@@ -47,7 +47,12 @@ class Vipps {
     // used in the fake locking mechanism using transients
     private $lockKey = null; 
 
+    public $vippsJSConfig = array();
+
     function __construct() {
+
+
+
     }
 
     public static function instance()  {
@@ -233,7 +238,10 @@ class Vipps {
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
-        wp_enqueue_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
+        wp_register_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
+        wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
+        wp_enqueue_script('vipps-admin');
+
         wp_enqueue_style('vipps-admin-style',plugins_url('css/vipps-admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps-admin.css"), 'all');
     }
 
@@ -264,11 +272,7 @@ class Vipps {
         }
 
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
-        $vippsConfig = array();
-        $vippsConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
-        $vippsConfig['BuyNowWithVipps'] = __('Buy now with', 'woo-vipps');
-        $vippsConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        wp_localize_script('vipps-gw', 'VippsConfig', $vippsConfig);
+        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         wp_enqueue_script('vipps-gw');
 
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
@@ -920,6 +924,13 @@ else:
         // Same thing, but for single products IOK 2018-05-28
         add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
         add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
+
+        // Used both in admin and non-admin-scripts, load as quick as possible IOK 2020-09-03
+        $this->vippsJSConfig = array();
+        $this->vippsJSConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
+        $this->vippsJSConfig['BuyNowWithVipps'] = __('Buy now with', 'woo-vipps');
+        $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+
 
         // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
         // that any user hasn't already installed the free plugin for this created by Krokedil. If they have, this filter will be present:

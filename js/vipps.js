@@ -164,7 +164,7 @@ jQuery( document ).ready( function() {
    }
    data['action'] = 'vipps_buy_single_product';
 
-   jQuery.ajax(vippsajaxurl, {
+   jQuery.ajax(VippsConfig['vippsajaxurl'], {
     "method": "POST",
     "data":data,
     "cache":false,

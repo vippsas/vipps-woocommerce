@@ -138,7 +138,7 @@ jQuery(document).ready(function () {
    jQuery('body').addClass('processing');
 
    var data  = jQuery("#vippsdata").serialize();
-   jQuery.ajax(vippsajaxurl, {
+   jQuery.ajax(VippsConfig['vippsajaxurl'], {
     "method": "POST",
     "data":data,
     "cache":false,

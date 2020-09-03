@@ -81,7 +81,7 @@ jQuery(document).ready(function () {
 
  // Actually check order status by calling admin-ajax
  function checkStatus()  {
-   jQuery.ajax(vippsajaxurl, {
+   jQuery.ajax(VippsConfig['vippsajaxurl'], {
     "method": "POST",
     "data":data,
     "cache":false,
