@@ -32,6 +32,19 @@ SOFTWARE.
  margin-bottom: -0.7em;
 }
 
+/* And this is for the products blocks IOK 2020-09-03 */
+.wc-block-grid__product .vippsbuynow {
+}
+.wc-block-grid__product .single-product.button.vipps-buy-now .inline.vipps-logo.negative {
+    display: inline-block;
+    margin: 0 .2em;
+}
+.wc-block-grid__product .single-product.button.vipps-buy-now {
+ min-width:15em;
+}
+
+/* end block stuff for now */
+
 form#vippsdata {
  margin:0;
 }
@@ -55,7 +68,7 @@ li.wc_payment_method.payment_method_vipps img {
 	max-width: 145px;
 }
 
-.woocommerce ul.products li.product .button.vipps-buy-now, a.button.vipps-buy-now {
+.wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now, .woocommerce ul.products li.product .button.vipps-buy-now, a.button.vipps-buy-now {
  color: #fff;
  background-color: #fe5b24;
 }

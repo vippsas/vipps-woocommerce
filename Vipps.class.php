@@ -928,7 +928,8 @@ else:
         // Used both in admin and non-admin-scripts, load as quick as possible IOK 2020-09-03
         $this->vippsJSConfig = array();
         $this->vippsJSConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
-        $this->vippsJSConfig['BuyNowWithVipps'] = __('Buy now with', 'woo-vipps');
+        $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
+        $this->vippsJSConfig['BuyNowWithVipps'] = __('Buy now with Vipps', 'woo-vipps');
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
 
