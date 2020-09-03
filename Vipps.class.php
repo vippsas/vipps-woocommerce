@@ -931,6 +931,8 @@ else:
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
         $this->vippsJSConfig['BuyNowWithVipps'] = __('Buy now with Vipps', 'woo-vipps');
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+        $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
+
 
 
         // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
