@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.4.11  =
-Added the WOOCOMMERCE_CHECKOUT constant to "create partial order" to assist plugins that work differently on the checkout page(s), such as Yith Dynamic Pricing
+= 1.5.0  =
+Experimental support for WooCommerce Gutenberg blocks, namely the checkout blocks and the All Products blocks (and other product blocks).
 
 == Frequently Asked Questions ==
 
@@ -198,7 +198,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.07.xx version 1.4.11  =
+= 2020.09.xx version 1.5.0  =
+ Added support for WooCommerce Gutenberg Blocks: the Checkout block, the All Products blocks and other product blocks.
+
+= 2020.07.29 version 1.4.11  =
  Added the WOOCOMMERCE_CHECKOUT constant to create_partial_order, because some plugins act differently on checkout and on normal page views.
  Improved compatibility with KCO external payments
 
