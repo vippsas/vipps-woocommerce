@@ -886,7 +886,21 @@ else:
         add_action( 'wp_enqueue_scripts', function () {
            wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), '1.0.0', true );
         });
-        /* End product blocks support */
+        /* End 'all products' blocks support */
+        /* This is for the other product blocks - here we only have a single HTML filter unfortunately */
+        add_filter('woocommerce_blocks_product_grid_item_html', function ($html, $data, $product) {
+           if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
+           $stripped = preg_replace("!</li>$!", "", $html);
+           $pid = $product->get_id();
+           $title = __('Buy now with Vipps', 'woo-vipps');
+           $text = __('Buy now with', 'woo-vipps');
+           $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+           $a=1;
+           $button = <<<EOF
+<div class="wp-block-button  wc-block-components-product-button wc-block-button-vipps"><a javascript="void(0)" data-product-id="$pid" class="single-product button vipps-buy-now wp-block-button__link initialized" title="$title"><span class="vippsbuynow">$text</span><img class="inline vipps-logo negative" src="$logo" alt="Vipps" border="0"></a></div>
+EOF;
+           return $stripped . $button . "</li>";
+        }, 10, 3);
 
     }
 
