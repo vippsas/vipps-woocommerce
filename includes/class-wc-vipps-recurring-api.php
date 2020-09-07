@@ -95,6 +95,14 @@ class WC_Vipps_Recurring_Api {
 	public function create_agreement( $agreement_body ) {
 		$token = $this->get_access_token();
 
+		if ( isset( $agreement_body['initialCharge']['description'] ) ) {
+			$charge_description = $agreement_body['initialCharge']['description'];
+
+			if ( strlen( $charge_description ) > 42 ) {
+				$agreement_body['initialCharge']['description'] = substr( $charge_description, 0, 42 ) . '...';
+			}
+		}
+
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
 		];
@@ -217,8 +225,8 @@ class WC_Vipps_Recurring_Api {
 		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
 		$charge_description = $agreement['productDescription'];
-		if ( strlen( $charge_description ) > 99 ) {
-			$charge_description = substr( $charge_description, 0, 90 );
+		if ( strlen( $charge_description ) > 42 ) {
+			$charge_description = substr( $charge_description, 0, 42 ) . '...';
 		}
 
 		$data = [

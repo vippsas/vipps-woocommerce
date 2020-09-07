@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.4.2 =
+* Fix: Truncate initialCharge description if it's longer than 45 characters long.
+
 = 1.4.1 =
 * Fix: Added a polyfill for the PHP `array_key_last` function for hosts with PHP < 7.3.0.
 
