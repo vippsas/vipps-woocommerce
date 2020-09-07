@@ -95,10 +95,26 @@ class WC_Vipps_Recurring_Api {
 	public function create_agreement( $agreement_body ) {
 		$token = $this->get_access_token();
 
+		if ( isset( $agreement_body['productName'] ) ) {
+			$product_name = $agreement_body['productName'];
+
+			if ( strlen( $product_name ) > 45 ) {
+				$agreement_body['productName'] = substr( $product_name, 0, 42 ) . '...';
+			}
+		}
+
+		if ( isset( $agreement_body['productDescription'] ) ) {
+			$product_description = $agreement_body['productDescription'];
+
+			if ( strlen( $product_description ) > 100 ) {
+				$agreement_body['productDescription'] = substr( $product_description, 0, 97 ) . '...';
+			}
+		}
+
 		if ( isset( $agreement_body['initialCharge']['description'] ) ) {
 			$charge_description = $agreement_body['initialCharge']['description'];
 
-			if ( strlen( $charge_description ) > 42 ) {
+			if ( strlen( $charge_description ) > 45 ) {
 				$agreement_body['initialCharge']['description'] = substr( $charge_description, 0, 42 ) . '...';
 			}
 		}
@@ -225,7 +241,7 @@ class WC_Vipps_Recurring_Api {
 		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
 		$charge_description = $agreement['productDescription'];
-		if ( strlen( $charge_description ) > 42 ) {
+		if ( strlen( $charge_description ) > 45 ) {
 			$charge_description = substr( $charge_description, 0, 42 ) . '...';
 		}
 
