@@ -158,6 +158,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.4.1 =
+* Fix: Added a polyfill for the PHP `array_key_last` function for hosts with PHP < 7.3.0.
+
 = 1.4.0 =
 * Enhancement: Added a "Default status to give orders with a reserved charge" option.
 * Enhancement: Improved safety of reserved charges, they should never be put in an unrecoverable state anymore. Un-nested payment logic so we should never run into a similar case again.
