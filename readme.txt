@@ -6,7 +6,7 @@ Tested up to: 5.5.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.4.1
+WC tested up to: 4.5.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.09.xx version 1.5.0  =
+= 2020.09.14 version 1.5.0  =
  Added support for WooCommerce Gutenberg Blocks: the Checkout block, the All Products blocks and other product blocks.
 
 = 2020.07.29 version 1.4.11  =
