@@ -73,7 +73,6 @@ jQuery( document ).ready( function() {
  });
  // If this is triggered, somebody just loaded a variation form, so we need to redo the button init scripts
  jQuery('body').on('wc_variation_form', function () {
-	 console.log("WC variation form loaded");
 	 vippsInit();
  });
  // Allow other guys to do this too
@@ -157,7 +156,6 @@ jQuery( document ).ready( function() {
     data['variation_id'] = (varid.length>0) ? varid.val() : 0;
     // Earlier versions, no variation:
     if (prodid.length == 0) {
-      console.log("Product id in button in this version of Woo");
       prodid = jQuery(form).find('button[name="add-to-cart"]');  
       data['product_id'] =  (prodid.length>0) ? prodid.val() : 0;
     }

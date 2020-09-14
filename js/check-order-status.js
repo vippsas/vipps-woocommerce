@@ -38,7 +38,6 @@ jQuery(document).ready(function () {
  var data  = jQuery("#vippsdata").serialize();
 
  function checkStatusReady() {
-   console.log("Checking status");
    var now = new Date();
    iterate++;
    // If we have a fkey that hasn't responed 404 yet and a half a minute hasn't passed,  call that directly and often IOK 2018-05-04
@@ -73,7 +72,6 @@ jQuery(document).ready(function () {
      });
    } else {
      // This happens when we've waited for a minute or moe, if we don't have a key and so forth.
-     console.log("Doesnt look as if this is going anyhere");
      statusok=1;
      setTimeout(checkStatus,500);
    }

@@ -31,7 +31,6 @@ SOFTWARE.
 (function () {
 
  if (pagenow == 'woocommerce_page_wc-settings') {
-  console.log("In the settings");
   jQuery(document).ready(function ()  {
    jQuery('input.vippspw').focus( function () { jQuery(this).attr('type','text') });; 
    jQuery('input.vippspw').focusout( function () { jQuery(this).attr('type','password');  });

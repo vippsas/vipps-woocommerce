@@ -1,7 +1,7 @@
 ( function( wp ) {
 
 if (!wp || (typeof(wp['element']) == 'undefined') || typeof(wp['i18n']) == 'undefined') {
- error_log("wp.element or wp.i18n not found - cannot load support for WooCommerce blocks");
+ console.log("wp.element or wp.i18n not found - cannot load support for WooCommerce blocks");
 }
 if (typeof(window['React']) == 'undefined') {
   console.log("No react, so we can't continue adding support for Vipps to blocks."); 
