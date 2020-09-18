@@ -8,14 +8,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-08-31T14:29:48+00:00\n"
-"PO-Revision-Date: 2020-08-31 14:30+0000\n"
+"POT-Creation-Date: 2020-09-18T14:33:10+00:00\n"
+"PO-Revision-Date: 2020-09-18 14:36+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
 "Language: nb_NO\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Loco-Version: 2.4.2; wp-5.5"
+"X-Loco-Version: 2.4.2; wp-5.5.1"
 
 #. Plugin Name of the plugin
 msgid "Vipps Recurring Payments Gateway for WooCommerce"
@@ -159,25 +159,38 @@ msgstr ""
 "skal ha i WooCommerce i mellomtiden."
 
 #: includes/admin/vipps-recurring-settings.php:73
+#: includes/admin/vipps-recurring-settings.php:74
+msgid "Transition order status for renewals to \"completed\""
+msgstr "Flytt status på fornyelsesordre til \"fullført\""
+
+#: includes/admin/vipps-recurring-settings.php:76
+msgid ""
+"This option will make sure order statuses always transition to \"completed\" "
+"when the renewal charge is completed in Vipps."
+msgstr ""
+"Denne innstillingen vil sørge for at status på ordre alltid blir "
+"\"fullført\" når et trekk blir fullført i Vipps."
+
+#: includes/admin/vipps-recurring-settings.php:80
 msgid "Logging"
 msgstr "Logging"
 
-#: includes/admin/vipps-recurring-settings.php:74
+#: includes/admin/vipps-recurring-settings.php:81
 msgid "Log debug messages"
 msgstr "Logg feilsøkingsmeldinger"
 
-#: includes/admin/vipps-recurring-settings.php:76
+#: includes/admin/vipps-recurring-settings.php:83
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr "Lagre feilsøkingsmeldinger i WooCommerce sin System Status logg."
 
-#: includes/class-wc-gateway-vipps-recurring.php:104
+#: includes/class-wc-gateway-vipps-recurring.php:112
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
-#: woo-vipps-recurring.php:342 woo-vipps-recurring.php:343
-#: woo-vipps-recurring.php:382
+#: woo-vipps-recurring.php:350 woo-vipps-recurring.php:351
+#: woo-vipps-recurring.php:390
 msgid "Vipps Recurring Payments"
 msgstr "Vipps faste betalinger"
 
-#: includes/class-wc-gateway-vipps-recurring.php:105
+#: includes/class-wc-gateway-vipps-recurring.php:113
 msgid ""
 "Vipps Recurring Payments works by redirecting your customers to the Vipps "
 "portal for confirmation. It creates a payment plan and charges your users on "
@@ -186,11 +199,11 @@ msgstr ""
 "Vipps faste betalinger lar deg ta løpende betalt med Vipps via en "
 "betalingsavtale."
 
-#: includes/class-wc-gateway-vipps-recurring.php:136
+#: includes/class-wc-gateway-vipps-recurring.php:145
 msgid "Pay with Vipps"
 msgstr "Betal med Vipps"
 
-#: includes/class-wc-gateway-vipps-recurring.php:319
+#: includes/class-wc-gateway-vipps-recurring.php:329
 msgid ""
 "It looks like you cancelled your order in Vipps. If this was a mistake you "
 "can try again by checking out again :)"
@@ -198,40 +211,40 @@ msgstr ""
 "Det ser ut som at du avlyste betalingen i Vipps. Hvis dette var et uhell så "
 "kan du sjekke ut på nytt :)"
 
-#: includes/class-wc-gateway-vipps-recurring.php:322
+#: includes/class-wc-gateway-vipps-recurring.php:332
 msgid "Cancelled Vipps Purchase"
 msgstr "Avlyst Vippsbetaling"
 
-#: includes/class-wc-gateway-vipps-recurring.php:332
+#: includes/class-wc-gateway-vipps-recurring.php:342
 msgid "Could not create or find the \"Cancelled Vipps Purchase\" page"
 msgstr "Kunne ikke opprette eller finne \"Avlyst Vippsbetaling\" siden"
 
-#: includes/class-wc-gateway-vipps-recurring.php:469
+#: includes/class-wc-gateway-vipps-recurring.php:479
 msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr "Delsummen er lik null, ordren er gratis i denne abonnementsperiode."
 
-#: includes/class-wc-gateway-vipps-recurring.php:497
+#: includes/class-wc-gateway-vipps-recurring.php:507
 msgid "The agreement was cancelled or expired in Vipps"
 msgstr "Betalingsavtalen utløp eller var avbrutt i Vipps"
 
 #. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:560
+#: includes/class-wc-gateway-vipps-recurring.php:579
 msgid "Vipps charge completed (Charge ID: %s)"
 msgstr "Vipps betaling fullført (Charge ID: %s)"
 
-#: includes/class-wc-gateway-vipps-recurring.php:574
+#: includes/class-wc-gateway-vipps-recurring.php:593
 msgid "Vipps awaiting manual capture"
 msgstr "Vipps venter på manuelt trekk av beløp"
 
-#: includes/class-wc-gateway-vipps-recurring.php:597
+#: includes/class-wc-gateway-vipps-recurring.php:616
 msgid "Vipps payment cancelled."
 msgstr "Vipps betaling kansellert."
 
-#: includes/class-wc-gateway-vipps-recurring.php:605
+#: includes/class-wc-gateway-vipps-recurring.php:624
 msgid "Vipps payment failed."
 msgstr "Vipps betaling mislyktes."
 
-#: includes/class-wc-gateway-vipps-recurring.php:708
+#: includes/class-wc-gateway-vipps-recurring.php:727
 msgid ""
 "A temporary error occurred when refunding a payment through Vipps. Please "
 "ensure the order is refunded manually or reset the order to \"Processing\" "
@@ -240,7 +253,7 @@ msgstr ""
 "En midlertidig feil oppstod hos Vipps. Vennligst dobbeltsjekk at ordren er "
 "refundert manuelt eller tilbakestill ordren til \"Behandler\" og prøvd igjen."
 
-#: includes/class-wc-gateway-vipps-recurring.php:726
+#: includes/class-wc-gateway-vipps-recurring.php:745
 msgid ""
 "You can not partially refund a pending or due Vipps charge. Please wait till "
 "the payment clears first or refund the full amount instead."
@@ -249,41 +262,41 @@ msgstr ""
 "Vent til betalingen er fullført eller gi en refusjon på hele beløpet i "
 "stedet."
 
-#: includes/class-wc-gateway-vipps-recurring.php:730
+#: includes/class-wc-gateway-vipps-recurring.php:749
 msgid "An unexpected error occurred while refunding a payment in Vipps."
 msgstr "En uforventet feil oppstod ved opprettelse av refusjon i Vipps."
 
 #. translators: Error message
-#: includes/class-wc-gateway-vipps-recurring.php:787
+#: includes/class-wc-gateway-vipps-recurring.php:806
 msgid "Failed creating a Vipps charge: %s"
 msgstr "Mislyktes med å opprette et Vipps-trekk: %s"
 
 #. translators: Vipps Charge ID, human diff timestamp
-#: includes/class-wc-gateway-vipps-recurring.php:818
+#: includes/class-wc-gateway-vipps-recurring.php:837
 msgid "Vipps charge created: %1$s. The charge will be complete %2$s."
 msgstr "Vipps trekk opprettet: %1$s. Trekket blir fullført %2$s."
 
-#: includes/class-wc-gateway-vipps-recurring.php:900
-#: includes/class-wc-gateway-vipps-recurring.php:934
+#: includes/class-wc-gateway-vipps-recurring.php:919
+#: includes/class-wc-gateway-vipps-recurring.php:953
 msgid "Vipps is temporarily unavailable."
 msgstr "Vipps er midlertidig utilgjengelig."
 
 #. translators: %s order id
-#: includes/class-wc-gateway-vipps-recurring.php:941
-#: includes/class-wc-gateway-vipps-recurring.php:975
+#: includes/class-wc-gateway-vipps-recurring.php:960
+#: includes/class-wc-gateway-vipps-recurring.php:994
 msgid "Could not capture Vipps payment for order id: %s"
 msgstr "Kunne ikke trekke betaling i Vipps for betaling med ordre ID: %s"
 
-#: includes/class-wc-gateway-vipps-recurring.php:971
+#: includes/class-wc-gateway-vipps-recurring.php:990
 msgid "Vipps failed to create charge"
 msgstr "Vipps mislyktes med å opprette en betaling"
 
-#: includes/class-wc-gateway-vipps-recurring.php:1013
+#: includes/class-wc-gateway-vipps-recurring.php:1032
 msgid "Payment gateway change request cancelled in Vipps"
 msgstr "Forespørsel om bytte av betalingsmiddel avbrutt i Vipps"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:1115
+#: includes/class-wc-gateway-vipps-recurring.php:1134
 msgid ""
 "Request to change gateway to Vipps with agreement ID: %s. Customer sent to "
 "Vipps for confirmation."
@@ -292,7 +305,7 @@ msgstr ""
 "ID: %s)"
 
 #. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:1133
+#: includes/class-wc-gateway-vipps-recurring.php:1152
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 
@@ -301,18 +314,18 @@ msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 msgid "Could not get Vipps access token"
 msgstr "Mislykes med å hente tilgangsnøkkel fra Vipps"
 
-#: includes/class-wc-vipps-recurring-api.php:346
+#: includes/class-wc-vipps-recurring-api.php:370
 msgid "Your Vipps Recurring Payments gateway is not correctly configured."
 msgstr ""
 "Vipps faste betalinger er ikke konfigurert riktig. Vennligst dobbeltsjekk "
 "innstillingene til utvidelsen."
 
-#: includes/class-wc-vipps-recurring-api.php:395
+#: includes/class-wc-vipps-recurring-api.php:419
 msgid "No response from Vipps"
 msgstr "Ingen svar fra Vipps API-et"
 
 #. translators: Link to a GitHub readme about the error
-#: includes/class-wc-vipps-recurring-api.php:447
+#: includes/class-wc-vipps-recurring-api.php:471
 msgid ""
 "Recurring payments is not yet activated for this sale unit. Read more <a "
 "href=\"%s\" target=\"_blank\">here</a>"
@@ -365,7 +378,7 @@ msgstr ""
 "Vipps faste betalinger krever at WooCommerce Subscriptions er installert. Du "
 "kan laste ned %s her."
 
-#: woo-vipps-recurring.php:250
+#: woo-vipps-recurring.php:258
 msgid ""
 "Vipps Recurring Payments is currently in test mode - no real transactions "
 "will occur. Disable this in your wp_config when you are ready to go live!"
@@ -373,24 +386,24 @@ msgstr ""
 "Vipps faste betalinger er foreløpig i testmodus - ingen ekte betalinger vil "
 "finne sted. Skru av denne i wp_config når du er klar for å gå live."
 
-#: woo-vipps-recurring.php:272
+#: woo-vipps-recurring.php:280
 msgid "Successfully checked the status of these charges"
 msgstr "Sjekk av trekkstatus vellykket"
 
 #. translators: amount of orders checked
-#: woo-vipps-recurring.php:367
+#: woo-vipps-recurring.php:375
 msgid "Done. Checked the status of %s orders"
 msgstr "Sånn. Sjekket status på %s ordre"
 
-#: woo-vipps-recurring.php:369
+#: woo-vipps-recurring.php:377
 msgid "Failed to finish checking the status of all orders. Please try again."
 msgstr "Klarte ikke hente status på alle ordre. Vennligst prøv igjen."
 
-#: woo-vipps-recurring.php:399
+#: woo-vipps-recurring.php:407
 msgid "Capture payment instantly"
 msgstr "Trekk betaling umiddelbart"
 
-#: woo-vipps-recurring.php:400
+#: woo-vipps-recurring.php:408
 msgid ""
 "Capture payment instantly even if the product is not virtual. Please make "
 "sure you are following Norwegian law when using this option."
@@ -399,10 +412,10 @@ msgstr ""
 "på at du følger norsk lov når du bruker denne innstillingen. Du skal ikke "
 "trekke penger før forsendelse er sendt."
 
-#: woo-vipps-recurring.php:453
+#: woo-vipps-recurring.php:461
 msgid "Capture payment"
 msgstr "Capture (Trekk beløp)"
 
-#: woo-vipps-recurring.php:554
+#: woo-vipps-recurring.php:562
 msgid "Settings"
 msgstr "Innstillinger"

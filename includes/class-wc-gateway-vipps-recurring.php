@@ -74,6 +74,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public $statuses_to_attempt_capture;
 
 	/**
+	 * Transition the order status to completed when a renewal order has been charged successfully
+	 * regardless of previous status
+	 *
+	 * @var string
+	 */
+	public $transition_renewals_to_completed;
+
+	/**
 	 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
 	 */
 	private static $instance;
@@ -123,17 +131,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Load the settings.
 		$this->init_settings();
 
-		$this->title                          = $this->get_option( 'title' );
-		$this->description                    = $this->get_option( 'description' );
-		$this->enabled                        = $this->get_option( 'enabled' );
-		$this->testmode                       = WC_VIPPS_RECURRING_TEST_MODE;
-		$this->secret_key                     = $this->get_option( 'secret_key' );
-		$this->client_id                      = $this->get_option( 'client_id' );
-		$this->subscription_key               = $this->get_option( 'subscription_key' );
-		$this->cancelled_order_page           = $this->get_option( 'cancelled_order_page' );
-		$this->default_renewal_status         = $this->get_option( 'default_renewal_status' );
-		$this->default_reserved_charge_status = $this->get_option( 'default_reserved_charge_status' );
-		$this->order_button_text              = __( 'Pay with Vipps', 'woo-vipps-recurring' );
+		$this->title                            = $this->get_option( 'title' );
+		$this->description                      = $this->get_option( 'description' );
+		$this->enabled                          = $this->get_option( 'enabled' );
+		$this->testmode                         = WC_VIPPS_RECURRING_TEST_MODE;
+		$this->secret_key                       = $this->get_option( 'secret_key' );
+		$this->client_id                        = $this->get_option( 'client_id' );
+		$this->subscription_key                 = $this->get_option( 'subscription_key' );
+		$this->cancelled_order_page             = $this->get_option( 'cancelled_order_page' );
+		$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
+		$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
+		$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
+		$this->order_button_text                = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new WC_Vipps_Recurring_Api( $this );
@@ -518,7 +527,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $transaction_id
 	 */
 	public function complete_order( $order, $transaction_id ) {
+		// $order->payment_complete() does not always assign a transaction id
+		// specifically if the order's status is already "processing", so we should make sure it sets it
+		WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )
+			? update_post_meta( $order->get_id(), '_transaction_id', $transaction_id )
+			: $order->set_transaction_id( $transaction_id );
+
 		$order->payment_complete( $transaction_id );
+
+		// controlled by the `transition_renewals_to_completed` setting
+		// only applicable to renewal orders
+		if ( $this->transition_renewals_to_completed && wcs_order_contains_renewal( $order ) ) {
+			$order->update_status( 'wc-completed' );
+		}
+
+		// unlock the order and make sure we tell our cronjob to not periodically check the status of this
+		// order anymore
 		$order->update_meta_data( '_vipps_recurring_pending_charge', false );
 		$this->unlock_order( $order );
 	}
