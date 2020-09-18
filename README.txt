@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.4.4 =
+* Enhancement: Added an option to move renewal orders from "processing" to "completed" when the charge completes in Vipps.
+
 = 1.4.3 =
 * Fix: Truncate agreement description if it's longer than 100 characters and truncate productName if it's longer than 45.
 
@@ -169,19 +172,3 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: Refunding a reversed charge now works, just like pending charges in version 1.3.9.
 * Change: "Default status to give pending renewal orders" default is now "processing" instead of "on hold"
 * Change: Removed "completed" as a possible default status for the "Default status to give pending renewal orders" setting as this status is conventionally used for orders that are completely finished.
-
-= 1.3.11 =
-* Fix: When a refund happens on a pending charge we need to set `_vipps_recurring_pending_charge` to `false`
-
-= 1.3.10 =
-* Fix: Synchronised orders where the Vipps agreement was never accepted would not clear from the job queue.
-* Fix: Solved an edge case where certain orders would end up in an unrecoverable 'locked' state when rate limits or other Vipps gateway errors occurred.
-
-= 1.3.9 =
-* Enhancement: Error handling and logging has been completely redone in order to more easily debug future errors.
-* Enhancement: You can now fully "refund" an order where the associated charge has not yet been completed in Vipps.
-* Fix: Potentially fix some small inconsistencies as error handling is now much better.
-
-= 1.3.8 =
-* Fix: Solved an issue where it would attempt to swap gateway even though it had already finished doing so. This time it would throw an internal server error because it's passing a blank Agreement ID to the Vipps API.
-* Fix: No longer use the `WC_VERSION` constant in a way that would throw an error if WooCommerce is missing (It shouldn't ever be missing, but just in case)
