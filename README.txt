@@ -10,15 +10,11 @@ License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
 == Description ==
 
-**This plugin is currently a test pilot (pre-release). It is very likely that you will encounter bugs or scenarios that are not yet supported.**
-
-**Please keep up to date with updates as soon as they happen. They are very important in this pre-release period.**
-
-**We encourage you to create an issue here or on the [GitHub page](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.**
-
 This plugin provides support for Vipps recurring payments for WooCommerce.
 
 This is the official Vipps Recurring Payments plugin for WooCommerce. It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
+
+**We encourage you to create an issue here or on the [GitHub page](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.**
 
 Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
