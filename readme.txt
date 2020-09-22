@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.5.0  =
-Experimental support for WooCommerce Gutenberg blocks, namely the checkout blocks and the All Products blocks (and other product blocks).
+= 1.5.1  =
+Fixed issues with payment_complete not being called, confusing various tracker plugins
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.09.28 version 1.5.1  =
+ Fixed issue with payment_complete not being called. Thanks to espen @ nhg for reporting and debugging
 
 = 2020.09.14 version 1.5.0  =
  Added support for WooCommerce Gutenberg Blocks: the Checkout block, the All Products blocks and other product blocks.
