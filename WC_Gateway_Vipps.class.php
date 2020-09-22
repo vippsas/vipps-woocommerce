@@ -360,7 +360,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
-    // they don't require payment. So we try to capture, and if successful, call "payment_complete". IOK 2018-09-21
+    // they don't require payment. So we try to capture. IOK 2020-09-22
     // do NOT call this unless the order is 'reserved' at Vipps!
     protected function maybe_complete_payment($order) {
         if ('vipps' != $order->get_payment_method()) return false;
@@ -369,8 +369,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = $order->get_meta('_vipps_captured'); 
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured || $vippsstatus == 'SALE') { 
-          // IOK 2019-09-21 already captured, so just run 'payment complete'
-          $order->payment_complete();
           return true;
         }
         $ok = 0;
@@ -383,7 +381,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         if (!$ok) return false;
         $order->save();
-        $order->payment_complete();
         return true;
     }
 
@@ -1231,13 +1228,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($statuschange) {
             switch ($vippsstatus) {
                 case 'authorized':
-                    // Orders not needing processing can be autocaptured, so try to do so now. This will reduce stock and mark the order 'completed' IOK 2019-09-21
+                    // Orders not needing processing can be autocaptured, so try to do so now.  IOK 2020-09-22 - simplified.
                     $autocapture = $this->maybe_complete_payment($order);
                     if (!$autocapture) {
-                      wc_reduce_stock_levels($order->get_id());
                       $authorized_state = $this->after_vipps_order_status($order);
+// FIXME INSTEAD MODIFY PAYMENT COMPLETE FILTER BELOW
                       $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
                     }
+                    $order->payment_complete();
                     break;
                 case 'complete':
                     $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
@@ -1509,18 +1507,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
-            // Orders not needing processing can be autocaptured, so try to do so now. This will reduce stock and mark the order 'completed' IOK 2019-09-21
+            // Orders not needing processing can be autocaptured, so try to do so now.
             $autocapture = $this->maybe_complete_payment($order);
             if (!$autocapture) {
-               wc_reduce_stock_levels($order->get_id());
                $authorized_state = $this->after_vipps_order_status($order);
+// IOK FIXME BELOW UNNECCESSRY
                $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
             }
+            $order->payment_complete();
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
           $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
-          $this->get_payment_details($order);
           $order->payment_complete();
+          $this->get_payment_details($order);
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
         }
