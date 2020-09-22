@@ -375,7 +375,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $ok = $this->capture_payment($order);
             $order->add_order_note(__('Payment automatically captured at Vipps for order not needing processing','woo_vipps'));
-          
         } catch (Exception $e) {
             $order->add_order_note(__('Order does not need processing, but payment could not be captured at Vipps:','woo_vipps') . ' ' . $e->getMessage());
         }
@@ -869,12 +868,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         }
 
+        $remaining = $order->get_meta('_vipps_capture_remaining');
+
         // Somehow the order status in payment_complete has been set to the 'after order status' or 'complete' by a filter. If so, do not capture.
         // Capture will be done *before* payment_complete if appropriate IOK 2020-09-22
-        if (did_action('woocommerce_pre_payment_complete') && $order->get_meta('_vipps_capture_remaining')>0) {
-            $this->log(sprintf(__("Filters are setting the payment_complete order status to '%s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
-            $order->add_order_note(sprintf(__('Payment complete set status to "%s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
-            return false;
+        if (did_action('woocommerce_pre_payment_complete')) {
+            if (!$order->needs_processing()) return; // This is fine, we've captured.
+	    if ($remaining>0) {
+                    // Not everything has been captured, but we have reached a capturable status. Complain, do not capture. IOK 2020-09-22
+		    $this->log(sprintf(__("Filters are setting the payment_complete order status to '%s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
+		    $order->add_order_note(sprintf(__('Payment complete set status to "%s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
+		    return false;
+	    }
         }
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
@@ -1228,14 +1233,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($statuschange) {
             switch ($vippsstatus) {
                 case 'authorized':
-                    // Orders not needing processing can be autocaptured, so try to do so now.  IOK 2020-09-22 - simplified.
-                    $autocapture = $this->maybe_complete_payment($order);
-                    if (!$autocapture) {
-                      $authorized_state = $this->after_vipps_order_status($order);
-// FIXME INSTEAD MODIFY PAYMENT COMPLETE FILTER BELOW
-                      $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
-                    }
-                    $order->payment_complete();
+                    $this->payment_complete($order);
                     break;
                 case 'complete':
                     $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
@@ -1507,14 +1505,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
-            // Orders not needing processing can be autocaptured, so try to do so now.
-            $autocapture = $this->maybe_complete_payment($order);
-            if (!$autocapture) {
-               $authorized_state = $this->after_vipps_order_status($order);
-// IOK FIXME BELOW UNNECCESSRY
-               $order->update_status($authorized_state, __( 'Payment authorized at Vipps', 'woo-vipps' ));
-            }
-            $order->payment_complete();
+            $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
           $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
@@ -1526,6 +1517,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
         clean_post_cache($order->get_id());
         $Vipps->unlockOrder($order);
+    }
+
+    // Do the 'payment_complete' logic for non-SALE orders IOK 2020-09-22
+    public function payment_complete($order,$transactionid='') {
+            // Orders not needing processing can be autocaptured, so try to do so now.
+            $autocapture = $this->maybe_complete_payment($order);
+            if (!$autocapture) {
+               add_filter( 'woocommerce_payment_complete_order_status', 
+                    function ($status, $orderid, $order) {
+                       return $this->after_vipps_order_status($order);
+                    }, 99, 3);
+               $order->add_order_note(__( 'Payment authorized at Vipps', 'woo-vipps' ));
+            }
+            $order->payment_complete();
     }
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
