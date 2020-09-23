@@ -14,7 +14,7 @@
    Stable tag: trunk
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 4.5.1
+   WC tested up to: 4.5.2
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
