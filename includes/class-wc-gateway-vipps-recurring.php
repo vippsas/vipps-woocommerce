@@ -381,17 +381,33 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$charges = $this->api->get_charges_for( $agreement_id );
-
-		// return false if there is no charge
-		// this will tell us if this was directly captured or not
-		if ( count( $charges ) === 0 ) {
-			return false;
+		if ( WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ) {
+			$charge_id = get_post_meta( $order_id, '_charge_id', true );
+		} else {
+			$charge_id = $order->get_meta( '_charge_id' );
 		}
 
-		$charge = null;
-		if ( $charges ) {
-			$charge = array_reverse( $charges )[0];
+		if ( WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ) {
+			$is_captured = get_post_meta( $order_id, '_vipps_recurring_captured', true );
+		} else {
+			$is_captured = $order->get_meta( '_vipps_recurring_captured' );
+		}
+
+		if ( $is_captured && $charge_id ) {
+			$charge = $this->api->get_charge( $agreement_id, $charge_id );
+		} else {
+			$charges = $this->api->get_charges_for( $agreement_id );
+
+			// return false if there is no charge
+			// this will tell us if this was directly captured or not
+			if ( count( $charges ) === 0 ) {
+				return false;
+			}
+
+			$charge = null;
+			if ( $charges ) {
+				$charge = array_reverse( $charges )[0];
+			}
 		}
 
 		return $charge;

@@ -434,6 +434,12 @@ class WC_Vipps_Recurring_Api {
 			return $body;
 		}
 
+		// Rate limiting, temporary error
+		if ( $status === 429 ) {
+			$msg = __( "We hit Vipps' rate limit, we will retry later.", 'woo-vipps-recurring' );
+			throw new WC_Vipps_Recurring_Temporary_Exception( $msg );
+		}
+
 		// error handling
 		$msg                           = $default_error;
 		$is_idempotent_error           = false;
@@ -471,7 +477,15 @@ class WC_Vipps_Recurring_Api {
 			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
 		}
 
-		WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Error: %s (%s) with request body: %s', $msg, $endpoint, $request_body ) );
+		if ( is_array( $request_body ) ) {
+			$request_body = json_encode( $request_body );
+		}
+
+		if ( is_array( $body ) ) {
+			$body = json_encode( $body );
+		}
+
+		WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Error (%s): %s (%s) with request body: %s. The response was: %s', $status, $msg, $endpoint, $request_body, $body ) );
 
 		$exception                      = new WC_Vipps_Recurring_Exception( $msg, $localized_msg );
 		$exception->response_code       = $status;
