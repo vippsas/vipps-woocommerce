@@ -392,6 +392,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} else {
 			$is_captured = $order->get_meta( '_vipps_recurring_captured' );
 		}
+		
+		$charge = false;
 
 		if ( $is_captured && $charge_id ) {
 			try {
