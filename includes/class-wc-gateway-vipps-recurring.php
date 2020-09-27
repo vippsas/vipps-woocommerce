@@ -392,10 +392,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} else {
 			$is_captured = $order->get_meta( '_vipps_recurring_captured' );
 		}
+		
+		$charge = false;
 
 		if ( $is_captured && $charge_id ) {
-			$charge = $this->api->get_charge( $agreement_id, $charge_id );
-		} else {
+			try {
+				$charge = $this->api->get_charge( $agreement_id, $charge_id );
+			} catch ( Exception $e ) {
+				// todo: Fix me - I'm a temporary fix because when an agreement is created a second time on the same order the
+				// charge id is not updated automatically, so we should do that instead
+				$charge = false;
+			}
+		}
+		
+		if ( ! $is_captured || ! $charge ) {
 			$charges = $this->api->get_charges_for( $agreement_id );
 
 			// return false if there is no charge
