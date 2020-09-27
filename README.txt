@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.4.6 =
+* Fix: Fix a bug when an agreement is created twice on the same order. We didn't fetch the right charge ID. This is a temporary fix I will have to revisit later on a proper setup.
+
 = 1.4.5 =
 * Fix: Changed how we make requests to minimize the amount of times we hit Vipps' rate limits. If you have gotten a lot of exceptions lately
 that look like this: `HTTP Response Error: (recurring/v2/agreements/:id/charges) with request body: Array` it's because of rate limits.
