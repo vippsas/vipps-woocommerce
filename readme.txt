@@ -198,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2020.10.xx version 1.5.2  =
+ Fixed deletion of cancelled orders; thanks to @alarsen2 for reporting
+
 = 2020.09.28 version 1.5.1  =
  Fixed issue with payment_complete not being called. Thanks to espen @ nhg for reporting and debugging
 

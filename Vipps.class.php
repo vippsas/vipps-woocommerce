@@ -206,7 +206,7 @@ class Vipps {
         global $wpdb;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $delendaq = $wpdb->prepare("SELECT o.ID from {$wpdb->postmeta} m join {$wpdb->posts} o on (m.meta_key='_vipps_delendum' and o.id=m.post_id)
-                WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc_cancelled' && o.post_modified_gmt < %s", gmdate('Y-m-d H:i:s', $cutoff));
+                WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc-cancelled' && o.post_modified_gmt < %s limit 30", gmdate('Y-m-d H:i:s', $cutoff));
         $delenda = $wpdb->get_results($delendaq, ARRAY_A);
         foreach ($delenda as $del) {
             wp_delete_post($del['ID']);
