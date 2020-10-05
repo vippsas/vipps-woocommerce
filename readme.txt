@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.5.1  =
-Fixed issues with payment_complete not being called, confusing various tracker plugins
+= 1.5.2  =
+Fixed issue with automatic deletion of orders never completed in express checkout
 
 == Frequently Asked Questions ==
 
@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.10.xx version 1.5.2  =
+= 2020.10.05 version 1.5.2  =
  Fixed deletion of cancelled orders; thanks to @alarsen2 for reporting
 
 = 2020.09.28 version 1.5.1  =
