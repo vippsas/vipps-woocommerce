@@ -88,6 +88,14 @@ class Vipps {
             add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
+
+
+        if (is_user_logged_in()) {
+         $user = wp_get_current_user(); 
+	 $roles = ( array ) $user->roles;
+         error_log(print_r($roles,true));
+        }
+
     }
 
     public function admin_init () {

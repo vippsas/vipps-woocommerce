@@ -433,6 +433,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $orderprefix = $Vipps->generate_order_prefix();
 
+        $expresscreateuserdefault = "no";
+        if (class_exists('VippsWooLogin')) {
+           $woodefault = apply_filters('woocommerce_checkout_registration_enabled', 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout'));
+           if ($woodefault) $expresscreateuserdefault = "yes";
+        }
+
+
         $this->form_fields = array(
                 'enabled' => array(
                     'title'       => __( 'Enable/Disable', 'woocommerce' ),
@@ -548,6 +555,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('When using Express Checkout, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
                         'default'     => 'no',
                         ),
+
+
+                 'expresscreateuser' => array (
+                    'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
+                    'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'),
+                    'default'     => $expresscreateuserdefault,
+                    ),
+
                   'singleproductbuynowcompatmode' => array(
                         'title'       => __( '"Buy now" compatibility mode', 'woo-vipps' ),
                         'label'       => __( 'Activate compatibility mode for all "Buy now" buttons', 'woo-vipps' ),
@@ -593,17 +610,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     );
 
 
-        // This will be enabled on a later date . IOK 2018-06-05
-        if (false) {
 
-            $this->form_fields['expresscreateuser'] = array (
-                    'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
-                    'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts.', 'woo-vipps'),
-                    'default'     => 'yes',
-                    );
-        }
+        
 
         $this->form_fields['developermode'] = array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
                     'title'       => __( 'Enable developer mode', 'woo-vipps' ),
