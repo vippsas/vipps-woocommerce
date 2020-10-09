@@ -220,7 +220,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @return bool Whether the subscription's payment method should be updated on checkout or async when a response is returned.
 	 */
-	public function indicate_async_payment_method_update( $should_update, $new_payment_method ) {
+	public function indicate_async_payment_method_update( $should_update, $new_payment_method ): bool {
 		if ( 'vipps_recurring' === $new_payment_method ) {
 			$should_update = false;
 		}
@@ -390,6 +390,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( ! $is_captured || ! $charge ) {
+			// todo: fix this guy, he's causing a lot of rate limits being hit
 			$charges = $this->api->get_charges_for( $agreement_id );
 
 			// return false if there is no charge
@@ -624,7 +625,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// status: FAILED
-		if ( 'FAILED' === $charge['status'] ) {
+		if ( 'FAILED' === $charge['status'] && $this->can_fail_order( $order ) ) {
 			$order->update_status( 'failed', __( 'Vipps payment failed.', 'woo-vipps-recurring' ) );
 			$order->update_meta_data( '_vipps_recurring_pending_charge', false );
 
@@ -632,6 +633,27 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$order->save();
+	}
+
+	/**
+	 * We should only render a charge as failed if a certain time threshold has passed on initialCharge
+	 * as a charge can move from FAILED to CHARGED when a customer's card is declined in Vipps
+	 * they are asked to update their card details or top-up their balance before retrying. This does not create
+	 * a new charge, it uses the old one and moves the status to CHARGED if successful
+	 *
+	 * Timeout thresholds: https://www.vipps.no/developers-documentation/recurring/documentation/#timeouts
+	 * "the user has a total of 10 minutes to complete the payment"
+	 *
+	 * @param $order
+	 *
+	 * @return bool
+	 */
+	public function can_fail_order( $order ): bool {
+		// wait threshold in seconds. 60 * 15 = 15 minutes
+		$wait_threshold = apply_filters( 'wc_vipps_recurring_fail_charge_wait_threshold', 60 * 15 );
+
+		return ! wcs_order_contains_renewal( $order ) &&
+			   $order->get_date_created()->getTimestamp() < time() - $wait_threshold;
 	}
 
 	/**
