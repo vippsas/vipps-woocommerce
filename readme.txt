@@ -75,8 +75,9 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.5.2  =
-Fixed issue with automatic deletion of orders never completed in express checkout
+= 1.6.0  =
+Now integrates with Login with Vipps: If you choose to, accounts will be created and you will be logged in to them (if they are 'customer' accounts) when using Express Checkout.
+If Login with Vipps is installed, this gets turned on by default. This allows you to let users log in and manage their accounts safely with absolutely no passwords involved.
 
 == Frequently Asked Questions ==
 
@@ -197,6 +198,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.10.xx version 1.6.0  =
+ Integrate with Login with Vipps and provide again the "create users when using express checkout" checkbox. If you choose too, this will then create (and log in) users when using express checkout.
+Only users without privileges will be logged in like that. If you install Login with Vipps, this will be set as the default choice.
 
 = 2020.10.05 version 1.5.2  =
  Fixed deletion of cancelled orders; thanks to @alarsen2 for reporting
