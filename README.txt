@@ -155,6 +155,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 == Changelog ==
 
 = 1.4.7 =
+* Fix: No longer attempt to cancel an already cancelled charge.
 * Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs. We still don't recommend using this plugin with WC < 3.0, though.
 
 = 1.4.6 =

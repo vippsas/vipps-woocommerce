@@ -516,7 +516,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->save();
 
 			// cancel charge
-			if ( $charge && in_array( $charge['status'], [ 'DUE', 'PENDING', 'CANCELLED' ] ) ) {
+			if ( $charge && in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
 				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
 			}
 
