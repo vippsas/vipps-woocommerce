@@ -111,14 +111,43 @@ class WC_Vipps_Recurring_Helper {
 	}
 
 	/**
+	 * Gets the id of a resource
+	 *
 	 * @param $order
 	 *
 	 * @return mixed
 	 */
-	public static function get_id( $order ) {
-		return method_exists( $order, 'get_id' )
-			? $order->get_id()
-			: $order->id;
+	public static function get_id( $resource ) {
+		return method_exists( $resource, 'get_id' )
+			? $resource->get_id()
+			: $resource->id;
+	}
+
+	/**
+	 * Gets meta data from a resource
+	 *
+	 * @param $resource
+	 * @param $meta_key
+	 *
+	 * @return mixed
+	 */
+	public static function get_meta( $resource, $meta_key ) {
+		return self::is_wc_lt( '3.0' )
+			? get_post_meta( self::get_id( $resource ), $meta_key, true )
+			: $resource->get_meta( $meta_key );
+	}
+
+	/**
+	 * Updates meta data on a resource
+	 *
+	 * @param $resource
+	 * @param $meta_key
+	 * @param $meta_value
+	 */
+	public static function update_meta_data( $resource, $meta_key, $meta_value ) {
+		self::is_wc_lt( '3.0' )
+			? update_post_meta( self::get_id( $resource ), $meta_key, $meta_value )
+			: $resource->update_meta_data( $meta_key, $meta_value );
 	}
 
 	/**
@@ -127,9 +156,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_agreement_id_from_order( $order ) {
-		return self::is_wc_lt( '3.0' )
-			? get_post_meta( self::get_id( $order ), '_agreement_id', true )
-			: $order->get_meta( '_agreement_id' );
+		return self::get_meta( $order, '_agreement_id' );
 	}
 
 	/**
@@ -138,9 +165,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function is_charge_captured_for_order( $order ) {
-		return self::is_wc_lt( '3.0' )
-			? get_post_meta( self::get_id( $order ), '_vipps_recurring_captured', true )
-			: $order->get_meta( '_vipps_recurring_captured' );
+		return self::get_meta( $order, '_vipps_recurring_captured' );
 	}
 
 	/**
@@ -149,9 +174,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_charge_id_from_order( $order ) {
-		return self::is_wc_lt( '3.0' )
-			? get_post_meta( self::get_id( $order ), '_charge_id', true )
-			: $order->get_meta( '_charge_id' );
+		return self::get_meta( $order, '_charge_id' );
 	}
 
 	/**
@@ -192,9 +215,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function is_stock_reduced_for_order( $order ) {
-		return self::is_wc_lt( '3.0' )
-			? get_post_meta( self::get_id( $order ), '_order_stock_reduced', true )
-			: $order->get_meta( '_order_stock_reduced', true );
+		return self::get_meta( $order, '_order_stock_reduced' );
 	}
 
 	/**

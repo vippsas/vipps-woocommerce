@@ -446,14 +446,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$order_status        = $order->get_status();
 				$show_capture_button = ( ! in_array( $order_status, $gateway->statuses_to_attempt_capture, true ) )
-				                       && ! (int) $order->get_meta( '_vipps_recurring_captured' )
-				                       && ! (int) $order->get_meta( '_vipps_recurring_zero_amount' );
+				                       && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
+				                       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' );
 
 				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;
 				}
 
-				$is_captured = $order->get_meta( '_vipps_recurring_captured' );
+				$is_captured = WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order );
 
 				if ( $show_capture_button && ! $is_captured ) {
 					$logo = plugins_url( 'assets/images/vipps_logo_negative_rgb_transparent.png', __FILE__ );
