@@ -30,11 +30,9 @@ class WC_Vipps_Recurring_Logger {
 
 		if ( apply_filters( 'wc_vipps_recurring_logging', true, $message ) ) {
 			if ( empty( self::$logger ) ) {
-				if ( WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ) {
-					self::$logger = new WC_Logger();
-				} else {
-					self::$logger = wc_get_logger();
-				}
+				self::$logger = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )
+					? new WC_Logger()
+					: wc_get_logger();
 			}
 
 			$settings = get_option( 'woocommerce_vipps_recurring_settings' );
@@ -57,11 +55,9 @@ class WC_Vipps_Recurring_Logger {
 				$log_entry .= '==== Start Log ====' . "\n" . $message . "\n" . '==== End Log ====' . "\n\n";
 			}
 
-			if ( WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ) {
-				self::$logger->add( self::WC_LOG_FILENAME, $log_entry );
-			} else {
-				self::$logger->debug( $log_entry, [ 'source' => self::WC_LOG_FILENAME ] );
-			}
+			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )
+				? self::$logger->add( self::WC_LOG_FILENAME, $log_entry )
+				: self::$logger->debug( $log_entry, [ 'source' => self::WC_LOG_FILENAME ] );
 		}
 	}
 }

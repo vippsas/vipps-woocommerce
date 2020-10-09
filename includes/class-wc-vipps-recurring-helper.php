@@ -42,7 +42,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed|string|void
 	 */
 	public static function get_settings( $setting = null ) {
-		$all_settings = get_option( 'woocommerce_vipps_recurring_settings', array() );
+		$all_settings = get_option( 'woocommerce_vipps_recurring_settings', [] );
 
 		if ( null === $setting ) {
 			return $all_settings;
@@ -108,5 +108,101 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	public static function rfc_3999_date_to_unix( string $date ): string {
 		return strtotime( $date );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_id( $order ) {
+		return method_exists( $order, 'get_id' )
+			? $order->get_id()
+			: $order->id;
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_agreement_id_from_order( $order ) {
+		return self::is_wc_lt( '3.0' )
+			? get_post_meta( self::get_id( $order ), '_agreement_id', true )
+			: $order->get_meta( '_agreement_id' );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function is_charge_captured_for_order( $order ) {
+		return self::is_wc_lt( '3.0' )
+			? get_post_meta( self::get_id( $order ), '_vipps_recurring_captured', true )
+			: $order->get_meta( '_vipps_recurring_captured' );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_charge_id_from_order( $order ) {
+		return self::is_wc_lt( '3.0' )
+			? get_post_meta( self::get_id( $order ), '_charge_id', true )
+			: $order->get_meta( '_charge_id' );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_payment_method( $order ) {
+		return self::is_wc_lt( '3.0' )
+			? $order->payment_method
+			: $order->get_payment_method();
+	}
+
+	/**
+	 * @param $order
+	 * @param $transaction_id
+	 */
+	public static function set_transaction_id_for_order( $order, $transaction_id ) {
+		self::is_wc_lt( '3.0' )
+			? update_post_meta( $order->id, '_transaction_id', $transaction_id )
+			: $order->set_transaction_id( $transaction_id );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_transaction_id_for_order( $order ) {
+		return self::is_wc_lt( '3.0' )
+			? get_post_meta( self::get_id( $order ), '_transaction_id' )
+			: $order->get_transaction_id();
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function is_stock_reduced_for_order( $order ) {
+		return self::is_wc_lt( '3.0' )
+			? get_post_meta( self::get_id( $order ), '_order_stock_reduced', true )
+			: $order->get_meta( '_order_stock_reduced', true );
+	}
+
+	/**
+	 * @param $order
+	 */
+	public static function reduce_stock_for_order( $order ) {
+		self::is_wc_lt( '3.0' )
+			? $order->reduce_order_stock()
+			: wc_reduce_stock_levels( self::get_id( $order ) );
 	}
 }

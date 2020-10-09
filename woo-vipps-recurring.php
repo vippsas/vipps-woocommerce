@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.4.6
+ * Version: 1.4.7
  * Requires at least: 4.4
  * Tested up to: 5.5
  * WC tested up to: 4.3.1
@@ -84,7 +84,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.4.6' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.4.7' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -438,7 +438,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					return;
 				}
 
-				$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
+				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
 				if ( $payment_method !== $gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
 					return;
@@ -477,7 +477,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$gateway = $this->gateway();
 
 				$order          = wc_get_order( $postid );
-				$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
+				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
 				if ( $payment_method !== $gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
 					return;
