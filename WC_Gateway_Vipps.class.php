@@ -1414,11 +1414,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save(); 
         $order->calculate_totals(true);
 
+
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
         // If possible and safe, user will be logged in on the thankyou screen if they still are in the same sesssion. (see above, _vipps_order_finalized). IOK 2020-10-09
-        if ($this->get_option('expresscreateuser')) {
+        if ($this->get_option('expresscreateuser'=='yes')) {
             global $Vipps;
-            $Vipps->express_checkout_get_vipps_customer($order);
+            $customer = $Vipps->express_checkout_get_vipps_customer($order);
+            // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
+            // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
+            if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
+               $userid = $customer->get_id();
+               update_user_meta($userid, '_vipps_phone', $phone);
+              // update_user_meta($userid, '_vipps_id', $sub);
+              // update_user_meta($userid, '_vipps_just_connected', 1);
+            }
         }
 
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);

@@ -90,13 +90,6 @@ class Vipps {
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
 
-
-        if (is_user_logged_in()) {
-         $user = wp_get_current_user(); 
-	 $roles = ( array ) $user->roles;
-         error_log(print_r($roles,true));
-        }
-
     }
 
     public function admin_init () {
@@ -882,7 +875,8 @@ else:
           $orderkey = $order->get_order_key();
 
           if ($orderkey == $sessionkey) {
-             // This order belongs to this session! That means that we can do stuff like logging in the user.
+             // If this is the case, this order belongs to this session and we can proceed to do 'sensitive' things. IOK 2020-10-09
+             $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
           }
         }
     }
@@ -1687,12 +1681,13 @@ EOF;
         if (!$order || $order->payment_method != 'vipps' ) return;
         if (!$order->get_meta('_vipps_express_checkout')) return;
 
-        $customer = express_checkout_get_vipps_customer ($order);
+        $customer = $this->express_checkout_get_vipps_customer ($order);
 
         if( $customer) {
-            $iscustomer = (in_array('customer', $customer->roles) || in_array('subscriber', $customer->roles));
+            $usermeta=get_userdata($customer->get_id());
+            $iscustomer = (in_array('customer', $usermeta->roles) || in_array('subscriber', $usermeta->roles));
             // Ensure we don't have any admins with an additonal customer role logged in like this
-            if($iscustomer && !user_can($customer, 'manage_woocommerce') && !user_can('manage_options'))  {
+            if($iscustomer && !user_can($customer->get_id(), 'manage_woocommerce') && !user_can($customer->get_id(),'manage_options'))  {
                 wp_set_current_user($customer->get_id(), $customer->user_login);
                 wp_set_auth_cookie($customer->get_id());
                 do_action('wp_login', $customer->user_login, $customer);
@@ -1706,19 +1701,17 @@ EOF;
         if (!$order || $order->payment_method != 'vipps' ) return;
         if (!$order->get_meta('_vipps_express_checkout')) return;
         if ($this->gateway()->get_option('expresscreateuser') != 'yes') return null;
-
         if (is_user_logged_in()) return new WC_Customer(get_current_user_id());
-        if ( $order->get_user_id()) return new WC_Customer($order->get_user_id());
+        if ($order->get_user_id()) return new WC_Customer($order->get_user_id());
 
         $email = $order->get_billing_email();
 
         // Existing customer, so update the order (and possibly the site if multisite) and return the customer. IOK 2020-10-09 
-        if (email_exists($order_email)) {
-            $user        = get_user_by( 'email', $email);
+        if (email_exists($email)) {
+            $user = get_user_by( 'email', $email);
             if (!$user) return null;
             $customerid = $user->ID;
             update_post_meta( $order->get_id(), '_customer_user', $customerid );
-            $order->set_user_id($customerid);
             $order->save(); 
             if (is_multisite() && ! is_user_member_of_blog($customerid, get_current_blog_id())) {
                 add_user_to_blog( get_current_blog_id(), $customerid, 'customer' );
@@ -1727,10 +1720,10 @@ EOF;
         }
 
         // No customer yet. As we want to create users like this (set in the settings) let's do so.
-        $customerid = wc_create_new_customer( $email);
+        // Username will be created from email, but the settings may stop generating passwords, so we force that to be generated. IOK 2020-10-09
+        $customerid = wc_create_new_customer( $email, '', wp_generate_password());
         if ($customerid && !is_wp_error($customerid)) {
             update_post_meta( $order_id, '_customer_user', $customer_id );
-            $order->set_user_id($customerid);
             $order->save(); 
             update_user_meta( $customerid, 'billing_address_1', $order->billing_address_1 );
             update_user_meta( $customerid, 'billing_address_2', $order->billing_address_2 );
@@ -1753,6 +1746,8 @@ EOF;
             update_user_meta( $customerid, 'shipping_method', $order->shipping_method );
             update_user_meta( $customerid, 'shipping_postcode', $order->shipping_postcode );
             update_user_meta( $customerid, 'shipping_state', $order->shipping_state );
+
+
             return new WC_Customer($customerid);
         }
         if (is_wp_error($customerid)) {
