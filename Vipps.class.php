@@ -66,11 +66,12 @@ class Vipps {
         return WC_Gateway_Vipps::instance();
     }
 
+
     public function init () {
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
-        // This restores the 'real' cart if the customer had one when buying a single product directly IOK 2018-10-01
-        add_action('woocommerce_thankyou_vipps', array($this, 'maybe_restore_cart'), 10, 1); 
+        // Cart restoration and other post-purchase actions, mostly for express checkout IOK 2020-10-09
+        add_action('woocommerce_thankyou_vipps', array($this, 'woocommerce_thankyou'), 10, 1); 
 
         add_filter('woocommerce_my_account_my_orders_actions', array($this,'woocommerce_my_account_my_orders_actions'), 10, 2);
 
@@ -871,6 +872,21 @@ else:
         return false;
     }
 
+    // On the thank you page, we have a completed order, so we need to restore any saved cart and possibly log in 
+    // the user if using Express Checkout IOK 2020-10-09
+    public function woocommerce_thankyou ($orderid) {
+        $this->maybe_restore_cart($orderid);
+        $order = wc_get_order($orderid);
+        if ($order) {
+          $sessionkey = WC()->session->get('_vipps_order_finalized');
+          $orderkey = $order->get_order_key();
+
+          if ($orderkey == $sessionkey) {
+             // This order belongs to this session! That means that we can do stuff like logging in the user.
+          }
+        }
+    }
+
     public function woocommerce_loaded () {
         /* IOK 2020-09-03 experimental support for the All Products type product block */
         // This is for product blocks - augment the description when using the StoreAPI so that we know that a button should be added
@@ -1662,6 +1678,89 @@ EOF;
             }
         }
         do_action('woo_vipps_cart_restored');
+    }
+
+    // Maybe log in user
+    // It is done on the thank-you page of the order, and only for express checkout.
+    function maybe_log_in_user ($order) {
+        if (is_user_logged_in()) return;
+        if (!$order || $order->payment_method != 'vipps' ) return;
+        if (!$order->get_meta('_vipps_express_checkout')) return;
+
+        $customer = express_checkout_get_vipps_customer ($order);
+
+        if( $customer) {
+            $iscustomer = (in_array('customer', $customer->roles) || in_array('subscriber', $customer->roles));
+            // Ensure we don't have any admins with an additonal customer role logged in like this
+            if($iscustomer && !user_can($customer, 'manage_woocommerce') && !user_can('manage_options'))  {
+                wp_set_current_user($customer->get_id(), $customer->user_login);
+                wp_set_auth_cookie($customer->get_id());
+                do_action('wp_login', $customer->user_login, $customer);
+            }
+        }
+    }
+
+    // Get the customer that corresponds to the current order, maybe creating the customer if it does not exist yet and
+    // the settings allow it.
+    function express_checkout_get_vipps_customer($order) {
+        if (!$order || $order->payment_method != 'vipps' ) return;
+        if (!$order->get_meta('_vipps_express_checkout')) return;
+        if ($this->gateway()->get_option('expresscreateuser') != 'yes') return null;
+
+        if (is_user_logged_in()) return new WC_Customer(get_current_user_id());
+        if ( $order->get_user_id()) return new WC_Customer($order->get_user_id());
+
+        $email = $order->get_billing_email();
+
+        // Existing customer, so update the order (and possibly the site if multisite) and return the customer. IOK 2020-10-09 
+        if (email_exists($order_email)) {
+            $user        = get_user_by( 'email', $email);
+            if (!$user) return null;
+            $customerid = $user->ID;
+            update_post_meta( $order->get_id(), '_customer_user', $customerid );
+            $order->set_user_id($customerid);
+            $order->save(); 
+            if (is_multisite() && ! is_user_member_of_blog($customerid, get_current_blog_id())) {
+                add_user_to_blog( get_current_blog_id(), $customerid, 'customer' );
+            }
+            return new WC_Customer($customerid);
+        }
+
+        // No customer yet. As we want to create users like this (set in the settings) let's do so.
+        $customerid = wc_create_new_customer( $email);
+        if ($customerid && !is_wp_error($customerid)) {
+            update_post_meta( $order_id, '_customer_user', $customer_id );
+            $order->set_user_id($customerid);
+            $order->save(); 
+            update_user_meta( $customerid, 'billing_address_1', $order->billing_address_1 );
+            update_user_meta( $customerid, 'billing_address_2', $order->billing_address_2 );
+            update_user_meta( $customerid, 'billing_city', $order->billing_city );
+            update_user_meta( $customerid, 'billing_company', $order->billing_company );
+            update_user_meta( $customerid, 'billing_country', $order->billing_country );
+            update_user_meta( $customerid, 'billing_email', $order->billing_email );
+            update_user_meta( $customerid, 'billing_first_name', $order->billing_first_name );
+            update_user_meta( $customerid, 'billing_last_name', $order->billing_last_name );
+            update_user_meta( $customerid, 'billing_phone', $order->billing_phone );
+            update_user_meta( $customerid, 'billing_postcode', $order->billing_postcode );
+            update_user_meta( $customerid, 'billing_state', $order->billing_state );
+            update_user_meta( $customerid, 'shipping_address_1', $order->shipping_address_1 );
+            update_user_meta( $customerid, 'shipping_address_2', $order->shipping_address_2 );
+            update_user_meta( $customerid, 'shipping_city', $order->shipping_city );
+            update_user_meta( $customerid, 'shipping_company', $order->shipping_company );
+            update_user_meta( $customerid, 'shipping_country', $order->shipping_country );
+            update_user_meta( $customerid, 'shipping_first_name', $order->shipping_first_name );
+            update_user_meta( $customerid, 'shipping_last_name', $order->shipping_last_name );
+            update_user_meta( $customerid, 'shipping_method', $order->shipping_method );
+            update_user_meta( $customerid, 'shipping_postcode', $order->shipping_postcode );
+            update_user_meta( $customerid, 'shipping_state', $order->shipping_state );
+            return new WC_Customer($customerid);
+        }
+        if (is_wp_error($customerid)) {
+            $this->log(__("Error creating customer in express checkout: ", 'woo-vipps') . $customerid->get_error_message());
+        } else {
+            $this->log(__("Unknown error customer in express checkout.", 'woo-vipps'));
+        }
+        return null;
     }
 
     // This restores the cart on order complete, but only if the current order was a single product buy with an active cart.

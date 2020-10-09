@@ -1370,6 +1370,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_shipping_city($city);
         $order->set_shipping_postcode($postcode);
         $order->set_shipping_country($country);
+
+        // Allow the bearer of the current session to login (if not yet logged in) on the thankyou-screen IOK 2020-10-09
+        WC()->session->set('_vipps_order_finalized', $order->get_order_key());
+
         $order->save();
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
@@ -1409,6 +1413,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->save(); 
         $order->calculate_totals(true);
+
+        // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
+        // If possible and safe, user will be logged in on the thankyou screen if they still are in the same sesssion. (see above, _vipps_order_finalized). IOK 2020-10-09
+        if ($this->get_option('expresscreateuser')) {
+            global $Vipps;
+            $Vipps->express_checkout_get_vipps_customer($order);
+        }
+
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
     }
