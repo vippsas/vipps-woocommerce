@@ -871,13 +871,17 @@ else:
         $this->maybe_restore_cart($orderid);
         $order = wc_get_order($orderid);
         if ($order) {
-          $sessionkey = WC()->session->get('_vipps_order_finalized');
-          $orderkey = $order->get_order_key();
+            $sessionkey = WC()->session->get('_vipps_order_finalized');
+            $orderkey = $order->get_order_key();
 
-          if ($orderkey == $sessionkey) {
-             // If this is the case, this order belongs to this session and we can proceed to do 'sensitive' things. IOK 2020-10-09
-             $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
-          }
+            if ($orderkey == $sessionkey) {
+                // If this is the case, this order belongs to this session and we can proceed to do 'sensitive' things. IOK 2020-10-09
+                // Given the settings, maybe log in the user on express checkout. If the below function exists however, don't: That means that
+                // NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
+                if (!function_exists('create_assign_user_on_vipps_callback')) {
+                    $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
+                }
+            }
         }
     }
 
