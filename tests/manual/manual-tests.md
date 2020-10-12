@@ -15,6 +15,7 @@ I should be able to create an order for a subscription product and pay via Vipps
     - On a sale
     - Synchronized renewal
     - Synchronized renewal with a "Sign-up grace period" set
+    - I can capture an order through changing the status to "Completed" or "Processing"
     - With the "capture payment instantly" option set
     - With a free trial
   
@@ -24,7 +25,6 @@ I should be able to create an order for a subscription product and pay via Vipps
     - Synchronized renewal
     - Synchronized renewal with a "Sign-up grace period" set
     - Synchronized renewal with a "Prorate First Renewal" with "For Virtual Subscription Products Only" set
-    - With the "capture payment instantly" option set
     - With a free trial
     
 - Variable subscriptions
