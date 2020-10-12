@@ -1524,6 +1524,9 @@ EOF;
 	    if (empty($parts)) return 0;
 
 	    $userId = $parts[0];
+
+            $this->log(__("Got a consent removal call for user with Vipps id $userId", 'woo-vipps'));
+
 	    global $wpdb;
             // a single userID may have several accounts on Woo
 	    $query = $wpdb->prepare("select * from {$wpdb->prefix}usermeta where key='_vipps_express_id' and value=%s", $userId); 
@@ -1543,10 +1546,16 @@ EOF;
 			    $this->log(__("No user with id %d when processing consent removal request", 'woo-vipps'), $userid);
 			    continue;
 		    }
-		    $email = $user->user_email;
+                    // Only do deletion for non-privileged users so admins don't accidentally erase themselves IOK 2020-10-12
+                    if (user_can($userid, 'manage_woocommerce') || user_can($userid,'manage_options'))  {
+			    $this->log(__("User with ID %d is an adminstrator - user erase request is not sent after receiving consent removal request", 'woo-vipps'), $userid);
+			    continue;
+                    }
+
 
 		    // We'll use the standard API by WordPress to handle this as an erasure request. IOK 2020-10-12. This gives a nice
 		    // confirmation to the user, and allows the admin to handle these carefully.
+		    $email = $user->user_email;
 		    if (!$email) {
 			    $this->log(__("User %d has no valid email", 'woo-vipps'), $user_id);
 			    continue;
