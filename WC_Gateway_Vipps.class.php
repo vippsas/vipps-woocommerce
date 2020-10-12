@@ -1419,7 +1419,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If possible and safe, user will be logged in on the thankyou screen if they still are in the same sesssion. (see above, _vipps_order_finalized). IOK 2020-10-09
         // Do not call this if the function 'create_assign_user_on_vipps_callback' exists - this is the prior art for this created and used by Netthandelsgruppen, so ensure
         // that continues to work. IOK 2020-10-09
-        if ($this->get_option('expresscreateuser'=='yes') && !function_exists('create_assign_user_on_vipps_callback')) {
+        $maybecreateuser = ($this->get_option('expresscreateuser') =='yes' && !function_exists('create_assign_user_on_vipps_callback')); 
+        $maybecreateuser = apply_filters('woo_vipps_create_user_on_express_checkout', $maybecreateuser, $order, $user);
+        if ($maybecreateuser) {
             global $Vipps;
             $customer = $Vipps->express_checkout_get_vipps_customer($order);
             // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't

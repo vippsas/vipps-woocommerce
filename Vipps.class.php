@@ -878,6 +878,7 @@ else:
                 // If this is the case, this order belongs to this session and we can proceed to do 'sensitive' things. IOK 2020-10-09
                 // Given the settings, maybe log in the user on express checkout. If the below function exists however, don't: That means that
                 // NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
+                // Actual logging in is governed by a filter in "maybe_log_in" too.
                 if (!function_exists('create_assign_user_on_vipps_callback')) {
                     $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
                 }
@@ -1683,7 +1684,11 @@ EOF;
     function maybe_log_in_user ($order) {
         if (is_user_logged_in()) return;
         if (!$order || $order->payment_method != 'vipps' ) return;
-        if (!$order->get_meta('_vipps_express_checkout')) return;
+
+        // Make this filterable because you may want to only log on some users
+        $do_login =  $order->get_meta('_vipps_express_checkout');
+        $do_login = apply_filters('woo_vipps_login_user_on_express_checkout', $do_login, $order);
+        if (!$do_login) return;
 
         $customer = $this->express_checkout_get_vipps_customer ($order);
 
