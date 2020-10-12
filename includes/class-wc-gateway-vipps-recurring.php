@@ -820,9 +820,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotence_key, $amount );
 
-			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, '_vipps_recurring_pending_charge', true );
-			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, '_vipps_recurring_captured', true );
-			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, '_charge_id', $charge['chargeId'] );
+			WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
 			$renewal_order->save();
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
@@ -921,11 +919,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// if a charge was never captured we need to create one
 			if ( ! $charge ) {
-				$this->create_charge( $agreement, $order, $idempotency_key );
+				$charge = $this->create_charge( $agreement, $order, $idempotency_key );
+				$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
 			}
 
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_pending_charge', true );
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_captured', true );
+			WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge['id'] );
 			$order->save();
 
 			$this->process_order_charge( $order, $charge );
@@ -1005,8 +1003,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return true;
 		} catch ( Exception $e ) {
 			// mark charge as failed
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_captured', false );
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 			$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
 			$order->save();
 

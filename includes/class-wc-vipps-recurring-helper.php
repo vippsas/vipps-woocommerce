@@ -211,6 +211,24 @@ class WC_Vipps_Recurring_Helper {
 
 	/**
 	 * @param $order
+	 * @param $charge_id
+	 */
+	public static function set_order_as_pending( $order, $charge_id ) {
+		self::update_meta_data( $order, '_vipps_recurring_pending_charge', true );
+		self::update_meta_data( $order, '_vipps_recurring_captured', true );
+		self::update_meta_data( $order, '_charge_id', $charge_id );
+	}
+
+	/**
+	 * @param $order
+	 */
+	public static function set_order_as_not_pending( $order ) {
+		self::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
+		self::update_meta_data( $order, '_vipps_recurring_captured', false );
+	}
+
+	/**
+	 * @param $order
 	 *
 	 * @return mixed
 	 */
