@@ -1525,36 +1525,40 @@ EOF;
 
 	    $userId = $parts[0];
 	    global $wpdb;
-	    $query = $wpdb->prepare("select * from {$wpdb->prefix}usermeta where key='_vipps_express_id' and value=%s limit 1", $userId); 
-	    $userdata = $wpdb->get_row($query, ARRAY_A);
-	    $user_id=0;
-	    if (!empty($userdata)) {
-		    $user_id = $userdata['user_id']; 
-	    }
-	    if (!$user_id) {
-		    $this->log(__("Could not find user with Vipps user ID %s for account deletion", 'woo-vipps'), $userId);
-		    return 0;
-	    }
-	    $user = get_user_by('ID', $user_id);
-	    if (!$user) {
-		    $this->log(__("No user with id %d when processing consent removal request", 'woo-vipps'), $userid);
-		    return 0;
-	    }
-	    $email = $user->user_email;
+            // a single userID may have several accounts on Woo
+	    $query = $wpdb->prepare("select * from {$wpdb->prefix}usermeta where key='_vipps_express_id' and value=%s", $userId); 
+            $users = $wpdb->get_results($query, ARRAY_A);
+	    foreach ($users as $userdata) {
+		    $userdata = $wpdb->get_row($query, ARRAY_A);
+		    $user_id=0;
+		    if (!empty($userdata)) {
+			    $user_id = $userdata['user_id']; 
+		    }
+		    if (!$user_id) {
+			    $this->log(__("Could not find user with Vipps user ID %s for account deletion", 'woo-vipps'), $userId);
+			    continue;
+		    }
+		    $user = get_user_by('ID', $user_id);
+		    if (!$user) {
+			    $this->log(__("No user with id %d when processing consent removal request", 'woo-vipps'), $userid);
+			    continue;
+		    }
+		    $email = $user->user_email;
 
-	    // We'll use the standard API by WordPress to handle this as an erasure request. IOK 2020-10-12. This gives a nice
-	    // confirmation to the user, and allows the admin to handle these carefully.
-	    if (!$email) {
-		    $this->log(__("User %d has no valid email", 'woo-vipps'), $user_id);
-		    return 0;
+		    // We'll use the standard API by WordPress to handle this as an erasure request. IOK 2020-10-12. This gives a nice
+		    // confirmation to the user, and allows the admin to handle these carefully.
+		    if (!$email) {
+			    $this->log(__("User %d has no valid email", 'woo-vipps'), $user_id);
+			    continue;
+		    }
+		    $request_id = wp_create_user_request( $email , 'remove_personal_data');
+		    if (is_wp_error($request_id)) {
+			    $this->log(__("Could not handle remove personal data request for user %s : %s", 'woo-vipps'), $email, $request_id->get_error_message());
+			    continue;
+		    }
+		    wp_send_user_request( $request_id );
+		    $this->log(__("Based on a consent removal call from the Vipps app a data erasure request has been created and a confirmation request been sent to the user %s", 'woo-vipps'), $email);
 	    }
-	    $request_id = wp_create_user_request( $email , 'remove_personal_data');
-	    if (is_wp_error($request_id)) {
-		    $this->log(__("Could not handle remove personal data request for user %s : %s", 'woo-vipps'), $email, $request_id->get_error_message());
-		    return 0;
-	    }
-	    wp_send_user_request( $request_id );
-	    $this->log(__("Based on a consent removal call from the Vipps app a data erasure request has been created and a confirmation request been sent to the user %s", 'woo-vipps'), $email);
 	    print "1";
 	    exit();
     }
