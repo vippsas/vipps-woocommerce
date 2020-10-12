@@ -158,6 +158,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: Delay marking an order as "Failed" for 15 minutes in case the status changes after a prompt to swap card or top-up bank account.
 The documentation states the user has a total of 10 minutes to complete the payment, so 15 minutes is a reasonable threshold. You can change this value yourself using the `wc_vipps_recurring_fail_charge_wait_threshold` filter.
 * Fix: No longer attempt to cancel an already cancelled charge.
+* Fix: We should no longer hit the Vipps API rate-limit as a result of a renewal order.
 * Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs and fetching plus updating meta.
 
 = 1.4.6 =
