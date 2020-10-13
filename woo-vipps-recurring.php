@@ -95,7 +95,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		 * Amount of days to retry a payment when creating a charge in the Vipps API
 		 */
 		if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
-			define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 3 );
+			define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 4 );
 		}
 
 		/*

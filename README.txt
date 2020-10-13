@@ -160,6 +160,7 @@ The documentation states the user has a total of 10 minutes to complete the paym
 * Fix: No longer attempt to cancel an already cancelled charge.
 * Fix: We should no longer hit the Vipps API rate-limit as a result of a renewal order.
 * Fix: Properly set the `_charge_id` meta key when capturing a payment.
+* Tweak: Updated the `WC_VIPPS_RECURRING_RETRY_DAYS` constant to 4 days by default.
 * Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs and fetching plus updating meta.
 
 = 1.4.6 =
