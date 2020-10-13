@@ -374,34 +374,27 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$charge_id   = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
-		$is_captured = WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order );
+		$charge_id = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
+		$charge    = false;
 
-		$charge = false;
-
-		if ( $is_captured && $charge_id ) {
+		if ( $charge_id ) {
 			try {
 				$charge = $this->api->get_charge( $agreement_id, $charge_id );
 			} catch ( Exception $e ) {
-				// todo: Fix me - I'm a temporary fix because when an agreement is created a second time on the same order the
-				// charge id is not updated automatically, so we should do that instead
-				$charge = false;
-			}
-		}
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed checking charge directly for charge: %s and agreement: %s. This might mean we have not set the right charge id somewhere. Finding latest charge instead.', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement_id ) );
 
-		if ( ! $is_captured || ! $charge ) {
-			// todo: fix this guy, he's causing a lot of rate limits being hit
-			$charges = $this->api->get_charges_for( $agreement_id );
+				$charges = $this->api->get_charges_for( $agreement_id );
 
-			// return false if there is no charge
-			// this will tell us if this was directly captured or not
-			if ( count( $charges ) === 0 ) {
-				return false;
-			}
+				// return false if there is no charge
+				// this will tell us if this was directly captured or not
+				if ( count( $charges ) === 0 ) {
+					return false;
+				}
 
-			$charge = null;
-			if ( $charges ) {
-				$charge = array_reverse( $charges )[0];
+				$charge = null;
+				if ( $charges ) {
+					$charge = array_reverse( $charges )[0];
+				}
 			}
 		}
 
@@ -636,24 +629,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * We should only render a charge as failed if a certain time threshold has passed on initialCharge
-	 * as a charge can move from FAILED to CHARGED when a customer's card is declined in Vipps
-	 * they are asked to update their card details or top-up their balance before retrying. This does not create
-	 * a new charge, it uses the old one and moves the status to CHARGED if successful
+	 * We should only mark an initialCharge as failed if the agreement is "STOPPED" or "EXPIRED"
 	 *
-	 * Timeout thresholds: https://www.vipps.no/developers-documentation/recurring/documentation/#timeouts
-	 * "the user has a total of 10 minutes to complete the payment"
+	 * An order is also failable if it's a renewal order
 	 *
 	 * @param $order
 	 *
 	 * @return bool
 	 */
 	public function can_fail_order( $order ): bool {
-		// wait threshold in seconds. 60 * 15 = 15 minutes
-		$wait_threshold = apply_filters( 'wc_vipps_recurring_fail_charge_wait_threshold', 60 * 15 );
+		$agreement = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 
-		return ! wcs_order_contains_renewal( $order ) &&
-		       $order->get_date_created()->getTimestamp() < time() - $wait_threshold;
+		return wcs_order_contains_renewal( $order )
+		       || in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] );
 	}
 
 	/**
@@ -1170,6 +1158,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$order->add_order_note( $message );
 
 				$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
+			}
+
+			// set an order's _charge_id meta value
+			if ( isset( $response['chargeId'] ) ) {
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $response['chargeId'] );
 			}
 
 			$order->save();
