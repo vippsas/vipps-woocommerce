@@ -854,6 +854,7 @@ else:
 
     // Can't use wc-api for this, as that does not support DELETE . IOK 2018-05-18
     private function is_consent_removal () {
+        
         if ($_SERVER['REQUEST_METHOD'] != 'DELETE') return false;
         if ( !get_option('permalink_structure')) {
             if (@$_REQUEST['vipps-consent-removal']) return @$_REQUEST['callback'];
@@ -1519,6 +1520,9 @@ EOF;
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {
 	    wc_nocache_headers();
+            // Currently, no such requests will be posted, and as this code isn't sufficiently tested,we'll just have 
+            // to escape here when the API is changed. IOK 2020-10-14
+            $this->log("Consent removal is non-functional pending API changes as of 2020-10-14"); print "1"; exit();
 	    //DELETE:[consetRemovalPrefix]/v2/consents/{userId}
 	    $parts = array_reverse(explode("/", $callback));
 	    if (empty($parts)) return 0;
