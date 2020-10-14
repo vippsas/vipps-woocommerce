@@ -531,6 +531,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 			}
 
 			/**
+			 * A subscription in Vipps
+			 *
+			 * @param $subscription_id
+			 */
+			public function update_subscription_details_in_app( $subscription_id ) {
+				$gateway = $this->gateway();
+				$gateway->maybe_subscription_details_in_app( $subscription_id );
+			}
+
+			/**
 			 * Check the status of gateway change requests
 			 */
 			public function check_gateway_change_agreement_statuses() {

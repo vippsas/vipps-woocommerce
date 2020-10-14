@@ -1057,6 +1057,30 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * @param $subscription_id
+	 *
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function maybe_update_subscription_details_in_app( $subscription_id ) {
+		$subscription = wcs_get_subscription( $subscription_id );
+		$parent_order = $subscription->get_parent();
+
+		$items   = array_reverse( $parent_order->get_items() );
+		$item    = array_pop( $items );
+		$product = $item->get_product();
+
+		$body = [
+			'price'              => WC_Vipps_Recurring_Helper::get_vipps_amount( $product->get_price() ),
+			'productName'        => $item->get_name(),
+			'productDescription' => $item->get_name()
+		];
+
+		$this->api->update_agreement( WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ), $body );
+	}
+
+	/**
 	 * @param int $order_id
 	 * @param bool $retry
 	 * @param bool $previous_error
