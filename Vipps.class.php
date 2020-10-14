@@ -1865,6 +1865,7 @@ EOF;
 
         try {
             $orderid = $gw->create_partial_order();
+            do_action('woo_vipps_ajax_do_express_checkout', $orderid);
         } catch (Exception $e) {
             $this->log($e->getMessage(),'error');
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
@@ -1995,6 +1996,7 @@ EOF;
 
         try {
             $orderid = $gw->create_partial_order();
+            do_action('woo_vipps_ajax_do_express_checkout', $orderid);
         } catch (Exception $e) {
             $result = array('ok'=>0, 'msg'=>__('Could not create order','woo-vipps') . ': ' . $e->getMessage(), 'url'=>false);
             wp_send_json($result);
