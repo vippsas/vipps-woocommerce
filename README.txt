@@ -159,6 +159,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: No longer attempt to cancel an already cancelled charge.
 * Fix: We should no longer hit the Vipps API rate-limit as a result of a renewal order.
 * Fix: Properly set the `_charge_id` meta key when capturing a payment.
+* Fix: Changing of gateways to Vipps Recurring Payments would sometimes cancel the new agreement instead of the old one due to a race condition.
 * Tweak: Updated the `WC_VIPPS_RECURRING_RETRY_DAYS` constant to 4 days by default.
 * Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs and fetching plus updating meta.
 
