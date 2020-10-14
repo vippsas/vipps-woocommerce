@@ -48,4 +48,5 @@ I should be able to cancel a subscription, the subscription agreement should the
 
 ### Swapping gateway
 
-I should be able to swap to Vipps Recurring Payments from any other gateway successfully.
+- I should be able to swap to Vipps Recurring Payments from any other gateway successfully.
+- I should be able to swap to Vipps from Vipps
