@@ -201,6 +201,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this,
 			'indicate_async_payment_method_update'
 		], 10, 2 );
+
+		// action for updating a post
+		add_action( 'save_post', [
+			$this,
+			'save_subscription'
+		], 10, 3 );
 	}
 
 	/**
@@ -1065,6 +1071,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public function maybe_update_subscription_details_in_app( $subscription_id ) {
 		$subscription = wcs_get_subscription( $subscription_id );
+
+		WC_Vipps_Recurring_Logger::log( 'maybe_update_subscription_details_in_app: ' . $subscription_id );
+
+		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
+		if ( $payment_method !== $this->id ) {
+			// If this is not the payment method, an agreement would not be available.
+			return;
+		}
+
 		$parent_order = $subscription->get_parent();
 
 		$items   = array_reverse( $parent_order->get_items() );
@@ -1072,12 +1087,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$product = $item->get_product();
 
 		$body = [
-			'price'              => WC_Vipps_Recurring_Helper::get_vipps_amount( $product->get_price() ),
-			'productName'        => $item->get_name(),
-			'productDescription' => $item->get_name()
+			'price' => WC_Vipps_Recurring_Helper::get_vipps_amount( $product->get_price() ),
+//			'productName'        => $item->get_name(),
+//			'productDescription' => $item->get_name()
 		];
 
-		$this->api->update_agreement( WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ), $body );
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
+		if ( empty( $agreement_id ) ) {
+			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $parent_order );
+		}
+
+		if ( $agreement_id ) {
+			$this->api->update_agreement( $agreement_id, $body );
+		}
+
+		$subscription->delete_meta_data( '_vipps_recurring_update_in_app' );
+		$subscription->save();
 	}
 
 	/**
@@ -1319,5 +1344,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	private function admin_error( $what ) {
 		wc_add_notice( $what, 'error' );
+	}
+
+	/**
+	 * @param $post_id
+	 * @param $post
+	 * @param $update
+	 */
+	public function save_subscription( $post_id, $post, $update ) {
+		if ( $update && 'shop_subscription' === get_post_type( $post ) ) {
+			$subscription = wcs_get_subscription( $post_id );
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_vipps_recurring_update_in_app', 1 );
+			$subscription->save();
+		}
 	}
 }

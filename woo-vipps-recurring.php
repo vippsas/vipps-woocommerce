@@ -201,17 +201,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 //				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
 //					add_action( 'wp_loaded', [
 //						$this,
-//						'check_gateway_change_agreement_statuses'
+//						'update_subscription_details_in_app'
 //					] );
 //				}
 				// end testing code
-
-				// reschedule recurring payment charge status checking event if the occurrence is not one_minute
-				$event_schedule = wp_get_schedule( 'woocommerce_vipps_recurring_check_order_statuses' );
-
-				if ( $event_schedule === 'hourly' || $event_schedule === 'five_minutes' ) {
-					wp_reschedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_order_statuses' );
-				}
 
 				// schedule recurring payment charge status checking event
 				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_order_statuses' ) ) {
@@ -231,6 +224,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'woocommerce_vipps_recurring_check_gateway_change_request', [
 					$this,
 					'check_gateway_change_agreement_statuses'
+				] );
+
+				// schedule checking for updating payment details
+				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_update_subscription_details_in_app' ) ) {
+					wp_schedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_update_subscription_details_in_app' );
+				}
+
+				add_action( 'woocommerce_vipps_recurring_update_subscription_details_in_app', [
+					$this,
+					'update_subscription_details_in_app'
 				] );
 
 				// Add custom product settings for Vipps Recurring.
@@ -531,16 +534,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			}
 
 			/**
-			 * A subscription in Vipps
-			 *
-			 * @param $subscription_id
-			 */
-			public function update_subscription_details_in_app( $subscription_id ) {
-				$gateway = $this->gateway();
-				$gateway->maybe_subscription_details_in_app( $subscription_id );
-			}
-
-			/**
 			 * Check the status of gateway change requests
 			 */
 			public function check_gateway_change_agreement_statuses() {
@@ -558,6 +551,28 @@ function woocommerce_gateway_vipps_recurring_init() {
 				foreach ( $posts as $post ) {
 					// check charge status
 					$gateway->maybe_process_gateway_change( $post->ID );
+				}
+			}
+
+			/**
+			 * Update a subscription's details in the app
+			 */
+			public function update_subscription_details_in_app() {
+				$gateway = $this->gateway();
+
+				$posts = get_posts( [
+					'limit'        => 5,
+					'post_type'    => 'shop_subscription',
+					'post_status'  => 'wc-active',
+					'meta_key'     => '_vipps_recurring_update_in_app',
+					'meta_compare' => '=',
+					'meta_value'   => 1,
+					'return'       => 'ids',
+				] );
+
+				foreach ( $posts as $post ) {
+					// check charge status
+					$gateway->maybe_update_subscription_details_in_app( $post->ID );
 				}
 			}
 
