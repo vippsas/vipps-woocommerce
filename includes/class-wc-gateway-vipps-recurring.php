@@ -1196,7 +1196,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $response['chargeId'] );
 			}
 
+			// save meta
 			$order->save();
+			$subscription->save();
 
 			$debug_msg .= sprintf( 'Debug body: %s', json_encode( $agreement_body ) ) . "\n";
 			$debug_msg .= sprintf( 'Debug response: %s', json_encode( array_merge( $response, [ 'vippsConfirmationUrl' => 'redacted' ] ) ) );
