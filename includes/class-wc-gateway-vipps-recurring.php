@@ -1108,6 +1108,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Process a payment when checking out in WooCommerce
+	 *
 	 * @param int $order_id
 	 * @param bool $retry
 	 * @param bool $previous_error
@@ -1143,7 +1145,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_virtual     = $product->is_virtual();
 			$direct_capture = $product->get_meta( '_vipps_recurring_direct_capture' ) === 'yes';
 
-			// create Vipps agreement
 			$agreement_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
 			$redirect_url  = $this->get_return_url( $order );
 
@@ -1159,7 +1160,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'merchantRedirectUrl'  => $redirect_url,
 			];
 
-			// validate phone number and only add it if it's up to Vipps' standard
+			// validate phone number and only add it if it's up to Vipps' standard to avoid errors
 			if ( WC_Vipps_Recurring_Helper::is_valid_phone_number( $order->get_billing_phone() ) ) {
 				$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
 			}
@@ -1182,8 +1183,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			// if the price of the order and the price of the product differ we should create a campaign
-			// we also need a campaign if the price is 0 the first time
 			if ( $is_zero_amount || (float) $order->get_total_discount() !== 0.00 ) {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
@@ -1223,7 +1222,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
 			}
 
-			// set an order's _charge_id meta value
 			if ( isset( $response['chargeId'] ) ) {
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $response['chargeId'] );
 			}
@@ -1236,7 +1234,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$debug_msg .= sprintf( 'Debug response: %s', json_encode( array_merge( $response, [ 'vippsConfirmationUrl' => 'redacted' ] ) ) );
 			WC_Vipps_Recurring_Logger::log( $debug_msg );
 
-			// redirect to Vipps
 			return [
 				'result'   => 'success',
 				'redirect' => $response['vippsConfirmationUrl'],
