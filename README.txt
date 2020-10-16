@@ -160,8 +160,10 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: We should no longer hit the Vipps API rate-limit as a result of a renewal order.
 * Fix: Properly set the `_charge_id` meta key when capturing a payment.
 * Fix: Changing of gateways to Vipps Recurring Payments would sometimes cancel the new agreement instead of the old one due to a race condition.
+* Fix: Multiples of the same product in the same subscription will now be charged correctly based on the total order price.
 * Tweak: Updated the `WC_VIPPS_RECURRING_RETRY_DAYS` constant to 4 days by default.
 * Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs and fetching plus updating meta.
+* Enhancement: If you update a subscription's order item prices this will now be reflected in the app.
 
 = 1.4.6 =
 * Fix: Fix a bug when an agreement is created twice on the same order. We didn't fetch the right charge ID. This is a temporary fix I will have to revisit later on a proper setup.
