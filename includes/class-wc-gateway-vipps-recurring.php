@@ -113,6 +113,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->method_description = __( 'Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
 		$this->has_fields         = true;
 
+		/*
+		 * Do not add 'multiple_subscriptions' to $supports.
+		 * Vipps Recurring API does not have any concept of multiple line items at the time of writing this.
+		 * It could technically be possible to support this, but it's very confusing for a customer in the Vipps app.
+		 * There are a lot of edge cases to think about in order to support this functionality too,
+		 * 'process_payment' would have to be rewritten entirely.
+		 */
+
 		$this->supports = [
 			'subscriptions',
 			'refunds',
@@ -122,7 +130,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'subscription_amount_changes',
 			'subscription_date_changes',
 			'subscription_payment_method_change',
-			'subscription_payment_method_change_customer'
+			'subscription_payment_method_change_customer',
 		];
 
 		// Load the form fields.
@@ -1118,7 +1126,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			if ( ! $is_gateway_change ) {
 				$subscriptions = $this->get_subscriptions_for_order( $order );
-				$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
+
+				// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
+				$subscription = $subscriptions[ array_key_first( $subscriptions ) ];
 			}
 
 			$period   = $subscription->get_billing_period();
@@ -1126,24 +1136,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$items = array_reverse( $order->get_items() );
 
-			$has_physical_product         = false;
-			$does_not_have_direct_capture = false;
-			$item_name                    = '';
+			// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
+			$item    = array_pop( $items );
+			$product = $item->get_product();
 
-			foreach ( $items as $item ) {
-				$product   = $item->get_product();
-				$item_name .= $item->get_name() . ', ';
-
-				if ( ! $product->is_virtual() ) {
-					$has_physical_product = true;
-				}
-
-				if ( $product->get_meta( '_vipps_recurring_direct_capture' ) !== 'yes' ) {
-					$does_not_have_direct_capture = true;
-				}
-			}
-
-			$item_name = trim( $item_name, ', ' );
+			$is_virtual     = $product->is_virtual();
+			$direct_capture = $product->get_meta( '_vipps_recurring_direct_capture' ) === 'yes';
 
 			// create Vipps agreement
 			$agreement_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
@@ -1154,8 +1152,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
 				'interval'             => strtoupper( $period ),
 				'intervalCount'        => (int) $interval,
-				'productName'          => $item_name,
-				'productDescription'   => $item_name,
+				'productName'          => $item->get_name(),
+				'productDescription'   => $item->get_name(),
 				'isApp'                => false,
 				'merchantAgreementUrl' => $agreement_url,
 				'merchantRedirectUrl'  => $redirect_url,
@@ -1167,14 +1165,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
-			$capture_immediately = ! $has_physical_product || ! $does_not_have_direct_capture;
+			$capture_immediately = $is_virtual || $direct_capture;
 
 			if ( ! $is_zero_amount ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
-						'description'     => $item_name,
+						'description'     => $item->get_name(),
 						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
