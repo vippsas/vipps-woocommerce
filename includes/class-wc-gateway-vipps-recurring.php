@@ -1126,9 +1126,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$items = array_reverse( $order->get_items() );
 
-			// there should ever only be one with this gateway
-			$item    = array_pop( $items );
-			$product = $item->get_product();
+			$has_physical_product         = false;
+			$does_not_have_direct_capture = false;
+			$item_name                    = '';
+
+			foreach ( $items as $item ) {
+				$product   = $item->get_product();
+				$item_name .= $item->get_name() . ', ';
+
+				if ( $product->is_virtual( 'no' ) ) {
+					$has_physical_product = true;
+				}
+
+				if ( $product->get_meta( '_vipps_recurring_direct_capture' ) !== 'yes' ) {
+					$does_not_have_direct_capture = true;
+				}
+			}
+
+			$item_name = trim( $item_name, ', ' );
 
 			// create Vipps agreement
 			$agreement_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
@@ -1136,11 +1151,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$agreement_body = [
 				'currency'             => $order->get_currency(),
-				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $product->get_price() ),
+				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
 				'interval'             => strtoupper( $period ),
 				'intervalCount'        => (int) $interval,
-				'productName'          => $item->get_name(),
-				'productDescription'   => $item->get_name(),
+				'productName'          => $item_name,
+				'productDescription'   => $item_name,
 				'isApp'                => false,
 				'merchantAgreementUrl' => $agreement_url,
 				'merchantRedirectUrl'  => $redirect_url,
@@ -1152,14 +1167,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
-			$capture_immediately = $product->is_virtual( 'yes' ) || $product->get_meta( '_vipps_recurring_direct_capture' ) === 'yes';
+			$capture_immediately = ! $has_physical_product && ! $does_not_have_direct_capture;
 
 			if ( ! $is_zero_amount ) {
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
-						'description'     => $item->get_name(),
+						'description'     => $item_name,
 						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
@@ -1170,8 +1185,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			// if the price of the order and the price of the product differ we should create a campaign
-			// but only if $order->get_total() is 0 or $charge_immediately is false
-			if ( ( ! $capture_immediately || $is_zero_amount ) && (float) $product->get_price() !== (float) $order->get_total() ) {
+			// we also need a campaign if the price is 0 the first time
+			if ( $is_zero_amount || (float) $order->get_total_discount() !== 0.00 ) {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
