@@ -154,7 +154,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
-= 1.4.7 =
+= 1.5.0 =
 * Fix: No longer mark an order as "Failed" if a charge's status is "FAILED" unless an agreement is also "EXPIRED" or "STOPPED" (a user can be prompted to swap card or top-up bank account in-app).
 * Fix: No longer attempt to cancel an already cancelled charge.
 * Fix: We should no longer hit the Vipps API rate-limit as a result of a renewal order.
