@@ -82,17 +82,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public $transition_renewals_to_completed;
 
 	/**
-	 * If this option is 'yes' we will update the price on the Vipps agreement when a subscription is edited.
-	 *
-	 * It's highly recommended for this option to be disabled when prices should not be reflected in the app.
-	 *
-	 * It's considered a dangerous option.
-	 *
-	 * @var string
-	 */
-	public $update_agreement_in_app_on_subscription_edit;
-
-	/**
 	 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
 	 */
 	private static $instance;
@@ -142,19 +131,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Load the settings.
 		$this->init_settings();
 
-		$this->title                                        = $this->get_option( 'title' );
-		$this->description                                  = $this->get_option( 'description' );
-		$this->enabled                                      = $this->get_option( 'enabled' );
-		$this->testmode                                     = WC_VIPPS_RECURRING_TEST_MODE;
-		$this->secret_key                                   = $this->get_option( 'secret_key' );
-		$this->client_id                                    = $this->get_option( 'client_id' );
-		$this->subscription_key                             = $this->get_option( 'subscription_key' );
-		$this->cancelled_order_page                         = $this->get_option( 'cancelled_order_page' );
-		$this->default_renewal_status                       = $this->get_option( 'default_renewal_status' );
-		$this->default_reserved_charge_status               = $this->get_option( 'default_reserved_charge_status' );
-		$this->transition_renewals_to_completed             = $this->get_option( 'transition_renewals_to_completed' );
-		$this->update_agreement_in_app_on_subscription_edit = $this->get_option( 'update_agreement_in_app_on_subscription_edit' );
-		$this->order_button_text                            = __( 'Pay with Vipps', 'woo-vipps-recurring' );
+		$this->title                            = $this->get_option( 'title' );
+		$this->description                      = $this->get_option( 'description' );
+		$this->enabled                          = $this->get_option( 'enabled' );
+		$this->testmode                         = WC_VIPPS_RECURRING_TEST_MODE;
+		$this->secret_key                       = $this->get_option( 'secret_key' );
+		$this->client_id                        = $this->get_option( 'client_id' );
+		$this->subscription_key                 = $this->get_option( 'subscription_key' );
+		$this->cancelled_order_page             = $this->get_option( 'cancelled_order_page' );
+		$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
+		$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
+		$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
+		$this->order_button_text                = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new WC_Vipps_Recurring_Api( $this );
@@ -214,11 +202,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'indicate_async_payment_method_update'
 		], 10, 2 );
 
-		// action for updating a post
-		add_action( 'save_post', [
+		// action for updating a subscription's order items
+		add_action( 'woocommerce_before_save_order_items', [
 			$this,
-			'save_subscription'
-		], 10, 3 );
+			'save_subscription_order_items'
+		], 10, 1 );
 	}
 
 	/**
@@ -1357,15 +1345,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * @param $post_id
-	 * @param $post
-	 * @param $update
+	 * @param $subscription_id
 	 */
-	public function save_subscription( $post_id, $post, $update ) {
-		if ( 'yes' === $this->update_agreement_in_app_on_subscription_edit
-			 && $update
-			 && 'shop_subscription' === get_post_type( $post ) ) {
-			$subscription = wcs_get_subscription( $post_id );
+	public function save_subscription_order_items( $subscription_id ) {
+		$post = get_post( $subscription_id );
+
+		if ( 'shop_subscription' === get_post_type( $post ) ) {
+			$subscription = wcs_get_subscription( $subscription_id );
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_vipps_recurring_update_in_app', 1 );
 			$subscription->save();
 		}

@@ -76,13 +76,6 @@ return apply_filters(
 			'description' => __( 'This option will make sure order statuses always transition to "completed" when the renewal charge is completed in Vipps.', 'woo-vipps-recurring' ),
 			'default'     => 'no',
 		],
-		'update_agreement_in_app_on_subscription_edit' => [
-			'title'       => __( 'Update agreement details in the app when editing a WooCommerce subscription', 'woo-vipps-recurring' ),
-			'label'       => __( 'Update agreement details in the app when editing a WooCommerce subscription', 'woo-vipps-recurring' ),
-			'type'        => 'checkbox',
-			'description' => __( "When enabled, a subscription product's price will be updated in Vipps if the price has changed and you update the subscription. This option should be disabled unless you need to update the price of a subscription for everyone retroactively.", 'woo-vipps-recurring' ),
-			'default'     => 'no',
-		],
 		'logging'                          => [
 			'title'       => __( 'Logging', 'woo-vipps-recurring' ),
 			'label'       => __( 'Log debug messages', 'woo-vipps-recurring' ),
