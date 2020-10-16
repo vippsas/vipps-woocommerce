@@ -593,7 +593,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: RESERVED
 		// not auto captured, so we need to put the order status to `$this->default_reserved_charge_status`
 		if ( ! $transaction_id && $charge['status'] === 'RESERVED'
-			 && ! wcs_order_contains_renewal( $order ) ) {
+		     && ! wcs_order_contains_renewal( $order ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
 
 			$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
@@ -604,8 +604,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: DUE or PENDING
 		// when DUE we need to check that it becomes another status in a cron
 		if ( ! $transaction_id && ( $charge['status'] === 'DUE'
-									|| ( $charge['status'] === 'PENDING'
-										 && wcs_order_contains_renewal( $order ) ) ) ) {
+		                            || ( $charge['status'] === 'PENDING'
+		                                 && wcs_order_contains_renewal( $order ) ) ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_captured', true );
@@ -647,7 +647,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 
 		return wcs_order_contains_renewal( $order )
-			   || in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] );
+		       || in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] );
 	}
 
 	/**
@@ -869,9 +869,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 
 		if ( wcs_order_contains_renewal( $order )
-			 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' ) !== 1
-			 || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
-			 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) ) {
+		     || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' ) !== 1
+		     || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
+		     || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) ) {
 			return;
 		}
 
@@ -1114,11 +1114,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
 		try {
+			$subscription = $order;
+
 			if ( ! $is_gateway_change ) {
 				$subscriptions = $this->get_subscriptions_for_order( $order );
 				$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
-			} else {
-				$subscription = $order;
 			}
 
 			$period   = $subscription->get_billing_period();
@@ -1134,7 +1134,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$product   = $item->get_product();
 				$item_name .= $item->get_name() . ', ';
 
-				if ( $product->is_virtual( 'no' ) ) {
+				if ( ! $product->is_virtual() ) {
 					$has_physical_product = true;
 				}
 
@@ -1167,7 +1167,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
-			$capture_immediately = ! $has_physical_product && ! $does_not_have_direct_capture;
+			$capture_immediately = ! $has_physical_product || ! $does_not_have_direct_capture;
 
 			if ( ! $is_zero_amount ) {
 				$agreement_body = array_merge( $agreement_body, [
