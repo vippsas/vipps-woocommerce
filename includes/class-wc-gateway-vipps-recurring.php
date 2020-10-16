@@ -1080,12 +1080,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$parent_order = $subscription->get_parent();
 
-		$items   = array_reverse( $parent_order->get_items() );
-		$item    = array_pop( $items );
-		$product = $item->get_product();
-
 		$body = [
-			'price' => WC_Vipps_Recurring_Helper::get_vipps_amount( $product->get_price() ),
+			'price' => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
 //			'productName'        => $item->get_name(),
 //			'productDescription' => $item->get_name()
 		];
