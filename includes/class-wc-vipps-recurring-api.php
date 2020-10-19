@@ -85,6 +85,39 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
+	 * @param $body
+	 *
+	 * @return array
+	 */
+	private function process_agreement_body( $body ): array {
+		if ( isset( $body['productName'] ) ) {
+			$product_name = $body['productName'];
+
+			if ( strlen( $product_name ) > 45 ) {
+				$body['productName'] = substr( $product_name, 0, 42 ) . '...';
+			}
+		}
+
+		if ( isset( $body['productDescription'] ) ) {
+			$product_description = $body['productDescription'];
+
+			if ( strlen( $product_description ) > 100 ) {
+				$body['productDescription'] = substr( $product_description, 0, 97 ) . '...';
+			}
+		}
+
+		if ( isset( $body['initialCharge']['description'] ) ) {
+			$charge_description = $body['initialCharge']['description'];
+
+			if ( strlen( $charge_description ) > 45 ) {
+				$body['initialCharge']['description'] = substr( $charge_description, 0, 42 ) . '...';
+			}
+		}
+
+		return $body;
+	}
+
+	/**
 	 * @param $agreement_body
 	 *
 	 * @return mixed|string|null
@@ -95,29 +128,7 @@ class WC_Vipps_Recurring_Api {
 	public function create_agreement( $agreement_body ) {
 		$token = $this->get_access_token();
 
-		if ( isset( $agreement_body['productName'] ) ) {
-			$product_name = $agreement_body['productName'];
-
-			if ( strlen( $product_name ) > 45 ) {
-				$agreement_body['productName'] = substr( $product_name, 0, 42 ) . '...';
-			}
-		}
-
-		if ( isset( $agreement_body['productDescription'] ) ) {
-			$product_description = $agreement_body['productDescription'];
-
-			if ( strlen( $product_description ) > 100 ) {
-				$agreement_body['productDescription'] = substr( $product_description, 0, 97 ) . '...';
-			}
-		}
-
-		if ( isset( $agreement_body['initialCharge']['description'] ) ) {
-			$charge_description = $agreement_body['initialCharge']['description'];
-
-			if ( strlen( $charge_description ) > 45 ) {
-				$agreement_body['initialCharge']['description'] = substr( $charge_description, 0, 42 ) . '...';
-			}
-		}
+		$agreement_body = $this->process_agreement_body( $agreement_body );
 
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
@@ -142,6 +153,28 @@ class WC_Vipps_Recurring_Api {
 		];
 
 		return $this->http_call( 'recurring/v2/agreements/' . $agreement_id, 'GET', [], $headers );
+	}
+
+	/**
+	 * @param $agreement_id
+	 * @param $data
+	 *
+	 * @return mixed|string|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function update_agreement( $agreement_id, $data ) {
+		$token = $this->get_access_token();
+
+		$data = $this->process_agreement_body( $data );
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		return $this->http_call( 'recurring/v2/agreements/' . $agreement_id, 'PATCH', $data, $headers );
+
 	}
 
 	/**

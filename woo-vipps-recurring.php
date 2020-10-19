@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.4.6
+ * Version: 1.5.0
  * Requires at least: 4.4
  * Tested up to: 5.5
  * WC tested up to: 4.3.1
@@ -84,7 +84,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.4.6' );
+		define( 'WC_VIPPS_RECURRING_VERSION', '1.5.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -95,7 +95,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		 * Amount of days to retry a payment when creating a charge in the Vipps API
 		 */
 		if ( ! defined( 'WC_VIPPS_RECURRING_RETRY_DAYS' ) ) {
-			define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 3 );
+			define( 'WC_VIPPS_RECURRING_RETRY_DAYS', 4 );
 		}
 
 		/*
@@ -201,17 +201,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 //				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
 //					add_action( 'wp_loaded', [
 //						$this,
-//						'check_gateway_change_agreement_statuses'
+//						'update_subscription_details_in_app'
 //					] );
 //				}
 				// end testing code
-
-				// reschedule recurring payment charge status checking event if the occurrence is not one_minute
-				$event_schedule = wp_get_schedule( 'woocommerce_vipps_recurring_check_order_statuses' );
-
-				if ( $event_schedule === 'hourly' || $event_schedule === 'five_minutes' ) {
-					wp_reschedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_order_statuses' );
-				}
 
 				// schedule recurring payment charge status checking event
 				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_order_statuses' ) ) {
@@ -231,6 +224,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'woocommerce_vipps_recurring_check_gateway_change_request', [
 					$this,
 					'check_gateway_change_agreement_statuses'
+				] );
+
+				// schedule checking for updating payment details
+				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_update_subscription_details_in_app' ) ) {
+					wp_schedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_update_subscription_details_in_app' );
+				}
+
+				add_action( 'woocommerce_vipps_recurring_update_subscription_details_in_app', [
+					$this,
+					'update_subscription_details_in_app'
 				] );
 
 				// Add custom product settings for Vipps Recurring.
@@ -438,7 +441,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					return;
 				}
 
-				$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
+				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
 				if ( $payment_method !== $gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
 					return;
@@ -446,14 +449,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$order_status        = $order->get_status();
 				$show_capture_button = ( ! in_array( $order_status, $gateway->statuses_to_attempt_capture, true ) )
-				                       && ! (int) $order->get_meta( '_vipps_recurring_captured' )
-				                       && ! (int) $order->get_meta( '_vipps_recurring_zero_amount' );
+				                       && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
+				                       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' );
 
 				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;
 				}
 
-				$is_captured = $order->get_meta( '_vipps_recurring_captured' );
+				$is_captured = WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order );
 
 				if ( $show_capture_button && ! $is_captured ) {
 					$logo = plugins_url( 'assets/images/vipps_logo_negative_rgb_transparent.png', __FILE__ );
@@ -477,7 +480,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$gateway = $this->gateway();
 
 				$order          = wc_get_order( $postid );
-				$payment_method = WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' ) ? $order->payment_method : $order->get_payment_method();
+				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
 				if ( $payment_method !== $gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
 					return;
@@ -548,6 +551,28 @@ function woocommerce_gateway_vipps_recurring_init() {
 				foreach ( $posts as $post ) {
 					// check charge status
 					$gateway->maybe_process_gateway_change( $post->ID );
+				}
+			}
+
+			/**
+			 * Update a subscription's details in the app
+			 */
+			public function update_subscription_details_in_app() {
+				$gateway = $this->gateway();
+
+				$posts = get_posts( [
+					'limit'        => 5,
+					'post_type'    => 'shop_subscription',
+					'post_status'  => 'wc-active',
+					'meta_key'     => '_vipps_recurring_update_in_app',
+					'meta_compare' => '=',
+					'meta_value'   => 1,
+					'return'       => 'ids',
+				] );
+
+				foreach ( $posts as $post ) {
+					// check charge status
+					$gateway->maybe_update_subscription_details_in_app( $post->ID );
 				}
 			}
 
