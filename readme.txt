@@ -199,7 +199,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.10.xx version 1.6.0  =
+= 2020.10.19 version 1.6.0  =
  Integrate with Login with Vipps and provide again the "create users when using express checkout" checkbox. If you choose too, this will then create (and log in) users when using express checkout.
 Only users without privileges will be logged in like that. If you install Login with Vipps, this will be set as the default choice.
 
