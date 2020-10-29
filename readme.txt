@@ -6,7 +6,7 @@ Tested up to: 5.5.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.6.0
+WC tested up to: 4.6.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,9 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.6.0  =
-Now integrates with Login with Vipps: If you choose to, accounts will be created and you will be logged in to them (if they are 'customer' accounts) when using Express Checkout.
-If Login with Vipps is installed, this gets turned on by default. This allows you to let users log in and manage their accounts safely with absolutely no passwords involved.
+= 1.6.1  =
+Bugfix release
 
 == Frequently Asked Questions ==
 
@@ -198,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.1x.xx version 1.6.1  =
+ Bugs fixed
 
 = 2020.10.19 version 1.6.0  =
  Integrate with Login with Vipps and provide again the "create users when using express checkout" checkbox. If you choose too, this will then create (and log in) users when using express checkout.
