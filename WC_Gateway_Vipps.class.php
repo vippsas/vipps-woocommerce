@@ -218,9 +218,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2018-05-18
     public function consent_removal_callback_url () {
         if ( !get_option('permalink_structure')) {
-            return set_url_scheme(home_url(),'https') . "/?vipps-consent-removal&callback=";
+            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/?vipps-consent-removal&callback=";
         } else {
-            return set_url_scheme(home_url(),'https') . "/vipps-consent-removal/?callback=";
+            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/vipps-consent-removal/?callback=";
         }
     }
 
