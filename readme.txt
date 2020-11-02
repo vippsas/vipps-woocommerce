@@ -198,8 +198,8 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.1x.xx version 1.6.1  =
- Bugs fixed:  WPML support reenabled thanks to a bug report by @kodeks
+= 2020.11.02 version 1.6.1  =
+ Bugs fixed:  WPML support reenabled thanks to a bug report by @kodeks, user creation improved thanks to @henmor
 
 = 2020.10.19 version 1.6.0  =
  Integrate with Login with Vipps and provide again the "create users when using express checkout" checkbox. If you choose too, this will then create (and log in) users when using express checkout.

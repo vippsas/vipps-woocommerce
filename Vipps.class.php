@@ -1785,6 +1785,10 @@ EOF;
         if ($customerid && !is_wp_error($customerid)) {
             update_post_meta( $order_id, '_customer_user', $customer_id );
             $order->save(); 
+
+            // Ensure the standard WP user fields are set too IOK 2020-11-03
+            wp_update_user(array('ID' => $customerid, 'first_name' => $order->billing_first_name, 'last_name' => $order->billing_last_name));
+
             update_user_meta( $customerid, 'billing_address_1', $order->billing_address_1 );
             update_user_meta( $customerid, 'billing_address_2', $order->billing_address_2 );
             update_user_meta( $customerid, 'billing_city', $order->billing_city );
