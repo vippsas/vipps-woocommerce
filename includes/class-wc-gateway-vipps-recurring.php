@@ -458,20 +458,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
 		if ( $payment_method !== $this->id ) {
-			// If this is not the payment method, an agreement would not be available.
+			// if this is not the payment method, an agreement would not be available.
 			return 'INVALID';
 		}
 
-		// CHECK IF ORDER IS TEMPORARILY LOCKED
+		// check if order is temporarily locked
 		clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
 
-		// HOLD ON TO THE LOCK FOR 15 SECONDS
+		// hold on to the lock for 15 seconds
 		$lock = (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_locked_for_update_time' );
 		if ( $lock && $lock > time() - 15 ) {
 			return 'SUCCESS';
 		}
 
-		// LOCK ORDER FOR CHECKING
+		// lock the order
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', time() );
 		$order->save();
 
@@ -612,8 +612,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: DUE or PENDING
 		// when DUE we need to check that it becomes another status in a cron
 		if ( ! $transaction_id && ( $charge['status'] === 'DUE'
-		                            || ( $charge['status'] === 'PENDING'
-		                                 && wcs_order_contains_renewal( $order ) ) ) ) {
+									|| ( $charge['status'] === 'PENDING'
+										 && wcs_order_contains_renewal( $order ) ) ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_captured', true );
@@ -655,7 +655,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 
 		return wcs_order_contains_renewal( $order )
-		       || in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] );
+			   || in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] );
 	}
 
 	/**
@@ -881,9 +881,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 
 		if ( wcs_order_contains_renewal( $order )
-		     || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' ) !== 1
-		     || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
-		     || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) ) {
+			 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' ) !== 1
+			 || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
+			 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) ) {
 			return;
 		}
 
