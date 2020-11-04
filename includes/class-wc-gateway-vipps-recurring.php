@@ -96,7 +96,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @return WC_Gateway_Vipps_Recurring The *Singleton* instance.
 	 */
-	public static function get_instance(): \WC_Gateway_Vipps_Recurring {
+	public static function get_instance(): WC_Gateway_Vipps_Recurring {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
@@ -394,8 +394,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( $charge_id ) {
 			try {
 				$charge = $this->api->get_charge( $agreement_id, $charge_id );
+			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+				// do nothing, we're just being too quick
 			} catch ( Exception $e ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed checking charge directly for charge: %s and agreement: %s. This might mean we have not set the right charge id somewhere. Finding latest charge instead.', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement_id ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed checking charge directly for charge: %s and agreement: %s. This might mean we have not set the right charge id somewhere. Finding latest charge instead.', WC_Vipps_Recurring_Helper::get_id( $order ), $charge_id, $agreement_id ) );
 
 				$charges = $this->api->get_charges_for( $agreement_id );
 
@@ -478,13 +480,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = $this->get_agreement_from_order( $order );
 		$charge    = $this->get_latest_charge_from_order( $order );
 
-		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_initial' ) ) && ! wcs_order_contains_renewal( $order );
-		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' );
-
-		// set _charge_id on order
-		if ( $charge !== false ) {
+		if ( ! $charge ) {
+			// we're being rate limited
+			return 'SUCCESS';
+		} else {
+			// set _charge_id on order
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $charge['id'] );
 		}
+
+		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_initial' ) ) && ! wcs_order_contains_renewal( $order );
+		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' );
 
 		// if there's a campaign with a price of 0 we can complete the order immediately
 		if ( $agreement['status'] === 'ACTIVE' && WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
@@ -601,7 +606,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: RESERVED
 		// not auto captured, so we need to put the order status to `$this->default_reserved_charge_status`
 		if ( ! $transaction_id && $charge['status'] === 'RESERVED'
-		     && ! wcs_order_contains_renewal( $order ) ) {
+			 && ! wcs_order_contains_renewal( $order ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
 
 			$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
