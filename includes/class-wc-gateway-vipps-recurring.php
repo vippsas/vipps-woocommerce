@@ -724,8 +724,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
-		$agreement_id = get_post_meta( WC_Vipps_Recurring_Helper::get_id( $subscription ), '_agreement_id' )[0];
-		$this->api->cancel_agreement( $agreement_id );
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
+		$agreement    = $this->api->get_agreement( $agreement_id );
+
+		if ( $agreement['status'] === 'ACTIVE' ) {
+			$this->api->cancel_agreement( $agreement_id );
+		}
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $subscription ), $agreement_id ) );
 	}
