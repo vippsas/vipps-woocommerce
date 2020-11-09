@@ -49,7 +49,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.4.7');
+define('WOO_VIPPS_VERSION', '1.6.2');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
