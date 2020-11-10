@@ -897,7 +897,7 @@ else:
                    if (!did_action('rest_api_init')) return $description;
                    $request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
                    $storeapi = "wc/store/products";
-                   if (false === strpos($request_uri, $rest_prefix . 'wc/store')) return $description;;
+                   if (false === strpos($request_uri, $storeapi)) return $description;;
 
                    // Now add a small tag to product descriptions if this product should be purchasable.
                    if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $description;
