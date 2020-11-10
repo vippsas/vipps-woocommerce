@@ -75,7 +75,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.6.1  =
+= 1.6.2  =
 Bugfix release
 
 == Frequently Asked Questions ==
@@ -197,6 +197,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.11.02 version 1.6.2  =
+ Bugs fixed: undefined variable removed (thanks to kimmenbert @ github for reporting)
+ Correct version of the plugin reported to the Vipps-api
 
 = 2020.11.02 version 1.6.1  =
  Bugs fixed:  WPML support reenabled thanks to a bug report by @kodeks, user creation improved thanks to @henmor
