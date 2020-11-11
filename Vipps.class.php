@@ -1867,6 +1867,26 @@ EOF;
             exit();
         }
 
+        // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
+        $toolate = false;
+        $msg = "";
+        $valid  = WC()->cart->check_cart_item_validity();
+        if ( is_wp_error( $valid) ) {
+               $toolate = true;
+               $msg = "<br>" .  $valid->get_error_message();
+        }
+        $stock = WC()->cart->check_cart_item_stock();
+	if ( is_wp_error( $stock) ) {
+		$toolate = true;
+		$msg = "<br>" .  $stock->get_error_message();
+	}
+
+        if ($toolate) {
+            $result = array('ok'=>0, 'msg'=>sprintf(__('Some of the products in your cart are no longer available in the quantities you have ordered. Please <a href="%s">edit your order</a> before continuing the checkout','woo-vipps'), wc_get_cart_url()) . $msg, 'url'=>false);
+            wp_send_json($result);
+            exit();
+        }
+
         try {
             $orderid = $gw->create_partial_order();
             do_action('woo_vipps_ajax_do_express_checkout', $orderid);
