@@ -907,9 +907,20 @@ else:
                 wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-admin' ), '1.0.0', true );
                 wp_enqueue_script( 'create-block-vipps-products-block-editor', plugins_url( 'Blocks/Products/js/editor.js', __FILE__ ), array( 'wc-blocks','wp-i18n','wp-element','vipps-admin'), '1.0.0', true );
         });
+
+
+        // Conditionally add the javascript for All Products Blocks so that they are only loaded when the block is used on a page.
+        // Overridable by filter if you are adding the block in some other way (for now). In the future, this may be a backend setting and eventually
+        // become the default, depending on how this goes. IOK 2020-11-16
         add_action( 'wp_enqueue_scripts', function () {
-           wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), '1.0.0', true );
-        });
+                $support_all_products_block = function_exists('has_block') && has_block('woocommerce/all-products');
+                $supoort_all_products_block = apply_filters('woo_vipps_support_all_products_block', $support_all_products_block);
+                if ($support_all_products_block) {
+                    wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), '1.0.0', true );
+                }
+       });
+        
+
         /* End 'all products' blocks support */
         /* This is for the other product blocks - here we only have a single HTML filter unfortunately */
         add_filter('woocommerce_blocks_product_grid_item_html', function ($html, $data, $product) {
