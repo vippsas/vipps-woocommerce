@@ -6,7 +6,7 @@ Tested up to: 5.5.1
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.6.1
+WC tested up to: 4.7.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.11.02 version 1.6.2  =
+= 2020.11.16 version 1.6.2  =
  Bugs fixed: undefined variable removed (thanks to kimmenbert @ github for reporting)
  Correct version of the plugin reported to the Vipps-api
  Ensure all products are in stock when using Express Checkout (thanks to lykkelig @ wp.org for reporting)
