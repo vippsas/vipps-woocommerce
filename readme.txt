@@ -2,7 +2,7 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.5.1
+Tested up to: 5.5.3
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
@@ -75,8 +75,9 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.6.2  =
-Bugfix release
+= 1.6.3  =
+Testing on newest versions of Wordpress and WooCommerce
+
 
 == Frequently Asked Questions ==
 
@@ -197,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.11.24 version 1.6.3  =
+ Updated WP/Woo versions
 
 = 2020.11.16 version 1.6.2  =
  Bugs fixed: undefined variable removed (thanks to kimmenbert @ github for reporting)

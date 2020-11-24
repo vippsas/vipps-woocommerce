@@ -10,4 +10,8 @@ This sub is a link between the merchant and the user and can used to retrieve th
 
 Please note: There is a time limit of 24 hours to retrieve the consented profile data from the userinfo endpoint.
 
+** 
+For the resources needed by all-products:
+wp_script_is( string $handle, string $list = 'enqueued' ) for all the dependencies; if they are all there, just add ours too.
+
 
