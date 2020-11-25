@@ -1242,7 +1242,7 @@ EOF;
            $this->log(__("Raw input was ", 'woo-vipps'));
            $this->log($raw_post);
         }
-        $callback = @$_REQUEST['callback'];
+        $callback = sanitize_text_field(@$_REQUEST['callback']);
         do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
 
         $data = array_reverse(explode("/",$callback));
@@ -2339,10 +2339,10 @@ EOF;
         // Pass the productinfo to the express checkout form
         $args = array();
         $args['quantity'] = 1;
-        if (array_key_exists('product_id',$productinfo)) $args['product_id'] = sprintf("%d", $productinfo['product_id']);
-        if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = sprintf("%d", $productinfo['variation_id']);
-        if (array_key_exists('product_sku',$productinfo)) $args['sku'] = $productinfo['product_sku'];
-        if (array_key_exists('quantity',$productinfo)) $args['quantity'] = sprintf("%d", $productinfo['quantity']);
+        if (array_key_exists('product_id',$productinfo)) $args['product_id'] = intval($productinfo['product_id']);
+        if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = intval($productinfo['variation_id']);
+        if (array_key_exists('product_sku',$productinfo)) $args['sku'] = sanitize_text_field($productinfo['product_sku']);
+        if (array_key_exists('quantity',$productinfo)) $args['quantity'] = intval($productinfo['quantity']);
 
         $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }

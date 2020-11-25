@@ -90,7 +90,7 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 }
 
 add_action ('before_woocommerce_init', function () {
- $url = $_SERVER['REQUEST_URI'];
+ $url = sanitize_text_field($_SERVER['REQUEST_URI']);
  # This removes cookies for the wc-api callback events for the vipps plugin, to be 100% sure no sessions are restored when they ought not be IOK 2020-07-01
  if (preg_match("!\bvipps\b!", $url) && preg_match("!\bwc-api\b!", $url)) {
     foreach($_COOKIE as $key=>$value) unset($_COOKIE[$key]);
