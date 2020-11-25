@@ -2316,7 +2316,7 @@ EOF;
             // Find product/variation using an external shareable link
             if (array_key_exists('pr',$_REQUEST)) {
                 global $wpdb;
-                $externalkey = $_REQUEST['pr'];
+                $externalkey = sanitize_text_field($_REQUEST['pr']);
                 $search = '_vipps_shareable_link_'.esc_sql($externalkey);
                 $existing =  $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='$search' limit 1",'ARRAY_A');
                 if (!empty($existing)) {
