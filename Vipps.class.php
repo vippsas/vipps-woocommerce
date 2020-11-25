@@ -621,7 +621,7 @@ else:
     // This is for debugging and ensuring we have excact details correct for a transaction.
     public function ajax_vipps_payment_details() {
         check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');
-        $orderid = $_REQUEST['orderid'];
+        $orderid = intval($_REQUEST['orderid']);
         $gw = $this->gateway();
         $order = wc_get_order($orderid);
         if (!$order) {
