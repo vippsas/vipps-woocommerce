@@ -378,7 +378,7 @@ class Vipps {
     public function process_product_meta ($id, $post) {
         // This is for the 'buy now' button
         if (isset($_POST['woo_vipps_add_buy_now_button'])) {
-            update_post_meta($id, '_vipps_buy_now_button', $_POST['woo_vipps_add_buy_now_button']);
+            update_post_meta($id, '_vipps_buy_now_button', sanitize_text_field($_POST['woo_vipps_add_buy_now_button']));
         }
         // This is for the shareable links.
         if (isset($_POST['woo_vipps_shareable_delenda'])) {
