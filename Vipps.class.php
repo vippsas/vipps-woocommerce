@@ -382,7 +382,7 @@ class Vipps {
         }
         // This is for the shareable links.
         if (isset($_POST['woo_vipps_shareable_delenda'])) {
-            $delenda = $_POST['woo_vipps_shareable_delenda'];
+            $delenda = array_map('sanitize_text_field',$_POST['woo_vipps_shareable_delenda']);
             foreach($delenda as $delendum) {
                 // This will delete the actual link
                 delete_post_meta($post->ID, '_vipps_shareable_link_'.$delendum);
