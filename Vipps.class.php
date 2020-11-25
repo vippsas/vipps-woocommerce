@@ -513,8 +513,8 @@ else:
             echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
             wp_die();
         }
-        $prodid = sprintf("%d",$_POST['prodid']);
-        $varid = sprintf("%d",$_POST['varid']);
+        $prodid = intval($_POST['prodid']);
+        $varid = intval($_POST['varid']);
 
         $product = ''; 
         $variant = '';
