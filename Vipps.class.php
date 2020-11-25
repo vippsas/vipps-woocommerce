@@ -1950,11 +1950,10 @@ EOF;
 
         // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
         // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
-        $varid = sprintf('%d',(@$_POST['variation_id']));
-        $prodid = sprintf('%d',(@$_POST['product_id']));
-        $sku = @$_POST['sku'];
-        $quant = sprintf('%d',(@$_POST['quantity']));
-
+        $varid = intval(@$_POST['variation_id']);
+        $prodid = intval(@$_POST['product_id']);
+        $sku = sanitize_text_field(@$_POST['sku']);
+        $quant = intval(@$_POST['quantity']);
 
         $product = null;
         $variant = null;
@@ -2094,8 +2093,8 @@ EOF;
         check_ajax_referer('vippsstatus','sec');
         wc_nocache_headers();
 
-        $orderid= wc_get_order_id_by_order_key(@$_POST['key']);
-        $transaction = wc_get_order_id_by_order_key(@$_POST['transaction']);
+        $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
+        $transaction = sanitize_text_field(@$_POST['transaction']);
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!isset($sessionorders[$orderid])) {
@@ -2564,7 +2563,7 @@ EOF;
         $gw = $this->gateway();
 
         // Failsafe for when the session disappears IOK 2018-11-19
-        $authtoken = @$_GET['t'];
+        $authtoken = sanitize_text_field(@$_GET['t']);
 
         // Now we *should* have a session at this point, but the session may have been deleted, or the session may be in another browser,
         // because we get here by the Vipps app opening the app. If so, we use a 'fake' session stored with the transient API and restore this session
