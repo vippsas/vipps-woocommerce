@@ -777,10 +777,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // From the request, get either    [billing_phone] =>  or [vipps phone]
         $phone = '';
         if (isset($_POST['vippsphone'])) {
-            $phone = trim($_POST['vippsphone']);
+            $phone = trim(sanitize_text_field($_POST['vippsphone']));
         }
         if (!$phone && isset($_POST['billing_phone'])) {
-            $phone = trim($_POST['billing_phone']);
+            $phone = trim(sanitize_text_field($_POST['billing_phone']));
         }
 
         // This is for express checkout if we know the customers' phone.
