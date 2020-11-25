@@ -561,8 +561,8 @@ else:
         if (!$ok) {
             wp_die(__("You are not allowed to use this link to create QR codes",'woo-vipps'));
         }
-        $url = $_GET['url']; 
-        $key = $_GET['key']; 
+        $url = sanitize_text_field($_GET['url']);
+        $key = sanitize_text_field($_GET['key']);
         if (!$url) {
             wp_die(__("The requested link does not exist", 'woo-vipps'));
         }
