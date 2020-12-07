@@ -1822,6 +1822,8 @@ EOF;
             update_user_meta( $customerid, 'shipping_postcode', $order->shipping_postcode );
             update_user_meta( $customerid, 'shipping_state', $order->shipping_state );
 
+            // Integration with All-in-one WP security - these accounts are created by validated accounts in the app.
+            update_user_meta( $customerid,'aiowps_account_status', 'approved');
 
             return new WC_Customer($customerid);
         }
