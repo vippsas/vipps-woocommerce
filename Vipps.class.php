@@ -1759,6 +1759,7 @@ EOF;
             $iscustomer = (in_array('customer', $usermeta->roles) || in_array('subscriber', $usermeta->roles));
             // Ensure we don't have any admins with an additonal customer role logged in like this
             if($iscustomer && !user_can($customer->get_id(), 'manage_woocommerce') && !user_can($customer->get_id(),'manage_options'))  {
+                do_action('express_checkout_before_customer_login', $customer, $order);
                 wp_set_current_user($customer->get_id(), $customer->user_login);
                 wp_set_auth_cookie($customer->get_id());
                 do_action('wp_login', $customer->user_login, $customer);
@@ -1787,18 +1788,23 @@ EOF;
             if (is_multisite() && ! is_user_member_of_blog($customerid, get_current_blog_id())) {
                 add_user_to_blog( get_current_blog_id(), $customerid, 'customer' );
             }
-            return new WC_Customer($customerid);
+            $customer = new WC_Customer($customerid);
+            return $customer;
         }
 
         // No customer yet. As we want to create users like this (set in the settings) let's do so.
         // Username will be created from email, but the settings may stop generating passwords, so we force that to be generated. IOK 2020-10-09
-        $customerid = wc_create_new_customer( $email, '', wp_generate_password());
+
+        $userdata = array('user_nicename'=>$name, 'display_name'=>"$firstname $lastname", 'nickname'=>$firstname, 'first_name'=>$firstname, 'last_name'=>$lastname);
+
+        $customerid = wc_create_new_customer( $email, '', wp_generate_password(), $userdata);
         if ($customerid && !is_wp_error($customerid)) {
             update_post_meta( $order_id, '_customer_user', $customer_id );
             $order->save(); 
 
             // Ensure the standard WP user fields are set too IOK 2020-11-03
-            wp_update_user(array('ID' => $customerid, 'first_name' => $order->billing_first_name, 'last_name' => $order->billing_last_name));
+            wp_update_user(array('ID' => $customerid, 'first_name' => $order->billing_first_name, 'last_name' => $order->billing_last_name,
+                                'display_name' => $order->billing_first_name . " "  . $order->billing_last_name, 'nickname' => $order->billing_first_name));
 
             update_user_meta( $customerid, 'billing_address_1', $order->billing_address_1 );
             update_user_meta( $customerid, 'billing_address_2', $order->billing_address_2 );
@@ -1825,7 +1831,10 @@ EOF;
             // Integration with All-in-one WP security - these accounts are created by validated accounts in the app.
             update_user_meta( $customerid,'aiowps_account_status', 'approved');
 
-            return new WC_Customer($customerid);
+            $customer = new WC_Customer($customerid);
+            do_action('woo_vipps_express_checkout_new_customer', $customer, $order_id);
+
+            return $customer;
         }
         if (is_wp_error($customerid)) {
             $this->log(__("Error creating customer in express checkout: ", 'woo-vipps') . $customerid->get_error_message());
