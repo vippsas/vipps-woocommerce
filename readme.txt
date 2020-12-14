@@ -199,7 +199,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2020.12.xx version 1.6.5  =
+= 2020.12.14 version 1.6.5  =
  Login and user creation synchronized better with Login with Vipps
  Tested on newest versions
 
