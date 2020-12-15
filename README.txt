@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.5.2 =
+* Fix: Fixed a bug where you were able to checkout the same order more than once while a Vipps agreement is not expired. This fixes problems with multiple charges occurring.
+
 = 1.5.1 =
 * Fix: We're no longer trying to cancel an agreement in Vipps when the status is anything other than `ACTIVE`.
 * Fix: No longer throw an error and retry with "latest charge" when we hit a rate limit when checking a single charge.

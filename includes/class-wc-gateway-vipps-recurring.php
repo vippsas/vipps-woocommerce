@@ -1121,9 +1121,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param int $order_id
 	 * @param bool $retry
-	 * @param bool $previous_error
+	 * @param false $previous_error
 	 *
-	 * @return array|null
+	 * @return array|string[]
 	 * @throws Exception
 	 */
 	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
@@ -1140,6 +1140,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
 				$subscription = $subscriptions[ array_key_first( $subscriptions ) ];
+			}
+
+			// if this order has a PENDING or ACTIVE agreement in Vipps we should not allow checkout anymore
+			// this will prevent duplicate transactions
+			if ( $agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) ) {
+				$agreement = $this->get_agreement_from_order( $order );
+
+				if ( $agreement['status'] === 'ACTIVE' ) {
+					throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps. You can leave this page.', 'woo-vipps-recurring' ) );
+				}
+
+				if ( $agreement['status'] === 'PENDING' ) {
+					throw new WC_Vipps_Recurring_Temporary_Exception( __( 'There is a pending agreement on this order. Check the Vipps app or wait and try again in a few minutes.', 'woo-vipps-recurring' ) );
+				}
 			}
 
 			$period   = $subscription->get_billing_period();
@@ -1247,8 +1261,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'result'   => 'success',
 				'redirect' => $response['vippsConfirmationUrl'],
 			];
+		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
+			$this->admin_error( $e->getMessage() );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in process_payment: %s', $order_id, $e->getMessage() ) );
+
+			return [
+				'result'   => 'fail',
+				'redirect' => '',
+			];
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
-			wc_add_notice( $e->getLocalizedMessage(), 'error' );
+			$this->admin_error( $e->getLocalizedMessage() );
 
 			$order->update_status( 'failed' );
 
