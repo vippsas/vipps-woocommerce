@@ -79,8 +79,8 @@ const VippsExpressPaymentMethod = {
 };
 
 
-registerPaymentMethod(Config => new Config(VippsPaymentMethod));
-registerExpressPaymentMethod(Config => new Config(VippsExpressPaymentMethod));
+registerPaymentMethod(VippsPaymentMethod);
+registerExpressPaymentMethod(VippsExpressPaymentMethod);
 
 
 }());
