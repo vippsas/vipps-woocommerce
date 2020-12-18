@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.6.5  =
-Better handling of user creation when using express checkout
+= 1.6.6  =
+Fix WooCommerce blocks other than 'all products'
 
 
 == Frequently Asked Questions ==
@@ -198,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2020.12.18 version 1.6.6  =
+ Bugfix for Woo gutenberg blocks (other than all products)
 
 = 2020.12.14 version 1.6.5  =
  Login and user creation synchronized better with Login with Vipps
