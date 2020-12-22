@@ -1762,7 +1762,7 @@ EOF;
                 do_action('express_checkout_before_customer_login', $customer, $order);
                 wp_set_current_user($customer->get_id(), $customer->user_login);
                 wp_set_auth_cookie($customer->get_id());
-                do_action('wp_login', $customer->user_login, $customer);
+                do_action('wp_login', $customer->user_login, new WP_User($customer->get_id()));
             }
         }
     }
