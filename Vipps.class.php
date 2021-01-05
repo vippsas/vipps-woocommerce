@@ -903,10 +903,12 @@ else:
                    if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $description;
                    return $description . "<span class='_product_metadata _vipps_metadata _prod_{$product->get_id()}' data-vipps-purchasable='1'></span>";
                    },10,2);
+
         add_action( 'enqueue_block_editor_assets', function () {
                 wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-admin' ), '1.0.0', true );
                 wp_enqueue_script( 'create-block-vipps-products-block-editor', plugins_url( 'Blocks/Products/js/editor.js', __FILE__ ), array( 'wc-blocks','wp-i18n','wp-element','vipps-admin'), '1.0.0', true );
         });
+
 
 
         // Conditionally add the javascript for All Products Blocks so that they are only loaded when the block is used on a page.
@@ -932,7 +934,7 @@ else:
            $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
            $a=1;
            $button = <<<EOF
-<div class="wp-block-button  wc-block-components-product-button wc-block-button-vipps"><a javascript="void(0)" data-product-id="$pid" class="single-product button vipps-buy-now wp-block-button__link" title="$title"><span class="vippsbuynow">$text</span><img class="inline vipps-logo negative" src="$logo" alt="Vipps" border="0"></a></div>
+<div class="wp-block-button  wc-block-components-product-button wc-block-button-vipps"><a javascript="void(0)" data-product_id="$pid" class="single-product button vipps-buy-now wp-block-button__link" title="$title"><span class="vippsbuynow">$text</span><img class="inline vipps-logo negative" src="$logo" alt="Vipps" border="0"></a></div>
 EOF;
            return $stripped . $button . "</li>";
         }, 10, 3);

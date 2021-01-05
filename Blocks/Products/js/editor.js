@@ -11,7 +11,7 @@ var __ = wp.i18n.__;
 
 const VippsBuyNow = ( props ) => {
        return el('div', {"class": 'wp-block-button  wc-block-components-product-button wc-block-button-vipps'},
-                 el ('a', {"javascript":'void(0)', "data-product-id":props.product.id,
+                 el ('a', {"javascript":'void(0)', "data-product_id":props.product.id,
                         "class": "single-product button vipps-buy-now wp-block-button__link",
                         "title":VippsConfig['BuyNowWithVipps']},
                        el('span', { "class": "vippsbuynow" }, VippsConfig['BuyNowWith']),
