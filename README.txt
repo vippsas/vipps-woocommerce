@@ -155,9 +155,10 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 == Changelog ==
 
 = 1.5.3 =
-* Enhancement: The status checker tool now shows the latest status from the API as a column value
 * Fix: A rare edge case where an order was never captured for a long time and the order would not disappear from the status checker tool.
 * Fix: A rare edge case where a new pending renewal order would not fetch the Charge ID properly when hitting the capture payment button.
+* Enhancement: The status checker tool now shows the latest status from the API as a column value
+* Enhancement: We now validate Vipps API details when you save your settings
 
 = 1.5.2 =
 * Fix: Fixed a bug where you were able to checkout the same order more than once while a Vipps agreement is not expired. This fixes problems with multiple charges occurring.

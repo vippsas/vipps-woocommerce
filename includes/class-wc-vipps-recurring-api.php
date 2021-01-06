@@ -30,13 +30,13 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
-	 * @param int $force
+	 * @param boolean $force
 	 *
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function get_access_token( $force = 0 ) {
+	public function get_access_token( $force = false ) {
 		// First, get a stored token if it exists
 		$stored = get_transient( '_vipps_app_token' );
 

@@ -1382,7 +1382,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $what
 	 */
 	private function admin_error( $what ) {
-		wc_add_notice( $what, 'error' );
+		add_action( 'admin_notices', function () use ( $what ) {
+			echo "<div class='notice notice-error is-dismissible'><p>$what</p></div>";
+		} );
+	}
+
+	/**
+	 * @param $what
+	 */
+	private function admin_notify( $what ) {
+		add_action( 'admin_notices', function () use ( $what ) {
+			echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
+		} );
 	}
 
 	/**
@@ -1396,5 +1407,26 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_vipps_recurring_update_in_app', 1 );
 			$subscription->save();
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function process_admin_options() {
+		$saved = parent::process_admin_options();
+
+		$this->init_form_fields();
+
+		if ( $this->get_option( 'enabled' ) === "yes" ) {
+			try {
+				$this->api->get_access_token( true );
+
+				$this->admin_notify( __( 'Successfully authenticated with the Vipps API', 'woo-vipps-recurring' ) );
+			} catch ( Exception $e ) {
+				$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps API: %s', 'woo-vipps-recurring' ), $e->getMessage() ) );
+			}
+		}
+
+		return $saved;
 	}
 }
