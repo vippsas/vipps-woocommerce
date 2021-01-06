@@ -498,6 +498,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = $this->get_agreement_from_order( $order );
 		$charge    = $this->get_latest_charge_from_order( $order );
 
+		// if there's a campaign with a price of 0 we can complete the order immediately
+		if ( $agreement['status'] === 'ACTIVE' && WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
+			$this->complete_order( $order, $agreement['id'] );
+
+			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
+			$order->save();
+
+			return 'SUCCESS';
+		}
+
 		if ( ! $charge ) {
 			// we're being rate limited
 			return 'SUCCESS';
@@ -511,16 +521,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_initial' ) ) && ! wcs_order_contains_renewal( $order );
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_pending_charge' );
-
-		// if there's a campaign with a price of 0 we can complete the order immediately
-		if ( $agreement['status'] === 'ACTIVE' && WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
-			$this->complete_order( $order, $agreement['id'] );
-
-			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
-			$order->save();
-
-			return 'SUCCESS';
-		}
 
 		// If payment has already been captured, this function is redundant.
 		if ( ! $pending_charge ) {
