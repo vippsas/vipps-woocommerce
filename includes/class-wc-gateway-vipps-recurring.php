@@ -1423,6 +1423,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				$this->admin_notify( __( 'Successfully authenticated with the Vipps API', 'woo-vipps-recurring' ) );
 			} catch ( Exception $e ) {
+				/* translators: %s: the error message returned from Vipps */
 				$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps API: %s', 'woo-vipps-recurring' ), $e->getMessage() ) );
 			}
 		}
