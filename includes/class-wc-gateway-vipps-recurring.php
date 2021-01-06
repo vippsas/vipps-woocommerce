@@ -397,21 +397,39 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
 				// do nothing, we're just being too quick
 			} catch ( Exception $e ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed checking charge directly for charge: %s and agreement: %s. This might mean we have not set the right charge id somewhere. Finding latest charge instead.', WC_Vipps_Recurring_Helper::get_id( $order ), $charge_id, $agreement_id ) );
-
-				$charges = $this->api->get_charges_for( $agreement_id );
-
-				// return false if there is no charge
-				// this will tell us if this was directly captured or not
-				if ( count( $charges ) === 0 ) {
-					return false;
-				}
-
-				$charge = null;
-				if ( $charges ) {
-					$charge = array_reverse( $charges )[0];
-				}
+				$charge = $this->get_latest_charge_for_agreement( $order, $agreement_id, $charge_id );
 			}
+		} else {
+			$charge = $this->get_latest_charge_for_agreement( $order, $agreement_id, $charge_id );
+		}
+
+		return $charge;
+	}
+
+	/**
+	 * @param $order
+	 * @param $agreement_id
+	 * @param $charge_id
+	 *
+	 * @return mixed|null
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function get_latest_charge_for_agreement( $order, $agreement_id, $charge_id ) {
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed checking charge directly for charge: %s and agreement: %s. This might mean we have not set the right charge id somewhere. Finding latest charge instead.', WC_Vipps_Recurring_Helper::get_id( $order ), $charge_id, $agreement_id ) );
+
+		$charges = $this->api->get_charges_for( $agreement_id );
+
+		// return false if there is no charge
+		// this will tell us if this was directly captured or not
+		if ( count( $charges ) === 0 ) {
+			return false;
+		}
+
+		$charge = null;
+		if ( $charges ) {
+			$charge = array_reverse( $charges )[0];
 		}
 
 		return $charge;
@@ -640,7 +658,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// status: FAILED
-		if ( 'FAILED' === $charge['status'] && $this->can_fail_order( $order ) ) {
+		if ( 'FAILED' === $charge['status'] ) {
 			$order->update_status( 'failed', __( 'Vipps payment failed.', 'woo-vipps-recurring' ) );
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
 
@@ -648,22 +666,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$order->save();
-	}
-
-	/**
-	 * We should only mark an initialCharge as failed if the agreement is "STOPPED" or "EXPIRED"
-	 *
-	 * An order is also failable if it's a renewal order
-	 *
-	 * @param $order
-	 *
-	 * @return bool
-	 */
-	public function can_fail_order( $order ): bool {
-		$agreement = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-
-		return wcs_order_contains_renewal( $order )
-			   || in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] );
 	}
 
 	/**
@@ -920,8 +922,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// if a charge exists and the status is RESERVED we need to simply capture it
 			$charges_amount = count( $charges );
 
-			// if there is a charge we should never create_charge
-			$charge = $charges_amount > 0;
+			$charge = null;
 
 			if ( $charges_amount > 0 ) {
 				$latest_charge = $charges[ array_key_last( $charges ) ];
