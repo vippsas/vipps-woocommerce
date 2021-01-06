@@ -61,6 +61,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'search'         => $ordersearch,
 			'paginate'       => true,
 			'type'           => 'shop_order',
+			'post_status'    => [ 'wc-processing', 'wc-on-hold', 'wc-completed' ],
 			'meta_key'       => '_vipps_recurring_pending_charge',
 			'meta_compare'   => '=',
 			'meta_value'     => 1,
