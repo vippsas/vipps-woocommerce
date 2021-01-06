@@ -449,10 +449,10 @@ class WC_Vipps_Recurring_Api {
 	private function handle_http_response( $response, $request_body, $endpoint, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
-			$msg = __( 'No response from Vipps', 'woo-vipps-recurring' );
-			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $msg, $request_body ) );
+			$error_msg = __( 'No response from Vipps', 'woo-vipps-recurring' );
+			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $error_msg, $request_body ) );
 
-			throw new WC_Vipps_Recurring_Temporary_Exception( $msg );
+			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
 		}
 
 		$status = (int) wp_remote_retrieve_response_code( $response );
@@ -469,26 +469,27 @@ class WC_Vipps_Recurring_Api {
 
 		// Rate limiting, temporary error
 		if ( $status === 429 ) {
-			$msg = __( "We hit Vipps' rate limit, we will retry later.", 'woo-vipps-recurring' );
-			throw new WC_Vipps_Recurring_Temporary_Exception( $msg );
+			$error_msg = __( "We hit Vipps' rate limit, we will retry later.", 'woo-vipps-recurring' );
+			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
 		}
 
 		// error handling
-		$msg                           = $default_error;
+		$error_msg                     = $default_error;
 		$is_idempotent_error           = false;
 		$is_merchant_not_allowed_error = false;
+		$is_url_validation_error       = false;
 
 		if ( $body ) {
 			if ( isset( $body['message'] ) ) {
-				$msg = $body['message'];
+				$error_msg = $body['message'];
 			} elseif ( isset( $body['error'] ) ) {
 				// access token
-				$msg = $body['error'];
+				$error_msg = $body['error'];
 			} elseif ( is_array( $body ) ) {
-				$msg = '';
+				$error_msg = '';
 				foreach ( $body as $entry ) {
 					if ( isset( $entry['code'] ) ) {
-						$msg .= $entry['field'] . ': ' . $entry['message'] . "\n";
+						$error_msg .= $entry['field'] . ': ' . $entry['message'] . "\n";
 
 						if ( $entry['code'] === 'idempotentkey.hash.mismatch' ) {
 							$is_idempotent_error = true;
@@ -497,10 +498,14 @@ class WC_Vipps_Recurring_Api {
 						if ( $entry['code'] === 'merchant.not.allowed.for.recurring.operation' ) {
 							$is_merchant_not_allowed_error = true;
 						}
+
+						if ( $entry['code'] === 'merchantagreementurl.apacheurlvalidation' ) {
+							$is_url_validation_error = true;
+						}
 					}
 				}
 			} else {
-				$msg = $body;
+				$error_msg = $body;
 			}
 		}
 
@@ -508,6 +513,10 @@ class WC_Vipps_Recurring_Api {
 		if ( $is_merchant_not_allowed_error ) {
 			/* translators: Link to a GitHub readme about the error */
 			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
+		}
+
+		if ( $is_url_validation_error ) {
+			$localized_msg = sprintf( __( 'Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?', 'woo-vipps-recurring' ) );
 		}
 
 		if ( is_array( $request_body ) ) {
@@ -518,9 +527,9 @@ class WC_Vipps_Recurring_Api {
 			$body = json_encode( $body );
 		}
 
-		WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Error (%s): %s (%s) with request body: %s. The response was: %s', $status, $msg, $endpoint, $request_body, $body ) );
+		WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Error (%s): %s (%s) with request body: %s. The response was: %s', $status, $error_msg, $endpoint, $request_body, $body ) );
 
-		$exception                      = new WC_Vipps_Recurring_Exception( $msg, $localized_msg );
+		$exception                      = new WC_Vipps_Recurring_Exception( $error_msg, $localized_msg );
 		$exception->response_code       = $status;
 		$exception->is_idempotent_error = $is_idempotent_error;
 
