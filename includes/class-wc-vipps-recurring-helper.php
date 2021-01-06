@@ -182,6 +182,23 @@ class WC_Vipps_Recurring_Helper {
 	 *
 	 * @return mixed
 	 */
+	public static function get_latest_api_status_from_order( $order ) {
+		return self::get_meta( $order, '_vipps_recurring_latest_api_status' );
+	}
+
+	/**
+	 * @param $order
+	 * @param $status
+	 */
+	public static function set_latest_api_status_for_order( $order, $status ) {
+		self::update_meta_data( $order, '_vipps_recurring_latest_api_status', $status );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
 	public static function get_payment_method( $order ) {
 		return self::is_wc_lt( '3.0' )
 			? $order->payment_method

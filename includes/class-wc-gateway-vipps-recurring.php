@@ -486,6 +486,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} else {
 			// set _charge_id on order
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $charge['id'] );
+
+			// set _vipps_recurring_latest_api_status
+			WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge['status'] );
 		}
 
 		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_initial' ) ) && ! wcs_order_contains_renewal( $order );
@@ -508,7 +511,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		}
 
-		$is_captured = $charge !== false && $charge['status'] !== 'RESERVED';
+		$is_captured = $charge['status'] !== 'RESERVED';
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_captured', $is_captured );
 
 		if ( (int) $initial ) {
@@ -529,7 +532,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->save();
 
 			// cancel charge
-			if ( $charge && in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
+			if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
 				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
 			}
 

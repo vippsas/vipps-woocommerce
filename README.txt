@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.5.3 =
+* Enhancement: The status checker tool now shows the latest status from the API as a column value
+
 = 1.5.2 =
 * Fix: Fixed a bug where you were able to checkout the same order more than once while a Vipps agreement is not expired. This fixes problems with multiple charges occurring.
 

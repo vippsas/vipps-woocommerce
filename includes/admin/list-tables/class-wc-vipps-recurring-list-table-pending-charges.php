@@ -129,7 +129,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 */
 	protected function extra_tablenav( $which ) {
 		?>
-        <div class="alignleft actions">
+		<div class="alignleft actions">
 			<?php
 			/**
 			 * Fires just before the closing div containing the custom bulk actions
@@ -139,7 +139,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			 */
 			do_action( 'wc_vipps_recurring_restrict_manage_pending_charges', $which );
 			?>
-        </div>
+		</div>
 		<?php
 		/**
 		 * Fires immediately following the closing "actions" div in the tablenav for the pending charges
@@ -172,6 +172,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'agreement_id' => __( 'Agreement ID', 'woo-vipps-recurring' ),
 			'charge_id'    => __( 'Charge ID', 'woo-vipps-recurring' ),
 			'captured'     => __( 'Captured', 'woo-vipps-recurring' ),
+			'api_status'   => __( 'Latest API Status', 'woo-vipps-recurring' ),
 			'created_at'   => __( 'Created At', 'woo-vipps-recurring' ),
 		];
 	}
@@ -183,7 +184,8 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		return [
 			'order'      => 'order',
 			'captured'   => 'captured',
-			'created_at' => 'created_at',
+			'api_status' => 'api_status',
+			'created_at' => 'created_at'
 		];
 	}
 
@@ -227,15 +229,16 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 
 		$r = "<tr id='order-{$order_object->get_id()}'>";
 
-		list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+		list( $columns, $hidden, $primary ) = $this->get_column_info();
 
 		foreach ( $columns as $column_name => $column_display_name ) {
 			$classes = "$column_name column-$column_name";
 			if ( $primary === $column_name ) {
 				$classes .= ' has-row-actions column-primary';
 			}
+
 			if ( 'posts' === $column_name ) {
-				$classes .= ' num'; // Special case for that column.
+				$classes .= ' num';
 			}
 
 			if ( in_array( $column_name, $hidden, true ) ) {
@@ -249,29 +252,43 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			if ( 'cb' === $column_name ) {
 				$r .= "<th scope='row' class='check-column'>$checkbox</th>";
 			} else {
-				$r .= "<td $attributes>";
+				$id = WC_Vipps_Recurring_Helper::get_id( $order_object );
+				$r  .= "<td $attributes>";
+
 				switch ( $column_name ) {
 					case 'order':
-						$r .= "<a href='post.php?post={$order_object->get_id()}&action=edit' target='_blank'>#{$edit}</a>";
+						$r .= "<a href='post.php?post={$id}&action=edit' target='_blank'>#{$edit}</a>";
+
 						break;
 					case 'agreement_id':
-						$r .= $order_object->get_meta( '_agreement_id' );
+						$r .= WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order_object );
+
 						break;
 					case 'charge_id':
-						if ( $order_object->get_meta( '_vipps_recurring_captured' ) ) {
-							$r .= $order_object->get_meta( '_charge_id' ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
+						if ( WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order_object ) ) {
+							$r .= WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order_object ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
 						} else {
 							$r .= __( 'This order has not yet been captured.', 'woo-vipps-recurring' );
 						}
 
 						break;
 					case 'captured':
-						$r .= $order_object->get_meta( '_vipps_recurring_captured' ) ? __( 'Yes', 'woo-vipps-recurring' ) : __( 'No', 'woo-vipps-recurring' );
+						$r .= WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order_object )
+							? __( 'Yes', 'woo-vipps-recurring' )
+							: __( 'No', 'woo-vipps-recurring' );
+
+						break;
+					case 'api_status':
+						$api_status = WC_Vipps_Recurring_Helper::get_latest_api_status_from_order( $order_object );
+						$r          .= $api_status ? $api_status : '-';
+
 						break;
 					case 'created_at':
 						$order_post = wcs_get_objects_property( $order_object, 'post' );
 
-						$timestamp_gmt = wcs_get_objects_property( $order_object, 'date_created' )->getTimestamp();
+						$timestamp_gmt = wcs_get_objects_property( $order_object, 'date_created' )
+							->getTimestamp();
+
 						// translators: php date format
 						$t_time          = get_the_time( _x( 'Y/m/d g:i:s A', 'post date', 'woocommerce-subscriptions' ), $order_post );
 						$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
@@ -301,9 +318,11 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 				if ( $primary === $column_name ) {
 					$r .= $this->row_actions( $actions );
 				}
+
 				$r .= '</td>';
 			}
 		}
+
 		$r .= '</tr>';
 
 		return $r;
