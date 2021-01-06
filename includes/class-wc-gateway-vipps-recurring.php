@@ -935,7 +935,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// if a charge was never captured we need to create one
 			if ( ! $charge ) {
 				$charge = $this->create_charge( $agreement, $order, $idempotency_key );
-				$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
 			}
 
 			WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge['id'] );
@@ -1003,7 +1002,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $order
 	 * @param $idempotency_key
 	 *
-	 * @return bool
+	 * @return mixed|bool
 	 */
 	public function create_charge( $agreement, $order, $idempotency_key ) {
 		try {
@@ -1015,7 +1014,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement['id'] ) );
 
-			return true;
+			return $charge;
 		} catch ( Exception $e ) {
 			// mark charge as failed
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
