@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.5.4 =
+* Fix: Cancelled or expired "zero amount" payments getting stuck in the checking queue
+
 = 1.5.3 =
 * Fix: A rare edge case where an order was never captured for a long time and the order would not disappear from the status checker tool.
 * Fix: A rare edge case where a new pending renewal order would not fetch the Charge ID properly when hitting the capture payment button.

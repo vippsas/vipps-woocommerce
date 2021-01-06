@@ -498,12 +498,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement = $this->get_agreement_from_order( $order );
 		$charge    = $this->get_latest_charge_from_order( $order );
 
-		// if there's a campaign with a price of 0 we can complete the order immediately
-		if ( $agreement['status'] === 'ACTIVE' && WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
-			$this->complete_order( $order, $agreement['id'] );
+		// logic for zero amounts when a charge does not exist
+		if ( WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' ) && ! wcs_order_contains_renewal( $order ) ) {
+			// if there's a campaign with a price of 0 we can complete the order immediately
+			if ( in_array( $agreement['status'], [ 'ACTIVE', 'STOPPED' ] ) ) {
+				$this->complete_order( $order, $agreement['id'] );
 
-			$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
-			$order->save();
+				$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
+				$order->save();
+			}
+
+			// if EXPIRED we can fail this order
+			if ( $agreement['status'] === 'EXPIRED' ) {
+				$this->check_charge_agreement_cancelled( $order, $agreement );
+
+				return 'CANCELLED';
+			}
 
 			return 'SUCCESS';
 		}
@@ -544,15 +554,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// agreement is expired or stopped
 		if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] ) ) {
-			$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps', 'woo-vipps-recurring' ) );
-
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
-			$order->save();
-
-			// cancel charge
-			if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
-				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
-			}
+			$this->check_charge_agreement_cancelled( $order, $agreement, $charge );
 
 			return 'CANCELLED';
 		}
@@ -560,6 +562,29 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->process_order_charge( $order, $charge );
 
 		return 'SUCCESS';
+	}
+
+	/**
+	 * @param $order
+	 * @param $agreement
+	 * @param $charge
+	 *
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function check_charge_agreement_cancelled( $order, $agreement, $charge = false ) {
+		$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps', 'woo-vipps-recurring' ) );
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
+		$order->save();
+
+		// cancel charge
+		if ( $charge ) {
+			if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
+				$this->api->cancel_charge( $agreement['id'], $charge['id'] );
+			}
+		}
 	}
 
 	/**
