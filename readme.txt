@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.6.8  =
-Fix Gutenberg product blocks
+= 1.6.9  =
+Fix user creation issues when creating users in express checkout
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.01.xx version 1.6.9 =
+ Bugfixes for user creation in express checkout
 
 = 2021.01.05 version 1.6.8  =
  Bugfix for Gutenberg blocks

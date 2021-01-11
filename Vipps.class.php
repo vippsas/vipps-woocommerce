@@ -1747,7 +1747,7 @@ EOF;
     // It is done on the thank-you page of the order, and only for express checkout.
     function maybe_log_in_user ($order) {
         if (is_user_logged_in()) return;
-        if (!$order || $order->payment_method != 'vipps' ) return;
+        if (!$order || $order->get_payment_method()!= 'vipps' ) return;
 
         // Make this filterable because you may want to only log on some users
         $do_login =  $order->get_meta('_vipps_express_checkout');
@@ -1762,9 +1762,12 @@ EOF;
             // Ensure we don't have any admins with an additonal customer role logged in like this
             if($iscustomer && !user_can($customer->get_id(), 'manage_woocommerce') && !user_can($customer->get_id(),'manage_options'))  {
                 do_action('express_checkout_before_customer_login', $customer, $order);
-                wp_set_current_user($customer->get_id(), $customer->user_login);
+
+                $user = new WP_User( $customer->get_id());
+                wp_set_current_user($customer->get_id(), $user->user_login);
+
                 wp_set_auth_cookie($customer->get_id());
-                do_action('wp_login', $customer->user_login, new WP_User($customer->get_id()));
+                do_action('wp_login', $user->user_login, $user);
             }
         }
     }
@@ -1772,7 +1775,7 @@ EOF;
     // Get the customer that corresponds to the current order, maybe creating the customer if it does not exist yet and
     // the settings allow it.
     function express_checkout_get_vipps_customer($order) {
-        if (!$order || $order->payment_method != 'vipps' ) return;
+        if (!$order || $order->get_payment_method() != 'vipps' ) return;
         if (!$order->get_meta('_vipps_express_checkout')) return;
         if ($this->gateway()->get_option('expresscreateuser') != 'yes') return null;
         if (is_user_logged_in()) return new WC_Customer(get_current_user_id());
@@ -1785,8 +1788,9 @@ EOF;
             $user = get_user_by( 'email', $email);
             if (!$user) return null;
             $customerid = $user->ID;
-            update_post_meta( $order->get_id(), '_customer_user', $customerid );
             $order->save(); 
+            update_post_meta( $order->get_id(), '_customer_user', $customerid );
+
             if (is_multisite() && ! is_user_member_of_blog($customerid, get_current_blog_id())) {
                 add_user_to_blog( get_current_blog_id(), $customerid, 'customer' );
             }
@@ -1796,45 +1800,47 @@ EOF;
 
         // No customer yet. As we want to create users like this (set in the settings) let's do so.
         // Username will be created from email, but the settings may stop generating passwords, so we force that to be generated. IOK 2020-10-09
-
+        $firstname = $order->get_billing_first_name();
+        $lastname =  $order->get_billing_last_name();
+        $name = $firstname;
         $userdata = array('user_nicename'=>$name, 'display_name'=>"$firstname $lastname", 'nickname'=>$firstname, 'first_name'=>$firstname, 'last_name'=>$lastname);
+ 
 
         $customerid = wc_create_new_customer( $email, '', wp_generate_password(), $userdata);
         if ($customerid && !is_wp_error($customerid)) {
-            update_post_meta( $order_id, '_customer_user', $customer_id );
             $order->save(); 
+            update_post_meta( $order->get_id(), '_customer_user', $customerid );
 
             // Ensure the standard WP user fields are set too IOK 2020-11-03
-            wp_update_user(array('ID' => $customerid, 'first_name' => $order->billing_first_name, 'last_name' => $order->billing_last_name,
-                                'display_name' => $order->billing_first_name . " "  . $order->billing_last_name, 'nickname' => $order->billing_first_name));
+            wp_update_user(array('ID' => $customerid, 'first_name' => $firstname, 'last_name' => $lastname, 'display_name' => "$firstname $lastname", 'nickname' => $firstname));
 
-            update_user_meta( $customerid, 'billing_address_1', $order->billing_address_1 );
-            update_user_meta( $customerid, 'billing_address_2', $order->billing_address_2 );
-            update_user_meta( $customerid, 'billing_city', $order->billing_city );
-            update_user_meta( $customerid, 'billing_company', $order->billing_company );
-            update_user_meta( $customerid, 'billing_country', $order->billing_country );
-            update_user_meta( $customerid, 'billing_email', $order->billing_email );
-            update_user_meta( $customerid, 'billing_first_name', $order->billing_first_name );
-            update_user_meta( $customerid, 'billing_last_name', $order->billing_last_name );
-            update_user_meta( $customerid, 'billing_phone', $order->billing_phone );
-            update_user_meta( $customerid, 'billing_postcode', $order->billing_postcode );
-            update_user_meta( $customerid, 'billing_state', $order->billing_state );
-            update_user_meta( $customerid, 'shipping_address_1', $order->shipping_address_1 );
-            update_user_meta( $customerid, 'shipping_address_2', $order->shipping_address_2 );
-            update_user_meta( $customerid, 'shipping_city', $order->shipping_city );
-            update_user_meta( $customerid, 'shipping_company', $order->shipping_company );
-            update_user_meta( $customerid, 'shipping_country', $order->shipping_country );
-            update_user_meta( $customerid, 'shipping_first_name', $order->shipping_first_name );
-            update_user_meta( $customerid, 'shipping_last_name', $order->shipping_last_name );
-            update_user_meta( $customerid, 'shipping_method', $order->shipping_method );
-            update_user_meta( $customerid, 'shipping_postcode', $order->shipping_postcode );
-            update_user_meta( $customerid, 'shipping_state', $order->shipping_state );
+            update_user_meta( $customerid, 'billing_address_1', $order->get_billing_address_1() );
+            update_user_meta( $customerid, 'billing_address_2', $order->get_billing_address_2() );
+            update_user_meta( $customerid, 'billing_city', $order->get_billing_city() );
+            update_user_meta( $customerid, 'billing_company', $order->get_billing_company() );
+            update_user_meta( $customerid, 'billing_country', $order->get_billing_country() );
+            update_user_meta( $customerid, 'billing_email', $order->get_billing_email() );
+            update_user_meta( $customerid, 'billing_first_name', $order->get_billing_first_name() );
+            update_user_meta( $customerid, 'billing_last_name', $order->get_billing_last_name() );
+            update_user_meta( $customerid, 'billing_phone', $order->get_billing_phone() );
+            update_user_meta( $customerid, 'billing_postcode', $order->get_billing_postcode() );
+            update_user_meta( $customerid, 'billing_state', $order->get_billing_state() );
+            update_user_meta( $customerid, 'shipping_address_1', $order->get_shipping_address_1() );
+            update_user_meta( $customerid, 'shipping_address_2', $order->get_shipping_address_2() );
+            update_user_meta( $customerid, 'shipping_city', $order->get_shipping_city() );
+            update_user_meta( $customerid, 'shipping_company', $order->get_shipping_company() );
+            update_user_meta( $customerid, 'shipping_country', $order->get_shipping_country() );
+            update_user_meta( $customerid, 'shipping_first_name', $order->get_shipping_first_name() );
+            update_user_meta( $customerid, 'shipping_last_name', $order->get_shipping_last_name() );
+            update_user_meta( $customerid, 'shipping_method', $order->get_shipping_method() );
+            update_user_meta( $customerid, 'shipping_postcode', $order->get_shipping_postcode() );
+            update_user_meta( $customerid, 'shipping_state', $order->get_shipping_state() );
 
             // Integration with All-in-one WP security - these accounts are created by validated accounts in the app.
             update_user_meta( $customerid,'aiowps_account_status', 'approved');
 
             $customer = new WC_Customer($customerid);
-            do_action('woo_vipps_express_checkout_new_customer', $customer, $order_id);
+            do_action('woo_vipps_express_checkout_new_customer', $customer, $order->get_id());
 
             return $customer;
         }

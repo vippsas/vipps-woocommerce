@@ -1426,6 +1426,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             global $Vipps;
             $customer = $Vipps->express_checkout_get_vipps_customer($order);
             $userid = $customer->get_id();
+
             update_user_meta($userid, '_vipps_express_id', $user['userId']); // This is used for consent removal. It is unfortunately not the same as for Login. IOK 2020-10-12
 
             // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
@@ -1435,10 +1436,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
               // update_user_meta($userid, '_vipps_id', $sub);
               // update_user_meta($userid, '_vipps_just_connected', 1);
             }
+
+            // Ensure we get any changes made to the order, as it will be re-saved later
+            $order = wc_get_order($order->get_id());
         }
 
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
+
     }
   
     // Previously, shipping rates were added by creating them here with metadata packed into the shippingMethodId. This is from 1.4.0 only 
