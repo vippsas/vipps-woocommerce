@@ -997,7 +997,7 @@ EOF;
 
         // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
         // that any user hasn't already installed the free plugin for this created by Krokedil. If they have, this filter will be present:
-        if (class_exists('KCO') && defined('KCO_WC_VERSION') && version_compare(KCO_WC_VERSION, '2.0.0', '>=')) {
+        if ($this->gateway()->enabled == 'yes' && class_exists('KCO') && defined('KCO_WC_VERSION') && version_compare(KCO_WC_VERSION, '2.0.0', '>=')) {
             if (has_filter('kco_wc_api_request_args', 'kcoepm_create_order_vipps')) {
                 // Vipps external payment support is already present - notify user and do nothing. IOK 2020-03-18
                 if (is_admin()) {
