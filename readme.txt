@@ -6,7 +6,7 @@ Tested up to: 5.6.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.9.0
+WC tested up to: 4.9.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.6.9  =
-Fix user creation issues when creating users in express checkout
+= 1.7.0  =
+Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
 
 == Frequently Asked Questions ==
 
@@ -198,7 +198,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.01.xx version 1.6.9 =
+= 2021.01.xx version 1.7.0 =
+ Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
+
+= 2021.01.18 version 1.6.9 =
  Bugfixes for user creation in express checkout
 
 = 2021.01.05 version 1.6.8  =

@@ -62,7 +62,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             return self::$instance;
     } 
-	    
+        
 
     public function __construct() {
         $this->testapiurl = 'https://apitest.vipps.no';
@@ -79,10 +79,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
-	// We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
+    // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
-	$supported_types= array('simple','variable','variation','bundle');
-	$this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
+    $supported_types= array('simple','variable','variation','bundle');
+    $this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -236,43 +236,43 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
-	    $type = $product->get_type();
-	    $ok = in_array($type, $this->express_checkout_supported_product_types);
-	    $ok = apply_filters('woo_vipps_product_supports_express_checkout',$ok,$product);
-	    return $ok;
+        $type = $product->get_type();
+        $ok = in_array($type, $this->express_checkout_supported_product_types);
+        $ok = apply_filters('woo_vipps_product_supports_express_checkout',$ok,$product);
+        return $ok;
     }
 
     // Check to see if the cart passed (or the global one) can be bought with express checkout IOK 2018-12-04
     public function cart_supports_express_checkout($cart=null) {
-	    if (!$cart) $cart = WC()->cart;
-	    $supports  = true;
-	    if (!$cart) return $supports;
+        if (!$cart) $cart = WC()->cart;
+        $supports  = true;
+        if (!$cart) return $supports;
 
             # Not supported by Vipps
             if ($cart->cart_contents_total <= 0) return false;
 
-	    foreach($cart->get_cart() as $key=>$val) {
-		    $prod = $val['data'];
-		    if (!is_a($prod, 'WC_Product')) continue;
-		    $product_supported = $this->product_supports_express_checkout($prod);
-		    if (!$product_supported) {
-			    $supports = false;
-			    break;
-		    }
-	    }
-	    $supports = apply_filters('woo_vipps_cart_supports_express_checkout', $supports, $cart);
-	    return $supports;
+        foreach($cart->get_cart() as $key=>$val) {
+            $prod = $val['data'];
+            if (!is_a($prod, 'WC_Product')) continue;
+            $product_supported = $this->product_supports_express_checkout($prod);
+            if (!$product_supported) {
+                $supports = false;
+                break;
+            }
+        }
+        $supports = apply_filters('woo_vipps_cart_supports_express_checkout', $supports, $cart);
+        return $supports;
     }
 
     // True if "Express checkout" should be displayed IOK 2018-06-18
     public function show_express_checkout() {
             if (!$this->express_checkout_available()) return false;
-	    $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
-	    $show = $show && $this->cart_supports_express_checkout();
+        $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
+        $show = $show && $this->cart_supports_express_checkout();
             return apply_filters('woo_vipps_show_express_checkout', $show);
     }
     public function show_login_with_vipps() {
-	    return false;
+        return false;
     }
 
 
@@ -318,8 +318,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
         try {
-                $this->get_payment_details($order);
-                $order = wc_get_order($orderid); // Grap theorder again
+                $order = $this->update_vipps_payment_details($order); 
        } catch (Exception $e) {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
@@ -389,8 +388,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
 
         try {
-                $this->get_payment_details($order);
-                $order = wc_get_order($orderid); // Grap theorder again
+                $order = $this->update_vipps_payment_details($order); 
         } catch (Exception $e) {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
@@ -621,12 +619,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
         );
 
-	$this->dev_form_fields = array(
-			'developertitle' => array(
-				'title' => __('Developer mode settings', 'woo-vipps'),
-				'type'  => 'title',
-				'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
-				),
+    $this->dev_form_fields = array(
+            'developertitle' => array(
+                'title' => __('Developer mode settings', 'woo-vipps'),
+                'type'  => 'title',
+                'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
+                ),
                         'use_flock' => array (
                             'title'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
                             'label'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
@@ -637,56 +635,56 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
 
-			'testmode' => array(
-				'title' => __('Test mode', 'woo-vipps'),
-				'title' => __('Enable test mode', 'woo-vipps'),
-				'type'  => 'checkbox',
-				'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
-					accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
-				'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
-				),
-			'merchantSerialNumber_test' => array(
-				'title' => __('Merchant Serial Number', 'woo-vipps'),
-				'class' => 'vippspw',
-				'label'       => __( 'Merchant Serial Number', 'woo-vipps' ),
-				'type'        => 'number',
-				'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
-				'default'     => '',
-				),
-			'clientId_test' => array(
-					'title' => __('Client Id', 'woo-vipps'),
-					'label'       => __( 'Client Id', 'woo-vipps' ),
-					'type'        => 'password',
-					'class' => 'vippspw',
-					'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-					'default'     => '',
-					),
-			'secret_test' => array(
-					'title' => __('Client Secret', 'woo-vipps'),
-					'label'       => __( 'Client Secret', 'woo-vipps' ),
-					'type'        => 'password',
-					'class' => 'vippspw',
-					'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-					'default'     => '',
-					),
-			'Ocp_Apim_Key_eCommerce_test' => array(
-					'title' => __('Vipps Subscription Key', 'woo-vipps'),
-					'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
-					'type'        => 'password',
-					'class' => 'vippspw',
-					'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-					'default'     => '',
-					),
-			);
+            'testmode' => array(
+                'title' => __('Test mode', 'woo-vipps'),
+                'title' => __('Enable test mode', 'woo-vipps'),
+                'type'  => 'checkbox',
+                'description' => __('If you enable this, transactions will be made towards the Vipps Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
+                    accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular Vipps app). Contact Vipps\' technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'),
+                'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+                ),
+            'merchantSerialNumber_test' => array(
+                'title' => __('Merchant Serial Number', 'woo-vipps'),
+                'class' => 'vippspw',
+                'label'       => __( 'Merchant Serial Number', 'woo-vipps' ),
+                'type'        => 'number',
+                'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
+                'default'     => '',
+                ),
+            'clientId_test' => array(
+                    'title' => __('Client Id', 'woo-vipps'),
+                    'label'       => __( 'Client Id', 'woo-vipps' ),
+                    'type'        => 'password',
+                    'class' => 'vippspw',
+                    'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'secret_test' => array(
+                    'title' => __('Client Secret', 'woo-vipps'),
+                    'label'       => __( 'Client Secret', 'woo-vipps' ),
+                    'type'        => 'password',
+                    'class' => 'vippspw',
+                    'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            'Ocp_Apim_Key_eCommerce_test' => array(
+                    'title' => __('Vipps Subscription Key', 'woo-vipps'),
+                    'label'       => __( 'Vipps Subscription Key', 'woo-vipps' ),
+                    'type'        => 'password',
+                    'class' => 'vippspw',
+                    'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+                    'default'     => '',
+                    ),
+            );
 
         // Developer mode settings: Only shown when active. IOK 2019-08-30
-	if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-		$this->form_fields = array_merge($this->form_fields,$this->dev_form_fields);
+    if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
+        $this->form_fields = array_merge($this->form_fields,$this->dev_form_fields);
                 if (VIPPS_TEST_MODE) {
                    $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
                    $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
                 }
-	}
+    }
 
         // New shipping in express checkout is available, but merchant has overridden the old shipping callback. Ask what to do! IOK 2020-02-12
         if (has_action('woo_vipps_shipping_methods')) {
@@ -882,19 +880,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Capture will be done *before* payment_complete if appropriate IOK 2020-09-22
         if (did_action('woocommerce_pre_payment_complete')) {
             if (!$order->needs_processing()) return; // This is fine, we've captured.
-	    if ($remaining>0) {
+        if ($remaining>0) {
                     // Not everything has been captured, but we have reached a capturable status. Complain, do not capture. IOK 2020-09-22
-		    $this->log(sprintf(__("Filters are setting the payment_complete order status to '%s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
-		    $order->add_order_note(sprintf(__('Payment complete set status to "%s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
-		    return false;
-	    }
+            $this->log(sprintf(__("Filters are setting the payment_complete order status to '%s' - will not capture", 'woo-vipps'), $order->get_status()),'debug');
+            $order->add_order_note(sprintf(__('Payment complete set status to "%s" - will not capture payments automatically','woo-vipps'), $order->get_status()));
+            return false;
+        }
         }
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
         try {
-                $this->get_payment_details($order);
-                $order = wc_get_order($orderid); // Grap theorder again
+                $order = $this->update_vipps_payment_details($order); 
        } catch (Exception $e) {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing capture: ", 'woo-vipps') . $e->getMessage(), 'warning');
@@ -933,7 +930,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Ensure 'SALE' direct captured orders work
         if (!$captured && $vippsstatus == 'SALE') { 
-            $this->get_payment_details($order);
+            $order = $this->update_vipps_payment_details($order); 
             $captured = $order->get_meta('_vipps_captured');
         }
 
@@ -1078,9 +1075,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->add_order_note(__('Vipps Payment cancelled:','woo-vipps'));
         $order->save();
 
-        // Update status from Vipps, but ignore errors IO 2018-05-07
+        // Update status from Vipps, but ignore errors IOK 2018-05-07
         try {
-            $this->get_vipps_order_status($order,false);
+            $status = $this->get_vipps_order_status($order);
+            if ($status) $order->update_meta_data('_vipps_status',$status);
+            $order->save();
         } catch (Exception $e)  {
         }
         return true;
@@ -1174,13 +1173,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
          return "initiated";
     }
 
-    // This does not call Vipps, so if you need to refresh status, please use callback_check_order_status first. IOK 2019-01-23
+    // This does not normally call Vipps, so if you need to refresh status, please use callback_check_order_status first. IOK 2019-01-23
     public function check_payment_status($order) {
         if (!$order) return 'cancelled';
         $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         // This can happen if the vipps status is set from the back end for instance. IOK 2020-08-14
         if ($order->get_status() == 'pending' && $status != 'initiated') {
            $this->callback_check_order_status($order);
+           $order = wc_get_order($order->get_id()); // refresh to get the new status IOK 2021-01-20
            $status = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         }
         return $status;
@@ -1208,10 +1208,35 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
      
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
-        $vippsstatus = $this->interpret_vipps_order_status($this->get_vipps_order_status($order,'iscallback'));
+        $vippsstatus = "";
+
+        /* Now read the payment details and update the order with the relevant values, finding the new Vipps status IOK 2021-01-20 */
+        $paymentdetails = array();
+        try {
+            $paymentdetails = $this->get_payment_details($order);
+            $newvippsstatus = $this->get_vipps_order_status($order,$paymentdetails);
+            if (!$newvippsstatus) {
+                throw new Exception(__("Could not interpret Vipps order status", 'woo-vipps'));
+            }
+            $order->update_meta_data('_vipps_status',$newvippsstatus);
+            $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
+            $transaction = @$statusdata['transactionInfo'];
+            if ($transaction) {
+                $vippsstamp = strtotime($transaction['timeStamp']);
+                $vippsamount= $transaction['amount'];
+                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+                $order->update_meta_data('_vipps_amount',$vippsamount);
+            }
+        } catch (Exception $e) {
+            $this->log(__("Error getting payment details from Vipps for order_id:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
+            clean_post_cache($order->get_id());
+            return $oldstatus;
+        }
+
+        $order->save();
+
 
         $statuschange = 0;
-
         if ($oldvippsstatus != $vippsstatus) {
             $statuschange = 1;
         }
@@ -1221,17 +1246,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
-            try {
-                $statusdata = $this->api->payment_details($order);
-                do_action('woo_vipps_express_checkout_get_order_status', $statusdata);
-            } catch (Exception $e) {
-                $this->log(__("Error getting payment details from Vipps for express checkout for order_id:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
-                clean_post_cache($order->get_id());
-                return $oldstatus; 
-            }
+            do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
-            if (@$statusdata['shippingDetails']) {
-                $this->set_order_shipping_details($order,$statusdata['shippingDetails'], $statusdata['userDetails']);
+            if (@$paymentdetails['shippingDetails']) {
+                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
             } else {
                 $this->log(__("No shipping details from Vipps for express checkout for order id:",'woo-vipps') . ' ' . $orderid, 'error');
                 clean_post_cache($order->get_id());
@@ -1246,7 +1264,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     break;
                 case 'complete':
                     $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
-                    $this->get_payment_details($order);
+                    $order = $this->update_vipps_payment_details($order, $paymentdetails); 
                     $order->payment_complete();
                     break;
                 case 'cancelled':
@@ -1261,66 +1279,151 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $newstatus;
     }
 
-    // This is primarily for debugging right now. Can be made callable to update the order status directley with Vipps status. IOK 2019-09-21
-    // IOK 2018-12-19 now as a side-effect refreshes all the postmeta values from Vipps
+    // IOK 2020-01-20 Previously was just a debugging tool, then was used to update postmeta values. Now is used as the main source of info
+    // about the order from Vipps; the previous side-effecting is now done by update_vipps_payment_details.
     public function get_payment_details($order) {
-      // First, update the Vips order status
-      $status = $this->get_vipps_order_status($order,false);
       // Then the details, which include the transaction history
       $result = $this->api->payment_details($order);
+
       if ($result) {
-        $result['status'] = $status;
-        if (isset($result['transactionSummary'])) {
-        $transactionSummary= $result['transactionSummary'];
-        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
-        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
-        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
-        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-        }
+          // We would like e to have a single enum as the payment status like in the old API or v2 before march 2021, so find one and store it. IOK 2021-01-20
+          $result['status'] = $this->get_payment_status_from_payment_details($result);
+
+          // Add for backwards compatibility from the old order_status interface - last operations transactionInfo IOK 2021-01-20
+          if (isset($result['transactionLogHistory'])){
+              $log = $result['transactionLogHistory'];
+              if (!empty($log)) {
+                  $result['transactionInfo'] = $log[0];
+              }
+          }
       }
-      $order->save();
+
       return $result;
     }
 
-    // Get the order status as defined by Vipps. If 'iscallback' is true, set timestamps etc as if this was a Vipps callback. IOK 2018-05-04 
-    public function get_vipps_order_status($order, $iscallback=0) {
+    // Update the order with Vipps payment details, either passed or called using the API.
+    public function update_vipps_payment_details ($order, $details = null) {
+       if (!$details) $details = $this->get_payment_details($order);
+
+       if ($details) {
+           if (isset($details['transactionSummary'])) {
+               $transactionSummary= $details['transactionSummary'];
+               $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+               $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+               $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+               $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+               }
+
+       }
+       $order->save();
+       return $order;
+    }
+
+    // IOK 2021-01-20 from March 2021 the order_status interface is removed; so we now need to interpret the payment history to find
+    // out the order status.
+    public function get_payment_status_from_payment_details($details) {
+
+       $status = 'INITIATE';
+       $statusknown = false;
+
+       // We have to assume there is an transaction log history, but protect against having it missing anyway
+       $log = isset($details['transactionLogHistory']) ? $details['transactionLogHistory'] : array();
+       $synchronously = array_reverse($log);
+
+
+       foreach ($synchronously as $op) {
+         if ($statusknown) break; // Last iteration determined ths status
+
+         $type = $op['operation'];
+         $success = intval($op['operationSuccess']);
+         switch($type) {
+           case 'INITIATE': // Payment initiated, by merchant
+                if (!$success) {
+                   $status = 'FAILED';
+                   $statusknown = true;
+                }
+                break;
+           case 'RESERVE':  // Payment reserved, customer has completed payment
+                if ($success) {
+                   $status = 'RESERVE';        // 'authorized', but we need to check later ops
+                } else {
+                   $status = 'RESERVE_FAILED'; // a 'cancel' status, probably the last but need to check
+                }
+                break;
+           case 'CAPTURE':  // Payment captured by merchant (after RESERVE, but can be partial)
+                if ($success) {
+                   $status = 'RESERVE';        // we know this at least. If the entire sum is captured, we could do a 'complete' status
+                } else {
+                   // This means nothing.
+                } 
+                break;
+           case 'REFUND':   // Payment refunded, by merchant (after CAPTURE, but can be partial)
+                if ($success) {
+                   $status = 'RESERVE';        // we know this at least. If the entire sum is refunded, we could do a 'cancelled/refunded' status
+                } else {
+                   // This means nothing.
+                } 
+                break;
+           case 'CANCEL':   // Payment cancelled by user in Vipps
+                if ($success) {
+                   $status = 'CANCEL';        // Successfully cancelled by user
+                   $statusknown = true;
+                } else {
+                   // Is this even possible? I guess so! but we can't guess the state of the transaction here.
+                } 
+
+                break;
+           case 'SALE':     // Payment captured with direct capture, by merchant (and is total)
+                if ($success) {
+                   $status = 'SALE';  // An order-complete status. However, final status isn't known because it may be refunded or cancelled after
+                } else {
+                    $status = 'FAILED'; // So direct capture didn't succed. Does this end the transaction though?
+                } 
+                break;
+           case 'VOID':     // Payment cancelled by merchant, is total
+                if ($success) {
+                   $status = 'VOID';        // Successfully cancelled by merchant
+                   $statusknown = true;
+                } else {
+                   // Is this even possible? I guess so! but we can't guess the state of the transaction here.
+                } 
+                break;
+           default: 
+                $this->log(sprintf("Unknown operation %s in transaction log for %s!", $op, $details['orderId']));
+                break;
+         }
+       }
+
+
+       return $status;
+    }
+
+    // Get the order status as defined by Vipps; if you have the payment details already, pass them. Will modify the order. IOK 2021-01-20
+    public function get_vipps_order_status($order, $statusdata=null) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) return null;
-        try { 
-            $statusdata = $this->api->order_status($order);
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(__('Could not get Vipps order status for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            if (!$iscallback) $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
-            return null;
-        } catch (VippsAPIException $e) {
-            $msg = __('Could not get Vipps order status','woo-vipps') . ' ' . $e->getMessage();
-            $this->log($msg,'error');
-            if (intval($e->responsecode) == 402) {
-                $this->log(__('Order does not exist at Vipps - cancelling','woo-vipps') . ' ' . $order->get_id(), 'warning');
-                return 'CANCEL'; 
+        if (!$statusdata) {
+            try { 
+                $statusdata = $this->get_payment_details($order);
+            } catch (TemporaryVippsApiException $e) {
+                $this->log(__('Could not get Vipps order status for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
+                return null;
+            } catch (VippsAPIException $e) {
+                $msg = __('Could not get Vipps order status','woo-vipps') . ' ' . $e->getMessage();
+                $this->log($msg,'error');
+                if (intval($e->responsecode) == 402) {
+                    $this->log(__('Order does not exist at Vipps - cancelling','woo-vipps') . ' ' . $order->get_id(), 'warning');
+                    return 'CANCEL'; 
+                }
+            } catch (Exception $e) {
+                $msg = __('Could not get Vipps order status for order id:','woo-vipps') . ' ' . $order->get_id() . "\n" . $e->getMessage();
+                $this->log($msg,'error');
+                return null;
             }
-            if (!$iscallback) $this->adminerr($msg);
-        } catch (Exception $e) {
-            $msg = __('Could not get Vipps order status for order id:','woo-vipps') . ' ' . $order->get_id() . "\n" . $e->getMessage();
-            $this->log($msg,'error');
-            if (!$iscallback) $this->adminerr($msg);
-            return null;
         }
         if (!$statusdata) return null;
 
-        $transaction = @$statusdata['transactionInfo'];
-        if (!$transaction) return null;
-        $vippsstatus = $transaction['status'];
-        $vippsstamp = strtotime($transaction['timeStamp']);
-        $vippsamount= $transaction['amount'];
-
-        if ($iscallback) {
-            $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
-        }
-        $order->update_meta_data('_vipps_amount',$vippsamount);
-        $order->update_meta_data('_vipps_status',$vippsstatus); // should be RESERVED or REJECTED mostly, could be FAILED etc. IOK 2018-04-24
-        $order->save();
-
+        $vippsstatus = $statusdata['status'];
         return $vippsstatus;
     }
 
@@ -1543,7 +1646,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
         $order->update_meta_data('_vipps_amount',$vippsamount);
-        $order->update_meta_data('_vipps_status',$vippsstatus); 
+        $order->update_meta_data('_vipps_status',$vippsstatus);  // Still uses the old status values - could call update_vipps_payment_details instead at the cost of an extra callIOK 2021-01-21
 
         if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
             $this->payment_complete($order);
@@ -1551,7 +1654,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
           $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
           $order->payment_complete();
-          $this->get_payment_details($order);
+          $this->update_vipps_payment_details($order);
         } else {
             $order->update_status('cancelled', __( 'Payment cancelled at Vipps', 'woo-vipps' ));
         }
@@ -1591,9 +1694,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = new WC_Order();
         $order->set_status('pending');
         $order->set_payment_method($this);
-	$order->set_created_via('Vipps Express Checkout');
-	$order->set_payment_method_title('Vipps Express Checkout');
-	$dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
+    $order->set_created_via('Vipps Express Checkout');
+    $order->set_payment_method_title('Vipps Express Checkout');
+    $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
 
         $order->update_meta_data('_vipps_express_checkout',1);
 
@@ -1781,7 +1884,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Use Billing Phone if it is required, otherwise ask for a phone IOK 2018-04-24
         // For v2 of the api, just let Vipps ask for then umber
         // IOK 2019-09-12 removed dead code only used for v1 of api
-	print $this->get_option('description');
+    print $this->get_option('description');
         return;
     }
     public function validate_fields() {

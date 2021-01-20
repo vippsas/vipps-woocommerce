@@ -192,34 +192,6 @@ class VippsApi {
         return $res;
     }
 
-    public function order_status($order) {
-        $merch = $this->get_merchant_serial();
-        $vippsorderid = $order->get_meta('_vipps_orderid');
-	$requestid = 1;
-
-        $command = 'Ecomm/v2/payments/'.$vippsorderid.'/status';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
-        if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        if (!$merch) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['X-Request-Id'] = $requestid;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $data = array();
-        $res = $this->http_call($command,$data,'GET',$headers);
-        return $res;
-    }
 
     // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
     public function capture_payment($order,$amount,$requestid=1) {
@@ -479,7 +451,7 @@ class VippsApi {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
                 $msg = '';
                 foreach($content as $entry) {
-                    $msg .= $response  . ' ' .   $entry['errorMessage'] . "\n";
+                    $msg .= $response  . ' ' .   @$entry['errorMessage'] . "\n";
                 } 
             }
         }

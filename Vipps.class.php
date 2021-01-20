@@ -258,6 +258,7 @@ class Vipps {
         global $post;
         if ($post && get_post_type($post) == 'shop_order' ) {
             $order = wc_get_order($post);
+
             $pm = $order->get_payment_method();
             if ($pm == 'vipps') { 
                 add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
@@ -637,6 +638,7 @@ else:
         $gw = $this->gateway();
         try {
             $details = $gw->get_payment_details($order);
+            $order =   $gw->update_vipps_payment_details($order, $details);
         } catch (Exception $e) {
             print "<p>"; 
             print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
@@ -647,6 +649,7 @@ else:
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
+        print __('Other Order status', 'woo-vipps') . ": " .@$details['otherstatus'] . "<br>";
         print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
