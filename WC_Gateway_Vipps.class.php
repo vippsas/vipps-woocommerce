@@ -1220,7 +1220,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             $order->update_meta_data('_vipps_status',$newvippsstatus);
             $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
-            $transaction = @$statusdata['transactionInfo'];
+            $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
                 $vippsamount= $transaction['amount'];
