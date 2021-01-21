@@ -1312,10 +1312,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
                $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
                $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-               }
-
+           }
+           $order->save();
        }
-       $order->save();
        return $order;
     }
 

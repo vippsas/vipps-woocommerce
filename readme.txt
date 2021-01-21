@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.01.xx version 1.7.0 =
+= 2021.01.25 version 1.7.0 =
  Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
 
 = 2021.01.18 version 1.6.9 =
