@@ -850,11 +850,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function process_subscription_payment( $amount, $renewal_order ): bool {
 		try {
 			// create charge logic
-			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order );
-			$agreement    = $this->api->get_agreement( $agreement_id );
-			$amount       = WC_Vipps_Recurring_Helper::get_vipps_amount( $amount );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment attempting to create charge', $renewal_order->get_id() ) );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment agreement: %s', $renewal_order->get_id(), json_encode( $agreement ) ) );
+			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order );
+
+			if ( ! $agreement_id ) {
+				throw new WC_Vipps_Recurring_Exception( 'Fatal error: Vipps agreement id does not exist.' );
+			}
+
+			$agreement = $this->api->get_agreement( $agreement_id );
+			$amount    = WC_Vipps_Recurring_Helper::get_vipps_amount( $amount );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment on agreement: %s', $renewal_order->get_id(), json_encode( $agreement ) ) );
 
 			// idempotency key
 			$idempotence_key = $this->get_idempotence_key( $renewal_order );
@@ -865,6 +872,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$renewal_order->save();
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
+
 		} catch ( Exception $e ) {
 			// if we reach this point we consider the error the be completely unrecoverable
 
