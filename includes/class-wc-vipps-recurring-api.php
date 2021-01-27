@@ -94,7 +94,7 @@ class WC_Vipps_Recurring_Api {
 			$product_name = $body['productName'];
 
 			if ( strlen( $product_name ) > 45 ) {
-				$body['productName'] = substr( $product_name, 0, 42 ) . '...';
+				$body['productName'] = mb_substr( $product_name, 0, 42 ) . '...';
 			}
 		}
 
@@ -102,7 +102,7 @@ class WC_Vipps_Recurring_Api {
 			$product_description = $body['productDescription'];
 
 			if ( strlen( $product_description ) > 100 ) {
-				$body['productDescription'] = substr( $product_description, 0, 97 ) . '...';
+				$body['productDescription'] = mb_substr( $product_description, 0, 97 ) . '...';
 			}
 		}
 
@@ -110,7 +110,7 @@ class WC_Vipps_Recurring_Api {
 			$charge_description = $body['initialCharge']['description'];
 
 			if ( strlen( $charge_description ) > 45 ) {
-				$body['initialCharge']['description'] = substr( $charge_description, 0, 42 ) . '...';
+				$body['initialCharge']['description'] = mb_substr( $charge_description, 0, 42 ) . '...';
 			}
 		}
 
@@ -275,7 +275,7 @@ class WC_Vipps_Recurring_Api {
 
 		$charge_description = $agreement['productDescription'];
 		if ( strlen( $charge_description ) > 45 ) {
-			$charge_description = substr( $charge_description, 0, 42 ) . '...';
+			$charge_description = mb_substr( $charge_description, 0, 42 ) . '...';
 		}
 
 		$data = [
@@ -347,7 +347,7 @@ class WC_Vipps_Recurring_Api {
 		];
 
 		if ( $reason !== null && strlen( $reason ) > 99 ) {
-			$reason = substr( $reason, 0, 90 );
+			$reason = mb_substr( $reason, 0, 90 );
 		}
 
 		$data = [

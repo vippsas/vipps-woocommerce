@@ -154,6 +154,10 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.5.5 =
+* Fix: No longer attempt to charge a non existent agreement when a renewal is attempted on a subscription that does not have a Vipps agreement.
+* Fix: Multibyte characters like 'æøå' in descriptions now work, these characters caused an internal server error when json encoding.
+
 = 1.5.4 =
 * Fix: Cancelled or expired "zero amount" payments getting stuck in the checking queue
 
