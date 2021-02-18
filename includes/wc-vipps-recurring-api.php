@@ -2,7 +2,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-require_once( __DIR__ . '/class-wc-vipps-recurring-exceptions.php' );
+require_once( __DIR__ . '/wc-vipps-recurring-exceptions.php' );
 
 /**
  * Class WC_Vipps_Recurring_Api

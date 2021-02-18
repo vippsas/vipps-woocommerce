@@ -9,6 +9,41 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Vipps_Recurring_Helper {
 	/**
+	 * Vipps charges
+	 */
+	public const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';
+	public const META_CHARGE_FAILED_REASON = '_vipps_recurring_failed_charge_reason';
+	public const META_CHARGE_FAILED_DESCRIPTION = '_vipps_recurring_failed_charge_description';
+	public const META_CHARGE_CAPTURED = '_vipps_recurring_captured';
+	public const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
+	public const META_CHARGE_ID = '_charge_id';
+	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
+
+	/**
+	 * Vipps agreements
+	 */
+	public const META_AGREEMENT_ID = '_agreement_id';
+
+	/**
+	 * Product
+	 */
+	public const META_PRODUCT_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
+
+	/**
+	 * Orders
+	 */
+	public const META_ORDER_STOCK_REDUCED = '_order_stock_reduced';
+	public const META_ORDER_TRANSACTION_ID = '_transaction_id';
+	public const META_ORDER_INITIAL = '_vipps_recurring_initial';
+	public const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
+
+	/**
+	 * Subscription
+	 */
+	public const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
+	public const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
+
+	/**
 	 * Get Vipps amount to pay
 	 *
 	 * @param float $total Amount due.
@@ -156,7 +191,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_agreement_id_from_order( $order ) {
-		return self::get_meta( $order, '_agreement_id' );
+		return self::get_meta( $order, self::META_AGREEMENT_ID );
 	}
 
 	/**
@@ -165,7 +200,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function is_charge_captured_for_order( $order ) {
-		return self::get_meta( $order, '_vipps_recurring_captured' );
+		return self::get_meta( $order, self::META_CHARGE_CAPTURED );
 	}
 
 	/**
@@ -174,7 +209,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_charge_id_from_order( $order ) {
-		return self::get_meta( $order, '_charge_id' );
+		return self::get_meta( $order, self::META_CHARGE_ID );
 	}
 
 	/**
@@ -183,7 +218,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_latest_api_status_from_order( $order ) {
-		return self::get_meta( $order, '_vipps_recurring_latest_api_status' );
+		return self::get_meta( $order, self::META_CHARGE_LATEST_STATUS );
 	}
 
 	/**
@@ -191,7 +226,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $status
 	 */
 	public static function set_latest_api_status_for_order( $order, $status ) {
-		self::update_meta_data( $order, '_vipps_recurring_latest_api_status', $status );
+		self::update_meta_data( $order, self::META_CHARGE_LATEST_STATUS, $status );
 	}
 
 	/**
@@ -211,7 +246,7 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	public static function set_transaction_id_for_order( $order, $transaction_id ) {
 		self::is_wc_lt( '3.0' )
-			? update_post_meta( $order->id, '_transaction_id', $transaction_id )
+			? update_post_meta( $order->id, self::META_ORDER_TRANSACTION_ID, $transaction_id )
 			: $order->set_transaction_id( $transaction_id );
 	}
 
@@ -222,7 +257,7 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	public static function get_transaction_id_for_order( $order ) {
 		return self::is_wc_lt( '3.0' )
-			? get_post_meta( self::get_id( $order ), '_transaction_id' )
+			? get_post_meta( self::get_id( $order ), self::META_ORDER_TRANSACTION_ID )
 			: $order->get_transaction_id();
 	}
 
@@ -231,17 +266,17 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $charge_id
 	 */
 	public static function set_order_as_pending( $order, $charge_id ) {
-		self::update_meta_data( $order, '_vipps_recurring_pending_charge', true );
-		self::update_meta_data( $order, '_vipps_recurring_captured', true );
-		self::update_meta_data( $order, '_charge_id', $charge_id );
+		self::update_meta_data( $order, self::META_CHARGE_PENDING, true );
+		self::update_meta_data( $order, self::META_CHARGE_CAPTURED, true );
+		self::update_meta_data( $order, self::META_CHARGE_ID, $charge_id );
 	}
 
 	/**
 	 * @param $order
 	 */
 	public static function set_order_as_not_pending( $order ) {
-		self::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
-		self::update_meta_data( $order, '_vipps_recurring_captured', false );
+		self::update_meta_data( $order, self::META_CHARGE_PENDING, false );
+		self::update_meta_data( $order, self::META_CHARGE_CAPTURED, false );
 	}
 
 	/**
@@ -250,7 +285,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function is_stock_reduced_for_order( $order ) {
-		return self::get_meta( $order, '_order_stock_reduced' );
+		return self::get_meta( $order, self::META_ORDER_STOCK_REDUCED );
 	}
 
 	/**

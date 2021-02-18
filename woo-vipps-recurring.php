@@ -165,9 +165,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @version 4.0.0
 			 */
 			public function init() {
-				require_once __DIR__ . '/includes/class-wc-vipps-recurring-helper.php';
-				require_once __DIR__ . '/includes/class-wc-vipps-recurring-logger.php';
-				require_once __DIR__ . '/includes/class-wc-gateway-vipps-recurring.php';
+				require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
+				require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
+				require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
 
 				add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 
@@ -405,8 +405,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 				echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 				woocommerce_wp_checkbox( [
-					'id'          => '_vipps_recurring_direct_capture',
-					'value'       => get_post_meta( get_the_ID(), '_vipps_recurring_direct_capture', true ),
+					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
+					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
 					'label'       => __( 'Capture payment instantly', 'woo-vipps-recurring' ),
 					'description' => __( 'Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option.', 'woo-vipps-recurring' )
 				] );
@@ -420,8 +420,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @param $post_id
 			 */
 			public function woocommerce_process_product_meta( $post_id ) {
-				$capture_instantly = isset( $_POST['_vipps_recurring_direct_capture'] ) ? 'yes' : 'no';
-				update_post_meta( $post_id, '_vipps_recurring_direct_capture', $capture_instantly );
+				$capture_instantly = isset( $_POST[WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE] ) ? 'yes' : 'no';
+				update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
 			}
 
 			/**
@@ -450,7 +450,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$order_status        = $order->get_status();
 				$show_capture_button = ( ! in_array( $order_status, $gateway->statuses_to_attempt_capture, true ) )
 				                       && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
-				                       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_zero_amount' );
+				                       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
 
 				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;
@@ -518,7 +518,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'limit'          => $limit,
 					'order'          => 'rand',
 					'type'           => 'shop_order',
-					'meta_key'       => '_vipps_recurring_pending_charge',
+					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
 					'meta_compare'   => '=',
 					'meta_value'     => 1,
 					'return'         => 'ids',
@@ -542,7 +542,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$posts = get_posts( [
 					'post_type'    => 'shop_subscription',
 					'post_status'  => 'wc-active',
-					'meta_key'     => '_vipps_recurring_waiting_for_gateway_change',
+					'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE,
 					'meta_compare' => '=',
 					'meta_value'   => 1,
 					'return'       => 'ids',
@@ -564,7 +564,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'limit'        => 5,
 					'post_type'    => 'shop_subscription',
 					'post_status'  => 'wc-active',
-					'meta_key'     => '_vipps_recurring_update_in_app',
+					'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP,
 					'meta_compare' => '=',
 					'meta_value'   => 1,
 					'return'       => 'ids',
