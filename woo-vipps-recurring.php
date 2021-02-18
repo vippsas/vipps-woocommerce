@@ -308,7 +308,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 *
 			 */
 			public function setup_screen() {
-				global $wc_vipps_recurring_list_table;
+				global $wc_vipps_recurring_list_table_pending_charges,
+				       $wc_vipps_recurring_list_table_failed_charges;
 
 				$screen_id = false;
 
@@ -317,25 +318,27 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$screen_id = isset( $screen, $screen->id ) ? $screen->id : '';
 				}
 
-				if ( ! empty( $_REQUEST['screen'] ) ) { // WPCS: input var ok.
-					$screen_id = wc_clean( wp_unslash( $_REQUEST['screen'] ) ); // WPCS: input var ok, sanitization ok.
+				if ( ! empty( $_REQUEST['screen'] ) ) {
+					$screen_id = wc_clean( wp_unslash( $_REQUEST['screen'] ) );
 				}
-
-				add_filter( 'handle_bulk_actions-settings_page_woo-vipps-recurring', [
-					$this,
-					'settings_page_bulk_action_handler'
-				], 10, 3 );
 
 				switch ( $screen_id ) {
 					case 'settings_page_woo-vipps-recurring':
-						include_once 'includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php';
-						$wc_vipps_recurring_list_table = new WC_Vipps_Recurring_Admin_List_Pending_Charges();
+						include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php';
+						include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php';
+
+						$wc_vipps_recurring_list_table_pending_charges = new WC_Vipps_Recurring_Admin_List_Pending_Charges([
+							'screen' => $screen_id . '_pending-charges'
+						]);
+						$wc_vipps_recurring_list_table_failed_charges  = new WC_Vipps_Recurring_Admin_List_Failed_Charges([
+							'screen' => $screen_id . '_failed-charges'
+						]);
 						break;
 				}
 
-				if ( $wc_vipps_recurring_list_table
-				     && $wc_vipps_recurring_list_table->current_action()
-				     && $wc_vipps_recurring_list_table->current_action() === 'check_status' ) {
+				if ( $wc_vipps_recurring_list_table_pending_charges
+				     && $wc_vipps_recurring_list_table_pending_charges->current_action()
+				     && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
 					$sendback = $this->handle_check_statuses_bulk_action();
 
 					wp_redirect( $sendback );

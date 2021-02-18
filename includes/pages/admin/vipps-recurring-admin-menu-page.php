@@ -36,9 +36,23 @@ defined( 'ABSPATH' ) || exit;
         <input type="hidden" name="page" value="woo-vipps-recurring">
 
 		<?php
-		global $wc_vipps_recurring_list_table;
-		$wc_vipps_recurring_list_table->prepare_items();
-		echo $wc_vipps_recurring_list_table->display();
+		global $wc_vipps_recurring_list_table_pending_charges;
+		$wc_vipps_recurring_list_table_pending_charges->prepare_items();
+		echo $wc_vipps_recurring_list_table_pending_charges->display();
+		?>
+    </form>
+
+    <h2>
+		<?php echo __( 'Failed Charges', 'woo-vipps-recurring' ); ?>
+    </h2>
+
+    <form method="get">
+        <input type="hidden" name="page" value="woo-vipps-recurring">
+
+		<?php
+		global $wc_vipps_recurring_list_table_failed_charges;
+		$wc_vipps_recurring_list_table_failed_charges->prepare_items();
+		echo $wc_vipps_recurring_list_table_failed_charges->display();
 		?>
     </form>
 </div>

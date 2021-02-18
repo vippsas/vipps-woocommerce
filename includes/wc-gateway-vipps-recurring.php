@@ -685,7 +685,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: FAILED
 		if ( 'FAILED' === $charge['status'] ) {
 			$order->update_status( 'failed', __( 'Vipps payment failed.', 'woo-vipps-recurring' ) );
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_pending_charge', false );
+			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
+			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, $charge );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge failed: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'] ) );
 		}

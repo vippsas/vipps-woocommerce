@@ -9,7 +9,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 }
 
-class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
+class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 
 	/**
 	 * Constructor.
@@ -22,8 +22,8 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	public function __construct( $args = [] ) {
 		parent::__construct(
 			[
-				'singular' => 'pending charge',
-				'plural'   => 'pending charges',
+				'singular' => 'failed charge',
+				'plural'   => 'failed charges',
 				'screen'   => $args['screen'] ?? null,
 			]
 		);
@@ -40,7 +40,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	}
 
 	/**
-	 * Prepare the pending charges list for display.
+	 * Prepare the failed charges list for display.
 	 *
 	 * @throws Exception
 	 * @global string $ordersearch
@@ -50,7 +50,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 
 		$ordersearch = isset( $_REQUEST['s'] ) ? wp_unslash( trim( $_REQUEST['s'] ) ) : '';
 
-		$per_page        = 'wc_vipps_recurring_pending_charges_per_page';
+		$per_page        = 'wc_vipps_recurring_failed_charges_per_page';
 		$orders_per_page = $this->get_items_per_page( $per_page );
 
 		$paged = $this->get_pagenum();
@@ -61,7 +61,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'search'         => $ordersearch,
 			'paginate'       => true,
 			'type'           => 'shop_order',
-			'meta_key'       => '_vipps_recurring_pending_charge',
+			'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_FAILED,
 			'meta_compare'   => '=',
 			'meta_value'     => 1,
 			'payment_method' => 'vipps_recurring'
@@ -86,16 +86,16 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 		 *                    users list table.
 		 *
 		 */
-		$args = apply_filters( 'wc_vipps_recurring_pending_charges_list_table_query_args', $args );
+		$args = apply_filters( 'wc_vipps_recurring_failed_charges_list_table_query_args', $args );
 
 		// Query the user IDs for this page.
-		$wp_pending_order_search = wc_get_orders( $args );
+		$wp_failed_charges_search = wc_get_orders( $args );
 
-		$this->items = $wp_pending_order_search->orders;
+		$this->items = $wp_failed_charges_search->orders;
 
 		$this->set_pagination_args(
 			[
-				'total_items' => $wp_pending_order_search->total,
+				'total_items' => $wp_failed_charges_search->total,
 				'per_page'    => $orders_per_page,
 			]
 		);
@@ -105,7 +105,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 * Output 'no users' message.
 	 */
 	public function no_items() {
-		_e( 'No pending charges found.' );
+		_e( 'No failed charges found.' );
 	}
 
 	/**
@@ -115,9 +115,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 *
 	 */
 	protected function get_bulk_actions() {
-		return [
-			'check_status' => __( 'Check Status', 'woo-vipps-recurring' )
-		];
+		return [];
 	}
 
 	/**
@@ -137,18 +135,18 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			 *
 			 * @param string $which The location of the extra table nav markup: 'top' or 'bottom'.
 			 */
-			do_action( 'wc_vipps_recurring_restrict_manage_pending_charges', $which );
+			do_action( 'wc_vipps_recurring_restrict_manage_failed_charges', $which );
 			?>
 		</div>
 		<?php
 		/**
-		 * Fires immediately following the closing "actions" div in the tablenav for the pending charges
+		 * Fires immediately following the closing "actions" div in the tablenav for the failed charges
 		 * list table.
 		 *
 		 * @param string $which The location of the extra table nav markup: 'top' or 'bottom'.
 		 *
 		 */
-		do_action( 'wc_vipps_recurring_manage_pending_charges_extra_tablenav', $which );
+		do_action( 'wc_vipps_recurring_manage_failed_charges_extra_tablenav', $which );
 	}
 
 	/**
@@ -167,13 +165,12 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 */
 	public function get_columns() {
 		return [
-			'cb'           => '<input type="checkbox" />',
-			'order'        => __( 'Order', 'woocommerce' ),
-			'agreement_id' => __( 'Agreement ID', 'woo-vipps-recurring' ),
-			'charge_id'    => __( 'Charge ID', 'woo-vipps-recurring' ),
-			'captured'     => __( 'Captured', 'woo-vipps-recurring' ),
-			'api_status'   => __( 'Latest API Status', 'woo-vipps-recurring' ),
-			'created_at'   => __( 'Created At', 'woo-vipps-recurring' ),
+			'cb'             => '<input type="checkbox" />',
+			'order'          => __( 'Order', 'woocommerce' ),
+			'agreement_id'   => __( 'Agreement ID', 'woo-vipps-recurring' ),
+			'charge_id'      => __( 'Charge ID', 'woo-vipps-recurring' ),
+			'failure_reason' => __( 'Failure Reason', 'woo-vipps-recurring' ),
+			'created_at'     => __( 'Created At', 'woo-vipps-recurring' ),
 		];
 	}
 
@@ -182,10 +179,9 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 */
 	protected function get_sortable_columns() {
 		return [
-			'order'      => 'order',
-			'captured'   => 'captured',
-			'api_status' => 'api_status',
-			'created_at' => 'created_at'
+			'order'          => 'order',
+			'failure_reason' => 'failure_reason',
+			'created_at'     => 'created_at'
 		];
 	}
 
@@ -199,7 +195,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	}
 
 	/**
-	 * Generate HTML for a single row on the vipps pending charges admin panel.
+	 * Generate HTML for a single row on the vipps failed charges admin panel.
 	 *
 	 * @param WC_Order $order_object The current user object.
 	 * @param string $style Deprecated. Not used.
@@ -272,15 +268,10 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 						}
 
 						break;
-					case 'captured':
-						$r .= WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order_object )
-							? __( 'Yes', 'woo-vipps-recurring' )
-							: __( 'No', 'woo-vipps-recurring' );
-
-						break;
-					case 'api_status':
-						$api_status = WC_Vipps_Recurring_Helper::get_latest_api_status_from_order( $order_object );
-						$r          .= $api_status ? $api_status : '-';
+					case 'failed_reason':
+						$failure_reason      = WC_Vipps_Recurring_Helper::get_failure_reason_for_order( $order_object );
+						$failure_description = WC_Vipps_Recurring_Helper::get_failure_description_for_order( $order_object );
+						$r                   .= $failure_reason ? sprintf( '<span title="%s">%s</span>', $failure_description, $failure_reason ) : '-';
 
 						break;
 					case 'created_at':
@@ -303,7 +294,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 						break;
 					default:
 						/**
-						 * Filters the display output of custom columns in the pending charges list table.
+						 * Filters the display output of custom columns in the failed charges list table.
 						 *
 						 * @param string $output Custom column output. Default empty.
 						 * @param string $column_name Column name.
@@ -312,7 +303,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 						 * @since 2.8.0
 						 *
 						 */
-						$r .= apply_filters( 'wc_vipps_recurring_manage_pending_charges_custom_column', '', $column_name, $order_object->get_id() );
+						$r .= apply_filters( 'wc_vipps_recurring_manage_failed_charges_custom_column', '', $column_name, $order_object->get_id() );
 				}
 
 				if ( $primary === $column_name ) {

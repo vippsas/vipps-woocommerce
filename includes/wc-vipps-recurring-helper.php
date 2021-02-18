@@ -281,6 +281,40 @@ class WC_Vipps_Recurring_Helper {
 
 	/**
 	 * @param $order
+	 * @param $charge
+	 */
+	public static function set_order_charge_failed( $order, $charge ) {
+		self::update_meta_data( $order, self::META_CHARGE_FAILED, true );
+
+		if ( isset( $charge['failureReason'] ) ) {
+			self::update_meta_data( $order, self::META_CHARGE_FAILED_REASON, $charge['failureReason'] );
+		}
+
+		if ( isset( $charge['failureDescription'] ) ) {
+			self::update_meta_data( $order, self::META_CHARGE_FAILED_DESCRIPTION, $charge['failureDescription'] );
+		}
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_failure_reason_for_order( $order ) {
+		return self::get_meta( $order, self::META_CHARGE_FAILED_REASON );
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function get_failure_description_for_order( $order ) {
+		return self::get_meta( $order, self::META_CHARGE_FAILED_DESCRIPTION );
+	}
+
+	/**
+	 * @param $order
 	 *
 	 * @return mixed
 	 */
