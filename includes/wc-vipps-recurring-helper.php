@@ -284,6 +284,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $charge
 	 */
 	public static function set_order_charge_failed( $order, $charge ) {
+		self::set_order_as_not_pending( $order );
 		self::update_meta_data( $order, self::META_CHARGE_FAILED, true );
 
 		if ( isset( $charge['failureReason'] ) ) {
@@ -293,6 +294,24 @@ class WC_Vipps_Recurring_Helper {
 		if ( isset( $charge['failureDescription'] ) ) {
 			self::update_meta_data( $order, self::META_CHARGE_FAILED_DESCRIPTION, $charge['failureDescription'] );
 		}
+	}
+
+	/**
+	 * @param $order
+	 * @param $charge_id
+	 */
+	public static function set_order_charge_not_failed( $order, $charge_id ) {
+		self::update_meta_data( $order, self::META_CHARGE_FAILED, false );
+		self::set_order_as_pending($order, $charge_id);
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return mixed
+	 */
+	public static function is_charge_failed_for_order( $order ): bool {
+		return (bool) self::get_meta( $order, self::META_CHARGE_FAILED );
 	}
 
 	/**

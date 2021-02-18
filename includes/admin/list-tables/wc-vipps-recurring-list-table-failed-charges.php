@@ -115,7 +115,9 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 	 *
 	 */
 	protected function get_bulk_actions() {
-		return [];
+		return [
+			'check_status' => __( 'Check Status', 'woo-vipps-recurring' )
+		];
 	}
 
 	/**
@@ -170,6 +172,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 			'agreement_id'   => __( 'Agreement ID', 'woo-vipps-recurring' ),
 			'charge_id'      => __( 'Charge ID', 'woo-vipps-recurring' ),
 			'failure_reason' => __( 'Failure Reason', 'woo-vipps-recurring' ),
+			'api_status'     => __( 'Latest API Status', 'woo-vipps-recurring' ),
 			'created_at'     => __( 'Created At', 'woo-vipps-recurring' ),
 		];
 	}
@@ -181,6 +184,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 		return [
 			'order'          => 'order',
 			'failure_reason' => 'failure_reason',
+			'api_status'     => 'api_status',
 			'created_at'     => 'created_at'
 		];
 	}
@@ -261,17 +265,18 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 
 						break;
 					case 'charge_id':
-						if ( WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order_object ) ) {
-							$r .= WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order_object ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
-						} else {
-							$r .= __( 'This order has not yet been captured.', 'woo-vipps-recurring' );
-						}
+						$r .= WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order_object ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
 
 						break;
-					case 'failed_reason':
+					case 'failure_reason':
 						$failure_reason      = WC_Vipps_Recurring_Helper::get_failure_reason_for_order( $order_object );
 						$failure_description = WC_Vipps_Recurring_Helper::get_failure_description_for_order( $order_object );
-						$r                   .= $failure_reason ? sprintf( '<span title="%s">%s</span>', $failure_description, $failure_reason ) : '-';
+						$r                   .= $failure_reason ? sprintf( '<span title="%s">%s</span>', $failure_description, $failure_reason ) : 'N/A';
+
+						break;
+					case 'api_status':
+						$api_status = WC_Vipps_Recurring_Helper::get_latest_api_status_from_order( $order_object );
+						$r          .= $api_status ? $api_status : '-';
 
 						break;
 					case 'created_at':

@@ -523,7 +523,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'SUCCESS';
 		} else {
 			// set _charge_id on order
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $charge['id'] );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
 
 			// set _vipps_recurring_latest_api_status
 			WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge['status'] );
@@ -531,9 +531,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) ) && ! wcs_order_contains_renewal( $order );
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
-		// If payment has already been captured, this function is redundant.
-		if ( ! $pending_charge ) {
+		// If payment has already been captured, this function is redundant, unless the charge failed
+		if ( ! $pending_charge && ! $did_fail ) {
 			$this->unlock_order( $order );
 
 			return 'SUCCESS';
@@ -554,6 +555,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// agreement is expired or stopped
 		if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] ) ) {
+			$this->process_order_charge( $order, $charge );
 			$this->check_charge_agreement_cancelled( $order, $agreement, $charge );
 
 			return 'CANCELLED';
@@ -625,7 +627,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_charge_id', $charge['id'] );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
 		$transaction_id = WC_Vipps_Recurring_Helper::get_transaction_id_for_order( $order );
 
 		// Reduce stock
@@ -691,7 +693,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge failed: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'] ) );
 		}
 
-		$order->save();
+		// if status was FAILED, but no longer is
+		if ( WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
+			 && 'FAILED' !== $charge['status']
+			 && in_array( $charge['status'], [ 'PROCESSING', 'DUE', 'PENDING' ] ) ) {
+			WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge['id'] );
+		}
 	}
 
 	/**

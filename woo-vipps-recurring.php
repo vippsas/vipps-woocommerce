@@ -344,6 +344,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 					wp_redirect( $sendback );
 				}
 
+				if ( $wc_vipps_recurring_list_table_failed_charges
+				     && $wc_vipps_recurring_list_table_failed_charges->current_action()
+				     && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
+					$sendback = $this->handle_check_statuses_bulk_action();
+
+					wp_redirect( $sendback );
+				}
+
 				// Ensure the table handler is only loaded once. Prevents multiple loads if a plugin calls check_ajax_referer many times.
 				remove_action( 'current_screen', [ $this, 'setup_screen' ] );
 			}
