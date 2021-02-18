@@ -154,6 +154,11 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.6.0 =
+* Enhancement: There's now an overview of failed charges and their failure reason on the Settings -> Vipps Recurring Payments page.
+* Refactor: Use the Helper class for most of our frequently used meta keys.
+* Refactor: Renamed the class filenames, class names remain untouched.
+
 = 1.5.5 =
 * Fix: No longer attempt to charge a non existent agreement when a renewal is attempted on a subscription that does not have a Vipps agreement.
 * Fix: Multibyte characters like 'æøå' in descriptions now work, these characters caused an internal server error when json encoding.
