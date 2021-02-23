@@ -1261,7 +1261,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				];
 			}
 
-			$response = $this->api->create_agreement( $agreement_body );
+			$idempotency_key = $this->get_idempotence_key( $order );
+			$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
 
 			if ( $is_gateway_change ) {
 				/* translators: Vipps Agreement ID */
@@ -1306,16 +1307,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'redirect' => $response['vippsConfirmationUrl'],
 			];
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			$this->admin_error( $e->getMessage() );
+			wc_add_notice( $e->getMessage(), 'error' );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in process_payment: %s', $order_id, $e->getMessage() ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error in process_payment: %s', $order_id, $e->getMessage() ) );
 
 			return [
 				'result'   => 'fail',
 				'redirect' => '',
 			];
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
-			$this->admin_error( $e->getLocalizedMessage() );
+			wc_add_notice( $e->getLocalizedMessage(), 'error' );
 
 			$order->update_status( 'failed' );
 

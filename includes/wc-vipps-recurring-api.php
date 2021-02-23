@@ -119,19 +119,21 @@ class WC_Vipps_Recurring_Api {
 
 	/**
 	 * @param $agreement_body
+	 * @param $idempotence_key
 	 *
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function create_agreement( $agreement_body ) {
+	public function create_agreement( $agreement_body, $idempotence_key ) {
 		$token = $this->get_access_token();
 
 		$agreement_body = $this->process_agreement_body( $agreement_body );
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'   => 'Bearer ' . $token,
+			'Idempotency-Key' => $idempotence_key,
 		];
 
 		return $this->http_call( 'recurring/v2/agreements', 'POST', $agreement_body, $headers );
@@ -234,8 +236,8 @@ class WC_Vipps_Recurring_Api {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization'  => 'Bearer ' . $token,
-			'Idempotent-Key' => $idempotency_key,
+			'Authorization'   => 'Bearer ' . $token,
+			'Idempotency-Key' => $idempotency_key,
 		];
 
 		return $this->http_call( 'recurring/v2/agreements/' . $agreement['id'] . '/charges/' . $charge['id'] . '/capture', 'POST', [], $headers );
@@ -257,8 +259,8 @@ class WC_Vipps_Recurring_Api {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization'  => 'Bearer ' . $token,
-			'Idempotent-Key' => $idempotence_key,
+			'Authorization'   => 'Bearer ' . $token,
+			'Idempotency-Key' => $idempotence_key,
 		];
 
 		$has_price_changed = false;
@@ -342,8 +344,8 @@ class WC_Vipps_Recurring_Api {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization'  => 'Bearer ' . $token,
-			'Idempotent-Key' => $this->generate_idempotency_key(),
+			'Authorization'   => 'Bearer ' . $token,
+			'Idempotency-Key' => $this->generate_idempotency_key(),
 		];
 
 		if ( $reason !== null && strlen( $reason ) > 99 ) {
