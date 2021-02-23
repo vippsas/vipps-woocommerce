@@ -23,6 +23,7 @@ class WC_Vipps_Recurring_Helper {
 	 * Vipps agreements
 	 */
 	public const META_AGREEMENT_ID = '_agreement_id';
+	public const META_AGREEMENT_CONFIRMATION_URL = '_agreement_confirmation_url';
 
 	/**
 	 * Product
@@ -302,7 +303,7 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	public static function set_order_charge_not_failed( $order, $charge_id ) {
 		self::update_meta_data( $order, self::META_CHARGE_FAILED, false );
-		self::set_order_as_pending($order, $charge_id);
+		self::set_order_as_pending( $order, $charge_id );
 	}
 
 	/**
