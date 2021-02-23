@@ -158,6 +158,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Enhancement: There's now an overview of failed charges and their failure reason on the Settings -> Vipps Recurring Payments page.
 * Refactor: Use the Helper class for most of our frequently used meta keys.
 * Refactor: Renamed the class filenames, class names remain untouched.
+* Fix: Redirect to last known agreement confirmation URL if the agreement is pending. This prevents being stuck in checkout.
 
 = 1.5.5 =
 * Fix: No longer attempt to charge a non existent agreement when a renewal is attempted on a subscription that does not have a Vipps agreement.
