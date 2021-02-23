@@ -1,8 +1,8 @@
 === Vipps Recurring Payments for WooCommerce ===
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
-Requires at least: 5.0.0
-Tested up to: 5.5.0
+Requires at least: 5.0
+Tested up to: 5.6
 Stable tag: trunk
 Requires PHP: 7.0
 License: AGPLv3.0 or later
