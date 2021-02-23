@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Vipps Recurring Payments Gateway for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Vipps Recurring Payments Gateway for WooCommerce 1.5.3\n"
+"Project-Id-Version: Vipps Recurring Payments Gateway for WooCommerce 1.6.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vipps-recurring-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-01-06T16:04:58+00:00\n"
+"POT-Creation-Date: 2021-02-23T14:16:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: woo-vipps-recurring\n"
@@ -30,43 +30,53 @@ msgstr ""
 msgid "https://everyday.no"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:119
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:119
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:119
 msgid "Check Status"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:172
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:172
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
 msgid "Agreement ID"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:173
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:173
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:173
 msgid "Charge ID"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:174
-msgid "Captured"
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:174
+msgid "Failure Reason"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:175
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:175
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:175
 msgid "Latest API Status"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:176
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:176
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:176
 msgid "Created At"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:269
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:268
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:269
 msgid "Charge ID not available. Check the order's notes instead."
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:271
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:174
+msgid "Captured"
+msgstr ""
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
 msgid "This order has not yet been captured."
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:277
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:277
 msgid "Yes"
 msgstr ""
 
-#: includes/admin/list-tables/class-wc-vipps-recurring-list-table-pending-charges.php:278
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:278
 msgid "No"
 msgstr ""
 
@@ -165,151 +175,12 @@ msgstr ""
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
-#: includes/class-wc-gateway-vipps-recurring.php:112
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
-#: woo-vipps-recurring.php:353
-#: woo-vipps-recurring.php:354
-#: woo-vipps-recurring.php:393
+#: includes/wc-gateway-vipps-recurring.php:112
+#: woo-vipps-recurring.php:364
+#: woo-vipps-recurring.php:365
+#: woo-vipps-recurring.php:404
 msgid "Vipps Recurring Payments"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:113
-msgid "Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:153
-msgid "Pay with Vipps"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:342
-msgid "It looks like you cancelled your order in Vipps. If this was a mistake you can try again by checking out again :)"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:345
-msgid "Cancelled Vipps Purchase"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:355
-msgid "Could not create or find the \"Cancelled Vipps Purchase\" page"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:519
-msgid "The subtotal is zero, the order is free for this subscription period."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:547
-msgid "The agreement was cancelled or expired in Vipps"
-msgstr ""
-
-#. translators: Vipps Charge ID
-#: includes/class-wc-gateway-vipps-recurring.php:621
-msgid "Vipps charge completed (Charge ID: %s)"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:633
-msgid "Vipps awaiting manual capture"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:654
-msgid "Vipps payment cancelled."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:662
-msgid "Vipps payment failed."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:771
-msgid "A temporary error occurred when refunding a payment through Vipps. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:789
-msgid "You can not partially refund a pending or due Vipps charge. Please wait till the payment clears first or refund the full amount instead."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:793
-msgid "An unexpected error occurred while refunding a payment in Vipps."
-msgstr ""
-
-#. translators: Error message
-#: includes/class-wc-gateway-vipps-recurring.php:849
-msgid "Failed creating a Vipps charge: %s"
-msgstr ""
-
-#. translators: Vipps Charge ID, human diff timestamp
-#: includes/class-wc-gateway-vipps-recurring.php:880
-msgid "Vipps charge created: %1$s. The charge will be complete %2$s."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:951
-#: includes/class-wc-gateway-vipps-recurring.php:985
-msgid "Vipps is temporarily unavailable."
-msgstr ""
-
-#. translators: %s order id
-#: includes/class-wc-gateway-vipps-recurring.php:992
-#: includes/class-wc-gateway-vipps-recurring.php:1025
-msgid "Could not capture Vipps payment for order id: %s"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:1021
-msgid "Vipps failed to create charge"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:1069
-msgid "Payment gateway change request cancelled in Vipps"
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:1154
-msgid "This subscription is already active in Vipps. You can leave this page."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:1158
-msgid "There is a pending agreement on this order. Check the Vipps app or wait and try again in a few minutes."
-msgstr ""
-
-#. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:1227
-msgid "Request to change gateway to Vipps with agreement ID: %s. Customer sent to Vipps for confirmation."
-msgstr ""
-
-#. translators: Vipps Agreement ID
-#: includes/class-wc-gateway-vipps-recurring.php:1245
-msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
-msgstr ""
-
-#: includes/class-wc-gateway-vipps-recurring.php:1424
-msgid "Successfully authenticated with the Vipps API"
-msgstr ""
-
-#. translators: %s: the error message returned from Vipps
-#: includes/class-wc-gateway-vipps-recurring.php:1427
-msgid "Could not authenticate with the Vipps API: %s"
-msgstr ""
-
-#: includes/class-wc-vipps-recurring-api.php:70
-#: includes/class-wc-vipps-recurring-api.php:74
-msgid "Could not get Vipps access token"
-msgstr ""
-
-#: includes/class-wc-vipps-recurring-api.php:403
-msgid "Your Vipps Recurring Payments gateway is not correctly configured."
-msgstr ""
-
-#: includes/class-wc-vipps-recurring-api.php:452
-msgid "No response from Vipps"
-msgstr ""
-
-#: includes/class-wc-vipps-recurring-api.php:472
-msgid "We hit Vipps' rate limit, we will retry later."
-msgstr ""
-
-#. translators: Link to a GitHub readme about the error
-#: includes/class-wc-vipps-recurring-api.php:515
-msgid "Recurring payments is not yet activated for this sale unit. Read more <a href=\"%s\" target=\"_blank\">here</a>"
-msgstr ""
-
-#: includes/class-wc-vipps-recurring-api.php:519
-msgid "Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?"
 msgstr ""
 
 #. translators: link to the plugin's settings page
@@ -327,6 +198,149 @@ msgstr ""
 
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:32
 msgid "Pending Charges"
+msgstr ""
+
+#: includes/pages/admin/vipps-recurring-admin-menu-page.php:46
+msgid "Failed Charges"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:113
+msgid "Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:153
+msgid "Pay with Vipps"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:342
+msgid "It looks like you cancelled your order in Vipps. If this was a mistake you can try again by checking out again :)"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:345
+msgid "Cancelled Vipps Purchase"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:355
+msgid "Could not create or find the \"Cancelled Vipps Purchase\" page"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:507
+msgid "The subtotal is zero, the order is free for this subscription period."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:579
+msgid "The agreement was cancelled or expired in Vipps"
+msgstr ""
+
+#. translators: Vipps Charge ID
+#: includes/wc-gateway-vipps-recurring.php:648
+msgid "Vipps charge completed (Charge ID: %s)"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:660
+msgid "Vipps awaiting manual capture"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:681
+msgid "Vipps payment cancelled."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:689
+msgid "Vipps payment failed."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:804
+msgid "A temporary error occurred when refunding a payment through Vipps. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:822
+msgid "You can not partially refund a pending or due Vipps charge. Please wait till the payment clears first or refund the full amount instead."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:826
+msgid "An unexpected error occurred while refunding a payment in Vipps."
+msgstr ""
+
+#. translators: Error message
+#: includes/wc-gateway-vipps-recurring.php:890
+msgid "Failed creating a Vipps charge: %s"
+msgstr ""
+
+#. translators: Vipps Charge ID, human diff timestamp
+#: includes/wc-gateway-vipps-recurring.php:921
+msgid "Vipps charge created: %1$s. The charge will be complete %2$s."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:992
+#: includes/wc-gateway-vipps-recurring.php:1026
+msgid "Vipps is temporarily unavailable."
+msgstr ""
+
+#. translators: %s order id
+#: includes/wc-gateway-vipps-recurring.php:1033
+#: includes/wc-gateway-vipps-recurring.php:1066
+msgid "Could not capture Vipps payment for order id: %s"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1062
+msgid "Vipps failed to create charge"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1110
+msgid "Payment gateway change request cancelled in Vipps"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1195
+msgid "This subscription is already active in Vipps. You can leave this page."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1209
+msgid "There is a pending agreement on this order. Check the Vipps app or wait and try again in a few minutes."
+msgstr ""
+
+#. translators: Vipps Agreement ID
+#: includes/wc-gateway-vipps-recurring.php:1279
+msgid "Request to change gateway to Vipps with agreement ID: %s. Customer sent to Vipps for confirmation."
+msgstr ""
+
+#. translators: Vipps Agreement ID
+#: includes/wc-gateway-vipps-recurring.php:1297
+msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1478
+msgid "Successfully authenticated with the Vipps API"
+msgstr ""
+
+#. translators: %s: the error message returned from Vipps
+#: includes/wc-gateway-vipps-recurring.php:1481
+msgid "Could not authenticate with the Vipps API: %s"
+msgstr ""
+
+#: includes/wc-vipps-recurring-api.php:70
+#: includes/wc-vipps-recurring-api.php:74
+msgid "Could not get Vipps access token"
+msgstr ""
+
+#: includes/wc-vipps-recurring-api.php:405
+msgid "Your Vipps Recurring Payments gateway is not correctly configured."
+msgstr ""
+
+#: includes/wc-vipps-recurring-api.php:454
+msgid "No response from Vipps"
+msgstr ""
+
+#: includes/wc-vipps-recurring-api.php:474
+msgid "We hit Vipps' rate limit, we will retry later."
+msgstr ""
+
+#. translators: Link to a GitHub readme about the error
+#: includes/wc-vipps-recurring-api.php:517
+msgid "Recurring payments is not yet activated for this sale unit. Read more <a href=\"%s\" target=\"_blank\">here</a>"
+msgstr ""
+
+#: includes/wc-vipps-recurring-api.php:521
+msgid "Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?"
 msgstr ""
 
 #. translators: 1. URL link.
@@ -348,26 +362,26 @@ msgid "Successfully checked the status of these charges"
 msgstr ""
 
 #. translators: amount of orders checked
-#: woo-vipps-recurring.php:378
+#: woo-vipps-recurring.php:389
 msgid "Done. Checked the status of %s orders"
 msgstr ""
 
-#: woo-vipps-recurring.php:380
+#: woo-vipps-recurring.php:391
 msgid "Failed to finish checking the status of all orders. Please try again."
 msgstr ""
 
-#: woo-vipps-recurring.php:410
+#: woo-vipps-recurring.php:421
 msgid "Capture payment instantly"
 msgstr ""
 
-#: woo-vipps-recurring.php:411
+#: woo-vipps-recurring.php:422
 msgid "Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option."
 msgstr ""
 
-#: woo-vipps-recurring.php:464
+#: woo-vipps-recurring.php:475
 msgid "Capture payment"
 msgstr ""
 
-#: woo-vipps-recurring.php:587
+#: woo-vipps-recurring.php:598
 msgid "Settings"
 msgstr ""
