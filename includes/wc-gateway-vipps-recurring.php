@@ -1200,6 +1200,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					$confirmationUrl = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL );
 
 					if ( $confirmationUrl ) {
+						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Customer has been redirected to an existing confirmation URL', $order_id ) );
+
 						return [
 							'result'   => 'success',
 							'redirect' => $confirmationUrl,
