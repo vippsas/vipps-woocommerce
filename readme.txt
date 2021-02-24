@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.6.0
+Tested up to: 5.7.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 4.9.1
+WC tested up to: 5.0.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.0  =
-Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
+= 1.7.1  =
+Compatibility with Woo 5.0.0 and WP 5.7.0
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.02.xx version 1.7.1 =
+Compatibility with Woo 5.0.0 and WP 5.7.0
 
 = 2021.01.25 version 1.7.0 =
  Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
