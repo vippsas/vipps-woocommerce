@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.02.xx version 1.7.1 =
+= 2021.03.01 version 1.7.1 =
 Compatibility with Woo 5.0.0 and WP 5.7.0
 
 = 2021.01.25 version 1.7.0 =
