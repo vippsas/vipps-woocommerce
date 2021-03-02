@@ -176,6 +176,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			add_action( 'woocommerce_order_status_' . $status, [ $this, 'maybe_capture_payment' ] );
 		}
 
+		add_filter( 'woocommerce_valid_order_statuses_for_payment_complete', [
+			$this,
+			'append_valid_statuses_for_payment_complete'
+		] );
+
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [
 			$this,
 			'process_admin_options'
@@ -595,10 +600,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $transaction_id
 	 */
 	public function complete_order( $order, $transaction_id ) {
-		// $order->payment_complete() does not always assign a transaction id
-		// specifically if the order's status is already "processing", so we should make sure it sets it
-		WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $transaction_id );
-
 		$order->payment_complete( $transaction_id );
 
 		// controlled by the `transition_renewals_to_completed` setting
@@ -1486,5 +1487,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		return $saved;
+	}
+
+	/**
+	 * @param $statuses
+	 *
+	 * @return array
+	 */
+	public function append_valid_statuses_for_payment_complete( $statuses ): array {
+		$statuses = array_merge( $statuses, $this->statuses_to_attempt_capture );
+
+		if ( ! in_array( 'completed', $statuses ) && $this->transition_renewals_to_completed ) {
+			$statuses[] = 'completed';
+		}
+
+		return $statuses;
 	}
 }

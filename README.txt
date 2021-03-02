@@ -154,6 +154,11 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.6.1 =
+* Fix: 'free' agreements where the agreement status is 'STOPPED' should not be completed.
+* Fix: Do not attempt to fetch charge for synchronised renewals at initial order.
+* Fix: Add 'completed' to 'woocommerce_valid_order_statuses_for_payment_complete' conditionally instead of rolling our own logic.
+
 = 1.6.0 =
 * Enhancement: There's now an overview of failed charges and their failure reason on the Settings -> Vipps Recurring Payments page.
 * Refactor: Use the Helper class for most of our frequently used meta keys.
