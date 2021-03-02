@@ -496,20 +496,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order->save();
 
 		$agreement = $this->get_agreement_from_order( $order );
-		$charge    = $this->get_latest_charge_from_order( $order );
 
 		// logic for zero amounts when a charge does not exist
 		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) && ! wcs_order_contains_renewal( $order ) ) {
 			// if there's a campaign with a price of 0 we can complete the order immediately
-			if ( in_array( $agreement['status'], [ 'ACTIVE', 'STOPPED' ] ) ) {
+			if ( $agreement['status'] === 'ACTIVE' ) {
 				$this->complete_order( $order, $agreement['id'] );
 
 				$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
 				$order->save();
 			}
 
-			// if EXPIRED we can fail this order
-			if ( $agreement['status'] === 'EXPIRED' ) {
+			// if EXPIRED or STOPPED we can fail this order
+			if ( in_array( $agreement['status'], [ 'EXPIRED', 'STOPPED' ] ) ) {
 				$this->check_charge_agreement_cancelled( $order, $agreement );
 
 				return 'CANCELLED';
@@ -517,6 +516,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			return 'SUCCESS';
 		}
+
+		$charge = $this->get_latest_charge_from_order( $order );
 
 		if ( ! $charge ) {
 			// we're being rate limited
