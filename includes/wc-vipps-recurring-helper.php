@@ -11,38 +11,38 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * Vipps charges
 	 */
-	public const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';
-	public const META_CHARGE_FAILED_REASON = '_vipps_recurring_failed_charge_reason';
-	public const META_CHARGE_FAILED_DESCRIPTION = '_vipps_recurring_failed_charge_description';
-	public const META_CHARGE_CAPTURED = '_vipps_recurring_captured';
-	public const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
-	public const META_CHARGE_ID = '_charge_id';
-	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
+	const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';
+	const META_CHARGE_FAILED_REASON = '_vipps_recurring_failed_charge_reason';
+	const META_CHARGE_FAILED_DESCRIPTION = '_vipps_recurring_failed_charge_description';
+	const META_CHARGE_CAPTURED = '_vipps_recurring_captured';
+	const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
+	const META_CHARGE_ID = '_charge_id';
+	const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
 
 	/**
 	 * Vipps agreements
 	 */
-	public const META_AGREEMENT_ID = '_agreement_id';
-	public const META_AGREEMENT_CONFIRMATION_URL = '_agreement_confirmation_url';
+	const META_AGREEMENT_ID = '_agreement_id';
+	const META_AGREEMENT_CONFIRMATION_URL = '_agreement_confirmation_url';
 
 	/**
 	 * Product
 	 */
-	public const META_PRODUCT_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
+	const META_PRODUCT_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
 
 	/**
 	 * Orders
 	 */
-	public const META_ORDER_STOCK_REDUCED = '_order_stock_reduced';
-	public const META_ORDER_TRANSACTION_ID = '_transaction_id';
-	public const META_ORDER_INITIAL = '_vipps_recurring_initial';
-	public const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
+	const META_ORDER_STOCK_REDUCED = '_order_stock_reduced';
+	const META_ORDER_TRANSACTION_ID = '_transaction_id';
+	const META_ORDER_INITIAL = '_vipps_recurring_initial';
+	const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
 
 	/**
 	 * Subscription
 	 */
-	public const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
-	public const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
+	const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
+	const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
 
 	/**
 	 * Get Vipps amount to pay
