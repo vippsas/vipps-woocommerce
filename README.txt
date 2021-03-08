@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.6.2 =
+* Fix: Swapping payment gateway to Vipps now works again after the recent WooCommerce and WooCommerce Subscription updates.
+
 = 1.6.1 =
 * Fix: 'free' agreements where the agreement status is 'STOPPED' should not be completed.
 * Fix: Do not attempt to fetch charge for synchronised renewals at initial order.

@@ -1229,9 +1229,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
 			$redirect_url  = $this->get_return_url( $order );
 
+			// total no longer returns the order amount when gateway is being changed
+			$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
+
 			$agreement_body = [
 				'currency'             => $order->get_currency(),
-				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
+				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ),
 				'interval'             => strtoupper( $period ),
 				'intervalCount'        => (int) $interval,
 				'productName'          => $item->get_name(),
