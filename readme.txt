@@ -6,7 +6,7 @@ Tested up to: 5.7.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.0.0
+WC tested up to: 5.1.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.1  =
-Compatibility with Woo 5.0.0 and WP 5.7.0
+= 1.7.2  =
+Bugfix for broken express checkout in 5.7 when used with certain other plugins
 
 == Frequently Asked Questions ==
 
@@ -198,8 +198,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2021.03.15 version 1.7.2 =
+ Fixes javascript problem on express checkout screen that could be caused by plugin interactions
+
 = 2021.03.01 version 1.7.1 =
-Compatibility with Woo 5.0.0 and WP 5.7.0
+ Compatibility with Woo 5.0.0 and WP 5.7.0
 
 = 2021.01.25 version 1.7.0 =
  Stop using the deprecated payment status interface. This is a quite large rewrite that should be invisible to uses.
