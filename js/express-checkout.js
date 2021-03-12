@@ -123,7 +123,8 @@ jQuery(document).ready(function () {
      jQuery('#vipps-status-message').append(msg);
  } 
 
- function doExpressCheckout () {
+ function doExpressCheckout (e) {
+   if (e) e.preventDefault(); 
    if (validating) return false;
    validating=true;
    removeErrorMessages();
