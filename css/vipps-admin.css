@@ -4,6 +4,22 @@
     min-height: 56px;
 }
 
+.notice.notice-vipps.notice-info.notice-vipps-neg {
+    border-color: #fe5b24;
+    background-color: #fe5b24;
+    color: white;
+    min-height: 56px;
+}
+.notice.notice-vipps.notice-info.notice-vipps-neg a {
+   color: white !important;
+}
+.notice.notice-vipps.notice-info.notice-vipps-neg button.notice-dismiss {
+   color: white;
+}
+.notice.notice-vipps.notice-info.notice-vipps-neg button.notice-dismiss::before {
+   color: white;
+}
+
 /* IOK for the blocks editor, payment blocks  copied from vipps.css. 2020-08-10 */
 .wc-block-components-tabs .wc-block-components-tabs__list > .wc-block-components-tabs__item .wc-block-components-tabs__item-content > img.vipps-payment-logo {
  height: 2em;

@@ -97,6 +97,9 @@ class Vipps {
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
+        // Check if login w vipps is installed first
+        $this->add_login_vipps_dismissable_admin_banner();
+
         // Styling etc
         add_action('admin_head', array($this, 'admin_head'));
 
@@ -115,10 +118,16 @@ class Vipps {
         // Keep admin notices during redirects IOK 2018-05-07
         add_action('admin_notices',array($this,'stored_admin_notices'));
 
+        add_action('admin_notices', function () {
+});
+
         // Ajax just for the backend
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
         add_action('wp_ajax_vipps_link_qr', array($this, 'ajax_vipps_link_qr'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
+
+        // Handle permanent dismissal of notices
+        add_action('wp_ajax_vipps_dismiss_notice', array($this, 'ajax_vipps_dismiss_notice'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
@@ -193,13 +202,45 @@ class Vipps {
     }
 
     // Add a backend notice to stand out a bit, using a Vipps logo and the Vipps color for info-level messages. IOK 2020-02-16
-    public function add_vipps_admin_notice ($text, $type='info') {
-                add_action('admin_notices', function() use ($text,$type) {
+    public function add_vipps_admin_notice ($text, $type='info',$key='') {
+                if ($key) {
+                    $dismissed = get_option('_vipps_dismissed_notices');
+                    if (isset($dismissed[$key])) return;
+                }
+                add_action('admin_notices', function() use ($text,$type, $key) {
                         $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
                         $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
-                        echo "<div class='notice notice-vipps notice-$type is-dismissible'><p>$message</p></div>";
+                        echo "<div class='notice notice-vipps notice-$type is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
+    }
+
+    // Advertise The Other Plugin if not installed
+    public function add_login_vipps_dismissable_admin_banner () {
+        if (!function_exists('get_plugins')) return;
+
+        $dismissed = get_option('_vipps_dismissed_notices');
+#        if (isset($dismissed['vippslogin01'])) return;
+
+        $installed_plugins = get_plugins();
+        if (isset($installed_plugins['login-with-vipps/login-with-vipps.php'])) {
+           if (!is_array($dismissed)) $dismissed = array();
+           $dismissed['vippslogin01'] = time();
+           update_option('_vipps_dismissed_notices', $dismissed, false);
+#           return;
+        }
+
+
+        add_action('admin_notices', function () {
+            $logo = plugins_url('img/vipps-logg-inn-neg.png',__FILE__);
+            $loginurl = "https://wordpress.org/plugins/login-with-vipps/#description";
+            ?>
+            <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippslogin01'>
+            <img src="<?php echo $logo; ?>" style="float:left; height: 3rem;" alt="Logg inn med Vipps-logo">
+            <p><?php echo sprintf( __("Login with Vipps is available for WooCommerce. Easier and safer accounts for your customers - with no long usernames and passwords. <br> Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps'), $loginurl); ?></p>
+            </div>
+            <?php
+            });
     }
 
     // This function will delete old orders that were cancelled before the Vipps action was completed. We keep them for
@@ -241,6 +282,7 @@ class Vipps {
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
         wp_register_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
+        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
         wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
         wp_enqueue_script('vipps-admin');
 
@@ -503,6 +545,17 @@ else:
            </div> <!-- end blurb -->
            </div> <!-- end options-group -->
     <?php
+    }
+
+
+    public function ajax_vipps_dismiss_notice() {
+        check_ajax_referer('vippssecnonce','vipps_sec');
+        if (!isset($_POST['key']) || !$_POST['key']) return;
+        $dismissed = get_option('_vipps_dismissed_notices');
+        if (!is_array($dismissed)) $dismissed = array();
+        $key = sanitize_text_field($_POST['key']);
+        $dismissed[$key] = time();
+        update_option('_vipps_dismissed_notices', $dismissed, false);
     }
 
     // This creates and stores a shareable link that when followed will allow external buyers to buy the specified product direclty.
@@ -996,7 +1049,6 @@ EOF;
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
         $this->vippsJSConfig['vippsbuynowbutton'] = __( 'Vipps Buy Now button', 'woo-vipps' );
         $this->vippsJSConfig['vippsbuynowdescription'] =  __( 'Add a Vipps Buy Now-button to the product block', 'woo-vipps');
-
 
         // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
         // that any user hasn't already installed the free plugin for this created by Krokedil. If they have, this filter will be present:
