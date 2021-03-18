@@ -243,7 +243,7 @@ class Vipps {
             $loginurl = "https://wordpress.org/plugins/login-with-vipps/#description";
             ?>
             <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippslogin01'>
-            <img src="<?php echo $logo; ?>" style="float:left; height: 3rem; margin-right: 0.5rem" alt="Logg inn med Vipps-logo">
+            <img src="<?php echo $logo; ?>" style="float:left; height: 3rem; margin-right: 0.5rem; margin-top: 0.25rem" alt="Logg inn med Vipps-logo">
              <div>
             <p><?php echo sprintf(__("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps'), $loginurl); ?></p>
              </div>
