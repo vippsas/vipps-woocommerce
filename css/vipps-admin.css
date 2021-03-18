@@ -16,6 +16,7 @@
 }
 .notice.notice-vipps.notice-info.notice-vipps-neg a {
    color: white !important;
+   text-decoration: underline;
 }
 .notice.notice-vipps.notice-info.notice-vipps-neg button.notice-dismiss {
    color: white;

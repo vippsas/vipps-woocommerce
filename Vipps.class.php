@@ -67,6 +67,13 @@ class Vipps {
     }
 
 
+    // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
+    // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
+    private function translatable_strings() {
+            _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps');
+    }
+
+
     public function init () {
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
@@ -220,14 +227,14 @@ class Vipps {
         if (!function_exists('get_plugins')) return;
 
         $dismissed = get_option('_vipps_dismissed_notices');
-        if (isset($dismissed['vippslogin01'])) return; 
+#        if (isset($dismissed['vippslogin01'])) return;  // IOK FIXME
 
         $installed_plugins = get_plugins();
         if (isset($installed_plugins['login-with-vipps/login-with-vipps.php'])) {
            if (!is_array($dismissed)) $dismissed = array();
            $dismissed['vippslogin01'] = time();
            update_option('_vipps_dismissed_notices', $dismissed, false);
-           return;
+#           return; // IOK FIXME
         }
 
 
