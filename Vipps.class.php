@@ -220,14 +220,14 @@ class Vipps {
         if (!function_exists('get_plugins')) return;
 
         $dismissed = get_option('_vipps_dismissed_notices');
-#        if (isset($dismissed['vippslogin01'])) return; // IOK FIXME BEFORE GOING LIVE
+        if (isset($dismissed['vippslogin01'])) return; 
 
         $installed_plugins = get_plugins();
         if (isset($installed_plugins['login-with-vipps/login-with-vipps.php'])) {
            if (!is_array($dismissed)) $dismissed = array();
            $dismissed['vippslogin01'] = time();
            update_option('_vipps_dismissed_notices', $dismissed, false);
-#           return; // IOK FIXME BEFORE GOING LIVE
+           return;
         }
 
 
@@ -238,7 +238,7 @@ class Vipps {
             <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippslogin01'>
             <img src="<?php echo $logo; ?>" style="float:left; height: 3rem; margin-right: 0.5rem" alt="Logg inn med Vipps-logo">
              <div>
-            <p><?php echo sprintf( __("Login with Vipps is available for WooCommerce. Easier and safer accounts for your customers - with no long usernames and passwords. <br> Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps'), $loginurl); ?></p>
+            <p><?php echo sprintf(__("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps'), $loginurl); ?></p>
              </div>
             </div>
             <?php
