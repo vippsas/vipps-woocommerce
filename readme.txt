@@ -13,7 +13,7 @@ License URI: https://choosealicense.com/licenses/mit/
 
 == Description ==
 
-*Official Vipps Express Checkout and Payment for WooCommerce. 3.6 millon norwegians use Vipps. Give them a fast and familiar shopping experience.*
+*Official Vipps Express Checkout and Payment for WooCommerce. 3.9 millon norwegians use Vipps. Give them a fast and familiar shopping experience.*
 
 This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
 
