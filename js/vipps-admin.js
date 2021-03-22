@@ -37,6 +37,17 @@ SOFTWARE.
   });
  }
 
+ // Handle permanent notice dismissal
+ jQuery(document).ready(function () {
+    jQuery('.notice-vipps .notice-dismiss').click(function () { 
+        let nonce = VippsConfig['vippssecnonce'];
+        let key = jQuery(this).closest('.notice').data('key');
+        if (! key) return;
+        let data = { 'action': 'vipps_dismiss_notice', 'vipps_sec':nonce, 'key': key };
+        jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0 });
+    });
+ });
+
  if  (pagenow == 'product') {
 
      // Called on the product edit screen by a button.
@@ -158,6 +169,7 @@ SOFTWARE.
        jQuery('#vipps-share-link').click(vipps_create_shareable_link);
        add_shareable_commands();
      });
+
 
 
  }
