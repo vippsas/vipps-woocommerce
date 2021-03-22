@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.2  =
-Bugfix for broken express checkout in 5.7 when used with certain other plugins
+= 1.7.3  =
+This update mostly has to do with translations
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.03.22 version 1.7.3 =
+ Remainder that the Login with Vipps plugin exists
 
 = 2021.03.15 version 1.7.2 =
  Fixes javascript problem on express checkout screen that could be caused by plugin interactions
