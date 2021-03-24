@@ -1034,7 +1034,7 @@ EOF;
 
 
         // Special pages and callbacks handled by template_redirect
-        add_action('template_redirect', array($this,'template_redirect'));
+        add_action('template_redirect', array($this,'template_redirect'), 1);
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
 
