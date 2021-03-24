@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.3  =
-This update mostly has to do with translations
+= 1.7.4  =
+This update fixes the undismissable banner issue
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.03.24 version 1.7.4 =
+ Fix the undismissable banner issue by ensuring browsers won't have cached the admin javascript
 
 = 2021.03.22 version 1.7.3 =
  Remainder that the Login with Vipps plugin exists
