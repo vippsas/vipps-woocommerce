@@ -187,4 +187,4 @@ function VippsGetPaymentDetails(orderid,nonce) {
 
 
 
-console.log("Vipps admin scripts loaded");
+console.log("Vipps admin scripts loaded - v1.7.4");

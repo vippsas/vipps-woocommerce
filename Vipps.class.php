@@ -293,12 +293,12 @@ class Vipps {
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
-        wp_register_script('vipps-admin',plugins_url('js/vipps-admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/vipps-admin.js"), 'true');
+        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
         $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
         wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
         wp_enqueue_script('vipps-admin');
 
-        wp_enqueue_style('vipps-admin-style',plugins_url('css/vipps-admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps-admin.css"), 'all');
+        wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
     }
 
     public function notice_is_test_mode() {
@@ -567,7 +567,9 @@ else:
         if (!is_array($dismissed)) $dismissed = array();
         $key = sanitize_text_field($_POST['key']);
         $dismissed[$key] = time();
+        $this->log(__("Dismissed message ", 'woo-vipps')  . $key, 'info');
         update_option('_vipps_dismissed_notices', $dismissed, false);
+        wp_cache_flush();
     }
 
     // This creates and stores a shareable link that when followed will allow external buyers to buy the specified product direclty.
