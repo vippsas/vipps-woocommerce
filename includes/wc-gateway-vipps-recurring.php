@@ -1165,6 +1165,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * Process a payment when checking out in WooCommerce
 	 *
+	 * https://docs.woocommerce.com/document/subscriptions/develop/payment-gateway-integration/
+	 * "Putting it all Together"
+	 *
 	 * @param int $order_id
 	 * @param bool $retry
 	 * @param false $previous_error
@@ -1199,14 +1202,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				// todo: remove this if Idempotency-Key starts working as expected in Vipps' API
 				if ( $agreement['status'] === 'PENDING' ) {
-					$confirmationUrl = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL );
+					$confirmation_url = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL );
 
-					if ( $confirmationUrl ) {
+					if ( $confirmation_url ) {
 						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Customer has been redirected to an existing confirmation URL', $order_id ) );
 
 						return [
 							'result'   => 'success',
-							'redirect' => $confirmationUrl,
+							'redirect' => $confirmation_url,
 						];
 					}
 

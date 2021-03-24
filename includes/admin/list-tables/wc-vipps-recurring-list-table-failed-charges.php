@@ -105,7 +105,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 	 * Output 'no users' message.
 	 */
 	public function no_items() {
-		_e( 'No failed charges found.' );
+		_e( 'No failed charges found.', 'woo-vipps-recurring' );
 	}
 
 	/**

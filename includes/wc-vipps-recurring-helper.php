@@ -295,6 +295,8 @@ class WC_Vipps_Recurring_Helper {
 		if ( isset( $charge['failureDescription'] ) ) {
 			self::update_meta_data( $order, self::META_CHARGE_FAILED_DESCRIPTION, $charge['failureDescription'] );
 		}
+
+		$order->save();
 	}
 
 	/**
