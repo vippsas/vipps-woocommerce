@@ -131,6 +131,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'subscription_date_changes',
 			'subscription_payment_method_change',
 			'subscription_payment_method_change_customer',
+			'subscription_payment_method_change_admin',
 		];
 
 		// Load the form fields.
@@ -220,6 +221,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this,
 			'save_subscription_order_items'
 		], 10, 1 );
+
+		// tell WooCommerce about our custom payment meta fields
+		add_action( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
+
+		// validate custom payment meta fields
+		add_action( 'woocommerce_subscription_validate_payment_meta', [
+			$this,
+			'validate_subscription_payment_meta'
+		], 10, 2 );
 	}
 
 	/**
@@ -1508,5 +1518,44 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		return $statuses;
+	}
+
+	/**
+	 * @param $payment_meta
+	 * @param $subscription
+	 *
+	 * @return mixed
+	 */
+	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
+		$payment_meta[ $this->id ] = [
+			'post_meta' => [
+				'_agreement_id' => [
+					'value' => get_post_meta( $subscription->id, '_agreement_id', true ),
+					'label' => __( 'Vipps Agreement ID', 'woo-vipps-recurring' ),
+				]
+			],
+		];
+
+		return $payment_meta;
+	}
+
+	/**
+	 * @param $payment_method_id
+	 * @param $payment_meta
+	 *
+	 * @throws Exception
+	 */
+	public function validate_subscription_payment_meta( $payment_method_id, $payment_meta ) {
+		if ( $this->id !== $payment_method_id ) {
+			return;
+		}
+
+		$agreement_id = $payment_meta['post_meta']['_agreement_id']['value'];
+
+		try {
+			$this->api->get_agreement( $agreement_id );
+		} catch ( Exception $e ) {
+			throw new Exception( __( 'This Vipps agreement ID is invalid.', 'woo-vipps-recurring' ) );
+		}
 	}
 }
