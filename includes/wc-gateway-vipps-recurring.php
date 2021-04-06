@@ -1203,7 +1203,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// if this order has a PENDING or ACTIVE agreement in Vipps we should not allow checkout anymore
 			// this will prevent duplicate transactions
-			if ( $agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) ) {
+			if ( $agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) && ! $is_gateway_change ) {
 				$agreement = $this->get_agreement_from_order( $order );
 
 				if ( $agreement['status'] === 'ACTIVE' ) {
@@ -1227,8 +1227,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			$period   = $subscription->get_billing_period();
-			$interval = $subscription->get_billing_interval();
+			$subscription_period = $subscription->get_billing_period();
+
+			$subscription_interval = $subscription->get_billing_interval();
 
 			$items = array_reverse( $order->get_items() );
 
@@ -1248,8 +1249,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement_body = [
 				'currency'             => $order->get_currency(),
 				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ),
-				'interval'             => strtoupper( $period ),
-				'intervalCount'        => (int) $interval,
+				'interval'             => strtoupper( $subscription_period ),
+				'intervalCount'        => (int) $subscription_interval,
 				'productName'          => $item->get_name(),
 				'productDescription'   => $item->get_name(),
 				'isApp'                => false,

@@ -157,6 +157,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 = 1.6.3 =
 * Fix: Add missing Norwegian translation for "No failed charges found.".
 * Fix: Failed charges now appear properly in the "Failed charges" list.
+* Fix: Fixed an edge case when changing payment method to Vipps as a customer.
 * Enhancement: Added a link to explain the various possible failure reasons.
 * Enhancement: Ability to change gateway from the admin dashboard. This should also allow using the REST API to create a subscription.
 
