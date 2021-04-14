@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.04.xz version 1.7.6 =
+= 2021.04.19 version 1.7.6 =
  Version bump for new version of WooCommerce and Blocks
 
 = 2021.03.29 version 1.7.5 =
