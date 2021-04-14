@@ -17,28 +17,6 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-/**
- * WooCommerce requirement notice
- *
- * @return void
- * @since 4.1.2
- */
-function woocommerce_vipps_recurring_missing_wc_notice() {
-	/* translators: 1. URL link. */
-	echo '<div class="error"><p><strong>' . sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' ) . '</strong></p></div>';
-}
-
-/**
- * WooCommerce Subscriptions requirement notice
- *
- * @return void
- * @since 4.1.2
- */
-function woocommerce_vipps_recurring_missing_wc_subscriptions_notice() {
-	/* translators: 1. URL link. */
-	echo '<div class="error"><p><strong>' . sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' ) . '</strong></p></div>';
-}
-
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
 /**
@@ -67,18 +45,6 @@ if ( ! function_exists( 'array_key_last' ) ) {
  */
 function woocommerce_gateway_vipps_recurring_init() {
 	load_plugin_textdomain( 'woo-vipps-recurring', false, plugin_basename( __DIR__ ) . '/languages' );
-
-	if ( ! class_exists( 'WooCommerce' ) ) {
-		add_action( 'admin_notices', 'woocommerce_vipps_recurring_missing_wc_notice' );
-
-		return;
-	}
-
-	if ( ! class_exists( 'WC_Subscriptions' ) ) {
-		add_action( 'admin_notices', 'woocommerce_vipps_recurring_missing_wc_subscriptions_notice' );
-
-		return;
-	}
 
 	if ( ! class_exists( 'WC_Vipps_Recurring' ) ) {
 		/*
@@ -246,6 +212,22 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Admin only dashboard
 			 */
 			public function admin_init() {
+				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
+
+				if ( ! class_exists( 'WooCommerce' ) ) {
+					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' );
+					$this->add_admin_notice( $notice, 'info', '', true );
+
+					return;
+				}
+
+				if ( ! class_exists( 'WC_Subscriptions' ) ) {
+					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
+					$this->add_admin_notice( $notice, 'info', '', true );
+
+					return;
+				}
+
 				$gateway = $this->gateway();
 
 				// add capture button if order is not captured
@@ -257,30 +239,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'save_post', [ $this, 'save_order' ], 10, 3 );
 
 				if ( $gateway->testmode ) {
-					add_action( 'admin_notices', static function () {
-						$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
-						echo "<div class='notice notice-info is-dismissible'><p>$notice</p></div>";
-					} );
+					$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
+					$this->add_admin_notice( $notice );
 				}
-
-				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 
 				// Load correct list table classes for current screen.
 				add_action( 'current_screen', [ $this, 'setup_screen' ] );
 
 				if ( isset( $_REQUEST['statuses_checked'] ) ) {
-					add_action( 'admin_notices', [
-						$this,
-						'vipps_recurring_check_statuses_bulk_action_notice'
-					] );
+					$this->add_admin_notice( __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) );
 				}
-			}
-
-			/**
-			 * Show bulk update notice for statuses check
-			 */
-			public function vipps_recurring_check_statuses_bulk_action_notice() {
-				echo '<div class="updated"><p>' . __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) . '</p></div>';
 			}
 
 			/**
@@ -327,12 +295,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 						include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php';
 						include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php';
 
-						$wc_vipps_recurring_list_table_pending_charges = new WC_Vipps_Recurring_Admin_List_Pending_Charges([
+						$wc_vipps_recurring_list_table_pending_charges = new WC_Vipps_Recurring_Admin_List_Pending_Charges( [
 							'screen' => $screen_id . '_pending-charges'
-						]);
-						$wc_vipps_recurring_list_table_failed_charges  = new WC_Vipps_Recurring_Admin_List_Failed_Charges([
+						] );
+						$wc_vipps_recurring_list_table_failed_charges  = new WC_Vipps_Recurring_Admin_List_Failed_Charges( [
 							'screen' => $screen_id . '_failed-charges'
-						]);
+						] );
 						break;
 				}
 
@@ -431,7 +399,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @param $post_id
 			 */
 			public function woocommerce_process_product_meta( $post_id ) {
-				$capture_instantly = isset( $_POST[WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE] ) ? 'yes' : 'no';
+				$capture_instantly = isset( $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ] ) ? 'yes' : 'no';
 				update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
 			}
 
@@ -499,20 +467,33 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( isset( $_POST['do_capture_vipps_recurring'] ) && $_POST['do_capture_vipps_recurring'] ) {
 					$gateway->capture_payment( $order );
-
-					$this->store_admin_notices();
 				}
 			}
 
 			/**
-			 * Make admin notices persistent
+			 * @param $text
+			 * @param string $type
+			 * @param string $key
 			 */
-			public function store_admin_notices() {
-				ob_start();
-				do_action( 'admin_notices' );
+			public function add_admin_notice( $text, $type = 'info', $key = '', $plaintext = false ) {
+				$callable = function () use ( $text, $type, $key ) {
+					$logo      = plugins_url( 'assets/images/vipps-logo.svg', __FILE__ );
+					$logo_html = "<img src='$logo' alt='Vipps logo'>";
 
-				$notices = ob_get_clean();
-				set_transient( '_vipps_recurring_save_admin_notices', $notices, 5 * 60 );
+					$message = sprintf( $text, admin_url( 'admin.php?page=wc-settings&tab=checkout&section=vipps_recurring' ) );
+					echo "<div class='notice notice-vipps-recurring notice-$type is-dismissible' data-key='" . esc_attr( $key ) . "'>
+						<div class='notice-vipps-recurring__inner'>
+							$logo_html
+							<p>$message</p>
+						</div>
+					</div>";
+				};
+
+				if ( $plaintext ) {
+					$callable();
+				} else {
+					add_action( 'admin_notices', $callable );
+				}
 			}
 
 			/**
