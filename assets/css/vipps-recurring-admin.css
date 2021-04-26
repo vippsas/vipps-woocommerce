@@ -1,12 +1,12 @@
-#woocommerce-coupon-data ul.wc-tabs li.wc_vipps_recurring_options a::before, #woocommerce-product-data ul.wc-tabs li.wc_vipps_recurring_options a::before, .woocommerce ul.wc-tabs li.wc_vipps_recurring_options a::before {
-    font-family: initial;
-    content: "";
-    background-image: url( '/wp-content/plugins/vipps-recurring-payments-gateway-for-woocommerce/assets/images/vipps-logo.svg' );
-    background-repeat: no-repeat;
-    height: 14px;
-    width: 30px;
-    display: inline-block;
-    vertical-align: middle;
+#woocommerce-product-data ul.wc-tabs li.wc_vipps_recurring_options a:before {
+	font-family: initial;
+	content: "";
+	background-repeat: no-repeat;
+	background-size: 100%;
+	height: 13px;
+	width: 13px;
+	display: inline-block;
+	vertical-align: middle;
 }
 
 .notice-vipps-recurring {

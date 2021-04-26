@@ -214,6 +214,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function admin_init() {
 				add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_scripts' ] );
 
+				// styling
+				add_action( 'admin_head', [ $this, 'admin_head' ] );
+
 				if ( ! class_exists( 'WooCommerce' ) ) {
 					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' );
 					$this->add_admin_notice( $notice, 'info', '', true );
@@ -252,8 +255,22 @@ function woocommerce_gateway_vipps_recurring_init() {
 			}
 
 			/**
+			 * Inject admin ahead
+			 */
+			public function admin_head() {
+				$smile_icon = plugins_url( 'assets/images/vipps-icon-smile.png', __FILE__ );
+
+				?>
+				<style>
+					#woocommerce-product-data ul.wc-tabs li.wc_vipps_recurring_options a:before {
+						background-image: url( <?php echo $smile_icon ?> );
+					}
+				</style>
+				<?php
+			}
+
+			/**
 			 * @return string
-			 * @throws WC_Vipps_Recurring_Exception
 			 */
 			public function handle_check_statuses_bulk_action(): string {
 				$sendback = remove_query_arg( [ 'orders' ], wp_get_referer() );
@@ -273,7 +290,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			}
 
 			/**
-			 *
+			 * Setup the screen for our special setting and action tables
 			 */
 			public function setup_screen() {
 				global $wc_vipps_recurring_list_table_pending_charges,
@@ -438,7 +455,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$is_captured = WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order );
 
 				if ( $show_capture_button && ! $is_captured ) {
-					$logo = plugins_url( 'assets/images/vipps_logo_negative_rgb_transparent.png', __FILE__ );
+					$logo = plugins_url( 'assets/images/vipps-logo-negative-rgb-transparent.png', __FILE__ );
 
 					print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vipps-button generate-items"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'woo-vipps-recurring' ) . '</button>';
 					print '<input id="docapture" type="hidden" name="do_capture_vipps_recurring" value="0">';
