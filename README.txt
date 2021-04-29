@@ -154,7 +154,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
-= 1.6.3 =
+= 1.7.0 =
 * Fix: Add missing Norwegian translation for "No failed charges found.".
 * Fix: Failed charges now appear properly in the "Failed charges" list.
 * Fix: Fixed an edge case when changing payment method to Vipps as a customer, when already using Vipps.
