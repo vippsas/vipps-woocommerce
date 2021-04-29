@@ -1203,7 +1203,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// if this order has a PENDING or ACTIVE agreement in Vipps we should not allow checkout anymore
 			// this will prevent duplicate transactions
-			if ( $agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) && ! $is_gateway_change ) {
+			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+			if ( $agreement_id && ! $is_gateway_change ) {
 				$agreement = $this->get_agreement_from_order( $order );
 
 				if ( $agreement['status'] === 'ACTIVE' ) {
@@ -1246,6 +1247,25 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// total no longer returns the order amount when gateway is being changed
 			$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
 
+			// when we're performing a variation switch we need some special logic in Vipps
+			$is_variable_item    = ! ! $item->get_variation_id();
+			$subscription_switch = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch' );
+
+			if ( $subscription_switch && $is_variable_item ) {
+				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );
+
+				if ( isset( $subscription_switch_data[ $subscription_switch ]['switches'] ) ) {
+					;
+					$switches    = $subscription_switch_data[ $subscription_switch ]['switches'];
+					$switch_data = $switches[ array_key_first( $switches ) ];
+					$direction   = $switch_data['switch_direction'];
+
+					if ( $direction === 'upgrade' ) {
+						$agreement_total += $order->get_total();
+					}
+				}
+			}
+
 			$agreement_body = [
 				'currency'             => $order->get_currency(),
 				'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ),
@@ -1281,45 +1301,57 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			if ( $is_zero_amount || (float) $order->get_total_discount() !== 0.00 ) {
+			if ( $is_zero_amount || $order->get_total_discount() !== 0.00 || $subscription_switch ) {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
+
+				$campaign_price = $subscription_switch ? 0 : WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() );
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
 					'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
-					'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
+					'campaignPrice' => $campaign_price,
 				];
 			}
 
 			$idempotency_key = $this->get_idempotence_key( $order );
 			$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
 
-			if ( $is_gateway_change ) {
-				/* translators: Vipps Agreement ID */
-				$message = sprintf( __( 'Request to change gateway to Vipps with agreement ID: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
+			// mark the old agreement for cancellation to leave no dangling agreements in Vipps
+			$should_cancel_old = $is_gateway_change || $subscription_switch;
+			if ( $should_cancel_old ) {
+				if ( $is_gateway_change ) {
+					/* translators: Vipps Agreement ID */
+					$message = sprintf( __( 'Request to change gateway to Vipps with agreement ID: %s.', 'woo-vipps-recurring' ), $response['agreementId'] );
+					$subscription->add_order_note( $message );
+					$debug_msg .= 'Request to change gateway to Vipps' . "\n";
+				} else {
+					$debug_msg .= 'Request to switch subscription variation' . "\n";
+				}
 
-				$subscription->add_order_note( $message );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_old_agreement_id', WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ) );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_new_agreement_id', $response['agreementId'] );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE, true );
+			}
 
-				$debug_msg .= 'Request to change gateway to Vipps' . "\n";
-			} else {
-				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
-				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
-				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+			if ( ! $is_gateway_change ) {
+				if ( ! $should_cancel_old ) {
+					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
+				}
 
 				if ( $is_zero_amount ) {
 					WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT, true );
 				}
 
-				/* translators: Vipps Agreement ID */
-				$message = sprintf( __( 'Vipps agreement created: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
-				$order->add_order_note( $message );
-
-				$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
 			}
+
+			/* translators: Vipps Agreement ID */
+			$message = sprintf( __( 'Vipps agreement created: %s. Customer sent to Vipps for confirmation.', 'woo-vipps-recurring' ), $response['agreementId'] );
+			$order->add_order_note( $message );
+
+			$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
 
 			if ( isset( $response['chargeId'] ) ) {
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $response['chargeId'] );
