@@ -159,6 +159,8 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: Failed charges now appear properly in the "Failed charges" list.
 * Fix: Fixed an edge case when changing payment method to Vipps as a customer, when already using Vipps.
 * Fix: Support upgrading to a different product variation. Price is now passed along properly and a campaign is applied in order to not confuse the customer.
+* Fix: Update agreement in app when downgrading or not prorating a subscription.
+* Enhancement: Update item name and description in app for delayed in app updates.
 * Enhancement: Added a link to explain the various possible failure reasons.
 * Enhancement: Ability to change gateway from the admin dashboard. This should also allow using the REST API to create a subscription.
 * Enhancement: Bring style on notices and in product tabs up to par with the Vipps e-com plugin.

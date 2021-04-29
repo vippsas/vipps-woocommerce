@@ -230,6 +230,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this,
 			'validate_subscription_payment_meta'
 		], 10, 2 );
+
+		// handle subscription switches (free upgrades & downgrades)
+		add_action( 'woocommerce_subscriptions_switched_item', [ $this, 'handle_subscription_switches' ], 10, 1 );
 	}
 
 	/**
@@ -1147,16 +1150,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
 		if ( $payment_method !== $this->id ) {
-			// If this is not the payment method, an agreement would not be available.
 			return;
 		}
 
 		$parent_order = $subscription->get_parent();
+		$items        = array_reverse( $subscription->get_items() );
+
+		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
+		$item = array_pop( $items );
 
 		$body = [
-			'price' => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
-//			'productName'        => $item->get_name(),
-//			'productDescription' => $item->get_name()
+			'price'              => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
+			'productName'        => $item->get_name(),
+			'productDescription' => $item->get_name()
 		];
 
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
@@ -1165,6 +1171,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $agreement_id ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement updated in app for agreement id: %s', $subscription_id, $agreement_id ) );
 			$this->api->update_agreement( $agreement_id, $body );
 		}
 
@@ -1248,15 +1255,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
 
 			// when we're performing a variation switch we need some special logic in Vipps
-			$is_variable_item    = ! ! $item->get_variation_id();
-			$subscription_switch = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch' );
+			$is_subscription_switch = wcs_order_contains_switch( $order );
 
-			if ( $subscription_switch && $is_variable_item ) {
+			if ( $is_subscription_switch ) {
 				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );
 
-				if ( isset( $subscription_switch_data[ $subscription_switch ]['switches'] ) ) {
-					;
-					$switches    = $subscription_switch_data[ $subscription_switch ]['switches'];
+				if ( isset( $subscription_switch_data[ $is_subscription_switch ]['switches'] ) ) {
+					$switches    = $subscription_switch_data[ $is_subscription_switch ]['switches'];
 					$switch_data = $switches[ array_key_first( $switches ) ];
 					$direction   = $switch_data['switch_direction'];
 
@@ -1301,11 +1306,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			if ( $is_zero_amount || $order->get_total_discount() !== 0.00 || $subscription_switch ) {
+			if ( $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch ) {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
-				$campaign_price = $subscription_switch ? 0 : WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() );
+				$campaign_price = $is_subscription_switch ? 0 : WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() );
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
@@ -1318,7 +1323,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
 
 			// mark the old agreement for cancellation to leave no dangling agreements in Vipps
-			$should_cancel_old = $is_gateway_change || $subscription_switch;
+			$should_cancel_old = $is_gateway_change || $is_subscription_switch;
 			if ( $should_cancel_old ) {
 				if ( $is_gateway_change ) {
 					/* translators: Vipps Agreement ID */
@@ -1590,5 +1595,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} catch ( Exception $e ) {
 			throw new Exception( __( 'This Vipps agreement ID is invalid.', 'woo-vipps-recurring' ) );
 		}
+	}
+
+	/**
+	 * @param $subscription
+	 * @param $new_order_item
+	 * @param $old_order_item
+	 */
+	public function handle_subscription_switches( $subscription ) {
+		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
+		if ( $this->id !== $payment_method ) {
+			return;
+		}
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+		$subscription->save();
 	}
 }
