@@ -1511,8 +1511,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             foreach($shipping_rate->get_meta_data() as $key => $value) {
               $it->add_meta_data($key,$value,true);
             }
-            $order->add_item($it);
             $it->save();
+            $order->add_item($it);
         }
         $order->save(); 
         $order->calculate_totals(true);
