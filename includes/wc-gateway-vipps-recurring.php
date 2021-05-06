@@ -120,7 +120,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		 * There are a lot of edge cases to think about in order to support this functionality too,
 		 * 'process_payment' would have to be rewritten entirely.
 		 */
-
 		$this->supports = [
 			'subscriptions',
 			'refunds',
@@ -156,15 +155,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 		$this->api     = new WC_Vipps_Recurring_Api( $this );
 
-		// when transitioning an order to these statuses we should
-		// automatically try to capture the charge if it's not already captured
+		/*
+		 * when transitioning an order to these statuses we should
+		 * automatically try to capture the charge if it's not already captured
+		 */
 		$capture_statuses = [
 			'completed',
 			'processing'
 		];
 
-		// we have to remove the status corresponding to `$this->default_reserved_charge_status` otherwise we end up
-		// prematurely capturing this reserved Vipps charge
+		/*
+		 * we have to remove the status corresponding to `$this->default_reserved_charge_status` otherwise we end up
+		 * prematurely capturing this reserved Vipps charge
+		 */
 		$capture_status_transition_id = array_search( str_replace( 'wc-', '', $this->default_reserved_charge_status ), $capture_statuses, true );
 		if ( $capture_status_transition_id ) {
 			unset( $capture_statuses[ $capture_status_transition_id ] );
@@ -201,16 +204,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'cancel_subscription',
 		] );
 
-		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1, 1 );
+		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1 );
 
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [
 			$this,
 			'failing_payment_method'
 		], 10, 2 );
 
-		// When changing the payment method for a WooCommerce Subscription to Vipps, let WooCommerce Subscription
-		// know that the payment method for that subscription should not be changed immediately. Instead, it should
-		// wait for the go ahead in cron, after the user confirmed the payment method change with Vipps.
+		/*
+		 * When changing the payment method for a WooCommerce Subscription to Vipps, let WooCommerce Subscription
+		 * know that the payment method for that subscription should not be changed immediately. Instead, it should
+		 * wait for the go ahead in cron, after the user confirmed the payment method change with Vipps.
+		 */
 		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [
 			$this,
 			'indicate_async_payment_method_update'
@@ -233,6 +238,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// handle subscription switches (free upgrades & downgrades)
 		add_action( 'woocommerce_subscriptions_switched_item', [ $this, 'handle_subscription_switches' ], 10, 1 );
+
+		/*
+		 * handle in app updates when a subscription status changes, typically when status transitions to
+		 * 'pending-cancel', 'cancelled' or 'pending-cancel' to any other status
+		 */
+		add_action( 'woocommerce_subscription_status_updated', [
+			$this,
+			'maybe_handle_subscription_status_transitions'
+		], 10, 3 );
 	}
 
 	/**
@@ -1159,10 +1173,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
 		$item = array_pop( $items );
 
+		$item_name           = $item->get_name();
+		$product_description = $item_name;
+
+		if ( $prefix = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX ) ) {
+			$product_description = "[$prefix] $product_description";
+		}
+
 		$body = [
 			'price'              => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
-			'productName'        => $item->get_name(),
-			'productDescription' => $item->get_name()
+			'productName'        => $item_name,
+			'productDescription' => $product_description
 		];
 
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
@@ -1171,12 +1192,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $agreement_id ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement updated in app for agreement id: %s', $subscription_id, $agreement_id ) );
-			$this->api->update_agreement( $agreement_id, $body );
+			try {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement updated in app for agreement id: %s', $subscription_id, $agreement_id ) );
+				$this->api->update_agreement( $agreement_id, $body );
+			} catch (Exception $e) {
+				// do nothing
+			}
 		}
 
-		$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
-		$subscription->save();
+		WC_Vipps_Recurring_Helper::set_update_in_app_completed( $subscription );
 	}
 
 	/**
@@ -1328,7 +1352,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
-				$campaign_price = ($is_subscription_switch || $sign_up_fee) ? 0 : $order->get_total();
+				$campaign_price = ( $is_subscription_switch || $sign_up_fee ) ? 0 : $order->get_total();
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
@@ -1617,8 +1641,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	/**
 	 * @param $subscription
-	 * @param $new_order_item
-	 * @param $old_order_item
 	 */
 	public function handle_subscription_switches( $subscription ) {
 		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
@@ -1628,5 +1650,50 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
 		$subscription->save();
+	}
+
+	/**
+	 * @param WC_Subscription $subscription
+	 * @param $new_status
+	 * @param $old_status
+	 */
+	public function maybe_handle_subscription_status_transitions( WC_Subscription $subscription, $new_status, $old_status ) {
+		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
+		if ( $this->id !== $payment_method ) {
+			return;
+		}
+
+		if ( WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP ) ) {
+			return;
+		}
+
+		if ( $new_status === 'pending-cancel' ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+			WC_Vipps_Recurring_Helper::update_meta_data(
+				$subscription,
+				WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
+				__( 'Pending cancellation', 'woo-vipps-recurring' )
+			);
+
+			$subscription->save();
+		}
+
+		if ( $new_status === 'cancelled' ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+			WC_Vipps_Recurring_Helper::update_meta_data(
+				$subscription,
+				WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
+				__( 'Cancelled', 'woo-vipps-recurring' )
+			);
+
+			$subscription->save();
+		}
+
+		if ( $old_status === 'pending-cancel' && $new_status !== 'cancelled' ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+			$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
+
+			$subscription->save();
+		}
 	}
 }

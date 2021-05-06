@@ -574,7 +574,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$posts = get_posts( [
 					'limit'        => 5,
 					'post_type'    => 'shop_subscription',
-					'post_status'  => 'wc-active',
+					'post_status'  => ['wc-active', 'wc-pending-cancel', 'wc-cancelled'],
 					'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP,
 					'meta_compare' => '=',
 					'meta_value'   => 1,

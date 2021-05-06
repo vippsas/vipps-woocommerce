@@ -43,6 +43,7 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
 	const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
+	const META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX = '_vipps_recurring_update_in_app_description_prefix';
 
 	/**
 	 * Get Vipps amount to pay
@@ -297,6 +298,15 @@ class WC_Vipps_Recurring_Helper {
 		}
 
 		$order->save();
+	}
+
+	/**
+	 * @param WC_Subscription $subscription
+	 */
+	public static function set_update_in_app_completed( WC_Subscription $subscription ) {
+		$subscription->delete_meta_data( self::META_SUBSCRIPTION_UPDATE_IN_APP );
+		$subscription->delete_meta_data( self::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
+		$subscription->save();
 	}
 
 	/**
