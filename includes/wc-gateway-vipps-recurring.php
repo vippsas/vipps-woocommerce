@@ -1241,6 +1241,21 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$items = array_reverse( $order->get_items() );
 
+			/*
+			 * WooCommerce Subscriptions should really deal with this themselves, but when other gateways with support for `multiple_subscriptions`
+			 * are enabled WooCommerce Subscriptions allows this scenario for our plugin too. This is not ideal so let's deny it here.
+			 * There's no good way to make this obvious to a customer in the app, especially if the products have different durations
+			 * i.e. one yearly and one monthly
+			 */
+			if ( count( $items ) !== 1 ) {
+				wc_add_notice( __( 'Different subscription products can not be purchased at the same time using Vipps.', 'woo-vipps-recurring' ), 'error' );
+
+				return [
+					'result'   => 'fail',
+					'redirect' => ''
+				];
+			}
+
 			// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
 			$item    = array_pop( $items );
 			$product = $item->get_product();

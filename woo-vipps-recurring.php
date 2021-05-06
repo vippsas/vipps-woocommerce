@@ -218,6 +218,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'admin_head', [ $this, 'admin_head' ] );
 
 				if ( ! class_exists( 'WooCommerce' ) ) {
+					// translators: %s link to WooCommerce's download page
 					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' );
 					$this->add_admin_notice( $notice, 'info', '', true );
 
@@ -225,7 +226,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				if ( ! class_exists( 'WC_Subscriptions' ) ) {
-					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
+					// translators: %s link to WooCommerce Subscription's purchase page
+					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
 					$this->add_admin_notice( $notice, 'info', '', true );
 
 					return;
