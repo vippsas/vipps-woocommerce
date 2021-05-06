@@ -201,7 +201,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'cancel_subscription',
 		] );
 
-		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1 );
+		add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1, 1 );
 
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [
 			$this,
