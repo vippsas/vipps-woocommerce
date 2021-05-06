@@ -1208,8 +1208,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$subscription = $subscriptions[ array_key_first( $subscriptions ) ];
 			}
 
-			// if this order has a PENDING or ACTIVE agreement in Vipps we should not allow checkout anymore
-			// this will prevent duplicate transactions
+			/*
+			 * if this order has a PENDING or ACTIVE agreement in Vipps we should not allow checkout anymore
+			 * this will prevent duplicate transactions
+			 */
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 			if ( $agreement_id && ! $is_gateway_change ) {
 				$agreement = $this->get_agreement_from_order( $order );
@@ -1321,16 +1323,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			if ( $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch ) {
+			$sign_up_fee = WC_Subscriptions_Order::get_sign_up_fee( $order );
+			if ( $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee ) {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
-				$campaign_price = $is_subscription_switch ? 0 : WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() );
+				$campaign_price = ($is_subscription_switch || $sign_up_fee) ? 0 : $order->get_total();
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
 					'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
-					'campaignPrice' => $campaign_price,
+					'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ),
 				];
 			}
 

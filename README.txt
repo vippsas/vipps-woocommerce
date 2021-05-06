@@ -160,6 +160,8 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: Fixed an edge case when changing payment method to Vipps as a customer, when already using Vipps.
 * Fix: Support upgrading to a different product variation. Price is now passed along properly and a campaign is applied in order to not confuse the customer.
 * Fix: Update agreement in app when downgrading or not prorating a subscription.
+* Fix: Do not allow multiple subscriptions in a single Vipps payment when other gateways that support it are enabled.
+* Enhancement: Display sign up fees in a better way in the Vipps app. Use a campaign with a price of 0,- until the next payment date.
 * Enhancement: Update item name and description in app for delayed in app updates.
 * Enhancement: Added a link to explain the various possible failure reasons.
 * Enhancement: Ability to change gateway from the admin dashboard. This should also allow using the REST API to create a subscription.
