@@ -1174,7 +1174,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$item = array_pop( $items );
 
 		$item_name           = $item->get_name();
-		$product_description = $item_name;
+		$product_description = WC_Vipps_Recurring_Helper::get_product_description( $item->get_product() );
 
 		if ( $prefix = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX ) ) {
 			$product_description = "[$prefix] $product_description";
@@ -1195,7 +1195,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			try {
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement updated in app for agreement id: %s', $subscription_id, $agreement_id ) );
 				$this->api->update_agreement( $agreement_id, $body );
-			} catch (Exception $e) {
+			} catch ( Exception $e ) {
 				// do nothing
 			}
 		}
@@ -1318,7 +1318,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'interval'             => strtoupper( $subscription_period ),
 				'intervalCount'        => (int) $subscription_interval,
 				'productName'          => $item->get_name(),
-				'productDescription'   => $item->get_name(),
+				'productDescription'   => WC_Vipps_Recurring_Helper::get_product_description( $product ),
 				'isApp'                => false,
 				'merchantAgreementUrl' => $agreement_url,
 				'merchantRedirectUrl'  => $redirect_url,
@@ -1689,7 +1689,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$subscription->save();
 		}
 
-		if ( $old_status === 'pending-cancel' && $new_status !== 'cancelled' ) {
+		if ( $new_status === 'on-hold' ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+			WC_Vipps_Recurring_Helper::update_meta_data(
+				$subscription,
+				WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
+				__( 'On hold', 'woo-vipps-recurring' )
+			);
+
+			$subscription->save();
+		}
+
+		if ( ( $old_status === 'pending-cancel' || $old_status === 'on-hold' ) && $new_status !== 'cancelled' ) {
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
 			$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
 

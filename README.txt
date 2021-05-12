@@ -161,7 +161,8 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: Support upgrading to a different product variation. Price is now passed along properly and a campaign is applied in order to not confuse the customer.
 * Fix: Update agreement in app when downgrading or not prorating a subscription.
 * Fix: Do not allow multiple subscriptions in a single Vipps payment when other gateways that support it are enabled.
-* Enhancement: The subscription description is now prefixed with "[Pending cancellation]" or "[Cancelled]" depending on the subscription's status in the Vipps app.
+* Enhancement: The subscription description is now prefixed in the Vipps app with "[Pending cancellation]", "[Cancelled]" and "[On hold]" depending on the subscription's status.
+* Enhancement: Added a setting per product for what source should be used for an agreement's description. You can now choose between product title, product short description, or custom text.
 * Enhancement: Display sign up fees in a better way in the Vipps app. Use a campaign with a price of 0,- until the next payment date.
 * Enhancement: Update item name and description in app for delayed in app updates.
 * Enhancement: Added a link to explain the various possible failure reasons.

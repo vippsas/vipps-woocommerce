@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-05-06T14:33:56+00:00\n"
+"POT-Creation-Date: 2021-05-12T12:32:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.4.0\n"
 "X-Domain: woo-vipps-recurring\n"
@@ -303,51 +303,55 @@ msgstr ""
 msgid "Payment gateway change request cancelled in Vipps"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1238
+#: includes/wc-gateway-vipps-recurring.php:1244
 msgid "This subscription is already active in Vipps. You can leave this page."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1254
+#: includes/wc-gateway-vipps-recurring.php:1260
 msgid "There is a pending agreement on this order. Check the Vipps app or wait and try again in a few minutes."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1271
+#: includes/wc-gateway-vipps-recurring.php:1277
 msgid "Different subscription products can not be purchased at the same time using Vipps."
 msgstr ""
 
 #. translators: Vipps Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1366
+#: includes/wc-gateway-vipps-recurring.php:1372
 msgid "Request to change gateway to Vipps with agreement ID: %s."
 msgstr ""
 
 #. translators: Vipps Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1392
+#: includes/wc-gateway-vipps-recurring.php:1398
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1572
+#: includes/wc-gateway-vipps-recurring.php:1578
 msgid "Successfully authenticated with the Vipps API"
 msgstr ""
 
 #. translators: %s: the error message returned from Vipps
-#: includes/wc-gateway-vipps-recurring.php:1575
+#: includes/wc-gateway-vipps-recurring.php:1581
 msgid "Could not authenticate with the Vipps API: %s"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1608
+#: includes/wc-gateway-vipps-recurring.php:1614
 msgid "Vipps Agreement ID"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1632
+#: includes/wc-gateway-vipps-recurring.php:1638
 msgid "This Vipps agreement ID is invalid."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1665
+#: includes/wc-gateway-vipps-recurring.php:1675
 msgid "Pending cancellation"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1676
+#: includes/wc-gateway-vipps-recurring.php:1686
 msgid "Cancelled"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1697
+msgid "On hold"
 msgstr ""
 
 #: includes/wc-vipps-recurring-api.php:70
@@ -411,10 +415,42 @@ msgstr ""
 msgid "Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option."
 msgstr ""
 
-#: woo-vipps-recurring.php:462
+#: woo-vipps-recurring.php:416
+msgid "Description source"
+msgstr ""
+
+#: woo-vipps-recurring.php:417
+msgid "Where we should source the agreement description from. Displayed in the Vipps app."
+msgstr ""
+
+#: woo-vipps-recurring.php:420
+msgid "Product title"
+msgstr ""
+
+#: woo-vipps-recurring.php:421
+msgid "Product short description"
+msgstr ""
+
+#: woo-vipps-recurring.php:422
+msgid "Custom"
+msgstr ""
+
+#: woo-vipps-recurring.php:429
+msgid "Custom description"
+msgstr ""
+
+#: woo-vipps-recurring.php:430
+msgid "If the description source is set to \"custom\" this text will be used."
+msgstr ""
+
+#: woo-vipps-recurring.php:431
+msgid "Max 100 characters"
+msgstr ""
+
+#: woo-vipps-recurring.php:488
 msgid "Capture payment"
 msgstr ""
 
-#: woo-vipps-recurring.php:598
+#: woo-vipps-recurring.php:624
 msgid "Settings"
 msgstr ""

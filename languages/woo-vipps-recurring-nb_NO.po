@@ -9,7 +9,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2020-10-16T12:18:56+00:00\n"
-"PO-Revision-Date: 2021-05-06 15:42+0000\n"
+"PO-Revision-Date: 2021-05-12 12:32+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -40,7 +40,7 @@ msgstr "Agreement ID"
 msgid "An unexpected error occurred while refunding a payment in Vipps."
 msgstr "En uforventet feil oppstod ved opprettelse av refusjon i Vipps."
 
-#: includes/wc-gateway-vipps-recurring.php:1676
+#: includes/wc-gateway-vipps-recurring.php:1686
 msgid "Cancelled"
 msgstr "Kansellert"
 
@@ -48,7 +48,7 @@ msgstr "Kansellert"
 msgid "Cancelled Vipps Purchase"
 msgstr "Avlyst Vippsbetaling"
 
-#: woo-vipps-recurring.php:462
+#: woo-vipps-recurring.php:488
 msgid "Capture payment"
 msgstr "Capture (Trekk beløp)"
 
@@ -97,7 +97,7 @@ msgid "client_secret"
 msgstr "client_secret"
 
 #. translators: %s: the error message returned from Vipps
-#: includes/wc-gateway-vipps-recurring.php:1575
+#: includes/wc-gateway-vipps-recurring.php:1581
 msgid "Could not authenticate with the Vipps API: %s"
 msgstr "Kunne ikke autentisere med Vipps API-et: %s"
 
@@ -125,6 +125,14 @@ msgstr "Opprett ny side"
 msgid "Created At"
 msgstr "Tidspunkt"
 
+#: woo-vipps-recurring.php:422
+msgid "Custom"
+msgstr "Egendefinert"
+
+#: woo-vipps-recurring.php:429
+msgid "Custom description"
+msgstr "Egendefinert beskrivelse"
+
 #: includes/admin/vipps-recurring-settings.php:56
 msgid "Default status to give orders with a reserved charge"
 msgstr "Standardstatus for ordre med reservert trekk i Vipps"
@@ -137,7 +145,11 @@ msgstr "Standardstatus for fornyelsesordre"
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: includes/wc-gateway-vipps-recurring.php:1271
+#: woo-vipps-recurring.php:416
+msgid "Description source"
+msgstr "Beskrivelseskilde"
+
+#: includes/wc-gateway-vipps-recurring.php:1277
 msgid ""
 "Different subscription products can not be purchased at the same time using "
 "Vipps."
@@ -192,6 +204,15 @@ msgstr "her"
 msgid "https://everyday.no"
 msgstr "https://everyday.no"
 
+#: woo-vipps-recurring.php:430
+#| msgid ""
+#| "If the description source is set to \"custom field\" this text will be "
+#| "used."
+msgid "If the description source is set to \"custom\" this text will be used."
+msgstr ""
+"Hvis beskrivelseskilden er satt til \"egendefinert\" vil denne teksten bli "
+"brukt."
+
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:19
 msgid ""
 "If you have a lot of Vipps subscription orders that are currently on-hold "
@@ -223,6 +244,10 @@ msgstr "Logg feilsøkingsmeldinger"
 msgid "Logging"
 msgstr "Logging"
 
+#: woo-vipps-recurring.php:431
+msgid "Max 100 characters"
+msgstr "Maks 100 tegn"
+
 #: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:278
 msgid "No"
 msgstr "Nei"
@@ -239,6 +264,10 @@ msgstr "Ingen svar fra Vipps API-et"
 msgid "Offer recurring payments with Vipps for WooCommerce Subscriptions"
 msgstr "Tilby faste betalinger med Vipps for WooCommerce Subscriptions"
 
+#: includes/wc-gateway-vipps-recurring.php:1697
+msgid "On hold"
+msgstr "På vent"
+
 #: includes/wc-gateway-vipps-recurring.php:153
 msgid "Pay with Vipps"
 msgstr "Betal med Vipps"
@@ -251,13 +280,21 @@ msgstr "Betal med Vipps"
 msgid "Payment gateway change request cancelled in Vipps"
 msgstr "Forespørsel om bytte av betalingsmiddel avbrutt i Vipps"
 
-#: includes/wc-gateway-vipps-recurring.php:1665
+#: includes/wc-gateway-vipps-recurring.php:1675
 msgid "Pending cancellation"
 msgstr "Venter på kansellering"
 
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:32
 msgid "Pending Charges"
 msgstr "Trekk på vent"
+
+#: woo-vipps-recurring.php:421
+msgid "Product short description"
+msgstr "Kort beskrivelse av produktet"
+
+#: woo-vipps-recurring.php:420
+msgid "Product title"
+msgstr "Produktnavn"
 
 #. translators: Link to a GitHub readme about the error
 #: includes/wc-vipps-recurring-api.php:517
@@ -269,7 +306,7 @@ msgstr ""
 "href=\"%s\" target=\"_blank\">her</a>"
 
 #. translators: Vipps Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1366
+#: includes/wc-gateway-vipps-recurring.php:1372
 msgid "Request to change gateway to Vipps with agreement ID: %s."
 msgstr "Forespørsel om å bytte til Vipps med agreement ID: %s"
 
@@ -277,11 +314,11 @@ msgstr "Forespørsel om å bytte til Vipps med agreement ID: %s"
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr "Lagre feilsøkingsmeldinger i WooCommerce sin System Status logg."
 
-#: woo-vipps-recurring.php:598
+#: woo-vipps-recurring.php:624
 msgid "Settings"
 msgstr "Innstillinger"
 
-#: includes/wc-gateway-vipps-recurring.php:1572
+#: includes/wc-gateway-vipps-recurring.php:1578
 msgid "Successfully authenticated with the Vipps API"
 msgstr "Autentisering med Vipps vellykket"
 
@@ -314,7 +351,7 @@ msgstr ""
 msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr "Delsummen er lik null, ordren er gratis i denne abonnementsperioden."
 
-#: includes/wc-gateway-vipps-recurring.php:1254
+#: includes/wc-gateway-vipps-recurring.php:1260
 msgid ""
 "There is a pending agreement on this order. Check the Vipps app or wait and "
 "try again in a few minutes."
@@ -351,13 +388,13 @@ msgstr ""
 msgid "This order has not yet been captured."
 msgstr "Denne ordren har ikke blitt trukket ennå."
 
-#: includes/wc-gateway-vipps-recurring.php:1238
+#: includes/wc-gateway-vipps-recurring.php:1244
 msgid "This subscription is already active in Vipps. You can leave this page."
 msgstr ""
 "Dette abonnementet har allerede en aktiv betalingsavtale i Vipps. Du kan "
 "forlate denne siden."
 
-#: includes/wc-gateway-vipps-recurring.php:1632
+#: includes/wc-gateway-vipps-recurring.php:1638
 msgid "This Vipps agreement ID is invalid."
 msgstr "Denne betalingsavtalen er ugyldig."
 
@@ -375,11 +412,11 @@ msgid "Vipps"
 msgstr "Vipps"
 
 #. translators: Vipps Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1392
+#: includes/wc-gateway-vipps-recurring.php:1398
 msgid "Vipps agreement created: %s. Customer sent to Vipps for confirmation."
 msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps for samtykke."
 
-#: includes/wc-gateway-vipps-recurring.php:1608
+#: includes/wc-gateway-vipps-recurring.php:1614
 msgid "Vipps Agreement ID"
 msgstr "Vipps betalingsavtale (Agreement ID)"
 
@@ -479,6 +516,13 @@ msgstr ""
 "Når et abonnement fornyes tar det et par dager før pengene blir trukket fra "
 "kunden sin bankkonto. Denne innstillingen kontrollerer hvilken status ordren "
 "skal ha i WooCommerce i mellomtiden."
+
+#: woo-vipps-recurring.php:417
+msgid ""
+"Where we should source the agreement description from. Displayed in the "
+"Vipps app."
+msgstr ""
+"Hvor beskrivelsen som brukes til betalingsavtalen i appen skal komme fra."
 
 #: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:277
 msgid "Yes"

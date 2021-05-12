@@ -296,7 +296,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function setup_screen() {
 				global $wc_vipps_recurring_list_table_pending_charges,
-				       $wc_vipps_recurring_list_table_failed_charges;
+					   $wc_vipps_recurring_list_table_failed_charges;
 
 				$screen_id = false;
 
@@ -324,16 +324,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				if ( $wc_vipps_recurring_list_table_pending_charges
-				     && $wc_vipps_recurring_list_table_pending_charges->current_action()
-				     && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
+					 && $wc_vipps_recurring_list_table_pending_charges->current_action()
+					 && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
 					$sendback = $this->handle_check_statuses_bulk_action();
 
 					wp_redirect( $sendback );
 				}
 
 				if ( $wc_vipps_recurring_list_table_failed_charges
-				     && $wc_vipps_recurring_list_table_failed_charges->current_action()
-				     && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
+					 && $wc_vipps_recurring_list_table_failed_charges->current_action()
+					 && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
 					$sendback = $this->handle_check_statuses_bulk_action();
 
 					wp_redirect( $sendback );
@@ -406,7 +406,30 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
 					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
 					'label'       => __( 'Capture payment instantly', 'woo-vipps-recurring' ),
-					'description' => __( 'Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option.', 'woo-vipps-recurring' )
+					'description' => __( 'Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option.', 'woo-vipps-recurring' ),
+					'desc_tip'    => true,
+				] );
+
+				woocommerce_wp_select( [
+					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE,
+					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, true ) ?: 'title',
+					'label'       => __( 'Description source', 'woo-vipps-recurring' ),
+					'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps app.', 'woo-vipps-recurring' ),
+					'desc_tip'    => true,
+					'options'     => [
+						'title'             => __( 'Product title', 'woo-vipps-recurring' ),
+						'short_description' => __( 'Product short description', 'woo-vipps-recurring' ),
+						'custom'            => __( 'Custom', 'woo-vipps-recurring' )
+					]
+				] );
+
+				woocommerce_wp_text_input( [
+					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_TEXT,
+					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_TEXT, true ),
+					'label'       => __( 'Custom description', 'woo-vipps-recurring' ),
+					'description' => __( 'If the description source is set to "custom" this text will be used.', 'woo-vipps-recurring' ),
+					'placeholder' => __( 'Max 100 characters', 'woo-vipps-recurring' ),
+					'desc_tip'    => true,
 				] );
 
 				echo '</div>';
@@ -420,6 +443,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function woocommerce_process_product_meta( $post_id ) {
 				$capture_instantly = isset( $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ] ) ? 'yes' : 'no';
 				update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, $capture_instantly );
+
+				update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE ] );
+				update_post_meta( $post_id, WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_TEXT, $_POST[ WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_TEXT ] ?? '' );
 			}
 
 			/**
@@ -447,8 +473,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$order_status        = $order->get_status();
 				$show_capture_button = ( ! in_array( $order_status, $gateway->statuses_to_attempt_capture, true ) )
-				                       && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
-				                       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
+									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
+									   && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
 
 				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;
@@ -574,7 +600,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$posts = get_posts( [
 					'limit'        => 5,
 					'post_type'    => 'shop_subscription',
-					'post_status'  => ['wc-active', 'wc-pending-cancel', 'wc-cancelled'],
+					'post_status'  => [ 'wc-active', 'wc-pending-cancel', 'wc-cancelled', 'wc-on-hold' ],
 					'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP,
 					'meta_compare' => '=',
 					'meta_value'   => 1,

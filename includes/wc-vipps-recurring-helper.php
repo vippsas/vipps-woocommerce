@@ -29,6 +29,8 @@ class WC_Vipps_Recurring_Helper {
 	 * Product
 	 */
 	const META_PRODUCT_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
+	const META_PRODUCT_DESCRIPTION_SOURCE = '_vipps_recurring_product_description_source';
+	const META_PRODUCT_DESCRIPTION_TEXT = '_vipps_recurring_product_description_text';
 
 	/**
 	 * Orders
@@ -343,6 +345,26 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	public static function get_failure_description_for_order( $order ) {
 		return self::get_meta( $order, self::META_CHARGE_FAILED_DESCRIPTION );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return string
+	 */
+	public static function get_product_description( WC_Product $product ): string {
+		$source = self::get_meta( $product, self::META_PRODUCT_DESCRIPTION_SOURCE );
+
+		$description = $product->get_name();
+		if ( $source === 'short_description' ) {
+			$description = $product->get_short_description();
+		}
+
+		if ( $source === 'custom' ) {
+			$description = self::get_meta( $product, self::META_PRODUCT_DESCRIPTION_TEXT );
+		}
+
+		return $description;
 	}
 
 	/**
