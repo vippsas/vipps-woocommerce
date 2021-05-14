@@ -91,10 +91,8 @@ class VippsKCSupport {
         $kco_settings = get_option( 'woocommerce_kco_settings' );
         $activate = isset( $kco_settings['epm_vipps_activate'] ) ? ($kco_settings['epm_vipps_activate'] == 'yes') : true;
 
-        // Can't do these, so disallow Vipps as external payment method  IOK 2020-05-29
-        $remove = class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription(); 
         global $Vipps;
-        $activate = apply_filters( 'woo_vipps_activate_kco_exteral_payment', ($activate && $Vipps->gateway()->is_available()));
+        $activate = apply_filters( 'woo_vipps_activate_kco_external_payment', ($activate && $Vipps->gateway()->is_available()));
 
         // Klarna will absolutely cache your external payment methods, so to be able to deactivate these based on the
         // cart, we must send this always
