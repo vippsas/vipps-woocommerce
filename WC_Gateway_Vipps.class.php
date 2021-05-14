@@ -742,7 +742,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($currency != 'NOK') {
             $ok = false;
         }
-
+        // Can't do these, so remove Vipps as payment method  IOK 2021-05-14
+        $ok = $ok && !(class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription());
         $ok = apply_filters('woo_vipps_is_available', $ok, $this);
         return $ok; 
     }

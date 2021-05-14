@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.7.1
+Tested up to: 5.7.2
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.2.2
+WC tested up to: 5.3.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.6  =
-Updated versions of WooCommerce
+= 1.7.7  =
+Fixed integration with Klarna so that Vipps isn't provided as an external payment method for carts that don't support it. Also add disable checkbox for Vipps as external payment method in admin, and provide a filter for developers.
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.05.xx version 1.7.7 =
+ Fix integration with Klarna Checkout so Vipps can be disabled as external payment method when appropriate
 
 = 2021.04.19 version 1.7.6 =
  Version bump for new version of WooCommerce and Blocks
