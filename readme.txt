@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.05.xx version 1.7.7 =
+= 2021.05.18 version 1.7.7 =
  Fix integration with Klarna Checkout so Vipps can be disabled as external payment method when appropriate
 
 = 2021.04.19 version 1.7.6 =
