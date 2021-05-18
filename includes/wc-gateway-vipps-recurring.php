@@ -208,7 +208,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [
 			$this,
-			'failing_payment_method'
+			'update_failing_payment_method'
 		], 10, 2 );
 
 		/*
@@ -247,6 +247,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this,
 			'maybe_handle_subscription_status_transitions'
 		], 10, 3 );
+
+		// delete idempotency key when renewal/resubscribe happens
+		add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10 );
+		add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 10 );
 	}
 
 	/**
@@ -275,11 +279,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * @param $original_order
-	 * @param $new_renewal_order
+	 * @param $subscription
+	 * @param $renewal_order
 	 */
-	public function failing_payment_method( $original_order, $new_renewal_order ) {
-		WC_Vipps_Recurring_Helper::update_meta_data( $original_order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $new_renewal_order ) );
+	public function update_failing_payment_method( $subscription, $renewal_order ) {
+		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order ) );
 	}
 
 	/**
@@ -869,7 +873,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$idempotence_key = $this->api->generate_idempotency_key();
 		}
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, '_idempotency_key', $idempotence_key );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotence_key );
 		$order->save();
 
 		return $idempotence_key;
@@ -1706,5 +1710,31 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$subscription->save();
 		}
+	}
+
+	/**
+	 * Don't transfer Vipps idempotency key or any other keys unique to a charge or order to resubscribe orders.
+	 *
+	 * @param mixed $resubscribe_order The order created for the customer to resubscribe to the old expired/cancelled subscription
+	 */
+	public function delete_resubscribe_meta( $resubscribe_order ) {
+		$this->delete_renewal_meta( $resubscribe_order );
+	}
+
+	/**
+	 * Don't transfer Vipps idempotency key or any other keys unique to a charge or order to renewal orders.
+	 *
+	 * @param mixed $renewal_order The renewal order
+	 */
+	public function delete_renewal_meta( $renewal_order ) {
+		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_ID );
+		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
+		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
+		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
+
+		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
+
+		return $renewal_order;
 	}
 }

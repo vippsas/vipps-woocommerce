@@ -39,6 +39,7 @@ class WC_Vipps_Recurring_Helper {
 	const META_ORDER_TRANSACTION_ID = '_transaction_id';
 	const META_ORDER_INITIAL = '_vipps_recurring_initial';
 	const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
+	const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
 
 	/**
 	 * Subscription

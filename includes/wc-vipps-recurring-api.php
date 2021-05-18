@@ -81,7 +81,7 @@ class WC_Vipps_Recurring_Api {
 	 * @return string
 	 */
 	public function generate_idempotency_key(): string {
-		return wp_generate_password( 24, false, false );
+		return wp_generate_password( 24, false );
 	}
 
 	/**
