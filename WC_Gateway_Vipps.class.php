@@ -1528,21 +1528,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($maybecreateuser) {
             global $Vipps;
             $customer = $Vipps->express_checkout_get_vipps_customer($order);
-            $userid = $customer->get_id();
+            if ($customer) {
+                $userid = $customer->get_id();
 
-            update_user_meta($userid, '_vipps_express_id', $user['userId']); // This is used for consent removal. It is unfortunately not the same as for Login. IOK 2020-10-12
+                update_user_meta($userid, '_vipps_express_id', $user['userId']); // This is used for consent removal. It is unfortunately not the same as for Login. IOK 2020-10-12
 
-            // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
-            // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
-            if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
-               update_user_meta($userid, '_vipps_phone', $phone);
-              // update_user_meta($userid, '_vipps_id', $sub);
-              // update_user_meta($userid, '_vipps_just_connected', 1);
+                // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
+                // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
+                if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
+                    update_user_meta($userid, '_vipps_phone', $phone);
+                    // update_user_meta($userid, '_vipps_id', $sub);
+                    // update_user_meta($userid, '_vipps_just_connected', 1);
+                }
+
+                // Ensure we get any changes made to the order, as it will be re-saved later
+                $order = wc_get_order($order->get_id());
             }
-
-            // Ensure we get any changes made to the order, as it will be re-saved later
-            $order = wc_get_order($order->get_id());
         }
+            
 
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
