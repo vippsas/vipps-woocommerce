@@ -868,14 +868,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	/**
 	 * @param $order
-	 * @param bool $generate_new
 	 *
 	 * @return mixed|string
 	 */
-	public function get_idempotence_key( $order, bool $generate_new = false ) {
+	public function get_idempotence_key( $order ) {
 		$idempotence_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
 
-		if ( ! $idempotence_key || $generate_new ) {
+		if ( ! $idempotence_key ) {
 			$idempotence_key = $this->api->generate_idempotency_key();
 		}
 
@@ -918,9 +917,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] it looks like the charge on agreement: %s failed. Deleting renewal meta and creating a new charge.', $renewal_order->get_id(), $agreement['id'] ) );
 
 				$this->delete_renewal_meta( $renewal_order );
+				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $renewal_order, 0 );// empty transaction id as we use this to determine whether to update the order status in check_charge_status.
 				$renewal_order->save();
+				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $renewal_order ) );
 
-				$idempotence_key = $this->get_idempotence_key( $renewal_order, true );
+				$idempotence_key = $this->get_idempotence_key( $renewal_order );
 
 				// calling $this->create_charge as this is a completely new charge and should be treated as such.
 				$charge = $this->create_charge( $agreement, $renewal_order, $idempotence_key );
@@ -1759,7 +1760,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
 		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
 		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_ORDER_TRANSACTION_ID );
 
 		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
