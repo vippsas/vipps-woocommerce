@@ -163,6 +163,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Fix: Do not allow multiple subscriptions in a single Vipps payment when other gateways that support it are enabled.
 * Fix: No longer show the "capture" button on an order where the charge has failed previously.
 * Fix: Delete meta values from renewal and resubscribe orders to make sure we get fresh charges.
+* Fix: WooCommerce's automatic retry system should now work as expected on renewal orders. We now override the behaviour of `wcs_is_scheduled_payment_attempt` in our `check_charge_status` function.
 * Enhancement: The subscription description is now prefixed in the Vipps app with "[Pending cancellation]", "[Cancelled]" and "[On hold]" depending on the subscription's status.
 * Enhancement: Added a setting per product for what source should be used for an agreement's description. You can now choose between product title, product short description, or custom text.
 * Enhancement: Display sign up fees in a better way in the Vipps app. Use a campaign with a price of 0,- until the next payment date.
