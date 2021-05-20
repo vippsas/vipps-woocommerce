@@ -1341,7 +1341,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
-						'description'     => $item->get_name(),
+						'description'     => WC_Vipps_Recurring_Helper::get_product_description( $product ),
 						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
