@@ -1346,10 +1346,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_subscription_switch = wcs_order_contains_switch( $order );
 
 			if ( $is_subscription_switch ) {
-				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );
+				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );;
 
-				if ( isset( $subscription_switch_data[ $is_subscription_switch ]['switches'] ) ) {
-					$switches    = $subscription_switch_data[ $is_subscription_switch ]['switches'];
+				if ( isset( $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'] ) ) {
+					$switches    = $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'];
 					$switch_data = $switches[ array_key_first( $switches ) ];
 					$direction   = $switch_data['switch_direction'];
 
