@@ -169,7 +169,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 * Enhancement: Display sign up fees in a better way in the Vipps app. Use a campaign with a price of 0,- until the next payment date.
 * Enhancement: Update item name and description in app for delayed in app updates.
 * Enhancement: Added a link to explain the various possible failure reasons.
-* Enhancement: Ability to change gateway from the admin dashboard. This should also allow using the REST API to create a subscription.
+* Enhancement: Ability to change gateway from the admin dashboard, this means setting another Vipps agreement ID manually. This should also allow using the REST API to create a subscription.
 * Enhancement: Bring style on notices and in product tabs up to par with the Vipps e-com plugin.
 
 = 1.6.2 =
