@@ -526,10 +526,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// check if order is temporarily locked
 		clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
 
-		// hold on to the lock for 15 seconds
+		// hold on to the lock for 30 seconds
 		$lock = (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_locked_for_update_time' );
-
-		if ( $lock && $lock > time() - 15 ) {
+		if ( $lock && $lock > time() - 30 ) {
 			return 'SUCCESS';
 		}
 
@@ -785,10 +784,26 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param $amount_to_charge
 	 * @param $order
 	 *
+	 * @return bool
+	 *
 	 * @throws Exception
 	 */
-	public function scheduled_subscription_payment( $amount_to_charge, $order ) {
-		$this->process_subscription_payment( $amount_to_charge, $order );
+	public function scheduled_subscription_payment( $amount_to_charge, $order ): bool {
+		try {
+			return $this->process_subscription_payment( $amount_to_charge, $order );
+		} catch ( Exception $e ) {
+			// if we reach this point we consider the error the be completely unrecoverable.
+			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, [] );
+			$order->update_status( 'failed' );
+
+			/* translators: Error message */
+			$message = sprintf( __( 'Failed creating a Vipps charge: %s', 'woo-vipps-recurring' ), $e->getMessage() );
+			$order->add_order_note( $message );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in process_subscription_payment: %s', $order->get_id(), $e->getMessage() ) );
+
+			return false;
+		}
 	}
 
 	/**
@@ -875,8 +890,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$idempotence_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
 
 		if ( ! $idempotence_key ) {
-			$idempotence_key = $this->api->generate_idempotency_key();
+			$idempotence_key = $this->generate_idempotency_key( $order );
 		}
+
+		return $idempotence_key;
+	}
+
+	/**
+	 * @param $order
+	 *
+	 * @return string
+	 */
+	protected function generate_idempotency_key( $order ) {
+		$idempotence_key = $this->api->generate_idempotency_key();
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotence_key );
 		$order->save();
@@ -886,7 +912,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	/**
 	 * @param $amount
-	 * @param WC_Order $renewal_order
+	 * @param $renewal_order
 	 *
 	 * @return bool
 	 * @throws WC_Vipps_Recurring_Config_Exception
@@ -894,73 +920,63 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function process_subscription_payment( $amount, $renewal_order ): bool {
-		try {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment attempting to create charge', $renewal_order->get_id() ) );
+		$renewal_order_id = WC_Vipps_Recurring_Helper::get_id( $renewal_order );
 
-			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order );
-
-			if ( ! $agreement_id ) {
-				throw new WC_Vipps_Recurring_Exception( 'Fatal error: Vipps agreement id does not exist.' );
-			}
-
-			$agreement = $this->api->get_agreement( $agreement_id );
-			$amount    = WC_Vipps_Recurring_Helper::get_vipps_amount( $amount );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment on agreement: %s', $renewal_order->get_id(), json_encode( $agreement ) ) );
-
-			/*
-			 * if this is triggered by the Woo Subscriptions retry system we need to delete the data related to the old payment
-			 * and create an entirely new charge.
-			 */
-			$charge_has_failed = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $renewal_order );
-			if ( $charge_has_failed ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] it looks like the charge on agreement: %s failed. Deleting renewal meta and creating a new charge.', $renewal_order->get_id(), $agreement['id'] ) );
-
-				$this->delete_renewal_meta( $renewal_order );
-				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $renewal_order, 0 );// empty transaction id as we use this to determine whether to update the order status in check_charge_status.
-				$renewal_order->save();
-				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $renewal_order ) );
-
-				$idempotence_key = $this->get_idempotence_key( $renewal_order );
-
-				// calling $this->create_charge as this is a completely new charge and should be treated as such.
-				$charge = $this->create_charge( $agreement, $renewal_order, $idempotence_key );
-				$this->check_charge_status( WC_Vipps_Recurring_Helper::get_id( $renewal_order ) );
-			} else {
-				$idempotence_key = $this->get_idempotence_key( $renewal_order );
-
-				$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotence_key, $amount );
-
-				$renewal_order->save();
-			}
-
-			WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
-
-		} catch ( Exception $e ) {
-			// if we reach this point we consider the error the be completely unrecoverable.
-
-			WC_Vipps_Recurring_Helper::set_order_charge_failed( $renewal_order, [] );
-			$renewal_order->update_status( 'failed' );
-
-			/* translators: Error message */
-			$message = sprintf( __( 'Failed creating a Vipps charge: %s', 'woo-vipps-recurring' ), $e->getMessage() );
-			$renewal_order->add_order_note( $message );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in process_subscription_payment: %s', $renewal_order->get_id(), $e->getMessage() ) );
-
-			throw new $e;
+		if ( get_transient( 'order_lock_' . $renewal_order_id ) ) {
+			return true;
 		}
 
+		set_transient( 'order_lock_' . $renewal_order_id, uniqid(), 30 );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment attempting to create charge', $renewal_order->get_id() ) );
+
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order );
+
+		if ( ! $agreement_id ) {
+			throw new WC_Vipps_Recurring_Exception( 'Fatal error: Vipps agreement id does not exist.' );
+		}
+
+		$agreement = $this->api->get_agreement( $agreement_id );
+		$amount    = WC_Vipps_Recurring_Helper::get_vipps_amount( $amount );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment on agreement: %s', $renewal_order->get_id(), json_encode( $agreement ) ) );
+
 		/*
-		 * if creating a charge was OK in the above code, we can assume we will have no further errors,
-		 * if we do they will at least not affect the rest of the logic or payment flow as the following is recoverable
+		 * if this is triggered by the Woo Subscriptions retry system we need to delete the data related to the old payment
+		 * and create an entirely new charge.
 		 */
+		$charge_has_failed = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $renewal_order );
+
+		// if the previous charge is 'FAILED' we can assume this is an automatic retry instead of a normal renewal process.
+		if ( $charge_has_failed ) {
+			// check that the currently attached charge is in fact failed
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] it looks like the charge on agreement: %s failed. Deleting renewal meta and creating a new charge.', $renewal_order->get_id(), $agreement['id'] ) );
+
+			// note: delete transaction id as we use this to determine whether to update the order status in check_charge_status.
+			$renewal_order->set_transaction_id( 0 );
+			$renewal_order = $this->delete_renewal_meta( $renewal_order );
+
+			$this->generate_idempotency_key( $renewal_order );
+
+			// clean the post cache for the renewal order to force Woo to fetch meta again.
+			clean_post_cache( $renewal_order_id );
+		}
+
+		$idempotency_key = $this->get_idempotence_key( $renewal_order );
+
+		$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotency_key, $amount );
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['chargeId'] );
+		WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
+
 		$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
 
 		$this->process_order_charge( $renewal_order, $charge );
+		$renewal_order->save();
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge['id'], $agreement['id'] ) );
 
@@ -1110,6 +1126,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// add due charge note
 			$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
+
 			$order->add_order_note( $this->get_due_charge_note( $charge ) );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement['id'] ) );
@@ -1753,15 +1770,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param mixed $renewal_order The renewal order
 	 */
 	public function delete_renewal_meta( $renewal_order ) {
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_ID );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
+		$renewal_order_id = WC_Vipps_Recurring_Helper::get_id( $renewal_order );
 
-		delete_post_meta( WC_Vipps_Recurring_Helper::get_id( $renewal_order ), WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
 		return $renewal_order;
 	}

@@ -166,7 +166,7 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * Gets meta data from a resource
 	 *
-	 * @param $resource
+	 * @param WC_Order|WC_Subscription $resource
 	 * @param $meta_key
 	 *
 	 * @return mixed
@@ -261,9 +261,15 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_transaction_id_for_order( $order ) {
-		return self::is_wc_lt( '3.0' )
+		$transaction_id = self::is_wc_lt( '3.0' )
 			? get_post_meta( self::get_id( $order ), self::META_ORDER_TRANSACTION_ID )
 			: $order->get_transaction_id();
+
+		if ( is_integer( $transaction_id ) && ! $transaction_id ) {
+			return false;
+		}
+
+		return $transaction_id;
 	}
 
 	/**
