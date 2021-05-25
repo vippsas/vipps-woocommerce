@@ -9,7 +9,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2020-10-16T12:18:56+00:00\n"
-"PO-Revision-Date: 2021-05-12 12:32+0000\n"
+"PO-Revision-Date: 2021-05-25 19:52+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -427,7 +427,7 @@ msgstr "Vipps venter på manuelt trekk av beløp"
 #. translators: Vipps Charge ID
 #: includes/wc-gateway-vipps-recurring.php:677
 msgid "Vipps charge completed (Charge ID: %s)"
-msgstr "Vipps betaling fullført (Charge ID: %s)"
+msgstr "Vippsbetaling fullført (Charge ID: %s)"
 
 #. translators: Vipps Charge ID, human diff timestamp
 #: includes/wc-gateway-vipps-recurring.php:950
