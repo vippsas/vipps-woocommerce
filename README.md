@@ -51,8 +51,7 @@ for an overview.
 # Getting started
 
 * Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
-* After 1-2 days you will get an email with login details to the [Vipps customer portal](https://portal.vipps.no).
-  This is where you can [retrieve the API credentials](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys) used to configure the plugin in WooCommerce.
+* Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
 * Proceed to "Installation" below
 
 ## Installation
