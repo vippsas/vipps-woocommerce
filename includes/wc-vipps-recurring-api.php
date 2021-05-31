@@ -67,11 +67,11 @@ class WC_Vipps_Recurring_Api {
 		try {
 			return $this->http_call( 'accessToken/get', 'POST' );
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			WC_Vipps_Recurring_Logger::log( __( 'Could not get Vipps access token', 'woo-vipps-recurring' ) . ' ' . $e->getMessage() );
+			WC_Vipps_Recurring_Logger::log( 'Could not get Vipps access token ' . $e->getMessage() );
 
 			throw $e;
 		} catch ( Exception $e ) {
-			WC_Vipps_Recurring_Logger::log( __( 'Could not get Vipps access token', 'woo-vipps-recurring' ) . ' ' . $e->getMessage() );
+			WC_Vipps_Recurring_Logger::log( 'Could not get Vipps access token ' . $e->getMessage() );
 
 			throw new WC_Vipps_Recurring_Config_Exception( $e->getMessage() );
 		}
