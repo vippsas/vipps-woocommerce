@@ -154,6 +154,10 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.7.1 =
+* Fix: Cancelled agreements can not be updated, thus we can not say that they have been cancelled in the description. Ensure we run the "maybe_update_subscription_details_in_app" code before we cancel an agreement, and only if the agreement is still "ACTIVE".
+* Fix: Ensure we only ever cancel an agreement once.
+
 = 1.7.0 =
 * Fix: Add missing Norwegian translation for "No failed charges found.".
 * Fix: Failed charges now appear properly in the "Failed charges" list.
