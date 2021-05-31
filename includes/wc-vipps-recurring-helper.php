@@ -45,6 +45,7 @@ class WC_Vipps_Recurring_Helper {
 	 * Subscription
 	 */
 	const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
+	const META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS = '_vipps_recurring_swapping_gateway_to_vipps';
 	const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
 	const META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX = '_vipps_recurring_update_in_app_description_prefix';
 

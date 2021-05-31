@@ -280,7 +280,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @return bool Whether the subscription's payment method should be updated on checkout or async when a response is returned.
 	 */
-	public function indicate_async_payment_method_update( $should_update, $new_payment_method ): bool {
+	public function indicate_async_payment_method_update( bool $should_update, string $new_payment_method ): bool {
 		if ( 'vipps_recurring' === $new_payment_method ) {
 			$should_update = false;
 		}
@@ -1209,14 +1209,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED', 'ACTIVE' ] ) ) {
 				$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
+				$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
 				$subscription->delete_meta_data( '_new_agreement_id' );
 				$subscription->delete_meta_data( '_old_agreement_id' );
 			}
 
 			$subscription->save();
-		} else {
-			// this exists as there was previously an issue where this value was never unset
-			$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
 		}
 	}
 
@@ -1291,7 +1289,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return array|string[]
 	 * @throws Exception
 	 */
-	public function process_payment( $order_id, $retry = true, $previous_error = false ) {
+	public function process_payment( $order_id, bool $retry = true, bool $previous_error = false ) {
 		$is_gateway_change = wcs_is_subscription( $order_id );
 
 		$order     = wc_get_order( $order_id );
@@ -1311,15 +1309,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 * if this order has a PENDING or ACTIVE agreement in Vipps we should not allow checkout anymore
 			 * this will prevent duplicate transactions
 			 */
-			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-			if ( $agreement_id && ! $is_gateway_change ) {
-				$agreement = $this->get_agreement_from_order( $order );
+			$agreement_id              = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+			$already_swapping_to_vipps = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
+
+			if ( $agreement_id && ( ! $is_gateway_change || $already_swapping_to_vipps ) ) {
+				if ( ! $already_swapping_to_vipps ) {
+					$agreement = $this->get_agreement_from_order( $order );
+				} else {
+					$new_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_new_agreement_id' );
+					$agreement        = $this->api->get_agreement( $new_agreement_id );
+				}
 
 				if ( $agreement['status'] === 'ACTIVE' ) {
 					throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps. You can leave this page.', 'woo-vipps-recurring' ) );
 				}
 
-				// todo: remove this if Idempotency-Key starts working as expected in Vipps' API
+				// todo: remove this if Idempotency-Key starts working as expected in Vipps' API (ideally confirmation url should be the same as long as the same idempotency key is passed)
 				if ( $agreement['status'] === 'PENDING' ) {
 					$confirmation_url = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL );
 
@@ -1454,6 +1459,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_old_agreement_id', WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ) );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_new_agreement_id', $response['agreementId'] );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE, true );
+				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS, true );
 			}
 
 			if ( ! $is_gateway_change ) {

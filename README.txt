@@ -157,6 +157,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 = 1.8.0 =
 * Fix: Cancelled agreements can not be updated, thus we can not say that they have been cancelled in the description. Ensure we run the "maybe_update_subscription_details_in_app" code before we cancel an agreement, and only if the agreement is still "ACTIVE".
 * Fix: Ensure we only ever cancel an agreement once.
+* Fix: It's no longer possible to end up with more than one Vipps agreement by changing gateway twice or more on accident (this bug was introduced in 1.7.0).
 * Enhancement: We now cancel DUE charges in Vipps when you change an order's status to 'Cancelled' or 'Failed'.
 
 = 1.7.0 =
