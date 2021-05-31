@@ -251,6 +251,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// delete idempotency key when renewal/resubscribe happens
 		add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10 );
 		add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 10 );
+
+		// cancel DUE charge if order transitions to 'cancelled' or 'failed'
+		$cancel_due_charge_statuses = apply_filters( 'wc_vipps_recurring_cancel_due_charge_statuses', [
+			'cancelled',
+			'failed'
+		] );
+
+		foreach ( $cancel_due_charge_statuses as $status ) {
+			add_action( 'woocommerce_order_status_' . $status, [ $this, 'maybe_cancel_due_charge' ] );
+		}
 	}
 
 	/**
@@ -1800,5 +1810,36 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
 		return $renewal_order;
+	}
+
+	/**
+	 * @param $order_id
+	 */
+	public function maybe_cancel_due_charge( $order_id ) {
+		$order        = wc_get_order( $order_id );
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+		$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
+
+		$pending_charge = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+
+		if ( $pending_charge ) {
+			try {
+				if ( get_transient( 'maybe_cancel_due_charge_lock' . $order_id ) ) {
+					return;
+				}
+
+				set_transient( 'maybe_cancel_due_charge_lock' . $order_id, uniqid(), 30 );
+
+				$charge = $this->api->get_charge( $agreement_id, $charge_id );
+				if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
+					$this->api->cancel_charge( $agreement_id, $charge_id );
+					$order->add_order_note( __( 'Cancelled due charge in Vipps.', 'woo-vipps-recurring' ) );
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelled DUE charge with ID: %s for agreement with ID: %s', $order_id, $charge_id, $agreement_id ) );
+				}
+			} catch ( Exception $e ) {
+				$order->add_order_note( __( 'Could not cancel charge in Vipps. Please manually check the status of this order if you plan to process a new renewal order!', 'woo-vipps-recurring' ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error msg: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
+			}
+		}
 	}
 }
