@@ -1403,7 +1403,8 @@ EOF;
         $shipping_methods = array();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
-            $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,array(array('total'=>0)), 'none_required', 0);
+            $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', WC_Tax::get_shipping_tax_rates());
+            $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,$no_shipping_taxes, 'none_required', 0);
         } else {
             $package = array();
             $package['contents'] = $acart->cart_contents;

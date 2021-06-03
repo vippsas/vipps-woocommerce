@@ -201,6 +201,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2021.06.xx version 1.7.8 =
+ Tiny change in "No shipping required" setup
+
 = 2021.05.18 version 1.7.7 =
  Fix error-handling when creating new customers in express checkout
 
