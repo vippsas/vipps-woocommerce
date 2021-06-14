@@ -75,11 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.8  =
-Fixed error-handling when creating customers when using express checkout.
-
-Fixed integration with Klarna so that Vipps isn't provided as an external payment method for carts that don't support it. Also add disable checkbox for Vipps as external payment method in admin, and provide a filter for developers.
-
+= 1.7.9  =
+ Tiny change in "No shipping required" setup
 
 == Frequently Asked Questions ==
 
@@ -201,10 +198,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.06.xx version 1.7.8 =
+= 2021.06.14 version 1.7.9 =
  Tiny change in "No shipping required" setup
 
-= 2021.05.18 version 1.7.7 =
+= 2021.05.18 version 1.7.8 =
  Fix error-handling when creating new customers in express checkout
 
 = 2021.05.18 version 1.7.7 =
