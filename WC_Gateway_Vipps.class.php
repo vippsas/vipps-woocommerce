@@ -1644,7 +1644,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $errorInfo = @$result['errorInfo'];
         if ($errorInfo) {
             $this->log(__("Error message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note($errorInfo['errorMessage']);
+            $order->add_order_note(sprintf(__("Error message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
         }
 
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);

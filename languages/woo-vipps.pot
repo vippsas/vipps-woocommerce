@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-14 13:26+0000\n"
+"POT-Creation-Date: 2021-06-16 15:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -102,7 +102,7 @@ msgid ""
 "avoid duplicate order-ids"
 msgstr ""
 
-#: Vipps.class.php:2762
+#: Vipps.class.php:2763
 msgid ""
 "An error occured during order confirmation. The error has been logged. "
 "Please contact us to determine the status of your order"
@@ -112,11 +112,11 @@ msgstr ""
 msgid "An error occured while creating a shareable link"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1604
+#: WC_Gateway_Vipps.class.php:1607
 msgid "Anomalous callback from vipps, handle errors and clean up"
 msgstr ""
 
-#: Vipps.class.php:2583
+#: Vipps.class.php:2584
 msgid "Are you sure?"
 msgstr ""
 
@@ -132,22 +132,22 @@ msgstr ""
 msgid "Awaiting Vipps payment confirmation"
 msgstr ""
 
-#: Vipps.class.php:1655
+#: Vipps.class.php:1656
 #, php-format
 msgid ""
 "Based on a consent removal call from the Vipps app a data erasure request "
 "has been created and a confirmation request been sent to the user %s"
 msgstr ""
 
-#: Vipps.class.php:1003 Vipps.class.php:1060 Vipps.class.php:2306
+#: Vipps.class.php:1003 Vipps.class.php:1060 Vipps.class.php:2307
 msgid "Buy now with"
 msgstr ""
 
-#: Vipps.class.php:1002 Vipps.class.php:1061 Vipps.class.php:2307
+#: Vipps.class.php:1002 Vipps.class.php:1061 Vipps.class.php:2308
 msgid "Buy now with Vipps"
 msgstr ""
 
-#: Vipps.class.php:402 Vipps.class.php:2635
+#: Vipps.class.php:402 Vipps.class.php:2636
 msgid "Buy now with Vipps!"
 msgstr ""
 
@@ -218,7 +218,7 @@ msgstr ""
 msgid "Cannot use flock() to lock orders: cannot create or write to directory"
 msgstr ""
 
-#: Vipps.class.php:1498
+#: Vipps.class.php:1499
 #, php-format
 msgid ""
 "Cannot use shipping method %s in Vipps Express checkout: the shipping method "
@@ -271,15 +271,15 @@ msgstr ""
 msgid "Confirm your order from"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1845
+#: WC_Gateway_Vipps.class.php:1848
 msgid "Connection to Vipps OK"
 msgstr ""
 
-#: Vipps.class.php:2767
+#: Vipps.class.php:2768
 msgid "Continue"
 msgstr ""
 
-#: Vipps.class.php:2726 Vipps.class.php:2763 Vipps.class.php:2771
+#: Vipps.class.php:2727 Vipps.class.php:2764 Vipps.class.php:2772
 msgid "Continue shopping"
 msgstr ""
 
@@ -315,22 +315,22 @@ msgstr ""
 msgid "Could not capture Vipps payment for order_id:"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1847
+#: WC_Gateway_Vipps.class.php:1850
 msgid "Could not connect to Vipps"
 msgstr ""
 
-#: Vipps.class.php:1994 Vipps.class.php:1999 Vipps.class.php:2009
-#: Vipps.class.php:2123 Vipps.class.php:2129 Vipps.class.php:2139
+#: Vipps.class.php:1995 Vipps.class.php:2000 Vipps.class.php:2010
+#: Vipps.class.php:2124 Vipps.class.php:2130 Vipps.class.php:2140
 msgid "Could not create order"
 msgstr ""
 
-#: Vipps.class.php:1428
+#: Vipps.class.php:1429
 msgid ""
 "Could not find any applicable shipping methods for Vipps Express Checkout - "
 "order will fail"
 msgstr ""
 
-#: Vipps.class.php:1627
+#: Vipps.class.php:1628
 #, php-format
 msgid "Could not find user with Vipps user ID %s for account deletion"
 msgstr ""
@@ -359,7 +359,7 @@ msgstr ""
 msgid "Could not get Vipps order status for order id:"
 msgstr ""
 
-#: Vipps.class.php:1651
+#: Vipps.class.php:1652
 #, php-format
 msgid "Could not handle remove personal data request for user %s : %s"
 msgstr ""
@@ -502,19 +502,19 @@ msgstr ""
 msgid "Enable Vipps"
 msgstr ""
 
-#: Vipps.class.php:2007 Vipps.class.php:2137
+#: Vipps.class.php:2008 Vipps.class.php:2138
 msgid "Error calculating static shipping"
 msgstr ""
 
-#: Vipps.class.php:1917
+#: Vipps.class.php:1918
 msgid "Error creating customer in express checkout: "
 msgstr ""
 
-#: Vipps.class.php:2761
+#: Vipps.class.php:2762
 msgid "Error during order confirmation"
 msgstr ""
 
-#: Vipps.class.php:2066
+#: Vipps.class.php:2067
 msgid "Error finding product - cannot create order"
 msgstr ""
 
@@ -535,7 +535,12 @@ msgstr ""
 msgid "Error getting payment details from Vipps for order_id:"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1643
+#: WC_Gateway_Vipps.class.php:1647
+#, php-format
+msgid "Error message from Vipps: %s"
+msgstr ""
+
+#: WC_Gateway_Vipps.class.php:1646
 msgid "Error message in callback from Vipps for order"
 msgstr ""
 
@@ -552,7 +557,7 @@ msgstr ""
 msgid "express checkout"
 msgstr ""
 
-#: Vipps.class.php:1964 Vipps.class.php:2034 Vipps.class.php:2088
+#: Vipps.class.php:1965 Vipps.class.php:2035 Vipps.class.php:2089
 msgid "Express checkout is not available for this order"
 msgstr ""
 
@@ -655,7 +660,7 @@ msgstr ""
 msgid "Invalid order for shipping callback:"
 msgstr ""
 
-#: Vipps.class.php:2507
+#: Vipps.class.php:2508
 msgid ""
 "It seems a customer is trying to re-order product(s) recently bought in the "
 "same session, asking user for confirmation"
@@ -720,16 +725,16 @@ msgstr ""
 msgid "No shipping details from Vipps for express checkout for order id:"
 msgstr ""
 
-#: Vipps.class.php:1406 Vipps.class.php:1538
+#: Vipps.class.php:1407 Vipps.class.php:1539
 msgid "No shipping required"
 msgstr ""
 
-#: Vipps.class.php:1632
+#: Vipps.class.php:1633
 #, php-format
 msgid "No user with id %d when processing consent removal request"
 msgstr ""
 
-#: Vipps.class.php:2189 Vipps.class.php:2194
+#: Vipps.class.php:2190 Vipps.class.php:2195
 msgid "Not an order"
 msgstr ""
 
@@ -753,7 +758,7 @@ msgstr ""
 msgid "Order cancel for order"
 msgstr ""
 
-#: Vipps.class.php:2725 Vipps.class.php:2728 Vipps.class.php:2770
+#: Vipps.class.php:2726 Vipps.class.php:2729 Vipps.class.php:2771
 msgid "Order cancelled"
 msgstr ""
 
@@ -761,7 +766,7 @@ msgstr ""
 msgid "Order capture for order"
 msgstr ""
 
-#: Vipps.class.php:2766
+#: Vipps.class.php:2767
 msgid "Order confirmed"
 msgstr ""
 
@@ -769,7 +774,7 @@ msgstr ""
 msgid "Order does not exist at Vipps - cancelling"
 msgstr ""
 
-#: Vipps.class.php:2204 Vipps.class.php:2226
+#: Vipps.class.php:2205 Vipps.class.php:2227
 msgid "Order failed"
 msgstr ""
 
@@ -781,7 +786,7 @@ msgstr ""
 msgid "Order id"
 msgstr ""
 
-#: Vipps.class.php:2627
+#: Vipps.class.php:2628
 msgid "Order in progress"
 msgstr ""
 
@@ -817,23 +822,23 @@ msgstr ""
 msgid "Payment already captured"
 msgstr ""
 
-#: Vipps.class.php:2217
+#: Vipps.class.php:2218
 msgid "Payment authorized"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1675
+#: WC_Gateway_Vipps.class.php:1678
 msgid "Payment authorized at Vipps"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1659
+#: WC_Gateway_Vipps.class.php:1662
 msgid "Payment cancelled at Vipps"
 msgstr ""
 
-#: Vipps.class.php:2221
+#: Vipps.class.php:2222
 msgid "Payment captured"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1267 WC_Gateway_Vipps.class.php:1655
+#: WC_Gateway_Vipps.class.php:1267 WC_Gateway_Vipps.class.php:1658
 msgid "Payment captured directly at Vipps"
 msgstr ""
 
@@ -853,7 +858,7 @@ msgid ""
 "this feature."
 msgstr ""
 
-#: Vipps.class.php:2625
+#: Vipps.class.php:2626
 msgid "Please wait while we are preparing your order"
 msgstr ""
 
@@ -861,11 +866,11 @@ msgstr ""
 msgid "Processing"
 msgstr ""
 
-#: Vipps.class.php:1953
+#: Vipps.class.php:1954
 msgid "Processing order... "
 msgstr ""
 
-#: Vipps.class.php:2422
+#: Vipps.class.php:2423
 msgid "Product is no longer available"
 msgstr ""
 
@@ -873,7 +878,7 @@ msgstr ""
 msgid "Raw input was "
 msgstr ""
 
-#: Vipps.class.php:2621
+#: Vipps.class.php:2622
 msgid "Ready for express checkout - press the button"
 msgstr ""
 
@@ -909,11 +914,11 @@ msgstr ""
 msgid "Select variant"
 msgstr ""
 
-#: Vipps.class.php:2083
+#: Vipps.class.php:2084
 msgid "Selected product variant is not available"
 msgstr ""
 
-#: Vipps.class.php:2095
+#: Vipps.class.php:2096
 msgid "Selected product variant is not available for purchase"
 msgstr ""
 
@@ -968,7 +973,7 @@ msgstr ""
 msgid "Skip entering your address and just checkout using"
 msgstr ""
 
-#: Vipps.class.php:1984
+#: Vipps.class.php:1985
 #, php-format
 msgid ""
 "Some of the products in your cart are no longer available in the quantities "
@@ -1007,7 +1012,7 @@ msgstr ""
 msgid "The entire amount has been captured at Vipps"
 msgstr ""
 
-#: Vipps.class.php:2423
+#: Vipps.class.php:2424
 msgid ""
 "The link you have followed is for a product that is no longer available at "
 "this location. Please return to the store and try again"
@@ -1055,7 +1060,7 @@ msgid ""
 "in the checkout form."
 msgstr ""
 
-#: Vipps.class.php:2560
+#: Vipps.class.php:2561
 msgid "To the Vipps app!"
 msgstr ""
 
@@ -1111,19 +1116,19 @@ msgid ""
 "wait or  choose another method."
 msgstr ""
 
-#: Vipps.class.php:1919
+#: Vipps.class.php:1920
 msgid "Unknown error customer in express checkout."
 msgstr ""
 
-#: Vipps.class.php:696 Vipps.class.php:2687
+#: Vipps.class.php:696 Vipps.class.php:2688
 msgid "Unknown order"
 msgstr ""
 
-#: Vipps.class.php:2229
+#: Vipps.class.php:2230
 msgid "Unknown payment status"
 msgstr ""
 
-#: Vipps.class.php:2073
+#: Vipps.class.php:2074
 msgid "Unknown product, cannot create order"
 msgstr ""
 
@@ -1188,7 +1193,7 @@ msgstr ""
 msgid "Use your current shipping filters"
 msgstr ""
 
-#: Vipps.class.php:1646
+#: Vipps.class.php:1647
 #, php-format
 msgid "User %d has no valid email"
 msgstr ""
@@ -1201,7 +1206,7 @@ msgstr ""
 msgid "User ID"
 msgstr ""
 
-#: Vipps.class.php:1637
+#: Vipps.class.php:1638
 #, php-format
 msgid ""
 "User with ID %d is an adminstrator - user erase request is not sent after "
@@ -1213,8 +1218,8 @@ msgid "Variant"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:72 WC_Gateway_Vipps.class.php:73
-#: WC_Gateway_Vipps.class.php:504 WC_Gateway_Vipps.class.php:1789
-#: WC_Gateway_Vipps.class.php:1879 VippsKCSupport.class.php:63
+#: WC_Gateway_Vipps.class.php:504 WC_Gateway_Vipps.class.php:1792
+#: WC_Gateway_Vipps.class.php:1882 VippsKCSupport.class.php:63
 #: Vipps.class.php:318 Vipps.class.php:458 Blocks/Payment/Vipps.class.php:46
 msgid "Vipps"
 msgstr ""
@@ -1223,23 +1228,23 @@ msgstr ""
 msgid "Vipps Buy Now button"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1589
+#: WC_Gateway_Vipps.class.php:1592
 msgid "Vipps callback for unknown order"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1639
+#: WC_Gateway_Vipps.class.php:1642
 msgid "Vipps callback received"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1583
+#: WC_Gateway_Vipps.class.php:1586
 msgid "Vipps callback with wrong merchantSerialNumber - might be forged"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1798
+#: WC_Gateway_Vipps.class.php:1801
 msgid "Vipps does not support your currency."
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1699 Vipps.class.php:2638
+#: WC_Gateway_Vipps.class.php:1702 Vipps.class.php:2639
 msgid "Vipps Express Checkout"
 msgstr ""
 
@@ -1260,7 +1265,7 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:411 WC_Gateway_Vipps.class.php:962
 #: WC_Gateway_Vipps.class.php:1025 WC_Gateway_Vipps.class.php:1060
-#: Vipps.class.php:2021 Vipps.class.php:2158 Vipps.class.php:2559
+#: Vipps.class.php:2022 Vipps.class.php:2159 Vipps.class.php:2560
 msgid "Vipps is temporarily unavailable."
 msgstr ""
 
@@ -1280,7 +1285,7 @@ msgstr ""
 msgid "Vipps payment refunded:"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1807
+#: WC_Gateway_Vipps.class.php:1810
 msgid "Vipps requires that your site uses HTTPS."
 msgstr ""
 
@@ -1289,7 +1294,7 @@ msgstr ""
 msgid "Vipps Subscription Key"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1799
+#: WC_Gateway_Vipps.class.php:1802
 msgid "Vipps will only be available as a payment option when currency is NOK"
 msgstr ""
 
@@ -1303,15 +1308,15 @@ msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
 msgstr ""
 
-#: Vipps.class.php:2746
+#: Vipps.class.php:2747
 msgid "Waiting for confirmation of purchase from Vipps"
 msgstr ""
 
-#: Vipps.class.php:2776
+#: Vipps.class.php:2777
 msgid "Waiting for your order confirmation"
 msgstr ""
 
-#: Vipps.class.php:2199 Vipps.class.php:2213
+#: Vipps.class.php:2200 Vipps.class.php:2214
 msgid "Waiting on order"
 msgstr ""
 
@@ -1325,7 +1330,7 @@ msgstr ""
 msgid "WP Hosting"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1597
+#: WC_Gateway_Vipps.class.php:1600
 msgid ""
 "Wrong auth token in callback from Vipps - possibly an attempt to fake a "
 "callback"
@@ -1343,7 +1348,7 @@ msgstr ""
 msgid "You need to enter your phone number to pay with Vipps"
 msgstr ""
 
-#: Vipps.class.php:2584
+#: Vipps.class.php:2585
 msgid ""
 "You recently completed an order with exactly the same products as you are "
 "buying now. There should be an email in your inbox from the previous "
@@ -1356,11 +1361,11 @@ msgid ""
 "vipps.no"
 msgstr ""
 
-#: Vipps.class.php:2101
+#: Vipps.class.php:2102
 msgid "Your product is temporarily no longer available for purchase"
 msgstr ""
 
-#: Vipps.class.php:2450
+#: Vipps.class.php:2451
 msgid "Your shopping cart is empty"
 msgstr ""
 
