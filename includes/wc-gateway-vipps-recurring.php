@@ -339,6 +339,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// redirect to checkout or cancelled page?
 		$page = $this->ensure_cancelled_order_page();
 		wp_redirect( $page->guid . '?vipps_recurring_order_cancelled=true' );
+		exit;
 	}
 
 	/**
