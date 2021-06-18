@@ -156,6 +156,8 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 = 1.8.1 =
 * Fix: Added an exit condition after attempting to redirect to the Cancelled Vipps Purchase page. This should in theory make this redirect work every single time.
+* Fix: Ensure we always check statuses on payments in ascending order.
+* Change: We now check 8 charges at the same time instead of 5.
 
 = 1.8.0 =
 * Fix: Cancelled agreements can not be updated, thus we can not say that they have been cancelled in the description. Ensure we run the "maybe_update_subscription_details_in_app" code before we cancel an agreement, and only if the agreement is still "ACTIVE".

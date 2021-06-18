@@ -550,12 +550,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 *
 			 * @return array
 			 */
-			public function check_order_statuses( $limit = 5 ): array {
+			public function check_order_statuses( $limit = 8 ): array {
 				$gateway = $this->gateway();
 
 				$order_ids = wc_get_orders( [
 					'limit'          => $limit,
-					'order'          => 'rand',
+					'order'          => 'ASC',
 					'type'           => 'shop_order',
 					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
 					'meta_compare'   => '=',
