@@ -1186,6 +1186,7 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
+        #error_log("This is the vipps callback handler, which is currently disabled."); echo "1"; exit();
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
@@ -1719,7 +1720,31 @@ EOF;
     // check if the status of these orders are now known. This is intended to handle the case where a user does not return
     // to the store and the Vipps callback fails for whatever reason.  IOK 2021-06-21
     public function cron_check_for_missing_callbacks() {
-        error_log("Checking for missing callbacks!");
+        $eightminutesago = time() - (60*8);
+        $sevendaysago = time() - (60*60*24*7);
+        $pending = wc_get_orders(
+          array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created'=> '<'.$eightminutesago,
+                'date_created' => '>' . $sevendaysago ));
+        if (empty($pending)) return;
+        $this->log(__("Some orders have not received a callback after 8 minutes, and are still pending. This may indicate a problem with your sites callback handler, which may cause issues if the customer does not return to the store. Checking order status for these now.", 'woo-vipps'));
+        foreach ($pending as $o) {
+            $this->check_status_of_pending_order($o);
+        }
+    }
+
+    // Check and possibly update the status of a pending order at Vipps.
+    public function check_status_of_pending_order($order) {
+        $express = $order->get_meta('_vipps_express_checkout'); 
+        $gw = $this->gateway();
+        try {
+            $order_status = $gw->callback_check_order_status($order);
+            $this->log(sprintf(__("For order %d order status at vipps is %s", 'woo-vipps'), $order->get_id(), $order_status), 'debug');
+            return $order_status;
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Error getting order status at Vipps for order %d", 'woo-vipps'), $order->get_id()), 'error'); 
+            $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
+            return null;
+        }
     }
 
     // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on plugins_loaded. IOK 2020-04-01
@@ -1782,15 +1807,7 @@ EOF;
             }
         }
         $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
-        $gw = $this->gateway();
-        try {
-            $order_status = $gw->callback_check_order_status($order);
-            $this->log("order status $order_status ");
-            return $order_status;
-        } catch (Exception $e) {
-            $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
-            return null;
-        }
+        return $this->check_status_of_pending_order($order);
     }
 
     // In some situations we have to empty the cart when the user goes to Vipps, so
