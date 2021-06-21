@@ -302,17 +302,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
 	public function process_redirect_payment( $order_id ) {
-		if ( empty( $order_id ) ) {
-			return;
-		}
-
 		$order = wc_get_order( $order_id );
 		if ( ! is_object( $order ) ) {
-			return;
-		}
-
-		$order_status = $order->get_status();
-		if ( in_array( $order_status, [ 'processing', 'completed' ] ) ) {
 			return;
 		}
 
@@ -324,6 +315,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// check latest charge status
 		$status = $this->check_charge_status( $order_id );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] process_redirect_payment: charge status is: %s", $order_id, $status ) );
 
 		$this->maybe_redirect_to_cancelled_order_page( $status );
 	}
