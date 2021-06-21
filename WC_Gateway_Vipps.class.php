@@ -1476,7 +1476,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_shipping_country($country);
 
         // Allow the bearer of the current session to login (if not yet logged in) on the thankyou-screen IOK 2020-10-09
-        WC()->session->set('_vipps_order_finalized', $order->get_order_key());
+        if (WC()->session) {
+            WC()->session->set('_vipps_order_finalized', $order->get_order_key());
+        } else {
+            $this->log(__("Finalizing an Express Checkout order with no session - this should probably not happen", 'woo-vipps'), 'error');
+        }
 
         $order->save();
 

@@ -1186,7 +1186,6 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        #error_log("This is the vipps callback handler, which is currently disabled."); echo "1"; exit();
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
@@ -1230,13 +1229,35 @@ EOF;
         return  $code;
     }
 
+    // To be added to the 'woocommerce_session_handler' filter IOK 2021-06-21
+    public static function getCallbackSessionClass ($handler) {
+          return  "VippsCallbackSessionHandler";
+    }
+
+    // Go back to the basic woocommerce session handler if we have temporarily restored session from an Vipps order 2021-06-21
+    // Only to be called by wp-cron, callbacks etc. Will not actually destroy the stored session, just the current session.
+    public function callback_destroy_session () {
+           $this->callbackorder = null;
+           remove_filter('woocommerce_session_handler', array('Vipps', 'getCallbackSessionClass'));
+           unset(WC()->session);
+           if (version_compare(WC_VERSION, '3.6.4', '>=')) {
+               // This will replace the old session with this one. IOK 2019-10-22
+               WC()->initialize_session(); 
+           } else {
+               // Do this manually for 3.6.3 and below
+               WC()->session = new WC_Session_Handler();
+               WC()->session->init();
+           }
+    }
+
     // When we get callbacks from Vipps, we want to restore the Woo session in place for the order.
     // For many plugins this is strictly neccessary because they don't check to see if there is a session
     // or not - and for many others, wrong results are produced without the (correct) session. IOK 2019-10-22
     protected function callback_restore_session ($orderid) {
         $this->callbackorder = $orderid;
+        unset(WC()->session);
         require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
-        add_filter('woocommerce_session_handler', function ($handler) { return "VippsCallbackSessionHandler";});
+        add_filter('woocommerce_session_handler', array('Vipps', 'getCallbackSessionClass')); 
         // Support older versions of Woo by inlining initialize session IOK 2019-12-12
         if (version_compare(WC_VERSION, '3.6.4', '>=')) {
             // This will replace the old session with this one. IOK 2019-10-22
@@ -1268,17 +1289,22 @@ EOF;
         // from the now restored session. IOK 2020-04-08
         $newcart = array();
 
-        foreach(WC()->session->get('cart',true) as $key => $values) {
-            $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
-            $values['data'] = $product;
-            $newcart[$key] = $values;
+        if (WC()->session->get('cart', true)) {
+            foreach(WC()->session->get('cart',true) as $key => $values) {
+                $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
+                $values['data'] = $product;
+                $newcart[$key] = $values;
+            }
         }
-        WC()->cart->set_cart_contents($newcart);
-        WC()->cart->calculate_totals();
-
-        // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
-        do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
-        WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
+        if (WC()->cart) {
+            WC()->cart->set_cart_contents($newcart);
+            WC()->cart->calculate_totals();
+            // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
+            do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
+            WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
+        } else {
+            // Apparently this happens quite a lot, so don't log it or anything. IOK 2021-06-21
+        }
 
         return WC()->session;
     }
@@ -1723,28 +1749,39 @@ EOF;
         $eightminutesago = time() - (60*8);
         $sevendaysago = time() - (60*60*24*7);
         $pending = wc_get_orders(
-          array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created'=> '<'.$eightminutesago,
-                'date_created' => '>' . $sevendaysago ));
+          array('limit'=>-1, 'status'=>'pending', 'payment_method' => 'vipps', 'date_created' => '>' . $sevendaysago ));
         if (empty($pending)) return;
-        $this->log(__("Some orders have not received a callback after 8 minutes, and are still pending. This may indicate a problem with your sites callback handler, which may cause issues if the customer does not return to the store. Checking order status for these now.", 'woo-vipps'));
         foreach ($pending as $o) {
-            $this->check_status_of_pending_order($o);
+            $then = $o->get_meta('_vipps_init_timestamp');
+            if ($then > $eightminutesago) continue;
+            $this->check_status_of_pending_order($o, true);
         }
     }
 
-    // Check and possibly update the status of a pending order at Vipps.
-    public function check_status_of_pending_order($order) {
+    // Check and possibly update the status of a pending order at Vipps. We only restore session if we know this is called from a context with no session -
+    // e.g. wp-cron. IOK 2021-06-21
+    public function check_status_of_pending_order($order, $maybe_restore_session=0) {
         $express = $order->get_meta('_vipps_express_checkout'); 
+        if ($express && $maybe_restore_session) {
+           $this->log(sprintf(__("Restoring session of order %d", 'woo-vipps'), $order->get_id()), 'debug'); 
+           $this->callback_restore_session($order->get_id());
+        }
         $gw = $this->gateway();
+        $order_status = null;
         try {
             $order_status = $gw->callback_check_order_status($order);
+            $order->add_order_note(__("Callback from Vipps delayed or never happened; order status checked by periodic job", 'woo-vipps'));
+            $order->save();
             $this->log(sprintf(__("For order %d order status at vipps is %s", 'woo-vipps'), $order->get_id(), $order_status), 'debug');
-            return $order_status;
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting order status at Vipps for order %d", 'woo-vipps'), $order->get_id()), 'error'); 
             $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
-            return null;
         }
+        // Ensure we don't keep using an old session for more than one order here.
+        if ($express && $maybe_restore_session) {
+            $this->callback_destroy_session();
+        }
+        return $order_status;
     }
 
     // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on plugins_loaded. IOK 2020-04-01

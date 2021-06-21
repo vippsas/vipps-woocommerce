@@ -49,6 +49,7 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
         }
         $sessionjson = $order->get_meta('_vipps_sessiondata');
 
+
         if (empty($sessionjson)) return false;
         $sessiondata = @json_decode($sessionjson,true);
         if (empty($sessiondata)) return false;
