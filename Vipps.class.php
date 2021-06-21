@@ -88,8 +88,23 @@ class Vipps {
 
         $this->add_shortcodes();
 
+        // We need a 5-minute scheduled event for the handler for missed callbacks. Using the 
+        // action scheduler would be better, but we can't do that just yet because of backwards 
+        // compatibility. At some point, support for older woo-versions should be dropped; then this
+        // should use the action scheduler instead. IOK 2021-06-21
+        add_filter('cron_schedules', function ($schedules) {
+            if(!isset($schedules["5min"])){
+                $schedules["5min"] = array(
+                    'interval' => 5*60,
+                    'display' => __('Once every 5 minutes'));
+            }
+            return $schedules;
+        });
+
         // Offload work to wp-cron so it can be done in the background on sites with heavy load IOK 2020-04-01
         add_action('vipps_cron_cleanup_hook', array($this, 'cron_cleanup_hook'));
+        // Check periodically for orders that are stuck pending with no callback IOK 2021-06-21
+        add_action('vipps_cron_missing_callback_hook', array($this, 'cron_check_for_missing_callbacks'));
 
         // This is a developer-mode level feature because flock() is not portable. This ensures callbacks and shopreturns do not
         // simultaneously update the orders, in particular not the express checkout order lines wrt shipping. IOK 2020-05-19
@@ -1700,10 +1715,20 @@ EOF;
        $this->delete_old_cancelled_orders(); // Remove cancelled express checkout orders if selected
     }
 
+    // This job runs in the wp-cron context and checks if there are *old* pending orders with payment method Vipps. If so, it will
+    // check if the status of these orders are now known. This is intended to handle the case where a user does not return
+    // to the store and the Vipps callback fails for whatever reason.  IOK 2021-06-21
+    public function cron_check_for_missing_callbacks() {
+        error_log("Checking for missing callbacks!");
+    }
+
     // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on plugins_loaded. IOK 2020-04-01
     public static function maybe_add_cron_event() {
        if (!wp_next_scheduled('vipps_cron_cleanup_hook')) {
           wp_schedule_event(time(), 'hourly', 'vipps_cron_cleanup_hook');
+       }
+       if (!wp_next_scheduled('vipps_cron_missing_callback_hook')) {
+          wp_schedule_event(time(), '5min', 'vipps_cron_missing_callback_hook');
        }
     }
 
