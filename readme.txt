@@ -198,7 +198,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.06.xx version 1.7.10 =
+= 2021.06.22 version 1.7.10 =
  Added a failsafe for situations where the Vipps callback fails and the customer does not return to the store
 
 = 2021.06.14 version 1.7.9 =
