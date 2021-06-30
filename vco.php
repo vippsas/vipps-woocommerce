@@ -92,8 +92,6 @@ function vipps_checkout_shortcode ($atts, $content) {
 
     }
 
-    $out .=  "<pre>" . print_r($current_vipps_session, true) . "</pre>";
-
 
     $token = $current_vipps_session['token'];
     $out .= "<iframe style='width:100%;height: 60rem; border=1px solid black;'  src='https://vippscheckoutprod.z6.web.core.windows.net/?token=$token'>iframe!</iframe>";
