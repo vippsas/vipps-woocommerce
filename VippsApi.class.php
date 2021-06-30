@@ -192,6 +192,111 @@ class VippsApi {
         return $res;
     }
 
+    // This is Vipps Checkout IOK 2021-06-19
+    public function initiate_checkout($phone,$order,$returnurl,$authtoken,$requestid) {
+        $command = 'checkout/session';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $clientid = $this->get_clientid();
+        $secret = $this->get_secret();
+        $subkey = $this->get_key();
+
+        $merch = $this->get_merchant_serial();
+        $prefix = $this->get_orderprefix();
+#        $static_shipping = $order->get_meta('_vipps_static_shipping');
+        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.($order->get_id()), $prefix, $order);
+        $order->update_meta_data('_vipps_prefix',$prefix);
+        $order->update_meta_data('_vipps_orderid', $vippsorderid);
+        $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
+#        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
+        $order->save();
+
+        $headers = array();
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        $callback = $this->gateway->payment_callback_url($authtoken);
+        $fallback = $returnurl;
+
+        $transaction = array();
+        $transaction['OrderId'] = $vippsorderid;
+        // Ignore refOrderId - for child-transactions 
+        $transaction['Amount'] = round(wc_format_decimal($order->get_total(),'') * 100); 
+        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
+        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
+        $transaction['TransactionText'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
+
+        // The limit for the transaction text is 100. Ensure we don't go over. Thanks to Marco1970 on wp.org for reporting this. IOK 2019-10-17
+        $length = strlen($transaction['TransactionText']);
+        if ($length>99) {
+          $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
+          $transaction['TransactionText'] =  __('Confirm your order','woo-vipps');
+          $transaction['TransactionText'] = substr($transaction['transactionText'],0,90); // Add some slack if this happens. IOK 2019-10-17
+        }
+        $transaction['TimeStamp'] = $date;
+
+        $authinfo = array();
+        $authinfo['ClientId'] = $clientid;
+        $authinfo['ClientSecret'] = $secret;
+        $authinfo['OcpApimSubscriptionKey'] = $subkey;
+
+        $data = array();
+        $data['AuthInfo'] = $authinfo;
+        $data['CustomerInfo'] = array('MobileNumber' => $phone); 
+        $data['MerchantInfo'] = array('MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'FallBack'=>$fallback); 
+
+        $data['Transaction'] = $transaction;
+
+        error_log("data is " . print_r($data, true));
+
+        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        error_log("Res is " . print_r($res, true));
+        return $res;
+    }
+
+    // Poll the sessionPollingURL gotten from the checkout API
+    public function poll_checkout ($sessionid) {
+        $data = array();
+        $headers = array();
+        $command = "checkout/session/$sessionid";
+        try {
+            $res = $this->http_call($command,$data,'GET',$headers,'json'); 
+        } catch (Exception $e) {
+            if ($e-responseCode == 404) {
+                return 'EXPIRED';
+            }
+            // Handle 5xx class errors here as 'No Vipps' FIXME
+            throw($e);
+        }
+        /*
+        200 
+            Successfully retrieved the CustomerData object for the given session id.
+
+            No links
+            204 
+            The specified session id is recognized, but no data is available yet (login flow not yet completed by user).
+
+            No links
+            404 
+            The specified session id is unknown.
+         */
+
+        error_log("Res is " . print_r($res, true));
+        return $res;
+    }
 
     // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
     public function capture_payment($order,$amount,$requestid=1) {
@@ -394,12 +499,15 @@ class VippsApi {
             $url .= "?$data_encoded";
         }
 
+        error_log("URl is $url");
+
         $return = wp_remote_request($url,$args);
         $headers = array();
         $content=NULL;
         $response=0;
 
         if (is_wp_error($return))  {
+            error_log("message " . $return->get_error_message());
             $headers['status'] = "500 " . $return->get_error_message();
             $response = 500;
         } else {
@@ -408,8 +516,16 @@ class VippsApi {
             $headers = wp_remote_retrieve_headers($return);
             $headers['status'] = "$response $message";
             $contenttext = wp_remote_retrieve_body($return);
+
+            error_log("Headers " . print_r($headers, true));
+            error_log("content: $contenttext");
+
             if ($contenttext) {
-                $content = json_decode($contenttext,true);
+                $content = @json_decode($contenttext,true);
+                // Yes, we also get text/plain sometimes!
+                if (!$content && !empty($contenttext) && preg_match("!text/plain!i", $headers['content-type'])){
+                    $content = array('message' => $contenttext);
+                }
             }
         }
 
@@ -429,17 +545,27 @@ class VippsApi {
 
         // Good result!
         if ($response < 300) {
+            error_log("resp $response headers " . print_r($headers,true));
             return $content; 
         }
+
+        // This is from the checkout api which of course does thing different again
+        /*
+         * {"type":"https://tools.ietf.org/html/rfc7231#section-6.5.1","title":"One or more validation errors occurred.","status":400,"traceId":"00-3d0f023ab3052d488fd0ab1eb7bfe9c8-f8aa7fc0fded974d-01","errors":{"AuthInfo.ClientSecret":["The ClientSecret field is required."]}}
+         * And for the poll: content: { "statusCode": 404, "message": "Resource not found" }
+         * [{"errorGroup":"Merchant","errorCode":"35","errorMessage":"Requested Order not found","contextId":"5b6a951e-4e68-4bc1-918c-6f40a7a0e466"}]
+         */
+
+
         // Now errorhandling. Default to use just the error header IOK 2018-05-11
         $msg = $headers['status'];
 
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
-	    // From initiate payment, at least some times. IOK 2018-06-18
-	    if (isset($content['message'])) {
-		$msg = $content['message'];
-	    } elseif (isset($content['error'])) {
+            // From initiate payment, at least some times. IOK 2018-06-18
+            if (isset($content['message'])) {
+                $msg = $content['message'];
+            } elseif (isset($content['error'])) {
                 // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
                 $msg = $content['error'];
             } elseif (isset($content['ResponseInfo'])) {

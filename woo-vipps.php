@@ -96,3 +96,6 @@ add_action ('before_woocommerce_init', function () {
     foreach($_COOKIE as $key=>$value) unset($_COOKIE[$key]);
  }
 },1);
+
+# IOK FIXME FOR DEVELOPMENT
+require_once('vco.php');
