@@ -275,7 +275,7 @@ class VippsApi {
         try {
             $res = $this->http_call($command,$data,'GET',$headers,'json'); 
         } catch (Exception $e) {
-            if ($e-responseCode == 404) {
+            if ($e->responsecode == 404) {
                 return 'EXPIRED';
             }
             // Handle 5xx class errors here as 'No Vipps' FIXME
