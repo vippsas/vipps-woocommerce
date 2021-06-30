@@ -39,6 +39,7 @@ function vipps_checkout_shortcode ($atts, $content) {
         $status = get_vipps_checkout_status($current_vipps_session);
         if (empty($status) || $status =='EXPIRED' || $status == 'ERROR') {
             $out .= " And it is bogus '$status'<br>";
+            $neworder = true;
         }
     }
 
@@ -86,17 +87,20 @@ function vipps_checkout_shortcode ($atts, $content) {
         $current_vipps_session = $Vipps->gateway()->api->initiate_checkout($phone,$order,$returnurl,$authtoken,$requestid); 
         if ($current_vipps_session) {
             WC()->session->set('current_vipps_session', $current_vipps_session);
+            $status = get_vipps_checkout_status($current_vipps_session);
         }
 
     }
 
     $out .=  "<pre>" . print_r($current_vipps_session, true) . "</pre>";
 
+
+    $token = $current_vipps_session['token'];
+    $out .= "<iframe style='width:100%;height: 60rem; border=1px solid black;'  src='https://vippscheckoutprod.z6.web.core.windows.net/?token=$token'>iframe!</iframe>";
+
     if ($status) {
            $out .= "<pre>" . print_r($status, true) . "</pre>";
     }
-
-#    $out .= "<iframe style='width:100%;height: 30rem; border=1px solid black;'  src='https://vippscheckout.vipps.no/v1/?token=$token'>iframe!</iframe>";
 
     return $out;
 }
@@ -173,3 +177,27 @@ Array
 )
             
                **/
+
+
+/*
+[sessionState] => SessionStarted
+    [selectedAddressType] => Custom
+    [orderContactInformation] => Array
+        (
+            [firstName] => iver
+            [lastName] => test
+            [phoneNumber] => 98818710
+            [email] => iverodin@gmail.com
+        )
+
+    [orderShippingAddress] => Array
+        (
+            [firstName] => iver
+            [lastName] => test
+            [streetAddress] => Observatorie terrasse 4a
+            [postalCode] => 0254
+            [region] => Oslo
+            [country] => Norge
+        )
+
+*/
