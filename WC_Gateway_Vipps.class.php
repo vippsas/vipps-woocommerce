@@ -1252,7 +1252,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (@$paymentdetails['shippingDetails']) {
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
             } else {
+//                error_log("Payment details: " . print_r($paymentdetails, true)); // IOK FIXME
+                //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
+                //  But first check to see if it has customer info! FIXME FIXME FIXME
+                error_log("Issue with shipping details, cancelling order " . $order->get_id());
+                error_log("HAs shipping: " . $order->has_shipping_address());
+                error_log("HAs billing : " . $order->has_billing_address());
+                error_log("addr " . print_r($order->get_address(), true));
                 $this->log(__("No shipping details from Vipps for express checkout for order id:",'woo-vipps') . ' ' . $orderid, 'error');
+                // Cancel any orders where the Checkout session is dead and there is no address info available
+                if (!$order->has_shipping_address() && !$order->has_billing_address()) {
+                    $sessiontimeout = time() - (60*90);
+                    $then = intval($order->get_meta('_vipps_init_timestamp'));
+                    error_log("So we have an empty order w timestamp " . date('Y-m-d H:i:s', $then) . " vs  " . date('Y-m-d H:i:s', $sessiontimeout));
+                    if ($then < $sessiontimeout)  {
+                        error_log("This order is too old - cancel it!");
+                        $this->log(sprintf(__("Order %d has no address info and any Vipps Checkout session is dead - have to cancel.", 'woo-vipps'), $order->get_id()));
+                        $order->update_status('cancelled', __('Could not get address info for order from Vipps', 'woo-vipps'));
+                        $order->save();
+                    } else {
+                        error_log("Sessionlogout greater than then?");
+                    }
+                }
+                // IOK FIXME FIXME IF WE *DO* HAVE THE ADDRESS INFO HERE, JUST CONTINUE AND COMPLETE THE ORDER
                 clean_post_cache($order->get_id());
                 return $oldstatus; 
             }

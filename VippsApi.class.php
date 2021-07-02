@@ -167,7 +167,8 @@ class VippsApi {
 
         $data = array();
         $data['customerInfo'] = array('mobileNumber' => $phone); 
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback); 
+      
+        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback, 'checkOutWebhookUrl'=> home_url('vipps-checkout-webhook', 'https'));
 
         $express = $this->gateway->express_checkout;
         if ($express) {

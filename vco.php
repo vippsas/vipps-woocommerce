@@ -86,6 +86,12 @@ function vipps_checkout_shortcode ($atts, $content) {
         $returnurl = $Vipps->payment_return_url();
         $current_vipps_session = $Vipps->gateway()->api->initiate_checkout($phone,$order,$returnurl,$authtoken,$requestid); 
         if ($current_vipps_session) {
+            $order = wc_get_order($current_pending);
+            $order->update_meta_data('_vipps_init_timestamp',time());
+            $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
+            $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
+            $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
+            $order->save();
             WC()->session->set('current_vipps_session', $current_vipps_session);
             $status = get_vipps_checkout_status($current_vipps_session);
         }
@@ -93,10 +99,23 @@ function vipps_checkout_shortcode ($atts, $content) {
     }
 
 
+    // Check that these exist etc
     $token = $current_vipps_session['token'];
-    $out .= "<iframe style='width:100%;height: 60rem; border=1px solid black;'  src='https://vippscheckoutprod.z6.web.core.windows.net/?token=$token'>iframe!</iframe>";
+    $src = $current_vipps_session['checkoutFrontendUrl']; 
+    $out .= "<iframe style='width:100%;height: 60rem; border=1px solid black;'  src='$src?token=$token'>iframe!</iframe>";
+$out .= "<script>
+      window.addEventListener(
+        'message',
+// only frameHeight in pixels are sent.
+        function (e) {
+            console.log('got message: %j', e);
+        },
+        false
+      );
+</script>";
 
     if ($status) {
+           $out .= "<pre>" . print_r($current_vipps_session, true) . "</pre>";
            $out .= "<pre>" . print_r($status, true) . "</pre>";
     }
 
