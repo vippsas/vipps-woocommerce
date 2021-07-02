@@ -97,5 +97,3 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-# IOK FIXME FOR DEVELOPMENT
-require_once('vco.php');
