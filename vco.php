@@ -2,12 +2,120 @@
 
 // Remember: In template redirect, do no-cache-headers on the is_vipps_checkout case
 
+    // For Vipps Checkout, poll for the result of the current session
+add_action('wp_ajax_vipps_checkout_poll_session', 'vipps_ajax_checkout_poll_session');
+add_action('wp_ajax_nopriv_vipps_checkout_poll_session', 'vipps_ajax_checkout_poll_session');
+add_action('woocommerce_thankyou_vipps', function () {
+    WC()->session->set('current_vipps_session', false);
+    WC()->session->set('vipps_checkout_current_pending',false);
+});
+
+function vipps_ajax_checkout_poll_session () {
+    global $Vipps;
+    // Check ajax refererer blablaba! FIXME!
+
+    // Fold this into a function that will create a session if missing. This one however is only to get the order info.
+    $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+    $order = $current_pending ? wc_get_order($current_pending) : null;
+
+    if ($order && $order->get_status() != 'pending') {
+        // Dispatch on order statuses here
+        if ($order->get_status() == 'completed') {
+            return wp_send_json_success(array('msg'=>'completed', 'url' => $Vipps->gateway()->get_return_url($order)));;
+        }
+        return wp_send_json_success(array('msg'=>'not_pending', 'url'=>''));
+        exit();
+    }
+
+    $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
+    if (!$current_vipps_session) {
+        WC()->session->set('current_vipps_session', false);
+        return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
+    }
+    $status = get_vipps_checkout_status($current_vipps_session); 
+    $failed = ($status == 'EXPIRED') ||  ($status['sessionState'] == 'PaymentFailed');
+    $complete = !$failed && ($status['sessionState'] ==  'PaymentSuccessful');
+    $ok   = !$failed && ($complete ||  in_array($status['sessionState'],  array('PaymentInitiated', 'SessionStarted')));
+
+    if ($failed) {
+        abandonOrder($order);
+        WC()->session->set('current_vipps_session', false);
+        return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
+        exit();
+    }
+
+    // Errorhandling! FIXME!
+    if (!$ok) {
+        error_log("status is ". print_r($status, true));
+        WC()->session->set('current_vipps_session', false);
+        abandonOrder($order);
+        return wp_send_json_error(array('msg'=>'EXPIRED', 'url'=>false));
+        exit();
+    }
+    $change = false;
+    if ($ok && isset($status['orderContactInformation']))  {
+        $contact = $status['orderContactInformation'];
+        $order->set_billing_email($contact['email']);
+        $order->set_billing_phone($contact['phoneNumber']);
+        $order->set_billing_first_name($contact['firstName']);
+        $order->set_billing_last_name($contact['lastName']);
+        $change = true;
+     }
+     if ($ok &&  isset($status['orderShippingAddress']))  {
+        $contact = $status['orderShippingAddress'];
+        $countrycode =  $Vipps->country_to_code($contact['country']);
+        $order->set_shipping_first_name($contact['firstName']);
+        $order->set_shipping_last_name($contact['lastName']);
+        $order->set_shipping_address_1($contact['streetAddress']);
+        $order->set_shipping_address_2("");
+        $order->set_shipping_city($contact['region']);
+        $order->set_shipping_postcode($contact['postalCode']);
+        $order->set_shipping_country($countrycode);
+
+        $order->set_billing_address_1($contact['streetAddress']);
+        $order->set_billing_address_2("");
+        $order->set_billing_city($contact['region']);
+        $order->set_billing_postcode($contact['postalCode']);
+        $order->set_billing_country($countrycode);
+
+        $change = true;
+    }
+    if ($change) $order->save();
+
+    if ($complete) {
+      // Order is complete! Yay!
+        // THIS WILL BE TRICKY TO GET RIGHT! At least wipe this on the thank you page
+        $Vipps->gateway()-> update_vipps_payment_details($order);
+        $Vipps->gateway()->payment_complete($order);
+        wp_send_json_success(array('msg'=>'completed','url' => $Vipps->gateway()->get_return_url($order)));
+        exit();
+    }
+
+    if ($ok && $change) {
+        wp_send_json_success(array('msg'=>'order_change', 'url'=>''));
+        exit();
+    }
+    if ($ok) {
+        wp_send_json_success(array('msg'=>'no_change', 'url'=>''));
+        exit();
+    }
+
+    error_log("Unknown result polling result " . print_r($status, true));
+    wp_send_json_success(array('msg'=>'unknown', 'url'=>''));
+}
+
 add_shortcode('vipps_checkout', 'vipps_checkout_shortcode');
 function vipps_checkout_shortcode ($atts, $content) {
     global $Vipps;
 
     $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
     $order = $current_pending ? wc_get_order($current_pending) : null;
+
+    // This isn't correct, but anyway
+    if (is_a($order, 'WC_Order') && $order->get_status() == 'completed') {
+       wp_redirect($Vipps->gateway()->get_return_url($order), 302);
+       exit();
+    }
 
     wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
     if ( WC()->cart->is_empty() ) {
@@ -109,9 +217,46 @@ $out .= "<script>
 // only frameHeight in pixels are sent.
         function (e) {
             console.log('got message: %j', e);
+            pollSessionStatus();
         },
         false
       );
+
+var pollingdone=false;
+var polling=false;
+function pollSessionStatus () {
+   console.log('polling!');
+   if (polling) return;
+   polling=true;
+   jQuery.ajax(". json_encode(admin_url('admin-ajax.php')) . ",
+    {cache:false,
+       dataType:'json',
+       data: { 'action': 'vipps_checkout_poll_session' },
+       error: function (xhr, statustext, error) {
+         console.log('Error polling status: ' + statustext + ' : ' + error);
+         if (error == 'timeout')  {
+            console.log('ouch, timeout');
+         }
+       },
+       'complete': function (xhr, statustext, error)  {
+         polling = false;
+         if (!pollingdone) {
+            // In case of race conditions, poll at least every 5 seconds 
+            setTimeout(pollSessionStatus, 10000);
+         }
+       },
+       method: 'POST', 
+       'success': function (result,statustext, xhr) {
+         console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
+         if (result['data']['url']) {
+            pollingdone = 1;
+            window.location.replace(result['data']['url']);
+         }
+       },
+       'timeout': 4000
+     });
+}
+
 </script>";
 
     if ($status) {

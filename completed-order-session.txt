@@ -1,0 +1,81 @@
+Array
+(
+    [sessionId] => Oj2yYmsZcG0ylyUA9rNlqA
+    [transaction] => Array
+        (
+            [orderId] => woodigitalt1922
+            [amount] => 20 NOK
+            [transactionText] => Bekreft din bestilling fra https://vdev.digitalt.org
+            [timeStamp] => 
+        )
+
+    [loginURL] => https://apitest.vipps.no/access-management-1.0/access/oauth2/auth?response_type=code&nonce=LJGHUMd-qxPfzaaYYjt4Vg&state=Oj2yYmsZcG0ylyUA9rNlqA&code_challenge=rNhxA8Z3D6WfNe6rag8Y3WdlgaNGawQ8xjGQ7fgGGTg&code_challenge_method=S256&client_id=32383e87-fd4b-4021-9e5d-53a101aff499&scope=openid%20address%20email%20name%20phoneNumber%20api_version_2&redirect_uri=https%3A%2F%2Fapitest.vipps.no%2Fcheckout%2Flogin%2Fredirect
+    [loginPollingURL] => https://apitest.vipps.no/checkout/login/Oj2yYmsZcG0ylyUA9rNlqA
+    [paymentURL] => https://apitest.vipps.no/checkout/payment/Oj2yYmsZcG0ylyUA9rNlqA
+    [fallBackURL] => https://vdev.digitalt.org/vipps-betaling/
+    [sessionUpdateURL] => https://apitest.vipps.no/checkout/session/Oj2yYmsZcG0ylyUA9rNlqA
+    [sessionState] => PaymentSuccessful
+    [customerData] => Array
+        (
+            [firstName] => Iver Odin
+            [lastName] => Kvello
+            [email] => iver@wp-hosting.no
+            [phone] => 97125562
+            [addresses] => Array
+                (
+                    [0] => Array
+                        (
+                            [streetAddress] => gagaga
+gagag
+                            [zip] => 7000
+                            [city] => Longyearbyen
+                            [country] => NO
+                            [addressType] => Other
+                            [isDefault] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [streetAddress] => nedre vollgate 4a
+ci ignitas 7 etage
+                            [zip] => 0158
+                            [city] => oslo
+                            [country] => NO
+                            [addressType] => Work
+                            [isDefault] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [streetAddress] => Test address 2
+                            [zip] => 0201
+                            [city] => OSLO
+                            [country] => NO
+                            [addressType] => Home
+                            [isDefault] => 1
+                        )
+
+                )
+
+        )
+
+    [selectedAddressType] => Custom
+    [orderContactInformation] => Array
+        (
+            [firstName] => iver
+            [lastName] => test
+            [phoneNumber] => 97125562
+            [email] => iverodin@gmail.com
+        )
+
+    [orderShippingAddress] => Array
+        (
+            [firstName] => iver
+            [lastName] => test
+            [streetAddress] => Observatorie terrasse 4a
+            [postalCode] => 0254
+            [region] => Oslo
+            [country] => Norge
+        )
+
+)
