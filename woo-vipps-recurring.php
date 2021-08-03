@@ -17,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
+define( 'WC_VIPPS_RECURRING_VERSION', '1.8.1' );
+
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
 /**
@@ -41,6 +43,15 @@ if ( ! function_exists( 'array_key_last' ) ) {
 }
 
 /**
+ * Activation hooks
+ */
+register_activation_hook( __FILE__, 'woocommerce_gateway_vipps_recurring_activate' );
+
+function woocommerce_gateway_vipps_recurring_activate() {
+	add_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
+}
+
+/**
  * Initialize our plugin
  */
 function woocommerce_gateway_vipps_recurring_init() {
@@ -50,7 +61,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_VERSION', '1.8.1' );
 		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
@@ -253,6 +263,36 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( isset( $_REQUEST['statuses_checked'] ) ) {
 					$this->add_admin_notice( __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) );
+				}
+			}
+
+			/**
+			 * Upgrade routines
+			 */
+			public function upgrade() {
+				global $wpdb;
+
+				$version = get_option( 'woo-vipps-recurring-version' );
+
+				// Update 1.8.2: add back _vipps_recurring_pending_charge and _charge_id
+				if ( version_compare( $version, '1.8.2', '<' ) ) {
+					$results = $wpdb->get_results( "SELECT wp_posts.id FROM (
+						SELECT DISTINCT post_id as id FROM wp_postmeta as m
+						WHERE EXISTS (SELECT * FROM wp_postmeta WHERE post_id = m.post_id AND meta_key = '_vipps_recurring_failed_charge_reason')
+						AND NOT EXISTS (SELECT * FROM wp_postmeta WHERE post_id = m.post_id AND meta_key = '_vipps_recurring_pending_charge')
+					) as lookup
+					JOIN wp_posts ON (wp_posts.id = lookup.id)
+					ORDER BY wp_posts.post_date DESC", ARRAY_A );
+
+					foreach ( $results as $row ) {
+						$order = wc_get_order( $row['id'] );
+						WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, WC_Vipps_Recurring_Helper::get_transaction_id_for_order( $order ) );
+						$order->save();
+					}
+				}
+
+				if ( $version !== WC_VIPPS_RECURRING_VERSION ) {
+					update_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
 				}
 			}
 
@@ -521,6 +561,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @param $text
 			 * @param string $type
 			 * @param string $key
+			 * @param false $plaintext
 			 */
 			public function add_admin_notice( $text, $type = 'info', $key = '', $plaintext = false ) {
 				$callable = function () use ( $text, $type, $key ) {
@@ -637,6 +678,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function install() {
 				$this->gateway()->ensure_cancelled_order_page();
+				$this->upgrade();
 			}
 
 			/**

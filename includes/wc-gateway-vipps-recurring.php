@@ -728,7 +728,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: FAILED
 		if ( 'FAILED' === $charge['status'] ) {
 			$order->update_status( 'failed', __( 'Vipps payment failed.', 'woo-vipps-recurring' ) );
-			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, $charge );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge failed: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'] ) );
@@ -1789,6 +1788,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param mixed $resubscribe_order The order created for the customer to resubscribe to the old expired/cancelled subscription
 	 */
 	public function delete_resubscribe_meta( $resubscribe_order ) {
+		$resubscribe_order_id = WC_Vipps_Recurring_Helper::get_id( $resubscribe_order );
+
+		delete_post_meta( $resubscribe_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
+		delete_post_meta( $resubscribe_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
+
 		$this->delete_renewal_meta( $resubscribe_order );
 	}
 
@@ -1800,13 +1804,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function delete_renewal_meta( $renewal_order ) {
 		$renewal_order_id = WC_Vipps_Recurring_Helper::get_id( $renewal_order );
 
-		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
-		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
-		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
 		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_REASON );
 		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
 		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
+		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
 		delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
 		return $renewal_order;

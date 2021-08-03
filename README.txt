@@ -157,6 +157,7 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 = 1.8.1 =
 * Fix: Added an exit condition after attempting to redirect to the Cancelled Vipps Purchase page. This should in theory make this redirect work every single time.
 * Fix: Ensure we always check statuses on payments in ascending order.
+* Fix: No longer clean up necessary data like charge id or whether the charge is pending on renewals.
 * Change: We now check 8 charges at the same time instead of 5.
 
 = 1.8.0 =
