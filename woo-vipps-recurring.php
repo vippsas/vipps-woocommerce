@@ -274,8 +274,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$version = get_option( 'woo-vipps-recurring-version' );
 
-				// Update 1.8.2: add back _vipps_recurring_pending_charge and _charge_id
-				if ( version_compare( $version, '1.8.2', '<' ) ) {
+				// Update 1.8.1: add back _vipps_recurring_pending_charge and _charge_id
+				if ( version_compare( $version, '1.8.1', '<' ) ) {
 					$results = $wpdb->get_results( "SELECT wp_posts.id FROM (
 						SELECT DISTINCT post_id as id FROM wp_postmeta as m
 						WHERE EXISTS (SELECT * FROM wp_postmeta WHERE post_id = m.post_id AND meta_key = '_vipps_recurring_failed_charge_reason')
@@ -283,6 +283,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 					) as lookup
 					JOIN wp_posts ON (wp_posts.id = lookup.id)
 					ORDER BY wp_posts.post_date DESC", ARRAY_A );
+
+					WC_Vipps_Recurring_Logger::log( sprintf( 'Running 1.8.1 update, affecting orders with IDs: %s', implode(',', array_map(function($item) {
+						return $item['id'];
+					}, $results))) );
 
 					foreach ( $results as $row ) {
 						$order = wc_get_order( $row['id'] );
