@@ -243,10 +243,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		 * handle in app updates when a subscription status changes, typically when status transitions to
 		 * 'pending-cancel', 'cancelled' or 'pending-cancel' to any other status
 		 */
-		add_action( 'woocommerce_subscription_status_updated', [
-			$this,
-			'maybe_handle_subscription_status_transitions'
-		], 10, 3 );
+//		add_action( 'woocommerce_subscription_status_updated', [
+//			$this,
+//			'maybe_handle_subscription_status_transitions'
+//		], 10, 3 );
 
 		// delete idempotency key when renewal/resubscribe happens
 		add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10 );
