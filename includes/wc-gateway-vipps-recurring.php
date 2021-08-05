@@ -243,10 +243,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		 * handle in app updates when a subscription status changes, typically when status transitions to
 		 * 'pending-cancel', 'cancelled' or 'pending-cancel' to any other status
 		 */
-//		add_action( 'woocommerce_subscription_status_updated', [
-//			$this,
-//			'maybe_handle_subscription_status_transitions'
-//		], 10, 3 );
+		add_action( 'woocommerce_subscription_status_updated', [
+			$this,
+			'maybe_handle_subscription_status_transitions'
+		], 10, 3 );
 
 		// delete idempotency key when renewal/resubscribe happens
 		add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10 );
@@ -1748,8 +1748,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
 				__( 'Pending cancellation', 'woo-vipps-recurring' )
 			);
-
-			$subscription->save();
 		}
 
 		if ( $new_status === 'cancelled' ) {
@@ -1759,8 +1757,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
 				__( 'Cancelled', 'woo-vipps-recurring' )
 			);
-
-			$subscription->save();
 		}
 
 		if ( $new_status === 'on-hold' ) {
@@ -1770,15 +1766,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
 				__( 'On hold', 'woo-vipps-recurring' )
 			);
-
-			$subscription->save();
 		}
 
 		if ( ( $old_status === 'pending-cancel' || $old_status === 'on-hold' ) && $new_status !== 'cancelled' ) {
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
 			$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
-
-			$subscription->save();
 		}
 	}
 
