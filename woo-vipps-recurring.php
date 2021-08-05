@@ -600,7 +600,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$order_ids = wc_get_orders( [
 					'limit'          => $limit,
-					'order'          => 'ASC',
+					'order'          => 'rand',
 					'type'           => 'shop_order',
 					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
 					'meta_compare'   => '=',
