@@ -366,8 +366,7 @@ class Vipps {
         add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
         add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
         // The Vipps Checkout feature which overrides the normal checkout process.
-// IOK FIXME TEMPORARILY DISABLED FOR THE SUMMER
-//        add_shortcode('vipps_checkout', array($this, 'vipps_checkout_shortcode'));
+        add_shortcode('vipps_checkout', array($this, 'vipps_checkout_shortcode'));
     }
 
     public function log ($what,$type='info') {
