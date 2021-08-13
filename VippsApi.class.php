@@ -261,10 +261,10 @@ class VippsApi {
 
         $data['Transaction'] = $transaction;
 
-        error_log("data is " . print_r($data, true));
+        error_log("checkout init data is " . print_r($data, true));
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
-        error_log("Res is " . print_r($res, true));
+        error_log("checkout init res is " . print_r($res, true));
         return $res;
     }
 
@@ -295,9 +295,43 @@ class VippsApi {
             The specified session id is unknown.
          */
 
+        if ($res['customerURL']) {
+            $customerdata = array();
+            try {
+                $customerdata = $this->http_call($res['customerURL'],array(),'GET',array(),'json'); 
+                if ($customerdata && isset($customerdata['customerFormData'])) {
+                   $contact = $customerdata['customerFormData'];
+                   $orderContactInformation = array();
+                   $orderShippingAddress  = array();
+                   $orderContactInformation['email'] = $contact['email'];
+                   $orderContactInformation['phoneNumber'] = $contact['phone'];
+                   $orderContactInformation['firstName'] = $contact['firstName'];
+                   $orderContactInformation['lastName'] = $contact['lastName'];
+
+                   $orderShippingAddress['firstName'] = $contact['firstName'];
+                   $orderShippingAddress['lastName'] = $contact['lastName'];
+                   $orderShippingAddress['streetAddress'] = $contact['address'];
+                   $orderShippingAddress['streetAddress'] = $contact['address'];
+                   $orderShippingAddress['region'] = $contact['city'];
+                   $orderShippingAddress['postalCode'] = $contact['zip'];
+                   $orderShippingAddress['country'] = $contact['country'];
+
+                   $res['orderContactInformation'] = $orderContactInformation;
+                   $res['orderShippingAddress'] = $orderShippingAddress;
+                }
+
+
+
+            } catch (Exception $e) {
+                error_log("No customer data apparently : " . $e->getMessage());
+            }
+        }
+
         error_log("Res is " . print_r($res, true));
         return $res;
     }
+
+
 
     // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
     public function capture_payment($order,$amount,$requestid=1) {
@@ -467,8 +501,13 @@ class VippsApi {
 
     // Conveniently call Vipps IOK 2018-04-18
     private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){
-        $server=$this->gateway->apiurl();
-        $url = $server . "/" . $command; 
+        $url = "";
+        if (preg_match("/^http/i", $command)) {
+            $url = $command;
+        } else {
+            $server=$this->gateway->apiurl();
+            $url = $server . "/" . $command; 
+        }
 
         if (!$headers) $headers=array();
         $date = gmdate('c');

@@ -809,6 +809,9 @@ else:
             return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
         }
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
+
+// error_log(print_r($status, true)); // FIXME
+
         $failed = ($status == 'EXPIRED') ||  ($status['sessionState'] == 'PaymentFailed');
         $complete = !$failed && ($status['sessionState'] ==  'PaymentSuccessful');
         $ok   = !$failed && ($complete ||  in_array($status['sessionState'],  array('PaymentInitiated', 'SessionStarted')));
@@ -908,11 +911,12 @@ else:
         $current_total = WC()->cart->get_cart_total();
         $stored = WC()->session->get('current_cart_total');
 
-        $out = " Debug information before validating sessions ";
-        $out .= "Current pending: $current_pending<br>";
-        $out .= "Current: $current_total<br>";
-        $out .= "Stored: $stored<br>";
-        $out .= "Working..<br>";
+        $out = "";
+        #$out = " Debug information before validating sessions ";
+        #$out .= "Current pending: $current_pending<br>";
+        #$out .= "Current: $current_total<br>";
+        #$out .= "Stored: $stored<br>";
+        #$out .= "Working..<br>";
 
 
         $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
@@ -921,10 +925,10 @@ else:
         $neworder = false;
         $status = null;
         if ($current_vipps_session) {
-            $out .= "We got a session<br>";
+            #$out .= "We got a session<br>";
             $status = $this->get_vipps_checkout_status($current_vipps_session);
             if (empty($status) || $status =='EXPIRED' || $status == 'ERROR') {
-                $out .= " And it is bogus, better make a new one '$status'<br>";
+                #$out .= " And it is bogus, better make a new one '$status'<br>";
                 $neworder = true;
             }
         }
@@ -961,9 +965,9 @@ else:
         }
         WC()->session->set('current_cart_total', $current_total);
 
-        $out .= "Current pending: $current_pending<br>";
-        $out .= "Current: $current_total<br>";
-        $out .= "Stored: $stored<br>";
+        #$out .= "Current pending: $current_pending<br>";
+        #$out .= "Current: $current_total<br>";
+        #$out .= "Stored: $stored<br>";
 
         if (!$current_vipps_session && $current_pending) {
             $order = wc_get_order($current_pending);
@@ -1056,6 +1060,8 @@ if (result['data']['url']) {
     public function get_vipps_checkout_status($session) {
         if ($session && isset($session['token'])) {
             $data = $this->decode_checkout_token($session['token']);
+//error_log("session" . print_r($session, true)); // FIXME
+//error_log("session data " . print_r($data, true)); // FIXME
             $status = $this->gateway()->api->poll_checkout($data['sessionId']);
             // Handle stuff here
             return $status;
