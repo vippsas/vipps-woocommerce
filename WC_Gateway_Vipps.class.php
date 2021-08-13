@@ -1252,7 +1252,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (@$paymentdetails['shippingDetails']) {
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
             } else {
-//                error_log("Payment details: " . print_r($paymentdetails, true)); // IOK FIXME
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! FIXME FIXME FIXME
                 error_log("Issue with shipping details, cancelling order " . $order->get_id());

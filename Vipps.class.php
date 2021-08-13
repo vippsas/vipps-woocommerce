@@ -881,6 +881,10 @@ else:
     }
 
     function vipps_checkout_shortcode ($atts, $content) {
+        if (is_admin()) return;
+        if (wp_doing_ajax()) return;
+        if (defined('REST_REQUEST') && REST_REQUEST ) return;
+        if (!WC()->cart) return;
 
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
@@ -892,7 +896,7 @@ else:
         }
 
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-        if ( WC()->cart->is_empty() ) {
+        if (WC()->cart && WC()->cart->is_empty() ) {
             $this->abandonVippsCheckoutOrder($order);
             wc_get_template( 'cart/cart-empty.php' );
             return;
@@ -985,7 +989,7 @@ else:
         // Check that these exist etc
         $token = $current_vipps_session['token'];
         $src = $current_vipps_session['checkoutFrontendUrl']; 
-        $out .= "<iframe style='width:100%;height: 60rem; border=1px solid black;'  src='$src?token=$token'>iframe!</iframe>";
+        $out .= "<iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe>";
         $out .= "<script>
             window.addEventListener(
                     'message',
