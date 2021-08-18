@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
 Requires at least: 4.7
-Tested up to: 5.7.2
+Tested up to: 5.8.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.4.1
+WC tested up to: 5.5.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.10  =
- Added a failsafe for situations where the Vipps callback fails and the customer does not return to the store. This would leave these orders stuck as "pending"; whereas now a periodic job will periodically resolve orders like these after about 10 minutes.
+= 1.7.11  =
+ For WP version  5.8
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.08.09 version 1.7.11 =
+ Updating for latest versions of WP and Woo
 
 = 2021.06.22 version 1.7.10 =
  Added a failsafe for situations where the Vipps callback fails and the customer does not return to the store
