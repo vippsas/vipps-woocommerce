@@ -14,7 +14,7 @@
    Stable tag: 1.7.12 
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 5.5.2
+   WC tested up to: 5.6.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
