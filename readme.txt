@@ -6,7 +6,7 @@ Tested up to: 5.8.0
 Stable tag: trunk
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.5.2
+WC tested up to: 5.6.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -75,8 +75,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.11  =
- For WP version  5.8
+= 1.7.12  =
+ Stop restoring the session cart when checking the status of abandoned orders. This *may* cause problems with customers shopping carts and shipping.
 
 == Frequently Asked Questions ==
 
@@ -197,6 +197,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.08.23 version 1.7.12 =
+ The cron job that checks the status of abandoned orders have since 1.7.10 restored these orders' session to check the status as correctly as possible.
+It seems this may ruin the session of other active users however, and we can't have that, so now the status is checked without restoring the session.
 
 = 2021.08.09 version 1.7.11 =
  Updating for latest versions of WP and Woo

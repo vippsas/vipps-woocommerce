@@ -1754,12 +1754,13 @@ EOF;
         foreach ($pending as $o) {
             $then = $o->get_meta('_vipps_init_timestamp');
             if ($then > $eightminutesago) continue;
-            $this->check_status_of_pending_order($o, true);
+            $this->check_status_of_pending_order($o, false);
         }
     }
 
     // Check and possibly update the status of a pending order at Vipps. We only restore session if we know this is called from a context with no session -
     // e.g. wp-cron. IOK 2021-06-21
+    // Stop restoring session in wp-cron too. IOK 2021-08-23
     public function check_status_of_pending_order($order, $maybe_restore_session=0) {
         $express = $order->get_meta('_vipps_express_checkout'); 
         if ($express && $maybe_restore_session) {
