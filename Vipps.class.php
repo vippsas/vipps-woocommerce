@@ -864,7 +864,7 @@ else:
         if ($complete) {
             // Order is complete! Yay!
             // NB! I think the below method doesn't work quite right on the RESERVE / CAPTURE sequence. This should be RESERVE, but it stays as INIT. FIXME FIXME
-            $this->gateway()-> update_vipps_payment_details($order);
+            $this->gateway()->update_vipps_payment_details($order);
             $this->gateway()->payment_complete($order);
             wp_send_json_success(array('msg'=>'completed','url' => $this->gateway()->get_return_url($order)));
             exit();

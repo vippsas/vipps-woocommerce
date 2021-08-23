@@ -311,7 +311,6 @@ class VippsApi {
                    $orderShippingAddress['firstName'] = $contact['firstName'];
                    $orderShippingAddress['lastName'] = $contact['lastName'];
                    $orderShippingAddress['streetAddress'] = $contact['address'];
-                   $orderShippingAddress['streetAddress'] = $contact['address'];
                    $orderShippingAddress['region'] = $contact['city'];
                    $orderShippingAddress['postalCode'] = $contact['zip'];
                    $orderShippingAddress['country'] = $contact['country'];
