@@ -89,26 +89,56 @@ class Vipps {
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
+        // Ensure we remove the current session on the thank you page (too).
         add_action('woocommerce_thankyou_vipps', function () {
-                // FIXME ensure the sessions are correct *everywhere* plz. Specially in the abandon order thing.
-                WC()->session->set('current_vipps_session', false);
-                WC()->session->set('vipps_checkout_current_pending',false);
-                });
+            WC()->session->set('current_vipps_session', false);
+            WC()->session->set('vipps_checkout_current_pending',false);
+        });
 
         $this->add_shortcodes();
+
+        // For Vipps Checkout - we need to know any time and as soon as the cart changes, so fold all the events into a single one. IOK 2021-08-24
+        // Product added
+        add_action( 'woocommerce_add_to_cart', function ($cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+            do_action('vipps_cart_changed');
+        }, 10, 6);
+        // Cart emptied 
+        add_action( 'woocommerce_cart_emptied', function ($clear_persistent_cart) {
+            do_action('vipps_cart_changed');
+        }, 10, 1);
+        // After updating quantities
+        add_action('woocommerce_after_cart_item_quantity_update', function ( $cart_item_key,  $quantity,  $old_quantity ) {
+            do_action('vipps_cart_changed');
+        }, 10, 3);
+        // Blocks and ajax
+        add_action( 'woocommerce_cart_item_removed', function ($cart_item_key, $cart) {
+            do_action('vipps_cart_changed');
+        }, 10, 3);
+        // Restore deleted entry
+        add_action( 'woocommerce_cart_item_restored', function ($cart_item_key, $cart) {
+            do_action('vipps_cart_changed');
+        }, 10, 3);
+        // Normal cart form update
+        add_filter('woocommerce_update_cart_action_cart_updated', function ($updated) {
+            do_action('vipps_cart_changed');
+            return $updated;
+        });
+        // Then handle the actual cart change
+        add_action('vipps_cart_changed', array($this, 'cart_changed'));
+
 
         // We need a 5-minute scheduled event for the handler for missed callbacks. Using the 
         // action scheduler would be better, but we can't do that just yet because of backwards 
         // compatibility. At some point, support for older woo-versions should be dropped; then this
         // should use the action scheduler instead. IOK 2021-06-21
         add_filter('cron_schedules', function ($schedules) {
-                if(!isset($schedules["5min"])){
+            if(!isset($schedules["5min"])){
                 $schedules["5min"] = array(
-                        'interval' => 5*60,
-                        'display' => __('Once every 5 minutes'));
-                }
-                return $schedules;
-                });
+                    'interval' => 5*60,
+                    'display' => __('Once every 5 minutes'));
+            }
+            return $schedules;
+        });
 
         // Offload work to wp-cron so it can be done in the background on sites with heavy load IOK 2020-04-01
         add_action('vipps_cron_cleanup_hook', array($this, 'cron_cleanup_hook'));
@@ -818,15 +848,13 @@ else:
 
         if ($failed) {
             $this->abandonVippsCheckoutOrder($order);
-            WC()->session->set('current_vipps_session', false);
             return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
             exit();
         }
 
-        // Errorhandling! FIXME!
+        // Errorhandling! If this happens we have an unknown status or something like it.
         if (!$ok) {
             error_log("status is ". print_r($status, true));
-            WC()->session->set('current_vipps_session', false);
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>'EXPIRED', 'url'=>false));
             exit();
@@ -904,48 +932,32 @@ else:
             wc_get_template( 'cart/cart-empty.php' );
             return;
         }
+        $out = ""; // Start generating output already to make debugging easier
 
-# Check to see if we need a new partial order or session. We only need the total to stay the same; so we are not using the cart hash for instance.
-        WC()->cart->calculate_fees();
-        WC()->cart->calculate_totals();
-        $current_total = WC()->cart->get_cart_total();
-        $stored = WC()->session->get('current_cart_total');
-
-        $out = "";
-        #$out = " Debug information before validating sessions ";
-        #$out .= "Current pending: $current_pending<br>";
-        #$out .= "Current: $current_total<br>";
-        #$out .= "Stored: $stored<br>";
-        #$out .= "Working..<br>";
-
-
+        // Zap the Vipps session if we don't have an order at this point.
         $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
         if (!$current_vipps_session) WC()->session->set('current_vipps_session', false);
 
         $neworder = false;
         $status = null;
+        // We already have an active Vipps session. Check to see if it is still valid, and if not, // zap it
         if ($current_vipps_session) {
-            #$out .= "We got a session<br>";
             $status = $this->get_vipps_checkout_status($current_vipps_session);
             if (empty($status) || $status =='EXPIRED' || $status == 'ERROR') {
-                #$out .= " And it is bogus, better make a new one '$status'<br>";
                 $neworder = true;
+                $current_vipps_session = null;
             }
         }
-
         if (!is_a($order, 'WC_Order') or $order->get_status() != 'pending')  {
-            $neworder = true;
-        }
-        if ($current_total != $stored) {
             $neworder = true;
         }
 
         /// ETC ETC ETC FIXME
 
 
+        // If we need a new order now (for whatever reason), create it and abandon any old one.
         if ($neworder) {
             if ($current_pending) {
-                WC()->session->set('vipps_checkout_current_pending',0);
                 $current_pending = 0;
                 $this->abandonVippsCheckoutOrder($order);
             }
@@ -956,19 +968,18 @@ else:
                 WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order();
                 if ($current_pending) {
-                    // Check for WP_Error too
+                    // Check errors here plz
+                    $order = wc_get_order($current_pending);
+                    $order->update_meta_data('_vipps_checkout', true);
+                    $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
                 }
             } catch (Exception $e) {
                 wp_die($e->getMessage());
             }
         }
-        WC()->session->set('current_cart_total', $current_total);
 
-        #$out .= "Current pending: $current_pending<br>";
-        #$out .= "Current: $current_total<br>";
-        #$out .= "Stored: $stored<br>";
-
+        // Create a new Vipps session if none exist
         if (!$current_vipps_session && $current_pending) {
             $order = wc_get_order($current_pending);
             $phone = "";
@@ -1046,12 +1057,22 @@ if (result['data']['url']) {
     }
 
 
-    
+    public function cart_changed() {
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $order = $current_pending ? wc_get_order($current_pending) : null;
+        if (!$order) return;
+        error_log("Cart changed, abandon current Vipps session");
+        $this->abandonVippsCheckoutOrder($order);
+    } 
     
     public function abandonVippsCheckoutOrder($order) {
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
-            // Also mark for deletion
+            if (WC()->session) { 
+                WC()->session->set('vipps_checkout_current_pending',0);
+                WC()->session->set('current_vipps_session', null);
+            }
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
+            // Also mark for deletion
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
         }
