@@ -1004,20 +1004,20 @@ else:
         // Check that these exist etc
         $token = $current_vipps_session['token'];
         $src = $current_vipps_session['checkoutFrontendUrl']; 
-        $out .= "<iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe>";
+        $out .= "<div id='vippscheckoutframe'><iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe></div>";
         $out .= "<script>
+        var pollingdone=false;
+        var polling=false;
             window.addEventListener(
                     'message',
                     // only frameHeight in pixels are sent.
                     function (e) {
                     console.log('got message: %j', e);
-                    pollSessionStatus();
+                    if (!pollingdone) pollSessionStatus();
                     },
                     false
                     );
 
-        var pollingdone=false;
-        var polling=false;
         function pollSessionStatus () {
             console.log('polling!');
             if (polling) return;
@@ -1042,6 +1042,16 @@ setTimeout(pollSessionStatus, 10000);
 method: 'POST', 
 'success': function (result,statustext, xhr) {
 console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
+if (result['data']['msg'] == 'EXPIRED') {
+   jQuery('#vippscheckoutframe').html('<p>Expired!</p>');
+   pollingdone=true;
+   return;
+}
+if (result['data']['msg'] == 'ERROR') {
+   jQuery('#vippscheckoutframe').html('<p>Error occured!</p>');
+   pollingdone=true;
+   return;
+}
 if (result['data']['url']) {
     pollingdone = 1;
     window.location.replace(result['data']['url']);
