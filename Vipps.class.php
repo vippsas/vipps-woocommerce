@@ -76,6 +76,7 @@ class Vipps {
 
 
     public function init () {
+        add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
         // Cart restoration and other post-purchase actions, mostly for express checkout IOK 2020-10-09
@@ -373,21 +374,20 @@ class Vipps {
             }
         }
     }
-
-    public function wp_enqueue_scripts() {
-
+    public function wp_register_scripts () {
         //  We are going to use the 'hooks' library introduced by WP 5.1, but we still support WP 4.7. So if this isn't enqueues 
         //  (which it only is if Gutenberg is active) or not provided at all, add it now.
         if (!wp_script_is( 'wp-hooks', 'registered')) {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
-
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
+        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
+    }
+
+    public function wp_enqueue_scripts() {
         wp_enqueue_script('vipps-gw');
-
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
-
     }
 
 
@@ -917,6 +917,9 @@ else:
         if (defined('REST_REQUEST') && REST_REQUEST ) return;
         if (!WC()->cart) return;
 
+        // Previously registered, now enqueue this script which should then appear in the footer.
+        wp_enqueue_script('vipps-checkout');
+
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
 
@@ -1005,63 +1008,6 @@ else:
         $token = $current_vipps_session['token'];
         $src = $current_vipps_session['checkoutFrontendUrl']; 
         $out .= "<div id='vippscheckoutframe'><iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe></div>";
-        $out .= "<script>
-        var pollingdone=false;
-        var polling=false;
-            window.addEventListener(
-                    'message',
-                    // only frameHeight in pixels are sent.
-                    function (e) {
-                    console.log('got message: %j', e);
-                    if (!pollingdone) pollSessionStatus();
-                    },
-                    false
-                    );
-
-        function pollSessionStatus () {
-            console.log('polling!');
-            if (polling) return;
-            polling=true;
-            jQuery.ajax(". json_encode(admin_url('admin-ajax.php')) . ",
-                    {cache:false,
-dataType:'json',
-data: { 'action': 'vipps_checkout_poll_session' },
-error: function (xhr, statustext, error) {
-console.log('Error polling status: ' + statustext + ' : ' + error);
-if (error == 'timeout')  {
-console.log('ouch, timeout');
-}
-},
-'complete': function (xhr, statustext, error)  {
-polling = false;
-if (!pollingdone) {
-// In case of race conditions, poll at least every 5 seconds 
-setTimeout(pollSessionStatus, 10000);
-}
-},
-method: 'POST', 
-'success': function (result,statustext, xhr) {
-console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
-if (result['data']['msg'] == 'EXPIRED') {
-   jQuery('#vippscheckoutframe').html('<p>Expired!</p>');
-   pollingdone=true;
-   return;
-}
-if (result['data']['msg'] == 'ERROR') {
-   jQuery('#vippscheckoutframe').html('<p>Error occured!</p>');
-   pollingdone=true;
-   return;
-}
-if (result['data']['url']) {
-    pollingdone = 1;
-    window.location.replace(result['data']['url']);
-}
-},
-    'timeout': 4000
-    });
-}
-
-</script>";
 
     return $out;
     }
