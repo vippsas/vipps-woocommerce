@@ -860,15 +860,24 @@ else:
             exit();
         }
         $change = false;
-        if ($ok && isset($status['orderContactInformation']))  {
+
+        $vipps_address_hash =  WC()->session->get('vipps_address_hash');
+        if ($ok && (isset($status['orderContactInformation']) || isset($status['orderShippingAddress'])))  {
+            $serialized = sha1(json_encode(@$status['orderContactInformation']) . ':' . json_encode(@$status['orderShippingAddress']));
+            if ($serialized != $vipps_address_hash) {
+                $change = true;
+                WC()->session->set('vipps_address_hash', $serialized);
+            } 
+        }
+
+        if ($ok && $change && isset($status['orderContactInformation']))  {
             $contact = $status['orderContactInformation'];
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
-            $change = true;
         }
-        if ($ok &&  isset($status['orderShippingAddress']))  {
+        if ($ok &&  $change && isset($status['orderShippingAddress']))  {
             $contact = $status['orderShippingAddress'];
             $countrycode =  $this->country_to_code($contact['country']);
             $order->set_shipping_first_name($contact['firstName']);
@@ -884,8 +893,6 @@ else:
             $order->set_billing_city($contact['region']);
             $order->set_billing_postcode($contact['postalCode']);
             $order->set_billing_country($countrycode);
-
-            $change = true;
         }
         if ($change) $order->save();
 

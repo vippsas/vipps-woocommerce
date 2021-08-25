@@ -65,6 +65,8 @@ jQuery( document ).ready( function() {
                     data: { 'action': 'vipps_checkout_poll_session' },
                     error: function (xhr, statustext, error) {
                         console.log('Error polling status: ' + statustext + ' : ' + error);
+                        jQuery('#vippscheckoutframe').html('<p>Error occured!</p>');
+                        pollingdone=true;
                         if (error == 'timeout')  {
                             console.log('ouch, timeout');
                         }
