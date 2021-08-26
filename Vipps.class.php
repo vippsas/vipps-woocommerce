@@ -956,7 +956,7 @@ else:
         // We already have an active Vipps session. Check to see if it is still valid, and if not, // zap it
         if ($current_vipps_session) {
             $status = $this->get_vipps_checkout_status($current_vipps_session);
-            if (empty($status) || $status =='EXPIRED' || $status == 'ERROR') {
+            if (empty($status) || $status =='EXPIRED' || $status == 'ERROR' || $status == 'FAILED') {
                 $neworder = true;
                 $current_vipps_session = null;
             }
