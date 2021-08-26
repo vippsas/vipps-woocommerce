@@ -819,7 +819,6 @@ else:
 
 
     public function vipps_ajax_checkout_poll_session () {
-        // Check ajax refererer blablaba! FIXME!
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
 
         // Fold this into a function that will create a session if missing. This one however is only to get the order info.
