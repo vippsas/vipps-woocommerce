@@ -840,27 +840,31 @@ else:
         }
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
 
-// error_log(print_r($status, true)); // FIXME
-
-        $failed = ($status == 'EXPIRED') ||  ($status['sessionState'] == 'PaymentFailed');
+        $failed = $status == 'ERROR' || $status == 'EXPIRED' ||  $status['sessionState'] == 'PaymentFailed';
         $complete = !$failed && ($status['sessionState'] ==  'PaymentSuccessful');
         $ok   = !$failed && ($complete ||  in_array($status['sessionState'],  array('PaymentInitiated', 'SessionStarted')));
 
-        if ($failed) {
+        if ($failed) { 
+            $msg = 'ERROR';
+            if (is_array($status)) {
+                $msg = 'FAILED';
+            } elseif ($status == 'EXPIRED') {
+                $msg = 'EXPIRED';
+            }
             $this->abandonVippsCheckoutOrder($order);
-            return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
+            return wp_send_json_error(array('msg'=>$msg, 'url'=>home_url()));
             exit();
         }
 
         // Errorhandling! If this happens we have an unknown status or something like it.
         if (!$ok) {
-            error_log("status is ". print_r($status, true));
+            $this->log("Unknown status on poliing status: " . print_r($status, true), 'ERROR');
             $this->abandonVippsCheckoutOrder($order);
-            return wp_send_json_error(array('msg'=>'EXPIRED', 'url'=>false));
+            return wp_send_json_error(array('msg'=>'ERROR', 'url'=>false));
             exit();
         }
-        $change = false;
 
+        $change = false;
         $vipps_address_hash =  WC()->session->get('vipps_address_hash');
         if ($ok && (isset($status['orderContactInformation']) || isset($status['orderShippingAddress'])))  {
             $serialized = sha1(json_encode(@$status['orderContactInformation']) . ':' . json_encode(@$status['orderShippingAddress']));
@@ -914,7 +918,6 @@ else:
             exit();
         }
 
-        error_log("Unknown result polling result " . print_r($status, true));
         wp_send_json_success(array('msg'=>'unknown', 'url'=>''));
     }
 
@@ -961,9 +964,6 @@ else:
         if (!is_a($order, 'WC_Order') or $order->get_status() != 'pending')  {
             $neworder = true;
         }
-
-        /// ETC ETC ETC FIXME
-
 
         // If we need a new order now (for whatever reason), create it and abandon any old one.
         if ($neworder) {
@@ -1024,7 +1024,6 @@ else:
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return;
-        error_log("Cart changed, abandon current Vipps session");
         $this->abandonVippsCheckoutOrder($order);
     } 
     
@@ -1044,10 +1043,8 @@ else:
     public function get_vipps_checkout_status($session) {
         if ($session && isset($session['token'])) {
             $data = $this->decode_checkout_token($session['token']);
-//error_log("session" . print_r($session, true)); // FIXME
-//error_log("session data " . print_r($data, true)); // FIXME
+            // This will return a status object, EXPIRED or ERROR
             $status = $this->gateway()->api->poll_checkout($data['sessionId']);
-            // Handle stuff here
             return $status;
         }
     }

@@ -97,33 +97,3 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-
-// Product added
-add_action( 'woocommerce_add_to_cart', function ($cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
-    do_action('vipps_cart_changed');
-}, 10, 6);
-// Cart emptied 
-add_action( 'woocommerce_cart_emptied', function ($clear_persistent_cart) {
-    do_action('vipps_cart_changed');
-}, 10, 1);
-// After updating quantities
-add_action('woocommerce_after_cart_item_quantity_update', function ( $cart_item_key,  $quantity,  $old_quantity ) {
-    do_action('vipps_cart_changed');
-}, 10, 3);
-// Blocks and ajax
-add_action( 'woocommerce_cart_item_removed', function ($cart_item_key, $cart) {
-    do_action('vipps_cart_changed');
-}, 10, 3);
-// Restore deleted entry
-add_action( 'woocommerce_cart_item_restored', function ($cart_item_key, $cart) {
-    do_action('vipps_cart_changed');
-}, 10, 3);
-// Normal cart form update
-add_filter('woocommerce_update_cart_action_cart_updated', function ($updated) {
-    do_action('vipps_cart_changed');
-    return $updated;
-});
-
-add_action('vipps_cart_changed', function () {
-    error_log("Cart changed");
-});

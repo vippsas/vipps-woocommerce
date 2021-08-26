@@ -276,11 +276,13 @@ class VippsApi {
         try {
             $res = $this->http_call($command,$data,'GET',$headers,'json'); 
         } catch (Exception $e) {
-            if ($e->responsecode == 404) {
+            error_log("Exception: "  . print_r($e, true));
+            if (is_a($e, 'VippsAPIException') && $e->responsecode == 404) {
                 return 'EXPIRED';
             }
-            // Handle 5xx class errors here as 'No Vipps' FIXME
-            throw($e);
+            $this->log(sprintf(__("Error polling status of session %s - error message %s", 'woo-vipps'), $sessionid, $e->getMessage()));
+            // We can't dom uch more than this so just return ERROR
+            return 'ERROR';
         }
         /*
         200 
