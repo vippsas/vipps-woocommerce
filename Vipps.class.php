@@ -906,7 +906,6 @@ else:
 
         if ($complete) {
             // Order is complete! Yay!
-            // NB! I think the below method doesn't work quite right on the RESERVE / CAPTURE sequence. This should be RESERVE, but it stays as INIT. FIXME FIXME
             $this->gateway()->update_vipps_payment_details($order);
             $this->gateway()->payment_complete($order);
             wp_send_json_success(array('msg'=>'completed','url' => $this->gateway()->get_return_url($order)));
@@ -1006,7 +1005,7 @@ else:
             if ($current_vipps_session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
-                $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
+                $order->update_meta_data('_vipps_status','INITIATE');
                 $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
                 $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
                 $order->save();

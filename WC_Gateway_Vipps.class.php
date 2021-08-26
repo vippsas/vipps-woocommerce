@@ -1326,10 +1326,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Update the order with Vipps payment details, either passed or called using the API.
     public function update_vipps_payment_details ($order, $details = null) {
        if (!$details) $details = $this->get_payment_details($order);
+       error_log("details are " . print_r($details, true));
 
        if ($details) {
            if (isset($details['transactionSummary'])) {
                $transactionSummary= $details['transactionSummary'];
+               $order->update_meta_data('_vipps_status',$details['status']);
                $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
                $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
                $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
