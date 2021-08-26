@@ -94,6 +94,7 @@ class Vipps {
         add_action('woocommerce_thankyou_vipps', function () {
             WC()->session->set('current_vipps_session', false);
             WC()->session->set('vipps_checkout_current_pending',false);
+            WC()->session->set('vipps_address_hash', false);
         });
 
         $this->add_shortcodes();
@@ -819,6 +820,7 @@ else:
 
     public function vipps_ajax_checkout_poll_session () {
         // Check ajax refererer blablaba! FIXME!
+        check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
 
         // Fold this into a function that will create a session if missing. This one however is only to get the order info.
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
@@ -836,8 +838,10 @@ else:
         $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
         if (!$current_vipps_session) {
             WC()->session->set('current_vipps_session', false);
+            WC()->session->set('vipps_address_hash', false);
             return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
         }
+
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' ||  $status['sessionState'] == 'PaymentFailed';
@@ -873,6 +877,7 @@ else:
                 WC()->session->set('vipps_address_hash', $serialized);
             } 
         }
+        if ($complete) $change = true;
 
         if ($ok && $change && isset($status['orderContactInformation']))  {
             $contact = $status['orderContactInformation'];
@@ -949,7 +954,9 @@ else:
 
         // Zap the Vipps session if we don't have an order at this point.
         $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
-        if (!$current_vipps_session) WC()->session->set('current_vipps_session', false);
+        if (!$current_vipps_session) {
+           WC()->session->set('current_vipps_session', false);
+        }
 
         $neworder = false;
         $status = null;
@@ -1011,12 +1018,18 @@ else:
         }
 
 
+        $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'), $order);
+        $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps') , $order);
+
         // Check that these exist etc
         $token = $current_vipps_session['token'];
         $src = $current_vipps_session['checkoutFrontendUrl']; 
         $out .= "<div id='vippscheckoutframe'><iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe></div>";
+        $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
+        $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
+        $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
 
-    return $out;
+        return $out;
     }
 
 
@@ -1032,7 +1045,9 @@ else:
             if (WC()->session) { 
                 WC()->session->set('vipps_checkout_current_pending',0);
                 WC()->session->set('current_vipps_session', null);
+                WC()->session->set('vipps_address_hash', false);
             }
+            // NB: This can *potentially* be revived by a callback!
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
             // Also mark for deletion
             $order->update_meta_data('_vipps_delendum',1);
@@ -1216,10 +1231,15 @@ else:
 
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
-         // FIXME FIXME Remember: In template redirect, do no-cache-headers on the is_vipps_checkout case
-
+        global $post;
         // Handle special callbacks
         $special = $this->is_special_page() ;
+
+        // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
+        // nocache headres to any page that uses this shortcode. IOK 2021-08-26
+        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) { 
+            wc_nocache_headers();
+        }
 
 
         if ($special) return $this->$special();

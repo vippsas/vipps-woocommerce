@@ -62,11 +62,12 @@ jQuery( document ).ready( function() {
         jQuery.ajax(VippsConfig['vippsajaxurl'],
                 {cache:false,
                     dataType:'json',
-                    data: { 'action': 'vipps_checkout_poll_session' },
+                    data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
                     error: function (xhr, statustext, error) {
                         console.log('Error polling status: ' + statustext + ' : ' + error);
-                        jQuery('#vippscheckoutframe').html('<p>Error occured!</p>');
                         pollingdone=true;
+                        jQuery('#vippscheckouterror').show();
+                        jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured</div>');
                         if (error == 'timeout')  {
                             console.log('ouch, timeout');
                         }
@@ -82,12 +83,14 @@ jQuery( document ).ready( function() {
                     'success': function (result,statustext, xhr) {
                         console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
                         if (result['data']['msg'] == 'EXPIRED') {
-                            jQuery('#vippscheckoutframe').html('<p>Expired!</p>');
+                            jQuery('#vippscheckoutexpired').show();
+                            jQuery('#vippscheckoutframe').html('<div style="display:none">Session expired</div>');
                             pollingdone=true;
                             return;
                         }
-                        if (result['data']['msg'] == 'ERROR') {
-                            jQuery('#vippscheckoutframe').html('<p>Error occured!</p>');
+                        if (result['data']['msg'] == 'ERROR' || result['data']['msg'] == 'FAILED') {
+                            jQuery('#vippscheckouterror').show();
+                            jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured in backend</div>');
                             pollingdone=true;
                             return;
                         }
