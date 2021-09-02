@@ -824,14 +824,14 @@ else:
         // Fold this into a function that will create a session if missing. This one however is only to get the order info.
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
-
-        if ($order && $order->get_status() != 'pending') {
-            // Dispatch on order statuses here
-            if ($order->get_status() == 'completed') {
-                return wp_send_json_success(array('msg'=>'completed', 'url' => $this->gateway()->get_return_url($order)));;
-            }
-            return wp_send_json_success(array('msg'=>'not_pending', 'url'=>''));
-            exit();
+        $payment_status =  $this->gateway()->check_payment_status($order);
+        if (in_array($payment_status, ['authorized', 'complete'])) {
+            $this->abandonVippsCheckoutOrder(false);
+            return wp_send_json_success(array('msg'=>'completed', 'url' => $this->gateway()->get_return_url($order)));;
+        }
+        if ($payment_status == 'cancelled') {
+            $this->abandonVippsCheckoutOrder($order);
+            return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
         }
 
         $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
@@ -940,9 +940,8 @@ else:
 
         // This isn't correct, but anyway
         $payment_status =  $this->gateway()->check_payment_status($order);
-
-
         if (in_array($payment_status, ['authorized', 'complete'])) {
+            $this->abandonVippsCheckoutOrder(false);
             wp_redirect($this->gateway()->get_return_url($order), 302);
             exit();
         }
