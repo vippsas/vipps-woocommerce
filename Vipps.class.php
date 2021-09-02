@@ -904,7 +904,8 @@ else:
         }
         if ($change) $order->save();
 
-        if ($complete) {
+        // IOK FIXME DEBUG CALLBACK
+        if (false && $complete) {
             // Order is complete! Yay!
             $this->gateway()->update_vipps_payment_details($order);
             $this->gateway()->payment_complete($order);
@@ -934,11 +935,21 @@ else:
         wp_enqueue_script('vipps-checkout');
 
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $current_authtoken = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_authtoken') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
 
         // This isn't correct, but anyway
-        if (is_a($order, 'WC_Order') && $order->get_status() == 'completed') {
+        $payment_status =  $this->gateway()->check_payment_status($order);
+
+
+        if (in_array($payment_status, ['authorized', 'complete'])) {
             wp_redirect($this->gateway()->get_return_url($order), 302);
+            exit();
+        }
+        if ($payment_status == 'cancelled') {
+            // This will mostly just wipe the session.
+            $this->abandonVippsCheckoutOrder($order);
+            wp_redirect(home_url(), 302);
             exit();
         }
 
@@ -977,6 +988,7 @@ else:
                 $this->abandonVippsCheckoutOrder($order);
             }
         }
+
         if (!$current_pending) {
             try {
                 $current_vipps_session = null;
@@ -986,6 +998,9 @@ else:
                     // Check errors here plz
                     $order = wc_get_order($current_pending);
                     $order->update_meta_data('_vipps_checkout', true);
+                    $current_authtoken = $this->gateway()->generate_authtoken();
+                    WC()->session->set('vipps_checkout_authtoken', $current_authtoken);
+                    $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
                     $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
                 }
@@ -998,10 +1013,9 @@ else:
         if (!$current_vipps_session && $current_pending) {
             $order = wc_get_order($current_pending);
             $phone = "";
-            $authtoken = "";
             $requestid = 1;
             $returnurl = $this->payment_return_url();
-            $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$authtoken,$requestid); 
+            $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$current_authtoken,$requestid); 
             if ($current_vipps_session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
@@ -1039,12 +1053,12 @@ else:
     } 
     
     public function abandonVippsCheckoutOrder($order) {
+        if (WC()->session) {
+            WC()->session->set('vipps_checkout_current_pending',0);
+            WC()->session->set('current_vipps_session', null);
+            WC()->session->set('vipps_address_hash', false);
+        }
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
-            if (WC()->session) { 
-                WC()->session->set('vipps_checkout_current_pending',0);
-                WC()->session->set('current_vipps_session', null);
-                WC()->session->set('vipps_address_hash', false);
-            }
             // NB: This can *potentially* be revived by a callback!
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
             // Also mark for deletion
@@ -1511,11 +1525,30 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
+        error_log("iverok callback received");
+        // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
+        status_header(202, "Accepted");
+
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
+
+
+        // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
+        $ischeckout = false;
+        $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
+	    $parts = array_reverse(explode("/", $callback));
+        if (isset($parts[3]) && $parts[3] == 'checkout') {
+            $ischeckout = true;
+        }
+        error_log("iverok Callback body " . print_r($result,true));
+        error_log("iverok Callback request " . print_r($_REQUEST, true));
+        error_log("iverok Callback parts" . print_r($parts, true));
+        error_log("iverok Callback is checkout $ischeckout");
+        
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
 
         if (!$result) {
+            error_log("iverok Callback Error in callback no result");
             $error = json_last_error_msg();
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             $this->log(sprintf(__("Error was: %s",'woo-vipps'), $error));
@@ -1524,20 +1557,28 @@ EOF;
 
         $vippsorderid = $result['orderId'];
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
-
         // Ensure we use the same session as for the original order IOK 2019-10-21
         $this->callback_restore_session($orderid);
 
-        do_action('woo_vipps_callback', $result);
+        if ($ischeckout) {
+             do_action('woo_vipps_callback_checkout', $result);
+        } else {
+             do_action('woo_vipps_callback', $result);
+        }
 
         // a small bit of security
         $order = wc_get_order($orderid);
         if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
+            error_log("iverok Callback Error in callback no or wrong authtoken ");
+            error_log("iverok callback meta is " . $order->get_meta('_vipps_authtoken'));
+            error_log("iverok callback tk is " .  $_REQUEST['tk']);
+
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
         $gw = $this->gateway();
-        $gw->handle_callback($result);
+        error_log("iverok handling callback $ischeckout");
+        $gw->handle_callback($result, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
         if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();

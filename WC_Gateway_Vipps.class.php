@@ -1190,6 +1190,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
+        global $Vipps;
         $orderid = $order->get_id();
 
         clean_post_cache($order->get_id());
@@ -1203,7 +1204,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
         // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
         // and callbacks happen at the same time.
-        global $Vipps;
         if (!$Vipps->lockOrder($order)) {
             return $oldstatus;
         }
@@ -1451,34 +1451,62 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user) {
+        global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
         $order->update_meta_data('_vipps_shipping_set', true);
         $order->save(); // Limit the window for double shipping as much as possible.
 
-        global $Vipps;
-        $address = $shipping['address'];
+        // We get different values from the normal callback and the Checkout callback, so be prepared for several results. IOK 2021-09-02
+        $address = isset($shipping['address']) ? $shipping['address'] : $shipping;;
 
         $firstname = $user['firstName'];
         $lastname = $user['lastName'];
-        $phone = $user['mobileNumber'];
         $email = $user['email'];
+        $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
+        if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
 
-        $addressline1 = $address['addressLine1'];
-        $addressline2 = @$address['addressLine2'];
-      
+        $shipping_firstname = $firstname;
+        $shipping_lastname = $lastname;
+        $addressline1 = isset($address['addressLine1']) ? $address['addressLine1'] : "";
+        $addressline2 = isset($address['addressLine2']) ? $address['addressLine2'] : "";
+        // This is the 'checkout'  callback
+        if (isset($shipping['streetAddress'])) {
+            $addressline1 = $shipping['streetAddress'];
+            $addressline2 = "";
+        }
+        if (isset($shipping['firstName'])) {
+            $shipping_firstname = $shipping['firstName'];
+            $shipping_lastname = $shipping['lastName'];
+        }
         // This apparently happens a lot IOK 2019-08-26 
         if ($addressline1 == $addressline2) $addressline2 = ''; 
 
-        $vippscountry = $address['country'];
-        $city = $address['city'];
-        $postcode= @$address['zipCode'];
-        if (isset($address['postCode'])) {
+        $city = "";
+        if (isset($address['city'])) {
+            $city = $address['city'];
+        } elseif (isset($address['region'])) {
+            $city = $address['region'];
+        }
+        
+        $postcode= "";
+        if (isset($address['zipCode'])) {
+           $postcode = $address['zipCode'];
+        } elseif (isset($address['postCode'])) {
             $postcode= $address['postCode'];
         } elseif (isset($address['postalCode'])){
             $postcode= $address['postalCode'];
         }
-        $country = $Vipps->country_to_code($vippscountry);
+
+        // eCom returns "NORWAY", while Checkout returns "NO". Woo requires the two-letter country code.
+        $vippscountry = $address['country'];
+        if (strlen($vippscountry) == 2) {
+            $country = strtoupper($vippscountry);
+        } else {
+            $country = $Vipps->country_to_code($vippscountry);
+        }
+
+        error_log("em $email ph $phone first $firstname last $lastname add $addressline1 add2 $addressline2 city $city post $postcode country $country shpifirst $shipping_firstname shiplast $shipping_lastname");
 
         $order->set_billing_email($email);
         $order->set_billing_phone($phone);
@@ -1490,8 +1518,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_billing_postcode($postcode);
         $order->set_billing_country($country);
 
-        $order->set_shipping_first_name($firstname);
-        $order->set_shipping_last_name($lastname);
+        $order->set_shipping_first_name($shipping_firstname);
+        $order->set_shipping_last_name($shipping_lastname);
         $order->set_shipping_address_1($addressline1);
         $order->set_shipping_address_2($addressline2);
         $order->set_shipping_city($city);
@@ -1502,48 +1530,49 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (WC()->session) {
             WC()->session->set('_vipps_order_finalized', $order->get_order_key());
         } else {
-            $this->log(__("Finalizing an Express Checkout order with no session - this should probably not happen", 'woo-vipps'), 'error');
+            $this->log(__("Finalizing an Express Checkout order with no session - this should probably not happen except when no callback has arrived", 'woo-vipps'), 'error');
         }
-
         $order->save();
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
         WC()->customer->set_billing_location($country,'',$postcode,$city);
         WC()->customer->set_shipping_location($country,'',$postcode,$city);
 
-        $method = $shipping['shippingMethodId'];
-
-        $shipping_rate=null;
-        if (substr($method,0,1) != '$') {
-            $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
-        } else { 
-            $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-            if (is_array($shipping_table) && isset($shipping_table[$method])) {
-                $shipping_rate = @unserialize($shipping_table[$method]);
-                if (!$shipping_rate) {
-                   $this->log(sprintf(__("Vipps Express Checkout: Could not deserialize the chosen shipping method %s for order %d", 'woo-vipps'), $method, $order->get_id()), 'error');
-                } else {
-                   // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
-                   $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
-                }
-            } 
-        }
-        $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
-        $it = null;       
-        if ($shipping_rate) {
-            $it = new WC_Order_Item_Shipping();
-            $it->set_shipping_rate($shipping_rate);
-            $it->set_order_id( $order->get_id() );
-            // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
-            // Therefore, do it manually/forcefully IOK 2020-02-17
-            foreach($shipping_rate->get_meta_data() as $key => $value) {
-              $it->add_meta_data($key,$value,true);
+        // Now do shipping, if it exists IOK 2021-09-02
+        $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
+        if ($method) {
+            $shipping_rate=null;
+            if (substr($method,0,1) != '$') {
+                $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
+            } else { 
+                $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                if (is_array($shipping_table) && isset($shipping_table[$method])) {
+                    $shipping_rate = @unserialize($shipping_table[$method]);
+                    if (!$shipping_rate) {
+                        $this->log(sprintf(__("Vipps Express Checkout: Could not deserialize the chosen shipping method %s for order %d", 'woo-vipps'), $method, $order->get_id()), 'error');
+                    } else {
+                        // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
+                        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
+                    }
+                } 
             }
-            $it->save();
-            $order->add_item($it);
+            $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
+            $it = null;       
+            if ($shipping_rate) {
+                $it = new WC_Order_Item_Shipping();
+                $it->set_shipping_rate($shipping_rate);
+                $it->set_order_id( $order->get_id() );
+                // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
+                // Therefore, do it manually/forcefully IOK 2020-02-17
+                foreach($shipping_rate->get_meta_data() as $key => $value) {
+                    $it->add_meta_data($key,$value,true);
+                }
+                $it->save();
+                $order->add_item($it);
+            }
+            $order->save(); 
+            $order->calculate_totals(true);
         }
-        $order->save(); 
-        $order->calculate_totals(true);
 
 
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
@@ -1552,18 +1581,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // that continues to work. IOK 2020-10-09
         $maybecreateuser = ($this->get_option('expresscreateuser') =='yes' && !function_exists('create_assign_user_on_vipps_callback')); 
         $maybecreateuser = apply_filters('woo_vipps_create_user_on_express_checkout', $maybecreateuser, $order, $user);
+        // IOK FIXME FIXME DON|T DO THIS IF CHECKOUT
         if ($maybecreateuser) {
             global $Vipps;
             $customer = $Vipps->express_checkout_get_vipps_customer($order);
             if ($customer) {
-                $userid = $customer->get_id();
-
-                update_user_meta($userid, '_vipps_express_id', $user['userId']); // This is used for consent removal. It is unfortunately not the same as for Login. IOK 2020-10-12
-
                 // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
                 // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
                 if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
-                    update_user_meta($userid, '_vipps_phone', $phone);
+                    update_user_meta($customer->get_id(), '_vipps_phone', $phone);
                     // update_user_meta($userid, '_vipps_id', $sub);
                     // update_user_meta($userid, '_vipps_just_connected', 1);
                 }
@@ -1572,8 +1598,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order = wc_get_order($order->get_id());
             }
         }
-            
-
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
 
@@ -1596,9 +1620,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $shipping_rate;
     }
 
-    // Handle the callback from Vipps.
-    public function handle_callback($result) {
+    // Handle the callback from Vipps eCom.
+    public function handle_callback($result, $ischeckout=false) {
         global $Vipps;
+        error_log("iverok Handling callback"); // FIXME
 
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
@@ -1646,12 +1671,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
-        global $Vipps;
         if (!$Vipps->lockOrder($order)) {
             clean_post_cache($order->get_id());
             return;
         }
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
+            error_log("iverok handling shipping details"); // FIXME
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
 
@@ -1661,10 +1686,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $transaction['status'];
 
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        try {
-            $Vipps->createCallbackSignal($order,'ok');
-        } catch (Exception $e) {
-            // Could not create a signal file, but that's ok.
+        // Not neccessary for Vipps Checkout though, as that is polled from outside the iframe. IOK 2021-09-02
+        if (!$ischeckout) {
+            try {
+                $Vipps->createCallbackSignal($order,'ok');
+            } catch (Exception $e) {
+                // Could not create a signal file, but that's ok.
+            }
         }
         $order->add_order_note(__('Vipps callback received','woo-vipps'));
 
@@ -1709,7 +1737,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
     // IOK 2018-05-25
-    public function create_partial_order() {
+    public function create_partial_order($ischeckout=false) {
         // This is neccessary for some plugins, like Yith Dynamic Pricing, that adds filters to get_price depending on whether or not is_checkout is true.
         // so basically, since we are impersonating WC_Checkout here, we should define this constant too. IOK 2020-07-03
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
@@ -1724,9 +1752,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = new WC_Order();
         $order->set_status('pending');
         $order->set_payment_method($this);
-    $order->set_created_via('Vipps Express Checkout');
-    $order->set_payment_method_title('Vipps Express Checkout');
-    $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
+        if ($ischeckout) {
+            $order->set_created_via('Vipps Checkout');
+            $order->set_payment_method_title('Vipps Checkout');
+        } else {
+            $order->set_created_via('Vipps Express Checkout');
+            $order->set_payment_method_title('Vipps Express Checkout');
+        }
+        $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
+        $dummy = __('Vipps Checkout', 'woo-vipps'); //  this is so gettext will find this string.
 
         $order->update_meta_data('_vipps_express_checkout',1);
 
