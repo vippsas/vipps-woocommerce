@@ -32,6 +32,79 @@ jQuery( document ).ready( function() {
     var pollingdone=false;
     var polling=false;
     var listening=false;
+    var initiating=false;
+
+    jQuery('.vipps_checkout_button.button').click (function (e) {
+      if (initiating) return;
+      clearValidations();
+      var ok = validateTerms();
+      if (ok) {
+        initiating=true;
+        jQuery("body").css("cursor", "progress");
+        jQuery('.vipps_checkout_button.button').each(function () {
+           jQuery(this).addClass('disabled');
+           jQuery(this).css("cursor", "progress");
+        });
+        jQuery.ajax(VippsConfig['vippsajaxurl'],
+                {   cache:false,
+                    dataType:'json',
+                    data: { 'action': 'vipps_checkout_start_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
+                    method: 'POST', 
+                    error: function (xhr, statustext, error) {
+                        jQuery("body").css("cursor", "default");
+                        jQuery('.vipps_checkout_button.button').css("cursor", "default");
+                        jQuery('.vipps_checkout_startdiv').hide();
+                        console.log('Error initiating transaction : ' + statustext + ' : ' + error);
+                        pollingdone=true;
+                        jQuery('#vippscheckouterror').show();
+                        jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured</div>');
+                        if (error == 'timeout')  {
+                            console.log('ouch, timeout');
+                        }
+                    },
+                    'success': function (result,statustext, xhr) {
+                        jQuery("body").css("cursor", "default");
+                        jQuery('.vipps_checkout_button.button').css("cursor", "default");
+                        jQuery('.vipps_checkout_startdiv').hide();
+                        console.log('A Ok: %j', result);
+                        return;
+                        if (result['data']['msg'] == 'EXPIRED') {
+                            jQuery('#vippscheckoutexpired').show();
+                            jQuery('#vippscheckoutframe').html('<div style="display:none">Session expired</div>');
+                            pollingdone=true;
+                            return;
+                        }
+                        if (result['data']['msg'] == 'ERROR' || result['data']['msg'] == 'FAILED') {
+                            jQuery('#vippscheckouterror').show();
+                            jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured in backend</div>');
+                            pollingdone=true;
+                            return;
+                        }
+                    },
+                    'timeout': 4000
+                });
+
+
+      }
+    });
+
+    function validateTerms () { 
+       var termsbox = jQuery('.input-checkbox[name="terms"]');
+       if (termsbox.length == 0) return true;
+       if (termsbox.is(':checked')) return true;
+       termsbox.closest('.validate-required').addClass('woocommerce-invalid');
+       termsbox.closest('.validate-required').addClass('woocommerce-invalid-required-field');
+       return false;
+    }
+    function clearValidations() {
+       var termsbox = jQuery('.input-checkbox[name="terms"]');
+       termsbox.closest('.validate-required').removeClass('woocommerce-invalid');
+       termsbox.closest('.validate-required').removeClass('woocommerce-invalid-required-field');
+    }
+
+    jQuery('.input-checkbox[name="terms"]').change(function () {
+       clearValidations();
+    });
 
     function listenToFrame() {
         if (listening) return;

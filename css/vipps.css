@@ -139,6 +139,11 @@ img.inline {
  background-color: #fe5b24;
 }
 
+.vipps_checkout_button_wrapper {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
 .vippsspinner {
     width:125px;
     height:125px;
