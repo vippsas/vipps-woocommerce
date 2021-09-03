@@ -925,7 +925,109 @@ else:
         wp_send_json_success(array('msg'=>'unknown', 'url'=>''));
     }
 
+    // Retrieve the current pending Vipps Checkout session, if it exists, and do some cleanup
+    // if it isn't correct IOK 2021-09-03
+    protected function vipps_checkout_current_pending_session () {
+        // If this is set, this is a currently pending order which is maybe still valid
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $order = $current_pending ? wc_get_order($current_pending) : null;
+
+        # If we do have an order, we need to check if it is 'pending', and if not, we have to check its payment status
+        $payment_status = null;
+        if ($order) {
+            if ($order->get_status() == 'pending') {
+                $payment_status = 'initiated'; // Just assume this for now
+            } else {
+                $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
+            } 
+        }
+        // This covers situations where we can actually go directly to the thankyou-screen or whatever
+        $redirect = "";
+        if (in_array($payment_status, ['authorized', 'complete'])) {
+            $this->abandonVippsCheckoutOrder(false);
+            $redirect = $this->gateway()->get_return_url($order);
+        } elseif ($payment_status == 'cancelled') {
+            // This will mostly just wipe the session.
+            $this->abandonVippsCheckoutOrder($order);
+            $redirect = home_url();
+        }
+        // Now if we don't have an order right now, we should not have a session either, so fix that
+        if (!$order) {
+            $this->abandonVippsCheckoutOrder(false);
+        } 
+
+        // Now check the current vipps session if it exist
+        $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
+        // A single word or array containing session data, containing token and frontendFrameUrl
+        // ERROR EXPIRED FAILED
+        $session_status = $current_vipps_session ? $this->get_vipps_checkout_status($current_vipps_session) : null;
+
+        // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
+        if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
+            $this->abandonVippsCheckoutOrder($order);
+        }
+
+        // This will return either a valid vipps session, nothing, or  redirect. 
+        return(array('order'=>$order ? $order->get_id() : false, 'session'=>$current_vipps_session,  'redirect'=>$redirect));
+    }
+
     function vipps_checkout_shortcode ($atts, $content) {
+        // No point in expanding this unless we are actually doing the checkout. IOK 2021-09-03
+        if (is_admin()) return;
+        if (wp_doing_ajax()) return;
+        if (defined('REST_REQUEST') && REST_REQUEST ) return;
+        wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
+        if (!WC()->cart ||  WC()->cart->is_empty() ) {
+            $this->abandonVippsCheckoutOrder(false);
+            ob_start();
+            wc_get_template( 'cart/cart-empty.php' );
+            return ob_get_clean();
+        }
+        // Previously registered, now enqueue this script which should then appear in the footer.
+        wp_enqueue_script('vipps-checkout');
+
+        // We need to be able to check if we still have a live, good session, in which case
+        // we can open the iframe directly. Otherwise, the form we are going to output will 
+        // create the iframe after a button press which will create a new order.
+        $sessioninfo = $this->vipps_checkout_current_pending_session();
+        $out = ""; // Start generating output already to make debugging easier
+
+        if ($sessioninfo['redirect']) {
+           // This is always either the thankyou page or home_url()  IOK 2021-09-03
+           $redir = json_encode($sessioninfo['redirect']);
+           $out .= "<script>window.location.replace($redir);</script>";
+           return $out;
+        }
+$out .= "<pre>" . print_r($sessioninfo, true) . "</pre>";
+
+        // Now the normal case.
+        $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'));
+        $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps')); 
+
+        if (!$sessioninfo['session']) {
+           $out .= "<p>Press button to start session</p>"; 
+           $out .= "<input type=button value='pressme'>";
+        }
+
+        // Check that these exist etc
+        $out .= "<div id='vippscheckoutframe'>";
+        // If we have an actual live session right now, just do the iframe at once.
+        if ($sessioninfo['session']) {
+            $token = $sessioninfo['session']['token'];      // From Vipps
+            $src = $sessioninfo['session']['frontendUrl'];  // From Vipps
+            $url = esc_attr($src . "?" . "token=$token");
+            $out .= "<iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'></iframe>";
+        }
+        $out .= "</div>";
+        $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
+        $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
+        $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
+
+        return $out;
+    }
+
+    function vipps_checkout_shortcode2 ($atts, $content) {
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST ) return;
@@ -959,6 +1061,9 @@ else:
             return;
         }
         $out = ""; // Start generating output already to make debugging easier
+
+
+$out .= "<pre>" . print_r($this->vipps_checkout_current_pending_session(), true) . "</pre>";
 
         // Zap the Vipps session if we don't have an order at this point.
         $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
@@ -1034,7 +1139,7 @@ else:
 
         // Check that these exist etc
         $token = $current_vipps_session['token'];
-        $src = $current_vipps_session['checkoutFrontendUrl']; 
+        $src = $current_vipps_session['frontendUrl']; 
         $out .= "<div id='vippscheckoutframe'><iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe></div>";
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
