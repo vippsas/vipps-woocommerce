@@ -31,24 +31,34 @@ jQuery( document ).ready( function() {
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
     var polling=false;
-    var origin = new URL(jQuery('#vippscheckoutframe iframe').attr('src')).origin;;
-    window.addEventListener(
-            'message',
-            // only frameHeight in pixels are sent, but it is sent whenever the frame changes (so, including when address etc is set). So poll when this happens. IOK 2021-08-25
-            function (e) {
+    var listening=false;
+
+    function listenToFrame() {
+        if (listening) return;
+        var iframe = jQuery('#vippscheckoutframe iframe');
+        if (iframe.length < 1) return;
+        var src = iframe.attr('src');
+        if (!src) return;
+        listening = true;
+        var origin = new URL(src).origin;;
+        window.addEventListener(
+                'message',
+                // Only frameHeight in pixels are sent, but it is sent whenever the frame changes (so, including when address etc is set). 
+                // So poll when this happens. IOK 2021-08-25
+                function (e) {
                 if (e.origin != origin) return;
-                console.log('got message %j', e);
+                console.log('got message %j', e); // FIXME debuggin
                 if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
                     wp.hooks.doAction('vippsCheckoutIframeMessage', e);
                 }
                 if (e.data.hasOwnProperty('frameHeight')) {
-                     jQuery('#vippscheckoutframe iframe').attr('x-height', e.data.frameHeight + 'px');
-                     jQuery('#vippscheckoutframe iframe').css('height', e.data.frameHeight + 'px');
+                    jQuery('#vippscheckoutframe iframe').css('height', e.data.frameHeight + 'px');
                 }
                 if (!polling && !pollingdone) pollSessionStatus();
-            },
-            false
-            );
+                },
+                false
+                );
+    }
 
     function pollSessionStatus () {
         console.log('polling!');
@@ -103,5 +113,6 @@ jQuery( document ).ready( function() {
                 });
     }
 
+    listenToFrame(); // Start now if we have an iframe. This will also start the polling.
     console.log("Vipps Checkout Initialized");
 });
