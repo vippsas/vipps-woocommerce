@@ -824,7 +824,7 @@ else:
         // Fold this into a function that will create a session if missing. This one however is only to get the order info.
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
-        $payment_status =  $this->gateway()->check_payment_status($order);
+        $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
         if (in_array($payment_status, ['authorized', 'complete'])) {
             $this->abandonVippsCheckoutOrder(false);
             return wp_send_json_success(array('msg'=>'completed', 'url' => $this->gateway()->get_return_url($order)));;
@@ -939,7 +939,7 @@ else:
         $order = $current_pending ? wc_get_order($current_pending) : null;
 
         // This isn't correct, but anyway
-        $payment_status =  $this->gateway()->check_payment_status($order);
+        $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
         if (in_array($payment_status, ['authorized', 'complete'])) {
             $this->abandonVippsCheckoutOrder(false);
             wp_redirect($this->gateway()->get_return_url($order), 302);
