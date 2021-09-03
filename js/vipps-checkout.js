@@ -66,18 +66,19 @@ jQuery( document ).ready( function() {
                         jQuery("body").css("cursor", "default");
                         jQuery('.vipps_checkout_button.button').css("cursor", "default");
                         jQuery('.vipps_checkout_startdiv').hide();
-                        console.log('A Ok: %j', result);
-                        return;
-                        if (result['data']['msg'] == 'EXPIRED') {
-                            jQuery('#vippscheckoutexpired').show();
-                            jQuery('#vippscheckoutframe').html('<div style="display:none">Session expired</div>');
-                            pollingdone=true;
+                        if (! result['data']['ok']) {
+                            console.log("Error starting Vipps Checkout %j", result);
+                            jQuery('#vippscheckouterror').show();
                             return;
                         }
-                        if (result['data']['msg'] == 'ERROR' || result['data']['msg'] == 'FAILED') {
-                            jQuery('#vippscheckouterror').show();
-                            jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured in backend</div>');
-                            pollingdone=true;
+                        if (result['data']['redirect']) {
+                            window.location.replace(result['redirect']);
+                            return;
+                        }
+                        if (result['data']['src']) {
+                            var iframe = jQuery('<iframe src="' + result['data']['src'] + '" frameBorder=0 style="width:100%;height: 60rem;"></iframe>'); 
+                            jQuery('#vippscheckoutframe').append(iframe);
+                            listenToFrame();
                             return;
                         }
                     },

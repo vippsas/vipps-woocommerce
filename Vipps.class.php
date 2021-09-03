@@ -820,10 +820,75 @@ else:
         exit();
     }
 
+    // This is used by the Vipps Checkout page to start the Vipps checkout session, including 
+    // creating the partial order IOK 2021-09-03
     public function vipps_ajax_checkout_start_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
- 
-        return wp_send_json_success(array('msg'=>'test', 'src'=>"src"));
+        $url = ""; 
+        $redir = "";
+        // First, check that we haven't already done this like in another window or something:
+        $session = $this->vipps_checkout_current_pending_session();
+        if (isset($sessioninfo['redirect'])) {
+            $redirect = $sessioninfo['redirect'];
+        }
+        if (isset($sessioninfo['session']) && isset($sessioninfo['session']['token'])) {
+            $token = $sessioninfo['session']['token'];
+            $src = $sessioninfo['session']['frontendUrl'];
+            $url = $src . "?" . "token=$token";
+        }
+        $current_vipps_session = null;
+        $current_pending = 0;
+        $current_authtoken = "";
+        if (!$redirect && !$url) {
+            try {
+                WC()->session->set('current_vipps_session', null);
+                $current_pending = $this->gateway()->create_partial_order('ischeckout');
+                if ($current_pending) {
+                    // Check errors here plz
+                    $order = wc_get_order($current_pending);
+                    $order->update_meta_data('_vipps_checkout', true);
+                    $current_authtoken = $this->gateway()->generate_authtoken();
+                    WC()->session->set('vipps_checkout_authtoken', $current_authtoken);
+                    $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
+                    $order->save();
+                    WC()->session->set('vipps_checkout_current_pending', $current_pending);
+                } else {
+                    throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
+                }
+            } catch (Exception $e) {
+                return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
+            }
+        }
+
+        $order = wc_get_order($current_pending);
+        $phone = "";
+        $requestid = 1;
+        $returnurl = $this->payment_return_url();
+        try {
+            $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$current_authtoken,$requestid); 
+            if ($current_vipps_session) {
+                $order = wc_get_order($current_pending);
+                $order->update_meta_data('_vipps_init_timestamp',time());
+                $order->update_meta_data('_vipps_status','INITIATE');
+                $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
+                $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
+                $order->save();
+                WC()->session->set('current_vipps_session', $current_vipps_session);
+                $token = $current_vipps_session['token'];
+                $src = $current_vipps_session['frontendUrl'];
+                $url = esc_attr($src . "?" . "token=$token");
+            } else {
+                    throw new Exception(__('Unknown error creating Vipps Checkout session', 'woo-vipps'));
+            }
+        } catch (Exception $e) {
+                $this->log(sprintf(__("Could not initiate Vipps Checkout session: %s", 'woo-vipps'), $e->getMessage()), 'ERROR');
+                return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
+        }
+        if ($url || $redir) {
+            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir));
+        } else { 
+            return wp_send_json_success(array('ok'=>0, 'msg'=>__('Could not start Vipps Checkout session'),'src'=>$url, 'redirect'=>$redir));
+        }
     }
 
     public function vipps_ajax_checkout_poll_session () {
@@ -913,7 +978,8 @@ else:
         if ($change) $order->save();
 
         // IOK FIXME DEBUG CALLBACK
-        if (false && $complete) {
+        // if (false && $complete) {
+        if ($complete) {
             // Order is complete! Yay!
             $this->gateway()->update_vipps_payment_details($order);
             $this->gateway()->payment_complete($order);
@@ -1035,127 +1101,6 @@ else:
             $out .= "<iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'></iframe>";
         }
         $out .= "</div>";
-        $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
-        $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
-        $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
-
-        return $out;
-    }
-
-    function vipps_checkout_shortcode2 ($atts, $content) {
-        if (is_admin()) return;
-        if (wp_doing_ajax()) return;
-        if (defined('REST_REQUEST') && REST_REQUEST ) return;
-        if (!WC()->cart) return;
-
-        // Previously registered, now enqueue this script which should then appear in the footer.
-        wp_enqueue_script('vipps-checkout');
-
-        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
-        $current_authtoken = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_authtoken') : false;
-        $order = $current_pending ? wc_get_order($current_pending) : null;
-
-        // This isn't correct, but anyway
-        $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
-        if (in_array($payment_status, ['authorized', 'complete'])) {
-            $this->abandonVippsCheckoutOrder(false);
-            wp_redirect($this->gateway()->get_return_url($order), 302);
-            exit();
-        }
-        if ($payment_status == 'cancelled') {
-            // This will mostly just wipe the session.
-            $this->abandonVippsCheckoutOrder($order);
-            wp_redirect(home_url(), 302);
-            exit();
-        }
-
-        wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-        if (WC()->cart && WC()->cart->is_empty() ) {
-            $this->abandonVippsCheckoutOrder($order);
-            wc_get_template( 'cart/cart-empty.php' );
-            return;
-        }
-        $out = ""; // Start generating output already to make debugging easier
-
-
-$out .= "<pre>" . print_r($this->vipps_checkout_current_pending_session(), true) . "</pre>";
-
-        // Zap the Vipps session if we don't have an order at this point.
-        $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
-        if (!$current_vipps_session) {
-           WC()->session->set('current_vipps_session', false);
-        }
-
-        $neworder = false;
-        $status = null;
-        // We already have an active Vipps session. Check to see if it is still valid, and if not, // zap it
-        if ($current_vipps_session) {
-            $status = $this->get_vipps_checkout_status($current_vipps_session);
-            if (empty($status) || $status =='EXPIRED' || $status == 'ERROR' || $status == 'FAILED') {
-                $neworder = true;
-                $current_vipps_session = null;
-            }
-        }
-        if (!is_a($order, 'WC_Order') or $order->get_status() != 'pending')  {
-            $neworder = true;
-        }
-
-        // If we need a new order now (for whatever reason), create it and abandon any old one.
-        if ($neworder) {
-            if ($current_pending) {
-                $current_pending = 0;
-                $this->abandonVippsCheckoutOrder($order);
-            }
-        }
-
-        if (!$current_pending) {
-            try {
-                $current_vipps_session = null;
-                WC()->session->set('current_vipps_session', null);
-                $current_pending = $this->gateway()->create_partial_order();
-                if ($current_pending) {
-                    // Check errors here plz
-                    $order = wc_get_order($current_pending);
-                    $order->update_meta_data('_vipps_checkout', true);
-                    $current_authtoken = $this->gateway()->generate_authtoken();
-                    WC()->session->set('vipps_checkout_authtoken', $current_authtoken);
-                    $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
-                    $order->save();
-                    WC()->session->set('vipps_checkout_current_pending', $current_pending);
-                }
-            } catch (Exception $e) {
-                wp_die($e->getMessage());
-            }
-        }
-
-        // Create a new Vipps session if none exist
-        if (!$current_vipps_session && $current_pending) {
-            $order = wc_get_order($current_pending);
-            $phone = "";
-            $requestid = 1;
-            $returnurl = $this->payment_return_url();
-            $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$current_authtoken,$requestid); 
-            if ($current_vipps_session) {
-                $order = wc_get_order($current_pending);
-                $order->update_meta_data('_vipps_init_timestamp',time());
-                $order->update_meta_data('_vipps_status','INITIATE');
-                $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
-                $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
-                $order->save();
-                WC()->session->set('current_vipps_session', $current_vipps_session);
-                $status = $this->get_vipps_checkout_status($current_vipps_session);
-            }
-
-        }
-
-
-        $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'), $order);
-        $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps') , $order);
-
-        // Check that these exist etc
-        $token = $current_vipps_session['token'];
-        $src = $current_vipps_session['frontendUrl']; 
-        $out .= "<div id='vippscheckoutframe'><iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'>iframe!</iframe></div>";
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
         $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
@@ -1775,7 +1720,7 @@ EOF;
         $newcart = array();
 
         if (WC()->session->get('cart', true)) {
-            foreach(WC()->session->get('cart',true) as $key => $values) {
+            foreach(WC()->session->get('cart',[]) as $key => $values) {
                 $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
                 $values['data'] = $product;
                 $newcart[$key] = $values;
