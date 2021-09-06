@@ -1366,8 +1366,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_virtual     = $product->is_virtual();
 			$direct_capture = $product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
 
-			$agreement_url = get_permalink( get_option( 'woocommerce_myaccount_page_id' ) );
-			$redirect_url  = $this->get_return_url( $order );
+			$agreement_url = filter_var( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ), FILTER_VALIDATE_URL )
+				? get_permalink( get_option( 'woocommerce_myaccount_page_id' ) )
+				: wc_get_account_endpoint_url( 'dashboard' );
+
+			if ( ! filter_var( $agreement_url, FILTER_VALIDATE_URL ) ) {
+				$agreement_url = get_home_url();
+			}
+
+			$redirect_url = $this->get_return_url( $order );
 
 			// total no longer returns the order amount when gateway is being changed
 			$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();

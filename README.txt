@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.8.3 =
+* Fix: Fixed an issue where an invalid "my account" page link would cause checkout to not work.
+
 = 1.8.2 =
 * Enhancement: Added `_vipps_recurring_latest_failed_charge_reason` and `_vipps_recurring_latest_failed_charge_description` to subscriptions.
 * Enhancement: Migrate the aforementioned data.
