@@ -2329,13 +2329,17 @@ EOF;
         if (is_user_logged_in()) return;
         if (!$order || $order->get_payment_method()!= 'vipps' ) return;
 
-        // Make this filterable because you may want to only log on some users
+        // We *do* want to log in express checkout customers, but not those that 
+        // use the Vipps Checkout solution - those can change their emails in the
+        // checkout screen. IOK 2021-09-03
         $do_login =  $order->get_meta('_vipps_express_checkout');
+        $do_login = $do_login && !$order->get_meta('_vipps_checkout');
+
+        // Make this filterable because you may want to only log on some users
         $do_login = apply_filters('woo_vipps_login_user_on_express_checkout', $do_login, $order);
         if (!$do_login) return;
 
         $customer = $this->express_checkout_get_vipps_customer ($order);
-
         if( $customer) {
             $usermeta=get_userdata($customer->get_id());
             $iscustomer = (in_array('customer', $usermeta->roles) || in_array('subscriber', $usermeta->roles));
