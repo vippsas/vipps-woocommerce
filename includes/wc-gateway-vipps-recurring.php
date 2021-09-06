@@ -1239,6 +1239,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
 		$item = array_pop( $items );
 
+		if ( ! $item ) {
+			return;
+		}
+
 		$item_name           = $item->get_name();
 		$product_description = WC_Vipps_Recurring_Helper::get_product_description( $item->get_product() );
 
