@@ -1166,7 +1166,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return array
 	 */
 	public function get_subscriptions_for_order( $order ): array {
-		return wcs_order_contains_renewal( $order ) ? wcs_get_subscriptions_for_renewal_order( $order ) : wcs_get_subscriptions_for_order( $order );
+		return WC_Vipps_Recurring_Helper::get_subscriptions_for_order( $order );
 	}
 
 	/**

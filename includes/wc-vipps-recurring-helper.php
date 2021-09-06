@@ -48,6 +48,8 @@ class WC_Vipps_Recurring_Helper {
 	const META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS = '_vipps_recurring_swapping_gateway_to_vipps';
 	const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
 	const META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX = '_vipps_recurring_update_in_app_description_prefix';
+	const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON = '_vipps_recurring_latest_failed_charge_reason';
+	const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
 
 	/**
 	 * Get Vipps amount to pay
@@ -299,15 +301,35 @@ class WC_Vipps_Recurring_Helper {
 		self::set_order_as_not_pending( $order );
 		self::update_meta_data( $order, self::META_CHARGE_FAILED, true );
 
+		self::set_order_failure_reasons( $order, $charge );
+	}
+
+	/**
+	 * @param $order
+	 * @param $charge
+	 */
+	public static function set_order_failure_reasons( $order, $charge ) {
+		$subscriptions = self::get_subscriptions_for_order( $order );
+		$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
+
 		if ( isset( $charge['failureReason'] ) ) {
 			self::update_meta_data( $order, self::META_CHARGE_FAILED_REASON, $charge['failureReason'] );
+			// set on subscription too, this is useful for plugins like WP Sheet Editor
+			self::update_meta_data( $subscription, self::META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON, $charge['failureReason'] );
 		}
 
 		if ( isset( $charge['failureDescription'] ) ) {
 			self::update_meta_data( $order, self::META_CHARGE_FAILED_DESCRIPTION, $charge['failureDescription'] );
+			// set on subscription too, this is useful for plugins like WP Sheet Editor
+			self::update_meta_data( $subscription, self::META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION, $charge['failureDescription'] );
 		}
 
 		$order->save();
+		$subscription->save();
+	}
+
+	public static function get_subscriptions_for_order( $order ): array {
+		return wcs_order_contains_renewal( $order ) ? wcs_get_subscriptions_for_renewal_order( $order ) : wcs_get_subscriptions_for_order( $order );
 	}
 
 	/**

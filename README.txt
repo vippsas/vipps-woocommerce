@@ -2,7 +2,7 @@
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 5.7
+Tested up to: 5.8
 Stable tag: trunk
 Requires PHP: 7.0
 License: AGPLv3.0 or later
@@ -153,6 +153,11 @@ After 2 days it will move to the "Processing" status. You can however change the
 Alternatively you you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
 
 == Changelog ==
+
+= 1.8.2 =
+* Enhancement: Added `_vipps_recurring_latest_failed_charge_reason` and `_vipps_recurring_latest_failed_charge_description` to subscriptions.
+* Enhancement: Migrate the aforementioned data.
+* Enhancement: Update tested up to, now 5.8.
 
 = 1.8.1 =
 * Fix: Added an exit condition after attempting to redirect to the Cancelled Vipps Purchase page. This should in theory make this redirect work every single time.
