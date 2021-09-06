@@ -257,8 +257,7 @@ class VippsApi {
         $data = array();
         $data['AuthInfo'] = $authinfo;
         $data['CustomerInfo'] = array('MobileNumber' => $phone); 
-        $data['MerchantInfo'] = array('MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'FallBack'=>$fallback); 
-
+        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'fallbackUrl'=>$fallback); 
         $data['Transaction'] = $transaction;
 
         error_log("checkout init data is " . print_r($data, true));

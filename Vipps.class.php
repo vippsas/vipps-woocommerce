@@ -833,7 +833,7 @@ else:
         }
         if (isset($sessioninfo['session']) && isset($sessioninfo['session']['token'])) {
             $token = $sessioninfo['session']['token'];
-            $src = $sessioninfo['session']['frontendUrl'];
+            $src = $sessioninfo['session']['checkoutFrontendUrl'];
             $url = $src . "?" . "token=$token";
         }
         $current_vipps_session = null;
@@ -875,7 +875,7 @@ else:
                 $order->save();
                 WC()->session->set('current_vipps_session', $current_vipps_session);
                 $token = $current_vipps_session['token'];
-                $src = $current_vipps_session['frontendUrl'];
+                $src = $current_vipps_session['checkoutFrontendUrl'];
                 $url = esc_attr($src . "?" . "token=$token");
             } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout session', 'woo-vipps'));
@@ -1096,7 +1096,7 @@ else:
         // If we have an actual live session right now, just do the iframe at once.
         if ($sessioninfo['session']) {
             $token = $sessioninfo['session']['token'];      // From Vipps
-            $src = $sessioninfo['session']['frontendUrl'];  // From Vipps
+            $src = $sessioninfo['session']['checkoutFrontendUrl'];  // From Vipps
             $url = esc_attr($src . "?" . "token=$token");
             $out .= "<iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'></iframe>";
         }
