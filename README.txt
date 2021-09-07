@@ -154,6 +154,9 @@ Alternatively you you could look into using WooCommerce "Early renewals": [https
 
 == Changelog ==
 
+= 1.8.4 =
+* Fix: The 1.8.2 migration will no longer throw a fatal error for some installations if a subscription does not exist on an order.
+
 = 1.8.3 =
 * Fix: Fixed an issue where an invalid "my account" page link would cause checkout to not work.
 
