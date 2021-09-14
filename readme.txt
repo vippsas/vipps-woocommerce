@@ -1,9 +1,10 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
+Version: 1.8.0
+Stable tag: 1.8.0
 Requires at least: 4.7
-Tested up to: 5.8.0
-Stable tag: 1.7.12
+Tested up to: 5.8.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 5.6.0
@@ -75,8 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.12  =
- Stop restoring the session cart when checking the status of abandoned orders. This *may* cause problems with customers shopping carts and shipping.
+= 1.7.13  =
+ Ensure a refund of 0 NOK does not refund the entire amount.
 
 == Frequently Asked Questions ==
 
@@ -197,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.09.14 version 1.7.13 =
+ Ensure refunds of 0 NOK are not handled by Vipps
 
 = 2021.08.23 version 1.7.12 =
  The cron job that checks the status of abandoned orders have since 1.7.10 restored these orders' session to check the status as correctly as possible.
