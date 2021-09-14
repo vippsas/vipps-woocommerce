@@ -404,6 +404,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return new WP_Error('Vipps', __("Cannot refund through Vipps - the refund amount is too large.", 'woo-vipps'));
         }
         $ok = 0;
+
+        // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
+        if (is_numeric($amount) && $amount == 0) {
+            $order->add_order_note($amount . ' ' . 'NOK' . ' ' . __(" refunded through Vipps:",'woo-vipps') . ' ' . $reason);
+            return true;
+        }
+
         try {
             $ok = $this->refund_payment($order,$amount);
         } catch (TemporaryVippsApiException $e) {
