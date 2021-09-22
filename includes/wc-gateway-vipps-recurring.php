@@ -82,6 +82,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public $transition_renewals_to_completed;
 
 	/**
+	 * The amount of charges to check in wp-cron at a time
+	 *
+	 * @var integer
+	 */
+	public $check_charges_amount;
+
+	/**
+	 * The sort order in which we check charges in wp-cron
+	 *
+	 * @var string
+	 */
+	public $check_charges_sort_order;
+
+	/**
 	 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
 	 */
 	private static $instance;
@@ -91,7 +105,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	private $api;
 
-	/**f
+	/**
 	 * Returns the *Singleton* instance of this class.
 	 *
 	 * @return WC_Gateway_Vipps_Recurring The *Singleton* instance.
@@ -150,6 +164,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 		$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 		$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
+		$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
+		$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 		$this->order_button_text                = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
 		$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';

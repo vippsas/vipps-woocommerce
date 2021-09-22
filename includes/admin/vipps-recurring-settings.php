@@ -70,11 +70,28 @@ return apply_filters(
 			}, ARRAY_FILTER_USE_KEY )
 		],
 		'transition_renewals_to_completed' => [
+			'type'        => 'checkbox',
 			'title'       => __( 'Transition order status for renewals to "completed"', 'woo-vipps-recurring' ),
 			'label'       => __( 'Transition order status for renewals to "completed"', 'woo-vipps-recurring' ),
-			'type'        => 'checkbox',
 			'description' => __( 'This option will make sure order statuses always transition to "completed" when the renewal charge is completed in Vipps.', 'woo-vipps-recurring' ),
 			'default'     => 'no',
+		],
+		'check_charges_amount'             => [
+			'type'        => 'number',
+			'title'       => __( 'Amount of charges to check per status check', 'woo-vipps-recurring' ),
+			'description' => __( 'The amount of charges to check the status for in wp-cron per scheduled event. It is recommended to keep this between 5 and 100. The higher the value, the more performance issues you may run into.', 'woo-vipps-recurring' ),
+			'default'     => 10,
+		],
+		'check_charges_sort_order'         => [
+			'type'        => 'select',
+			'title'       => __( 'Status checking sort order for charges', 'woo-vipps-recurring' ),
+			'description' => __( 'The sort order we use when checking charges in wp-cron. Random sort order is the best for most use cases. Oldest first may be useful if you use synchronized renewals.', 'woo-vipps-recurring' ),
+			'default'     => 'rand',
+			'options'     => [
+				'rand' => __( 'Random', 'woo-vipps-recurring' ),
+				'asc'  => __( 'Oldest first', 'woo-vipps-recurring' ),
+				'desc' => __( 'Newest first', 'woo-vipps-recurring' )
+			]
 		],
 		'logging'                          => [
 			'title'       => __( 'Logging', 'woo-vipps-recurring' ),

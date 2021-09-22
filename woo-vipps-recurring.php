@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.8.4
+ * Version: 1.9.0
  * Requires at least: 4.4
  * Tested up to: 5.8
  * WC tested up to: 5.6.0
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.8.4' );
+define( 'WC_VIPPS_RECURRING_VERSION', '1.9.0' );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
@@ -174,12 +174,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				// testing code
-//				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
-//					add_action( 'wp_loaded', [
-//						$this,
-//						'update_subscription_details_in_app'
-//					] );
-//				}
+				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+					add_action( 'wp_loaded', [
+						$this,
+						'check_order_statuses'
+					] );
+				}
 				// end testing code
 
 				// schedule recurring payment charge status checking event
@@ -633,16 +633,20 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Check charge statuses scheduled action
 			 *
-			 * @param int $limit
+			 * @param int|null $limit
 			 *
 			 * @return array
 			 */
-			public function check_order_statuses( $limit = 8 ): array {
+			public function check_order_statuses( $limit = '' ): array {
 				$gateway = $this->gateway();
+
+				if ( empty( $limit ) ) {
+					$limit = $gateway->check_charges_amount;
+				}
 
 				$order_ids = wc_get_orders( [
 					'limit'          => $limit,
-					'order'          => 'rand',
+					'order'          => $gateway->check_charges_sort_order,
 					'type'           => 'shop_order',
 					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
 					'meta_compare'   => '=',

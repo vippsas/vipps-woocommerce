@@ -150,9 +150,14 @@ This is because when an order is charged in Vipps it takes 2 days before the pay
 
 After 2 days it will move to the "Processing" status. You can however change the behaviour of this by using the "Default status to give pending renewals" option in the plugin settings.
 
-Alternatively you you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
+Alternatively you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
 
 == Changelog ==
+
+= 1.9.0 =
+* Enhancement: Added a setting for what sort order we should check charges by.
+* Enhancement: Added a setting for how many charges we should check at a time.
+* Enhancement: Default amount of charges to check per wp-cron run is now 10.
 
 = 1.8.4 =
 * Fix: The 1.8.2 migration will no longer throw a fatal error for some installations if a subscription does not exist on an order.
