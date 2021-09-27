@@ -1243,6 +1243,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->save();
 
+        $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
+        $address_set_by_poll = false;
+        if ($checkoutpoll) {
+            try {
+                $polldata =  $this->api->poll_checkout($checkoutpoll);
+                if (isset($polldata['shippingDetails'])) {
+                    $this->set_order_shipping_details($order,$polldata['shippingDetails'], $polldata['userDetails']);
+                    $address_set_by_poll = 1;
+                }
+            } catch (Exception $e) {
+                $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
+            }
+        }
+
+
+
 
         $statuschange = 0;
         if ($oldvippsstatus != $vippsstatus) {
@@ -1258,26 +1274,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
             if (@$paymentdetails['shippingDetails']) {
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
+            } else if ($address_set_by_poll) {
+                // NOOP - address is known
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
-                //  But first check to see if it has customer info! FIXME FIXME FIXME
-                error_log("Issue with shipping details, cancelling order " . $order->get_id());
-                error_log("HAs shipping: " . $order->has_shipping_address());
-                error_log("HAs billing : " . $order->has_billing_address());
-                error_log("addr " . print_r($order->get_address(), true));
-                $this->log(__("No shipping details from Vipps for express checkout for order id:",'woo-vipps') . ' ' . $orderid, 'error');
+                //  But first check to see if it has customer info! 
                 // Cancel any orders where the Checkout session is dead and there is no address info available
                 if (!$order->has_shipping_address() && !$order->has_billing_address()) {
+                    $this->log(__("No shipping details from Vipps for express checkout for order id:",'woo-vipps') . ' ' . $orderid, 'error');
                     $sessiontimeout = time() - (60*90);
                     $then = intval($order->get_meta('_vipps_init_timestamp'));
-                    error_log("So we have an empty order w timestamp " . date('Y-m-d H:i:s', $then) . " vs  " . date('Y-m-d H:i:s', $sessiontimeout));
                     if ($then < $sessiontimeout)  {
-                        error_log("This order is too old - cancel it!");
                         $this->log(sprintf(__("Order %d has no address info and any Vipps Checkout session is dead - have to cancel.", 'woo-vipps'), $order->get_id()));
                         $order->update_status('cancelled', __('Could not get address info for order from Vipps', 'woo-vipps'));
                         $order->save();
                     } else {
-                        error_log("Sessionlogout greater than then?");
+                        // NOOP - the vipps checkout session can still be active, so we need to let it be
+                        $this->log(sprintf(__("No address information for order %d, but there still might be an active Vipps Checkout session for it, so do not cancel it.", 'woo-vipps'), $order->get_id()));
                     }
                 }
                 // IOK FIXME FIXME IF WE *DO* HAVE THE ADDRESS INFO HERE, JUST CONTINUE AND COMPLETE THE ORDER
@@ -1333,7 +1346,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Update the order with Vipps payment details, either passed or called using the API.
     public function update_vipps_payment_details ($order, $details = null) {
        if (!$details) $details = $this->get_payment_details($order);
-       error_log("details are " . print_r($details, true));
 
        if ($details) {
            if (isset($details['transactionSummary'])) {
@@ -1513,8 +1525,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $country = $Vipps->country_to_code($vippscountry);
         }
 
-        error_log("em $email ph $phone first $firstname last $lastname add $addressline1 add2 $addressline2 city $city post $postcode country $country shpifirst $shipping_firstname shiplast $shipping_lastname");
-
         $order->set_billing_email($email);
         $order->set_billing_phone($phone);
         $order->set_billing_first_name($firstname);
@@ -1630,7 +1640,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Handle the callback from Vipps eCom.
     public function handle_callback($result, $ischeckout=false) {
         global $Vipps;
-        error_log("iverok Handling callback"); // FIXME
 
         // These can have a prefix added, which may have changed, so we'll use our own search
         // to retrieve the order IOK 2018-05-03
@@ -1683,7 +1692,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
-            error_log("iverok handling shipping details"); // FIXME
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
 

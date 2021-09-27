@@ -50,9 +50,6 @@ class Vipps {
     public $vippsJSConfig = array();
 
     function __construct() {
-
-
-
     }
 
     public static function instance()  {
@@ -864,12 +861,15 @@ else:
         $phone = "";
         $requestid = 1;
         $returnurl = $this->payment_return_url();
+        $returnurl = add_query_arg('t',$current_authtoken,$returnurl);
+        WC()->session->set('_vipps_pending_order',$order->get_id());
         try {
             $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$current_authtoken,$requestid); 
             if ($current_vipps_session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
                 $order->update_meta_data('_vipps_status','INITIATE');
+                $order->update_meta_data('_vipps_checkout_poll', $current_vipps_session['pollingUrl']);
                 $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
                 $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
                 $order->save();
@@ -894,6 +894,7 @@ else:
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
 
+
         // Fold this into a function that will create a session if missing. This one however is only to get the order info.
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
@@ -915,23 +916,19 @@ else:
         }
 
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
+        $failed = $status == 'ERROR' || $status == 'EXPIRED';
+        $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
+        $ok   = !$failed;
 
-        $failed = $status == 'ERROR' || $status == 'EXPIRED' ||  $status['sessionState'] == 'PaymentFailed';
-        $complete = !$failed && ($status['sessionState'] ==  'PaymentSuccessful');
-        $ok   = !$failed && ($complete ||  in_array($status['sessionState'],  array('PaymentInitiated', 'SessionStarted')));
+        // Since we checked the payment status at Vipps directly above, we don't actaully have any extra information at this point.
+        // We do know that the session is live and ongoing, but that's it.
 
         if ($failed) { 
-            $msg = 'ERROR';
-            if (is_array($status)) {
-                $msg = 'FAILED';
-            } elseif ($status == 'EXPIRED') {
-                $msg = 'EXPIRED';
-            }
+            $msg = $status;
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>$msg, 'url'=>home_url()));
             exit();
         }
-
         // Errorhandling! If this happens we have an unknown status or something like it.
         if (!$ok) {
             $this->log("Unknown status on poliing status: " . print_r($status, true), 'ERROR');
@@ -940,6 +937,7 @@ else:
             exit();
         }
 
+        // This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
         $change = false;
         $vipps_address_hash =  WC()->session->get('vipps_address_hash');
         if ($ok && (isset($status['orderContactInformation']) || isset($status['orderShippingAddress'])))  {
@@ -951,15 +949,15 @@ else:
         }
         if ($complete) $change = true;
 
-        if ($ok && $change && isset($status['orderContactInformation']))  {
-            $contact = $status['orderContactInformation'];
+        if ($ok && $change && isset($status['userDetails']))  {
+            $contact = $status['userDetails'];
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
         }
-        if ($ok &&  $change && isset($status['orderShippingAddress']))  {
-            $contact = $status['orderShippingAddress'];
+        if ($ok &&  $change && isset($status['shippingDetails']))  {
+            $contact = $status['shippingDetails'];
             $countrycode =  $this->country_to_code($contact['country']);
             $order->set_shipping_first_name($contact['firstName']);
             $order->set_shipping_last_name($contact['lastName']);
@@ -977,8 +975,7 @@ else:
         }
         if ($change) $order->save();
 
-        // IOK FIXME DEBUG CALLBACK
-        // if (false && $complete) {
+        // IOK 2021-09-27 we no longer get informed when the order is complete, but if we did, this would handle it.
         if ($complete) {
             // Order is complete! Yay!
             $this->gateway()->update_vipps_payment_details($order);
@@ -996,6 +993,7 @@ else:
             exit();
         }
 
+        // This should never happen.
         wp_send_json_success(array('msg'=>'unknown', 'url'=>''));
     }
 
@@ -1133,9 +1131,7 @@ else:
     
     public function get_vipps_checkout_status($session) {
         if ($session && isset($session['token'])) {
-            $data = $this->decode_checkout_token($session['token']);
-            // This will return a status object, EXPIRED or ERROR
-            $status = $this->gateway()->api->poll_checkout($data['sessionId']);
+            $status = $this->gateway()->api->poll_checkout($session['pollingUrl']);
             return $status;
         }
     }
@@ -1589,7 +1585,6 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        error_log("iverok callback received");
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
@@ -1604,15 +1599,10 @@ EOF;
         if (isset($parts[3]) && $parts[3] == 'checkout') {
             $ischeckout = true;
         }
-        error_log("iverok Callback body " . print_r($result,true));
-        error_log("iverok Callback request " . print_r($_REQUEST, true));
-        error_log("iverok Callback parts" . print_r($parts, true));
-        error_log("iverok Callback is checkout $ischeckout");
         
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
 
         if (!$result) {
-            error_log("iverok Callback Error in callback no result");
             $error = json_last_error_msg();
             $this->log(__("Did not understand callback from Vipps:",'woo-vipps') . " " .  $raw_post, 'error');
             $this->log(sprintf(__("Error was: %s",'woo-vipps'), $error));
@@ -1633,15 +1623,10 @@ EOF;
         // a small bit of security
         $order = wc_get_order($orderid);
         if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
-            error_log("iverok Callback Error in callback no or wrong authtoken ");
-            error_log("iverok callback meta is " . $order->get_meta('_vipps_authtoken'));
-            error_log("iverok callback tk is " .  $_REQUEST['tk']);
-
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
         $gw = $this->gateway();
-        error_log("iverok handling callback $ischeckout");
         $gw->handle_callback($result, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
@@ -1655,6 +1640,7 @@ EOF;
         $mapped = @$this->countrymap[strtoupper($countryname)];
         $code = WC()->countries->get_base_country();
         if ($mapped) $code = $mapped;
+        if (!$mapped && strlen($countryname) == 2) $code = strtoupper($countryname);
         $code = apply_filters('woo_vipps_country_to_code', $code, $countryname);
         return  $code;
     }

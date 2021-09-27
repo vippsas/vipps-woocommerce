@@ -229,7 +229,13 @@ class VippsApi {
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
+        $headers['client_id'] = $clientid;
+        $headers['client_secret'] = $secret;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
         $callback = $this->gateway->payment_callback_url($authtoken);
+
+        // IOK FIXME
         $fallback = $returnurl;
 
         $transaction = array();
@@ -249,85 +255,61 @@ class VippsApi {
         }
         $transaction['TimeStamp'] = $date;
 
-        $authinfo = array();
-        $authinfo['ClientId'] = $clientid;
-        $authinfo['ClientSecret'] = $secret;
-        $authinfo['OcpApimSubscriptionKey'] = $subkey;
+        #$authinfo = array();
+        #$authinfo['ClientId'] = $clientid;
+        #$authinfo['ClientSecret'] = $secret;
+        #$authinfo['OcpApimSubscriptionKey'] = $subkey;
+        #$data['AuthInfo'] = $authinfo;
 
         $data = array();
-        $data['AuthInfo'] = $authinfo;
         $data['CustomerInfo'] = array('MobileNumber' => $phone); 
         $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'fallbackUrl'=>$fallback); 
         $data['Transaction'] = $transaction;
 
-        error_log("checkout init data is " . print_r($data, true));
-
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
-        error_log("checkout init res is " . print_r($res, true));
         return $res;
     }
 
     // Poll the sessionPollingURL gotten from the checkout API
-    public function poll_checkout ($sessionid) {
+    public function poll_checkout ($pollingurl) {
+        $command = $pollingurl;
+
         $data = array();
         $headers = array();
-        $command = "checkout/session/$sessionid";
+        $clientid = $this->get_clientid();
+        $secret = $this->get_secret();
+        $subkey = $this->get_key();
+
+        $headers['client_id'] = $clientid;
+        $headers['client_secret'] = $secret;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+
         try {
             $res = $this->http_call($command,$data,'GET',$headers,'json'); 
-        } catch (Exception $e) {
-            error_log("Exception: "  . print_r($e, true));
-            if (is_a($e, 'VippsAPIException') && $e->responsecode == 404) {
+        } catch (VippsAPIException $e) {
+            if ($e->responsecode == 400) {
+                // No information yet.
+                return array('sessionState'=>'PaymentInitiated');
+            } else if ($e->responsecode == 404) {
                 return 'EXPIRED';
-            }
-            $this->log(sprintf(__("Error polling status of session %s - error message %s", 'woo-vipps'), $sessionid, $e->getMessage()));
+            } else {
+                $this->log(sprintf(__("Error polling status - error message %s", 'woo-vipps'), $e->getMessage()));
+                // We can't dom uch more than this so just return ERROR
+                return 'ERROR';
+
+            } 
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Error polling status - error message %s", 'woo-vipps'), $e->getMessage()));
             // We can't dom uch more than this so just return ERROR
             return 'ERROR';
         }
-        /*
-        200 
-            Successfully retrieved the CustomerData object for the given session id.
 
-            No links
-            204 
-            The specified session id is recognized, but no data is available yet (login flow not yet completed by user).
-
-            No links
-            404 
-            The specified session id is unknown.
-         */
-
-        if ($res['customerURL']) {
-            $customerdata = array();
-            try {
-                $customerdata = $this->http_call($res['customerURL'],array(),'GET',array(),'json'); 
-                if ($customerdata && isset($customerdata['customerFormData'])) {
-                   $contact = $customerdata['customerFormData'];
-                   $orderContactInformation = array();
-                   $orderShippingAddress  = array();
-                   $orderContactInformation['email'] = $contact['email'];
-                   $orderContactInformation['phoneNumber'] = $contact['phone'];
-                   $orderContactInformation['firstName'] = $contact['firstName'];
-                   $orderContactInformation['lastName'] = $contact['lastName'];
-
-                   $orderShippingAddress['firstName'] = $contact['firstName'];
-                   $orderShippingAddress['lastName'] = $contact['lastName'];
-                   $orderShippingAddress['streetAddress'] = $contact['address'];
-                   $orderShippingAddress['region'] = $contact['city'];
-                   $orderShippingAddress['postalCode'] = $contact['zip'];
-                   $orderShippingAddress['country'] = $contact['country'];
-
-                   $res['orderContactInformation'] = $orderContactInformation;
-                   $res['orderShippingAddress'] = $orderShippingAddress;
-                }
-
-
-
-            } catch (Exception $e) {
-                error_log("No customer data apparently : " . $e->getMessage());
-            }
-        }
-
-        error_log("Res is " . print_r($res, true));
         return $res;
     }
 
@@ -539,15 +521,12 @@ class VippsApi {
             $url .= "?$data_encoded";
         }
 
-        error_log("URl is $url");
-
         $return = wp_remote_request($url,$args);
         $headers = array();
         $content=NULL;
         $response=0;
 
         if (is_wp_error($return))  {
-            error_log("message " . $return->get_error_message());
             $headers['status'] = "500 " . $return->get_error_message();
             $response = 500;
         } else {
@@ -556,9 +535,6 @@ class VippsApi {
             $headers = wp_remote_retrieve_headers($return);
             $headers['status'] = "$response $message";
             $contenttext = wp_remote_retrieve_body($return);
-
-            error_log("Headers " . print_r($headers, true));
-            error_log("content: $contenttext");
 
             if ($contenttext) {
                 $content = @json_decode($contenttext,true);
@@ -585,7 +561,6 @@ class VippsApi {
 
         // Good result!
         if ($response < 300) {
-            error_log("resp $response headers " . print_r($headers,true));
             return $content; 
         }
 
