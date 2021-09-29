@@ -915,11 +915,18 @@ else:
         // Handle special callbacks
         $special = $this->is_special_page() ;
 
-
-        if ($special) return $this->$special();
+        if ($special) {
+            remove_filter('template_redirect', 'redirect_canonical', 10);
+            do_action('woo_vipps_before_handling_special_page', $special);
+            $this->$special();
+        }
 
         $consentremoval = $this->is_consent_removal();
-        if ($consentremoval) return  $this->vipps_consent_removal_callback($consentremoval);
+        if ($consentremoval) {
+            remove_filter('template_redirect', 'redirect_canonical', 10);
+            do_action('woo_vipps_before_handling_special_page', 'consentremoval');
+            $this->vipps_consent_removal_callback($consentremoval);
+        }
 
     }
     // Template handling for special pages. IOK 2018-11-21
@@ -1049,7 +1056,7 @@ EOF;
 
 
         // Special pages and callbacks handled by template_redirect
-        add_action('template_redirect', array($this,'template_redirect'), 1);
+        add_action('template_redirect', array($this,'template_redirect'),1);
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
 
@@ -2465,6 +2472,7 @@ EOF;
         $posted = $session->get('__vipps_buy_product');
         $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
 
+
         if (!$posted) {
             // Find product/variation using an external shareable link
             if (array_key_exists('pr',$_REQUEST)) {
@@ -2477,6 +2485,7 @@ EOF;
                 }
             }
         }
+
         $productinfo = false;
         if (is_array($posted)) {
             $productinfo = $posted;
@@ -2860,7 +2869,7 @@ EOF;
           $wp_post->post_status = 'publish';
           $wp_post->comment_status= 'closed';
           $wp_post->ping_status= 'closed';
-	}
+	    }
         if (!$wp_post || is_wp_error($wp_post)) {
             $post = new stdClass();
             $post->ID = -99;

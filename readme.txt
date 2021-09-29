@@ -78,6 +78,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 = 1.7.14  =
  Add extra support for plugins like Yith WooCommerce Name your Price and move compatiblity hacks over in an extra file
+ Support non-standard pretty permalinks that don't look the way we expect for the special pages
 
 == Frequently Asked Questions ==
 
@@ -201,6 +202,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2021.xx.xx  version 1.7.14 =
  Add extra supports for plugins like Yith WooCommerce Name Your Price and move compatibility hacks into a separate file
+ Support non-standard pretty permalinks by stopping redirect_canonical after a special page has been requested.
 
 = 2021.09.13 version 1.7.13 =
  Ensure refunds of 0 NOK are not handled by Vipps
