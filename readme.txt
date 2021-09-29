@@ -1,13 +1,13 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.7.13
-Stable tag: 1.7.13
+Version: 1.7.14
+Stable tag: 1.7.14
 Requires at least: 4.7
 Tested up to: 5.8.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.6.0
+WC tested up to: 5.7.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -76,8 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.13  =
- Ensure a refund of 0 NOK does not refund the entire amount.
+= 1.7.14  =
+ Add extra support for plugins like Yith WooCommerce Name your Price and move compatiblity hacks over in an extra file
 
 == Frequently Asked Questions ==
 
@@ -199,7 +199,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.09.14 version 1.7.13 =
+= 2021.xx.xx  version 1.7.14 =
+ Add extra supports for plugins like Yith WooCommerce Name Your Price and move compatibility hacks into a separate file
+
+= 2021.09.13 version 1.7.13 =
  Ensure refunds of 0 NOK are not handled by Vipps
 
 = 2021.08.23 version 1.7.12 =

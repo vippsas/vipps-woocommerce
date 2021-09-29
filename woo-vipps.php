@@ -7,14 +7,13 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-
-   Version: 1.7.13 
-   Stable tag: 1.7.13 
+   Version: 1.7.14
+   Stable tag: 1.7.14
    Requires at least: 4.7
    Tested up to: 5.8.1
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 5.6.0
+   WC tested up to: 5.7.1
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -49,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.7.13');
+define('WOO_VIPPS_VERSION', '1.7.14');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -86,8 +85,9 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     add_action('init',array($Vipps,'init'));
     add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
     add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
-
 }
+
+require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
 
 add_action ('before_woocommerce_init', function () {
  $url = sanitize_text_field($_SERVER['REQUEST_URI']);
