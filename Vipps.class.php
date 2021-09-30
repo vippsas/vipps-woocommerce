@@ -1136,35 +1136,6 @@ else:
         }
     }
     
-    private function decode_checkout_token($token) {
-        // Actually use JWT verifier here and verify 
-        $head = false;
-        $body = false;
-        if ($token) {
-            // First decode the header, body and signature. IOK 2019-10-14
-            @list($headb64,$bodyb64,$cryptob64) = explode('.', $token);
-    
-    
-            $headjson = $this->base64urldecode($headb64);
-            $bodyjson  = $this->base64urldecode($bodyb64);
-            $crypto = $this->base64urldecode($cryptob64);
-    
-            $head = @json_decode($headjson, true, 512, JSON_BIGINT_AS_STRING);
-            $body = @json_decode($bodyjson, true, 512, JSON_BIGINT_AS_STRING);
-            return $body;
-        }
-        return false;
-    }
-    
-    private function base64urldecode($input) {
-        $remainder = strlen($input) % 4;
-        if ($remainder) {
-            $padlen = 4 - $remainder;
-            $input .= str_repeat('=', $padlen);
-        }
-        return base64_decode(strtr($input, '-_', '+/'));
-    }
-    
 
     // This function will create a file with an obscure filename in the $callbackDirname directory.
     // When initiating payment, this file will be created with a zero value. When the response is reday,
