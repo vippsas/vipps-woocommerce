@@ -96,3 +96,61 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
+
+add_filter('woocommerce_get_checkout_page_id',  function ($id) {
+    $vipps_checkout_activated = true;
+    $vipps_checkout_active = $vipps_checkout_activated && apply_filters('woo_vipps_checkout_active', true);
+    if ($vipps_checkout_active) {
+        $checkoutid = wc_get_page_id('vipps_checkout');
+        if (get_post_status($checkoutid)) {
+            // Page exists and stuff, return it instead of the default checkout
+            return $checkoutid;
+        }
+        // The page, though stored as a setting, is a ghost. Delete the option,
+        // but we don't actually create the page here. Instead we return the normal Woo checkout page.
+        // To recreate the Vipps checkout page, the user must re-save the Vipps settings.
+        delete_option('woocommerce_vipps_checkout_page_id');
+        return $id;
+    }
+    return $id;
+});
+
+add_filter('woocommerce_create_pages', function ($data, $int) {
+    error_log("iverok int $int: " . print_r($data, true));
+    return $data;
+}, 50, 2);
+
+add_filter('woocommerce_settings_pages', function ($settings) {
+    $i = -1;
+    foreach($settings as $entry) {
+        $i++;
+        if ($entry['type'] == 'sectionend' && $entry['id'] == 'advanced_page_options') {
+            break;
+        }
+    }
+    if ($i > 0) {
+
+        $vippspagesettings = array(
+            array(
+                'title'    => __( 'Vipps Checkout Page', 'woo-vipps' ),
+                'desc'     => __('This page is used for the alternative Vipps Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps') .  sprintf( __( 'Page contents: [%s]', 'woocommerce' ), 'vipps_checkout') ,
+                'id'       => 'woocommerce_vipps_checkout_page_id',
+                'type'     => 'single_select_page_with_search',
+                'default'  => '',
+                'class'    => 'wc-page-search',
+                'css'      => 'min-width:300px;',
+                'args'     => array(
+                    'exclude' =>
+                    array(
+                        wc_get_page_id( 'myaccount' ),
+                    ),
+                ),
+                'desc_tip' => true,
+                'autoload' => false,
+            ));
+         array_splice($settings, $i, 0, $vippspagesettings);
+    }
+
+    return $settings;
+}
+ ,10, 1);
