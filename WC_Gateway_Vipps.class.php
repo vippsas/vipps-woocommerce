@@ -79,10 +79,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
-    // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
+        // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
-    $supported_types= array('simple','variable','variation','bundle');
-    $this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
+        $supported_types= array('simple','variable','variation','bundle');
+        $this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -437,13 +437,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         foreach(get_pages() as $page) $page_list[$page->ID] = $page->post_title;
 
         $orderprefix = $Vipps->generate_order_prefix();
-
         $expresscreateuserdefault = "no";
         if (class_exists('VippsWooLogin')) {
            $woodefault = apply_filters('woocommerce_checkout_registration_enabled', 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout'));
            if ($woodefault) $expresscreateuserdefault = "yes";
         }
-
+        // FIXME FIXME FIXME IOK 
+        $vipps_checkout_activated = true;
 
         $this->form_fields = array(
                 'enabled' => array(
@@ -452,7 +452,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'type'        => 'checkbox',
                     'description' => '',
                     'default'     => 'no',
-                    ),
+                    )
+                );
+
+
+        if ($vipps_checkout_activated) {
+            $this->form_fields['vipps_checkout_enabled'] = 
+                    array(
+                        'title'       => __( 'Activate Alternative Vipps Checkout', 'woocommerce' ),
+                        'label'       => __( 'Enable Alternative Vipps Checkout screen, replacing the standard checkout page', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If activated, this will replace the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
+                        'default'     => 'no',
+                        );
+        }
+     
+
+        $standardfields = array(
                 'orderprefix' => array(
                     'title' => __('Order-id Prefix', 'woo-vipps'),
                     'label'       => __( 'Order-id Prefix', 'woo-vipps' ),
@@ -468,18 +484,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
                 'clientId' => array(
-                        'title' => __('Client Id', 'woo-vipps'),
-                        'class' => 'vippspw',
-                        'label'       => __( 'Client Id', 'woo-vipps' ),
-                        'type'        => 'password',
-                        'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                        'default'     => '',
-                        ),
+                    'title' => __('Client Id', 'woo-vipps'),
+                    'class' => 'vippspw',
+                    'label'       => __( 'Client Id', 'woo-vipps' ),
+                    'type'        => 'password',
+                    'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'default'     => '',
+                    ),
                 'secret' => array(
                         'title' => __('Client Secret', 'woo-vipps'),
                         'label'       => __( 'Client Secret', 'woo-vipps' ),
                         'class' => 'vippspw',
-                       'type'        => 'password',
+                        'type'        => 'password',
                         'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
                         'default'     => '',
                         ),
@@ -497,9 +513,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __( 'Choose default order status for reserved (not captured) orders', 'woo-vipps' ),
                         'type'        => 'select',
                         'options' => array(
-                              'on-hold' => __('On hold','woo-vipps'),
-                              'processing' => __('Processing', 'woo-vipps'),
-                        ), 
+                            'on-hold' => __('On hold','woo-vipps'),
+                            'processing' => __('Processing', 'woo-vipps'),
+                            ), 
                         'description' => __('By default, orders that are <b>reserved</b> but not <b>captured</b> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\')<br> Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. <br>If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
                         'default'     => 'on-hold',
                         ),
@@ -539,21 +555,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
                         'type'        => 'select',
                         'options' => array(
-                              'none' => __('No products','woo-vipps'),
-                              'some' => __('Some products', 'woo-vipps'),
-                              'all' => __('All products','woo-vipps')
-                        ), 
+                            'none' => __('No products','woo-vipps'),
+                            'some' => __('Some products', 'woo-vipps'),
+                            'all' => __('All products','woo-vipps')
+                            ), 
                         'description' => __('Enable this to allow customers to buy a product using Express Checkout directly from the product page. If you choose \'some\', you must enable this on the relevant products', 'woo-vipps'),
                         'default'     => 'none',
                         ),
-                 'singleproductexpressarchives' => array(
+                'singleproductexpressarchives' => array(
                         'title'       => __( 'Add \'Buy now\' button on catalog pages too', 'woo-vipps' ),
                         'label'       => __( 'Add the button for all relevant products on catalog pages', 'woo-vipps' ),
                         'type'        => 'checkbox',
                         'description' => __('If Express Checkout is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'),
                         'default'     => 'no',
                         ),
-                 'expresscheckout_termscheckbox' => array(
+                'expresscheckout_termscheckbox' => array(
                         'title'       => __( 'Add terms and conditions checkbox on Express Checkout', 'woo-vipps' ),
                         'label'       => __( 'Always ask for confirmation on Express Checkout', 'woo-vipps' ),
                         'type'        => 'checkbox',
@@ -562,15 +578,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
 
-                 'expresscreateuser' => array (
-                    'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
-                    'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'),
-                    'default'     => $expresscreateuserdefault,
-                    ),
+                'expresscreateuser' => array (
+                        'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'),
+                        'default'     => $expresscreateuserdefault,
+                        ),
 
-                  'singleproductbuynowcompatmode' => array(
+                'singleproductbuynowcompatmode' => array(
                         'title'       => __( '"Buy now" compatibility mode', 'woo-vipps' ),
                         'label'       => __( 'Activate compatibility mode for all "Buy now" buttons', 'woo-vipps' ),
                         'type'        => 'checkbox',
@@ -578,7 +594,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
-                  'enablestaticshipping' => array(
+                'enablestaticshipping' => array(
                         'title'       => __( 'Enable static shipping for Express Checkout', 'woo-vipps' ),
                         'label'       => __( 'Enable static shipping', 'woo-vipps' ),
                         'type'        => 'checkbox',
@@ -587,7 +603,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
 
-                  'deletefailedexpressorders' => array(
+                'deletefailedexpressorders' => array(
                         'title'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
                         'label'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
                         'type'        => 'checkbox',
@@ -595,7 +611,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
-                  'vippsspecialpagetemplate' => array(
+                'vippsspecialpagetemplate' => array(
                         'title'       => __( 'Override page template used for the special Vipps pages', 'woo-vipps' ),
                         'label'       => __( 'Use specific template for Vipps', 'woo-vipps' ),
                         'type'        => 'select',
@@ -603,7 +619,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('Use this template from your theme or child-theme to display all the special Vipps pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'),
                         ),
 
-                  'vippsspecialpageid' =>  array(
+                'vippsspecialpageid' =>  array(
                         'title' => __('Use a real page ID for the special Vipps pages - neccessary for some themes', 'woo-vipps'),
                         'label' => __('Use a real page ID', 'woo-vipps'),
                         'type'  => 'select',
@@ -614,8 +630,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                     );
 
-
-
+       // Add all the standard fields
+       foreach($standardfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
         
 
         $this->form_fields['developermode'] = array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
@@ -738,21 +756,48 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 });
     }
 
-   // Only be available if current currency is NOK IOK 2018-09-19
+    // Only be available if current currency is NOK IOK 2018-09-19
     public function is_available() {
+        // This is split into two functions to avoid triggering infinite recursion in filters that override this value below. IOK 2021-10-30
+        $ok = $this->standard_is_available();
+        $ok = apply_filters('woo_vipps_is_available', $ok, $this);
+        return $ok; 
+    }
+
+    // True if the alternative Vipps Checkout screen is both available and activated. Returns the page id of the checkout
+    // page for convenience. IOK 2021-10-01
+    public function vipps_checkout_available () {
+        if (! $this->get_option('vipps_checkout_enabled')) return false;
+        if (!$this->standard_is_available()) return false;
+
+        $checkoutid = wc_get_page_id('vipps_checkout');
+        if (!$checkoutid) return false;
+      
+        // Page doesn't exist anymore 
+        if (! get_post_status($checkoutid)) {
+             delete_option('woocommerce_vipps_checkout_page_id');
+             return false;
+        }
+
+        // Restrictions on cart are the same as for express checkout
+        if (!$this->cart_supports_express_checkout()) return false;
+
+        // This checks currency and so forth
+        $ok = $this->standard_is_available();
+        // Filter to false if you want to use the standard checkout for whatever reason
+        return apply_filters('woo_vipps_checkout_available', $checkoutid, $this);
+    }
+
+    //  Basic unfiltered version of "can I use vipps" ? IOK 2021-10-01
+    protected function standard_is_available () {
         if (!$this->can_be_activated()) return false;
         if (!parent::is_available()) return false;
-
         $ok = true;
-
         $currency = get_woocommerce_currency(); 
         if ($currency != 'NOK') {
             $ok = false;
         }
-        // Can't do these, so remove Vipps as payment method  IOK 2021-05-14
-        $ok = $ok && !(class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription());
-        $ok = apply_filters('woo_vipps_is_available', $ok, $this);
-        return $ok; 
+        return $ok;
     }
 
     // True iff the express checkout feature  should be available 
@@ -1888,7 +1933,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 </div>
         <?php endif; ?>
     
-
+        <div style="width:100%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding-left: 1rem; margin-top:1rem; margin-bottom: 1rem;font-weight:800"> Skru på Vipps Checkout her! </div>
                 <table class="form-table">
                 <?php $this->generate_settings_html(); ?>
                 </table> <?php

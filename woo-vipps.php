@@ -99,18 +99,13 @@ add_action ('before_woocommerce_init', function () {
 
 add_filter('woocommerce_get_checkout_page_id',  function ($id) {
     $vipps_checkout_activated = true;
-    $vipps_checkout_active = $vipps_checkout_activated && apply_filters('woo_vipps_checkout_active', true);
-    if ($vipps_checkout_active) {
-        $checkoutid = wc_get_page_id('vipps_checkout');
-        if (get_post_status($checkoutid)) {
-            // Page exists and stuff, return it instead of the default checkout
-            return $checkoutid;
-        }
-        // The page, though stored as a setting, is a ghost. Delete the option,
-        // but we don't actually create the page here. Instead we return the normal Woo checkout page.
-        // To recreate the Vipps checkout page, the user must re-save the Vipps settings.
-        delete_option('woocommerce_vipps_checkout_page_id');
-        return $id;
+    $checkoutid = false;
+    if ($vipps_checkout_activated) {
+        global $Vipps;
+        $checkoutid = $Vipps->gateway()->vipps_checkout_available();
+    }
+    if ($checkoutid) {
+        return $checkoutid;
     }
     return $id;
 });
