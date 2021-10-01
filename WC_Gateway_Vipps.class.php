@@ -442,8 +442,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $woodefault = apply_filters('woocommerce_checkout_registration_enabled', 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout'));
            if ($woodefault) $expresscreateuserdefault = "yes";
         }
-        // FIXME FIXME FIXME IOK 
-        $vipps_checkout_activated = true;
+
+        // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
+        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
 
         $this->form_fields = array(
                 'enabled' => array(
@@ -767,7 +768,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if the alternative Vipps Checkout screen is both available and activated. Returns the page id of the checkout
     // page for convenience. IOK 2021-10-01
     public function vipps_checkout_available () {
-        if (! $this->get_option('vipps_checkout_enabled')) return false;
+        if ($this->get_option('vipps_checkout_enabled') != 'yes') return false;
         if (!$this->standard_is_available()) return false;
 
         $checkoutid = wc_get_page_id('vipps_checkout');
@@ -1970,6 +1971,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } else {
                 $this->adminerr(__("Could not connect to Vipps", 'woo-vipps') . ": $msg");
         }
+
+        // If enabling this, ensure the page in question exists
+        if ($this->get_option('vipps_checkout_enabled') == 'yes') {
+            // As this option has value, the user has obviously seen the activate banner.
+            update_option('woo_vipps_checkout_activated', true, true);
+            error_log("Adding the page if not exists");
+            $checkoutid = wc_get_page_id('vipps_checkout');
+
+            $makeit = !$checkoutid || ! get_post_status($checkoutid);
+            if ($makeit) {
+               error_log("It doesn't! Doing it");
+               delete_option('woocommerce_vipps_checkout_page_id');
+               WC_Install::create_pages();
+               error_log("Did it!");
+            } else {
+               error_log("Page exists, everything is good. ");
+            }
+        }
+
         return $saved;
     }
 

@@ -98,7 +98,8 @@ add_action ('before_woocommerce_init', function () {
 
 
 add_filter('woocommerce_get_checkout_page_id',  function ($id) {
-    $vipps_checkout_activated = true;
+    $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+    if (!$vipps_checkout_activated) return $id;
     $checkoutid = false;
     if ($vipps_checkout_activated) {
         global $Vipps;
@@ -110,12 +111,22 @@ add_filter('woocommerce_get_checkout_page_id',  function ($id) {
     return $id;
 });
 
-add_filter('woocommerce_create_pages', function ($data, $int) {
-    error_log("iverok int $int: " . print_r($data, true));
+add_filter('woocommerce_create_pages', function ($data) {
+    $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+    if (!$vipps_checkout_activated) return $data;
+
+    $data['vipps_checkout'] = array(
+            'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
+            'title'   => _x( 'Checkout with Vipps', 'Page title', 'woo-vipps' ),
+            'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
+            );
+
     return $data;
-}, 50, 2);
+}, 50);
 
 add_filter('woocommerce_settings_pages', function ($settings) {
+    $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+    if (!$vipps_checkout_activated) return $settings;
     $i = -1;
     foreach($settings as $entry) {
         $i++;
