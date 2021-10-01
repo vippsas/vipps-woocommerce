@@ -97,6 +97,20 @@ class Vipps {
             WC()->session->set('vipps_address_hash', false);
         });
 
+        // Activate support for Vipps Checkout, including creating the special checkout page etc
+        add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
+          check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
+          $this->gateway()->maybe_create_vipps_pages();
+  
+          if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
+             $this->gateway()->update_option('vipps_checkout_enabled', 'yes');
+          } else {
+             $this->gateway()->update_option('vipps_checkout_enabled', 'no');
+          }
+
+
+        });
+
         $this->add_shortcodes();
 
         // For Vipps Checkout - we need to know any time and as soon as the cart changes, so fold all the events into a single one. IOK 2021-08-24

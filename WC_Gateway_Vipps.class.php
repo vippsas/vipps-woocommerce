@@ -463,7 +463,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __( 'Activate Alternative Vipps Checkout', 'woocommerce' ),
                         'label'       => __( 'Enable Alternative Vipps Checkout screen, replacing the standard checkout page', 'woo-vipps' ),
                         'type'        => 'checkbox',
-                        'description' => __('If activated, this will replace the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
+                        'description' => __('If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
                         'default'     => 'no',
                         );
         }
@@ -1934,7 +1934,55 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 </div>
         <?php endif; ?>
     
-        <div style="width:100%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding-left: 1rem; margin-top:1rem; margin-bottom: 1rem;font-weight:800"> Skru på Vipps Checkout her! </div>
+        <?php // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
+        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+        if (!$vipps_checkout_activated): ?>
+        <div id="activate_vipps_checkout"  style="width:95%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding: 1rem 1rem 1rem 1rem; margin-top:2rem; margin-bottom: 1rem;font-weight:800">
+                 <h2>Use Vipps Checkout for all purchases</h2>
+<?php echo "Active: " . intval($vipps_checkout_activated) . "<br>"; ?>
+          <p>Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.</p>
+          <p>To activate Vipps Checkout, just press the button below. Otherwise, Vipps will of course be available in the regular checkout screen; and you can also offer Vipps Express checkout from both the product pages and the shopping cart if you wish.</p>
+
+          <div style="text-align:center">
+                 <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:activate_vipps_checkout(1)">Yes, activate Vipps Checkout!</a>
+                 <span style="width:30%; height:1rem;display:inline-block"></span>
+                 <a class="button vipps-button secondary" href="javascript:activate_vipps_checkout(0)">No, thank you not right now anyway</a>
+          </div>
+<script>
+function activate_vipps_checkout(yesno) {
+ console.log("This!");
+  var nonce = <?php echo json_encode(wp_create_nonce('woo_vipps_activate_checkout')); ?>;
+  var referer = jQuery('input[name="_wp_http_referer"]').val();
+  var args = { '_wpnonce' : nonce, '_wp_http_referer' : referer, 'activate': yesno, 'action' : 'woo_vipps_activate_checkout_page' }
+
+  jQuery("#activate_vipps_checkout .button.vipps-button").css('cursor', 'wait');
+  jQuery("#activate_vipps_checkout .button.vipps-button").prop('inactive', true);
+  jQuery("#activate_vipps_checkout .button.vipps-button").prop('disabled', true);
+  jQuery("#activate_vipps_checkout .button.vipps-button").addClass('disabled');
+
+
+  jQuery.ajax(<?php echo json_encode(admin_url('admin-ajax.php')); ?>, { 
+            method: 'POST',
+            data: args,
+            error: function (jqXHR, stat, err) {
+            },
+            success: function  (data, stat, jqXHR) {
+            },
+            complete: function (xhr, stat)  {
+               document.body.style.cursor = 'default';
+               jQuery("#activate_vipps_checkout .button.vipps-button").css('cursor', 'default');
+               window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+            }
+    }
+   );
+   console.log("That!");
+   return false;
+}
+</script>
+
+
+        </div>
+        <?php endif; ?>
                 <table class="form-table">
                 <?php $this->generate_settings_html(); ?>
                 </table> <?php
@@ -1974,7 +2022,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If enabling this, ensure the page in question exists
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
-            // As this option has value, the user has obviously seen the activate banner.
+            $this->maybe_create_vipps_pages();
+        }
+
+        return $saved;
+    }
+
+    // This creates the Vipps Checkout page if neccessary. Called when user activates Vipps Checkout,
+    // or when it is enabled for the first time.
+    public function maybe_create_vipps_pages () {
+            // This always true if we get here at all
             update_option('woo_vipps_checkout_activated', true, true);
             error_log("Adding the page if not exists");
             $checkoutid = wc_get_page_id('vipps_checkout');
@@ -1988,9 +2045,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             } else {
                error_log("Page exists, everything is good. ");
             }
-        }
-
-        return $saved;
     }
 
     public function check_connection () {
