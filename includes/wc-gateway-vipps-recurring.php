@@ -583,13 +583,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( ! $charge ) {
 			// we're being rate limited
 			return 'SUCCESS';
-		} else {
-			// set _charge_id on order
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
-
-			// set _vipps_recurring_latest_api_status
-			WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge['status'] );
 		}
+
+		// set _charge_id on order
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
+
+		// set _vipps_recurring_latest_api_status
+		WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge['status'] );
 
 		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) ) && ! wcs_order_contains_renewal( $order );
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );

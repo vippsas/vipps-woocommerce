@@ -158,6 +158,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Enhancement: Added a setting for what sort order we should check charges by.
 * Enhancement: Added a setting for how many charges we should check at a time.
 * Enhancement: Default amount of charges to check per wp-cron run is now 10.
+* Change: Removed extra sortable columns from pending charges and failed charges tables. Sorting by meta value does not work in WooCommerce's wc_get_orders.
+* Fix: Order by random now works as expected in our periodic status check for charges.
 
 = 1.8.4 =
 * Fix: The 1.8.2 migration will no longer throw a fatal error for some installations if a subscription does not exist on an order.

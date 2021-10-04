@@ -67,10 +67,6 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'payment_method' => 'vipps_recurring'
 		];
 
-		if ( '' !== $args['search'] ) {
-			$args['search'] = '*' . $args['search'] . '*';
-		}
-
 		if ( isset( $_REQUEST['orderby'] ) ) {
 			$args['orderby'] = $_REQUEST['orderby'];
 		}
@@ -182,10 +178,8 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	 */
 	protected function get_sortable_columns() {
 		return [
-			'order'      => 'order',
-			'captured'   => 'captured',
-			'api_status' => 'api_status',
-			'created_at' => 'created_at'
+			'order'      => [ 'order', true ],
+			'created_at' => [ 'created_at', true ]
 		];
 	}
 
