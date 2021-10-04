@@ -1289,21 +1289,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->save();
 
-        $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
         $address_set_by_poll = false;
-        if ($checkoutpoll) {
-            try {
-                $polldata =  $this->api->poll_checkout($checkoutpoll);
-                if (isset($polldata['shippingDetails'])) {
-                    $this->set_order_shipping_details($order,$polldata['shippingDetails'], $polldata['userDetails']);
-                    $address_set_by_poll = 1;
+        if (!$order->has_shipping_address() && !$order->has_billing_address()) {
+            $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
+            if ($checkoutpoll) {
+                try {
+                    $polldata =  $this->api->poll_checkout($checkoutpoll);
+                    if (isset($polldata['shippingDetails'])) {
+                        $this->set_order_shipping_details($order,$polldata['shippingDetails'], $polldata['userDetails']);
+                        $address_set_by_poll = 1;
+                    }
+                } catch (Exception $e) {
+                    $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
                 }
-            } catch (Exception $e) {
-                $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
             }
         }
-
-
 
 
         $statuschange = 0;
@@ -1942,7 +1942,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$vipps_checkout_activated): ?>
         <div id="activate_vipps_checkout"  style="width:95%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding: 1rem 1rem 1rem 1rem; margin-top:2rem; margin-bottom: 1rem;font-weight:800">
                  <h2>Use Vipps Checkout for all purchases</h2>
-<?php echo "Active: " . intval($vipps_checkout_activated) . "<br>"; ?>
           <p>Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.</p>
           <p>To activate Vipps Checkout, just press the button below. Otherwise, Vipps will of course be available in the regular checkout screen; and you can also offer Vipps Express checkout from both the product pages and the shopping cart if you wish.</p>
 

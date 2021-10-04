@@ -872,7 +872,7 @@ else:
         }
 
         $order = wc_get_order($current_pending);
-        $phone = "";
+        $phone = ""; // FIXME FILL OUT WITH STANDARD INFO
         $requestid = 1;
         $returnurl = $this->payment_return_url();
         $returnurl = add_query_arg('t',$current_authtoken,$returnurl);
@@ -1085,7 +1085,6 @@ else:
            $out .= "<script>window.location.replace($redir);</script>";
            return $out;
         }
-// $out .= "<pre>" . print_r($sessioninfo, true) . "</pre>"; // FIXME
 
         // Now the normal case.
         $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'));
