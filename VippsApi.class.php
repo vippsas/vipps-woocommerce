@@ -234,8 +234,6 @@ class VippsApi {
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
         $callback = $this->gateway->payment_callback_url($authtoken);
-
-        // IOK FIXME
         $fallback = $returnurl;
 
         $transaction = array();

@@ -99,16 +99,23 @@ add_action ('before_woocommerce_init', function () {
 
 
 add_filter('woocommerce_get_checkout_page_id',  function ($id) {
+    global $Vipps;
+
+    # Only do this if Vipps Checkout was ever activated
     $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
     if (!$vipps_checkout_activated) return $id;
-    $checkoutid = false;
-    if ($vipps_checkout_activated) {
-        global $Vipps;
+
+    if ($Vipps) {
+        # We sometimes want to use the 'real' checkout screen, ie, like for "thankyou"
+        if ($Vipps->gateway()->get_real_checkout_screen) return $id;
+
+        # If Vipps Checkout is enabled, can be used etc, use that.
         $checkoutid = $Vipps->gateway()->vipps_checkout_available();
+        if ($checkoutid) {
+            return $checkoutid;
+        }
     }
-    if ($checkoutid) {
-        return $checkoutid;
-    }
+
     return $id;
 });
 

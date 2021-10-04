@@ -850,7 +850,7 @@ else:
         $current_vipps_session = null;
         $current_pending = 0;
         $current_authtoken = "";
-        if (!$redirect && !$url) {
+        if (!$redir && !$url) {
             try {
                 WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
@@ -872,7 +872,10 @@ else:
         }
 
         $order = wc_get_order($current_pending);
-        $phone = ""; // FIXME FILL OUT WITH STANDARD INFO
+        $phone = "";
+        if (is_user_logged_in()) {
+            $phone = get_user_meta(get_current_user_id(), 'billing_phone', true);
+        }
         $requestid = 1;
         $returnurl = $this->payment_return_url();
         $returnurl = add_query_arg('t',$current_authtoken,$returnurl);

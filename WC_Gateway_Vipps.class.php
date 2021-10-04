@@ -52,6 +52,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Used to signal state to process_payment
     public $express_checkout = 0;
+    // Used to sometimes use the standard checkout screen if using Vipps Checkout
+    public $get_real_checkout_screen = false;
 
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
@@ -149,6 +151,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_orderprefix() {
         $prefix = $this->get_option('orderprefix');
         return $prefix;
+    }
+
+    // The return URL will normally use the Checkout page, but if we are using Vipps Checkout, we'll want to use the *normal* checkout
+    // page to handle the thankyous. This way we don't have to handle the "thankyou" endpoint. IOK 2021-10-04
+    public function get_return_url($order=null) {
+        $this->get_real_checkout_screen = true;
+        $url = parent::get_return_url($order); 
+        $this->get_real_checkout_screen = false;
+        return $url;
     }
 
 
@@ -1339,7 +1350,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $this->log(sprintf(__("No address information for order %d, but there still might be an active Vipps Checkout session for it, so do not cancel it.", 'woo-vipps'), $order->get_id()));
                     }
                 }
-                // IOK FIXME FIXME IF WE *DO* HAVE THE ADDRESS INFO HERE, JUST CONTINUE AND COMPLETE THE ORDER
                 clean_post_cache($order->get_id());
                 return $oldstatus; 
             }
@@ -1644,7 +1654,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // that continues to work. IOK 2020-10-09
         $maybecreateuser = ($this->get_option('expresscreateuser') =='yes' && !function_exists('create_assign_user_on_vipps_callback')); 
         $maybecreateuser = apply_filters('woo_vipps_create_user_on_express_checkout', $maybecreateuser, $order, $user);
-        // IOK FIXME FIXME DON|T DO THIS IF CHECKOUT
         if ($maybecreateuser) {
             global $Vipps;
             $customer = $Vipps->express_checkout_get_vipps_customer($order);
