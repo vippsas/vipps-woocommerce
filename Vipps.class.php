@@ -1298,11 +1298,18 @@ else:
             wc_nocache_headers();
         }
 
-
-        if ($special) return $this->$special();
+        if ($special) {
+            remove_filter('template_redirect', 'redirect_canonical', 10);
+            do_action('woo_vipps_before_handling_special_page', $special);
+            $this->$special();
+        }
 
         $consentremoval = $this->is_consent_removal();
-        if ($consentremoval) return  $this->vipps_consent_removal_callback($consentremoval);
+        if ($consentremoval) {
+            remove_filter('template_redirect', 'redirect_canonical', 10);
+            do_action('woo_vipps_before_handling_special_page', 'consentremoval');
+            $this->vipps_consent_removal_callback($consentremoval);
+        }
 
     }
     // Template handling for special pages. IOK 2018-11-21
@@ -1432,7 +1439,7 @@ EOF;
 
 
         // Special pages and callbacks handled by template_redirect
-        add_action('template_redirect', array($this,'template_redirect'), 1);
+        add_action('template_redirect', array($this,'template_redirect'),1);
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
 
@@ -1462,21 +1469,6 @@ EOF;
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
         $this->vippsJSConfig['vippsbuynowbutton'] = __( 'Vipps Buy Now button', 'woo-vipps' );
         $this->vippsJSConfig['vippsbuynowdescription'] =  __( 'Add a Vipps Buy Now-button to the product block', 'woo-vipps');
-
-        // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
-        // that any user hasn't already installed the free plugin for this created by Krokedil. If they have, this filter will be present:
-        if ($this->gateway()->enabled == 'yes' && class_exists('KCO') && defined('KCO_WC_VERSION') && version_compare(KCO_WC_VERSION, '2.0.0', '>=')) {
-            if (has_filter('kco_wc_api_request_args', 'kcoepm_create_order_vipps')) {
-                // Vipps external payment support is already present - notify user and do nothing. IOK 2020-03-18
-                if (is_admin()) {
-// We don't add any messages for this quite yet. IOK 2020-03-18
-//                    $this->add_vipps_admin_notice(__("It seems you have installed the plugin Klarna Checkout (V3) Vipps External Payment Method for WooCommerce. The functionality of this plugin is now provided in the standard Checkout with Vipps for WooCommerce plugin, so it is no longer needed.","woo-vipps"));
-                }
-            } else {
-                require_once(dirname(__FILE__) . "/VippsKCSupport.class.php");
-                VippsKCSupport::init();
-            }
-        }
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
@@ -2885,6 +2877,7 @@ EOF;
         $posted = $session->get('__vipps_buy_product');
         $session->set('__vipps_buy_product', false); // Reloads won't work but that's ok.
 
+
         if (!$posted) {
             // Find product/variation using an external shareable link
             if (array_key_exists('pr',$_REQUEST)) {
@@ -2897,6 +2890,7 @@ EOF;
                 }
             }
         }
+
         $productinfo = false;
         if (is_array($posted)) {
             $productinfo = $posted;
@@ -3280,7 +3274,7 @@ EOF;
           $wp_post->post_status = 'publish';
           $wp_post->comment_status= 'closed';
           $wp_post->ping_status= 'closed';
-	}
+	    }
         if (!$wp_post || is_wp_error($wp_post)) {
             $post = new stdClass();
             $post->ID = -99;

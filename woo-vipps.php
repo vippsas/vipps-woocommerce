@@ -13,7 +13,7 @@
    Tested up to: 5.8.1
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 5.6.0
+   WC tested up to: 5.7.1
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -85,8 +85,9 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     add_action('init',array($Vipps,'init'));
     add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
     add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
-
 }
+
+require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
 
 add_action ('before_woocommerce_init', function () {
  $url = sanitize_text_field($_SERVER['REQUEST_URI']);

@@ -1802,10 +1802,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This is neccessary for some plugins, like Yith Dynamic Pricing, that adds filters to get_price depending on whether or not is_checkout is true.
         // so basically, since we are impersonating WC_Checkout here, we should define this constant too. IOK 2020-07-03
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
+         // In *some* cases you may need to actually load classes and reload the cart, because some plugins do not load when DOING_AJAX.
+        do_action('woo_vipps_express_checkout_beforce_calculate_totals');
         WC()->cart->calculate_fees();
         WC()->cart->calculate_totals();
-
         do_action('woo_vipps_before_create_express_checkout_order', WC()->cart);
+
         $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         
