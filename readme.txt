@@ -200,7 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.xx.xx  version 1.7.14 =
+= 2021.10.04  version 1.7.14 =
  Add extra supports for plugins like Yith WooCommerce Name Your Price and move compatibility hacks into a separate file
  Support non-standard pretty permalinks by stopping redirect_canonical after a special page has been requested.
 
