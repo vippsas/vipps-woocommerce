@@ -47,6 +47,7 @@ jQuery( document ).ready( function() {
         });
         jQuery.ajax(VippsConfig['vippsajaxurl'],
                 {   cache:false,
+                    timeout: 0,
                     dataType:'json',
                     data: { 'action': 'vipps_checkout_start_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
                     method: 'POST', 
