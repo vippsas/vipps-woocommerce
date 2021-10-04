@@ -644,16 +644,25 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$limit = $gateway->check_charges_amount;
 				}
 
-				$order_ids = wc_get_orders( [
+				$options = [
 					'limit'          => $limit,
-					'order'          => $gateway->check_charges_sort_order,
 					'type'           => 'shop_order',
 					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
 					'meta_compare'   => '=',
 					'meta_value'     => 1,
 					'return'         => 'ids',
 					'payment_method' => $gateway->id
-				] );
+				];
+
+				if ( $gateway->check_charges_sort_order === 'rand' ) {
+					$options['orderby'] = 'rand';
+				} else {
+					$options['orderby'] = 'post_date';
+					$options['order']   = $gateway->check_charges_sort_order;
+				}
+
+				remove_all_filters( 'posts_orderby' );
+				$order_ids = wc_get_orders( $options );
 
 				foreach ( $order_ids as $order_id ) {
 					// check charge status
