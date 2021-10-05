@@ -282,7 +282,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ok = 0;
 
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
-        $captured = $order->get_meta('_vipps_captured');
+        $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured || $vippsstatus == 'SALE') {
             return $this->maybe_refund_payment($orderid);
@@ -325,8 +325,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $vippsstatus = $order->get_meta('_vipps_status');
-        $captured = $order->get_meta('_vipps_captured');
-        $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
         if (!$captured) {
             return $this->maybe_cancel_payment($orderid);
@@ -365,7 +365,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ('vipps' != $order->get_payment_method()) return false;
         if ($order->needs_processing()) return false; // No auto-capture for orders needing processing
         // IOK 2018-10-03 when implementing partial capture, this must be modified.
-        $captured = $order->get_meta('_vipps_captured'); 
+        $captured = intval($order->get_meta('_vipps_captured')); 
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured || $vippsstatus == 'SALE') { 
           return true;
@@ -394,8 +394,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        $captured = $order->get_meta('_vipps_captured');
-        $to_refund =  $order->get_meta('_vipps_refund_remaining');
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
         if (!$captured) {
             return new WP_Error('Vipps', __("Cannot refund through Vipps - the payment has not been captured yet.", 'woo-vipps'));
@@ -882,7 +882,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         }
 
-        $remaining = $order->get_meta('_vipps_capture_remaining');
+        $remaining = intval($order->get_meta('_vipps_capture_remaining'));
 
         // Somehow the order status in payment_complete has been set to the 'after order status' or 'complete' by a filter. If so, do not capture.
         // Capture will be done *before* payment_complete if appropriate IOK 2020-09-22
@@ -939,7 +939,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Ensure 'SALE' direct captured orders work
         if (!$captured && $vippsstatus == 'SALE') { 
             $order = $this->update_vipps_payment_details($order); 
-            $captured = $order->get_meta('_vipps_captured');
+            $captured = intval($order->get_meta('_vipps_captured'));
         }
 
         $total = round(wc_format_decimal($order->get_total(),'')*100);
@@ -951,7 +951,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If we already have captured everything, then we are ok! IOK 2017-05-07
         if ($captured) {
-            $remaining = $order->get_meta('_vipps_capture_remaining');
+            $remaining = intval($order->get_meta('_vipps_capture_remaining'));
             if (!$remaining) {
                 $order->add_order_note(__('Payment already captured','woo-vipps'));
                 return true;
@@ -1007,9 +1007,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $total = round(wc_format_decimal($order->get_total(),'')*100);
-        $captured = $order->get_meta('_vipps_captured');
-        $to_refund =  $order->get_meta('_vipps_refund_remaining');
-        $refunded = $order->get_meta('_vipps_refunded');
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
+        $refunded = intval($order->get_meta('_vipps_refunded'));
         $superfluous = $captured-$total-$refunded;
 
 
@@ -1052,7 +1052,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
         // If we have captured the order, we can't cancel it. IOK 2018-05-07
-        $captured = $order->get_meta('_vipps_captured');
+        $captured = intval($order->get_meta('_vipps_captured'));
         if ($captured) {
             $msg = __('Cannot cancel a captured Vipps transaction - use refund instead', 'woo-vipps');
             $this->adminerr($msg);
@@ -1104,7 +1104,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             throw new VippsAPIException($msg);
         }
         // If we haven't captured anything, we can't refund IOK 2017-05-07
-        $captured = $order->get_meta('_vipps_captured');
+        $captured = intval($order->get_meta('_vipps_captured'));
         if (!$captured) {
             $msg = __('Trying to refund payment on Vipps payment not captured:','woo-vipps'). ' ' .$order->get_id();
             $this->log($msg,'error');

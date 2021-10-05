@@ -1163,7 +1163,8 @@ EOF;
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $total = intval(100*wc_format_decimal($order->get_total(),''));
-        $refunded = $order->get_meta('_vipps_refunded');
+        $refunded = intval($order->get_meta('_vipps_refunded'));
+
         $superfluous = $captured-$total-$refunded;
 
 

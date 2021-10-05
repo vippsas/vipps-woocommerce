@@ -1,8 +1,8 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.7.14
-Stable tag: 1.7.14
+Version: 1.7.15
+Stable tag: 1.7.15
 Requires at least: 4.7
 Tested up to: 5.8.1
 Requires PHP: 5.6
@@ -76,9 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.14  =
- Add extra support for plugins like Yith WooCommerce Name your Price and move compatiblity hacks over in an extra file
- Support non-standard pretty permalinks that don't look the way we expect for the special pages
+= 1.7.15  =
+ Fix various bugs for PHP8
 
 == Frequently Asked Questions ==
 
@@ -199,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.10.xx  version 1.7.15 =
+ Fix various php8-related bugs
 
 = 2021.10.04  version 1.7.14 =
  Add extra supports for plugins like Yith WooCommerce Name Your Price and move compatibility hacks into a separate file
