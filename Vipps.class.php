@@ -1549,7 +1549,8 @@ EOF;
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $total = intval(100*wc_format_decimal($order->get_total(),''));
-        $refunded = $order->get_meta('_vipps_refunded');
+        $refunded = intval($order->get_meta('_vipps_refunded'));
+
         $superfluous = $captured-$total-$refunded;
 
 
@@ -1684,7 +1685,7 @@ EOF;
         // from the now restored session. IOK 2020-04-08
         $newcart = array();
 
-        if (WC()->session->get('cart', true)) {
+        if (WC()->session->get('cart', false)) {
             foreach(WC()->session->get('cart',[]) as $key => $values) {
                 $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
                 $values['data'] = $product;
