@@ -187,6 +187,7 @@ class VippsApi {
         $data['transaction'] = $transaction;
 
 
+        $this->log("Initiating Vipps session for $vippsorderid", 'debug');
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
