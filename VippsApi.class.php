@@ -183,6 +183,18 @@ class VippsApi {
                 $data['merchantInfo']['staticShippingDetails'] = $static_shipping["shippingDetails"];
             }
 
+            // Support new, more explicit checkout flow IOK 2021-10-13
+            $explicit_option = $this->gateway->get_option('useExplicitCheckoutFlow');
+            $explicit_flow =  ($explicit_option == 'yes');
+            if ($explicit_option == 'shipping' && WC()->cart) {
+                $explicit_flow =  WC()->cart->needs_shipping();
+            }
+            $explicit_flow = apply_filters('woo_vipps_use_explicit_checkout_flow',  $explicit_flow, $order);
+
+            if ($explicit_flow) {
+               $transaction['useExplicitCheckoutFlow'] = true;
+            }
+
         }
         $data['transaction'] = $transaction;
 

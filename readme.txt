@@ -1,13 +1,13 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.7.15
-Stable tag: 1.7.15
+Version: 1.7.16
+Stable tag: 1.7.16
 Requires at least: 4.7
 Tested up to: 5.8.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.7.1
+WC tested up to: 5.8.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -76,8 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.15  =
- Fix various bugs for PHP8
+= 1.7.16  =
+ Support a more explicit, multi-step address selection flow at Vipps Express checkout. This can be turned on or off in the settings.
 
 == Frequently Asked Questions ==
 
@@ -198,6 +198,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.10.xx  version 1.7.16 =
+ Support a more explicit, multi-step address selection flow in Express checkout, toggleable in the settings
 
 = 2021.10.05  version 1.7.15 =
  Fix various php8-related bugs

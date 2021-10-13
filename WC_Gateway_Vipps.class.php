@@ -534,6 +534,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes',
                         ),
 
+                 'useExplicitCheckoutFlow' => array(
+                        'title'       => __( 'Use explicit flow for shipping in Express Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Enable explicit checkout flow', 'woo-vipps' ),
+                        'type'        => 'select',
+                        'options' => array(
+                          'no' => __('Use the normal Express checkout flow', 'woo-vipps'),
+                          'yes' => __('Use a multi-step explicit flow for Express checkout', 'woo-vipps'),
+                          'shipping' => __('Use the explicit flow only if the order needs shipping', 'woo-vipps'),
+                        ),
+                        'description' => __('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps') . '.<br>' .
+                        __('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
+
+
                 'singleproductexpress' => array(
                         'title'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
                         'label'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
