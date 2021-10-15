@@ -78,6 +78,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 = 1.7.16  =
  Support a more explicit, multi-step address selection flow at Vipps Express checkout. This can be turned on or off in the settings.
+ Small CSS fixes for certain themes
 
 == Frequently Asked Questions ==
 
