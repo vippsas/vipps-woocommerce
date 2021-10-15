@@ -72,7 +72,9 @@ class VippsApi {
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
     public function get_access_token($force=0) {
         // First, get a stored token if it exists
-        $stored = get_transient('_vipps_app_token');
+        $transientnameextra = apply_filters('woo_vipps_access_token_key', "");
+        $transientname = '_vipps_app_token' . $transientnameextra;
+        $stored = get_transient($transientname);
         if (!$force && $stored && $stored['expires_on'] > time()) {
             return $stored['access_token'];
         }
@@ -82,7 +84,7 @@ class VippsApi {
 
         $at = $fresh['access_token'];
         $expire = $fresh['expires_in']/2;
-        set_transient('_vipps_app_token',$fresh,$expire);
+        set_transient($transientname,$fresh,$expire);
         return $at;
     }
 

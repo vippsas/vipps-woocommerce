@@ -151,6 +151,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $prefix;
     }
 
+    // Experimentally we override the options api to allow multivendor-sites to use different settings
+    public function get_option($key,$empty_value=null) {
+      $option_value = parent::get_option($key, $empty_value);
+      if (function_exists('get_current_screen')) {
+        $screen = get_current_screen();
+        if ($screen && $screen->base == 'woocommerce_page_wc-settings') {
+           return $option_value;
+        }
+      }
+      $filtered = apply_filters('woo_vipps_gw_get_option', $option_value, $key); 
+      return $filtered;
+    }
+
 
     // Delete express checkout orders with no customer information - these were abandonend before the app started.
     // IOK 2019-08-26
