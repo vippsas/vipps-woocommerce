@@ -200,8 +200,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.10.xx  version 1.7.16 =
+= 2021.10.18  version 1.7.16 =
  Support a more explicit, multi-step address selection flow in Express checkout, toggleable in the settings
+ Small CSS fixes for certain themes
 
 = 2021.10.05  version 1.7.15 =
  Fix various php8-related bugs
