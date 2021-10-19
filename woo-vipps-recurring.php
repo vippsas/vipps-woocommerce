@@ -680,13 +680,13 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$posts = get_posts( [
 					'post_type'    => 'shop_subscription',
-					'post_status'  => 'wc-active',
+					'post_status'  => [ 'wc-active', 'wc-pending', 'wc-on-hold' ],
 					'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE,
 					'meta_compare' => '=',
 					'meta_value'   => 1,
 					'return'       => 'ids',
 				] );
-
+				
 				foreach ( $posts as $post ) {
 					// check charge status
 					$gateway->maybe_process_gateway_change( $post->ID );
