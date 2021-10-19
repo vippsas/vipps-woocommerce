@@ -659,7 +659,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// controlled by the `transition_renewals_to_completed` setting
 		// only applicable to renewal orders
-		if ( $this->transition_renewals_to_completed && wcs_order_contains_renewal( $order ) ) {
+		if ( $this->transition_renewals_to_completed === "yes" && wcs_order_contains_renewal( $order ) ) {
 			$order->update_status( 'wc-completed' );
 		}
 
@@ -845,7 +845,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return;
 		}
 
-		set_transient( 'cancel_subscription_lock' . $subscription_id, uniqid(), 30 );
+		set_transient( 'cancel_subscription_lock' . $subscription_id, uniqid( '', true ), 30 );
 
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
 		$agreement    = $this->api->get_agreement( $agreement_id );
@@ -956,7 +956,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return true;
 		}
 
-		set_transient( 'order_lock_' . $renewal_order_id, uniqid(), 30 );
+		set_transient( 'order_lock_' . $renewal_order_id, uniqid( '', true ), 30 );
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment attempting to create charge', $renewal_order->get_id() ) );
 
@@ -1858,7 +1858,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					return;
 				}
 
-				set_transient( 'maybe_cancel_due_charge_lock' . $order_id, uniqid(), 30 );
+				set_transient( 'maybe_cancel_due_charge_lock' . $order_id, uniqid( '', true ), 30 );
 
 				$charge = $this->api->get_charge( $agreement_id, $charge_id );
 				if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
