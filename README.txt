@@ -154,6 +154,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.9.1 =
+* Fix: Renewal orders will no longer transition to `completed` when the setting for this is turned off.
+* Fix: Fixed a problem where our `_vipps_recurring_waiting_for_gateway_change` was never processed for orders where the subscription was not `wc-active`. Added `wc-on-hold` and `wc-pending` to this list.
+
 = 1.9.0 =
 * Enhancement: Added a setting for what sort order we should check charges by.
 * Enhancement: Added a setting for how many charges we should check at a time.
