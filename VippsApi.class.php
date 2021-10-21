@@ -261,7 +261,7 @@ class VippsApi {
 
         $data = array();
         $data['CustomerInfo'] = array('MobileNumber' => $phone); 
-        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'fallbackUrl'=>$fallback); 
+        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'returnUrl'=>$fallback); 
         $data['Transaction'] = $transaction;
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
