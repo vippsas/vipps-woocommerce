@@ -1,7 +1,0 @@
-
-The login setup must be as follows:
-*Redirect URI* must be:
-MT: https://apitest.vipps.no/checkout/login/redirect
-PROD:  https://api.vipps.no/checkout/login/redirect
-
-account must be set up with skip landing page true for ecomm
