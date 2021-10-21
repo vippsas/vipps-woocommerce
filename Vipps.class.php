@@ -67,8 +67,17 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-            _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started here", 'woo-vipps');
-            _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps');
+        _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started here", 'woo-vipps');
+        _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps');
+
+        /* for 1.7.16, delete after IOK 2021-10-13 */
+        _e( 'Use explicit flow for shipping in Express Checkout', 'woo-vipps' );
+        _e( 'Enable explicit checkout flow', 'woo-vipps' );
+        _e('Use the normal Express checkout flow', 'woo-vipps');
+        _e('Use a multi-step explicit flow for Express checkout', 'woo-vipps');
+        _e('Use the explicit flow only if the order needs shipping', 'woo-vipps');
+        _e('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps');
+        _e('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps');
     }
 
 

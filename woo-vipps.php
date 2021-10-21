@@ -13,7 +13,7 @@
    Tested up to: 5.8.1
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 5.7.1
+   WC tested up to: 5.8.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
