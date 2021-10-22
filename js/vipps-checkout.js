@@ -184,7 +184,7 @@ jQuery( document ).ready( function() {
                             window.location.replace(result['data']['url']);
                         }
                     },
-                    'timeout': 4000
+                    'timeout': 0
                 });
     }
 

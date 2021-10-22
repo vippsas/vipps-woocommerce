@@ -872,6 +872,7 @@ else:
                     $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
                     $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
+                    do_action('woo_vipps_checkout_order_created', $order);
                 } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
                 }
