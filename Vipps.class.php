@@ -2235,20 +2235,29 @@ EOF;
     }
 
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
-    protected function maybe_add_static_shipping($gw,$orderid) {
-        if ($gw->get_option('enablestaticshipping') == 'yes') {
-            $order = wc_get_order($orderid);
-            $prefix  = $gw->get_orderprefix();
-            $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
-            $addressinfo = $this->get_static_shipping_address_data();
-            $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
-
-            if ($options) {
-                $order->update_meta_data('_vipps_static_shipping', $options);
-                $order->save();
-            }
+    // Made visible for consistency with add_static_shipping. IOK 2021-10-22
+    public function maybe_add_static_shipping($gw,$orderid) {
+        $ok = $gw->get_option('enablestaticshipping') == 'yes';
+        $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
+        if ($ok) {
+            return $this->add_static_shipping($gw, $orderid);
         }
     }
+
+    // And this function adds static shipping no matter what. It may need to be used in plugins, hence visible. IOK 2021-10-22
+    public function add_static_shipping ($gw, $orderid) {
+        $order = wc_get_order($orderid);
+        $prefix  = $gw->get_orderprefix();
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
+        $addressinfo = $this->get_static_shipping_address_data();
+        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
+
+        if ($options) {
+            $order->update_meta_data('_vipps_static_shipping', $options);
+            $order->save();
+        }
+    }
+    
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
