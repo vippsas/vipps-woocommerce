@@ -880,7 +880,7 @@ else:
                 return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
             }
         }
-
+        // Ensure we get the latest updates to the order too IOK 2021-10-22
         $order = wc_get_order($current_pending);
         $phone = "";
         if (is_user_logged_in()) {
@@ -2653,7 +2653,7 @@ EOF;
 
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
     // Made visible for consistency with add_static_shipping. IOK 2021-10-22
-    public function maybe_add_static_shipping($gw,$orderid) {
+    public function maybe_add_static_shipping($gw, $orderid) {
         $ok = $gw->get_option('enablestaticshipping') == 'yes';
         $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
         if ($ok) {

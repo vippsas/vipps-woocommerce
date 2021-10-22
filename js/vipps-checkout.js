@@ -60,7 +60,7 @@ jQuery( document ).ready( function() {
                         jQuery('#vippscheckouterror').show();
                         jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured</div>');
                         if (error == 'timeout')  {
-                            console.log('ouch, timeout');
+                            console.log('Timeout creating Checkout session at vipps');
                         }
                     },
                     'success': function (result,statustext, xhr) {
@@ -83,7 +83,6 @@ jQuery( document ).ready( function() {
                             return;
                         }
                     },
-                    'timeout': 4000
                 });
 
 
@@ -146,6 +145,7 @@ jQuery( document ).ready( function() {
 
         jQuery.ajax(VippsConfig['vippsajaxurl'],
                 {cache:false,
+                    timeout: 0,
                     dataType:'json',
                     data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
                     error: function (xhr, statustext, error) {
@@ -154,7 +154,7 @@ jQuery( document ).ready( function() {
                         jQuery('#vippscheckouterror').show();
                         jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured</div>');
                         if (error == 'timeout')  {
-                            console.log('ouch, timeout');
+                            console.log('Timeout polling session data hos Vipps');
                         }
                     },
                     'complete': function (xhr, statustext, error)  {
@@ -184,7 +184,6 @@ jQuery( document ).ready( function() {
                             window.location.replace(result['data']['url']);
                         }
                     },
-                    'timeout': 0
                 });
     }
 
