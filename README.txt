@@ -154,6 +154,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.10.0 =
+* Refactor: Rewrote our admin notification system to allow for dismissible alerts.
+* Added: A campaign banner for Login with Vipps. This will last for 10 days, and it is fully dismissible.
+
 = 1.9.1 =
 * Fix: Renewal orders will no longer transition to `completed` when the setting for this is turned off.
 * Fix: Fixed a problem where our `_vipps_recurring_waiting_for_gateway_change` was never processed for orders where the subscription was not `wc-active`. Added `wc-on-hold` and `wc-pending` to this list.

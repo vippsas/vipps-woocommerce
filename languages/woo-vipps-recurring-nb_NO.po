@@ -9,7 +9,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2020-10-16T12:18:56+00:00\n"
-"PO-Revision-Date: 2021-09-22 13:08+0000\n"
+"PO-Revision-Date: 2021-10-25 11:28+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -31,8 +31,8 @@ msgstr ""
 "En midlertidig feil oppstod hos Vipps. Vennligst dobbeltsjekk at ordren er "
 "refundert manuelt eller tilbakestill ordren til \"Behandler\" og prøvd igjen."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:172
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:167
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:168
 msgid "Agreement ID"
 msgstr "Agreement ID"
 
@@ -56,15 +56,15 @@ msgstr "Kansellerte trekk til forfall i Vipps."
 msgid "Cancelled Vipps Purchase"
 msgstr "Avlyst Vippsbetaling"
 
-#: woo-vipps-recurring.php:576
+#: woo-vipps-recurring.php:588
 msgid "Capture payment"
 msgstr "Capture (Trekk beløp)"
 
-#: woo-vipps-recurring.php:494
+#: woo-vipps-recurring.php:508
 msgid "Capture payment instantly"
 msgstr "Trekk betaling umiddelbart"
 
-#: woo-vipps-recurring.php:495
+#: woo-vipps-recurring.php:509
 msgid ""
 "Capture payment instantly even if the product is not virtual. Please make "
 "sure you are following Norwegian law when using this option."
@@ -73,22 +73,22 @@ msgstr ""
 "på at du følger norsk lov når du bruker denne innstillingen. Du skal ikke "
 "trekke penger før forsendelse er sendt."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:174
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:170
 msgid "Captured"
 msgstr "Beløp trukket"
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:173
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:173
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:168
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:169
 msgid "Charge ID"
 msgstr "Charge ID"
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:268
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:269
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:261
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:263
 msgid "Charge ID not available. Check the order's notes instead."
 msgstr "Charge ID ikke tilgjengelig. Sjekk notatene til ordren i stedet."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:119
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:119
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:114
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:115
 msgid "Check Status"
 msgstr "Sjekk Status"
 
@@ -131,16 +131,16 @@ msgstr "Kunne ikke opprette eller finne \"Avlyst Vippsbetaling\" siden"
 msgid "Create a new page"
 msgstr "Opprett ny side"
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:176
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:176
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:171
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
 msgid "Created At"
 msgstr "Tidspunkt"
 
-#: woo-vipps-recurring.php:508
+#: woo-vipps-recurring.php:522
 msgid "Custom"
 msgstr "Egendefinert"
 
-#: woo-vipps-recurring.php:515
+#: woo-vipps-recurring.php:529
 msgid "Custom description"
 msgstr "Egendefinert beskrivelse"
 
@@ -156,7 +156,7 @@ msgstr "Standardstatus for fornyelsesordre"
 msgid "Description"
 msgstr "Beskrivelse"
 
-#: woo-vipps-recurring.php:502
+#: woo-vipps-recurring.php:516
 msgid "Description source"
 msgstr "Beskrivelseskilde"
 
@@ -168,7 +168,7 @@ msgstr ""
 "Forskjellige abonnementer kan ikke kjøpes samtidig i samme ordre med Vipps."
 
 #. translators: amount of orders checked
-#: woo-vipps-recurring.php:462
+#: woo-vipps-recurring.php:476
 msgid "Done. Checked the status of %s orders"
 msgstr "Sånn. Sjekket status på %s ordre"
 
@@ -193,11 +193,11 @@ msgstr "Mislykkede trekk"
 msgid "Failed creating a Vipps charge: %s"
 msgstr "Mislyktes med å opprette et Vipps-trekk: %s"
 
-#: woo-vipps-recurring.php:464
+#: woo-vipps-recurring.php:478
 msgid "Failed to finish checking the status of all orders. Please try again."
 msgstr "Klarte ikke hente status på alle ordre. Vennligst prøv igjen."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:174
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:169
 msgid "Failure Reason"
 msgstr "Feilårsak"
 
@@ -207,7 +207,9 @@ msgstr "Feilårsak"
 msgid "Get your API keys from your Vipps developer portal."
 msgstr "Hent API-nøklene dine fra Vipps-portalen."
 
+#. translators: %1$s URL to login-with-vipps, %2$s translation for "here"
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:55
+#: woo-vipps-recurring.php:275
 msgid "here"
 msgstr "her"
 
@@ -215,7 +217,7 @@ msgstr "her"
 msgid "https://everyday.no"
 msgstr "https://everyday.no"
 
-#: woo-vipps-recurring.php:516
+#: woo-vipps-recurring.php:530
 #| msgid ""
 #| "If the description source is set to \"custom field\" this text will be "
 #| "used."
@@ -242,8 +244,8 @@ msgstr ""
 "Det ser ut som at du avlyste betalingen i Vipps. Hvis dette var et uhell så "
 "kan du sjekke ut på nytt :)"
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:175
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:175
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:170
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:171
 msgid "Latest API Status"
 msgstr "Nyeste API status"
 
@@ -255,7 +257,18 @@ msgstr "Logg feilsøkingsmeldinger"
 msgid "Logging"
 msgstr "Logging"
 
-#: woo-vipps-recurring.php:517
+#. translators: %1$s URL to login-with-vipps, %2$s translation for "here"
+#: woo-vipps-recurring.php:275
+msgid ""
+"Login with Vipps is available for WooCommerce. Super-easy and safer login "
+"for your customers - no more usernames and passwords. Get started <a "
+"href=\"%1$s\" target=\"_blank\">%2$s</a>!"
+msgstr ""
+"Logg inn med Vipps er tilgjengelig for WooCommerce. Enklere og tryggere "
+"innlogging for kundene dine - uten lange brukernavn og passord. Kom i gang "
+"<a href=\"%1$s\" target=\"_blank\">%2$s</a>!"
+
+#: woo-vipps-recurring.php:531
 msgid "Max 100 characters"
 msgstr "Maks 100 tegn"
 
@@ -263,11 +276,11 @@ msgstr "Maks 100 tegn"
 msgid "Newest first"
 msgstr "Nyeste først"
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:278
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:272
 msgid "No"
 msgstr "Nei"
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:108
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:103
 msgid "No failed charges found."
 msgstr "Ingen trekk har mislykket foreløpig."
 
@@ -307,11 +320,11 @@ msgstr "Venter på kansellering"
 msgid "Pending Charges"
 msgstr "Trekk på vent"
 
-#: woo-vipps-recurring.php:507
+#: woo-vipps-recurring.php:521
 msgid "Product short description"
 msgstr "Kort beskrivelse av produktet"
 
-#: woo-vipps-recurring.php:506
+#: woo-vipps-recurring.php:520
 msgid "Product title"
 msgstr "Produktnavn"
 
@@ -337,7 +350,7 @@ msgstr "Forespørsel om å bytte til Vipps med agreement ID: %s"
 msgid "Save debug messages to the WooCommerce System Status log."
 msgstr "Lagre feilsøkingsmeldinger i WooCommerce sin System Status logg."
 
-#: woo-vipps-recurring.php:717
+#: woo-vipps-recurring.php:703
 msgid "Settings"
 msgstr "Innstillinger"
 
@@ -349,7 +362,7 @@ msgstr "Rekkefølgen trekk skal sjekkes i"
 msgid "Successfully authenticated with the Vipps API"
 msgstr "Autentisering med Vipps vellykket"
 
-#: woo-vipps-recurring.php:265
+#: woo-vipps-recurring.php:270
 msgid "Successfully checked the status of these charges"
 msgstr "Sjekk av trekkstatus vellykket"
 
@@ -439,7 +452,7 @@ msgstr ""
 "Denne innstillingen vil sørge for at status på ordre alltid blir "
 "\"fullført\" når et trekk blir fullført i Vipps."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:265
 msgid "This order has not yet been captured."
 msgstr "Denne ordren har ikke blitt trukket ennå."
 
@@ -507,8 +520,8 @@ msgid "Vipps payment failed."
 msgstr "Vipps betaling mislyktes."
 
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
-#: includes/wc-gateway-vipps-recurring.php:126 woo-vipps-recurring.php:437
-#: woo-vipps-recurring.php:438 woo-vipps-recurring.php:477
+#: includes/wc-gateway-vipps-recurring.php:126 woo-vipps-recurring.php:451
+#: woo-vipps-recurring.php:452 woo-vipps-recurring.php:491
 msgid "Vipps Recurring Payments"
 msgstr "Vipps faste betalinger"
 
@@ -516,7 +529,7 @@ msgstr "Vipps faste betalinger"
 msgid "Vipps Recurring Payments Gateway for WooCommerce"
 msgstr "Vipps faste betalinger for WooCommerce"
 
-#: woo-vipps-recurring.php:257
+#: woo-vipps-recurring.php:262
 msgid ""
 "Vipps Recurring Payments is currently in test mode - no real transactions "
 "will occur. Disable this in your wp_config when you are ready to go live!"
@@ -525,7 +538,7 @@ msgstr ""
 "finne sted. Skru av denne i wp_config når du er klar for å gå live."
 
 #. translators: %s link to WooCommerce Subscription's purchase page
-#: woo-vipps-recurring.php:240
+#: woo-vipps-recurring.php:247
 #| msgid ""
 #| "Vipps recurring payments requires WooCommerce Subscriptions to be "
 #| "installed and active. You can download %s here."
@@ -537,7 +550,7 @@ msgstr ""
 "kan kjøpe og laste ned %s her."
 
 #. translators: %s link to WooCommerce's download page
-#: woo-vipps-recurring.php:232
+#: woo-vipps-recurring.php:239
 msgid ""
 "Vipps recurring payments requires WooCommerce to be installed and active. "
 "You can download %s here."
@@ -572,14 +585,14 @@ msgstr ""
 "kunden sin bankkonto. Denne innstillingen kontrollerer hvilken status ordren "
 "skal ha i WooCommerce i mellomtiden."
 
-#: woo-vipps-recurring.php:503
+#: woo-vipps-recurring.php:517
 msgid ""
 "Where we should source the agreement description from. Displayed in the "
 "Vipps app."
 msgstr ""
 "Hvor beskrivelsen som brukes til betalingsavtalen i appen skal komme fra."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:277
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
 msgid "Yes"
 msgstr "Ja"
 
