@@ -23,3 +23,17 @@
 	padding: 10px;
 	height: 36px;
 }
+
+.notice-vipps-recurring--login-promotion {
+	background: #fe5b24 !important;
+	border-color: #fe5b24;
+	color: #fff;
+}
+
+.notice-vipps-recurring--login-promotion .notice-dismiss:before {
+	color: #fff;
+}
+
+.notice-vipps-recurring--login-promotion a {
+	color: #fff;
+}

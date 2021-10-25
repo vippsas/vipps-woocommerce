@@ -269,6 +269,25 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( isset( $_REQUEST['statuses_checked'] ) ) {
 					$this->notices->success( __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) );
 				}
+
+				// Show Vipps Login notice for a maximum of 10 days
+				// 1636066799 = 04-11-2021 23:59:59 UTC
+				// && ! class_exists( 'WC_Gateway_Vipps' )
+				if ( ! class_exists( 'VippsWooLogin' ) && time() < 1636066799 ) {
+					$vipps_login_plugin_url = 'https://wordpress.org/plugins/login-with-vipps';
+					if (get_locale() === 'nb_NO') {
+						$vipps_login_plugin_url = 'https://nb.wordpress.org/plugins/login-with-vipps';
+					}
+
+					$this->notices->campaign(
+					/* translators: %1$s URL to login-with-vipps, %2$s translation for "here" */
+						sprintf( __( 'Login with Vipps is available for WooCommerce. Super-easy and safer login for your customers - no more usernames and passwords. Get started <a href="%1$s" target="_blank">%2$s</a>!', 'woo-vipps-recurring' ), $vipps_login_plugin_url, __( 'here', 'woo-vipps-recurring' ) ),
+						'login_promotion',
+						true,
+						'assets/images/vipps-logg-inn-neg.png',
+						'login-promotion'
+					);
+				}
 			}
 
 			/**

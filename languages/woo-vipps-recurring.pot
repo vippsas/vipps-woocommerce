@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Vipps Recurring Payments Gateway for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Vipps Recurring Payments Gateway for WooCommerce 1.9.0\n"
+"Project-Id-Version: Vipps Recurring Payments Gateway for WooCommerce 1.9.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vipps-recurring-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-09-22T13:07:04+00:00\n"
+"POT-Creation-Date: 2021-10-25T11:26:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.5.0\n"
 "X-Domain: woo-vipps-recurring\n"
@@ -30,57 +30,57 @@ msgstr ""
 msgid "https://everyday.no"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:108
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:103
 msgid "No failed charges found."
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:119
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:119
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:114
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:115
 msgid "Check Status"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:172
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:167
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:168
 msgid "Agreement ID"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:173
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:173
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:168
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:169
 msgid "Charge ID"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:174
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:169
 msgid "Failure Reason"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:175
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:175
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:170
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:171
 msgid "Latest API Status"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:176
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:176
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:171
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
 msgid "Created At"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:268
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:269
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:261
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:263
 msgid "Charge ID not available. Check the order's notes instead."
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:174
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:170
 msgid "Captured"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:265
 msgid "This order has not yet been captured."
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:277
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
 msgid "Yes"
 msgstr ""
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:278
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:272
 msgid "No"
 msgstr ""
 
@@ -209,9 +209,9 @@ msgstr ""
 
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
 #: includes/wc-gateway-vipps-recurring.php:126
-#: woo-vipps-recurring.php:437
-#: woo-vipps-recurring.php:438
-#: woo-vipps-recurring.php:477
+#: woo-vipps-recurring.php:451
+#: woo-vipps-recurring.php:452
+#: woo-vipps-recurring.php:491
 msgid "Vipps Recurring Payments"
 msgstr ""
 
@@ -241,7 +241,9 @@ msgstr ""
 msgid "A list of possible failure reasons and what they mean can be found %s"
 msgstr ""
 
+#. translators: %1$s URL to login-with-vipps, %2$s translation for "here"
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:55
+#: woo-vipps-recurring.php:275
 msgid "here"
 msgstr ""
 
@@ -412,76 +414,81 @@ msgid "Your WordPress URL is not passing Merchant Agreement URL validation. Is y
 msgstr ""
 
 #. translators: %s link to WooCommerce's download page
-#: woo-vipps-recurring.php:232
+#: woo-vipps-recurring.php:239
 msgid "Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here."
 msgstr ""
 
 #. translators: %s link to WooCommerce Subscription's purchase page
-#: woo-vipps-recurring.php:240
+#: woo-vipps-recurring.php:247
 msgid "Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here."
 msgstr ""
 
-#: woo-vipps-recurring.php:257
+#: woo-vipps-recurring.php:262
 msgid "Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!"
 msgstr ""
 
-#: woo-vipps-recurring.php:265
+#: woo-vipps-recurring.php:270
 msgid "Successfully checked the status of these charges"
 msgstr ""
 
+#. translators: %1$s URL to login-with-vipps, %2$s translation for "here"
+#: woo-vipps-recurring.php:275
+msgid "Login with Vipps is available for WooCommerce. Super-easy and safer login for your customers - no more usernames and passwords. Get started <a href=\"%1$s\" target=\"_blank\">%2$s</a>!"
+msgstr ""
+
 #. translators: amount of orders checked
-#: woo-vipps-recurring.php:462
+#: woo-vipps-recurring.php:476
 msgid "Done. Checked the status of %s orders"
 msgstr ""
 
-#: woo-vipps-recurring.php:464
+#: woo-vipps-recurring.php:478
 msgid "Failed to finish checking the status of all orders. Please try again."
 msgstr ""
 
-#: woo-vipps-recurring.php:494
+#: woo-vipps-recurring.php:508
 msgid "Capture payment instantly"
 msgstr ""
 
-#: woo-vipps-recurring.php:495
+#: woo-vipps-recurring.php:509
 msgid "Capture payment instantly even if the product is not virtual. Please make sure you are following Norwegian law when using this option."
 msgstr ""
 
-#: woo-vipps-recurring.php:502
+#: woo-vipps-recurring.php:516
 msgid "Description source"
 msgstr ""
 
-#: woo-vipps-recurring.php:503
+#: woo-vipps-recurring.php:517
 msgid "Where we should source the agreement description from. Displayed in the Vipps app."
 msgstr ""
 
-#: woo-vipps-recurring.php:506
+#: woo-vipps-recurring.php:520
 msgid "Product title"
 msgstr ""
 
-#: woo-vipps-recurring.php:507
+#: woo-vipps-recurring.php:521
 msgid "Product short description"
 msgstr ""
 
-#: woo-vipps-recurring.php:508
+#: woo-vipps-recurring.php:522
 msgid "Custom"
 msgstr ""
 
-#: woo-vipps-recurring.php:515
+#: woo-vipps-recurring.php:529
 msgid "Custom description"
 msgstr ""
 
-#: woo-vipps-recurring.php:516
+#: woo-vipps-recurring.php:530
 msgid "If the description source is set to \"custom\" this text will be used."
 msgstr ""
 
-#: woo-vipps-recurring.php:517
+#: woo-vipps-recurring.php:531
 msgid "Max 100 characters"
 msgstr ""
 
-#: woo-vipps-recurring.php:576
+#: woo-vipps-recurring.php:588
 msgid "Capture payment"
 msgstr ""
 
-#: woo-vipps-recurring.php:717
+#: woo-vipps-recurring.php:703
 msgid "Settings"
 msgstr ""
