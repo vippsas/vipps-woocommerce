@@ -88,6 +88,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 			private static $instance;
 
 			/**
+			 * @var WC_Vipps_Recurring_Admin_Notices
+			 */
+			public $notices;
+
+			/**
+			 * @var WC_Gateway_Vipps_Recurring
+			 */
+			public $gateway;
+
+			/**
 			 * Returns the *Singleton* instance of this class.
 			 *
 			 * @return WC_Vipps_Recurring The *Singleton* instance.
@@ -98,13 +108,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				return self::$instance;
-			}
-
-			/**
-			 * @return WC_Gateway_Vipps_Recurring
-			 */
-			public function gateway(): \WC_Gateway_Vipps_Recurring {
-				return WC_Gateway_Vipps_Recurring::get_instance();
 			}
 
 			/**
@@ -144,6 +147,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 				require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
 				require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
 				require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
+				require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+
+				$this->notices = WC_Vipps_Recurring_Admin_Notices::get_instance( __FILE__ );
+				$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
 
 				add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 
@@ -230,7 +237,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( ! class_exists( 'WooCommerce' ) ) {
 					// translators: %s link to WooCommerce's download page
 					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' );
-					$this->add_admin_notice( $notice, 'info', '', true );
+					$this->notices->error( $notice );
 
 					return;
 				}
@@ -238,12 +245,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( ! class_exists( 'WC_Subscriptions' ) ) {
 					// translators: %s link to WooCommerce Subscription's purchase page
 					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
-					$this->add_admin_notice( $notice, 'info', '', true );
+					$this->notices->error( $notice );
 
 					return;
 				}
-
-				$gateway = $this->gateway();
 
 				// add capture button if order is not captured
 				add_action( 'woocommerce_order_item_add_action_buttons', [
@@ -253,16 +258,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				add_action( 'save_post', [ $this, 'save_order' ], 10, 3 );
 
-				if ( $gateway->testmode ) {
+				if ( $this->gateway->testmode ) {
 					$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
-					$this->add_admin_notice( $notice );
+					$this->notices->warning( $notice );
 				}
 
 				// Load correct list table classes for current screen.
 				add_action( 'current_screen', [ $this, 'setup_screen' ] );
 
 				if ( isset( $_REQUEST['statuses_checked'] ) ) {
-					$this->add_admin_notice( __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) );
+					$this->notices->success( __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) );
 				}
 			}
 
@@ -368,7 +373,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 					foreach ( $order_ids as $order_id ) {
 						// check charge status
-						$this->gateway()->check_charge_status( $order_id );
+						$this->gateway->check_charge_status( $order_id );
 					}
 
 					$sendback = add_query_arg( 'statuses_checked', 1, $sendback );
@@ -545,20 +550,18 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @param $order
 			 */
 			public function order_item_add_capture_button( $order ) {
-				$gateway = $this->gateway();
-
 				if ( $order->get_type() !== 'shop_order' ) {
 					return;
 				}
 
 				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
-				if ( $payment_method !== $gateway->id ) {
+				if ( $payment_method !== $this->gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
 					return;
 				}
 
 				$order_status        = $order->get_status();
-				$show_capture_button = ( ! in_array( $order_status, $gateway->statuses_to_attempt_capture, true ) )
+				$show_capture_button = ( ! in_array( $order_status, $this->gateway->statuses_to_attempt_capture, true ) )
 									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
 									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
 									   && ! wcs_order_contains_renewal( $order )
@@ -589,44 +592,15 @@ function woocommerce_gateway_vipps_recurring_init() {
 					return;
 				}
 
-				$gateway = $this->gateway();
-
 				$order          = wc_get_order( $postid );
 				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
-				if ( $payment_method !== $gateway->id ) {
+				if ( $payment_method !== $this->gateway->id ) {
 					// If this is not the payment method, an agreement would not be available.
 					return;
 				}
 
 				if ( isset( $_POST['do_capture_vipps_recurring'] ) && $_POST['do_capture_vipps_recurring'] ) {
-					$gateway->capture_payment( $order );
-				}
-			}
-
-			/**
-			 * @param $text
-			 * @param string $type
-			 * @param string $key
-			 * @param false $plaintext
-			 */
-			public function add_admin_notice( $text, $type = 'info', $key = '', $plaintext = false ) {
-				$callable = function () use ( $text, $type, $key ) {
-					$logo      = plugins_url( 'assets/images/vipps-logo.svg', __FILE__ );
-					$logo_html = "<img src='$logo' alt='Vipps logo'>";
-
-					$message = sprintf( $text, admin_url( 'admin.php?page=wc-settings&tab=checkout&section=vipps_recurring' ) );
-					echo "<div class='notice notice-vipps-recurring notice-$type is-dismissible' data-key='" . esc_attr( $key ) . "'>
-						<div class='notice-vipps-recurring__inner'>
-							$logo_html
-							<p>$message</p>
-						</div>
-					</div>";
-				};
-
-				if ( $plaintext ) {
-					$callable();
-				} else {
-					add_action( 'admin_notices', $callable );
+					$this->gateway->capture_payment( $order );
 				}
 			}
 
@@ -638,10 +612,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @return array
 			 */
 			public function check_order_statuses( $limit = '' ): array {
-				$gateway = $this->gateway();
-
 				if ( empty( $limit ) ) {
-					$limit = $gateway->check_charges_amount;
+					$limit = $this->gateway->check_charges_amount;
 				}
 
 				$options = [
@@ -651,14 +623,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'meta_compare'   => '=',
 					'meta_value'     => 1,
 					'return'         => 'ids',
-					'payment_method' => $gateway->id
+					'payment_method' => $this->gateway->id
 				];
 
-				if ( $gateway->check_charges_sort_order === 'rand' ) {
+				if ( $this->gateway->check_charges_sort_order === 'rand' ) {
 					$options['orderby'] = 'rand';
 				} else {
 					$options['orderby'] = 'post_date';
-					$options['order']   = $gateway->check_charges_sort_order;
+					$options['order']   = $this->gateway->check_charges_sort_order;
 				}
 
 				remove_all_filters( 'posts_orderby' );
@@ -666,7 +638,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				foreach ( $order_ids as $order_id ) {
 					// check charge status
-					$gateway->check_charge_status( $order_id );
+					$this->gateway->check_charge_status( $order_id );
 				}
 
 				return $order_ids;
@@ -676,8 +648,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Check the status of gateway change requests
 			 */
 			public function check_gateway_change_agreement_statuses() {
-				$gateway = $this->gateway();
-
 				$posts = get_posts( [
 					'post_type'    => 'shop_subscription',
 					'post_status'  => [ 'wc-active', 'wc-pending', 'wc-on-hold' ],
@@ -686,10 +656,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'meta_value'   => 1,
 					'return'       => 'ids',
 				] );
-				
+
 				foreach ( $posts as $post ) {
 					// check charge status
-					$gateway->maybe_process_gateway_change( $post->ID );
+					$this->gateway->maybe_process_gateway_change( $post->ID );
 				}
 			}
 
@@ -697,8 +667,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Update a subscription's details in the app
 			 */
 			public function update_subscription_details_in_app() {
-				$gateway = $this->gateway();
-
 				$posts = get_posts( [
 					'limit'        => 5,
 					'post_type'    => 'shop_subscription',
@@ -711,7 +679,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				foreach ( $posts as $post ) {
 					// check charge status
-					$gateway->maybe_update_subscription_details_in_app( $post->ID );
+					$this->gateway->maybe_update_subscription_details_in_app( $post->ID );
 				}
 			}
 
@@ -736,7 +704,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @version 3.1.0
 			 */
 			public function install() {
-				$this->gateway()->ensure_cancelled_order_page();
+				$this->gateway->ensure_cancelled_order_page();
 				$this->upgrade();
 			}
 
@@ -769,7 +737,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					return $methods;
 				}
 
-				foreach ( WC()->cart->get_cart_contents() as $key => $values ) {
+				foreach ( WC()->cart->get_cart_contents() as $values ) {
 					$product = wc_get_product( $values['product_id'] );
 
 					if ( ! $product->is_type( [ 'subscription', 'variable-subscription' ] ) ) {

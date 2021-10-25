@@ -11,6 +11,10 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
  * and to ensure only the site owner can perform this action.
  */
 if ( defined( 'WC_REMOVE_ALL_DATA' ) && true === WC_REMOVE_ALL_DATA ) {
+	global $wpdb;
+
     // Delete options.
     delete_option('woocommerce_vipps_recurring_settings');
+
+	$wpdb->query( 'DELETE FROM wp_options WHERE option_name LIKE "vipps_recurring_dismissed_%";' );
 }
