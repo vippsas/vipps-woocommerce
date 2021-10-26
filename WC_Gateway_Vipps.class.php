@@ -1970,9 +1970,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           <p>To activate Vipps Checkout, just press the button below. Otherwise, Vipps will of course be available in the regular checkout screen; and you can also offer Vipps Express checkout from both the product pages and the shopping cart if you wish.</p>
 
           <div style="text-align:center">
-                 <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:activate_vipps_checkout(1)">Yes, activate Vipps Checkout!</a>
+                 <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(1)">Yes, activate Vipps Checkout!</a>
                  <span style="width:30%; height:1rem;display:inline-block"></span>
-                 <a class="button vipps-button secondary" href="javascript:activate_vipps_checkout(0)">No, thank you not right now anyway</a>
+                 <a class="button vipps-button secondary" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(0)">No, thank you not right now anyway</a>
           </div>
 <script>
 function activate_vipps_checkout(yesno) {
