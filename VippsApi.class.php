@@ -107,6 +107,7 @@ class VippsApi {
     }
 
     public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
+        do_action("woo_vipps_api_call", $order, 'initiate');
         $command = 'Ecomm/v2/payments';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
@@ -210,6 +211,7 @@ class VippsApi {
 
     // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
     public function capture_payment($order,$amount,$requestid=1) {
+        do_action("woo_vipps_api_call", $order, 'capture');
         $orderid = $order->get_meta('_vipps_orderid');
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
@@ -261,6 +263,7 @@ class VippsApi {
 
     // Cancel a reserved but not captured payment IOK 2018-05-07
     public function cancel_payment($order,$requestid=1) {
+        do_action("woo_vipps_api_call", $order, 'cancel');
         $orderid = $order->get_meta('_vipps_orderid');
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
@@ -297,6 +300,7 @@ class VippsApi {
 
     // Refund a captured payment.  IOK 2018-05-08
     public function refund_payment($order,$requestid=1,$amount=0,$cents=false) {
+        do_action("woo_vipps_api_call", $order, 'refund');
         $orderid = $order->get_meta('_vipps_orderid');
         $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
 
@@ -343,6 +347,7 @@ class VippsApi {
 
     // Used to retrieve shipping and user details for express checkout orders where relevant and the callback isn't coming.
     public function payment_details ($order) {
+        do_action("woo_vipps_api_call", $order, 'details');
 	$requestid=0;
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'Ecomm/v2/payments/'.$orderid.'/details';
