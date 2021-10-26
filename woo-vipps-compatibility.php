@@ -55,3 +55,16 @@ add_action('plugins_loaded', function () {
     }
 });
 
+// Anti-support for WooCommerce subscriptions; but allow turning it off using an (advanced) setting or filter. IOK 2021-10-26
+add_filter('woo_vipps_is_available', function ($ok, $gateway) {
+    if (!$ok) return $ok;
+    // Can't do these, so remove Vipps as payment method  IOK 2021-05-14
+    if (class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription()) {
+      $ok = ($gateway->get_option('support_subscription_cart') == 'yes');
+      $ok = apply_filters('woo_vipps_support_subscription_cart', $ok);
+    }
+    return $ok;
+}, 10, 2);
+
+
+
