@@ -1366,18 +1366,49 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 * There's no good way to make this obvious to a customer in the app, especially if the products have different durations
 			 * i.e. one yearly and one monthly
 			 */
-			if ( count( $items ) !== 1 ) {
-				wc_add_notice( __( 'Different subscription products can not be purchased at the same time using Vipps.', 'woo-vipps-recurring' ), 'error' );
+			$has_more_products = count( $items ) > 1;
+			if ( $has_more_products ) {
+				$counter = 1;
 
-				return [
-					'result'   => 'fail',
-					'redirect' => ''
-				];
+				foreach ( $items as $item ) {
+					if ( ! WC_Subscriptions_Product::is_subscription( $item['product_id'] ) ) {
+						continue;
+					}
+
+					if ( $counter > 1 ) {
+						wc_add_notice( __( 'Different subscription products can not be purchased at the same time using Vipps.', 'woo-vipps-recurring' ), 'error' );
+
+						return [
+							'result'   => 'fail',
+							'redirect' => ''
+						];
+					}
+
+					$counter ++;
+				}
 			}
 
-			// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled
-			$item    = array_pop( $items );
-			$product = $item->get_product();
+			// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
+			$subscription_items = array_filter( $items, static function ( $item ) {
+				return WC_Subscriptions_Product::is_subscription( $item['product_id'] );
+			} );
+			$item               = array_pop( $subscription_items );
+			$product            = $item->get_product();
+
+			$extra_initial_charge_description = '';
+
+			if ( $has_more_products ) {
+				$other_items = array_filter( $items, static function ( $other_item ) use ( $item ) {
+					return $item['product_id'] !== $other_item['product_id'];
+				} );
+
+				$extra_initial_charge_description = ' + ';
+				foreach ( $other_items as $product_item ) {
+					$extra_initial_charge_description .= WC_Vipps_Recurring_Helper::get_product_description( $product_item->get_product() ) . ', ';
+				}
+
+				$extra_initial_charge_description = rtrim( $extra_initial_charge_description, ', ' );
+			}
 
 			$is_virtual     = $product->is_virtual();
 			$direct_capture = $product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
@@ -1437,7 +1468,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
-						'description'     => WC_Vipps_Recurring_Helper::get_product_description( $product ),
+						'description'     => WC_Vipps_Recurring_Helper::get_product_description( $product ) . $extra_initial_charge_description,
 						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
