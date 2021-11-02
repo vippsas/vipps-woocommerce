@@ -1222,17 +1222,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $token;
     }
 
-
     // Collapse several statuses to a known list IOK 2019-01-23
     public function interpret_vipps_order_status($status) {
         switch ($status) { 
             case 'INITIATE':
             case 'REGISTER':
             case 'REGISTERED':
+            case 'CREATED':
                 return 'initiated';
                 break;
             case 'RESERVE':
             case 'RESERVED':
+            case 'AUTHORISED':
+            case 'AUTHORIZED':
                 return 'authorized';
             case 'SALE':
                 return 'complete';
@@ -1246,6 +1248,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'RESERVE_FAILED':
             case 'FAILED':
             case 'REJECTED':
+            case 'TERMINATED':
                 return 'cancelled';
                 break;
             }
@@ -1740,7 +1743,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             exit();
         }
 
-        $transaction = @$result['transactionInfo'];
+        $transaction = array();
+        if (isset($result['transactionInfo'])) {
+            $transaction = $result['transactionInfo'];
+            $transaction['currency'] = 'NOK';
+        } else if (isset($result['paymentDetails'])) {
+            $details = $result['paymentDetails'];
+            $transaction['transactionId'] = 'checkout_' . $vippsorderid;
+            $transaction['timeStamp'] = date('Y-m-d H:i:s', time());
+            $transaction['amount'] = $details['amount']['value'];
+            $transaction['currency'] = $details['amount']['currency'];
+            $transaction['status'] = $details['state'];
+        }
+
         if (!$transaction) {
             $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woo-vipps'),'warning');
             clean_post_cache($order->get_id());
@@ -1768,6 +1783,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $transactionid = @$transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);
         $vippsamount = $transaction['amount'];
+        $vippscurrency= $transaction['currency'];
         $vippsstatus = $transaction['status'];
 
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
@@ -1789,9 +1805,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
         $order->update_meta_data('_vipps_amount',$vippsamount);
+        $order->update_meta_data('_vipps_currency',$vippscurrency);
         $order->update_meta_data('_vipps_status',$vippsstatus);  // Still uses the old status values - could call update_vipps_payment_details instead at the cost of an extra callIOK 2021-01-21
 
-        if ($vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
+        if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
@@ -2059,17 +2076,14 @@ function activate_vipps_checkout(yesno) {
     public function maybe_create_vipps_pages () {
             // This always true if we get here at all
             update_option('woo_vipps_checkout_activated', true, true);
-            error_log("Adding the page if not exists");
             $checkoutid = wc_get_page_id('vipps_checkout');
 
             $makeit = !$checkoutid || ! get_post_status($checkoutid);
             if ($makeit) {
-               error_log("It doesn't! Doing it");
                delete_option('woocommerce_vipps_checkout_page_id');
                WC_Install::create_pages();
-               error_log("Did it!");
             } else {
-               error_log("Page exists, everything is good. ");
+                 // Noop
             }
     }
 

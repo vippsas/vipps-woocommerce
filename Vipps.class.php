@@ -864,7 +864,6 @@ else:
                 WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
                 if ($current_pending) {
-                    // Check errors here plz
                     $order = wc_get_order($current_pending);
                     $order->update_meta_data('_vipps_checkout', true);
                     $current_authtoken = $this->gateway()->generate_authtoken();
@@ -889,7 +888,13 @@ else:
         $requestid = 1;
         $returnurl = $this->payment_return_url();
         $returnurl = add_query_arg('t',$current_authtoken,$returnurl);
-        WC()->session->set('_vipps_pending_order',$order->get_id());
+
+        $order_id = $order->get_id();
+        $sessionorders= WC()->session->get('_vipps_session_orders');
+        if (!$sessionorders) $sessionorders = array();
+        $sessionorders[$order_id] = 1;
+        WC()->session->set('_vipps_pending_order',$order_id);
+        WC()->session->set('_vipps_session_orders',$sessionorders);
         try {
             $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$current_authtoken,$requestid); 
             if ($current_vipps_session) {
@@ -1581,7 +1586,6 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
@@ -1616,6 +1620,7 @@ EOF;
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
+
         $gw = $this->gateway();
         $gw->handle_callback($result, $ischeckout);
 
@@ -3193,6 +3198,7 @@ EOF;
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
+            /* IOK FIXME
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
@@ -3200,13 +3206,16 @@ EOF;
                 clean_post_cache($orderid);
                 $order = wc_get_order($orderid); // Reload order object
             }
+              IOK FIXME  */
         } else {
                 // No need to do anyting here. IOK 2020-01-26
         }
         
 
 
-        $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
+        # IOK FIXME
+#        $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
+        $payment = 'initiated';
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
