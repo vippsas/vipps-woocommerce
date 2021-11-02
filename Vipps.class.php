@@ -3198,7 +3198,6 @@ EOF;
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
-            /* IOK FIXME
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
@@ -3206,16 +3205,13 @@ EOF;
                 clean_post_cache($orderid);
                 $order = wc_get_order($orderid); // Reload order object
             }
-              IOK FIXME  */
         } else {
                 // No need to do anyting here. IOK 2020-01-26
         }
         
 
 
-        # IOK FIXME
-#        $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
-        $payment = 'initiated';
+        $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
