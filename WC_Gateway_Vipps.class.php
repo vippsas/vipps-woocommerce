@@ -1319,8 +1319,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
 
         $this->log("About to check if we need to poll checkout " . $order->get_meta('_vipps_checkout_poll'), 'DEBUG'); // IOK FIXME
-        $address_set_by_poll = false;
-        if (!$order->has_shipping_address() && !$order->has_billing_address()) {
+        $address_set = $order->get_meta('_vipps_shipping_set');
+        if (!$address_set) {
             $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
             $this->log("Checkoutpoll : $checkoutpoll", 'DEBUG'); // IOK FIXME
             if ($checkoutpoll) {
@@ -1332,7 +1332,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $this->log("Setting shipping details", 'DEBUG'); // IOK FIXME 
                         $this->set_order_shipping_details($order,$polldata['shippingDetails'], $polldata['userDetails']);
                         $this->log("Setting shipping details done", 'DEBUG'); // IOK FIXME 
-                        $address_set_by_poll = 1;
+                        $address_set = 1;
                     }
                 } catch (Exception $e) {
                     $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
@@ -1340,6 +1340,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         } else {
           $this->log("Order already has shipping and billing address", 'DEBUG'); // IOK FIXME
+          $this->log(print_r($order->get_address('shipping'), true));
+          $this->log(print_r($order->get_address('billing'), true));
         }
 
 
@@ -1357,7 +1359,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
             if (@$paymentdetails['shippingDetails']) {
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
-            } else if ($address_set_by_poll) {
+            } else if ($address_set) {
                 // NOOP - address is known
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
@@ -1773,6 +1775,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return false;
         }
+
+        $order->add_order_note(__('Vipps callback received','woo-vipps'));
+
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
@@ -1809,8 +1814,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // Could not create a signal file, but that's ok.
             }
         }
-        $order->add_order_note(__('Vipps callback received','woo-vipps'));
-
         $errorInfo = @$result['errorInfo'];
         if ($errorInfo) {
             $this->log(__("Error message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
