@@ -154,6 +154,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.11.0 =
+* Added: You can now pay for single payment products in the same shopping cart as a subscription.
+
 = 1.10.0 =
 * Refactor: Rewrote our admin notification system to allow for dismissible alerts.
 * Added: A campaign banner for Login with Vipps. This will last for 10 days, and it is fully dismissible.

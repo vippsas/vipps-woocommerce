@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.10.0
+ * Version: 1.11.0
  * Requires at least: 4.4
  * Tested up to: 5.8
  * WC tested up to: 5.6.0
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.10.0' );
+define( 'WC_VIPPS_RECURRING_VERSION', '1.11.0' );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
@@ -166,9 +166,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 				// add our gateway
 				add_filter( 'woocommerce_payment_gateways', [ $this, 'add_gateways' ] );
 
-				// we only want our gateway visible on subscriptions
-				add_filter( 'woocommerce_available_payment_gateways', [ $this, 'maybe_disable_gateway' ] );
-
 				add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), [
 					$this,
 					'plugin_action_links'
@@ -275,7 +272,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				// && ! class_exists( 'WC_Gateway_Vipps' )
 				if ( ! class_exists( 'VippsWooLogin' ) && time() < 1636066799 ) {
 					$vipps_login_plugin_url = 'https://wordpress.org/plugins/login-with-vipps';
-					if (get_locale() === 'nb_NO') {
+					if ( get_locale() === 'nb_NO' ) {
 						$vipps_login_plugin_url = 'https://nb.wordpress.org/plugins/login-with-vipps';
 					}
 
@@ -739,29 +736,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function add_gateways( $methods ): array {
 				if ( function_exists( 'wcs_create_renewal_order' ) && class_exists( 'WC_Subscriptions_Order' ) ) {
 					$methods[] = 'WC_Gateway_Vipps_Recurring';
-				}
-
-				return $methods;
-			}
-
-			/**
-			 * Maybe disable payment gateway
-			 *
-			 * @param $methods
-			 *
-			 * @return mixed
-			 */
-			public function maybe_disable_gateway( $methods ) {
-				if ( is_admin() || ! is_checkout() ) {
-					return $methods;
-				}
-
-				foreach ( WC()->cart->get_cart_contents() as $values ) {
-					$product = wc_get_product( $values['product_id'] );
-
-					if ( ! $product->is_type( [ 'subscription', 'variable-subscription' ] ) ) {
-						unset( $methods['vipps_recurring'] );
-					}
 				}
 
 				return $methods;
