@@ -1318,20 +1318,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->save();
 
+        $this->log("About to check if we need to poll checkout " . $order->get_meta('_vipps_checkout_poll'), 'DEBUG'); // IOK FIXME
         $address_set_by_poll = false;
         if (!$order->has_shipping_address() && !$order->has_billing_address()) {
             $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
+            $this->log("Checkoutpoll : $checkoutpoll", 'DEBUG'); // IOK FIXME
             if ($checkoutpoll) {
                 try {
+                    $this->log("Getting address info from Vipps Checkout", 'DEBUG'); // IOK FIXME
                     $polldata =  $this->api->poll_checkout($checkoutpoll);
+                    $this->log("Got " . print_r($polldata, true), 'DEBUG'); // IOK FIXME
                     if (isset($polldata['shippingDetails'])) {
+                        $this->log("Setting shipping details", 'DEBUG'); // IOK FIXME 
                         $this->set_order_shipping_details($order,$polldata['shippingDetails'], $polldata['userDetails']);
+                        $this->log("Setting shipping details done", 'DEBUG'); // IOK FIXME 
                         $address_set_by_poll = 1;
                     }
                 } catch (Exception $e) {
                     $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
                 }
             }
+        } else {
+          $this->log("Order already has shipping and billing address", 'DEBUG'); // IOK FIXME
         }
 
 
@@ -1758,6 +1766,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $transaction['status'] = $details['state'];
         }
 
+        $this->log("Parsed transaction: " . print_r($transaction, true), 'DEBUG'); // IOK FIXME
+
         if (!$transaction) {
             $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woo-vipps'),'warning');
             clean_post_cache($order->get_id());
@@ -1779,7 +1789,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
+            $this->log("Setting shipping details in callback", 'DEBUG'); // IOK FIXME
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
+            $this->log("Setting shipping details done", 'DEBUG'); // IOK FIXME
         }
 
         $transactionid = @$transaction['transactionId'];

@@ -188,5 +188,5 @@ jQuery( document ).ready( function() {
     }
 
     listenToFrame(); // Start now if we have an iframe. This will also start the polling.
-    console.log("Vipps Checkout Initialized");
+    console.log("Vipps Checkout Initialized version 101");
 });

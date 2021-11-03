@@ -1583,8 +1583,12 @@ EOF;
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
+        $this->log("Got a callback from Vipps", 'DEBUG'); // IOK FIXME
+
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
+
+        $this->log("Callback value is " . print_r($result, true), 'DEBUG'); // IOK FIXME
 
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
@@ -1622,6 +1626,8 @@ EOF;
         }
 
         $gw = $this->gateway();
+
+        $this->log("About to call handle_callback", 'DEBUG'); // IOK FIXME
         $gw->handle_callback($result, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
@@ -3199,6 +3205,7 @@ EOF;
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
+            $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); // IOK FIXME
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
                 $status = $newstatus;
