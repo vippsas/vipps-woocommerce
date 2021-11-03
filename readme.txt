@@ -202,6 +202,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2021.1x.xx  version 1.7.18 =
  Add support for Woocommerce Subscriptions manual renewals using a filter and a developer setting.
+ Fix issue where customer was assumed to exist even when doing cron jobs for rescuing dead orders
 
 = 2021.10.19  version 1.7.17 =
  Fix CSS issue caused by previous version
