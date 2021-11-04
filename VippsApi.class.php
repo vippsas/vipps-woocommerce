@@ -602,9 +602,14 @@ class VippsApi {
             } else {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
                 $msg = '';
-                foreach($content as $entry) {
-                    $msg .= $response  . ' ' .   @$entry['errorMessage'] . "\n";
-                } 
+                if (is_array($content)) {
+                    foreach($content as $entry) {
+                        $msg .= $response  . ' ' .   @$entry['errorMessage'] . "\n";
+                    }
+                } else {
+                    // At this point, we have no idea what we have got, so just stringify it IOK 2021-11-04
+                    $msg = $response . " " .  print_r($msg, true);
+                }
             }
         }
 

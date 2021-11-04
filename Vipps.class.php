@@ -1607,8 +1607,33 @@ EOF;
             return false;
         }
 
+        # For testing sites that appear not to receive callbacks
+        if (isset($result['testing_callback'])) {
+            $this->log(__("Received a test callback, exiting" , 'woo-vipps'), 'debug');
+            print '{"status": 1, "msg": "Test ok"}';
+            exit();
+        }
+
         $vippsorderid = $result['orderId'];
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
+
+        if (!$orderid) {
+            $this->log(__("There is no order with this Vipps orderid, callback fails:",'woo-vipps') . " " . $vippsorderid,  'error');
+            return false;
+        }
+
+        $order = wc_get_order($orderid);
+        if (!is_a($order, 'WC_Order')) {
+            $this->log(__("There is no order with this order id, callback fails:",'woo-vipps') . " " . $orderid,  'error');
+            return false;
+        }
+
+
+        // a small bit of security
+        if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
+            $this->log("Wrong authtoken on Vipps payment details callback", 'error');
+            exit();
+        }
         // Ensure we use the same session as for the original order IOK 2019-10-21
         $this->callback_restore_session($orderid);
 
@@ -1618,16 +1643,11 @@ EOF;
              do_action('woo_vipps_callback', $result);
         }
 
-        // a small bit of security
-        $order = wc_get_order($orderid);
-        if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
-            $this->log("Wrong authtoken on Vipps payment details callback", 'error');
-            exit();
-        }
 
         $gw = $this->gateway();
 
         $this->log("About to call handle_callback", 'DEBUG'); // IOK FIXME
+
         $gw->handle_callback($result, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
