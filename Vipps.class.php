@@ -2528,6 +2528,11 @@ EOF;
         // IOK 2018-05-28
         $ok = wp_verify_nonce($_REQUEST['sec'],'express');
 
+        add_filter('body_class', function ($classes) {
+            $classes[] = 'vipps-express-checkout';
+            return $classes;
+        });
+
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
 
@@ -2674,6 +2679,7 @@ EOF;
         $execute = apply_filters('woo_vipps_checkout_directly_to_vipps', $execute, $productinfo);
 
         $content = $this->spinner();
+
         $content .= "<form id='vippsdata'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
