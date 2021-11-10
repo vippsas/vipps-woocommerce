@@ -266,15 +266,12 @@ class VippsApi {
         }
         $transaction['TimeStamp'] = $date;
 
-        #$authinfo = array();
-        #$authinfo['ClientId'] = $clientid;
-        #$authinfo['ClientSecret'] = $secret;
-        #$authinfo['OcpApimSubscriptionKey'] = $subkey;
-        #$data['AuthInfo'] = $authinfo;
+        # This have to exist, but we'll not check it now.
+        $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
 
         $data = array();
         $data['CustomerInfo'] = array('MobileNumber' => $phone); 
-        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'returnUrl'=>$fallback); 
+        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'returnUrl'=>$fallback, 'termsAndConditionsUrl'=> $termsAndConditionsUrl); 
         $data['Transaction'] = $transaction;
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
