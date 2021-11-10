@@ -27,6 +27,8 @@ SOFTWARE.
 
 */
 
+
+
 jQuery( document ).ready( function() {
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
@@ -34,18 +36,28 @@ jQuery( document ).ready( function() {
     var listening=false;
     var initiating=false;
 
-    jQuery('.vipps_checkout_button.button').click (function (e) {
+    // Just in case we need to do this by button.
+    jQuery('.vipps_checkout_button.button').click(function (e) { initVippsCheckout() });
+    if (jQuery('.vipps_checkout_startdiv').length>0) {
+       // which we must if we don't have the visibility API
+      if (typeof document.hidden == "undefined") {
+         jQuery('.vipps_checkout_startdiv').css('visibility', 'visible');
+      } else {
+         document.addEventListener('visibilitychange', initWhenVisible, false);
+         initWhenVisible();
+      }
+    }
+
+    function initVippsCheckout () {
       if (initiating) return;
-      clearValidations();
-      var ok = validateTerms();
-      if (ok) {
-        initiating=true;
-        jQuery("body").css("cursor", "progress");
-        jQuery('.vipps_checkout_button.button').each(function () {
+      initiating=true;
+      jQuery("body").css("cursor", "progress");
+      jQuery("body").addClass('processing');
+      jQuery('.vipps_checkout_button.button').each(function () {
            jQuery(this).addClass('disabled');
            jQuery(this).css("cursor", "progress");
-        });
-        jQuery.ajax(VippsConfig['vippsajaxurl'],
+      });
+      jQuery.ajax(VippsConfig['vippsajaxurl'],
                 {   cache:false,
                     timeout: 0,
                     dataType:'json',
@@ -57,6 +69,7 @@ jQuery( document ).ready( function() {
                         jQuery('.vipps_checkout_startdiv').hide();
                         console.log('Error initiating transaction : ' + statustext + ' : ' + error);
                         pollingdone=true;
+                        jQuery("body").removeClass('processing');
                         jQuery('#vippscheckouterror').show();
                         jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured</div>');
                         if (error == 'timeout')  {
@@ -70,6 +83,7 @@ jQuery( document ).ready( function() {
                         if (! result['data']['ok']) {
                             console.log("Error starting Vipps Checkout %j", result);
                             jQuery('#vippscheckouterror').show();
+                            jQuery("body").removeClass('processing');
                             return;
                         }
                         if (result['data']['redirect']) {
@@ -80,32 +94,13 @@ jQuery( document ).ready( function() {
                             var iframe = jQuery('<iframe src="' + result['data']['src'] + '" frameBorder=0 style="width:100%;height: 60rem;"></iframe>'); 
                             jQuery('#vippscheckoutframe').append(iframe);
                             listenToFrame();
+                            jQuery("body").removeClass('processing');
                             return;
                         }
                     },
                 });
-
-
-      }
-    });
-
-    function validateTerms () { 
-       var termsbox = jQuery('.input-checkbox[name="terms"]');
-       if (termsbox.length == 0) return true;
-       if (termsbox.is(':checked')) return true;
-       termsbox.closest('.validate-required').addClass('woocommerce-invalid');
-       termsbox.closest('.validate-required').addClass('woocommerce-invalid-required-field');
-       return false;
-    }
-    function clearValidations() {
-       var termsbox = jQuery('.input-checkbox[name="terms"]');
-       termsbox.closest('.validate-required').removeClass('woocommerce-invalid');
-       termsbox.closest('.validate-required').removeClass('woocommerce-invalid-required-field');
     }
 
-    jQuery('.input-checkbox[name="terms"]').change(function () {
-       clearValidations();
-    });
 
     function listenToFrame() {
         if (listening) return;
@@ -121,7 +116,6 @@ jQuery( document ).ready( function() {
                 // So poll when this happens. IOK 2021-08-25
                 function (e) {
                 if (e.origin != origin) return;
-                console.log('got message %j', e); // FIXME debuggin
                 if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
                     wp.hooks.doAction('vippsCheckoutIframeMessage', e);
                 }
@@ -187,6 +181,24 @@ jQuery( document ).ready( function() {
                 });
     }
 
+
+
+    function initWhenVisible() {
+      if (typeof document.visibilityState == 'undefined') return;
+      if (initiating) return;
+      if (listening) return;
+      var iframe = jQuery('#vippscheckoutframe iframe');
+      if (iframe.length > 0) return;
+      if (document.visibilityState == 'visible') {
+         jQuery("body").addClass('processing');
+         initVippsCheckout();
+      } else {
+         console.log("Not visible - not starting Vipps Checkout");
+      }
+    }
+
+    console.log("Vipps Checkout Initialized version 102");
+    
     listenToFrame(); // Start now if we have an iframe. This will also start the polling.
-    console.log("Vipps Checkout Initialized version 101");
+    initWhenVisible(); // Or start the session maybe
 });

@@ -1109,14 +1109,11 @@ else:
         $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps')); 
 
         if (!$sessioninfo['session']) {
-           $out .= "<div class='vipps_checkout_startdiv'>";
+           $out .= "<div id=iverdebug></div>"; # FIXME
+           $out .= $this->spinner();
+           $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
            $out .= "<h2>" . __('Press the button to complete your order with Vipps!', 'woo-vipps') . "</h2>";
            $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . __('Checkout with Vipps', 'woo-vipps') . '</button></div>';
-           $out .= apply_filters('woo_vipps_checkout_before_terms_and_conditions', "");
-           ob_start();
-           wc_get_template('checkout/terms.php');
-           $out .= ob_get_clean();
-           $out .= apply_filters('woo_vipps_checkout_after_terms_and_conditions', "");
            $out .= "</div>";
         }
 
