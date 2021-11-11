@@ -93,6 +93,9 @@ class Vipps {
         // Used in 'compat mode' only to add products to the cart
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
+        // Some stuff in the head for dynamic css etc
+        add_action('wp_head', array($this, 'wp_head'));
+
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
@@ -184,6 +187,10 @@ class Vipps {
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
+
+        // Stuff for the special Vipps Checkout page
+        add_filter('woocommerce_settings_pages', array($this, 'woocommerce_settings_pages'), 10, 1);
+
         // Check if login w vipps is installed first
         $this->add_login_vipps_dismissable_admin_banner();
 
@@ -259,6 +266,18 @@ class Vipps {
         array_unshift( $links, $link);
         return $links;
     }
+
+    // Extra stuff in the <head>, which will mostly mean dynamic CSS
+    public function wp_head () {
+        // If we have a Vipps Checkout page, stop iOS from giving previews of it that
+        // starts the session - iOS should use the visibility API of the browser for this, but it doesn't as of 2021-11-11
+        $checkoutid = wc_get_page_id('vipps_checkout');
+        if ($checkoutid) {
+            $url = get_permalink($checkoutid);
+            echo "<style> a[href=\"$url\"] { -webkit-touch-callout: none;  } </style>\n";
+        } 
+    }
+   
 
     // Requested by Vipps: It is a feature of this plugin that a prefix is added to the order number, in order to make it possible to use several different stores
     // that may use the same ordre number ranges. The prefix used to be just "Woo" by default, but Vipps felt it would be easier to respond to support request by
@@ -1109,7 +1128,6 @@ else:
         $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps')); 
 
         if (!$sessioninfo['session']) {
-           $out .= "<div id=iverdebug></div>"; # FIXME
            $out .= $this->spinner();
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
            $out .= "<h2>" . __('Press the button to complete your order with Vipps!', 'woo-vipps') . "</h2>";
@@ -1428,10 +1446,35 @@ EOF;
            return $stripped . $button . "</li>";
         }, 10, 3);
 
+
+
+        # This implements the Vipps Checkout replacement checkout page for those that wants to use that, by filtering the checkout page id.
+        add_filter('woocommerce_get_checkout_page_id',  function ($id) {
+                # Only do this if Vipps Checkout was ever activated
+                $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+                if (!$vipps_checkout_activated) return $id;
+
+                # We sometimes want to use the 'real' checkout screen, ie, like for "thankyou"
+                # IOK FIXME TODO: Instead, we probably should implement the endpoints for thankyou and so forth directly, just in case someone
+                # deletes the standard page or somethng.
+                if ($this->gateway()->get_real_checkout_screen) return $id;
+
+                # If Vipps Checkout is enabled, can be used etc, use that.
+                $checkoutid = $this->gateway()->vipps_checkout_available();
+                if ($checkoutid) {
+                    return $checkoutid;
+                }
+
+                return $id;
+        },10, 1);
+
     }
 
     public function plugins_loaded() {
         $ok = load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+
+        // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+        add_filter('woocommerce_create_pages', array($this, 'woocommerce_create_pages'), 50, 1);
 
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
@@ -2912,6 +2955,59 @@ EOF;
         $sku = $product->get_sku();
 
         echo $this->get_buy_now_button($product->get_id(),false,$sku);
+    }
+
+
+
+    // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
+    public function woocommerce_create_pages ($data) {
+        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+        if (!$vipps_checkout_activated) return $data;
+
+        $data['vipps_checkout'] = array(
+                'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
+                'title'   => _x( 'Checkout with Vipps', 'Page title', 'woo-vipps' ),
+                'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
+                );
+
+        return $data;
+    }
+
+    // YES
+    public function woocommerce_sttings_pages ($settings) {
+        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+        if (!$vipps_checkout_activated) return $settings;
+        $i = -1;
+        foreach($settings as $entry) {
+            $i++;
+            if ($entry['type'] == 'sectionend' && $entry['id'] == 'advanced_page_options') {
+                break;
+            }
+        }
+        if ($i > 0) {
+
+            $vippspagesettings = array(
+                    array(
+                        'title'    => __( 'Vipps Checkout Page', 'woo-vipps' ),
+                        'desc'     => __('This page is used for the alternative Vipps Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps') .  sprintf( __( 'Page contents: [%s]', 'woocommerce' ), 'vipps_checkout') ,
+                        'id'       => 'woocommerce_vipps_checkout_page_id',
+                        'type'     => 'single_select_page_with_search',
+                        'default'  => '',
+                        'class'    => 'wc-page-search',
+                        'css'      => 'min-width:300px;',
+                        'args'     => array(
+                            'exclude' =>
+                            array(
+                                wc_get_page_id( 'myaccount' ),
+                                ),
+                            ),
+                        'desc_tip' => true,
+                        'autoload' => false,
+                        ));
+            array_splice($settings, $i, 0, $vippspagesettings);
+        }
+
+        return $settings;
     }
 
 

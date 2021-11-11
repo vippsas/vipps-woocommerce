@@ -94,7 +94,6 @@ jQuery( document ).ready( function() {
                             var iframe = jQuery('<iframe src="' + result['data']['src'] + '" frameBorder=0 style="width:100%;height: 60rem;"></iframe>'); 
                             jQuery('#vippscheckoutframe').append(iframe);
                             listenToFrame();
-                            jQuery("body").removeClass('processing');
                             return;
                         }
                     },
@@ -116,6 +115,7 @@ jQuery( document ).ready( function() {
                 // So poll when this happens. IOK 2021-08-25
                 function (e) {
                 if (e.origin != origin) return;
+                jQuery("body").removeClass('processing');
                 if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
                     wp.hooks.doAction('vippsCheckoutIframeMessage', e);
                 }

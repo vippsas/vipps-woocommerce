@@ -7,8 +7,8 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.8.2
-   Stable tag: 1.8.2 
+   Version: 1.8.3
+   Stable tag: 1.8.3 
    Requires at least: 4.7
    Tested up to: 5.8.1
    Requires PHP: 5.6
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.8.2');
+define('WOO_VIPPS_VERSION', '1.8.3');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -96,75 +96,3 @@ add_action ('before_woocommerce_init', function () {
     foreach($_COOKIE as $key=>$value) unset($_COOKIE[$key]);
  }
 },1);
-
-
-add_filter('woocommerce_get_checkout_page_id',  function ($id) {
-    global $Vipps;
-
-    # Only do this if Vipps Checkout was ever activated
-    $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-    if (!$vipps_checkout_activated) return $id;
-
-    if ($Vipps) {
-        # We sometimes want to use the 'real' checkout screen, ie, like for "thankyou"
-        if ($Vipps->gateway()->get_real_checkout_screen) return $id;
-
-        # If Vipps Checkout is enabled, can be used etc, use that.
-        $checkoutid = $Vipps->gateway()->vipps_checkout_available();
-        if ($checkoutid) {
-            return $checkoutid;
-        }
-    }
-
-    return $id;
-});
-
-add_filter('woocommerce_create_pages', function ($data) {
-    $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-    if (!$vipps_checkout_activated) return $data;
-
-    $data['vipps_checkout'] = array(
-            'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
-            'title'   => _x( 'Checkout with Vipps', 'Page title', 'woo-vipps' ),
-            'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
-            );
-
-    return $data;
-}, 50);
-
-add_filter('woocommerce_settings_pages', function ($settings) {
-    $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-    if (!$vipps_checkout_activated) return $settings;
-    $i = -1;
-    foreach($settings as $entry) {
-        $i++;
-        if ($entry['type'] == 'sectionend' && $entry['id'] == 'advanced_page_options') {
-            break;
-        }
-    }
-    if ($i > 0) {
-
-        $vippspagesettings = array(
-            array(
-                'title'    => __( 'Vipps Checkout Page', 'woo-vipps' ),
-                'desc'     => __('This page is used for the alternative Vipps Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps') .  sprintf( __( 'Page contents: [%s]', 'woocommerce' ), 'vipps_checkout') ,
-                'id'       => 'woocommerce_vipps_checkout_page_id',
-                'type'     => 'single_select_page_with_search',
-                'default'  => '',
-                'class'    => 'wc-page-search',
-                'css'      => 'min-width:300px;',
-                'args'     => array(
-                    'exclude' =>
-                    array(
-                        wc_get_page_id( 'myaccount' ),
-                    ),
-                ),
-                'desc_tip' => true,
-                'autoload' => false,
-            ));
-         array_splice($settings, $i, 0, $vippspagesettings);
-    }
-
-    return $settings;
-}
- ,10, 1);
