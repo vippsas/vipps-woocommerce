@@ -1,10 +1,10 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.3
-Stable tag: 1.8.3
+Version: 1.8.4
+Stable tag: 1.8.4
 Requires at least: 4.7
-Tested up to: 5.8.1
+Tested up to: 5.8.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 5.8.0

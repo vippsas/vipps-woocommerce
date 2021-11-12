@@ -114,6 +114,9 @@ jQuery( document ).ready( function() {
                 // Only frameHeight in pixels are sent, but it is sent whenever the frame changes (so, including when address etc is set). 
                 // So poll when this happens. IOK 2021-08-25
                 function (e) {
+
+                   console.log("message %j", e); //IOK FIXME
+
                 if (e.origin != origin) return;
                 jQuery("body").removeClass('processing');
                 if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
@@ -121,6 +124,12 @@ jQuery( document ).ready( function() {
                 }
                 if (e.data.hasOwnProperty('frameHeight')) {
                     jQuery('#vippscheckoutframe iframe').css('height', e.data.frameHeight + 'px');
+                }
+                // URL to either Vipps mobile App or Vipps Landing page is communicated from the iframe when paying
+                // The actual redirect is handled here
+                if (e.data.hasOwnProperty('paymentUrl')) {
+                   console.log("Paymenturl!");
+                    window.location.href = e.data.paymentUrl;
                 }
                 if (!polling && !pollingdone) pollSessionStatus();
                 },

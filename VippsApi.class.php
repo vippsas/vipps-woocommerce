@@ -239,7 +239,7 @@ class VippsApi {
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vippscheckout';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
         $headers['client_id'] = $clientid;
