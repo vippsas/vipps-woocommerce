@@ -1110,6 +1110,8 @@ else:
         // Previously registered, now enqueue this script which should then appear in the footer.
         wp_enqueue_script('vipps-checkout');
 
+        do_action('vipps_checkout_before_get_session');
+
         // We need to be able to check if we still have a live, good session, in which case
         // we can open the iframe directly. Otherwise, the form we are going to output will 
         // create the iframe after a button press which will create a new order.
