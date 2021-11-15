@@ -1725,7 +1725,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function append_valid_statuses_for_payment_complete( $statuses ): array {
 		$statuses = array_merge( $statuses, $this->statuses_to_attempt_capture );
 
-		if ( ! in_array( 'completed', $statuses ) && $this->transition_renewals_to_completed ) {
+		if ( ! in_array( 'completed', $statuses, true ) && $this->transition_renewals_to_completed ) {
 			$statuses[] = 'completed';
 		}
 
