@@ -764,8 +764,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($currency != 'NOK') {
             $ok = false;
         }
-        // Can't do these, so remove Vipps as payment method  IOK 2021-05-14
-        $ok = $ok && !(class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription());
         $ok = apply_filters('woo_vipps_is_available', $ok, $this);
         return $ok; 
     }
@@ -1507,8 +1505,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
-        WC()->customer->set_billing_location($country,'',$postcode,$city);
-        WC()->customer->set_shipping_location($country,'',$postcode,$city);
+        if (WC()->customer) {
+            WC()->customer->set_billing_location($country,'',$postcode,$city);
+            WC()->customer->set_shipping_location($country,'',$postcode,$city);
+        }
 
         $method = $shipping['shippingMethodId'];
 

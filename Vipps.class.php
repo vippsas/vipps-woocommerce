@@ -1199,13 +1199,16 @@ EOF;
             return false;
         }
 
+        // For testing sites that appear not to receive callbacks
+        if (isset($result['testing_callback'])) {
+            $this->log(__("Received a test callback, exiting" , 'woo-vipps'), 'debug');
+            print '{"status": 1, "msg": "Test ok"}';
+            exit();
+        }
+
+
         $vippsorderid = $result['orderId'];
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
-
-        // Ensure we use the same session as for the original order IOK 2019-10-21
-        $this->callback_restore_session($orderid);
-
-        do_action('woo_vipps_callback', $result);
 
         // a small bit of security
         $order = wc_get_order($orderid);
@@ -1213,6 +1216,12 @@ EOF;
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
+
+        // Ensure we use the same session as for the original order IOK 2019-10-21
+        $this->callback_restore_session($orderid);
+
+        do_action('woo_vipps_callback', $result);
+
         $gw = $this->gateway();
         $gw->handle_callback($result);
 
@@ -2244,20 +2253,29 @@ EOF;
     }
 
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
-    protected function maybe_add_static_shipping($gw,$orderid) {
-        if ($gw->get_option('enablestaticshipping') == 'yes') {
-            $order = wc_get_order($orderid);
-            $prefix  = $gw->get_orderprefix();
-            $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
-            $addressinfo = $this->get_static_shipping_address_data();
-            $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
-
-            if ($options) {
-                $order->update_meta_data('_vipps_static_shipping', $options);
-                $order->save();
-            }
+    // Made visible for consistency with add_static_shipping. IOK 2021-10-22
+    public function maybe_add_static_shipping($gw,$orderid) {
+        $ok = $gw->get_option('enablestaticshipping') == 'yes';
+        $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
+        if ($ok) {
+            return $this->add_static_shipping($gw, $orderid);
         }
     }
+
+    // And this function adds static shipping no matter what. It may need to be used in plugins, hence visible. IOK 2021-10-22
+    public function add_static_shipping ($gw, $orderid) {
+        $order = wc_get_order($orderid);
+        $prefix  = $gw->get_orderprefix();
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
+        $addressinfo = $this->get_static_shipping_address_data();
+        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
+
+        if ($options) {
+            $order->update_meta_data('_vipps_static_shipping', $options);
+            $order->save();
+        }
+    }
+    
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
@@ -2528,6 +2546,11 @@ EOF;
         // IOK 2018-05-28
         $ok = wp_verify_nonce($_REQUEST['sec'],'express');
 
+        add_filter('body_class', function ($classes) {
+            $classes[] = 'vipps-express-checkout';
+            return $classes;
+        });
+
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
 
@@ -2674,6 +2697,7 @@ EOF;
         $execute = apply_filters('woo_vipps_checkout_directly_to_vipps', $execute, $productinfo);
 
         $content = $this->spinner();
+
         $content .= "<form id='vippsdata'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
