@@ -1190,13 +1190,16 @@ EOF;
             return false;
         }
 
+        // For testing sites that appear not to receive callbacks
+        if (isset($result['testing_callback'])) {
+            $this->log(__("Received a test callback, exiting" , 'woo-vipps'), 'debug');
+            print '{"status": 1, "msg": "Test ok"}';
+            exit();
+        }
+
+
         $vippsorderid = $result['orderId'];
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
-
-        // Ensure we use the same session as for the original order IOK 2019-10-21
-        $this->callback_restore_session($orderid);
-
-        do_action('woo_vipps_callback', $result);
 
         // a small bit of security
         $order = wc_get_order($orderid);
@@ -1204,6 +1207,12 @@ EOF;
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
+
+        // Ensure we use the same session as for the original order IOK 2019-10-21
+        $this->callback_restore_session($orderid);
+
+        do_action('woo_vipps_callback', $result);
+
         $gw = $this->gateway();
         $gw->handle_callback($result);
 
