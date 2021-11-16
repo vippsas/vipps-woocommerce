@@ -159,6 +159,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 = 1.12.0 =
 * Added: Support for Klarna Checkout.
 * Fixed: No longer attempt to load Vipps Recurring Payments if WooCommerce is disabled/not installed.
+* Fixed: If you have a variable subscription product the Vipps settings from the "parent" will now be respected.
 
 = 1.11.0 =
 * Added: You can now pay for single payment products in the same shopping cart as a subscription.

@@ -86,10 +86,6 @@ class WC_Vipps_Recurring_Kc_Support {
 		$merchant_urls = KCO_WC()->merchant_urls->get_urls();
 		$confirmation_url = $merchant_urls['confirmation'];
 
-//		// todo: REMOVE ME
-//		$confirmation_url = str_replace( 'http://wordpress.test', 'https://98e1-141-0-97-106.ngrok.io', $confirmation_url );
-//		// todo: END REMOVE ME
-
 		$kco_settings = get_option( 'woocommerce_kco_settings' );
 		$activate     = ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes';
 
