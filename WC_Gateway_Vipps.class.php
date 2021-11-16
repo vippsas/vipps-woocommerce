@@ -1643,6 +1643,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Now do shipping, if it exists IOK 2021-09-02
         $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
+
+        if (!$method && isset($shipping['ShippingMethodId'])) $method = $shipping['ShippingMethodId'];
+
         if ($method) {
             $shipping_rate=null;
             if (substr($method,0,1) != '$') {

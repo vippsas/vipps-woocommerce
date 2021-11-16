@@ -85,6 +85,7 @@ class Vipps {
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
+
         // Cart restoration and other post-purchase actions, mostly for express checkout IOK 2020-10-09
         add_action('woocommerce_thankyou_vipps', array($this, 'woocommerce_thankyou'), 10, 1); 
 
@@ -890,6 +891,18 @@ else:
                     $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
                     $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
+
+                    // IOK FIXME CHANGE WHEN DYNAMIC CHECKOUT WORKS. CURRENTLY VIPPS CHECKOUT MUST USE STATIC SHIPPING 
+                    add_filter('woo_vipps_enable_static_shipping', function ($ok, $orderid) {
+                        return true;
+                    }, 10, 2);
+                    try {
+                        $this->maybe_add_static_shipping($this->gateway(),$order->get_id());
+                    } catch (Exception $e) {
+                        // In this case, we just have to continue.
+                        $this->log(sprintf(__("Error calculating static shipping for order %s", 'woo-vipps'), $order->get_id()), 'error');
+                        $this->log($e->getMessage(),'error');
+                    }
                     do_action('woo_vipps_checkout_order_created', $order);
                 } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
@@ -900,7 +913,6 @@ else:
         }
         // Ensure we get the latest updates to the order too IOK 2021-10-22
         $order = wc_get_order($current_pending);
-        $phone = "";
         if (is_user_logged_in()) {
             $phone = get_user_meta(get_current_user_id(), 'billing_phone', true);
         }
@@ -914,8 +926,53 @@ else:
         $sessionorders[$order_id] = 1;
         WC()->session->set('_vipps_pending_order',$order_id);
         WC()->session->set('_vipps_session_orders',$sessionorders);
+
+        $customer_id = get_current_user_id();
+        if ($customer_id) {
+           $customer = new WC_Customer( $customer_id );
+        } else {
+            $customer = WC()->customer;
+        }
+
+        if ($customer) {
+            $customerinfo['Email'] = $customer->get_billing_email();
+            $customerinfo['FirstName'] = $customer->get_billing_first_name();
+            $customerinfo['LastName'] = $customer->get_billing_last_name();
+            $customerinfo['StreetAddress'] = $customer->get_billing_address_1();
+            $address2 =  trim($customer->get_billing_address_2());
+            if (!empty($address2)) {
+                $customerinfo['StreetAddress'] = $customerinfo['StreetAddress'] . ", " . $address2;
+            }
+            $customerinfo['City'] = $customer->get_billing_city();
+            $customerinfo['PostalCode'] = $customer->get_billing_postcode();
+            $customerinfo['Country'] = $customer->get_billing_country();
+
+            // Currently Vipps requires all phone numbers to have area codes and +. We can't guaratee that at all, but try for Norway
+            $phone = $customer->get_billing_phone();
+            $phone = preg_replace("![^0-9+]!", "",  $phone);
+            if (!preg_match("/^\+/", $phone)) {
+                if ($customerinfo['Country'] == 'NO') {
+                    $phone = "+47$phone";
+                }
+            }
+            // We assume +, either two or three digits for the region code, then 8 digits for the phone number, or we give up
+            if (!preg_match("/^\+\d{10,11}/", $phone)) {
+                $phone = "";
+            }
+            $customerinfo['PhoneNumber'] = $phone;
+        }
+
+        $keys = ['FirstName', 'LastName', 'StreetAddress', 'PostalCode', 'Country'];
+        foreach($keys as $k) {
+            if (empty($customerinfo[$k])) {
+                $customerinfo = array(); break;
+            }
+        }
+
+
+
         try {
-            $current_vipps_session = $this->gateway()->api->initiate_checkout($phone,$order,$returnurl,$current_authtoken,$requestid); 
+            $current_vipps_session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken,$requestid); 
             if ($current_vipps_session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
@@ -2041,6 +2098,21 @@ EOF;
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
+        // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax for no good reason.
+        if ($order->get_meta('_vipps_checkout')) {
+            $translated = array();
+            foreach ($return['shippingDetails']  as $m) {
+                  $m2['IsDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
+                  $m2['Priority'] = $m['priority'];
+                  $m2['ShippingCost'] = 100*$m['shippingCost']; // Yes, they want cents here and not in the normal API
+                  $m2['ShippingMethod'] = $m['shippingMethod'];
+                  $m2['ShippingMethodId'] = $m['shippingMethodId'];
+                  $m2['Description'] = ""; // IOK FIXME LATER
+                  $translated[] = $m2;
+            }
+            $return['shippingDetails'] = $translated;
+        }
+
         return $return;
     }
 
@@ -2114,6 +2186,7 @@ EOF;
 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$methods);
         $return = apply_filters('woo_vipps_shipping_methods', $return,$order,$acart);
+
         return $return;
     }
 

@@ -207,13 +207,14 @@ class VippsApi {
     }
 
     // This is Vipps Checkout IOK 2021-06-19
-    public function initiate_checkout($phone,$order,$returnurl,$authtoken,$requestid) {
+    public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$requestid) {
         $command = 'checkout/session';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $clientid = $this->get_clientid();
         $secret = $this->get_secret();
         $subkey = $this->get_key();
+        $static_shipping = $order->get_meta('_vipps_static_shipping');
 
         $merch = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
@@ -270,9 +271,15 @@ class VippsApi {
         $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
 
         $data = array();
-        $data['CustomerInfo'] = array('MobileNumber' => $phone); 
+        //$data['CustomerInfo'] = array('MobileNumber' => $phone); 
         $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'returnUrl'=>$fallback, 'termsAndConditionsUrl'=> $termsAndConditionsUrl); 
         $data['Transaction'] = $transaction;
+        if ($static_shipping) {
+            $data['ShippingOptions'] = $static_shipping["shippingDetails"];
+        }
+        if (!empty($customerinfo)) {
+            $data['PrefillInformation'] = $customerinfo;
+        }
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
@@ -529,6 +536,7 @@ class VippsApi {
             $url .= "?$data_encoded";
         }
 
+
         $return = wp_remote_request($url,$args);
         $headers = array();
         $content=NULL;
@@ -552,6 +560,7 @@ class VippsApi {
                 }
             }
         }
+
 
         // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
         return $this->handle_http_response($response,$headers,$content);
@@ -588,6 +597,8 @@ class VippsApi {
             // From initiate payment, at least some times. IOK 2018-06-18
             if (isset($content['message'])) {
                 $msg = $content['message'];
+            } elseif (isset($content['errors'])) {
+                $msg = print_r($content['errors'], true);
             } elseif (isset($content['error'])) {
                 // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
                 $msg = $content['error'];
