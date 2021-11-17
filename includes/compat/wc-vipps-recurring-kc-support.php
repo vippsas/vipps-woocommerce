@@ -8,16 +8,21 @@ class WC_Vipps_Recurring_Kc_Support {
 	 */
 	public static function init() {
 		add_filter( 'kco_wc_gateway_settings', [ 'WC_Vipps_Recurring_Kc_Support', 'form_fields' ] );
+
 		add_filter( 'kco_wc_api_request_args', [
 			'WC_Vipps_Recurring_Kc_Support',
 			'create_vipps_recurring_order'
 		], 90 );
+
 		add_filter( 'kco_wc_klarna_order_pre_submit', [
 			'WC_Vipps_Recurring_Kc_Support',
 			'canonicalize_phone_number'
 		], 11 );
+
 		add_action( 'init', [ 'WC_Vipps_Recurring_Kc_Support', 'maybe_remove_other_gateway_button' ] );
+
 		add_action( 'kco_wc_before_submit', [ 'WC_Vipps_Recurring_Kc_Support', 'add_vipps_recurring_payment_method' ] );
+
 		add_action( 'woocommerce_checkout_order_processed', [
 			'WC_Vipps_Recurring_Kc_Support',
 			'reset_default_payment_method'
@@ -62,7 +67,7 @@ class WC_Vipps_Recurring_Kc_Support {
 			'title'       => __( 'Image url', 'woo-vipps-recurring' ),
 			'type'        => 'text',
 			'description' => __( 'URL to the Vipps logo', 'woo-vipps-recurring' ),
-			'default'     => plugins_url( 'assets/images/vipps-rgb-black.png', __FILE__ )
+			'default'     => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/vipps-rgb-black.png'
 		];
 
 		$settings['epm_vipps_recurring_disable_button'] = [
@@ -76,7 +81,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * Compatibility code to create a Vipps Recurring order in Klarna.
+	 * Add Vipps Recurring to Klarna Checkout.
 	 *
 	 * @param $create
 	 *
@@ -104,7 +109,6 @@ class WC_Vipps_Recurring_Kc_Support {
 		$image_url   = $kco_settings['epm_vipps_recurring_img_url'] ?? '';
 		$description = $kco_settings['epm_vipps_recurring_description'] ?? '';
 
-
 		$klarna_external_payment = [
 			'name'         => $name,
 			'redirect_url' => add_query_arg( 'kco-external-payment', 'vipps_recurring', $confirmation_url ),
@@ -117,7 +121,7 @@ class WC_Vipps_Recurring_Kc_Support {
 		}
 		$create['external_payment_methods'][] = $klarna_external_payment;
 
-		// Ensure we don't do Vipps as the default payment method. This is checked in "woocommerce_checkout_order_processed" hook.
+		// Ensure we don't make Vipps the default payment method. This is checked in "woocommerce_checkout_order_processed" hook.
 		WC()->session->set( 'vipps_recurring_via_klarna', 1 );
 
 		return $create;
@@ -131,7 +135,7 @@ class WC_Vipps_Recurring_Kc_Support {
 			$('input#payment_method_vipps_recurring').prop('checked', true);
 			$('input#legal').prop('checked', true);
 			<?php
-			// In case other actions are needed, add more Javascript to this hook
+			// In case other actions are needed we can add more Javascript to this hook
 			do_action( 'wc_vipps_recurring_klarna_checkout_support_on_submit_javascript' );
 		}
 	}
@@ -151,18 +155,13 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * If the setting to remove "select an other gateway" is enabled we have to remove this button.
+	 * If the setting to remove "select another gateway" is enabled we have to remove that button.
 	 */
 	public static function maybe_remove_other_gateway_button() {
 		$kco_settings   = get_option( 'woocommerce_kco_settings' );
-		$disable_button = $kco_settings['epm_vipps_recurring_disable_button'] ?? 'no';
-		$remove         = ( 'yes' === $disable_button );
+		$disable_button = $kco_settings['epm_vipps_recurring_disable_button'] === 'yes';
 
-		// Let the user decide whether to use the 'use external payment method' button
-		// This is present for legacy reasons only, and is probably not the one you want. See the 'woo_vipps_activate_kco_external_payment' filter instead.
-		$remove = apply_filters( 'wc_vipps_recurring_remove_klarna_another_payment_button', $remove );
-
-		if ( $remove ) {
+		if ( $disable_button ) {
 			remove_action( 'kco_wc_after_order_review', 'kco_wc_show_another_gateway_button', 20 );
 		}
 	}
