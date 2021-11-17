@@ -891,6 +891,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $returnurl = add_query_arg('t',$authtoken,$returnurl);
 
         try {
+            // If the order was 'failed', it isnt any more! yet!
+            if ($order->get_status() != 'pending') {
+               $order->set_status('pending', __('Setting order status to pending to start payment', 'woo-vipps'));
+            }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();

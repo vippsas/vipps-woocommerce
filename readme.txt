@@ -76,9 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.18  =
- Make support for manual renewals for WooCommerce Subscriptions a developer-level option
- Add remote testing option for callback handler
+= 1.7.19  =
+ A bug from 2018 prevented failed orders from being paid with Vipps - now fixed.
 
 
 == Frequently Asked Questions ==
@@ -200,6 +199,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.11.17  version 1.7.19 =
+ Make sure failed orders get set to 'pending' when restarting payment with Vipps
 
 = 2021.11.15  version 1.7.18 =
  Add support for Woocommerce Subscriptions manual renewals using a filter and a developer setting.
