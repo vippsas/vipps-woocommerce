@@ -2536,6 +2536,12 @@ EOF;
     public function vipps_buy_product() {
         status_header(200,'OK');
         wc_nocache_headers();
+
+        add_filter('body_class', function ($classes) {
+            $classes[] = 'vipps-express-checkout';
+            return $classes;
+        });
+
         do_action('woo_vipps_express_checkout_page');
 
         $session = WC()->session;
