@@ -80,7 +80,7 @@ class Vipps {
         _e('Use the explicit flow only if the order needs shipping', 'woo-vipps');
         _e('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps');
         _e('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps');
-        _e("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce -  <a href='%'>get started here!", 'woo-vipps');
+        _e("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce -  get started here!", 'woo-vipps');
     }
 
 
