@@ -72,6 +72,7 @@ class Vipps {
     private function translatable_strings() {
             _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started here", 'woo-vipps');
             _e("Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started <a href='%s' target='_blank'>here</a>", 'woo-vipps');
+            _e("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce -  <a href='%'>get started here!", 'woo-vipps');
     }
 
 
