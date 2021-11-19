@@ -298,10 +298,9 @@ class Vipps {
 
         $installed_plugins = get_plugins();
         if (class_exists( 'WC_Vipps_Recurring' ) || isset($installed_plugins['vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php']) || get_option('woo-vipps-recurring-version')) {
-            error_log("Installed right now or at one point");
-           if (!is_array($dismissed)) $dismissed = array();
- //          $dismissed['vippssub01'] = time();
-//           update_option('_vipps_dismissed_notices', $dismissed, false);
+            if (!is_array($dismissed)) $dismissed = array();
+            $dismissed['vippssub01'] = time();
+            update_option('_vipps_dismissed_notices', $dismissed, false);
            return;
         }
 
