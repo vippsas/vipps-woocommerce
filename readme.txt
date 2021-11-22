@@ -76,8 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.19  =
- A bug from 2018 prevented failed orders from being paid with Vipps - now fixed.
+= 1.7.21  =
+ Change handling of country data from Vipps
 
 
 == Frequently Asked Questions ==
@@ -200,8 +200,14 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2021.11.xx  version 1.7.21 =
+* Accept two-letter country names now being sent by Vipps
+
+= 2021.11.22  version 1.7.20 =
+* Adds a dismissible banner for Vipps Recurring Payments if it has never been installed and WooCommerce Subscriptions *is* installed.
+
 = 2021.11.17  version 1.7.19 =
- Make sure failed orders get set to 'pending' when restarting payment with Vipps
+* Make sure failed orders get set to 'pending' when restarting payment with Vipps
 
 = 2021.11.15  version 1.7.18 =
  Add support for Woocommerce Subscriptions manual renewals using a filter and a developer setting.
