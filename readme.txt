@@ -1,8 +1,8 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.7.20
-Stable tag: 1.7.20
+Version: 1.7.21
+Stable tag: 1.7.21
 Requires at least: 4.7
 Tested up to: 5.8.2
 Requires PHP: 5.6
@@ -76,8 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.20  =
- Just a friendly and dismissible banner for people with Woo Subscriptions informing about the Vipps Recurring Payments plugin
+= 1.7.21  =
+ Change handling of country data from Vipps
 
 
 == Frequently Asked Questions ==
@@ -199,6 +199,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.11.xx  version 1.7.21 =
+* Accept two-letter country names now being sent by Vipps
 
 = 2021.11.22  version 1.7.20 =
 * Adds a dismissible banner for Vipps Recurring Payments if it has never been installed and WooCommerce Subscriptions *is* installed.

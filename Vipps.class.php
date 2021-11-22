@@ -1273,11 +1273,16 @@ EOF;
     }
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
+    // IOK 2021-11-22 Seems as if Vipps is now sending two-letter country codes at least some times
     public function country_to_code($countryname) {
         if (!$this->countrymap) $this->countrymap = unserialize(file_get_contents(dirname(__FILE__) . "/lib/countrycodes.php"));
         $mapped = @$this->countrymap[strtoupper($countryname)];
         $code = WC()->countries->get_base_country();
-        if ($mapped) $code = $mapped;
+        if ($mapped) {
+           $code = $mapped;
+        } else if (strlen($countryname)==2) {
+           $code = strtoupper($countryname);
+        }
         $code = apply_filters('woo_vipps_country_to_code', $code, $countryname);
         return  $code;
     }
