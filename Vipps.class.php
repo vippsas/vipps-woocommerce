@@ -312,7 +312,7 @@ class Vipps {
             <a target="_blank"  href="<?php echo $recurringurl; ?>">
             <img src="<?php echo $logo; ?>" style="float:left; height: 4rem; margin-top: 0.2rem" alt="Vipps Recurring Payments logo">
              <div>
-                 <p style="font-size:1rem"><?php echo __("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce -  get started here!", 'woo-vipps');
+                 <p style="font-size:1rem"><?php echo __("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce - get started here!", 'woo-vipps');
  ?></p>
              </div>
              </a>

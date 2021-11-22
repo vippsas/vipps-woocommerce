@@ -200,7 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.11.xx  version 1.7.20 =
+= 2021.11.22  version 1.7.20 =
 * Adds a dismissible banner for Vipps Recurring Payments if it has never been installed and WooCommerce Subscriptions *is* installed.
 
 = 2021.11.17  version 1.7.19 =
