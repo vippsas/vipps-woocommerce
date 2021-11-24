@@ -1306,6 +1306,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2020-01-20 Previously was just a debugging tool, then was used to update postmeta values. Now is used as the main source of info
     // about the order from Vipps; the previous side-effecting is now done by update_vipps_payment_details.
+    // IOK 2021-11-24 Because of this, we need to handle 402 and 404 errors differently here now - these *are* results, meaning there is
+    // no payment details because the order doesn't exist.
     public function get_payment_details($order) {
       // Then the details, which include the transaction history
       $result = array();
