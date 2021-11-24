@@ -1293,7 +1293,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$Vipps->lockOrder($order)) {
             return $oldstatus;
         }
-     
+
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
 
@@ -1411,9 +1411,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2020-01-20 Previously was just a debugging tool, then was used to update postmeta values. Now is used as the main source of info
     // about the order from Vipps; the previous side-effecting is now done by update_vipps_payment_details.
+    // IOK 2021-11-24 Because of this, we need to handle 402 and 404 errors differently here now - these *are* results, meaning there is
+    // no payment details because the order doesn't exist.
     public function get_payment_details($order) {
       // Then the details, which include the transaction history
-      $result = $this->api->payment_details($order);
+      $result = array();
+      try {
+          $result = $this->api->payment_details($order);
+      } catch (VippsAPIException $e) {
+          $resp = intval($e->responsecode);
+          if ($resp == 402 || $resp == 404) {
+              $result['status'] = 'CANCEL';
+              return $result;
+          } else {
+              throw $e;
+          }
+      }
 
       if ($result) {
           // We would like e to have a single enum as the payment status like in the old API or v2 before march 2021, so find one and store it. IOK 2021-01-20
@@ -1531,7 +1544,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Get the order status as defined by Vipps; if you have the payment details already, pass them. Will modify the order. IOK 2021-01-20
     public function get_vipps_order_status($order, $statusdata=null) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
-        if (!$vippsorderid) return null;
+        if (!$vippsorderid) {
+                $msg = __('Could not get Vipps order status - it has no Vipps Order Id. Must cancel.','woo-vipps');
+                $this->log($msg,'error');
+                return 'CANCEL'; 
+        }
         if (!$statusdata) {
             try { 
                 $statusdata = $this->get_payment_details($order);
@@ -1541,7 +1558,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             } catch (VippsAPIException $e) {
                 $msg = __('Could not get Vipps order status','woo-vipps') . ' ' . $e->getMessage();
                 $this->log($msg,'error');
-                if (intval($e->responsecode) == 402) {
+                if (intval($e->responsecode) == 402 || intval($e->responsecode) == 404) {
                     $this->log(__('Order does not exist at Vipps - cancelling','woo-vipps') . ' ' . $order->get_id(), 'warning');
                     return 'CANCEL'; 
                 }
