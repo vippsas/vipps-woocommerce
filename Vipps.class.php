@@ -1618,6 +1618,26 @@ EOF;
         add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
         add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
 
+        // The normal 'cancel unpaid order' thing for Woo only works for orders created via normal checkout
+        // We want it to work with Vipps Checkout and Express Checkout orders too IOK 2021-11-24 
+        add_filter('woocommerce_cancel_unpaid_order', function ($cancel, $order) {
+            if ($cancel) return $cancel;
+            // Only check Vipps orders
+            if ($order->get_payment_method() != 'vipps') return $cancel;
+            // For Vipps, all unpaid orders must be pending.
+            if ($order->get_status() != 'pending') return $cancel;
+            // We do need to check the order status, because this could be called very frequently on some sites.
+            try {
+              $details = $this->gateway()->get_payment_details($order);
+              if ($details && isset($details['status']) && $details['status'] == 'CANCEL') {
+                  return true;
+              }
+            } catch (Exception $e) {
+              // Don't do anything here at this point. IOK 2021-11-24
+            } 
+            return $cancel;
+        }, 20, 2);
+
         // Used both in admin and non-admin-scripts, load as quick as possible IOK 2020-09-03
         $this->vippsJSConfig = array();
         $this->vippsJSConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');

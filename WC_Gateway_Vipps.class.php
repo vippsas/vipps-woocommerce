@@ -1893,49 +1893,52 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
-        
-        $cart_hash = md5(json_encode(wc_clean($contents)) . WC()->cart->total);
-        $order = new WC_Order();
-        $order->set_status('pending');
-        $order->set_payment_method($this);
-        if ($ischeckout) {
-            $order->set_created_via('Vipps Checkout');
-            $order->set_payment_method_title('Vipps Checkout');
-        } else {
+        try {
+            $cart_hash = md5(json_encode(wc_clean($contents)) . WC()->cart->total);
+            $order = new WC_Order();
+            $order->set_status('pending');
+            $order->set_payment_method($this);
             $order->set_created_via('Vipps Express Checkout');
             $order->set_payment_method_title('Vipps Express Checkout');
+            $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
+
+            $order->update_meta_data('_vipps_express_checkout',1);
+
+            $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+            $order->set_currency( get_woocommerce_currency() );
+            $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+            $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
+            $order->set_customer_user_agent( wc_get_user_agent() );
+            $order->set_discount_total( WC()->cart->get_discount_total()); 
+            $order->set_discount_tax( WC()->cart->get_discount_tax() );
+            $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
+
+            // Use these methods directly - they should be safe.
+            WC()->checkout->create_order_line_items( $order, WC()->cart);
+            WC()->checkout->create_order_fee_lines( $order, WC()->cart);
+            WC()->checkout->create_order_tax_lines( $order, WC()->cart);
+            WC()->checkout->create_order_coupon_lines( $order, WC()->cart);
+            $order->calculate_totals(true);
+
+            // Added to support third-party plugins that wants to do stuff with the order before it is saved. IOK 2020-07-03
+            do_action( 'woocommerce_checkout_create_order', $order, array()); 
+
+            $orderid = $order->save(); 
+
+            do_action('woo_vipps_express_checkout_order_created', $orderid);
+
+            // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
+            do_action('woocommerce_checkout_update_order_meta', $orderid, array());
+            // And another one. IOK 2021-11-24
+            do_action( 'woocommerce_checkout_order_created', $order );
+        } catch ( Exception $e ) {
+            if ( $order && $order instanceof WC_Order ) {
+                $order->get_data_store()->release_held_coupons( $order );
+                do_action( 'woocommerce_checkout_order_exception', $order );
+            }
+            // Any errors gets passed upstream IOK 2021-11-24
+            throw $e;
         }
-        $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
-        $dummy = __('Vipps Checkout', 'woo-vipps'); //  this is so gettext will find this string.
-
-        $order->update_meta_data('_vipps_express_checkout',1);
-
-        $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
-        $order->set_currency( get_woocommerce_currency() );
-        $order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
-        $order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
-        $order->set_customer_user_agent( wc_get_user_agent() );
-        $order->set_discount_total( WC()->cart->get_discount_total()); 
-        $order->set_discount_tax( WC()->cart->get_discount_tax() );
-        $order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
-
-        // Use these methods directly - they should be safe.
-        WC()->checkout->create_order_line_items( $order, WC()->cart);
-        WC()->checkout->create_order_fee_lines( $order, WC()->cart);
-        WC()->checkout->create_order_tax_lines( $order, WC()->cart);
-        WC()->checkout->create_order_coupon_lines( $order, WC()->cart);
-        $order->calculate_totals(true);
-
-        // Added to support third-party plugins that wants to do stuff with the order before it is saved. IOK 2020-07-03
-        do_action( 'woocommerce_checkout_create_order', $order, array()); 
-
-        $orderid = $order->save(); 
-
-        do_action('woo_vipps_express_checkout_order_created', $orderid);
-
-        // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
-        do_action('woocommerce_checkout_update_order_meta', $orderid, array());
-
         return $orderid;
     }
 
