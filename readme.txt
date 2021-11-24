@@ -204,6 +204,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 * Accept two-letter country names now being sent by Vipps
 * Ensure Express Checkout orders are handled correctly by WooCommerces' cancel-unpaid-orders thing
 * When checking Vipps orders stuck in 'pending', also cancel them if they don't exist etc
+* Update the "partial orders" used for Express Checkout so they will work more like normal orders.
 
 = 2021.11.22  version 1.7.20 =
 * Adds a dismissible banner for Vipps Recurring Payments if it has never been installed and WooCommerce Subscriptions *is* installed.
