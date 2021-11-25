@@ -154,7 +154,7 @@ jQuery(document).ready(function () {
      if (result["ok"]) {
        vippsSuccess();
        validating=0;
-       window.location.href = result["url"];
+       window.location.replace(result["url"]);
      } else {
        console.log("Failure!");
        jQuery('#do-express-checkout').hide();

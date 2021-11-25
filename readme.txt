@@ -78,6 +78,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 = 1.7.21  =
  Change handling of country data from Vipps
+ Fix handling of unpaid pending orders
+ Fix back button issues
 
 
 == Frequently Asked Questions ==
@@ -205,6 +207,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 * Ensure Express Checkout orders are handled correctly by WooCommerces' cancel-unpaid-orders thing
 * When checking Vipps orders stuck in 'pending', also cancel them if they don't exist etc
 * Update the "partial orders" used for Express Checkout so they will work more like normal orders.
+* Change how redirects to Vipps work to avoid having the back-button work badly on Safari
 
 = 2021.11.22  version 1.7.20 =
 * Adds a dismissible banner for Vipps Recurring Payments if it has never been installed and WooCommerce Subscriptions *is* installed.
