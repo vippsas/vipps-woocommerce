@@ -177,7 +177,7 @@ jQuery( document ).ready( function() {
     "success": function (result, statustext, xhr) {
      if (result["ok"]) {
        console.log("We created the order!");
-       window.location.href = result["url"];
+       window.location.replace(result["url"]);
      } else {
        console.log("Failure!");
        jQuery(element).removeClass('disabled');
