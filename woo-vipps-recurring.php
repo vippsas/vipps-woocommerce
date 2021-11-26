@@ -230,6 +230,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_filter( 'woocommerce_product_data_tabs', [ $this, 'woocommerce_product_data_tabs' ] );
 				add_filter( 'woocommerce_product_data_panels', [ $this, 'woocommerce_product_data_panels' ] );
 				add_filter( 'woocommerce_process_product_meta', [ $this, 'woocommerce_process_product_meta' ] );
+
+				// Disable this gateway unless we're purchasing at least one subscription product.
+				add_filter( 'woocommerce_available_payment_gateways', [ $this, 'maybe_disable_gateway' ] );
 			}
 
 			/**
@@ -377,6 +380,27 @@ function woocommerce_gateway_vipps_recurring_init() {
 					}
 				</style>
 				<?php
+			}
+
+			public function maybe_disable_gateway( $methods ) {
+				if ( is_admin() || ! is_checkout() ) {
+					return $methods;
+				}
+
+				$has_subscription_product = false;
+				foreach ( WC()->cart->get_cart_contents() as $values ) {
+					$product = wc_get_product( $values['product_id'] );
+
+					if ( $product->is_type( [ 'subscription', 'variable-subscription' ] ) ) {
+						$has_subscription_product = true;
+					}
+				}
+
+				if ( ! $has_subscription_product ) {
+					unset( $methods['vipps_recurring'] );
+				}
+
+				return $methods;
 			}
 
 			/**
