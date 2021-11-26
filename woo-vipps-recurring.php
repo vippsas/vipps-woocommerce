@@ -5,10 +5,10 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.11.0
+ * Version: 1.12.0
  * Requires at least: 4.4
  * Tested up to: 5.8
- * WC tested up to: 5.6.0
+ * WC tested up to: 5.9.0
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
  */
@@ -55,6 +55,16 @@ function woocommerce_gateway_vipps_recurring_activate() {
  * Initialize our plugin
  */
 function woocommerce_gateway_vipps_recurring_init() {
+	$active_plugins      = apply_filters( 'active_plugins', get_option( 'active_plugins' ) );
+	$active_site_plugins = apply_filters( 'active_sitewide_plugins', get_site_option( 'active_sitewide_plugins' ) );
+	if ( $active_site_plugins ) {
+		$active_plugins = array_merge( $active_plugins, array_keys( $active_site_plugins ) );
+	}
+
+	if ( ! in_array( 'woocommerce/woocommerce.php', $active_plugins, true ) ) {
+		return;
+	}
+
 	load_plugin_textdomain( 'woo-vipps-recurring', false, plugin_basename( __DIR__ ) . '/languages' );
 
 	if ( ! class_exists( 'WC_Vipps_Recurring' ) ) {
@@ -220,6 +230,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_filter( 'woocommerce_product_data_tabs', [ $this, 'woocommerce_product_data_tabs' ] );
 				add_filter( 'woocommerce_product_data_panels', [ $this, 'woocommerce_product_data_panels' ] );
 				add_filter( 'woocommerce_process_product_meta', [ $this, 'woocommerce_process_product_meta' ] );
+
+				// Disable this gateway unless we're purchasing at least one subscription product.
+				add_filter( 'woocommerce_available_payment_gateways', [ $this, 'maybe_disable_gateway' ] );
 			}
 
 			/**
@@ -230,14 +243,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				// styling
 				add_action( 'admin_head', [ $this, 'admin_head' ] );
-
-				if ( ! class_exists( 'WooCommerce' ) ) {
-					// translators: %s link to WooCommerce's download page
-					$notice = sprintf( esc_html__( 'Vipps recurring payments requires WooCommerce to be installed and active. You can download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/" target="_blank">WooCommerce</a>' );
-					$this->notices->error( $notice );
-
-					return;
-				}
 
 				if ( ! class_exists( 'WC_Subscriptions' ) ) {
 					// translators: %s link to WooCommerce Subscription's purchase page
@@ -269,22 +274,21 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				// Show Vipps Login notice for a maximum of 10 days
 				// 1636066799 = 04-11-2021 23:59:59 UTC
-				// && ! class_exists( 'WC_Gateway_Vipps' )
-				if ( ! class_exists( 'VippsWooLogin' ) && time() < 1636066799 ) {
-					$vipps_login_plugin_url = 'https://wordpress.org/plugins/login-with-vipps';
-					if ( get_locale() === 'nb_NO' ) {
-						$vipps_login_plugin_url = 'https://nb.wordpress.org/plugins/login-with-vipps';
-					}
-
-					$this->notices->campaign(
-					/* translators: %1$s URL to login-with-vipps, %2$s translation for "here" */
-						sprintf( __( 'Login with Vipps is available for WooCommerce. Super-easy and safer login for your customers - no more usernames and passwords. Get started <a href="%1$s" target="_blank">%2$s</a>!', 'woo-vipps-recurring' ), $vipps_login_plugin_url, __( 'here', 'woo-vipps-recurring' ) ),
-						'login_promotion',
-						true,
-						'assets/images/vipps-logg-inn-neg.png',
-						'login-promotion'
-					);
-				}
+//				if ( ! class_exists( 'VippsWooLogin' ) && time() < 1636066799 ) {
+//					$vipps_login_plugin_url = 'https://wordpress.org/plugins/login-with-vipps';
+//					if ( get_locale() === 'nb_NO' ) {
+//						$vipps_login_plugin_url = 'https://nb.wordpress.org/plugins/login-with-vipps';
+//					}
+//
+//					$this->notices->campaign(
+//					/* translators: %1$s URL to login-with-vipps, %2$s translation for "here" */
+//						sprintf( __( 'Login with Vipps is available for WooCommerce. Super-easy and safer login for your customers - no more usernames and passwords. Get started <a href="%1$s" target="_blank">%2$s</a>!', 'woo-vipps-recurring' ), $vipps_login_plugin_url, __( 'here', 'woo-vipps-recurring' ) ),
+//						'login_promotion',
+//						true,
+//						'assets/images/vipps-logg-inn-neg.png',
+//						'login-promotion'
+//					);
+//				}
 			}
 
 			/**
@@ -376,6 +380,27 @@ function woocommerce_gateway_vipps_recurring_init() {
 					}
 				</style>
 				<?php
+			}
+
+			public function maybe_disable_gateway( $methods ) {
+				if ( is_admin() || ! is_checkout() ) {
+					return $methods;
+				}
+
+				$has_subscription_product = false;
+				foreach ( WC()->cart->get_cart_contents() as $values ) {
+					$product = wc_get_product( $values['product_id'] );
+
+					if ( $product->is_type( [ 'subscription', 'variable-subscription' ] ) ) {
+						$has_subscription_product = true;
+					}
+				}
+
+				if ( ! $has_subscription_product ) {
+					unset( $methods['vipps_recurring'] );
+				}
+
+				return $methods;
 			}
 
 			/**
@@ -775,6 +800,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			}
 		}
 
-		WC_Vipps_Recurring::get_instance();
+		global $vipps_recurring;
+		$vipps_recurring = WC_Vipps_Recurring::get_instance();
+
+		require_once __DIR__ . '/includes/wc-vipps-recurring-compatibility.php';
 	}
 }

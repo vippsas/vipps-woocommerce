@@ -1260,7 +1260,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$item_name           = $item->get_name();
-		$product_description = WC_Vipps_Recurring_Helper::get_product_description( $item->get_product() );
+		$parent_product      = wc_get_product( $item->get_product_id() );
+		$product_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
 
 		if ( $prefix = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX ) ) {
 			$product_description = "[$prefix] $product_description";
@@ -1394,6 +1395,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			} );
 			$item               = array_pop( $subscription_items );
 			$product            = $item->get_product();
+			$parent_product     = wc_get_product( $item->get_product_id() );
 
 			$extra_initial_charge_description = '';
 
@@ -1411,7 +1413,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			$is_virtual     = $product->is_virtual();
-			$direct_capture = $product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
+			$direct_capture = $parent_product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
 
 			$agreement_url = filter_var( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ), FILTER_VALIDATE_URL )
 				? get_permalink( get_option( 'woocommerce_myaccount_page_id' ) )
@@ -1430,7 +1432,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_subscription_switch = wcs_order_contains_switch( $order );
 
 			if ( $is_subscription_switch ) {
-				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );;
+				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );
 
 				if ( isset( $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'] ) ) {
 					$switches    = $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'];
@@ -1468,7 +1470,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
-						'description'     => WC_Vipps_Recurring_Helper::get_product_description( $product ) . $extra_initial_charge_description,
+						'description'     => WC_Vipps_Recurring_Helper::get_product_description( $parent_product ) . $extra_initial_charge_description,
 						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
@@ -1725,7 +1727,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function append_valid_statuses_for_payment_complete( $statuses ): array {
 		$statuses = array_merge( $statuses, $this->statuses_to_attempt_capture );
 
-		if ( ! in_array( 'completed', $statuses ) && $this->transition_renewals_to_completed ) {
+		if ( ! in_array( 'completed', $statuses, true ) && $this->transition_renewals_to_completed ) {
 			$statuses[] = 'completed';
 		}
 
