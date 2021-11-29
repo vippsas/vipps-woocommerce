@@ -1502,8 +1502,10 @@ EOF;
         $order->save();
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
-        WC()->customer->set_billing_location($country,'',$postcode,$city);
-        WC()->customer->set_shipping_location($country,'',$postcode,$city);
+        if (WC()->customer) {  
+            WC()->customer->set_billing_location($country,'',$postcode,$city);
+            WC()->customer->set_shipping_location($country,'',$postcode,$city);
+        }
 
 
         // If you need to do something before the cart is manipulated, this is where it must be done.
