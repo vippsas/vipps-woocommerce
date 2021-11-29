@@ -202,7 +202,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.11.xx  version 1.7.21 =
+= 2021.11.29  version 1.7.21 =
 * Accept two-letter country names now being sent by Vipps
 * Ensure Express Checkout orders are handled correctly by WooCommerces' cancel-unpaid-orders thing
 * When checking Vipps orders stuck in 'pending', also cancel them if they don't exist etc
