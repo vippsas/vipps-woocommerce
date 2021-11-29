@@ -1898,9 +1898,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order = new WC_Order();
             $order->set_status('pending');
             $order->set_payment_method($this);
-            $order->set_created_via('Vipps Express Checkout');
-            $order->set_payment_method_title('Vipps Express Checkout');
+            if ($ischeckout) {
+                $order->set_created_via('Vipps Checkout');
+                $order->set_payment_method_title('Vipps Checkout');
+            } else {
+                $order->set_created_via('Vipps Express Checkout');
+                $order->set_payment_method_title('Vipps Express Checkout');
+            }
             $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
+            $dummy = __('Vipps Checkout', 'woo-vipps'); //  this is so gettext will find this string.
 
             $order->update_meta_data('_vipps_express_checkout',1);
 
