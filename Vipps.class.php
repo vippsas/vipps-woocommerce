@@ -989,22 +989,22 @@ else:
             $customerinfo['PostalCode'] = $customer->get_billing_postcode();
             $customerinfo['Country'] = $customer->get_billing_country();
 
-            // Currently Vipps requires all phone numbers to have area codes and +. We can't guaratee that at all, but try for Norway
-            $phone = $customer->get_billing_phone();
-            $phone = preg_replace("![^0-9+]!", "",  $phone);
-            if (!preg_match("/^\+/", $phone)) {
-                if ($customerinfo['Country'] == 'NO') {
-                    $phone = "+47$phone";
-                }
+            // Currently Vipps requires all phone numbers to have area codes and NO  +. We can't guaratee that at all, but try for Norway
+            $phone = ""; 
+            $phonenr = $customer->get_billing_phone();
+            $phonenr = preg_replace("![^0-9]!", "",  $phonenr);
+            $phonenr = preg_replace("!^0+!", "", $phonenr);
+            if (strlen($phonenr) == 8 && $customerinfo['Country'] == 'NO') {
+                $phone = '47' + $phonenr;
             }
-            // We assume +, either two or three digits for the region code, then 8 digits for the phone number, or we give up
-            if (!preg_match("/^\+\d{10,11}/", $phone)) {
-                $phone = "";
+            if (preg_match("/47\d{8}/", $phonenr) && $customerinfo['Country'] == 'NO') {
+              $phone = $phonenr;
             }
+
             $customerinfo['PhoneNumber'] = $phone;
         }
 
-        $keys = ['FirstName', 'LastName', 'StreetAddress', 'PostalCode', 'Country'];
+        $keys = ['FirstName', 'LastName', 'StreetAddress', 'PostalCode', 'Country', 'PhoneNumber'];
         foreach($keys as $k) {
             if (empty($customerinfo[$k])) {
                 $customerinfo = array(); break;
@@ -2172,7 +2172,7 @@ EOF;
             foreach ($return['shippingDetails']  as $m) {
                   $m2['IsDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
                   $m2['Priority'] = $m['priority'];
-                  $m2['ShippingCost'] = 100*$m['shippingCost']; // Yes, they want cents here and not in the normal API
+                  $m2['ShippingCost'] = round(100*$m['shippingCost']); // Yes, they want cents here and not in the normal API
                   $m2['ShippingMethod'] = $m['shippingMethod'];
                   $m2['ShippingMethodId'] = $m['shippingMethodId'];
                   $m2['Description'] = ""; // IOK FIXME LATER
