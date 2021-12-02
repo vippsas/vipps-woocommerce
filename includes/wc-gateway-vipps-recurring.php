@@ -284,7 +284,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * should be asynchronous.
 	 *
 	 * WC_Subscriptions_Change_Payment_Gateway::change_payment_method_via_pay_shortcode uses the
-	 * result to decide whether or not to change the payment method information on the subscription
+	 * result to decide whether to change the payment method information on the subscription
 	 * right away or not.
 	 *
 	 * In our case, the payment method will not be updated until after the user confirms the
@@ -1309,6 +1309,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order     = wc_get_order( $order_id );
 		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
+		if ( ! WC_Subscriptions_Order::order_contains_subscription( $order_id ) ) {
+			return [
+				'result'   => 'fail',
+				'redirect' => ''
+			];
+		}
+
 		try {
 			$subscription = $order;
 
@@ -1404,7 +1411,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					return $item['product_id'] !== $other_item['product_id'];
 				} );
 
-				$extra_initial_charge_description = ' + ';
 				foreach ( $other_items as $product_item ) {
 					$extra_initial_charge_description .= WC_Vipps_Recurring_Helper::get_product_description( $product_item->get_product() ) . ', ';
 				}
@@ -1464,13 +1470,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
 			$capture_immediately = $is_virtual || $direct_capture;
+			$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
+
+			$sign_up_fee  = WC_Subscriptions_Order::get_sign_up_fee( $order );
+			$has_campaign = $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
 
 			if ( ! $is_zero_amount ) {
+				$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product ) . ' + ' . $extra_initial_charge_description;
+				if ( $has_campaign ) {
+					$initial_charge_description = $extra_initial_charge_description;
+				}
+
 				$agreement_body = array_merge( $agreement_body, [
 					'initialCharge' => [
 						'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
 						'currency'        => $order->get_currency(),
-						'description'     => WC_Vipps_Recurring_Helper::get_product_description( $parent_product ) . $extra_initial_charge_description,
+						'description'     => $initial_charge_description,
 						'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
 					],
 				] );
@@ -1480,12 +1495,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			$sign_up_fee = WC_Subscriptions_Order::get_sign_up_fee( $order );
-			if ( $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee ) {
+			if ( $has_campaign ) {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
-				$campaign_price = ( $is_subscription_switch || $sign_up_fee ) ? 0 : $order->get_total();
+				$campaign_price = ( $is_subscription_switch || $sign_up_fee || $has_synced_product ) ? 0 : $order->get_total();
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
