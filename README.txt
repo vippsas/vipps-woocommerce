@@ -160,6 +160,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: A bug in Klarna Checkout where it would attempt to use Vipps Recurring Payments instead of Vipps Checkout when you're only purchasing one time payment products.
 * Fixed: Descriptions of products you are not paying for right away is no longer included in initialCharge's description.
 * Fixed: Campaigns are now used correctly when a single product is purchased along with a synced subscription product.
+* Fixed: Campaigns are now used correctly when a single product is purchased along with a subscription product with a free trial.
 
 = 1.12.0 =
 * Added: Support for Klarna Checkout.

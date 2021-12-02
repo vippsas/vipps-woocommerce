@@ -1471,9 +1471,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
 			$capture_immediately = $is_virtual || $direct_capture;
 			$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
+			$has_trial           = WC_Subscriptions_Product::get_trial_length( $product ) !== null;
 
-			$sign_up_fee  = WC_Subscriptions_Order::get_sign_up_fee( $order );
-			$has_campaign = $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
+			$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
+			$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
+			$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
 
 			if ( ! $is_zero_amount ) {
 				$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product ) . ' + ' . $extra_initial_charge_description;
@@ -1499,7 +1501,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 
-				$campaign_price = ( $is_subscription_switch || $sign_up_fee || $has_synced_product ) ? 0 : $order->get_total();
+				$campaign_price = $has_free_campaign ? 0 : $order->get_total();
 
 				$agreement_body['campaign'] = [
 					'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
@@ -1507,6 +1509,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ),
 				];
 			}
+
+//			die( var_dump( $agreement_body ) );
 
 			$idempotency_key = $this->get_idempotence_key( $order );
 			$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
