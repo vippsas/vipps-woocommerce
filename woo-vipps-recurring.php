@@ -398,6 +398,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( ! $has_subscription_product ) {
 					unset( $methods['vipps_recurring'] );
+					add_filter( 'wc_vipps_recurring_activate_kco_external_payment', '__return_false' );
 				}
 
 				return $methods;
