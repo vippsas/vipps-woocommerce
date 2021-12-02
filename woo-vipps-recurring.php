@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.12.0
+ * Version: 1.12.1
  * Requires at least: 4.4
  * Tested up to: 5.8
  * WC tested up to: 5.9.0
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.11.0' );
+define( 'WC_VIPPS_RECURRING_VERSION', '1.12.1' );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
@@ -442,18 +442,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$screen_id = wc_clean( wp_unslash( $_REQUEST['screen'] ) );
 				}
 
-				switch ( $screen_id ) {
-					case 'settings_page_woo-vipps-recurring':
-						include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php';
-						include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php';
+				if ( $screen_id === 'settings_page_woo-vipps-recurring' ) {
+					include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php';
+					include_once 'includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php';
 
-						$wc_vipps_recurring_list_table_pending_charges = new WC_Vipps_Recurring_Admin_List_Pending_Charges( [
-							'screen' => $screen_id . '_pending-charges'
-						] );
-						$wc_vipps_recurring_list_table_failed_charges  = new WC_Vipps_Recurring_Admin_List_Failed_Charges( [
-							'screen' => $screen_id . '_failed-charges'
-						] );
-						break;
+					$wc_vipps_recurring_list_table_pending_charges = new WC_Vipps_Recurring_Admin_List_Pending_Charges( [
+						'screen' => $screen_id . '_pending-charges'
+					] );
+					$wc_vipps_recurring_list_table_failed_charges  = new WC_Vipps_Recurring_Admin_List_Failed_Charges( [
+						'screen' => $screen_id . '_failed-charges'
+					] );
 				}
 
 				if ( $wc_vipps_recurring_list_table_pending_charges
