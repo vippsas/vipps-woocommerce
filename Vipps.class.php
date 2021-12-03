@@ -1232,7 +1232,7 @@ else:
            $out .= $this->spinner();
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
            $out .= "<h2>" . __('Press the button to complete your order with Vipps!', 'woo-vipps') . "</h2>";
-           $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . __('Checkout with Vipps', 'woo-vipps') . '</button></div>';
+           $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . __('Vipps Checkout', 'woo-vipps') . '</button></div>';
            $out .= "</div>";
         }
 
@@ -3107,7 +3107,7 @@ EOF;
 
         $data['vipps_checkout'] = array(
                 'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
-                'title'   => _x( 'Checkout with Vipps', 'Page title', 'woo-vipps' ),
+                'title'   => _x( 'Vipps Checkout', 'Page title', 'woo-vipps' ),
                 'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
                 );
 

@@ -2037,14 +2037,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         if (!$vipps_checkout_activated): ?>
         <div id="activate_vipps_checkout"  style="width:95%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding: 1rem 1rem 1rem 1rem; margin-top:2rem; margin-bottom: 1rem;font-weight:800">
-                 <h2>Use Vipps Checkout for all purchases</h2>
-          <p>Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.</p>
-          <p>To activate Vipps Checkout, just press the button below. Otherwise, Vipps will of course be available in the regular checkout screen; and you can also offer Vipps Express checkout from both the product pages and the shopping cart if you wish.</p>
+                 <h2><?php _e('Use Vipps Checkout for all purchases', 'woo-vipps');?></h2>
+          <p><?php _e("Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.", 'woo-vipps'); ?></p>
+          <p><?php _e("To activate Vipps Checkout, just press the button below. Otherwise, Vipps will of course be available in the regular checkout screen; and you can also offer Vipps Express checkout from both the product pages and the shopping cart if you wish.", 'woo-vipps'); ?></p>
 
           <div style="text-align:center">
-                 <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(1)">Yes, activate Vipps Checkout!</a>
+                 <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(1)"><?php _e("Yes, activate Vipps Checkout!",'woo-vipps'); ?></a>
                  <span style="width:30%; height:1rem;display:inline-block"></span>
-                 <a class="button vipps-button secondary" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(0)">No, thank you not right now anyway</a>
+                 <a class="button vipps-button secondary" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(0)"><?php _e("No, thank you not right now anyway", 'woo-vipps'); ?></a>
           </div>
 <script>
 function activate_vipps_checkout(yesno) {

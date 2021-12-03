@@ -275,7 +275,7 @@ class VippsApi {
         $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'ReturnUrl'=>$fallback);
 
         if (!empty($termsAndConditionsUrl)) {
-            $data['TermsAndConditionsUrl'] = $termsAndConditionsUrl; 
+            $data['MerchantInfo']['TermsAndConditionsUrl'] = $termsAndConditionsUrl; 
         } else {
             $this->log(__("Your site does not have a Terms and Conditions page defined - starting Vipps Checkout anyway, but this should be defined", 'woo-vipps'));
         }
@@ -287,6 +287,7 @@ class VippsApi {
         if (!empty($customerinfo)) {
             $data['PrefillInformation'] = $customerinfo;
         }
+
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
