@@ -272,10 +272,10 @@ class VippsApi {
 
         $data = array();
         //$data['CustomerInfo'] = array('MobileNumber' => $phone); 
-        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'returnUrl'=>$fallback);
+        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'ReturnUrl'=>$fallback);
 
         if (!empty($termsAndConditionsUrl)) {
-            $data['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
+            $data['TermsAndConditionsUrl'] = $termsAndConditionsUrl; 
         } else {
             $this->log(__("Your site does not have a Terms and Conditions page defined - starting Vipps Checkout anyway, but this should be defined", 'woo-vipps'));
         }
