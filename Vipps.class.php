@@ -2204,6 +2204,15 @@ EOF;
         $sku = sanitize_text_field(@$_POST['sku']);
         $quant = intval(@$_POST['quantity']);
 
+        // Get any attributes posted for variable products (where one of the dimensions is "any" for instance)
+        $variations = array();
+        foreach ($_POST as $key => $value ) {
+            if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
+                continue;
+            }
+            $variations[ sanitize_title( wp_unslash( $key ) ) ] = wp_unslash( $value );
+        }
+
         $product = null;
         $variant = null;
         $parent = null;
@@ -2272,7 +2281,7 @@ EOF;
         WC()->cart->empty_cart();
 
         if ($parent && $parent->get_type() == 'variable') {
-            WC()->cart->add_to_cart($parent->get_id(),$quantity,$product->get_id());
+            WC()->cart->add_to_cart($parent->get_id(),$quantity,$product->get_id(), $variations);
         } else {
             WC()->cart->add_to_cart($product->get_id(),$quantity);
         }
@@ -2609,6 +2618,14 @@ EOF;
         if (array_key_exists('variation_id',$productinfo)) $args['variation_id'] = intval($productinfo['variation_id']);
         if (array_key_exists('product_sku',$productinfo)) $args['sku'] = sanitize_text_field($productinfo['product_sku']);
         if (array_key_exists('quantity',$productinfo)) $args['quantity'] = intval($productinfo['quantity']);
+
+        // For variable products where some of the attributes are "any", we need to add these as well. This is from woos form-handler for these.
+        foreach ($productinfo as $key => $value) {
+            if ( 'attribute_' !== substr( $key, 0, 10 ) ) {
+                continue;
+            }
+            $args[sanitize_title(wp_unslash($key))] = sanitize_text_field(wp_unslash($value));
+        }
 
         $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
