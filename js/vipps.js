@@ -148,6 +148,13 @@ jQuery( document ).ready( function() {
        addErrorMessage('Cannot add product - unknown error');
        return false;
     }
+    // Initialize with the entire content of the form if we have it.
+    var serialized = form.serializeArray();
+    for (var i=0;i<serialized.length;i++) {
+        if (serialized[i]['name'] != 'add-to-cart') {
+            data[serialized[i]['name']] = serialized[i]['value'];
+        }
+    }
     var prodid = jQuery(form).find('input[name="product_id"]');
     var varid = jQuery(form).find('input[name="variation_id"]');
     var quantity = jQuery(form).find('input[name="quantity"]');
