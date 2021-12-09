@@ -468,7 +468,10 @@ class Vipps {
         }
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
-        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
+
+        $sdkurl = $this->gateway()->is_test_mode() ? 'https://vippscheckoutmt.z6.web.core.windows.net/vippsCheckoutSDK.js' : 'https://vippscheckoutprod.z6.web.core.windows.net/vippsCheckoutSDK.js';
+        wp_register_script('vipps-sdk',$sdkurl,array());
+        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
     }
 
     public function wp_enqueue_scripts() {
@@ -916,7 +919,7 @@ else:
         if (isset($sessioninfo['session']) && isset($sessioninfo['session']['token'])) {
             $token = $sessioninfo['session']['token'];
             $src = $sessioninfo['session']['checkoutFrontendUrl'];
-            $url = $src . "?" . "token=$token";
+            $url = $src; 
         }
         $current_vipps_session = null;
         $current_pending = 0;
@@ -1026,7 +1029,7 @@ else:
                 WC()->session->set('current_vipps_session', $current_vipps_session);
                 $token = $current_vipps_session['token'];
                 $src = $current_vipps_session['checkoutFrontendUrl'];
-                $url = esc_attr($src . "?" . "token=$token");
+                $url = $src;
             } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout session', 'woo-vipps'));
             }
@@ -1035,7 +1038,7 @@ else:
                 return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
         }
         if ($url || $redir) {
-            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir));
+            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token));
         } else { 
             return wp_send_json_success(array('ok'=>0, 'msg'=>__('Could not start Vipps Checkout session'),'src'=>$url, 'redirect'=>$redir));
         }
@@ -1228,23 +1231,27 @@ else:
         $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'));
         $expiretext = apply_filters('woo_vipps_checkout_error', __('Your session has expired - please reload the page to restart, or return to the shop', 'woo-vipps')); 
 
+        $out .= $this->spinner();
+
         if (!$sessioninfo['session']) {
-           $out .= $this->spinner();
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
            $out .= "<h2>" . __('Press the button to complete your order with Vipps!', 'woo-vipps') . "</h2>";
            $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . __('Vipps Checkout', 'woo-vipps') . '</button></div>';
            $out .= "</div>";
         }
 
-        // Check that these exist etc
-        $out .= "<div id='vippscheckoutframe'>";
-        // If we have an actual live session right now, just do the iframe at once.
+        // If we have an actual live session right now, add it to the page on load. Otherwise, the session will be started using ajax after the page loads (and is visible)
         if ($sessioninfo['session']) {
             $token = $sessioninfo['session']['token'];      // From Vipps
             $src = $sessioninfo['session']['checkoutFrontendUrl'];  // From Vipps
-            $url = esc_attr($src . "?" . "token=$token");
-            $out .= "<iframe frameBorder=0 style='width:100%;height: 60rem;'  src='$src?token=$token'></iframe>";
+            $out .= "<script>VippsSessionState = " . json_encode(array('token'=>$token, 'checkoutFrontendUrl'=>$src)) . ";</script>\n";
+        } else {
+            $out .= "<script>VippsSessionState = null;</script>\n";
         }
+
+        // Check that these exist etc
+        $out .= "<div id='vippscheckoutframe'>";
+
         $out .= "</div>";
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
@@ -1556,7 +1563,7 @@ EOF;
                 if (!$vipps_checkout_activated) return $id;
 
                 # We sometimes want to use the 'real' checkout screen, ie, like for "thankyou"
-                # IOK FIXME TODO: Instead, we probably should implement the endpoints for thankyou and so forth directly, just in case someone
+                # IOK TODO: Instead, we probably should implement the endpoints for thankyou and so forth directly, just in case someone
                 # deletes the standard page or somethng.
                 if ($this->gateway()->get_real_checkout_screen) return $id;
 
@@ -1744,12 +1751,8 @@ EOF;
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
-        $this->log("Got a callback from Vipps", 'DEBUG'); // IOK FIXME
-
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
-
-        $this->log("Callback value is " . print_r($result, true), 'DEBUG'); // IOK FIXME
 
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
@@ -1804,8 +1807,6 @@ EOF;
         }
 
         $gw = $this->gateway();
-
-        $this->log("About to call handle_callback", 'DEBUG'); // IOK FIXME
 
         $gw->handle_callback($result, $ischeckout);
 
@@ -2175,7 +2176,7 @@ EOF;
                   $m2['ShippingCost'] = round(100*$m['shippingCost']); // Yes, they want cents here and not in the normal API
                   $m2['ShippingMethod'] = $m['shippingMethod'];
                   $m2['ShippingMethodId'] = $m['shippingMethodId'];
-                  $m2['Description'] = ""; // IOK FIXME LATER
+                  $m2['Description'] = ""; // IOK TODO 
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;
@@ -3488,7 +3489,7 @@ EOF;
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
-            $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); // IOK FIXME
+            $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); 
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
                 $status = $newstatus;

@@ -290,6 +290,7 @@ class VippsApi {
 
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+
         return $res;
     }
 
