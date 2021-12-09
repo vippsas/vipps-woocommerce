@@ -68,7 +68,7 @@ jQuery( document ).ready( function() {
                      checkoutFrontendUrl: VippsSessionState['checkoutFrontendUrl'].replace(/\/$/, ''),
                      token:  VippsSessionState['token'],
                      iFrameContainerId: "vippscheckoutframe",
-                     language: "no"
+                     language: VippsConfig['vippslanguage']
          };
          let vippsCheckout = VippsCheckout(args);
          console.log("Started with %j", args);

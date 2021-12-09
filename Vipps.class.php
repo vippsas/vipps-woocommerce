@@ -1654,6 +1654,8 @@ EOF;
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
         $this->vippsJSConfig['vippsbuynowbutton'] = __( 'Vipps Buy Now button', 'woo-vipps' );
         $this->vippsJSConfig['vippsbuynowdescription'] =  __( 'Add a Vipps Buy Now-button to the product block', 'woo-vipps');
+        $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
+       
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
         if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
@@ -1662,8 +1664,21 @@ EOF;
         }
 
     }
-    
 
+    // IOK 2021-12-09 try to get the current language in the format Vipps wants, one of 'en' and 'no'
+    public function get_customer_language() {
+        $language = ""; 
+        if (function_exists('pll_current_language')) {
+           $language = pll_current_language('slug');
+        } elseif (has_filter('wpml_current_language')){
+           $language=apply_filters('wpml_current_language',null);
+        } 
+        if (! $language) $language = substr(get_bloginfo('language'),0,2);
+        if ($language == 'nb' || $language == 'nn') $language = 'no';
+        if (! in_array($language, ['en', 'no'])) $language = 'en';
+        return $language;
+    }
+    
     public function save_order($postid,$post,$update) {
         if ($post->post_type != 'shop_order') return;
         $order = wc_get_order($postid);
