@@ -200,7 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.12.xx version 1.7.22 =
+= 2021.12.13 version 1.7.22 =
 * Support variations where one of the dimensions is 'any'
 
 = 2021.11.29  version 1.7.21 =
