@@ -1,8 +1,8 @@
 === Checkout with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.7.22
-Stable tag: 1.7.22
+Version: 1.7.23
+Stable tag: 1.7.23
 Requires at least: 4.7
 Tested up to: 5.8.2
 Requires PHP: 5.6
@@ -76,8 +76,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.22  =
-* Support product variations where one of the dimensions is 'any'
+= 1.7.23  =
+* Minor bugfixes
 
 
 == Frequently Asked Questions ==
@@ -199,6 +199,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2021.12.20 version 1.7.23 =
+* Minor bugfixes
 
 = 2021.12.13 version 1.7.22 =
 * Support variations where one of the dimensions is 'any'

@@ -1272,8 +1272,14 @@ EOF;
         $vippsorderid = $result['orderId'];
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-        // a small bit of security
         $order = wc_get_order($orderid);
+
+        if (!is_a($order, 'WC_Order')) {
+            $this->log(sprintf(__("In Vipps callback; cannot find order for %s", 'woo-vipps'), $vippsorderid), 'error');
+            exit();
+        }
+
+        // a small bit of security
         if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
