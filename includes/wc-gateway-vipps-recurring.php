@@ -1510,8 +1510,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				];
 			}
 
-//			die( var_dump( $agreement_body ) );
-
 			$idempotency_key = $this->get_idempotence_key( $order );
 			$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
 
