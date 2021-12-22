@@ -156,10 +156,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+==== End Log ====
+
 = 1.12.2 =
 * Fixed: Fixed an issue where `initialCharge.description` was empty. It cannot be empty under any circumstances.
-
-==== End Log ====
 
 = 1.12.1 =
 * Fixed: A bug in Klarna Checkout where it would attempt to use Vipps Recurring Payments instead of Vipps Checkout when you're only purchasing one time payment products.
