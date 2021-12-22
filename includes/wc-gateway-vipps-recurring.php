@@ -1479,7 +1479,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			if ( ! $is_zero_amount ) {
 				$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product ) . ' + ' . $extra_initial_charge_description;
-				if ( $has_campaign ) {
+				if ( $has_campaign && ! empty( $extra_initial_charge_description ) ) {
 					$initial_charge_description = $extra_initial_charge_description;
 				}
 
