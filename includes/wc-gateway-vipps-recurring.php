@@ -1471,16 +1471,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
 			$capture_immediately = $is_virtual || $direct_capture;
 			$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
-			$has_trial           = WC_Subscriptions_Product::get_trial_length( $product ) !== null;
+			$has_trial           = (bool) WC_Subscriptions_Product::get_trial_length( $product );
 
 			$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
 			$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
 			$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
 
 			if ( ! $is_zero_amount ) {
-				$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product ) . ' + ' . $extra_initial_charge_description;
-				if ( $has_campaign && ! empty( $extra_initial_charge_description ) ) {
-					$initial_charge_description = $extra_initial_charge_description;
+				$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
+				if ( ! empty( $extra_initial_charge_description ) ) {
+					$initial_charge_description .= ' + ' . $extra_initial_charge_description;
+
+					if ( $has_campaign ) {
+						$initial_charge_description = $extra_initial_charge_description;
+					}
 				}
 
 				$agreement_body = array_merge( $agreement_body, [

@@ -106,11 +106,12 @@ class WC_Vipps_Recurring_Api {
 			}
 		}
 
-		if ( isset( $body['initialCharge']['description'] ) ) {
+		if ( isset( $body['initialCharge'] ) ) {
 			$charge_description = ! empty( $body['initialCharge']['description'] )
 				? $body['initialCharge']['description']
 				: 'Mangler produktbeskrivelse';
 
+			$body['initialCharge']['description'] = $charge_description;
 			if ( strlen( $charge_description ) > 45 ) {
 				$body['initialCharge']['description'] = mb_substr( $charge_description, 0, 42 ) . '...';
 			}

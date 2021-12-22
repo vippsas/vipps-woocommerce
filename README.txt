@@ -158,6 +158,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 ==== End Log ====
 
+= 1.12.3 =
+* Fixed: Initial charge description no longer contains " + " when no extra products are purchased.
+* Fixed: Filling in 0 in the trial field tricking us into adding a campaign to the product, also resulting in an empty `initialCharge.description` and being unable to check out.
+
 = 1.12.2 =
 * Fixed: Fixed an issue where `initialCharge.description` was empty. It cannot be empty under any circumstances.
 
