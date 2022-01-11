@@ -1956,7 +1956,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function save_session_in_order($order) {
-error_log("SAving sesssion in order");
         // The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
         // The Vipps class will restore the session from this on callbacks.
         // IOK 2019-10-21

@@ -1789,7 +1789,13 @@ EOF;
             exit();
         }
 
-        $vippsorderid = $result['orderId'];
+        $vippsorderid = isset($result['orderId']) ? $result['orderId'] : "";
+        // For checkout, the orderId has been renamed to "reference" IOK 2022-02-11
+        if (!$vippsorderid && isset($result['reference'])) {
+           $vippsorderid = $result['reference'];
+           $result['orderId'] = $result['reference'];
+        }
+
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
         if (!$orderid) {
@@ -1873,10 +1879,7 @@ EOF;
         // Support older versions of Woo by inlining initialize session IOK 2019-12-12
         if (version_compare(WC_VERSION, '3.6.4', '>=')) {
             // This will replace the old session with this one. IOK 2019-10-22
-error_log("Before initilaize session");
             WC()->initialize_session(); 
-error_log("After initilaize session");
-error_log(print_r(WC()->session, true));
         } else {
             // Do this manually for 3.6.3 and below
             $session_class = "VippsCallbackSessionHandler";
@@ -1977,11 +1980,6 @@ error_log(print_r(WC()->session, true));
         $callback = sanitize_text_field(@$_REQUEST['callback']);
         do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
 
-        error_log("callback $callback and parsed " . print_r($result, true));
-        error_log(" request " . print_r($_REQUEST, true));
-        error_log(" uri " . $_SERVER['REQUEST_URI']);
-
-
         $data = array_reverse(explode("/",$callback));
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
@@ -2012,8 +2010,6 @@ error_log(print_r(WC()->session, true));
         }
         
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid);
-
-        error_log("Shipping: " . print_r($return, true));
  
         # Checkout does not have an addressID here, and should not be 'wrapped'
         if (!isset($return['addressId'])) {
@@ -2440,6 +2436,7 @@ error_log("Shipping for $vippsorderid, " . $order->get_id());
     // e.g. wp-cron. IOK 2021-06-21
     // Stop restoring session in wp-cron too. IOK 2021-08-23
     public function check_status_of_pending_order($order, $maybe_restore_session=0) {
+return; // IOK FIXME
         $express = $order->get_meta('_vipps_express_checkout'); 
         if ($express && $maybe_restore_session) {
            $this->log(sprintf(__("Restoring session of order %d", 'woo-vipps'), $order->get_id()), 'debug'); 
@@ -3546,7 +3543,8 @@ error_log("Shipping for $vippsorderid, " . $order->get_id());
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-        if ($status == 'pending') {
+//        if (false && $status == 'pending') { // IOK FIXME
+        if ($status == 'pending') { 
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); 
             $newstatus = $gw->callback_check_order_status($order);
