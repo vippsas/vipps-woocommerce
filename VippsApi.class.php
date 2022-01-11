@@ -168,7 +168,7 @@ class VippsApi {
         $data = array();
         $data['customerInfo'] = array('mobileNumber' => $phone); 
       
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback, 'checkOutWebhookUrl'=> home_url('vipps-checkout-webhook', 'https'));
+        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
 
         $express = $this->gateway->express_checkout;
         if ($express) {
@@ -208,7 +208,7 @@ class VippsApi {
 
     // This is Vipps Checkout IOK 2021-06-19
     public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$requestid) {
-        $command = 'checkout/session';
+        $command = 'checkout/v2/session';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $clientid = $this->get_clientid();
@@ -218,7 +218,6 @@ class VippsApi {
 
         $merch = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
-#        $static_shipping = $order->get_meta('_vipps_static_shipping');
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
@@ -246,48 +245,68 @@ class VippsApi {
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['merchant-Serial-Number'] = $merch;
 
         $callback = $this->gateway->payment_callback_url($authtoken);
         $fallback = $returnurl;
 
         $transaction = array();
-        $transaction['OrderId'] = $vippsorderid;
+        $currency = $order->get_currency();
+        $transaction['reference'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
-        $transaction['Amount'] = round(wc_format_decimal($order->get_total(),'') * 100); 
+        $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
         $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
-        $transaction['TransactionText'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
+        $transaction['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
 
         // The limit for the transaction text is 100. Ensure we don't go over. Thanks to Marco1970 on wp.org for reporting this. IOK 2019-10-17
-        $length = strlen($transaction['TransactionText']);
+        $length = strlen($transaction['paymentDescription']);
         if ($length>99) {
           $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
-          $transaction['TransactionText'] =  __('Confirm your order','woo-vipps');
-          $transaction['TransactionText'] = substr($transaction['transactionText'],0,90); // Add some slack if this happens. IOK 2019-10-17
+          $transaction['paymentDescription'] =  __('Confirm your order','woo-vipps');
+          $transaction['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
-        $transaction['TimeStamp'] = $date;
 
         # This have to exist, but we'll not check it now.
         $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
-
         $data = array();
-        //$data['CustomerInfo'] = array('MobileNumber' => $phone); 
-        $data['MerchantInfo'] = array('CallbackAuthorizationToken'=>$authtoken,'MerchantSerialNumber' => $merch, 'CallbackPrefix'=>$callback, 'ReturnUrl'=>$fallback);
+
+        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackPrefix'=>$callback, 'returnUrl'=>$fallback);
 
         if (!empty($termsAndConditionsUrl)) {
-            $data['MerchantInfo']['TermsAndConditionsUrl'] = $termsAndConditionsUrl; 
+            $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
         } else {
             $this->log(__("Your site does not have a Terms and Conditions page defined - starting Vipps Checkout anyway, but this should be defined", 'woo-vipps'));
         }
 
-        $data['Transaction'] = $transaction;
-        if ($static_shipping) {
-            $data['ShippingOptions'] = $static_shipping["shippingDetails"];
-        }
-        if (!empty($customerinfo)) {
-            $data['PrefillInformation'] = $customerinfo;
+        $data['transaction'] = $transaction;
+
+        ## Shipping!
+        $needs_shipping =  WC()->cart->needs_shipping();
+        $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
+        $shippingcallback .= "/v2/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
+        if ($needs_shipping) {
+            $logistics = array();
+            if ($static_shipping) {
+                $logistics['fixedOptions'] = $static_shipping["shippingDetails"];
+                $logistics['dynamicOptionsCallback'] = null;
+            } else {
+                $logistics['dynamicOptionsCallback'] = $shippingcallback;
+            }
+            $data['logistics'] = $logistics;
         }
 
+        if (!empty($customerinfo)) {
+            $data['prefillCustomer'] = $customerinfo;
+        }
+
+        // IOK 2022-01-11 This string-valued field be set to true (or whatever the correct value is) only if the 
+        // customer is present in the store when completing the order.
+        if (false) {
+         $data['customerInteraction'] = "";
+        }
+
+        error_log("Sending body " . print_r($data, true));
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 
@@ -303,10 +322,12 @@ class VippsApi {
         $clientid = $this->get_clientid();
         $secret = $this->get_secret();
         $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
 
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['merchant-Serial-Number'] = $merch;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -570,6 +591,8 @@ class VippsApi {
             }
         }
 
+error_log("doing $url  with " . print_r($args, true));
+error_log("Response $response, headers " . print_r($headers,true) . " Content " . print_r($content, true));
 
         // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
         return $this->handle_http_response($response,$headers,$content);

@@ -937,10 +937,6 @@ else:
                     $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
 
-                    // IOK FIXME CHANGE WHEN DYNAMIC CHECKOUT WORKS. CURRENTLY VIPPS CHECKOUT MUST USE STATIC SHIPPING 
-                    add_filter('woo_vipps_enable_static_shipping', function ($ok, $orderid) {
-                        return true;
-                    }, 10, 2);
                     try {
                         $this->maybe_add_static_shipping($this->gateway(),$order->get_id());
                     } catch (Exception $e) {
@@ -948,6 +944,7 @@ else:
                         $this->log(sprintf(__("Error calculating static shipping for order %s", 'woo-vipps'), $order->get_id()), 'error');
                         $this->log($e->getMessage(),'error');
                     }
+                    $this->gateway()->save_session_in_order($order);
                     do_action('woo_vipps_checkout_order_created', $order);
                 } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
@@ -980,40 +977,39 @@ else:
         }
 
         if ($customer) {
-            $customerinfo['Email'] = $customer->get_billing_email();
-            $customerinfo['FirstName'] = $customer->get_billing_first_name();
-            $customerinfo['LastName'] = $customer->get_billing_last_name();
-            $customerinfo['StreetAddress'] = $customer->get_billing_address_1();
+            $customerinfo['email'] = $customer->get_billing_email();
+            $customerinfo['firstName'] = $customer->get_billing_first_name();
+            $customerinfo['lastName'] = $customer->get_billing_last_name();
+            $customerinfo['streetAddress'] = $customer->get_billing_address_1();
             $address2 =  trim($customer->get_billing_address_2());
             if (!empty($address2)) {
-                $customerinfo['StreetAddress'] = $customerinfo['StreetAddress'] . ", " . $address2;
+                $customerinfo['streetAddress'] = $customerinfo['streetAddress'] . ", " . $address2;
             }
-            $customerinfo['City'] = $customer->get_billing_city();
-            $customerinfo['PostalCode'] = $customer->get_billing_postcode();
-            $customerinfo['Country'] = $customer->get_billing_country();
+            $customerinfo['city'] = $customer->get_billing_city();
+            $customerinfo['postalCode'] = $customer->get_billing_postcode();
+            $customerinfo['country'] = $customer->get_billing_country();
 
             // Currently Vipps requires all phone numbers to have area codes and NO  +. We can't guaratee that at all, but try for Norway
             $phone = ""; 
             $phonenr = $customer->get_billing_phone();
             $phonenr = preg_replace("![^0-9]!", "",  $phonenr);
             $phonenr = preg_replace("!^0+!", "", $phonenr);
-            if (strlen($phonenr) == 8 && $customerinfo['Country'] == 'NO') {
+            if (strlen($phonenr) == 8 && $customerinfo['country'] == 'NO') {
                 $phone = '47' + $phonenr;
             }
-            if (preg_match("/47\d{8}/", $phonenr) && $customerinfo['Country'] == 'NO') {
+            if (preg_match("/47\d{8}/", $phonenr) && $customerinfo['country'] == 'NO') {
               $phone = $phonenr;
             }
 
-            $customerinfo['PhoneNumber'] = $phone;
+            $customerinfo['phoneNumber'] = $phone;
         }
 
-        $keys = ['FirstName', 'LastName', 'StreetAddress', 'PostalCode', 'Country', 'PhoneNumber'];
+        $keys = ['firstName', 'lastName', 'streetAddress', 'postalCode', 'country', 'phoneNumber'];
         foreach($keys as $k) {
             if (empty($customerinfo[$k])) {
                 $customerinfo = array(); break;
             }
         }
-
 
 
         try {
@@ -1877,13 +1873,17 @@ EOF;
         // Support older versions of Woo by inlining initialize session IOK 2019-12-12
         if (version_compare(WC_VERSION, '3.6.4', '>=')) {
             // This will replace the old session with this one. IOK 2019-10-22
+error_log("Before initilaize session");
             WC()->initialize_session(); 
+error_log("After initilaize session");
+error_log(print_r(WC()->session, true));
         } else {
             // Do this manually for 3.6.3 and below
             $session_class = "VippsCallbackSessionHandler";
             WC()->session = new $session_class();
             WC()->session->init();
         }
+
         $customerid= 0;
         if (WC()->session && is_a(WC()->session, 'WC_Session_Handler')) {
             $customerid = WC()->session->get('express_customer_id');
@@ -1965,6 +1965,9 @@ EOF;
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
+
+        error_log("Raw post " . $raw_post);
+
         if (!$result) {
            $error = json_last_error_msg();
            $this->log(sprintf(__("Error getting customer data in the Vipps shipping details callback: %s",'woo-vipps'), $error));
@@ -1974,10 +1977,16 @@ EOF;
         $callback = sanitize_text_field(@$_REQUEST['callback']);
         do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
 
+        error_log("callback $callback and parsed " . print_r($result, true));
+        error_log(" request " . print_r($_REQUEST, true));
+        error_log(" uri " . $_SERVER['REQUEST_URI']);
+
+
         $data = array_reverse(explode("/",$callback));
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
+        error_log("Restoring session of order $orderid vipps orderid $vippsorderid");
         $this->callback_restore_session($orderid);       
 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
@@ -2004,6 +2013,13 @@ EOF;
         
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid);
 
+        error_log("Shipping: " . print_r($return, true));
+ 
+        # Checkout does not have an addressID here, and should not be 'wrapped'
+        if (!isset($return['addressId'])) {
+           $return = $return['shippingDetails'];
+        }
+
         $json = json_encode($return);
         header("Content-type: application/json; charset=UTF-8");
         print $json;
@@ -2013,9 +2029,28 @@ EOF;
     }
    
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
-        // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
-        // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
-        $addressid = $vippsdata['addressId'];
+
+error_log("Shipping for $vippsorderid, " . $order->get_id());
+
+       // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
+       // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
+       // checkout: {"streetAddress":"Observatorie terrasse 4a","postalCode":"0254","region":"Oslo","country":"NO"}
+
+       // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
+       // so filters will continue to work for newer apis/checkout
+       if (isset($vippsdata['streetAddress'])){
+            $vippsdata['addressLine1'] = $vippsdata['streetAddress'];
+            $vippsdata['addressLine2'] = "";
+       }
+       if (isset($vippsdata['region'])) {
+            $vippsdata['city'] = $vippsdata['region']; 
+         }
+       if (isset($vippsdata['postalCode'])) {
+            $vippsdata['postCode'] = $vippsdata['postalCode']; 
+        }
+        // Translations for different versions of the API end
+
+        $addressid = isset($vippsdata['addressId']) ? $vippsdata['addressId'] : "";
         $addressline1 = $vippsdata['addressLine1'];
         $addressline2 = $vippsdata['addressLine2'];
 
@@ -2182,19 +2217,28 @@ EOF;
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
-        // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax for no good reason.
+        // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
         if ($order->get_meta('_vipps_checkout')) {
             $translated = array();
+            $currency = get_woocommerce_currency();
             foreach ($return['shippingDetails']  as $m) {
-                  $m2['IsDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
-                  $m2['Priority'] = $m['priority'];
-                  $m2['ShippingCost'] = round(100*$m['shippingCost']); // Yes, they want cents here and not in the normal API
-                  $m2['ShippingMethod'] = $m['shippingMethod'];
-                  $m2['ShippingMethodId'] = $m['shippingMethodId'];
-                  $m2['Description'] = ""; // IOK TODO 
+
+                  $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
+                  $m2['priority'] = $m['priority'];
+                  $m2['amount'] = array(
+                            'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                            'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                          );
+                  $m2['product'] = $m['shippingMethod'];
+                  $m2['id'] = $m['shippingMethodId'];
+                  $m2['description'] = ""; // We haven't got this
+                  $m2['brand'] = ""; // We haven't got a "Brand" per se, but we could create a filter for the specific fields
+                                     // posten, helthjem, postnord is supported.
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;
+            unset($return['addressId']); // Not used it seems for checkout
+            unset($return['orderId']);
         }
 
         return $return;
