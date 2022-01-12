@@ -1140,9 +1140,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
+        // For epayment, partial cancellations will be possible. IOK 2022-11-12
+        $api = $order->get_meta('_vipps_api');
         try {
             $requestid = "";
-            $content =  $this->api->cancel_payment($order,$requestid);
+            if ($api == 'epayment') {
+                $requestid = 1;
+                $content =  $this->api->epayment_cancel_payment($order,$requestid);
+            } else {
+                $content =  $this->api->cancel_payment($order,$requestid);
+            }
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not cancel Vipps payment for order_id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . ' ' . $e->getMessage());
@@ -1153,6 +1160,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr($msg);
             return false;
         }
+
+error_log(print_r($content, true));
+
+
+
         // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
         $transactionInfo = $content['transactionInfo'];
         $transactionSummary= $content['transactionSummary'];
@@ -1837,13 +1849,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $transaction['status'];
 
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        // Not neccessary for Vipps Checkout though, as that is polled from outside the iframe. IOK 2021-09-02
-        if (!$ischeckout) {
-            try {
-                $Vipps->createCallbackSignal($order,'ok');
-            } catch (Exception $e) {
+        try {
+            $Vipps->createCallbackSignal($order,'ok');
+        } catch (Exception $e) {
                 // Could not create a signal file, but that's ok.
-            }
         }
         $errorInfo = @$result['errorInfo'];
         if ($errorInfo) {
@@ -1906,6 +1915,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_status('pending');
             $order->set_payment_method($this);
             if ($ischeckout) {
+                $order->update_meta_data('_vipps_api', 'epayment');
                 $order->set_created_via('Vipps Checkout');
                 $order->set_payment_method_title('Vipps Checkout');
             } else {

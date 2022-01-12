@@ -303,6 +303,7 @@ class VippsApi {
         // IOK 2022-01-11 This string-valued field be set to true (or whatever the correct value is) only if the 
         // customer is present in the store when completing the order.
         if (false) {
+         // Enum: "CUSTOMER_PRESENT" "CUSTOMER_NOT_PRESENT"
          $data['customerInteraction'] = "";
         }
 
@@ -525,6 +526,50 @@ class VippsApi {
         return $res;
     }
 
+    // Support for then new epayment API, which is also used by Checkout
+    // Cancel a reserved but not captured payment IOK 2018-05-07
+    // Currently must cancel the entire amount, but partial cancel will be possible.
+    public function epayment_cancel_payment($order,$requestid=1) {
+        $orderid = $order->get_meta('_vipps_orderid');
+        $command = 'epayment/v1/payments/'.$orderid.'/cancel';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+
+        $clientid = $this->get_clientid();
+        $secret = $this->get_secret();
+        $headers = array();        
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Idempotency-Key'] = $requestid;
+        
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        $modificationAmount = $order->get_meta('_vipps_amount');
+        $modificationCurrency = $order->get_currency();
+
+        $data = array();
+        $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
+        $data['modificationReference'] = $orderid . ":" . $requestid . ":" . time();
+
+        $res = $this->http_call($command,$data,'PUT',$headers,'json'); 
+        return $res;
+    }
+
 
     // Conveniently call Vipps IOK 2018-04-18
     private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){
@@ -639,6 +684,11 @@ error_log("Response $response, headers " . print_r($headers,true) . " Content " 
                 $msg = $response  . ' ' .  $content['ResponseInfo']['ResponseMessage'];
             } elseif (isset($content['errorInfo'])) {
                 $msg = $response  . ' ' .  $content['errorInfo']['errorMessage'];
+            } elseif (isset($content['type'])) {
+                // The epayment API, version 1
+                $msg = "$response ";
+                $msg .= $content['title'];
+                if (isset($content['detail'])) $msg .= " - " . $content['detail'];
             } else {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
                 $msg = '';
