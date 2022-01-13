@@ -1161,25 +1161,38 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-error_log(print_r($content, true));
-
-
-
-        // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
-        $transactionInfo = $content['transactionInfo'];
-        $transactionSummary= $content['transactionSummary'];
-        $order->update_meta_data('_vipps_cancel_timestamp',strtotime($transactionInfo['timeStamp']));
-        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
-        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
-        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
-        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-        $order->add_order_note(__('Vipps Payment cancelled:','woo-vipps'));
-        $order->save();
-
-        // Update status from Vipps, but ignore errors IOK 2018-05-07
+        // We need this to Update status from Vipps, but ignore errors IOK 2018-05-07
+        // Unfortunately, we also need this to update transaction values, as these are not sent by the epayment api.
+        $statusdata = null;
         try {
-            $status = $this->get_vipps_order_status($order);
+         $statusdata = $this->get_payment_details($order); // IOK
+        } catch (Exception $e)  {
+            $this->log(sprintf(__("Could not get status data for order %d after cancel: %s", 'woo-vipps'), $order->get_id(), $e->getMessage()));
+        }
+
+        // For the epayment api, content will be null, but we should have gotten the same data from the status data call,
+        // if it succeeded.
+        if (empty($content) && !empty($statusdata)) {
+            $content = $statusdata;
+        }
+
+        // the epay v2 API will return transactionInfo and Summary with the result, the new epayment api returns nothing.
+        if ($content  && isset($content['transactionInfo'])) {
+            // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
+            $transactionInfo = $content['transactionInfo'];
+            $transactionSummary= $content['transactionSummary'];
+            $order->update_meta_data('_vipps_cancel_timestamp',strtotime($transactionInfo['timeStamp']));
+            $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+            $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+            $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+            $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+            $order->save();
+        }
+        // Set status from Vipps, ignore errors, use statusdata if we have it.
+        try {
+            $status = $this->get_vipps_order_status($order, $statusdata);
             if ($status) $order->update_meta_data('_vipps_status',$status);
+            $order->add_order_note(__('Vipps Payment cancelled:','woo-vipps'));
             $order->save();
         } catch (Exception $e)  {
         }

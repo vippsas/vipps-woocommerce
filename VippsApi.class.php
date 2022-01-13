@@ -564,7 +564,10 @@ class VippsApi {
 
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
-        $data['modificationReference'] = $orderid . ":" . $requestid . ":" . time();
+
+        # IOK FIXME this isn't currently documented, but it must be 8-50 chars, alphanumeric. So we need to create an unique reference for this op,
+        # hopefully independent of the order id.
+        $data['modificationReference'] = "CANCELFROM{$modificationAmount}TO0T" . time();
 
         $res = $this->http_call($command,$data,'PUT',$headers,'json'); 
         return $res;
