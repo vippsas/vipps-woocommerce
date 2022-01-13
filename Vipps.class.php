@@ -851,6 +851,22 @@ else:
         try {
             $details = $gw->get_payment_details($order);
             $order =   $gw->update_vipps_payment_details($order, $details);
+
+# IOK FIXME
+try {
+$newdata1 = $gw->api->epayment_get_payment($order);
+        } catch (Exception $e) {
+ $newdata1 = $e->getMessage();
+}
+try {
+$newdata2 = $gw->api->epayment_get_payment_log($order);
+        } catch (Exception $e) {
+ $newdata2 = $e->getMessage();
+}
+
+print "<pre>"; print_r($newdata1); print "</pre>";
+print "<pre>"; print_r($newdata2); print "</pre>";
+
         } catch (Exception $e) {
             print "<p>"; 
             print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
@@ -2025,8 +2041,6 @@ EOF;
     }
    
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
-
-error_log("Shipping for $vippsorderid, " . $order->get_id());
 
        // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
        // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
