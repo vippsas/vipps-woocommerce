@@ -572,6 +572,107 @@ class VippsApi {
         $res = $this->http_call($command,$data,'PUT',$headers,'json'); 
         return $res;
     }
+    // Support for then new epayment API, which is also used by Checkout
+    // Capture (a part of) reserved but not captured payment IOK 2018-05-07
+    public function epayment_capture_payment($order, $amount, $requestid=1) {
+        $orderid = $order->get_meta('_vipps_orderid');
+        $command = 'epayment/v1/payments/'.$orderid.'/capture';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+
+        $clientid = $this->get_clientid();
+        $secret = $this->get_secret();
+        $headers = array();        
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Idempotency-Key'] = $requestid;
+        
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        $modificationAmount = round($amount);
+        $modificationCurrency = $order->get_currency();
+
+        $data = array();
+        $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
+
+        # IOK FIXME this isn't currently documented, but it must be 8-50 chars, alphanumeric. So we need to create an unique reference for this op,
+        # hopefully independent of the order id. Maybe we need to add FROM and TO values here, that would then need to be checked.
+#        $data['modificationReference'] = "CAPTURE{$modificationAmount}T" . time(); 
+
+        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        return $res;
+    }
+
+    // Support for then new epayment API, which is also used by Checkout
+    // Refund (a part of) captured payment IOK 2018-05-07
+    public function epayment_refund_payment($order, $requestid, $amount, $cents) {
+        $orderid = $order->get_meta('_vipps_orderid');
+        $command = 'epayment/v1/payments/'.$orderid.'/refund';
+
+        # null amount means the entire thing
+        $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
+
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+
+        $clientid = $this->get_clientid();
+        $secret = $this->get_secret();
+        $headers = array();        
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Idempotency-Key'] = $requestid;
+        
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        // If we have passed the value as 'øre' we don't need to calculate any more, but woo is weird so we might need to
+        $modificationAmount = round($amount);
+        if ($cents) {
+            $modificationAmount = round($amount);
+        } else { 
+            $modificationAmount = round($amount * 100); 
+        }
+        $modificationCurrency = $order->get_currency();
+
+        $data = array();
+        $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
+
+        # IOK FIXME this isn't currently documented, but it must be 8-50 chars, alphanumeric. So we need to create an unique reference for this op,
+        # hopefully independent of the order id. Maybe we need to add FROM and TO values here, that would then need to be checked.
+#        $data['modificationReference'] = "REFUND{$modificationAmount}T" . time(); 
+
+        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        return $res;
+    }
 
 
     // Conveniently call Vipps IOK 2018-04-18

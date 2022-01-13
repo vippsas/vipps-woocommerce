@@ -1044,7 +1044,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $requestidnr = intval($order->get_meta('_vipps_capture_transid'));
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
-            $content =  $this->api->capture_payment($order,$amount,$requestid);
+            $api = $order->get_meta('_vipps_api');
+            if ($api == 'epayment') {
+                $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
+            } else {
+                $content =  $this->api->capture_payment($order,$amount,$requestid);
+            }
         } catch (TemporaryVippsApiException $e) {
             $this->log(__('Could not capture Vipps payment for order id:', 'woo-vipps') . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             $this->adminerr(__('Vipps is temporarily unavailable.','woo-vipps') . "\n" . $e->getMessage());
@@ -1055,18 +1060,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr($msg);
             return false;
         }
-        // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
-        // status 'captured'
-        $transactionInfo = $content['transactionInfo'];
-        $transactionSummary= $content['transactionSummary'];
-        $order->update_meta_data('_vipps_capture_timestamp',strtotime($transactionInfo['timeStamp']));
-        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
-        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
-        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
-        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+
+        // This is for the epayment api thing - it returns nothing.
+        if (empty($content)) {
+            try {
+                $content = $this->get_payment_details($order); 
+            } catch (Exception $e)  {
+                $this->log(sprintf(__("Could not get status data for order %d after capture: %s", 'woo-vipps'), $order->get_id(), $e->getMessage()));
+            }
+        }
+
+        if (!empty($content)) {
+           // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
+           // status 'captured'
+           $transactionInfo = $content['transactionInfo'];
+           $transactionSummary= $content['transactionSummary'];
+           $order->update_meta_data('_vipps_capture_timestamp',strtotime($transactionInfo['timeStamp']));
+           $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+           $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+           $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+           $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+           $order->add_order_note(__('Vipps Payment captured:','woo-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
+        }
+
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_capture_transid', $requestidnr+1);
-        $order->add_order_note(__('Vipps Payment captured:','woo-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
         $order->save();
 
         return true;
@@ -1144,6 +1162,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $api = $order->get_meta('_vipps_api');
         try {
             $requestid = "";
+            $api = $order->get_meta('_vipps_api');
             if ($api == 'epayment') {
                 $requestid = 1;
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
@@ -1221,18 +1240,36 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // (but on failre, we don't increase it.) IOK 2018-05-07
         $requestidnr = intval($order->get_meta('_vipps_refund_transid'));
         $requestid = $requestidnr . ":" . $order->get_order_key();
-        $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
-        // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
-        $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
-        $transactionSummary= $content['transactionSummary'];
-        $order->update_meta_data('_vipps_refund_timestamp',strtotime($transactionInfo['timeStamp']));
-        $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
-        $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
-        $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
-        $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-        // Since we succeeded, the next time we'll start a new transaction.
+
+        $api = $order->get_meta('_vipps_api');
+        if ($api == 'epayment') {
+            $content =  $this->api->epayment_refund_payment($order,$requestid,$amount,$cents);
+        } else {
+            $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
+        }
+
+        // This is for the epayment api thing - it returns nothing.
+        if (empty($content)) {
+            try {
+                $content = $this->get_payment_details($order); 
+                $content['transaction'] = $content['transactionInfo']; // See below, ensure all uses same interface
+            } catch (Exception $e)  {
+                $this->log(sprintf(__("Could not get status data for order %d after capture: %s", 'woo-vipps'), $order->get_id(), $e->getMessage()));
+            }
+        }
+        if (!empty($content)) {
+            // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
+            $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
+            $transactionSummary= $content['transactionSummary'];
+            $order->update_meta_data('_vipps_refund_timestamp',strtotime($transactionInfo['timeStamp']));
+            $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
+            $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
+            $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
+            $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+            $order->add_order_note(__('Vipps payment refunded:','woo-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
+        }
+            // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
-        $order->add_order_note(__('Vipps payment refunded:','woo-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
         $order->save();
         return true;
     }
