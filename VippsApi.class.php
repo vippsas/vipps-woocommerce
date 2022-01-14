@@ -725,6 +725,10 @@ class VippsApi {
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
         $headers['Merchant-Serial-Number'] = $merch;
+
+        # IOK FIXME for debugging 2022-01-15
+        $headers['ocpApimSubscriptionKey'] = $subkey;
+        $headers['merchantSerialNumber'] = $merch;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
