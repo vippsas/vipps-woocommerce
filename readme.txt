@@ -200,7 +200,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.01.xx version 1.7.24 =
+= 2022.01.18 version 1.7.24 =
 * Minor bugfixes 
 
 = 2021.12.20 version 1.7.23 =
