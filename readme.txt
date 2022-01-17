@@ -4,10 +4,10 @@ Tags: woocommerce, vipps
 Version: 1.8.8
 Stable tag: 1.8.8
 Requires at least: 4.7
-Tested up to: 5.8.2
+Tested up to: 5.8.3
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 5.9.0
+WC tested up to: 6.1.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -80,8 +80,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.7.22  =
-* Support product variations where one of the dimensions is 'any'
+= 1.7.24  =
+* Minor bugfixes
 
 
 == Frequently Asked Questions ==
@@ -204,7 +204,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2021.12.xx version 1.7.22 =
+= 2022.01.18 version 1.7.24 =
+* Minor bugfixes 
+
+= 2021.12.20 version 1.7.23 =
+* Minor bugfixes
+
+= 2021.12.13 version 1.7.22 =
 * Support variations where one of the dimensions is 'any'
 
 = 2021.11.29  version 1.7.21 =

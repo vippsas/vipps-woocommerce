@@ -1950,7 +1950,7 @@ EOF;
     // IOK 2020-03-18
     public function get_static_shipping_address_data () {
          // This is the format used by the Vipps callback, we are going to mimic this.
-         $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"Norway", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
+         $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
          $addressok=false;
          if (WC()->customer) {
            $address = WC()->customer->get_shipping();
@@ -1972,7 +1972,8 @@ EOF;
              $defaultdata['postalCode'] = $countries->get_base_postcode();
              $defaultdata['postCode'] =   $countries->get_base_postcode();
              $defaultdata['addressLine1'] = $countries->get_base_address();
-             $defaultdata['addressLine2'] = $countries->get_base_address_2();
+             # Let addressLine2 be empty though, it's not needed for this.
+             $defaultdata['addressLine2'] = "";
              $addressok=true;
          }
          return $defaultdata;
@@ -2066,6 +2067,7 @@ EOF;
 
         // IOK 2019-08-26 apparently the apps contain a lot of addresses with duplicate lines
         if ($addressline1 == $addressline2) $addressline2 = '';
+        if (!$addressline2) $addressline2 = '';
 
         $vippscountry = $vippsdata['country'];
         $city = $vippsdata['city'];

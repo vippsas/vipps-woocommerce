@@ -1672,6 +1672,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // This apparently happens a lot IOK 2019-08-26 
         if ($addressline1 == $addressline2) $addressline2 = ''; 
+        // Ensure this gets zeroed out so we don't get the stores address here
+        if (! $addressline2) $addressline2 = '';
 
         $city = "";
         if (isset($address['city'])) {
