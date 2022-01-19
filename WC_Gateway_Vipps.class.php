@@ -1196,10 +1196,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
             $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
             $order->save();
+        } else {
+            $total = intval($order->get_meta('_vipps_amount'));
+            $captured = intval($order->get_meta('_vipps_captured'));
+#            $cancelled =  $amount + intval($order->get_meta('_vipps_cancelled');
+            $cancelled = $total;
+            $remaining = $total - $captured - $cancelled;
+            
+            // We need to assume it worked. Also, we can't do partial cancels yet, so just cancel everything.
+            $order->update_meta_data('_vipps_cancel_timestamp',time());
+            $order->update_meta_data('_vipps_cancelled', $cancelled);
+            $order->update_meta_data('_vipps_cancel_remaining', $remaining);
         }
+
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
-            $status = $this->get_vipps_order_status($order, $statusdata);
+            $status = $this->get_vipps_order_status($order);
             if ($status) $order->update_meta_data('_vipps_status',$status);
             $order->add_order_note(__('Vipps Payment cancelled:','woo-vipps'));
             $order->save();
@@ -1218,6 +1230,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
         }
+
+        // Get current payment status of the order IOK 2022-01-19
+        $order = $this->update_vipps_payment_details($order); 
+
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
         if (!$captured) {
@@ -1248,6 +1264,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
             $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
             $order->add_order_note(__('Vipps payment refunded:','woo-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
+        } else {
+           //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
+           // the fact. 
+           $captured = intval($order->get_meta('_vipps_captured'));
+           $refunded_now  = $amount ? ($cents ? $amount: round($amount*100)) : $captured;
+           $refunded = intval($order->get_meta('_vipps_refunded')) + $amount;
+           $remaining = $captured - $refunded; 
+ error_log("Dead reckoning: captured $captured - refunded $refunded - refundable $remaining");
+
+           $order->update_meta_data('_vipps_refunded', $refunded);
+           $order->update_meta_data('_vipps_refund_remaining', $remaining);
+           $order->update_meta_data('_vipps_refund_timestamp', time());
+           $order->add_order_note(__('Vipps Payment Refunded:','woo-vipps') . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . 'NOK');
         }
             // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
