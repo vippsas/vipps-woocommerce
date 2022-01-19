@@ -1061,15 +1061,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        // This is for the epayment api thing - it returns nothing.
-        if (empty($content)) {
-            try {
-                $content = $this->get_payment_details($order); 
-            } catch (Exception $e)  {
-                $this->log(sprintf(__("Could not get status data for order %d after capture: %s", 'woo-vipps'), $order->get_id(), $e->getMessage()));
-            }
-        }
-
         if (!empty($content)) {
            // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
            // status 'captured'
@@ -1081,6 +1072,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
            $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
            $order->add_order_note(__('Vipps Payment captured:','woo-vipps') . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
+        } else {
+           //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
+           // the fact. 
+           $captured = $amount + intval($order->get_meta('_vipps_captured'));
+           $remaining = intval($order->get_meta('_vipps_amount')) - $captured - intval($order->get_meta('_vipps_cancelled'));
+           $refundable = $captured - intval($order->get_meta('_vipps_refunded'));
+
+ error_log("Dead reckoning: captured $captured - remaining $remaining - refundable $refundable");
+        
+           $order->update_meta_data('_vipps_captured', $captured);
+           $order->update_meta_data('_vipps_capture_remaining', $remaining);
+           $order->update_meta_data('_vipps_refund_remaining', $refundable);
+           $order->update_meta_data('_vipps_capture_timestamp', time());
+           $order->add_order_note(__('Vipps Payment captured:','woo-vipps') . ' ' .  sprintf("%0.2f",$captured/100) . ' ' . 'NOK');
         }
 
         // Since we succeeded, the next time we'll start a new transaction.
@@ -1180,21 +1185,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        // We need this to Update status from Vipps, but ignore errors IOK 2018-05-07
-        // Unfortunately, we also need this to update transaction values, as these are not sent by the epayment api.
-        $statusdata = null;
-        try {
-         $statusdata = $this->get_payment_details($order); // IOK
-        } catch (Exception $e)  {
-            $this->log(sprintf(__("Could not get status data for order %d after cancel: %s", 'woo-vipps'), $order->get_id(), $e->getMessage()));
-        }
-
-        // For the epayment api, content will be null, but we should have gotten the same data from the status data call,
-        // if it succeeded.
-        if (empty($content) && !empty($statusdata)) {
-            $content = $statusdata;
-        }
-
         // the epay v2 API will return transactionInfo and Summary with the result, the new epayment api returns nothing.
         if ($content  && isset($content['transactionInfo'])) {
             // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
@@ -1248,15 +1238,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
         }
 
-        // This is for the epayment api thing - it returns nothing.
-        if (empty($content)) {
-            try {
-                $content = $this->get_payment_details($order); 
-                $content['transaction'] = $content['transactionInfo']; // See below, ensure all uses same interface
-            } catch (Exception $e)  {
-                $this->log(sprintf(__("Could not get status data for order %d after capture: %s", 'woo-vipps'), $order->get_id(), $e->getMessage()));
-            }
-        }
         if (!empty($content)) {
             // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
             $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
@@ -1307,6 +1288,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'AUTHORISED':
             case 'AUTHORIZED':
                 return 'authorized';
+                break;
             case 'SALE':
                 return 'complete';
                 break;
@@ -1320,6 +1302,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'FAILED':
             case 'REJECTED':
             case 'TERMINATED':
+            case 'ABORTED':
+            case 'EXPIRED':
                 return 'cancelled';
                 break;
             }
@@ -1374,13 +1358,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             $order->update_meta_data('_vipps_status',$newvippsstatus);
             $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
+            # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. FIXME
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
-                $vippsamount= $transaction['amount'];
+                $amount  = $transaction['amount'];
+                if (is_array($amount)) {
+                    $vippsamount= $amount['value'];
+                } else {
+                    $vippsamount= $amount;
+                }
                 $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                 $order->update_meta_data('_vipps_amount',$vippsamount);
+            } else {
+               $vippsstamp = time();
+               $vippsamount = $paymentdetails['amount']['value'];
+               $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+               $order->update_meta_data('_vipps_amount',$vippsamount);
             }
+
         } catch (Exception $e) {
             $this->log(__("Error getting payment details from Vipps for order_id:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
@@ -1389,9 +1385,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->save();
 
+        # IOK FIXME CHECK IF WE STILL NEED THIS - AFTER ALL WE MAY HAVE CALLED 'poll' ABOVE. Rewrite to only call this if we
+        # have no "shippingDetails" in the paymentDetails result FIXME FIXME
         $this->log("About to check if we need to poll checkout " . $order->get_meta('_vipps_checkout_poll'), 'DEBUG'); // IOK FIXME
         $address_set = $order->get_meta('_vipps_shipping_set');
         if (!$address_set) {
+
             $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
             $this->log("Checkoutpoll : $checkoutpoll", 'DEBUG'); // IOK FIXME
             if ($checkoutpoll) {
@@ -1480,35 +1479,90 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // about the order from Vipps; the previous side-effecting is now done by update_vipps_payment_details.
     // IOK 2021-11-24 Because of this, we need to handle 402 and 404 errors differently here now - these *are* results, meaning there is
     // no payment details because the order doesn't exist.
+    // IOK 2022-01-19 And now, with the epayment API in use by checkout, but not yet actually usable, we need to possibly use the poll API here too.
     public function get_payment_details($order) {
-      // Then the details, which include the transaction history
-      $result = array();
-      try {
-          $result = $this->api->payment_details($order);
-      } catch (VippsAPIException $e) {
-          $resp = intval($e->responsecode);
-          if ($resp == 402 || $resp == 404) {
-              $result['status'] = 'CANCEL';
-              return $result;
-          } else {
-              throw $e;
-          }
-      }
+        $result = array();
 
-      if ($result) {
-          // We would like e to have a single enum as the payment status like in the old API or v2 before march 2021, so find one and store it. IOK 2021-01-20
-          $result['status'] = $this->get_payment_status_from_payment_details($result);
+        $poll = $order->get_meta('_vipps_checkout_poll');
+        if ($poll) {
+            try {
+                $result = $this->api->poll_checkout($poll);
+                if ($result == 'EXPIRED') $result = array(); // IOK FIXME CHECK THIS it's probably cancelled
+            } catch (VippsAPIException $e) {
+                if ($resp == 402 || $resp == 404) {
+                    $result['status'] = 'CANCEL';
+                    return $result;
+                } else {
+                    throw $e;
+                }
+            }
+       }
 
-          // Add for backwards compatibility from the old order_status interface - last operations transactionInfo IOK 2021-01-20
-          if (isset($result['transactionLogHistory'])){
-              $log = $result['transactionLogHistory'];
-              if (!empty($log)) {
-                  $result['transactionInfo'] = $log[0];
-              }
-          }
-      }
+       # We now have epayment data, but we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
+       if (!empty($result)) {
+           $result['orderId']  = $result['reference']; 
 
-      return $result;
+           $details = $result['paymentDetails'];
+           # IOK 2022-01-19 for this, the docs and experience does not agree, so check both
+           $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
+           $result['status'] = $this->interpret_vipps_order_status($details['state']);
+           // if 'authorised' and directCapture is set and true, set to complete / SALE FIXME
+       
+           $transactionSummary = array();
+           // Always NOK at this point, but we also don't care because the order has the currency
+           $transactionSummary['capturedAmount'] = isset($aggregate['capturedAmount']) ?   $aggregate['capturedAmount']['value'] : 0;
+           $transactionSummary['refundedAmount'] = isset($aggregate['refundedAmount']) ? $aggregate['refundedAmount']['value'] : 0; 
+           $transactionSummary['cancelledAmount'] =isset($aggregate['cancelledAmount']) ? $aggregate['cancelledAmount']['value'] : 0; 
+           $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0; 
+           $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
+           $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
+           $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'];
+           $result['transactionSummary'] = $transactionSummary;
+
+           if (isset($result['shippingDetails'])) {
+                $addr  = $result['shippingDetails'];
+                unset($addr['shippingMethodId']);
+                $result['shippingDetails']['address'] = $addr;
+           }
+           if (isset($result['userDetails'])) {
+                $result['userDetails']['mobileNumber'] = $result['userDetails']['phoneNumber'];
+                $result['userDetails']['userId'] = $result['userDetails']['phoneNumber'];
+           }
+
+           # IOK 2022-01-19 FIXME this doesn't work yet.
+           $result['transactionLogHistory'] = array();
+
+           return $result;
+       }
+
+
+        // Then the details, which include the transaction history
+        try {
+            $result = $this->api->payment_details($order);
+        } catch (VippsAPIException $e) {
+            $resp = intval($e->responsecode);
+            if ($resp == 402 || $resp == 404) {
+                $result['status'] = 'CANCEL';
+                return $result;
+            } else {
+                throw $e;
+            }
+        }
+
+        if ($result) {
+            // We would like e to have a single enum as the payment status like in the old API or v2 before march 2021, so find one and store it. IOK 2021-01-20
+            $result['status'] = $this->get_payment_status_from_payment_details($result);
+
+            // Add for backwards compatibility from the old order_status interface - last operations transactionInfo IOK 2021-01-20
+            if (isset($result['transactionLogHistory'])){
+                $log = $result['transactionLogHistory'];
+                if (!empty($log)) {
+                    $result['transactionInfo'] = $log[0];
+                }
+            }
+        }
+
+        return $result;
     }
 
     // Update the order with Vipps payment details, either passed or called using the API.
@@ -1523,6 +1577,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
                $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
                $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
+               if (isset($details['transactionSummary']['cancelledAmount'])) {
+                   $order->update_meta_data('_vipps_cancelled',$transactionSummary['cancelledAmount']);
+                   $order->update_meta_data('_vipps_cancel_remaining',$transactionSummary['remainingAmountToCancel']);
+               }
            }
            $order->save();
        }
@@ -1531,11 +1589,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2021-01-20 from March 2021 the order_status interface is removed; so we now need to interpret the payment history to find
     // out the order status.
+    // IOK 2022-01-19 With the epayment API on the other hand, the payment status is back as 'state'.
     public function get_payment_status_from_payment_details($details) {
 
+       // The epayment api reintroduces a single value for the state of the order.
+       if (isset($details['state'])) {
+           $status = $this->interpret_vipps_order_status($details['state']);
+           return $status;
+       }
+
+       // ecom v2: getting the order status is not allowed, so we need to check the transactionLogHistory and *deduce* the status. IOK 2021-01-20
        $status = 'INITIATE';
        $statusknown = false;
-
        // We have to assume there is an transaction log history, but protect against having it missing anyway
        $log = isset($details['transactionLogHistory']) ? $details['transactionLogHistory'] : array();
        $synchronously = array_reverse($log);

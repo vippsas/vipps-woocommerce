@@ -877,7 +877,6 @@ print "<pre>"; print_r($newdata2); print "</pre>";
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
-        print __('Other Order status', 'woo-vipps') . ": " .@$details['otherstatus'] . "<br>";
         print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
@@ -886,6 +885,10 @@ print "<pre>"; print_r($newdata2); print "</pre>";
             print __('Remaining amount to capture', 'woo-vipps') . ":" . @$ts['remainingAmountToCapture'] . "<br>";
             print __('Refunded amount', 'woo-vipps') . ":" . @$ts['refundedAmount'] . "<br>";
             print __('Remaining amount to refund', 'woo-vipps') . ":" . @$ts['remainingAmountToRefund'] . "<br>";
+            if (isset($ts['cancelledAmount'])) {
+                print __('Cancelled amount', 'woo-vipps') . ":" . @$ts['cancelledAmount'] . "<br>";
+                print __('Remaining amount to cancel', 'woo-vipps') . ":" . @$ts['remainingAmountToCancel'] . "<br>";
+            }
         }
         if (!empty(@$details['shippingDetails'])) {
             $ss = $details['shippingDetails'];
