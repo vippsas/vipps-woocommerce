@@ -1791,6 +1791,14 @@ EOF;
         if (isset($parts[3]) && $parts[3] == 'checkout') {
             $ischeckout = true;
         }
+
+        $vippsorderid = ($result && isset($result['orderId'])) ? $result['orderId'] : "";
+        // For checkout, the orderId has been renamed to "reference" IOK 2022-02-11
+        // We set the orderId here very early so old filters and hooks will continue working - mostly used for debugging.
+        if (!$vippsorderid && $result && isset($result['reference'])) {
+           $vippsorderid = $result['reference'];
+           $result['orderId'] = $result['reference'];
+        }
         
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
 
@@ -1806,13 +1814,6 @@ EOF;
             $this->log(__("Received a test callback, exiting" , 'woo-vipps'), 'debug');
             print '{"status": 1, "msg": "Test ok"}';
             exit();
-        }
-
-        $vippsorderid = isset($result['orderId']) ? $result['orderId'] : "";
-        // For checkout, the orderId has been renamed to "reference" IOK 2022-02-11
-        if (!$vippsorderid && isset($result['reference'])) {
-           $vippsorderid = $result['reference'];
-           $result['orderId'] = $result['reference'];
         }
 
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
@@ -3562,7 +3563,7 @@ return; // IOK FIXME
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-//        if (false && $status == 'pending') { // IOK FIXME
+#        if (false && $status == 'pending') { // IOK FIXME For testing callbacks
         if ($status == 'pending') { 
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); 
