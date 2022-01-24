@@ -4,7 +4,7 @@ Tags: woocommerce, vipps
 Version: 1.8.9
 Stable tag: 1.8.9
 Requires at least: 4.7
-Tested up to: 5.8.3
+Tested up to: 5.9.0
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 6.1.0
