@@ -1990,7 +1990,7 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-        error_log("Raw post " . $raw_post);
+//        error_log("Raw post " . $raw_post);
 
         if (!$result) {
            $error = json_last_error_msg();
@@ -2005,7 +2005,7 @@ EOF;
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-        error_log("Restoring session of order $orderid vipps orderid $vippsorderid");
+//        error_log("Restoring session of order $orderid vipps orderid $vippsorderid");
         $this->callback_restore_session($orderid);       
 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);

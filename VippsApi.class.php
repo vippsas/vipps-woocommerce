@@ -307,7 +307,7 @@ class VippsApi {
          $data['customerInteraction'] = "";
         }
 
-        error_log("Sending body " . print_r($data, true));
+//        error_log("Sending body " . print_r($data, true));
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 
@@ -807,8 +807,8 @@ class VippsApi {
             }
         }
 
-error_log("doing $url  with " . print_r($args, true));
-error_log("Response $response, headers " . print_r($headers,true) . " Content " . print_r($content, true));
+// error_log("doing $url  with " . print_r($args, true));
+// error_log("Response $response, headers " . print_r($headers,true) . " Content " . print_r($content, true));
 
         // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
         return $this->handle_http_response($response,$headers,$content);

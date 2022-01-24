@@ -1079,7 +1079,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $remaining = intval($order->get_meta('_vipps_amount')) - $captured - intval($order->get_meta('_vipps_cancelled'));
            $refundable = $captured - intval($order->get_meta('_vipps_refunded'));
 
- error_log("Dead reckoning: captured $captured - remaining $remaining - refundable $refundable");
+ // error_log("Dead reckoning: captured $captured - remaining $remaining - refundable $refundable");
         
            $order->update_meta_data('_vipps_captured', $captured);
            $order->update_meta_data('_vipps_capture_remaining', $remaining);
@@ -1224,7 +1224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // The caller must handle the errors.
     public function refund_payment($order,$amount=0,$cents=false) {
 
-error_log("Amount is $amount cents is $cents");
+// error_log("Amount is $amount cents is $cents");
 
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
@@ -1282,7 +1282,7 @@ error_log("Amount is $amount cents is $cents");
            $refunded_now  = $amount;
            $refunded = intval($order->get_meta('_vipps_refunded')) + $amount;
            $remaining = $captured - $refunded; 
- error_log("Dead reckoning: captured $captured - refunded $refunded - refundable $remaining cents $cents");
+ // error_log("Dead reckoning: captured $captured - refunded $refunded - refundable $remaining cents $cents");
 
            $order->update_meta_data('_vipps_refunded', $refunded);
            $order->update_meta_data('_vipps_refund_remaining', $remaining);
@@ -1411,11 +1411,11 @@ error_log("Amount is $amount cents is $cents");
                 $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                 $order->update_meta_data('_vipps_amount',$vippsamount);
             } else {
-               error_log("Transactioninfo is missing, we should have paymentDetails instead");
+//               error_log("Transactioninfo is missing, we should have paymentDetails instead");
                // IOK 2022-01-20 the epayment API does it differently
                $vippsstamp = time();
                // IOK Check to see if this changes to aggregate or transactionAggregate's authorizedAmount
-               error_log(print_r($paymentdetails['paymentDetails'], true));
+//               error_log(print_r($paymentdetails['paymentDetails'], true));
                $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                $order->update_meta_data('_vipps_amount',$vippsamount);
