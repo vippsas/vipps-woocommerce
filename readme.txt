@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.9
-Stable tag: 1.8.9
+Version: 1.8.10
+Stable tag: 1.8.10
 Requires at least: 4.7
 Tested up to: 5.9.0
 Requires PHP: 5.6

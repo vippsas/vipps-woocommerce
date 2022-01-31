@@ -1014,7 +1014,7 @@ print "<pre>"; print_r($newdata2); print "</pre>";
             $phonenr = preg_replace("![^0-9]!", "",  $phonenr);
             $phonenr = preg_replace("!^0+!", "", $phonenr);
             if (strlen($phonenr) == 8 && $customerinfo['country'] == 'NO') {
-                $phone = '47' + $phonenr;
+                $phonenr = '47' + $phonenr;
             }
             if (preg_match("/47\d{8}/", $phonenr) && $customerinfo['country'] == 'NO') {
               $phone = $phonenr;
@@ -1990,8 +1990,6 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-//        error_log("Raw post " . $raw_post);
-
         if (!$result) {
            $error = json_last_error_msg();
            $this->log(sprintf(__("Error getting customer data in the Vipps shipping details callback: %s",'woo-vipps'), $error));
@@ -2005,7 +2003,6 @@ EOF;
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
 
-//        error_log("Restoring session of order $orderid vipps orderid $vippsorderid");
         $this->callback_restore_session($orderid);       
 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
@@ -2132,6 +2129,7 @@ EOF;
 
             $packages = apply_filters('woo_vipps_shipping_callback_packages', array($package));
             $shipping =  WC()->shipping->calculate_shipping($packages);
+
             $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
          }
 
@@ -2172,6 +2170,7 @@ EOF;
             $chosen = null; // Actually that isn't available
             $this->log(__("Unavailable shipping method set as default in the Vipps Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'));
         }
+
         if (!$chosen) {
             // Find first method that isn't 'local_pickup'
             foreach($methods as $key=>&$data) {
@@ -2189,8 +2188,9 @@ EOF;
              
             }
         }
-        $methods[$chosen]['default'] = true;
-
+        if (isset($methods[$chosen])) {
+            $methods[$chosen]['default'] = true;
+        }
         $methods = apply_filters('woo_vipps_express_checkout_shipping_rates', $methods, $order, $acart);
 
         $vippsmethods = array();
@@ -2198,6 +2198,8 @@ EOF;
         if (!$storedmethods) $storedmethods= array();
 
         foreach($methods as $method) {
+
+
            $rate = $method['rate'];
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
