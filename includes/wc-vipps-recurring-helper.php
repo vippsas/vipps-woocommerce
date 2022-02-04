@@ -385,7 +385,7 @@ class WC_Vipps_Recurring_Helper {
 	public static function get_product_description( WC_Product $product ): string {
 		$source = self::get_meta( $product, self::META_PRODUCT_DESCRIPTION_SOURCE );
 
-		$description = $product->get_name();
+		$description = $product->get_name( 'original' );
 		if ( $source === 'short_description' ) {
 			$description = $product->get_short_description();
 		}

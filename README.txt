@@ -2,7 +2,7 @@
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 5.8
+Tested up to: 5.9
 Stable tag: trunk
 Requires PHP: 7.0
 License: AGPLv3.0 or later
@@ -157,6 +157,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 == Changelog ==
 
 ==== End Log ====
+
+= 1.12.4 =
+* Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps app or app-switch screen.
 
 = 1.12.3 =
 * Fixed: Initial charge description no longer contains " + " when no extra products are purchased.

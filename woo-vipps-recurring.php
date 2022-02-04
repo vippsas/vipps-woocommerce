@@ -5,10 +5,10 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.12.3
+ * Version: 1.12.4
  * Requires at least: 4.4
- * Tested up to: 5.8
- * WC tested up to: 6.0
+ * Tested up to: 5.9
+ * WC tested up to: 6.1
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
  */
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.12.3' );
+define( 'WC_VIPPS_RECURRING_VERSION', '1.12.4' );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
