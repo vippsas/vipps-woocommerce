@@ -1513,6 +1513,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_billing_postcode($postcode);
         $order->set_billing_country($country);
 
+
+        if (version_compare(WC_VERSION, '5.6.0', '>=')) {
+            $order->set_shipping_phone($phone);
+        }
+
         $order->set_shipping_first_name($firstname);
         $order->set_shipping_last_name($lastname);
         $order->set_shipping_address_1($addressline1);
