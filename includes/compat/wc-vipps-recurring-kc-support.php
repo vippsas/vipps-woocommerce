@@ -7,34 +7,71 @@ class WC_Vipps_Recurring_Kc_Support {
 	 * Initialize Vipps Recurring KC Support class.
 	 */
 	public static function init() {
-		add_filter( 'kco_wc_gateway_settings', [ 'WC_Vipps_Recurring_Kc_Support', 'form_fields' ] );
+		add_filter( 'kco_wc_gateway_settings', [ WC_Vipps_Recurring_Kc_Support::class, 'form_fields' ] );
 
 		add_filter( 'kco_wc_api_request_args', [
-			'WC_Vipps_Recurring_Kc_Support',
+			WC_Vipps_Recurring_Kc_Support::class,
 			'create_vipps_recurring_order'
 		], 90 );
 
 		add_filter( 'kco_wc_klarna_order_pre_submit', [
-			'WC_Vipps_Recurring_Kc_Support',
+			WC_Vipps_Recurring_Kc_Support::class,
 			'canonicalize_phone_number'
 		], 11 );
 
-		add_action( 'init', [ 'WC_Vipps_Recurring_Kc_Support', 'maybe_remove_other_gateway_button' ] );
+		add_action( 'init', [ WC_Vipps_Recurring_Kc_Support::class, 'maybe_remove_other_gateway_button' ] );
 
-		add_action( 'kco_wc_before_submit', [ 'WC_Vipps_Recurring_Kc_Support', 'add_vipps_recurring_payment_method' ] );
+		add_action( 'kco_wc_before_submit', [
+			WC_Vipps_Recurring_Kc_Support::class,
+			'add_vipps_recurring_payment_method'
+		] );
 
 		add_action( 'woocommerce_payment_complete', [
-			'WC_Vipps_Recurring_Kc_Support',
+			WC_Vipps_Recurring_Kc_Support::class,
 			'reset_default_payment_method'
 		], 10 );
+
+		add_filter( 'wc_vipps_recurring_transaction_id_for_order', [
+			WC_Vipps_Recurring_Kc_Support::class,
+			'fix_transaction_id'
+		], 10, 2 );
+
+		add_action( 'wc_vipps_recurring_before_process_order_charge', [
+			WC_Vipps_Recurring_Kc_Support::class,
+			'fix_payment_method_on_subscription'
+		] );
+	}
+
+	/**
+	 * Klarna messes up our transaction id by inserting their own. We don't want theirs!
+	 */
+	public static function fix_transaction_id( $order, $transaction_id ) {
+		$_wc_klarna_order_id = WC_Vipps_Recurring_Helper::get_meta( $order, '_wc_klarna_order_id' );
+		if ( $_wc_klarna_order_id === $transaction_id ) {
+			return false;
+		}
+
+		return $transaction_id;
+	}
+
+	/**
+	 * Fix 16.02.2022 - KCO did not set the correct external payment method on a subscription after completed payment
+	 * KCO 2.6.4, WooCommerce 6.2.0
+	 */
+	public static function fix_payment_method_on_subscription( $order ) {
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway;
+
+		$subscriptions = $gateway->get_subscriptions_for_order( $order );
+		foreach ( $subscriptions as $subscription ) {
+			if ( $subscription->get_payment_method() === 'kco' && ! empty( WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) ) ) {
+				$subscription->set_payment_method( $gateway->id );
+				$subscription->save();
+			}
+		}
 	}
 
 	/**
 	 * Add custom setting fields to Klarna's Vipps Recurring settings.
-	 *
-	 * @param $settings
-	 *
-	 * @return mixed
 	 */
 	public static function form_fields( $settings ) {
 		$settings['epm_vipps_recurring_settings_title'] = [
@@ -82,10 +119,6 @@ class WC_Vipps_Recurring_Kc_Support {
 
 	/**
 	 * Add Vipps Recurring to Klarna Checkout.
-	 *
-	 * @param $create
-	 *
-	 * @return mixed
 	 */
 	public static function create_vipps_recurring_order( $create ) {
 		$merchant_urls    = KCO_WC()->merchant_urls->get_urls();
@@ -111,7 +144,7 @@ class WC_Vipps_Recurring_Kc_Support {
 		$gateway = [
 			'name'         => $name,
 			'redirect_url' => add_query_arg( [
-				'kco-external-payment' => 'vipps_recurring',
+				'kco-external-payment' => WC_Vipps_Recurring::get_instance()->gateway->id,
 				'order_id'             => $create['agreement_id'] ?? '{checkout.order.id}'
 			], $confirmation_url ),
 			'image_url'    => $image_url,
@@ -138,6 +171,9 @@ class WC_Vipps_Recurring_Kc_Support {
 		}
 	}
 
+	/**
+	 * Reset the default payment method back to KCO after a completed Vipps payment
+	 */
 	public static function reset_default_payment_method() {
 		if ( WC()->session && WC()->session->get( 'vipps_via_klarna' ) ) {
 			WC()->session->set( 'chosen_payment_method', 'kco' );
@@ -159,11 +195,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * @param $klarna_order
-	 *
 	 * We need to remove +47 and all spaces from the phone number before handing it off to the Vipps API.
-	 *
-	 * @return mixed
 	 */
 	public static function canonicalize_phone_number( $klarna_order ) {
 		if ( isset( $_GET['kco-external-payment'] ) && 'vipps_recurring' === $_GET['kco-external-payment'] ) {

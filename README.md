@@ -118,21 +118,25 @@ Enables someone with access to Vipps developer keys to test the plugin. This is 
 
 Available filters:
 
-`wc_vipps_recurring_supported_currencies($currencies: array)`
+`wc_vipps_recurring_supported_currencies(array $currencies)`
 
 - Takes an array of supported currencies in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
 
-`wc_vipps_recurring_payment_icons($icons: array)`
+`wc_vipps_recurring_payment_icons(array $icons)`
 
 - Takes an array of icons that a WooCommerce payment gateway can have. Currently it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
 
-`wc_vipps_recurring_show_capture_button($show_capture_button: bool, $order: WC_Order)`
+`wc_vipps_recurring_show_capture_button(bool $show_capture_button, WC_Order $order)`
 
 - Decides whether the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current decision on whether or not it shall be displayed. `$order` contains the current `WC_Order` being viewed.
 
-`wc_vipps_recurring_merchant_agreement_url($url: string)`
+`wc_vipps_recurring_merchant_agreement_url(string $url)`
 
-`wc_vipps_recurring_merchant_redirect_url($url: string)`
+`wc_vipps_recurring_merchant_redirect_url(string $url)`
+
+`wc_vipps_recurring_transaction_id_for_order(WC_Order $order, string $transaction_id)`
+
+- Determines the return value of `WC_Vipps_Recurring_Helper::get_transaction_id_for_order`
 
 # Frequently Asked Questions
 

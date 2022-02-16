@@ -269,15 +269,10 @@ class WC_Vipps_Recurring_Helper {
 			: $order->get_transaction_id();
 
 		if ( is_integer( $transaction_id ) && ! $transaction_id ) {
-			return false;
+			$transaction_id = false;
 		}
 
-		$_wc_klarna_order_id = self::get_meta( $order, '_wc_klarna_order_id' );
-		if ( $_wc_klarna_order_id === $transaction_id ) {
-			return false;
-		}
-
-		return $transaction_id;
+		return apply_filters( 'wc_vipps_recurring_transaction_id_for_order', $order, $transaction_id );
 	}
 
 	/**
