@@ -93,7 +93,7 @@ class WC_Vipps_Recurring_Kc_Support {
 
 		$kco_settings = get_option( 'woocommerce_kco_settings' );
 
-		$activate     = ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes';
+		$activate = ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes';
 		$activate = apply_filters( 'wc_vipps_recurring_activate_kco_external_payment', ( $activate && WC_Vipps_Recurring::get_instance()->gateway->is_available() ) );
 
 		if ( ! isset( $create['external_payment_methods'] ) || ! is_array( $create['external_payment_methods'] ) ) {
@@ -139,7 +139,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	public static function reset_default_payment_method() {
-		if ( WC()->session->get( 'vipps_via_klarna' ) ) {
+		if ( WC()->session && WC()->session->get( 'vipps_via_klarna' ) ) {
 			WC()->session->set( 'chosen_payment_method', 'kco' );
 			WC()->session->set( 'vipps_via_klarna', 0 );
 		}

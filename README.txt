@@ -154,6 +154,10 @@ After 2 days it will move to the "Processing" status. You can however change the
 
 Alternatively you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
 
+== Known bugs ==
+
+* Synchronized products can not be paid via Vipps when using KCO if the price at this moment in time is 0.
+
 == Changelog ==
 
 = 1.13.0 =
@@ -164,6 +168,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: KCO compatibility `headers already output` notice no longer shows on every page when debug mode is enabled.
 * Fixed: Set payment method to Vipps Recurring on the subscription after paying with the Vipps Recurring EPM in KCO. This is likely caused by a WooCommerce bug.
 * Refactor: `capture_payment` should no longer create a charge if a RESERVED charge does not exist.
+* Fixed: Now sets the correct order status for RESERVED payments when paying with Vipps through KCO.
 
 = 1.12.4 =
 * Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps app or app-switch screen.

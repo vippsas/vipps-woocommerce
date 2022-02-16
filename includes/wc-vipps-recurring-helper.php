@@ -261,7 +261,7 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * @param $order
 	 *
-	 * @return mixed
+	 * @return false|mixed
 	 */
 	public static function get_transaction_id_for_order( $order ) {
 		$transaction_id = self::is_wc_lt( '3.0' )
@@ -269,6 +269,11 @@ class WC_Vipps_Recurring_Helper {
 			: $order->get_transaction_id();
 
 		if ( is_integer( $transaction_id ) && ! $transaction_id ) {
+			return false;
+		}
+
+		$_wc_klarna_order_id = self::get_meta( $order, '_wc_klarna_order_id' );
+		if ( $_wc_klarna_order_id === $transaction_id ) {
 			return false;
 		}
 
