@@ -92,10 +92,9 @@ class WC_Vipps_Recurring_Kc_Support {
 		$confirmation_url = $merchant_urls['confirmation'];
 
 		$kco_settings = get_option( 'woocommerce_kco_settings' );
-		$activate     = ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes';
 
-		global $vipps_recurring;
-		$activate = apply_filters( 'wc_vipps_recurring_activate_kco_external_payment', ( $activate && $vipps_recurring->gateway->is_available() ) );
+		$activate     = ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes';
+		$activate = apply_filters( 'wc_vipps_recurring_activate_kco_external_payment', ( $activate && WC_Vipps_Recurring::get_instance()->gateway->is_available() ) );
 
 		if ( ! isset( $create['external_payment_methods'] ) || ! is_array( $create['external_payment_methods'] ) ) {
 			$create['external_payment_methods'] = [];
@@ -109,7 +108,7 @@ class WC_Vipps_Recurring_Kc_Support {
 		$image_url   = $kco_settings['epm_vipps_recurring_img_url'] ?? '';
 		$description = $kco_settings['epm_vipps_recurring_description'] ?? '';
 
-		$klarna_external_payment = [
+		$gateway = [
 			'name'         => $name,
 			'redirect_url' => add_query_arg( [
 				'kco-external-payment' => 'vipps_recurring',
@@ -119,10 +118,7 @@ class WC_Vipps_Recurring_Kc_Support {
 			'description'  => $description,
 		];
 
-		if ( ! isset( $create['external_payment_methods'] ) || ! is_array( $create['external_payment_methods'] ) ) {
-			$create['external_payment_methods'] = [];
-		}
-		$create['external_payment_methods'][] = $klarna_external_payment;
+		$create['external_payment_methods'][] = $gateway;
 
 		WC()->session->set( 'vipps_via_klarna', 1 );
 
