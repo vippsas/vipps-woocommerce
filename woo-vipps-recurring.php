@@ -759,7 +759,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function add_gateways( $methods ): array {
 				if ( function_exists( 'wcs_create_renewal_order' ) && class_exists( 'WC_Subscriptions_Order' ) ) {
-					$methods[] = 'WC_Gateway_Vipps_Recurring';
+					$methods[] = WC_Gateway_Vipps_Recurring::get_instance();
 				}
 
 				return $methods;
