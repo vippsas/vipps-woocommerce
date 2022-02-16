@@ -689,7 +689,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// KCO 2.6.4, WooCommerce 6.2.0
 			$subscriptions = $this->get_subscriptions_for_order( $order );
 			foreach ( $subscriptions as $subscription ) {
-				if ( $subscription->get_payment_method() === 'kco' && WC_Vipps_Recurring_Helper::get_id( $order ) ) {
+				if ( $subscription->get_payment_method() === 'kco' && ! empty( WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order ) ) ) {
 					$subscription->set_payment_method( $this->id );
 					$subscription->save();
 				}
@@ -722,7 +722,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// status: RESERVED
 			// not auto captured, so we need to put the order status to `$this->default_reserved_charge_status`
 			if ( ! $transaction_id && $charge['status'] === 'RESERVED'
-				 && ! wcs_order_contains_renewal( $order ) ) {
+			     && ! wcs_order_contains_renewal( $order ) ) {
 				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
 
 				$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
@@ -733,8 +733,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// status: DUE or PENDING
 			// when DUE we need to check that it becomes another status in a cron
 			if ( ! $transaction_id && ( $charge['status'] === 'DUE'
-										|| ( $charge['status'] === 'PENDING'
-											 && wcs_order_contains_renewal( $order ) ) ) ) {
+			                            || ( $charge['status'] === 'PENDING'
+			                                 && wcs_order_contains_renewal( $order ) ) ) ) {
 				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, true );
@@ -762,8 +762,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// if status was FAILED, but no longer is
 			if ( WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
-				 && 'FAILED' !== $charge['status']
-				 && in_array( $charge['status'], [ 'PROCESSING', 'DUE', 'PENDING' ] ) ) {
+			     && 'FAILED' !== $charge['status']
+			     && in_array( $charge['status'], [ 'PROCESSING', 'DUE', 'PENDING' ] ) ) {
 				WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge['id'] );
 			}
 		}
@@ -1048,9 +1048,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order = wc_get_order( $order_id );
 
 			if ( wcs_order_contains_renewal( $order )
-				 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING ) !== 1
-				 || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
-				 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) ) {
+			     || (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING ) !== 1
+			     || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
+			     || (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) ) {
 				return;
 			}
 
