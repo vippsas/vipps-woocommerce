@@ -1071,28 +1071,23 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			try {
 				$agreement = $this->api->get_agreement( $agreement_id );
 
-				// idempotency key
 				$idempotency_key = $this->get_idempotence_key( $order );
 
 				$charges = $this->api->get_charges_for( $agreement['id'] );
 
 				// if a charge exists and the status is RESERVED we need to simply capture it
-				$charges_amount = count( $charges );
+				$charges = array_filter( $charges, function ( $item ) {
+					return $item['status'] === 'RESERVED';
+				} );
 
-				$charge = null;
+				if ( count( $charges ) === 0 ) {
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] No RESERVED charges found in capture_payment for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement_id['id'] ) );
 
-				if ( $charges_amount > 0 ) {
-					$latest_charge = $charges[ array_key_last( $charges ) ];
-
-					if ( $latest_charge['status'] === 'RESERVED' ) {
-						$charge = $this->capture_reserved_charge( $latest_charge, $agreement, $order, $idempotency_key );
-					}
+					return false;
 				}
 
-				// if a charge was never captured we need to create one
-				if ( ! $charge ) {
-					$charge = $this->create_charge( $agreement, $order, $idempotency_key );
-				}
+				$latest_charge = $charges[ array_key_last( $charges ) ];
+				$charge        = $this->capture_reserved_charge( $latest_charge, $agreement, $order, $idempotency_key );
 
 				WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge['id'] );
 				$order->save();
