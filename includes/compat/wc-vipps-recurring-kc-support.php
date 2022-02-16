@@ -23,7 +23,7 @@ class WC_Vipps_Recurring_Kc_Support {
 
 		add_action( 'kco_wc_before_submit', [ 'WC_Vipps_Recurring_Kc_Support', 'add_vipps_recurring_payment_method' ] );
 
-		add_action( 'woocommerce_checkout_order_processed', [
+		add_action( 'woocommerce_payment_complete', [
 			'WC_Vipps_Recurring_Kc_Support',
 			'reset_default_payment_method'
 		], 10, 3 );
