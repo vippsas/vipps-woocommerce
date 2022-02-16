@@ -79,13 +79,13 @@ The documentation for retrieving your Vipps API Keys can be found
 
 Configuring products for use with the Vipps Recurring Payments plugin is not any
 different from default WooCommerce, with one exception: The configuration for
-whether or not the product is virtual or physical is important to consider.
+whether the product is virtual or physical is important to consider.
 
 If a product is virtual the customer will be charged immediately but if the
 product is physical you will have to capture the payment manually through the
 order in WooCommerce when you have shipped the product.
 
-In most cases your products should be virtual when using subscriptions but it is
+In most cases your products should be virtual when using subscriptions, but it is
 possible to use the plugin with physical products if you need to do so.
 
 See the
@@ -98,7 +98,7 @@ for more details:
 # Extending the plugin
 
 WooCommerce and WooCommerce Subscriptions has a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow so there should not be any need to extend this plugin directly,
-but if you need an action or filter added to the plugin don't hesitate to create an issue on GitHub and we will look into this as soon as possible.
+but if you need an action or filter added to the plugin don't hesitate to create an issue on GitHub, and we will look into this as soon as possible.
 
 The plugin is currently in a pre-release phase and will have more filters, actions and features further down the road.
 
@@ -120,15 +120,19 @@ Available filters:
 
 `wc_vipps_recurring_supported_currencies($currencies: array)`
 
-- This filter takes an array of supported currenices in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
+- Takes an array of supported currencies in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
 
 `wc_vipps_recurring_payment_icons($icons: array)`
 
-- This filter takes an array of icons that a WooCommerce payment gateway can have. Currently it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
+- Takes an array of icons that a WooCommerce payment gateway can have. Currently it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
 
 `wc_vipps_recurring_show_capture_button($show_capture_button: bool, $order: WC_Order)`
 
-- This filter decides whether or not the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current decision on whether or not it shall be displayed. `$order` contains the current `WC_Order` being viewed.
+- Decides whether the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current decision on whether or not it shall be displayed. `$order` contains the current `WC_Order` being viewed.
+
+`wc_vipps_recurring_merchant_agreement_url($url: string)`
+
+`wc_vipps_recurring_merchant_redirect_url($url: string)`
 
 # Frequently Asked Questions
 
@@ -193,4 +197,4 @@ This is because when an order is charged in Vipps it takes 2 days before the pay
 
 After 2 days it will move to the "Processing" status. You can however change the behaviour of this by using the "Default status to give pending renewals" option in the plugin settings.
 
-Alternatively you you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
+Alternatively you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.

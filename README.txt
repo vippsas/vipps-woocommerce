@@ -65,13 +65,13 @@ The documentation for retrieving your Vipps API Keys can be found [here](https:/
 
 Configuring products for use with the Vipps Recurring Payments plugin is not any
 different from default WooCommerce, with one exception: The configuration for
-whether or not the product is virtual or physical is important to consider.
+whether the product is virtual or physical is important to consider.
 
 If a product is virtual the customer will be charged immediately but if the
 product is physical you will have to capture the payment manually through the
 order in WooCommerce when you have shipped the product.
 
-In most cases your products should be virtual when using subscriptions but it is
+In most cases your products should be virtual when using subscriptions, but it is
 possible to use the plugin with physical products if you need to do so.
 
 See the
@@ -156,7 +156,12 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-==== End Log ====
+= 1.13.0 =
+* Added: `wc_vipps_recurring_merchant_agreement_url` filter.
+* Added: `wc_vipps_recurring_merchant_redirect_url` filter.
+* Fixed: KCO compatibility `headers already output` notice no longer shows on every page when debug mode is enabled.
+* Fixed: No longer use deprecated function `WC_Subscriptions_Order::order_contains_subscription`
+* Fixed: Make sure we don't register the Vipps Recurring gateway twice.
 
 = 1.12.4 =
 * Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps app or app-switch screen.
@@ -312,3 +317,5 @@ that look like this: `HTTP Response Error: (recurring/v2/agreements/:id/charges)
 * Fix: Refunding a reversed charge now works, just like pending charges in version 1.3.9.
 * Change: "Default status to give pending renewal orders" default is now "processing" instead of "on hold"
 * Change: Removed "completed" as a possible default status for the "Default status to give pending renewal orders" setting as this status is conventionally used for orders that are completely finished.
+
+==== End Log ====

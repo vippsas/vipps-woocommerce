@@ -26,7 +26,7 @@ class WC_Vipps_Recurring_Kc_Support {
 		add_action( 'woocommerce_payment_complete', [
 			'WC_Vipps_Recurring_Kc_Support',
 			'reset_default_payment_method'
-		], 10, 3 );
+		], 10 );
 	}
 
 	/**
@@ -88,7 +88,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	 * @return mixed
 	 */
 	public static function create_vipps_recurring_order( $create ) {
-		$merchant_urls = KCO_WC()->merchant_urls->get_urls();
+		$merchant_urls    = KCO_WC()->merchant_urls->get_urls();
 		$confirmation_url = $merchant_urls['confirmation'];
 
 		$kco_settings = get_option( 'woocommerce_kco_settings' );
@@ -111,7 +111,10 @@ class WC_Vipps_Recurring_Kc_Support {
 
 		$klarna_external_payment = [
 			'name'         => $name,
-			'redirect_url' => add_query_arg( 'kco-external-payment', 'vipps_recurring', $confirmation_url ),
+			'redirect_url' => add_query_arg( [
+				'kco-external-payment' => 'vipps_recurring',
+				'order_id'             => $create['agreement_id'] ?? '{checkout.order.id}'
+			], $confirmation_url ),
 			'image_url'    => $image_url,
 			'description'  => $description,
 		];
@@ -151,7 +154,8 @@ class WC_Vipps_Recurring_Kc_Support {
 	 */
 	public static function maybe_remove_other_gateway_button() {
 		$kco_settings   = get_option( 'woocommerce_kco_settings' );
-		$disable_button = $kco_settings['epm_vipps_recurring_disable_button'] === 'yes';
+		$disable_button = isset( $kco_settings['epm_vipps_recurring_disable_button'] ) &&
+						  $kco_settings['epm_vipps_recurring_disable_button'] === 'yes';
 
 		if ( $disable_button ) {
 			remove_action( 'kco_wc_after_order_review', 'kco_wc_show_another_gateway_button', 20 );
