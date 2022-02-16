@@ -159,9 +159,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 = 1.13.0 =
 * Added: `wc_vipps_recurring_merchant_agreement_url` filter.
 * Added: `wc_vipps_recurring_merchant_redirect_url` filter.
-* Fixed: KCO compatibility `headers already output` notice no longer shows on every page when debug mode is enabled.
 * Fixed: No longer use deprecated function `WC_Subscriptions_Order::order_contains_subscription`
 * Fixed: Make sure we don't register the Vipps Recurring gateway twice.
+* Fixed: KCO compatibility `headers already output` notice no longer shows on every page when debug mode is enabled.
+* Fixed: Set payment method to Vipps Recurring on the subscription after paying with the Vipps Recurring EPM in KCO. This is likely caused by a WooCommerce bug.
 
 = 1.12.4 =
 * Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps app or app-switch screen.

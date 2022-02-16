@@ -685,6 +685,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
+			// Fix 16.02.2022 - KCO did not set the correct external payment method on a subscription after completed payment
+			// KCO 2.6.4, WooCommerce 6.2.0
+			$subscriptions = $this->get_subscriptions_for_order( $order );
+			foreach ( $subscriptions as $subscription ) {
+				if ( $subscription->get_payment_method() === 'kco' && WC_Vipps_Recurring_Helper::get_id( $order ) ) {
+					$subscription->set_payment_method( $this->id );
+					$subscription->save();
+				}
+			}
+
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
 			$transaction_id = WC_Vipps_Recurring_Helper::get_transaction_id_for_order( $order );
 
