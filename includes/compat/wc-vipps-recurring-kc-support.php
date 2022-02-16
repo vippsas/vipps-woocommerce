@@ -121,8 +121,7 @@ class WC_Vipps_Recurring_Kc_Support {
 		}
 		$create['external_payment_methods'][] = $klarna_external_payment;
 
-		// Ensure we don't make Vipps the default payment method. This is checked in "woocommerce_checkout_order_processed" hook.
-		WC()->session->set( 'vipps_recurring_via_klarna', 1 );
+		WC()->session->set( 'vipps_via_klarna', 1 );
 
 		return $create;
 	}
@@ -140,17 +139,10 @@ class WC_Vipps_Recurring_Kc_Support {
 		}
 	}
 
-	/**
-	 * Reset default payment method.
-	 *
-	 * @param $order_id
-	 * @param $post_data
-	 * @param $order
-	 */
-	public static function reset_default_payment_method( $order_id, $post_data, $order ) {
-		if ( WC()->session->get( 'vipps_recurring_via_klarna' ) ) {
+	public static function reset_default_payment_method() {
+		if ( WC()->session->get( 'vipps_via_klarna' ) ) {
 			WC()->session->set( 'chosen_payment_method', 'kco' );
-			WC()->session->set( 'vipps_recurring_via_klarna', 0 );
+			WC()->session->set( 'vipps_via_klarna', 0 );
 		}
 	}
 
