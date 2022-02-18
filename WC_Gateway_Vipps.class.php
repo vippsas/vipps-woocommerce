@@ -304,6 +304,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return $this->maybe_refund_payment($orderid);
         }
 
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
 
         $payment = $this->check_payment_status($order);
         if ($payment == 'initiated' || $payment == 'cancelled') {
@@ -1108,6 +1114,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
+        try {
+                $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
         $total = round(wc_format_decimal($order->get_total(),'')*100);
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
@@ -1229,8 +1242,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             throw new VippsAPIException($msg);
         }
 
-        // Get current payment status of the order IOK 2022-01-19
-        $order = $this->update_vipps_payment_details($order); 
 
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
