@@ -1553,6 +1553,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                if ($result['status'] == 'AUTHORISED' && isset($result['directCapture']) && $result['directCapture']) {
                    $result['status'] = "SALE";
                }
+               if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
+                  $result['status'] = "INITIATE";
+               }
 
                $transactionSummary = array();
                // Always NOK at this point, but we also don't care because the order has the currency
