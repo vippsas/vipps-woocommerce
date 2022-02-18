@@ -1828,6 +1828,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->set_shipping_first_name($shipping_firstname);
         $order->set_shipping_last_name($shipping_lastname);
+        if (version_compare(WC_VERSION, '5.6.0', '>=')) {
+            $order->set_shipping_phone($phone);
+        }
         $order->set_shipping_address_1($addressline1);
         $order->set_shipping_address_2($addressline2);
         $order->set_shipping_city($city);
