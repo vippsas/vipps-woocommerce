@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.13.1 =
+* Fixed: Pass arguments to `wc_vipps_recurring_transaction_id_for_order` in the correct order.
+
 = 1.13.0 =
 * Added: `wc_vipps_recurring_merchant_agreement_url` filter.
 * Added: `wc_vipps_recurring_merchant_redirect_url` filter.

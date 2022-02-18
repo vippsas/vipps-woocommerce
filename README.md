@@ -134,7 +134,7 @@ Available filters:
 
 `wc_vipps_recurring_merchant_redirect_url(string $url)`
 
-`wc_vipps_recurring_transaction_id_for_order(WC_Order $order, string $transaction_id)`
+`wc_vipps_recurring_transaction_id_for_order(string $transaction_id, WC_Order $order)`
 
 - Determines the return value of `WC_Vipps_Recurring_Helper::get_transaction_id_for_order`
 

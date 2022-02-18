@@ -272,7 +272,7 @@ class WC_Vipps_Recurring_Helper {
 			$transaction_id = false;
 		}
 
-		return apply_filters( 'wc_vipps_recurring_transaction_id_for_order', $order, $transaction_id );
+		return apply_filters( 'wc_vipps_recurring_transaction_id_for_order', $transaction_id, $order );
 	}
 
 	/**

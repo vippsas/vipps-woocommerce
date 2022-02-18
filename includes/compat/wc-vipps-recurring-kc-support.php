@@ -45,7 +45,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	/**
 	 * Klarna messes up our transaction id by inserting their own. We don't want theirs!
 	 */
-	public static function fix_transaction_id( $order, $transaction_id ) {
+	public static function fix_transaction_id( $transaction_id, $order ) {
 		$_wc_klarna_order_id = WC_Vipps_Recurring_Helper::get_meta( $order, '_wc_klarna_order_id' );
 		if ( $_wc_klarna_order_id === $transaction_id ) {
 			return false;
