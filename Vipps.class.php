@@ -180,7 +180,6 @@ class Vipps {
             add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
-
     }
 
     public function admin_init () {
@@ -851,22 +850,6 @@ else:
         try {
             $details = $gw->get_payment_details($order);
             $order =   $gw->update_vipps_payment_details($order, $details);
-
-# IOK FIXME
-try {
-$newdata1 = $gw->api->epayment_get_payment($order);
-        } catch (Exception $e) {
- $newdata1 = $e->getMessage();
-}
-try {
-$newdata2 = $gw->api->epayment_get_payment_log($order);
-        } catch (Exception $e) {
- $newdata2 = $e->getMessage();
-}
-
-print "<pre>"; print_r($newdata1); print "</pre>";
-print "<pre>"; print_r($newdata2); print "</pre>";
-
         } catch (Exception $e) {
             print "<p>"; 
             print __('Transaction details not retrievable: ','woo-vipps') . $e->getMessage();
@@ -2458,7 +2441,6 @@ EOF;
     // e.g. wp-cron. IOK 2021-06-21
     // Stop restoring session in wp-cron too. IOK 2021-08-23
     public function check_status_of_pending_order($order, $maybe_restore_session=0) {
-return; // IOK FIXME
         $express = $order->get_meta('_vipps_express_checkout'); 
         if ($express && $maybe_restore_session) {
            $this->log(sprintf(__("Restoring session of order %d", 'woo-vipps'), $order->get_id()), 'debug'); 
@@ -3565,7 +3547,6 @@ return; // IOK FIXME
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-#        if (false && $status == 'pending') { // IOK FIXME For testing callbacks
         if ($status == 'pending') { 
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); 
@@ -3578,8 +3559,6 @@ return; // IOK FIXME
         } else {
                 // No need to do anyting here. IOK 2020-01-26
         }
-        
-
 
         $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
 

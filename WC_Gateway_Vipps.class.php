@@ -1393,7 +1393,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             $order->update_meta_data('_vipps_status',$newvippsstatus);
             $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
-            # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. FIXME
+
+            # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
@@ -1419,38 +1420,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return $oldstatus;
         }
-
         $order->save();
-
-        # IOK FIXME CHECK IF WE STILL NEED THIS - AFTER ALL WE MAY HAVE CALLED 'poll' ABOVE. Rewrite to only call this if we
-        # have no "shippingDetails" in the paymentDetails result FIXME FIXME
-        $this->log("About to check if we need to poll checkout " . $order->get_meta('_vipps_checkout_poll'), 'DEBUG'); // IOK FIXME
-        $address_set = $order->get_meta('_vipps_shipping_set');
-        if (!$address_set) {
-
-            $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
-            $this->log("Checkoutpoll : $checkoutpoll", 'DEBUG'); // IOK FIXME
-            if ($checkoutpoll) {
-                try {
-                    $this->log("Getting address info from Vipps Checkout", 'DEBUG'); // IOK FIXME
-                    $polldata =  $this->api->poll_checkout($checkoutpoll);
-                    $this->log("Got " . print_r($polldata, true), 'DEBUG'); // IOK FIXME
-                    if (isset($polldata['shippingDetails'])) {
-                        $this->log("Setting shipping details", 'DEBUG'); // IOK FIXME 
-                        $this->set_order_shipping_details($order,$polldata['shippingDetails'], $polldata['userDetails']);
-                        $this->log("Setting shipping details done", 'DEBUG'); // IOK FIXME 
-                        $address_set = 1;
-                    }
-                } catch (Exception $e) {
-                    $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
-                }
-            }
-        } else {
-          $this->log("Order already has shipping and billing address", 'DEBUG'); // IOK FIXME
-          $this->log(print_r($order->get_address('shipping'), true));
-          $this->log(print_r($order->get_address('billing'), true));
-        }
-
 
         $statuschange = 0;
         if ($oldvippsstatus != $vippsstatus) {
@@ -1462,12 +1432,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
+            // If we have been using Vipps Checkout, there is no Shipping Details in the normal "get order status" call, so we may need to poll
+            if (!isset($paymentdetails['shippingDetails'])) {
+                $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
+                if ($checkoutpoll) {
+                    try {
+                        $polldata =  $this->api->poll_checkout($checkoutpoll);
+                        if (isset($polldata['shippingDetails'])) {
+                            $paymentdetails['shippingDetails'] = $polldata['shippingDetails'];
+                            $paymentdetails['userDetails'] = $polldata['userDetails'];
+                        }
+                    } catch (Exception $e) {
+                        $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
+                    }
+                }
+            }
+
             do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
-            // This is for orders using express checkout - set or update order info, customer info.  IOK 2018-05-29
-            if (@$paymentdetails['shippingDetails']) {
+            $address_set = $order->get_meta('_vipps_shipping_set');
+            if ($address_set) {
+               // Callback has handled the situation, do nothing
+            } elseif (@$paymentdetails['shippingDetails']) {
+               // We need to set shipping details here
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
-            } else if ($address_set) {
-                // NOOP - address is known
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! 
@@ -1516,14 +1503,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // about the order from Vipps; the previous side-effecting is now done by update_vipps_payment_details.
     // IOK 2021-11-24 Because of this, we need to handle 402 and 404 errors differently here now - these *are* results, meaning there is
     // no payment details because the order doesn't exist.
-    // IOK 2022-01-19 And now, with the epayment API in use by checkout, but not yet actually usable, we need to possibly use the poll API here too.
+    // IOK 2022-01-19 And now, with the epayment API in use by checkout, we also need to use the poll api because the epayment API does not return user- and shipping data. We do get an order status though.
     public function get_payment_details($order) {
         $result = array();
         $poll = $order->get_meta('_vipps_checkout_poll');
         if ($poll) {
             try {
                 $result = $this->api->poll_checkout($poll);
-                if ($result == 'EXPIRED') $result = array(); // IOK FIXME CHECK THIS it's probably cancelled
+                if ($result == 'EXPIRED') $result = array(); 
             } catch (VippsAPIException $e) {
                 if ($resp == 402 || $resp == 404) {
                     $result['status'] = 'CANCEL';
@@ -1532,20 +1519,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     throw $e;
                 }
             }
-       }
+        } elseif ($order->get_meta('_vipps_api') == 'epayment') {
+            try {
+                $result = $gw->api->epayment_get_payment($order);
+            } catch (Exception $e) {
+                $this->log(__("Could not get order status from Vipps using epayment api: ", 'woo-vipps') . $e->getMessage(), "error");
+            }
+        }
 
-       # We now have epayment data, but we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
+       # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
        if (!empty($result)) {
            $result['orderId']  = $result['reference']; 
 
-           # This should never happen at this stage - but alas.
            if (isset($result['paymentDetails'])) {
                $details = $result['paymentDetails'];
 
                # IOK 2022-01-19 for this, the docs and experience does not agree, so check both
                $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
                $result['status'] = $details['state'];
-               // if 'AUTHORISED' and directCapture is set and true, set to complete / SALE FIXME
+
+               // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
+               if ($result['status'] == 'AUTHORISED' && isset($result['directCapture']) && $result['directCapture']) {
+                   $result['status'] = "SALE";
+               }
 
                $transactionSummary = array();
                // Always NOK at this point, but we also don't care because the order has the currency
@@ -1984,8 +1980,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $transaction['status'] = $details['state'];
         }
 
-        $this->log("Parsed transaction: " . print_r($transaction, true), 'DEBUG'); // IOK FIXME
-
         if (!$transaction) {
             $this->log(__("Anomalous callback from vipps, handle errors and clean up",'woo-vipps'),'warning');
             clean_post_cache($order->get_id());
@@ -2010,9 +2004,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
-            $this->log("Setting shipping details in callback", 'DEBUG'); // IOK FIXME
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
-            $this->log("Setting shipping details done", 'DEBUG'); // IOK FIXME
         }
 
         $transactionid = @$transaction['transactionId'];

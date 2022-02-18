@@ -307,8 +307,6 @@ class VippsApi {
          $data['customerInteraction'] = "";
         }
 
-//        error_log("Sending body " . print_r($data, true));
-
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 
         return $res;
@@ -565,10 +563,6 @@ class VippsApi {
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
-        # IOK FIXME this isn't currently documented, but it must be 8-50 chars, alphanumeric. So we need to create an unique reference for this op,
-        # hopefully independent of the order id.
-        $data['modificationReference'] = "CANCELFROM{$modificationAmount}TO0T" . time();
-
         $res = $this->http_call($command,$data,'PUT',$headers,'json'); 
         return $res;
     }
@@ -609,10 +603,6 @@ class VippsApi {
 
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
-
-        # IOK FIXME this isn't currently documented, but it must be 8-50 chars, alphanumeric. So we need to create an unique reference for this op,
-        # hopefully independent of the order id. Maybe we need to add FROM and TO values here, that would then need to be checked.
-#        $data['modificationReference'] = "CAPTURE{$modificationAmount}T" . time(); 
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
@@ -666,10 +656,6 @@ class VippsApi {
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
-        # IOK FIXME this isn't currently documented, but it must be 8-50 chars, alphanumeric. So we need to create an unique reference for this op,
-        # hopefully independent of the order id. Maybe we need to add FROM and TO values here, that would then need to be checked.
-#        $data['modificationReference'] = "REFUND{$modificationAmount}T" . time(); 
-
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
     }
@@ -706,6 +692,8 @@ class VippsApi {
         return $res;
     }
     // For the new epayment API, also used by checkout, return payment log (as for old payment_details. Will be used for debugging.
+    // IOK This function is not  yet implemented (2022-02-17) so it is not to be called. Will produce a transaction log for the 
+    // epayment api.
     public function epayment_get_payment_log ($order) {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid . "/events";
@@ -726,7 +714,7 @@ class VippsApi {
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
         $headers['Merchant-Serial-Number'] = $merch;
 
-        # IOK FIXME for debugging 2022-01-15
+        # IOK FIXME for debugging 2022-01-15 - documented values above do not work.
         $headers['ocpApimSubscriptionKey'] = $subkey;
         $headers['merchantSerialNumber'] = $merch;
         
@@ -807,9 +795,6 @@ class VippsApi {
             }
         }
 
-// error_log("doing $url  with " . print_r($args, true));
-// error_log("Response $response, headers " . print_r($headers,true) . " Content " . print_r($content, true));
-
         // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
         return $this->handle_http_response($response,$headers,$content);
     }
@@ -828,14 +813,6 @@ class VippsApi {
         if ($response < 300) {
             return $content; 
         }
-
-        // This is from the checkout api which of course does thing different again
-        /*
-         * {"type":"https://tools.ietf.org/html/rfc7231#section-6.5.1","title":"One or more validation errors occurred.","status":400,"traceId":"00-3d0f023ab3052d488fd0ab1eb7bfe9c8-f8aa7fc0fded974d-01","errors":{"AuthInfo.ClientSecret":["The ClientSecret field is required."]}}
-         * And for the poll: content: { "statusCode": 404, "message": "Resource not found" }
-         * [{"errorGroup":"Merchant","errorCode":"35","errorMessage":"Requested Order not found","contextId":"5b6a951e-4e68-4bc1-918c-6f40a7a0e466"}]
-         */
-
 
         // Now errorhandling. Default to use just the error header IOK 2018-05-11
         $msg = $headers['status'];
