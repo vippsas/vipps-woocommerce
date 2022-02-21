@@ -1042,11 +1042,10 @@ else:
         }
     }
 
+    // Check the current status of the current Checkout session for the user.
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
 
-
-        // Fold this into a function that will create a session if missing. This one however is only to get the order info.
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
@@ -1067,8 +1066,28 @@ else:
         }
 
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
-        $failed = $status == 'ERROR' || $status == 'EXPIRED';
+        $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
         $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
+
+        // Disallow sessions that go on for too long.
+        if (is_a($order, "WC_Order")) {
+            $created = $order->get_date_created();
+            $timestamp = 0;
+            $now = time();
+            try {
+                $timestamp = $created->getTimestamp();
+            } catch (Exception $e) {
+                // PHP 8 gives ValueError for this, we'll use 0
+            }
+            $passed = $now - $timestamp;
+            $minutes = ($passed / 60);
+            // Expire after 50 minutes
+            if ($minutes > 50) {
+                $this->abandonVippsCheckoutOrder($order);
+                return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
+            }
+        }
+
         $ok   = !$failed;
 
         // Since we checked the payment status at Vipps directly above, we don't actaully have any extra information at this point.
@@ -1082,7 +1101,7 @@ else:
         }
         // Errorhandling! If this happens we have an unknown status or something like it.
         if (!$ok) {
-            $this->log("Unknown status on poliing status: " . print_r($status, true), 'ERROR');
+            $this->log("Unknown status on polling status: " . print_r($status, true), 'ERROR');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>'ERROR', 'url'=>false));
             exit();
@@ -1272,6 +1291,7 @@ else:
             WC()->session->set('current_vipps_session', null);
             WC()->session->set('vipps_address_hash', false);
         }
+
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
             // NB: This can *potentially* be revived by a callback!
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);

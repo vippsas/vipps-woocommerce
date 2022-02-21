@@ -1399,6 +1399,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $paymentdetails = $this->get_payment_details($order);
             $newvippsstatus = $this->get_vipps_order_status($order,$paymentdetails);
+
             if (!$newvippsstatus) {
                 throw new Exception(__("Could not interpret Vipps order status", 'woo-vipps'));
             }
@@ -1417,7 +1418,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                 $order->update_meta_data('_vipps_amount',$vippsamount);
-            } else {
+            } else if ($paymentdetails and isset($paymentdetails['amount']))  {
                // IOK 2022-01-20 the epayment API does it differently
                $vippsstamp = time();
                // IOK Check to see if this changes to aggregate or transactionAggregate's authorizedAmount
@@ -1521,8 +1522,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($poll) {
             try {
                 $result = $this->api->poll_checkout($poll);
-                if ($result == 'EXPIRED') $result = array(); 
+                if ($result == 'EXPIRED') {
+                    $result = array('status'=>'CANCEL'); 
+                    return $result;
+                }
             } catch (VippsAPIException $e) {
+                $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
                     $result['status'] = 'CANCEL';
                     return $result;
@@ -1553,9 +1558,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                if ($result['status'] == 'AUTHORISED' && isset($result['directCapture']) && $result['directCapture']) {
                    $result['status'] = "SALE";
                }
-               if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
-                  $result['status'] = "INITIATE";
-               }
 
                $transactionSummary = array();
                // Always NOK at this point, but we also don't care because the order has the currency
@@ -1582,9 +1584,35 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            # IOK 2022-01-19 FIXME this doesn't work yet.
            $result['transactionLogHistory'] = array();
 
+
+           # IOK 2022-02-20 Try to always return a status
+           if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
+               // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
+               $result['status'] = "INITIATE";
+               $created = $order->get_date_created();
+               $timestamp = 0;
+               $now = time();
+               try {
+                   $timestamp = $created->getTimestamp();
+               } catch (Exception $e) {
+                   // PHP 8 gives ValueError for this, we'll use 0
+               }
+               $passed = $now - $timestamp;
+               $minutes = ($passed / 60);
+               // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
+               if ($minutes > 120) {
+                   $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
+                   $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
+                   $order->update_meta_data('_vipps_delendum',1);
+                   $order->save();
+                   $result['status'] = 'CANCEL';
+               }
+           }
+
            return $result;
        }
 
+        // If we get here, this is an ECOM order, which uses the older API IOK 2022-02-21
 
         // Then the details, which include the transaction history
         try {
