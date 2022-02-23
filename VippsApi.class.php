@@ -563,7 +563,7 @@ class VippsApi {
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
-        $res = $this->http_call($command,$data,'PUT',$headers,'json'); 
+        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
     }
     // Support for then new epayment API, which is also used by Checkout
