@@ -4,10 +4,10 @@ Tags: woocommerce, vipps
 Version: 1.8.12
 Stable tag: 1.8.12
 Requires at least: 4.7
-Tested up to: 5.9.0
+Tested up to: 5.9.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 6.2.0
+WC tested up to: 6.2.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
