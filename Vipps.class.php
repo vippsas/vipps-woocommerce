@@ -3204,8 +3204,8 @@ EOF;
         return $data;
     }
 
-    // YES
-    public function woocommerce_sttings_pages ($settings) {
+    // Make the new Vipps endpoint editable. Also IOK 2022-03-01
+    public function woocommerce_settings_pages ($settings) {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         if (!$vipps_checkout_activated) return $settings;
         $i = -1;
