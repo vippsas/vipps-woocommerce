@@ -78,6 +78,7 @@ class Vipps {
         _e('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps');
         _e('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps');
         _e("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce -  get started here!", 'woo-vipps');
+        _e("Card", 'woo-vipps');
     }
 
 
@@ -815,6 +816,7 @@ else:
 
 
         print "<table border=0><thead></thead><tbody>";
+        print "<tr><td colspan=2>"; print $order->get_payment_method_title();print "</td></tr>";
         print "<tr><td>Status</td>";
         print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";
         print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
@@ -860,6 +862,11 @@ else:
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
+        if (isset($details['paymentMethod'])) {
+            print __("Payment method", 'woo-vipps') . ":" . $details['paymentMethod'] . "<br>";
+        } else {
+            print __("Payment method", 'woo-vipps') . ": Vipps <br>";
+        }
         print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
@@ -3204,8 +3211,8 @@ EOF;
         return $data;
     }
 
-    // Make the new Vipps endpoint editable. Also IOK 2022-03-01
-    public function woocommerce_settings_pages ($settings) {
+    // YES
+    public function woocommerce_sttings_pages ($settings) {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
         if (!$vipps_checkout_activated) return $settings;
         $i = -1;

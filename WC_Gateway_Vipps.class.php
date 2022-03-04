@@ -1406,6 +1406,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_status',$newvippsstatus);
             $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
 
+            // Modify payment method name if neccessary
+            if (isset($paymentdetails['paymentMethod']) && $paymentdetails['paymentMethod'] == 'Card') {
+                if ($order->get_meta('_vipps_checkout_poll')) {
+                    $order->set_payment_method_title(__('Credit Card / Vipps Checkout', 'woo-vipps'));
+                    $order->save();
+                }
+            } 
+
+
             # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
@@ -1425,6 +1434,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                $order->update_meta_data('_vipps_amount',$vippsamount);
+
+
             }
 
         } catch (Exception $e) {
@@ -1546,7 +1557,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
        if (!empty($result)) {
            $result['orderId']  = $result['reference']; 
-
            if (isset($result['paymentDetails'])) {
                $details = $result['paymentDetails'];
 
@@ -1674,8 +1684,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    }
                }
            }
-
-
+           // Modify payment method name if neccessary
+           if (isset($details['paymentMethod']) && $details['paymentMethod'] == 'Card') {
+               if ($order->get_meta('_vipps_checkout_poll')) {
+                    $order->set_payment_method_title(__('Credit Card / Vipps Checkout', 'woo-vipps'));
+               }
+           }
            $order->save();
        }
        return $order;
@@ -2040,7 +2054,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
-
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
@@ -2048,6 +2061,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return;
         }
+
+        // Modify payment method name if neccessary
+        if (isset($result['paymentMethod']) && $result['paymentMethod'] == 'Card') {
+            if ($order->get_meta('_vipps_checkout_poll')) {
+                $order->set_payment_method_title(__('Credit Card / Vipps Checkout', 'woo-vipps'));
+                $order->save();
+            }
+        }
+
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
         }
