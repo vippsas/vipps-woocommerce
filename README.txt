@@ -160,6 +160,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.13.2 =
+* Fixed: Subscriptions now get cancelled if a charge fails and the status of the subscription is `pending-cancel`.
+* Fixed: If you provide no custom description for a product when the description source is set to `custom` we now default back to the product name. This prevents an error during checkout when no description is provided.
+
 = 1.13.1 =
 * Fixed: Pass arguments to `wc_vipps_recurring_transaction_id_for_order` in the correct order.
 
