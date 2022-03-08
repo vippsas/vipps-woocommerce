@@ -169,7 +169,7 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * Gets meta data from a resource
 	 *
-	 * @param WC_Order|WC_Subscription $resource
+	 * @param WC_Order|WC_Subscription|WC_Product $resource
 	 * @param $meta_key
 	 *
 	 * @return mixed
@@ -390,8 +390,9 @@ class WC_Vipps_Recurring_Helper {
 			$description = $product->get_short_description();
 		}
 
-		if ( $source === 'custom' ) {
-			$description = self::get_meta( $product, self::META_PRODUCT_DESCRIPTION_TEXT );
+		$custom_description = self::get_meta( $product, self::META_PRODUCT_DESCRIPTION_TEXT );
+		if ( $source === 'custom' && ! empty( $custom_description ) ) {
+			$description = $custom_description;
 		}
 
 		return $description;
