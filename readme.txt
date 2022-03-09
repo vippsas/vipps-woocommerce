@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.14
-Stable tag: 1.8.14
+Version: 1.8.15
+Stable tag: 1.8.15
 Requires at least: 4.7
 Tested up to: 5.9.1
 Requires PHP: 5.6
@@ -80,9 +80,10 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.8.14 =
+= 1.8.15 =
 * Support for Vipps Checkout alternative checkout page
 * Set payment method title to "Credit Card" if used on Vipps Checkout
+* Fix bug when retreiving order data via epayment api
 
 == Frequently Asked Questions ==
 

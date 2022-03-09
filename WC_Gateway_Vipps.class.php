@@ -1548,7 +1548,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         } elseif ($order->get_meta('_vipps_api') == 'epayment') {
             try {
-                $result = $gw->api->epayment_get_payment($order);
+                $result = $this->api->epayment_get_payment($order);
             } catch (Exception $e) {
                 $this->log(__("Could not get order status from Vipps using epayment api: ", 'woo-vipps') . $e->getMessage(), "error");
             }
