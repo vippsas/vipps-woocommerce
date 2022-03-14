@@ -1594,6 +1594,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            # IOK 2022-01-19 FIXME this doesn't work yet.
            $result['transactionLogHistory'] = array();
 
+           # IOK 2022-02-20 Try to always return a status
+           if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionTerminated') {
+               $result['status'] = 'CANCEL';
+               $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
+               $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+               $order->update_meta_data('_vipps_delendum',1);
+               $order->save();
+           }
 
            # IOK 2022-02-20 Try to always return a status
            if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
@@ -1811,6 +1819,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$statusdata) return null;
 
         $vippsstatus = $statusdata['status'];
+        if (!$vippsstatus) {
+            $this->log("Unknown Vipps Status: " . print_r($statusdata, true), 'debug');
+        }
         return $vippsstatus;
     }
 

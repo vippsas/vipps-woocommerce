@@ -1052,7 +1052,6 @@ else:
     // Check the current status of the current Checkout session for the user.
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
-
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
@@ -1073,6 +1072,7 @@ else:
         }
 
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
+
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
         $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
 
@@ -1944,6 +1944,7 @@ EOF;
                 $values['data'] = $product;
                 $newcart[$key] = $values;
             }
+        } else {
         }
         if (WC()->cart) {
             WC()->cart->set_cart_contents($newcart);
