@@ -160,6 +160,11 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.13.3 =
+* Fixed: Early renewals now work properly. If you renew early, and you're already using Vipps it will now skip the app entirely and create a new charge.
+If you renew early, and you're not already using Vipps you will be sent to the app and a gateway switch will be performed after successful checkout.
+* Fixed: A small error notice when swapping gateways in the admin area no longer appears.
+
 = 1.13.2 =
 * Fixed: Subscriptions now get cancelled if a charge fails and the status of the subscription is `pending-cancel`.
 * Fixed: If you provide no custom description for a product when the description source is set to `custom` we now default back to the product name. This prevents an error during checkout when no description is provided.

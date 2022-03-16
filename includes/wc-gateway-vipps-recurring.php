@@ -173,7 +173,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->api     = new WC_Vipps_Recurring_Api( $this );
 
 			/*
-			 * when transitioning an order to these statuses we should
+			 * When transitioning an order to these statuses we should
 			 * automatically try to capture the charge if it's not already captured
 			 */
 			$capture_statuses = [
@@ -182,7 +182,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			];
 
 			/*
-			 * we have to remove the status corresponding to `$this->default_reserved_charge_status` otherwise we end up
+			 * We have to remove the status corresponding to `$this->default_reserved_charge_status` otherwise we end up
 			 * prematurely capturing this reserved Vipps charge
 			 */
 			$capture_status_transition_id = array_search( str_replace( 'wc-', '', $this->default_reserved_charge_status ), $capture_statuses, true );
@@ -192,7 +192,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$this->statuses_to_attempt_capture = apply_filters( 'wc_vipps_recurring_captured_statuses', $capture_statuses );
 
-			// if we change a status that is currently on-hold to any of the $capture_statuses we should attempt to capture it
+			// If we change a status that is currently on-hold to any of the $capture_statuses we should attempt to capture it
 			foreach ( $this->statuses_to_attempt_capture as $status ) {
 				add_action( 'woocommerce_order_status_' . $status, [ $this, 'maybe_capture_payment' ] );
 			}
@@ -238,26 +238,26 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'indicate_async_payment_method_update'
 			], 10, 2 );
 
-			// action for updating a subscription's order items
+			// Action for updating a subscription's order items
 			add_action( 'woocommerce_before_save_order_items', [
 				$this,
 				'save_subscription_order_items'
 			], 10, 1 );
 
-			// tell WooCommerce about our custom payment meta fields
+			// Tell WooCommerce about our custom payment meta fields
 			add_action( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 
-			// validate custom payment meta fields
+			// Validate custom payment meta fields
 			add_action( 'woocommerce_subscription_validate_payment_meta', [
 				$this,
 				'validate_subscription_payment_meta'
 			], 10, 2 );
 
-			// handle subscription switches (free upgrades & downgrades)
+			// Handle subscription switches (free upgrades & downgrades)
 			add_action( 'woocommerce_subscriptions_switched_item', [ $this, 'handle_subscription_switches' ], 10, 1 );
 
 			/*
-			 * handle in app updates when a subscription status changes, typically when status transitions to
+			 * Handle in app updates when a subscription status changes, typically when status transitions to
 			 * 'pending-cancel', 'cancelled' or 'pending-cancel' to any other status
 			 */
 			add_action( 'woocommerce_subscription_status_updated', [
@@ -265,11 +265,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'maybe_handle_subscription_status_transitions'
 			], 10, 3 );
 
-			// delete idempotency key when renewal/resubscribe happens
+			// Delete idempotency key when renewal/resubscribe happens
 			add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10 );
 			add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 10 );
 
-			// cancel DUE charge if order transitions to 'cancelled' or 'failed'
+			// Cancel DUE charge if order transitions to 'cancelled' or 'failed'
 			$cancel_due_charge_statuses = apply_filters( 'wc_vipps_recurring_cancel_due_charge_statuses', [
 				'cancelled',
 				'failed'
@@ -278,6 +278,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			foreach ( $cancel_due_charge_statuses as $status ) {
 				add_action( 'woocommerce_order_status_' . $status, [ $this, 'maybe_cancel_due_charge' ] );
 			}
+
+			add_action( 'woocommerce_payment_complete', [ $this, 'after_renew_early_from_another_gateway' ] );
 		}
 
 		/**
@@ -658,14 +660,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function complete_order( $order, $transaction_id ) {
 			$order->payment_complete( $transaction_id );
 
-			// controlled by the `transition_renewals_to_completed` setting
-			// only applicable to renewal orders
+			// Controlled by the `transition_renewals_to_completed` setting
+			// Only applicable to renewal orders
 			if ( $this->transition_renewals_to_completed === "yes" && wcs_order_contains_renewal( $order ) ) {
 				$order->update_status( 'wc-completed' );
 			}
 
-			// unlock the order and make sure we tell our cronjob to not periodically check the status of this
-			// order anymore
+			// Unlock the order and make sure we tell our cronjob to stop periodically checking the status of this order
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 			$this->unlock_order( $order );
 		}
@@ -1314,19 +1315,56 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 */
 		public function process_payment( $order_id, bool $retry = true, bool $previous_error = false ) {
 			$is_gateway_change = wcs_is_subscription( $order_id );
+			$subscription      = null;
 
 			$order     = wc_get_order( $order_id );
 			$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
-			if ( ! wcs_order_contains_subscription( $order_id ) ) {
+			if ( ! wcs_order_contains_subscription( $order ) && ! wcs_order_contains_early_renewal( $order ) ) {
 				return [
 					'result'   => 'fail',
 					'redirect' => ''
 				];
 			}
 
+			// If we have an early renewal order on our hands we should
+			if ( wcs_order_contains_early_renewal( $order ) ) {
+				$renewal_order = $order;
+
+				$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order );
+				$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
+
+				$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
+				if ( $agreement_id ) {
+					$agreement = $this->api->get_agreement( $agreement_id );
+
+					if ( $agreement['status'] === 'ACTIVE' ) {
+						WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $renewal_order );
+
+						// Trigger the subscription payment complete hooks and reset suspension counts and user roles.
+						$subscription->payment_complete();
+
+						wcs_update_dates_after_early_renewal( $subscription, $renewal_order );
+						wc_add_notice( __( 'Your early renewal order was successful.', 'woocommerce-subscriptions' ) );
+
+						$renewal_order = wc_get_order( $renewal_order->get_id() );
+
+						return [
+							'result'   => 'success',
+							'redirect' => $renewal_order->get_view_order_url()
+						];
+					}
+				}
+
+				// We need to update the gateway to Vipps after the payment is completed if an agreement is active
+				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_RENEWING_WITH_VIPPS, true );
+				$subscription->save();
+			}
+
 			try {
-				$subscription = $order;
+				if ( ! $subscription ) {
+					$subscription = $order;
+				}
 
 				if ( ! $is_gateway_change ) {
 					$subscriptions = $this->get_subscriptions_for_order( $order );
@@ -1770,7 +1808,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$payment_meta[ $this->id ] = [
 				'post_meta' => [
 					'_agreement_id' => [
-						'value' => get_post_meta( $subscription->id, '_agreement_id', true ),
+						'value' => get_post_meta( $subscription->get_id(), '_agreement_id', true ),
 						'label' => __( 'Vipps Agreement ID', 'woo-vipps-recurring' ),
 					]
 				],
@@ -1929,6 +1967,43 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$order->add_order_note( __( 'Could not cancel charge in Vipps. Please manually check the status of this order if you plan to process a new renewal order!', 'woo-vipps-recurring' ) );
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error msg: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
 				}
+			}
+		}
+
+		/**
+		 * When renewing early from a different gateway WooCommerce does not update the gateway for you.
+		 * If we detect that you've renewed early with Vipps and the gateway is not set to Vipps we will
+		 * update the gateway for you.
+		 *
+		 * @param $order_id
+		 *
+		 * @return void
+		 * @throws WC_Vipps_Recurring_Exception
+		 */
+		public function after_renew_early_from_another_gateway( $order_id ) {
+			if ( ! wcs_order_contains_early_renewal( $order_id ) ) {
+				return;
+			}
+
+			$subscriptions = $this->get_subscriptions_for_order( $order_id );
+
+			foreach ( $subscriptions as $subscription ) {
+				if ( $subscription->get_payment_method() === $this->id ) {
+					continue;
+				}
+
+				if ( ! WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_RENEWING_WITH_VIPPS ) ) {
+					continue;
+				}
+
+				$agreement = $this->get_agreement_from_order( $subscription );
+				if ( ! $agreement || $agreement['status'] !== 'ACTIVE' ) {
+					continue;
+				}
+
+				$subscription->set_payment_method( $this->id );
+				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_RENEWING_WITH_VIPPS, false );
+				$subscription->save();
 			}
 		}
 	}
