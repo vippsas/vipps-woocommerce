@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.13.4 =
+* Fixed: We now prevent orders from being transitioned to `processing` when the status is already `completed`.
+
 = 1.13.3 =
 * Fixed: Early renewals now work properly. If you renew early, and you're already using Vipps it will now skip the app entirely and create a new charge.
 If you renew early, and you're not already using Vipps you will be sent to the app and a gateway switch will be performed after successful checkout.

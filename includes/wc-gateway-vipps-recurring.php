@@ -280,6 +280,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			add_action( 'woocommerce_payment_complete', [ $this, 'after_renew_early_from_another_gateway' ] );
+
+			add_filter( 'woocommerce_payment_complete_order_status', [
+				$this,
+				'prevent_backwards_transition_on_completed_order'
+			], 99, 3 );
 		}
 
 		/**
@@ -2005,6 +2010,25 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_RENEWING_WITH_VIPPS, false );
 				$subscription->save();
 			}
+		}
+
+		/**
+		 * Prevent an order from being transitioned to "processing" when the status is already "completed"
+		 *
+		 * @param $status
+		 * @param $order_id
+		 * @param $order
+		 *
+		 * @return string
+		 */
+		public function prevent_backwards_transition_on_completed_order( $status, $order_id, $order ): string {
+			if ( $status === 'processing'
+				 && $order->has_status( 'completed' )
+				 && $order->get_payment_method() === $this->id ) {
+				return 'completed';
+			}
+
+			return $status;
 		}
 	}
 }
