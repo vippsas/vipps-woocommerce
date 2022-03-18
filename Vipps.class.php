@@ -1466,14 +1466,21 @@ else:
         if ($special) {
             remove_filter('template_redirect', 'redirect_canonical', 10);
             do_action('woo_vipps_before_handling_special_page', $special);
-            $this->$special();
+
+            // Allow above hook to actually handle special pages. It should probably call $Vipps->fakepage or a redirect; can be used
+            // to intercept express checkout etc. IOK 2022-03-18
+            if (! apply_filters('woo_vipps_special_page_handled', false, $special)) {
+                $this->$special();
+            }
         }
 
         $consentremoval = $this->is_consent_removal();
         if ($consentremoval) {
             remove_filter('template_redirect', 'redirect_canonical', 10);
             do_action('woo_vipps_before_handling_special_page', 'consentremoval');
-            $this->vipps_consent_removal_callback($consentremoval);
+            if (! apply_filters('woo_vipps_special_page_handled', false, 'consentremoval')) {
+                $this->vipps_consent_removal_callback($consentremoval);
+            }
         }
 
     }
@@ -3310,6 +3317,9 @@ EOF;
             $args[sanitize_title(wp_unslash($key))] = sanitize_text_field(wp_unslash($value));
         }
 
+
+
+
         $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
 
@@ -3336,6 +3346,7 @@ EOF;
         }
 
         do_action('woo_vipps_express_checkout_page');
+
 
         $this->print_express_checkout_page($ok,'do_express_checkout');
     }
