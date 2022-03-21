@@ -584,7 +584,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
                         'description' => __('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps') . '.<br>' .
                         __('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps'),
-                        'default'     => 'yes',
+                        'default'     => 'no',
                         ),
 
 
@@ -1477,7 +1477,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                // Callback has handled the situation, do nothing
             } elseif (@$paymentdetails['shippingDetails']) {
                // We need to set shipping details here
-                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails']);
+                $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
+                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing);
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! 
@@ -1825,7 +1826,74 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $vippsstatus;
     }
 
-    public function set_order_shipping_details($order,$shipping, $user) {
+    // The various Vipps APIs return address info with various keys and formats, so we need to translate all of them 
+    // to a canonical format.
+    public function canonicalize_vipps_address($address, $user) {
+        // eCom has user info only in the user struct
+        $firstname = $user['firstName'];
+        $lastname = $user['lastName'];
+        $email = $user['email'];
+        $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
+        if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
+
+        if (!isset($address['firstName']) or !$address['firstName']) {
+            $address['firstName'] = $firstname;
+        }
+        if (!isset($address['lastName']) or !$address['lastName']) {
+            $address['lastName'] = $firstname;
+        }
+        if (!isset($address['phoneNumber']) or !$address['phoneNumber']) {
+            $address['phoneNumber'] = $phone;
+        }
+        if (!isset($address['email']) or !$address['email']) {
+            $address['email'] = $email;
+        }
+
+        $addressline1 = isset($address['addressLine1']) ? $address['addressLine1'] : "";
+        $addressline2 = isset($address['addressLine2']) ? $address['addressLine2'] : "";
+        if (isset($address['streetAddress'])) {
+            $addressline1 = $address['streetAddress'];
+        }
+        if ($addressline1 == $addressline2) $addressline2 = '';
+        $address['addressLine1'] = $addressline1;
+        $address['addressline2'] = $addressline2;
+        $address['streetAddress'] = $addressline1;
+
+        $city = "";
+        if (isset($address['city'])) {
+            $city = $address['city'];
+        } elseif (isset($address['region'])) {
+            $city = $address['region'];
+        }
+        $address['city'] = $city;
+        $address['region'] = $city;
+
+        $postcode= "";
+        if (isset($address['zipCode'])) {
+           $postcode = $address['zipCode'];
+        } elseif (isset($address['postCode'])) {
+            $postcode= $address['postCode'];
+        } elseif (isset($address['postalCode'])){
+            $postcode= $address['postalCode'];
+        }
+        $address['postCode'] = $postcode;
+        $address['zipCode'] = $postcode;
+        $address['postalCode'] = $postcode;
+
+        // eCom returns "NORWAY", while Checkout returns "NO". Woo requires the two-letter country code.
+        $vippscountry = $address['country'];
+        if (strlen($vippscountry) == 2) {
+            $country = strtoupper($vippscountry);
+        } else {
+            global $Vipps;
+            $country = $Vipps->country_to_code($vippscountry);
+        }
+        $address['country'] = $country;
+
+        return $address;
+    }
+
+    public function set_order_shipping_details($order,$shipping, $user, $billing=false) {
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
@@ -1835,74 +1903,49 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We get different values from the normal callback and the Checkout callback, so be prepared for several results. IOK 2021-09-02
         $address = isset($shipping['address']) ? $shipping['address'] : $shipping;;
 
-        $firstname = $user['firstName'];
-        $lastname = $user['lastName'];
-        $email = $user['email'];
-        $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
-        if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
-
-        $shipping_firstname = $firstname;
-        $shipping_lastname = $lastname;
-        $addressline1 = isset($address['addressLine1']) ? $address['addressLine1'] : "";
-        $addressline2 = isset($address['addressLine2']) ? $address['addressLine2'] : "";
-        // This is the 'checkout'  callback
-        if (isset($shipping['streetAddress'])) {
-            $addressline1 = $shipping['streetAddress'];
-            $addressline2 = "";
-        }
-        if (isset($shipping['firstName'])) {
-            $shipping_firstname = $shipping['firstName'];
-            $shipping_lastname = $shipping['lastName'];
-        }
-        // This apparently happens a lot IOK 2019-08-26 
-        if ($addressline1 == $addressline2) $addressline2 = ''; 
-        // Ensure this gets zeroed out so we don't get the stores address here
-        if (! $addressline2) $addressline2 = '';
-
-        $city = "";
-        if (isset($address['city'])) {
-            $city = $address['city'];
-        } elseif (isset($address['region'])) {
-            $city = $address['region'];
-        }
-        
-        $postcode= "";
-        if (isset($address['zipCode'])) {
-           $postcode = $address['zipCode'];
-        } elseif (isset($address['postCode'])) {
-            $postcode= $address['postCode'];
-        } elseif (isset($address['postalCode'])){
-            $postcode= $address['postalCode'];
+        // Sometimes we get an empty shipping address! In this case, fill the details with the billing address.
+        // This only happens with ecommerce though, so we need to check before canonicalizing. IOK 2022-03-21
+        $shipping_empty = true;
+        if ($billing && array_key_exists('streetAddress', $address)) {
+            $keys = ['firstName', 'lastName', 'email', 'phoneNumber', 'streetAddress', 'postalCode', 'region', 'country'];
+            foreach ($keys as $key) {
+                if (isset($address[$key]) && $address[$key]) {
+                    $shipping_empty = false; break;
+                }
+            }
+            if ($shipping_empty) {
+                foreach ($keys as $key) $address[$key] = $billing[$key];
+            }
         }
 
-        // eCom returns "NORWAY", while Checkout returns "NO". Woo requires the two-letter country code.
-        $vippscountry = $address['country'];
-        if (strlen($vippscountry) == 2) {
-            $country = strtoupper($vippscountry);
-        } else {
-            $country = $Vipps->country_to_code($vippscountry);
-        }
+        if (!$billing) $billing = $address;
 
-        $order->set_billing_email($email);
-        $order->set_billing_phone($phone);
-        $order->set_billing_first_name($firstname);
-        $order->set_billing_last_name($lastname);
-        $order->set_billing_address_1($addressline1);
-        $order->set_billing_address_2($addressline2);
-        $order->set_billing_city($city);
-        $order->set_billing_postcode($postcode);
-        $order->set_billing_country($country);
+        $address = $this->canonicalize_vipps_address($address, $user);
+        $billing = $this->canonicalize_vipps_address($billing, $user);
 
-        $order->set_shipping_first_name($shipping_firstname);
-        $order->set_shipping_last_name($shipping_lastname);
+
+        # Billing.
+        $order->set_billing_email($billing['email']);
+        $order->set_billing_phone($billing['phoneNumber']);
+        $order->set_billing_first_name($billing['firstName']);
+        $order->set_billing_last_name($billing['lastName']);
+        $order->set_billing_address_1($billing['streetAddress']);
+        $order->set_billing_address_2($billing['addressline2']);
+        $order->set_billing_city($billing['region']);
+        $order->set_billing_postcode($billing['postalCode']);
+        $order->set_billing_country($billing['country']);
+
+        # Shipping.
+        $order->set_shipping_first_name($address['firstName']);
+        $order->set_shipping_last_name($address['lastName']);
         if (version_compare(WC_VERSION, '5.6.0', '>=')) {
-            $order->set_shipping_phone($phone);
+            $order->set_shipping_phone($address['phoneNumber']);
         }
-        $order->set_shipping_address_1($addressline1);
-        $order->set_shipping_address_2($addressline2);
-        $order->set_shipping_city($city);
-        $order->set_shipping_postcode($postcode);
-        $order->set_shipping_country($country);
+        $order->set_shipping_address_1($address['streetAddress']);
+        $order->set_shipping_address_2($address['addressline2']);
+        $order->set_shipping_city($address['region']);
+        $order->set_shipping_postcode($address['postalCode']);
+        $order->set_shipping_country($address['country']);
 
         // Allow the bearer of the current session to login (if not yet logged in) on the thankyou-screen IOK 2020-10-09
         if (WC()->session) {
@@ -1914,8 +1957,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
         if (WC()->customer) {
-            WC()->customer->set_billing_location($country,'',$postcode,$city);
-            WC()->customer->set_shipping_location($country,'',$postcode,$city);
+            WC()->customer->set_billing_location($billing['country'],'',$billing['postalCode'],$billing['region']);
+            WC()->customer->set_shipping_location($address['country'],'',$address['postalCode'],$address['region']);
         }
 
         // Now do shipping, if it exists IOK 2021-09-02
@@ -1973,7 +2016,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
                 // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
                 if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
-                    update_user_meta($customer->get_id(), '_vipps_phone', $phone);
+                    update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
                     // update_user_meta($userid, '_vipps_id', $sub);
                     // update_user_meta($userid, '_vipps_just_connected', 1);
                 }
@@ -2082,7 +2125,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails']);
+            $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
+            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing);
         }
 
         $transactionid = @$transaction['transactionId'];
