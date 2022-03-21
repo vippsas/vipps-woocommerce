@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.16
-Stable tag: 1.8.16
+Version: 1.8.17
+Stable tag: 1.8.17
 Requires at least: 4.7
 Tested up to: 5.9.2
 Requires PHP: 5.6
@@ -80,11 +80,9 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.8.16 =
-* Fix session handling for Checkout and Express Checkout for logged-in users in the shipping callback.
+= 1.8.17 =
 * Support for Vipps Checkout alternative checkout page
-* Set payment method title to "Credit Card" if used on Vipps Checkout
-* Fix bug when retreiving order data via epayment api
+* Ensure shipping address is set if only billing address is provided
 
 == Frequently Asked Questions ==
 
@@ -205,6 +203,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.03.21 version 1.8.17 =
+* Handle error case when shipping address is received empty in callbacks
 
 = 2022.03.14 version 1.8.16 =
 * Ensure Express Checkout and Checkout session handling still works for logged-in users in newer versions of Woo
