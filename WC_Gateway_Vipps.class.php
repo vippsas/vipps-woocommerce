@@ -1840,7 +1840,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $address['firstName'] = $firstname;
         }
         if (!isset($address['lastName']) or !$address['lastName']) {
-            $address['lastName'] = $firstname;
+            $address['lastName'] = $lastname;
         }
         if (!isset($address['phoneNumber']) or !$address['phoneNumber']) {
             $address['phoneNumber'] = $phone;
