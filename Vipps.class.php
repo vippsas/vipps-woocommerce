@@ -1860,6 +1860,7 @@ EOF;
              do_action('woo_vipps_callback', $result);
         }
 
+
         $gw = $this->gateway();
 
         $gw->handle_callback($result, $ischeckout);
@@ -2467,6 +2468,8 @@ EOF;
         if (empty($pending)) return;
         foreach ($pending as $o) {
             $then = $o->get_meta('_vipps_init_timestamp');
+            if (! $then) continue; # Race condition! We may not have set the timestamp yet. IOK 2022-03-24
+            if (!$o->get_meta('_vipps_orderid')) continue; # ditto
             if ($then > $eightminutesago) continue;
             $this->check_status_of_pending_order($o, false);
         }
@@ -2484,8 +2487,8 @@ EOF;
         $gw = $this->gateway();
         $order_status = null;
         try {
-            $order_status = $gw->callback_check_order_status($order);
             $order->add_order_note(__("Callback from Vipps delayed or never happened; order status checked by periodic job", 'woo-vipps'));
+            $order_status = $gw->callback_check_order_status($order);
             $order->save();
             $this->log(sprintf(__("For order %d order status at vipps is %s", 'woo-vipps'), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {
