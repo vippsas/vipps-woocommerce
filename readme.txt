@@ -206,7 +206,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.03.22 version 1.8.24 =
+= 2022.03.24 version 1.8.19 =
 * Fix race condition in code that checks order status when callback hasn't happened
 
 = 2022.03.22 version 1.8.18 =
