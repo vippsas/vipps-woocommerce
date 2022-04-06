@@ -124,7 +124,18 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
-        $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.($order->get_id()), $prefix, $order);
+        // This is really for the new epayment api only, but we do this to ensure we use the same logic. For short prefixes and order numbers.
+        // Pad orderid with 0 to the left so the entire vipps-orderid/reference is at least 8 chars long. IOk 2022-04-06
+        $orderid = $order->get_id();
+        $woovippsid = $prefix . $orderid;
+        $len = strlen($woovippsid);
+        if ($len < 8) { # max is 50 so that would probably not be an issue
+            $padwith =  8  - strlen($prefix);
+            $paddedid = str_pad("".$orderid, $padwith, "0", STR_PAD_LEFT);
+            $woovippsid = $prefix . $paddedid;
+        }
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
+
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
@@ -228,7 +239,18 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
-        $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.($order->get_id()), $prefix, $order);
+        // Pad orderid with 0 to the left so the entire vipps-orderid/reference is at least 8 chars long. IOk 2022-04-06
+        $orderid = $order->get_id();
+        $woovippsid = $prefix . $orderid;
+        $len = strlen($woovippsid);
+        if ($len < 8) { # max is 50 so that would probably not be an issue
+            $padwith =  8  - strlen($prefix);
+            $paddedid = str_pad("".$orderid, $padwith, "0", STR_PAD_LEFT);
+            $woovippsid = $prefix . $paddedid;
+        }
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
+
+
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
