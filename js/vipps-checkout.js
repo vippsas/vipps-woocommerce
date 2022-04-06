@@ -136,7 +136,6 @@ jQuery( document ).ready( function() {
                 // Only frameHeight in pixels are sent, but it is sent whenever the frame changes (so, including when address etc is set). 
                 // So poll when this happens. IOK 2021-08-25
                 function (e) {
-                    console.log("message %j", e); //IOK FIXME
                     if (e.origin != origin) return;
                     jQuery("body").removeClass('processing');
                     if (!polling && !pollingdone) pollSessionStatus();
@@ -159,12 +158,14 @@ jQuery( document ).ready( function() {
                     dataType:'json',
                     data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
                     error: function (xhr, statustext, error) {
-                        console.log('Error polling status: ' + statustext + ' : ' + error);
-                        pollingdone=true;
-                        jQuery('#vippscheckouterror').show();
-                        jQuery('#vippscheckoutframe').html('<div style="display:none">Error occured</div>');
+                        // This may happen as a result of a race condition where the user is sent to Vipps
+                        //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
+                        // It may also be a temporary error, so we do not interrupt polling or notify the user. Just log.
+                        // IOK 2022-04-06
                         if (error == 'timeout')  {
                             console.log('Timeout polling session data hos Vipps');
+                        } else {
+                            console.log('Error polling session data hos Vipps - this may be temporary or because the user has moved on: ' + statustext + " error: " + error);
                         }
                     },
                     'complete': function (xhr, statustext, error)  {
