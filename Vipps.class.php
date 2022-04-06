@@ -946,6 +946,8 @@ else:
                     $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
 
+
+
                     try {
                         $this->maybe_add_static_shipping($this->gateway(),$order->get_id());
                     } catch (Exception $e) {
@@ -977,6 +979,8 @@ else:
         $sessionorders[$order_id] = 1;
         WC()->session->set('_vipps_pending_order',$order_id);
         WC()->session->set('_vipps_session_orders',$sessionorders);
+        // For mobiles where we may return from a different browser than we started from.
+        set_transient('_vipps_pending_order_'.$current_authtoken, $order_id,20*MINUTE_IN_SECONDS);
 
         $customer_id = get_current_user_id();
         if ($customer_id) {

@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.19
-Stable tag: 1.8.19
+Version: 1.8.20
+Stable tag: 1.8.20
 Requires at least: 4.7
 Tested up to: 5.9.3
 Requires PHP: 5.6
@@ -80,11 +80,9 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.8.19 =
+= 1.8.20 =
 * Support for Vipps Checkout alternative checkout page
-* Ensure shipping address is set if only billing address is provided
-* Fix name errors in express checkout
-* Fix race condition that would some times cancel orders that shouldn't have been
+* Ensure alternative browsers work on mobile for Checkout too (avoid "unknown order" on return from Vipps)
 
 == Frequently Asked Questions ==
 
@@ -205,6 +203,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.04.06 version 1.8.20 =
+* Ensure alternative browsers work on mobile on Checkout so that "unknown order" does not happen on order return
+* Ensure Vipps transaction references are at least 8 chars long
 
 = 2022.03.24 version 1.8.19 =
 * Fix race condition in code that checks order status when callback hasn't happened
