@@ -213,6 +213,8 @@ class VippsApi {
 
         $this->log("Initiating Vipps session for $vippsorderid", 'debug');
 
+        $data = apply_filters('woo_vipps_initiate_payment_data', $data);
+
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
     }
@@ -328,6 +330,8 @@ class VippsApi {
          // Enum: "CUSTOMER_PRESENT" "CUSTOMER_NOT_PRESENT"
          $data['customerInteraction'] = "";
         }
+
+        $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 

@@ -213,9 +213,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
-            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/?wc-api=$forwhat&$tk&callback=";
+            return untrailingslashit(home_url("/?wc-api=$forwhat&$tk&callback=", 'https'));
         } else {
-            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/wc-api/$forwhat?$tk&callback=";
+            return untrailingslashit(home_url("/wc-api/$forwhat?$tk&callback=", 'https'));
         }
     }
     // The main payment callback
@@ -229,9 +229,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2018-05-18
     public function consent_removal_callback_url () {
         if ( !get_option('permalink_structure')) {
-            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/?vipps-consent-removal&callback=";
+            return untrailingslashit(home_url("/?vipps-consent-removal&callback=", 'https'));
         } else {
-            return untrailingslashit(set_url_scheme(home_url(),'https')) . "/vipps-consent-removal/?callback=";
+            return untrailingslashit(home_url("/vipps-consent-removal/?callback=", 'https'));
         }
     }
 
