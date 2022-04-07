@@ -3063,7 +3063,7 @@ EOF;
         } else {
             $url = "/$what/";
         }
-        return untrailingslashit(set_url_scheme(home_url(),'https')) . $url;
+        return untrailingslashit(home_url($url, 'https'));
     }
     public function payment_return_url() {
         return apply_filters('woo_vipps_payment_return_url', $this->make_return_url('vipps-betaling')); 
