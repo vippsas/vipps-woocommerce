@@ -3057,13 +3057,10 @@ EOF;
     // The various return URLs for special pages of the Vipps stuff depend on settings and pretty-URLs so we supply them from here
     // These are for the "fallback URL" mostly. IOK 2018-05-18
     private function make_return_url($what) {
-        $url = '';
         if ( !get_option('permalink_structure')) {
-            $url = "/?VippsSpecialPage=$what";
-        } else {
-            $url = "/$what/";
+            return add_query_arg('VippsSpecialPage', $what, home_url("/", 'https'));
         }
-        return untrailingslashit(home_url($url, 'https'));
+        return trailingslashit(home_url($what, 'https'));
     }
     public function payment_return_url() {
         return apply_filters('woo_vipps_payment_return_url', $this->make_return_url('vipps-betaling')); 
@@ -3082,7 +3079,8 @@ EOF;
         if ( get_option('permalink_structure')) {
             foreach($specials as $special=>$specialmethod) {
                 // IOK 2018-06-07 Change to add any prefix from home-url for better matching IOK 2018-06-07
-                if (preg_match("!/$special/([^/]*)!", $_SERVER['REQUEST_URI'], $matches)) {
+                $path =  parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                if ($path && preg_match("!/$special/?$!", $path, $matches)) {
                     $method = $specialmethod; break;
                 }
             }
@@ -3592,7 +3590,7 @@ EOF;
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-        if ($status == 'pending') { 
+        if ($status == 'pending') {
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); 
             $newstatus = $gw->callback_check_order_status($order);
