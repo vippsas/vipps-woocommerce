@@ -217,7 +217,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
         // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
-        error_log("doing ".  add_query_arg($queryargs, $url) . "&callback=");
         return add_query_arg($queryargs, $url) . "&callback=";
     }
     // The main payment callback
@@ -239,7 +238,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
         // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
-        error_log("doing ". add_query_arg($queryargs, $url) . "&callback=");
         return add_query_arg($queryargs, $url) . "&callback=";
     }
 
