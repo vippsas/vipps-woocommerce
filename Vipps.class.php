@@ -235,6 +235,7 @@ class Vipps {
             $this->add_vipps_admin_notice($what,'info');
         }
 
+
         // This requires merchants using the old shipping callback filter to choose between this or the new shipping method mechanism. IOK 2020-02-17
         if (has_action('woo_vipps_shipping_methods')) {
             $option = $gw->get_option('newshippingcallback');
@@ -262,6 +263,11 @@ class Vipps {
             }
         }
 
+    }
+
+    public function admin_menu_page () {
+        // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
+        print "<h1> Hey yo! </h1>";
     }
 
     // Add a link to the settings page from the plugin list
@@ -446,6 +452,9 @@ class Vipps {
     }
 
     public function admin_menu () {
+            $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
+            add_menu_page(__("Vipps", 'woo-vipps'), __("Vipps", 'woo-vipps'), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+            add_submenu_page( 'vipps_admin_menu', __('QR Codes', 'woo-vipps'), __('QR Codes', 'woo-vipps'), 'manage_woocommerce', 'edit.php?post_type=vipps_qr_code', null, 20);
     }
 
     public function add_meta_boxes () {

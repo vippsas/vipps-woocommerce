@@ -69,6 +69,9 @@ if ($activesiteplugins) {
 if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     require_once(dirname(__FILE__) . "/Vipps.class.php");
 
+    // IOK FIXME TEMPORARY
+    require_once(dirname(__FILE__) . "/VippsQRCodes.class.php");
+
     /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
     global $Vipps;
     $Vipps = Vipps::instance();
