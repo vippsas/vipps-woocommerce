@@ -67,27 +67,15 @@ if ($activesiteplugins) {
 }
 
 if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
-    require_once(dirname(__FILE__) . "/Vipps.class.php");
-
-    // IOK FIXME TEMPORARY
-    require_once(dirname(__FILE__) . "/VippsQRCodes.class.php");
-
     /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
+    require_once(dirname(__FILE__) . "/Vipps.class.php");
     global $Vipps;
     $Vipps = Vipps::instance();
-    register_activation_hook(__FILE__,array($Vipps,'activate'));
-    register_deactivation_hook(__FILE__,array('Vipps','deactivate'));
-    register_uninstall_hook(__FILE__, 'Vipps::uninstall');
+    Vipps::register_hooks();
 
-    if (is_admin()) {
-        add_action('admin_init',array($Vipps,'admin_init'));
-        add_action('admin_menu',array($Vipps,'admin_menu'));
-    } else {
-        add_action('wp_footer', array($Vipps,'footer'));
-    }
-    add_action('init',array($Vipps,'init'));
-    add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
-    add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
+    /* The QR Code functionality is in its own class for modularity reasons. It is a singleton too. */
+    require_once(dirname(__FILE__) . "/VippsQRCodeController.class.php");
+    VippsQRCodeController::register_hooks();
 
     require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
 }

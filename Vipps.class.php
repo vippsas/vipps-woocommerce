@@ -57,6 +57,22 @@ class Vipps {
         return static::$instance;
     }
 
+    public static function register_hooks() {
+        $Vipps = static::instance();
+        register_activation_hook(__FILE__,array($Vipps,'activate'));
+        register_deactivation_hook(__FILE__,array('Vipps','deactivate'));
+        register_uninstall_hook(__FILE__, 'Vipps::uninstall');
+        if (is_admin()) {
+            add_action('admin_init',array($Vipps,'admin_init'));
+            add_action('admin_menu',array($Vipps,'admin_menu'));
+        } else {
+            add_action('wp_footer', array($Vipps,'footer'));
+        }
+        add_action('init',array($Vipps,'init'));
+        add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
+        add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
+    }
+
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
@@ -454,7 +470,6 @@ class Vipps {
     public function admin_menu () {
             $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
             add_menu_page(__("Vipps", 'woo-vipps'), __("Vipps", 'woo-vipps'), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
-            add_submenu_page( 'vipps_admin_menu', __('QR Codes', 'woo-vipps'), __('QR Codes', 'woo-vipps'), 'manage_woocommerce', 'edit.php?post_type=vipps_qr_code', null, 20);
     }
 
     public function add_meta_boxes () {
@@ -462,7 +477,6 @@ class Vipps {
         global $post;
         if ($post && get_post_type($post) == 'shop_order' ) {
             $order = wc_get_order($post);
-
             $pm = $order->get_payment_method();
             if ($pm == 'vipps') { 
                 add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
