@@ -283,6 +283,9 @@ class Vipps {
 
     public function admin_menu_page () {
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
         print "<h1> Hey yo! </h1>";
     }
 
