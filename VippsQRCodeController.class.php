@@ -68,7 +68,8 @@ class VippsQRCodeController {
         $id = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
         $url = get_post_meta($pid, '_vipps_qr_url', true); // The URL to add/modify
         $qr = get_post_meta($pid, '_vipps_qr_img', true); // The URL to add/modify
-
+        $qrgen = get_post_meta($pid, '_vipps_qr_imggen', true);
+        $qrpid  = get_post_meta($pid, '_vipps_qr_pid', true); // If linking to a product or page, this would be it
 
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
         ?>
@@ -76,6 +77,12 @@ class VippsQRCodeController {
 
             <div>
             <label><?php echo esc_html__( 'URL', 'woo-vipps' ); ?></label>
+
+<?
+// "link til: url, produkt, side" radioboks, og så dropdowner for produkt og side, lagre "pid" for disse og sørg for å oppdatere tax når lagres.
+?>
+
+
             <input name="_vipps_qr_url" type="url" value="<?php echo esc_attr( sanitize_text_field( $url) ); ?>" style="width:100%;" />
             </div>
 
@@ -84,6 +91,15 @@ class VippsQRCodeController {
         </div>
 
             <?php
+
+echo "<pre>"; echo $qrgen ; echo "<pre>";
+echo "<pre>";
+          $api = WC_Gateway_Vipps::instance()->api;
+          #print_r($api->get_merchant_redirect_qr('foo'));
+echo "</pre>";
+
+ 
+
     }
 
 
@@ -121,6 +137,23 @@ class VippsQRCodeController {
     // Called when updateing the URL meta-value of the post type: Synch the object with Vipps
     public function synch_url($pid, $url , $prev) {
           error_log("Synching $url for $pid, prev is $prev");
+
+          $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
+ 
+// FIXME rather use create-or-update logic here.
+          if (!$vid) {
+             $vid = apply_filters('woo_vipps_qr_id', 'woo-qr-'.$pid);  // IOK get the order prefix here actually, to avoid stepping on toes. Maybe use hashes?
+          }
+
+          $api = WC_Gateway_Vipps::instance()->api;
+
+          try {
+              $ok = $api->create_merchant_redirect_qr ($vid, $url) ;
+              error_log(print_r($ok, true));
+          }  catch (Exception $e) {
+              error_log("BONG");
+              error_log(print_r($e, true));
+          }
 
           // IOK FIXME if "is admin" here, we need to add a message about the error. 
           return null;  // null means "ok, store in database". 

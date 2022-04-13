@@ -755,6 +755,78 @@ class VippsApi {
         return $res;
     }
 
+    // the QR api 2022-04-13. PUT is update (on id), DELETE is deletion (of id), GET is get the .. thing. Arguments would be Accept
+    public function create_merchant_redirect_qr ($id, $url) {
+        $command = 'qr/v1/merchantRedirect/';
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        $headers = array();        
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        $headers['Accept'] = 'image/svg+xml'; // IOK FIXME make this modifiable - png is also possible 
+
+        $data = array('id' => $id, 'redirectUrl' => $url);
+
+        $res = $this->http_call($command,$data,'POST',$headers, 'json');
+
+ // [responsecode] => 409
+ //    [message:protected] => 409 Failed to create merchant redirect url - Conflict (id in use)
+
+
+        error_log("Res is " . print_r($res, true)); 
+
+        return $res;
+    }
+
+    // IOK DELETE THIS NOT USED FIXME
+    public function get_merchant_redirect_qr ($url) {
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        $headers = array();        
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        $headers['Accept'] = 'image/svg+xml'; // IOK FIXME make this modifiable - png is also possible 
+
+        $url =  "https://qr-generator-mt-app-service.azurewebsites.net/qr-generator/v1?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb3JtYXQiOiJpbWFnZS9zdmcreG1sIiwidXJsIjoiaHR0cHM6Ly9xci1tdC52aXBwcy5uby9yL2JUbGxzaU5YIiwiaXNzIjoiUXItQXBpIiwibmJmIjoxNjQ5ODU3MTYwLCJleHAiOjE2NDk4NjA3NjAsImlhdCI6MTY0OTg1NzE2MH0.nL73Yj9eZcPohy55q82rtdtquhZZ2Dyr12IW-EBPPQ8";
+
+
+        $res = $this->http_call($url,[],'GET',$headers);
+
+
+
+        return $res;
+    }
+
 
     // Conveniently call Vipps IOK 2018-04-18
     private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){
@@ -795,7 +867,6 @@ class VippsApi {
         if ($verb == 'GET' && $data_encoded) {
             $url .= "?$data_encoded";
         }
-
 
         $return = wp_remote_request($url,$args);
         $headers = array();
