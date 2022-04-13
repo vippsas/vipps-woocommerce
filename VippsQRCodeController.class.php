@@ -130,25 +130,33 @@ echo "</pre>";
                 if ($meta_key != '_vipps_qr_url') return $nullonsuccess;
                 if (get_post_type($pid) != 'vipps_qr_code') return $nullonsuccess;
                
-                error_log("In it to win it"); 
-                return $this->synch_url($pid, $meta_value, $prev_valuev);
+                error_log("In it to win it $meta_value was $prev_value"); 
+                return $this->synch_url($pid, $meta_value, $prev_value);
     }
  
     // Called when updateing the URL meta-value of the post type: Synch the object with Vipps
     public function synch_url($pid, $url , $prev) {
           error_log("Synching $url for $pid, prev is $prev");
-
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
+          $create = false;
  
-// FIXME rather use create-or-update logic here.
-          if (!$vid) {
-             $vid = apply_filters('woo_vipps_qr_id', 'woo-qr-'.$pid);  // IOK get the order prefix here actually, to avoid stepping on toes. Maybe use hashes?
-          }
-
-          $api = WC_Gateway_Vipps::instance()->api;
-
           try {
-              $ok = $api->create_merchant_redirect_qr ($vid, $url) ;
+              $api = WC_Gateway_Vipps::instance()->api;
+              if (!$vid) {
+                  $prefix = $api->get_orderprefix();
+                  $vid = apply_filters('woo_vipps_qr_id', $prefix . "-qr-" . $pid);
+                  error_log("No stored id, creating as $vid");
+                  $ok = $api->create_merchant_redirect_qr ($url);
+                  // Get actual vid from call here, but 
+                  update_post_meta( $pid, '_vipps_qr_id', $vid);
+              } else {
+                 if ($url == get_post_meta($pid, '_vipps_qr_url', true)) {
+                    error_log("No change, no sync");
+                    $ok = null;
+                 }  else {
+                    $ok = $api->update_merchant_redirect_qr ($vid, $url) ;
+                 }
+              }
               error_log(print_r($ok, true));
           }  catch (Exception $e) {
               error_log("BONG");

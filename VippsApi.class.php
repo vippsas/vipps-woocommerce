@@ -756,8 +756,16 @@ class VippsApi {
     }
 
     // the QR api 2022-04-13. PUT is update (on id), DELETE is deletion (of id), GET is get the .. thing. Arguments would be Accept
-    public function create_merchant_redirect_qr ($id, $url) {
-        $command = 'qr/v1/merchantRedirect/';
+    public function create_merchant_redirect_qr ($id,$url){
+        $action = "POST";
+        return $this->call_qr_merchant_redirect($action, $id, $url);
+    }
+    public function update_merchant_redirect_qr ($id, $url) {
+        $action = "PUT";
+        return $this->call_qr_merchant_redirect($action, $id, $url);
+    }
+    private function call_qr_merchant_redirect($action, $id, $url=null) {
+        $command = 'qr/v1/merchantRedirect/' . $id;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -780,9 +788,10 @@ class VippsApi {
 
         $headers['Accept'] = 'image/svg+xml'; // IOK FIXME make this modifiable - png is also possible 
 
-        $data = array('id' => $id, 'redirectUrl' => $url);
+        $data = array('id' => $id);
+        if ($url) $data['redirectUrl'] = $url;
 
-        $res = $this->http_call($command,$data,'POST',$headers, 'json');
+        $res = $this->http_call($command,$data,$action,$headers, 'json');
 
  // [responsecode] => 409
  //    [message:protected] => 409 Failed to create merchant redirect url - Conflict (id in use)
