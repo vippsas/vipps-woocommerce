@@ -3618,7 +3618,6 @@ EOF;
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($status == 'pending') {
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
-            $this->log("Order $orderid - no callback and the order is still pending. Checking order status at Vipps", 'DEBUG'); 
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
                 $status = $newstatus;
