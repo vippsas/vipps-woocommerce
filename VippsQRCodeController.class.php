@@ -67,8 +67,7 @@ class VippsQRCodeController {
         $pid = $post->ID;
         $id = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
         $url = get_post_meta($pid, '_vipps_qr_url', true); // The URL to add/modify
-        $qr = get_post_meta($pid, '_vipps_qr_img', true); // The URL to add/modify
-        $qrgen = get_post_meta($pid, '_vipps_qr_imggen', true);
+        $qr = get_post_meta($pid, '_vipps_qr_img', true); // The QR image
         $qrpid  = get_post_meta($pid, '_vipps_qr_pid', true); // If linking to a product or page, this would be it
 
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
@@ -90,24 +89,70 @@ class VippsQRCodeController {
             <label for="excerpt"><?php _e( 'Description' ); ?></label><textarea style="margin-top:0px; width:100%" rows="1" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // textarea_escaped ?></textarea>
         </div>
 
-            <?php
+<div class="qrimageholder" style="padding-top:1rem; padding-bottom: 1rem; display:flex; justify-content: space-between">
+   <?php if ($qr): ?> 
+     <div class="qrimagedownloadbuttons" style="display:flex;flex-direction:column;">
+       <a class="button downloadsvg" style="margin-top: .7rem">Download as SVG</a>
+       <a class="button downloadpng" style="margin-top: .7rem">Download as PNG</a>
+     </div>
+     <div id='qrimage' class='qrimage' style='width:25%'><?php echo $qr ?></div> 
+   <?php endif; ?> 
+</div>
 
-echo "<pre>"; echo $qrgen ; echo "<pre>";
-echo "<pre>";
-          $api = WC_Gateway_Vipps::instance()->api;
-          #print_r($api->get_merchant_redirect_qr('foo'));
-echo "</pre>";
+<script>
+jQuery('.button.downloadsvg').click(function () {
+var svgData = jQuery("#qrimage")[0].innerHTML;
+var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
+var domUrl = window.URL || window.webkitURL || window;
+var svgUrl = domUrl.createObjectURL(svgBlob);
+var downloadLink = document.createElement("a");
+downloadLink.href = svgUrl;
+downloadLink.target = "_blank";
+downloadLink.download = "mysvgfile.svg"; // FIXME ADD NICE TITLE
+document.body.appendChild(downloadLink);
+downloadLink.click();
+document.body.removeChild(downloadLink);
+});
 
- 
+jQuery('.button.downloadpng').click(function () {
+var svgData = jQuery("#qrimage")[0].innerHTML;
+var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
+var domUrl = window.URL || window.webkitURL || window;
+var svgUrl = domUrl.createObjectURL(svgBlob);
+var canvas = document.createElement("canvas");
+canvas.width = 640; // FIXME ADD FILTER MAYBE
+canvas.height= 640;
+var ctx = canvas.getContext('2d');
+var img = new Image();
+img.onload = function () {
+    ctx.drawImage(img, 0, 0);
+    domUrl.revokeObjectURL(svgUrl);
+    var imgURI = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
 
+    var downloadLink = document.createElement("a");
+    downloadLink.href = imgURI;
+    downloadLink.target = "_blank";
+    downloadLink.download = "mypngfile.png"; // FIXME ADD NICE TITLE
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+  };
+
+  img.src = svgUrl;
+});
+
+
+</script>
+
+
+    <?php
     }
 
 
     // This handles "save post" from the admin backend. IOK 2022-04-13  
     public function save_post ($pid, $post, $update) {
-        if (!wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) {
-            wp_die(__("Cannot save QR code data with invalid nonce!", 'woo-vipps'));
-        }
+        if (!wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
         if ( isset( $_POST['_vipps_qr_url'] ) ) {
             $newurl = $_POST['_vipps_qr_url'];
             update_post_meta( $pid, '_vipps_qr_url', sanitize_url($newurl));
@@ -129,6 +174,9 @@ echo "</pre>";
     public function update_post_metadata ($nullonsuccess, $pid, $meta_key, $meta_value, $prev_value) {
                 if ($meta_key != '_vipps_qr_url') return $nullonsuccess;
                 if (get_post_type($pid) != 'vipps_qr_code') return $nullonsuccess;
+         
+                // Prev is only passed when setting multi-values,
+                if (!$prev_value) $prev_value = get_post_meta($pid, '_vipps_qr_url', true);
                
                 error_log("In it to win it $meta_value was $prev_value"); 
                 return $this->synch_url($pid, $meta_value, $prev_value);
@@ -136,9 +184,10 @@ echo "</pre>";
  
     // Called when updateing the URL meta-value of the post type: Synch the object with Vipps
     public function synch_url($pid, $url , $prev) {
+
           error_log("Synching $url for $pid, prev is $prev");
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
-          $create = false;
+          $gotimage = get_post_meta($pid, '_vipps_qr_img', true); // We only fetch this if necessary
  
           try {
               $api = WC_Gateway_Vipps::instance()->api;
@@ -146,24 +195,44 @@ echo "</pre>";
                   $prefix = $api->get_orderprefix();
                   $vid = apply_filters('woo_vipps_qr_id', $prefix . "-qr-" . $pid);
                   error_log("No stored id, creating as $vid");
-                  $ok = $api->create_merchant_redirect_qr ($url);
+                  delete_post_meta($pid, '_vipps_qr_img');
+                  $ok = $api->create_merchant_redirect_qr ($vid, $url);
                   // Get actual vid from call here, but 
                   update_post_meta( $pid, '_vipps_qr_id', $vid);
               } else {
-                 if ($url == get_post_meta($pid, '_vipps_qr_url', true)) {
+                 if ($url == $prev && $gotimage) {
                     error_log("No change, no sync");
                     $ok = null;
                  }  else {
+                    error_log("Updating URL");
                     $ok = $api->update_merchant_redirect_qr ($vid, $url) ;
                  }
               }
-              error_log(print_r($ok, true));
+              // This is a time-limited URL which can be used for one hour to download the QR code
+              if ($ok && !$gotimage && isset($ok['url'])) {
+                  try {
+                      // We don't have to do this via the API, it's fine to use the normal get-content api. 
+                      $data = $api->get_merchant_redirect_qr($ok['url']);
+                      $img = $data['message']; // Could also be png if we allow that, currenlty svg
+                      update_post_meta($pid, '_vipps_qr_img', $img);
+                  } catch (Exception $e) {
+                    $Vipps::instance()->log(sprintf(__("Error downloading QR code image: %s", 'woo-vipps'), $e->getMessage()), 'error');
+                    // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
+                    // We couldn't get an image. Maybe link is to old, or something. Best thing to do would be to just 
+                    // ask the user to save the link again.
+                    // MUST THEN ENSURE THE url == prev ABOVE DOES NOT KICK IN. SO ADD CHECK FOR EXISTING IMG!
+                    return false; // Means *do not* store value.
+                  }
+              }
           }  catch (Exception $e) {
-              error_log("BONG");
+              // IOK here *in particular* catch the 409 thing for previously used ID and retry (If not handled in api).
+              // IOK FIXME ADD ADMIN MESSAGE
+              // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
+              $Vipps::instance()->log(sprintf(__("Error creating or updating QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
               error_log(print_r($e, true));
+              return false; // Means *do not* store value.
           }
 
-          // IOK FIXME if "is admin" here, we need to add a message about the error. 
           return null;  // null means "ok, store in database". 
     }
 

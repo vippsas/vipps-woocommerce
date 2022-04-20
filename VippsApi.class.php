@@ -765,7 +765,8 @@ class VippsApi {
         return $this->call_qr_merchant_redirect($action, $id, $url);
     }
     private function call_qr_merchant_redirect($action, $id, $url=null) {
-        $command = 'qr/v1/merchantRedirect/' . $id;
+        $command = 'qr/v1/merchantRedirect/';
+        if ($action != "POST") $command .= $id;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -802,8 +803,7 @@ class VippsApi {
         return $res;
     }
 
-    // IOK DELETE THIS NOT USED FIXME
-    public function get_merchant_redirect_qr ($url) {
+    public function get_merchant_redirect_qr ($url, $accept = "image/svg+xml") {
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -823,14 +823,11 @@ class VippsApi {
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
-        $headers['Accept'] = 'image/svg+xml'; // IOK FIXME make this modifiable - png is also possible 
-
-        $url =  "https://qr-generator-mt-app-service.azurewebsites.net/qr-generator/v1?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb3JtYXQiOiJpbWFnZS9zdmcreG1sIiwidXJsIjoiaHR0cHM6Ly9xci1tdC52aXBwcy5uby9yL2JUbGxzaU5YIiwiaXNzIjoiUXItQXBpIiwibmJmIjoxNjQ5ODU3MTYwLCJleHAiOjE2NDk4NjA3NjAsImlhdCI6MTY0OTg1NzE2MH0.nL73Yj9eZcPohy55q82rtdtquhZZ2Dyr12IW-EBPPQ8";
-
+        $headers['Accept'] = $accept;
 
         $res = $this->http_call($url,[],'GET',$headers);
 
+        error_log("Res is " . print_r($res, true));
 
 
         return $res;
@@ -877,6 +874,9 @@ class VippsApi {
             $url .= "?$data_encoded";
         }
 
+error_log("url $url");
+error_log("args " . print_r($args, true));
+
         $return = wp_remote_request($url,$args);
         $headers = array();
         $content=NULL;
@@ -888,14 +888,16 @@ class VippsApi {
         } else {
             $response = wp_remote_retrieve_response_code($return);
             $message =  wp_remote_retrieve_response_message($return);
+
+
             $headers = wp_remote_retrieve_headers($return);
             $headers['status'] = "$response $message";
             $contenttext = wp_remote_retrieve_body($return);
 
             if ($contenttext) {
                 $content = @json_decode($contenttext,true);
-                // Yes, we also get text/plain sometimes!
-                if (!$content && !empty($contenttext) && preg_match("!text/plain!i", $headers['content-type'])){
+                // Assume we always get json, except for when we don't. IOK 2022-04-22. 
+                if (!$content && !empty($contenttext) && !preg_match("!json!i", $headers['content-type'])){
                     $content = array('message' => $contenttext);
                 }
             }
