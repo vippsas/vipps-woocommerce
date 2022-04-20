@@ -764,6 +764,10 @@ class VippsApi {
         $action = "PUT";
         return $this->call_qr_merchant_redirect($action, $id, $url);
     }
+    public function delete_merchant_redirect_qr ($id) {
+        $action = "DELETE";
+        return $this->call_qr_merchant_redirect($action, $id, $url);
+    }
     private function call_qr_merchant_redirect($action, $id, $url=null) {
         $command = 'qr/v1/merchantRedirect/';
         if ($action != "POST") $command .= $id;
@@ -803,6 +807,8 @@ class VippsApi {
         return $res;
     }
 
+    // This isn't really neccessary since we can do this using just the fetch apis, but we'll do it anyway. 
+    // The URLs here are valid for just one hour, so this should be called right after an update.
     public function get_merchant_redirect_qr ($url, $accept = "image/svg+xml") {
         $at = $this->get_access_token();
         $subkey = $this->get_key();
@@ -826,10 +832,6 @@ class VippsApi {
         $headers['Accept'] = $accept;
 
         $res = $this->http_call($url,[],'GET',$headers);
-
-        error_log("Res is " . print_r($res, true));
-
-
         return $res;
     }
 
@@ -873,9 +875,6 @@ class VippsApi {
         if ($verb == 'GET' && $data_encoded) {
             $url .= "?$data_encoded";
         }
-
-error_log("url $url");
-error_log("args " . print_r($args, true));
 
         $return = wp_remote_request($url,$args);
         $headers = array();

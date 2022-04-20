@@ -152,7 +152,7 @@ img.onload = function () {
 
     // This handles "save post" from the admin backend. IOK 2022-04-13  
     public function save_post ($pid, $post, $update) {
-        if (!wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
+        if (!isset($_POST['vipps_qr_metabox_nonce']) || !wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
         if ( isset( $_POST['_vipps_qr_url'] ) ) {
             $newurl = $_POST['_vipps_qr_url'];
             update_post_meta( $pid, '_vipps_qr_url', sanitize_url($newurl));
@@ -168,8 +168,41 @@ img.onload = function () {
 
     public function init () {
         $this->register_vipps_qr_code();
+        // Ensure we synch with backend when updating
         add_filter('update_post_metadata', array($this, 'update_post_metadata'), 10, 5);
+
+        // On trash or delete, remove the QR code at vipps
+        add_action('wp_trash_post', array($this, 'delete_qr_code')); // Before status goes to "trash"
+        add_action('before_delete_post',array($this, 'delete_qr_code'));  // Before deletion, metadata still available
+
+        // Support resurection - the post id should then be available again
+        add_action('untrashed_post', array($this, 'undelete_qr_code'));
     }
+
+    // Called when deleting or trashing a post
+    public function delete_qr_code($pid) {
+        $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
+        if ($vid) {
+            $api = WC_Gateway_Vipps::instance()->api;
+            try {
+                $api->delete_merchant_redirect_qr($vid);
+             } catch (Exception $e) {
+                 $Vipps::instance()->log(sprintf(__("Error deleting QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
+                 // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
+             }
+             // Delete data from Vipps, including the ID which should now be free again
+             delete_post_meta($pid, '_vipps_qr_img');
+             delete_post_meta($pid, '_vipps_qr_id');
+        }
+    }
+    // Called when undeleting a post. We just need to recreate the QR code, so we do the same as when creating it.
+    public function undelete_qr_code($pid) {
+        $url = get_post_meta($pid, '_vipps_qr_url', true);
+        if ($url) {
+            $this->synch_url($pid, $url, 'NEW');
+        }
+    }
+
 
     public function update_post_metadata ($nullonsuccess, $pid, $meta_key, $meta_value, $prev_value) {
                 if ($meta_key != '_vipps_qr_url') return $nullonsuccess;
@@ -178,14 +211,11 @@ img.onload = function () {
                 // Prev is only passed when setting multi-values,
                 if (!$prev_value) $prev_value = get_post_meta($pid, '_vipps_qr_url', true);
                
-                error_log("In it to win it $meta_value was $prev_value"); 
                 return $this->synch_url($pid, $meta_value, $prev_value);
     }
  
     // Called when updateing the URL meta-value of the post type: Synch the object with Vipps
     public function synch_url($pid, $url , $prev) {
-
-          error_log("Synching $url for $pid, prev is $prev");
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
           $gotimage = get_post_meta($pid, '_vipps_qr_img', true); // We only fetch this if necessary
  
