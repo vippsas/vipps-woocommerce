@@ -16,17 +16,23 @@ class WC_Vipps_Recurring_All_Products_Support {
 	}
 
 	public static function cart_has_subscription_product( $has_subscription_product, $cart_content ) {
-		foreach ( $cart_content as $values ) {
-			$is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme( $values );
-			$has_subscription_product = ! is_bool( $is_wcs_att_sub );
+		if (class_exists( 'WCS_ATT_Cart' )) {
+			foreach ( $cart_content as $values ) {
+				$is_wcs_att_sub           = WCS_ATT_Cart::get_subscription_scheme( $values );
+				$has_subscription_product = ! is_bool( $is_wcs_att_sub );
+			}
 		}
 
 		return $has_subscription_product;
 	}
 
 	public static function item_is_subscription( $item_is_subscription, $item ) {
-		$is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme( $item );
+		if ( class_exists( 'WCS_ATT_Cart' ) && ! $item_is_subscription ) {
+			$is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme( $item );
 
-		return ! is_bool( $is_wcs_att_sub );
+			return ! is_bool( $is_wcs_att_sub );
+		}
+
+		return $item_is_subscription;
 	}
 }
