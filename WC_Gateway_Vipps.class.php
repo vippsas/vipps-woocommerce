@@ -206,17 +206,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
     private function make_callback_urls($forwhat,$token='') {
         // Passing the token as GET arguments, as the Authorize header is stripped. IOK 2018-06-13
-        $tk = '';
-        if ($token)  {
-          $tk = "tk=$token";
-        }
+        $url = home_url("/", 'https');
+        $queryargs = ['tk'=>$token];
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
-            return untrailingslashit(home_url("/?wc-api=$forwhat&$tk&callback=", 'https'));
+            $queryargs['wc-api'] = $forwhat;
         } else {
-            return untrailingslashit(home_url("/wc-api/$forwhat?$tk&callback=", 'https'));
+            $url = trailingslashit(home_url("wc-api/$forwhat", 'https'));
         }
+        // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
+        // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
+        return add_query_arg($queryargs, $url) . "&callback=";
     }
     // The main payment callback
     public function payment_callback_url ($token='') {
@@ -228,11 +229,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
     // IOK 2018-05-18
     public function consent_removal_callback_url () {
+        $queryargs = [];
+        $url = home_url("/", 'https');
         if ( !get_option('permalink_structure')) {
-            return untrailingslashit(home_url("/?vipps-consent-removal&callback=", 'https'));
+            $queryargs['vipps-consent-removal']=1;
         } else {
-            return untrailingslashit(home_url("/vipps-consent-removal/?callback=", 'https'));
+            $url = trailingslashit(home_url('vipps-consent-removal', 'https'));
         }
+        // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
+        // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
+        return add_query_arg($queryargs, $url) . "&callback=";
     }
 
     // Allow user to select the template to be used for the special Vipps pages. IOK 2020-02-17
