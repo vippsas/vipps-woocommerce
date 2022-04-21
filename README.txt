@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.0 =
+* Added: Support for [All Products for WooCommerce Subscriptions](https://woocommerce.com/products/all-products-for-woocommerce-subscriptions/). Thanks to @danielcherubini on GitHub.
+
 = 1.13.4 =
 * Fixed: We now prevent orders from being transitioned to `processing` when the status is already `completed`.
 

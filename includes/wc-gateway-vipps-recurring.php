@@ -1450,8 +1450,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
 				$subscription_items = array_filter( $items, static function ( $item ) {
-					return WC_Subscriptions_Product::is_subscription( $item['product_id'] );
+					return apply_filters('wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item);
 				} );
+
 				$item               = array_pop( $subscription_items );
 				$product            = $item->get_product();
 				$parent_product     = wc_get_product( $item->get_product_id() );

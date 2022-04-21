@@ -7,37 +7,37 @@ class WC_Vipps_Recurring_Kc_Support {
 	 * Initialize Vipps Recurring KC Support class.
 	 */
 	public static function init() {
-		add_filter( 'kco_wc_gateway_settings', [ WC_Vipps_Recurring_Kc_Support::class, 'form_fields' ] );
+		add_filter( 'kco_wc_gateway_settings', [ __CLASS__, 'form_fields' ] );
 
 		add_filter( 'kco_wc_api_request_args', [
-			WC_Vipps_Recurring_Kc_Support::class,
+			__CLASS__,
 			'create_vipps_recurring_order'
 		], 90 );
 
 		add_filter( 'kco_wc_klarna_order_pre_submit', [
-			WC_Vipps_Recurring_Kc_Support::class,
+			__CLASS__,
 			'canonicalize_phone_number'
 		], 11 );
 
-		add_action( 'init', [ WC_Vipps_Recurring_Kc_Support::class, 'maybe_remove_other_gateway_button' ] );
+		add_action( 'init', [ __CLASS__, 'maybe_remove_other_gateway_button' ] );
 
 		add_action( 'kco_wc_before_submit', [
-			WC_Vipps_Recurring_Kc_Support::class,
+			__CLASS__,
 			'add_vipps_recurring_payment_method'
 		] );
 
 		add_action( 'woocommerce_payment_complete', [
-			WC_Vipps_Recurring_Kc_Support::class,
+			__CLASS__,
 			'reset_default_payment_method'
 		], 10 );
 
 		add_filter( 'wc_vipps_recurring_transaction_id_for_order', [
-			WC_Vipps_Recurring_Kc_Support::class,
+			__CLASS__,
 			'fix_transaction_id'
 		], 10, 2 );
 
 		add_action( 'wc_vipps_recurring_before_process_order_charge', [
-			WC_Vipps_Recurring_Kc_Support::class,
+			__CLASS__,
 			'fix_payment_method_on_subscription'
 		] );
 	}
