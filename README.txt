@@ -162,7 +162,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 = 1.14.0 =
 * Added: Support for [All Products for WooCommerce Subscriptions](https://woocommerce.com/products/all-products-for-woocommerce-subscriptions/). Thanks to @danielcherubini on GitHub.
-* Fixed: Enforce load order of compatibility code.
+* Fixed: `prevent_backwards_transition_on_completed_order` no longer has a return type, this fixes compatibility with plugins like `WooCommerce Order custom Statuses`.
 
 = 1.13.4 =
 * Fixed: We now prevent orders from being transitioned to `processing` when the status is already `completed`.

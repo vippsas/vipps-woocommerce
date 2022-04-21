@@ -284,7 +284,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			add_filter( 'woocommerce_payment_complete_order_status', [
 				$this,
 				'prevent_backwards_transition_on_completed_order'
-			], 99, 3 );
+			], 100, 3 );
 		}
 
 		/**
@@ -2020,9 +2020,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $order_id
 		 * @param $order
 		 *
-		 * @return string
+		 * @return string|null
 		 */
-		public function prevent_backwards_transition_on_completed_order( $status, $order_id, $order ): string {
+		public function prevent_backwards_transition_on_completed_order( $status, $order_id, $order ) {
 			if ( $status === 'processing'
 				 && $order->has_status( 'completed' )
 				 && $order->get_payment_method() === $this->id ) {
