@@ -893,6 +893,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         $content = null;
 
+        // Should be impossible, but there we go IOK 2022-04-21
+        if (! $order->has_status('pending', 'failed')) return false;
+
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
         $this->save_session_in_order($order);
 
@@ -909,7 +912,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         try {
             // If the order was 'failed', it isnt any more! yet!
-            if ($order->get_status() != 'pending') {
+            if ($order->get_status() == 'failed') {
                $order->set_status('pending', __('Setting order status to pending to start payment', 'woo-vipps'));
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
