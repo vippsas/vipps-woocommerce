@@ -30,32 +30,28 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
-	 * @param boolean $force
+	 * @param boolean $force_fresh
 	 *
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function get_access_token( $force = false ) {
-		// First, get a stored token if it exists
+	public function get_access_token( $force_fresh = false ) {
 		$stored = get_transient( '_vipps_recurring_token' );
 
-		if ( ! $force && $stored && $stored['expires_on'] > time() ) {
+		if ( ! $force_fresh && $stored && $stored['expires_on'] > time() ) {
 			return $stored['access_token'];
 		}
 
-		// Otherwise, get it from vipps - this might throw errors
-		$fresh = $this->get_access_token_from_vipps();
+		$token = $this->get_access_token_from_vipps();
 
-		if ( ! $fresh ) {
+		if ( ! $token ) {
 			return null;
 		}
 
-		$token  = $fresh['access_token'];
-		$expire = $fresh['expires_in'] / 2;
-		set_transient( '_vipps_recurring_token', $fresh, $expire );
+		set_transient( '_vipps_recurring_token', $token, $token['expires_in'] / 2 );
 
-		return $token;
+		return $token['access_token'];
 	}
 
 	/**
