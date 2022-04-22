@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.1 =
+* Fixed: Renamed our Vipps access token transient to prevent conflicts with Vipps Checkout when two different sets of merchant tokens are used.
+
 = 1.14.0 =
 * Added: Support for [All Products for WooCommerce Subscriptions](https://woocommerce.com/products/all-products-for-woocommerce-subscriptions/). Thanks to @danielcherubini on GitHub.
 * Fixed: `prevent_backwards_transition_on_completed_order` no longer has a return type, this fixes compatibility with plugins like `WooCommerce Order custom Statuses`.

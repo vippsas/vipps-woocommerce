@@ -38,7 +38,7 @@ class WC_Vipps_Recurring_Api {
 	 */
 	public function get_access_token( $force = false ) {
 		// First, get a stored token if it exists
-		$stored = get_transient( '_vipps_app_token' );
+		$stored = get_transient( '_vipps_recurring_token' );
 
 		if ( ! $force && $stored && $stored['expires_on'] > time() ) {
 			return $stored['access_token'];
@@ -53,7 +53,7 @@ class WC_Vipps_Recurring_Api {
 
 		$token  = $fresh['access_token'];
 		$expire = $fresh['expires_in'] / 2;
-		set_transient( '_vipps_app_token', $fresh, $expire );
+		set_transient( '_vipps_recurring_token', $fresh, $expire );
 
 		return $token;
 	}
