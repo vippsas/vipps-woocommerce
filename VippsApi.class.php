@@ -769,7 +769,7 @@ class VippsApi {
         return $this->call_qr_merchant_redirect($action, $id, $url);
     }
     private function call_qr_merchant_redirect($action, $id, $url=null) {
-        $command = 'qr/v1/merchantRedirect/';
+        $command = 'qr/v1/merchant-redirect/';
         if ($action != "POST") $command .= $id;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
