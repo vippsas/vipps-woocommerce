@@ -7,7 +7,7 @@ Requires at least: 4.7
 Tested up to: 5.9.3
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 6.3.1
+WC tested up to: 6.4.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -81,9 +81,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 == Upgrade Notice ==
 
 = 1.8.21 =
-* Support for Vipps Checkout alternative checkout page
-* Ensure alternative browsers work on mobile for Checkout too (avoid "unknown order" on return from Vipps)
-* Handle too-short Vipps order ids on checkout
+* Bugfix release
+* Improved support for headless themes
 
 == Frequently Asked Questions ==
 
@@ -205,7 +204,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.04.xx version 1.8.21 =
+= 2022.04.07 version 1.8.21 =
+* Protect "process_payment" from being called repeatedly when this is not allowed
+* From Johnny Oskarsson:
+    - Improve compatibility with headless themes
+    - New filters for the data sent in `initiate_payment` and `initiate_checkout`, which allows for more control over the return URL which is especially important for headless themes.
 
 = 2022.04.06 version 1.8.20 =
 * Ensure alternative browsers work on mobile on Checkout so that "unknown order" does not happen on order return
