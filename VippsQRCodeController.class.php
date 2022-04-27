@@ -60,6 +60,10 @@ class VippsQRCodeController {
     public function admin_init() {
         add_meta_box( '_vipps_qr_data', __( 'URL', 'woo-vipps' ), array( $this, 'metabox_url' ), 'vipps_qr_code', 'normal', 'default' );
         add_action('save_post_vipps_qr_code', array($this, 'save_post'), 10, 3);
+
+
+        wp_enqueue_script('wc-enhanced-select');
+
     }
 
     public function metabox_url () {
@@ -73,6 +77,20 @@ class VippsQRCodeController {
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
         ?>
             <label><?php echo esc_html__( 'QR-id', 'woo-vipps' ); ?>: <?php echo esc_html($id); ?></label><br>
+
+<div>
+<label><?php echo esc_html__('Choose product', 'woo-vipps'); ?>:
+        <select class="wc-product-search" style="width:100%"  id="product_id" name="product_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products"></select>
+</label>
+
+<label><?php echo esc_html__('Choose page', 'woo-vipps'); ?>:
+<?php wp_dropdown_pages(['selected'=>0, 'echo'=>1, 'id'=>'page_id', 'class'=>'vipps-page-selector wc-enhanced-select', 'show_option_none'=> __('None chosen', 'woo-vipps')]); ?>
+</label>
+</div>
+<style>
+ .vipps-page-selector { width:100% }
+</style>
+
 
             <div>
             <label><?php echo esc_html__( 'URL', 'woo-vipps' ); ?></label>
