@@ -57,3 +57,13 @@
 li#toplevel_page_vipps_admin_menu .wp-menu-image.dashicons-before img {
     width: 20px; opacity: .9; padding-bottom: 2px;
 }
+
+/* For the QR code page */
+body.post-type-vipps_qr_code.wp-admin .vipps-page-selector { width:100% }
+body.post-type-vipps_qr_code.wp-admin .vipps-page-selector { width:100% }
+body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option {
+    display:none;
+}
+body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.active {
+    display:block;
+}

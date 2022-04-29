@@ -74,34 +74,47 @@ class VippsQRCodeController {
         $qr = get_post_meta($pid, '_vipps_qr_img', true); // The QR image
         $qrpid  = get_post_meta($pid, '_vipps_qr_pid', true); // If linking to a product or page, this would be it
 
+        $urltype = get_post_meta($pid, '_vipps_urltype', true); // What kind of URL we are working with
+        if (!$urltype) $urltype = 'pageid';
+
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
         ?>
             <label><?php echo esc_html__( 'QR-id', 'woo-vipps' ); ?>: <?php echo esc_html($id); ?></label><br>
 
-<div>
-<label><?php echo esc_html__('Choose product', 'woo-vipps'); ?>:
-        <select class="wc-product-search" style="width:100%"  id="product_id" name="product_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products"></select>
-</label>
+<div class="url-section">
+  <label><?php echo esc_html('Select link type', 'woo-vipps'); ?></label>
+    <div class="link-selector">
+       <label for="pageidtab"><?php _e("Page", 'woo-vipps'); ?>
+        <input type=radio class="vipps_urltype" id=pageidtab value="pageid" name="vipps_urltype" <?php if ($urltype=='pageid') echo " checked "; ?>>
+       </label>
 
-<label><?php echo esc_html__('Choose page', 'woo-vipps'); ?>:
+       <label for="productidtab"><?php _e("Product", 'woo-vipps'); ?>
+         <input type=radio class="vipps_urltype" id=productidtab value="productid" name="vipps_urltype" <?php if ($urltype=='productid') echo " checked "; ?>>
+       </label>
+
+       <label for="urltab"><?php _e("URL", 'woo-vipps'); ?>
+         <input type=radio class="vipps_urltype" id=urltab value="url" name="vipps_urltype" <?php if ($urltype=='url') echo " checked "; ?>>
+       </label>
+
+    </div>
+  <div class="url-options">
+  <div class="url-option pageid <?php if ($urltype=='pageid') echo " active "; ?>">
+     <label><?php echo esc_html__('Choose page', 'woo-vipps'); ?>:</label>
 <?php wp_dropdown_pages(['selected'=>0, 'echo'=>1, 'id'=>'page_id', 'class'=>'vipps-page-selector wc-enhanced-select', 'show_option_none'=> __('None chosen', 'woo-vipps')]); ?>
-</label>
-</div>
-<style>
- .vipps-page-selector { width:100% }
-</style>
+   </div>
+
+   <div class="url-option productid <?php if ($urltype=='productid') echo " active "; ?>">
+    <label><?php echo esc_html__('Choose product', 'woo-vipps'); ?>:</label>
+        <select class="wc-product-search" style="width:100%"  id="product_id" name="product_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products"></select>
+   </div>
 
 
-            <div>
-            <label><?php echo esc_html__( 'URL', 'woo-vipps' ); ?></label>
-
-<?
-// "link til: url, produkt, side" radioboks, og så dropdowner for produkt og side, lagre "pid" for disse og sørg for å oppdatere tax når lagres.
-?>
-
-
+   <div class="url-option url <?php if ($urltype=='url') echo " active "; ?>">
+       <label><?php echo esc_html__( 'URL', 'woo-vipps' ); ?></label>
             <input name="_vipps_qr_url" type="url" value="<?php echo esc_attr( sanitize_text_field( $url) ); ?>" style="width:100%;" />
-            </div>
+   </div>
+ </div>
+</div>
 
             <div>
             <label for="excerpt"><?php _e( 'Description' ); ?></label><textarea style="margin-top:0px; width:100%" rows="1" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // textarea_escaped ?></textarea>
@@ -276,6 +289,7 @@ img.onload = function () {
               // IOK here *in particular* catch the 409 thing for previously used ID and retry (If not handled in api).
               // IOK FIXME ADD ADMIN MESSAGE
               // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
+              global $Vipps;
               $Vipps::instance()->log(sprintf(__("Error creating or updating QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
               error_log(print_r($e, true));
               return false; // Means *do not* store value.

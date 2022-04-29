@@ -169,10 +169,30 @@ SOFTWARE.
        jQuery('#vipps-share-link').click(vipps_create_shareable_link);
        add_shareable_commands();
      });
-
-
-
  }
+
+
+    if (pagenow == 'vipps_qr_code') {
+        function select_url_bit (which) {
+            console.log("Doing " + which);
+            let all = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option');
+            let thisone  = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.' + which);
+            console.log('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.' + which);
+            all.removeClass('active');
+            thisone.addClass('active');
+            all.find('input,select').prop('required', false);
+            thisone.find('input,select').prop('required', true);
+        }
+        jQuery(document).ready(function () {
+            jQuery('.url-section .link-selector .vipps_urltype').on('change', function () {
+                console.log("clickety!");
+                select_url_bit(jQuery(this).val());
+            });
+            console.log("val is " + jQuery('.url-section .link-selector .vipps_urltype').val());
+            select_url_bit(jQuery('.url-section .link-selector .vipps_urltype').val());
+        });
+    }
+
 })();
 
 function VippsGetPaymentDetails(orderid,nonce) {
@@ -187,4 +207,4 @@ function VippsGetPaymentDetails(orderid,nonce) {
 
 
 
-console.log("Vipps admin scripts loaded - v1.7.4");
+console.log("Vipps admin scripts loaded - v1.9.0");
