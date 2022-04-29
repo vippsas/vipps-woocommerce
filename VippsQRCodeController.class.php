@@ -60,8 +60,46 @@ class VippsQRCodeController {
     public function admin_init() {
         add_meta_box( '_vipps_qr_data', __( 'URL', 'woo-vipps' ), array( $this, 'metabox_url' ), 'vipps_qr_code', 'normal', 'default' );
         add_action('save_post_vipps_qr_code', array($this, 'save_post'), 10, 3);
+        add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts')); 
+        add_action('admin_footer', array($this, 'admin_footer'));
 
-        wp_enqueue_script('wc-enhanced-select');
+
+        add_filter('views_edit-vipps_qr_code', array($this, 'qr_list_views'));
+
+    }
+ 
+    public function admin_enqueue_scripts ($hook) {
+      wp_enqueue_script('wc-enhanced-select');
+      $screen = get_current_screen();
+      if ($screen && $screen->id == 'edit-vipps_qr_code') {
+          wp_enqueue_script( 'jquery-ui-dialog' );
+          wp_enqueue_style( 'wp-jquery-ui-dialog' );
+      }
+    }
+
+    public function admin_footer() {
+      $screen = get_current_screen();
+      if ($screen && $screen->id == 'edit-vipps_qr_code') {
+?>
+<!-- The modal / dialog box, hidden somewhere near the footer -->
+<div id="vipps_unsynchronized_qr_codes" class="hidden" style="max-width:1200px;min-width:600px;" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
+ <div>
+  <p><?php _e("There are some QR codes present at Vipps that are not part of this Website. This may be because these are part of some <i>other</i> website using this same account, or they may have gotten 'lost' in a database restore - or maybe you are creating an entire new site. If neccessary, you can import these into your current site and manage them from here", 'woo-vipps'); ?></p>
+</div>
+<?php
+      }
+    }
+
+    public function qr_list_views ($views) {
+        $count = 2;
+        $unsynch = "<a class='open_unsynchronized_qr_codes' href=\"javascript:void(0);\" title='" . __("Show QR codes not synchronized to this site", 'woo-vipps') . "'>";
+        $unsynch .= __("Unsynchronized QR codes", 'woo-vipps');
+        $unsynch .= " <span class='count'>($count)</span>";
+        $unsynch .= "</a>";
+
+        $views['unsynchronized'] = $unsynch;
+        return $views;
+
     }
 
     public function metabox_url () {
