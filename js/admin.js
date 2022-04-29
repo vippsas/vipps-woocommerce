@@ -174,10 +174,8 @@ SOFTWARE.
 
     if (pagenow == 'vipps_qr_code') {
         function select_url_bit (which) {
-            console.log("Doing " + which);
             let all = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option');
             let thisone  = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.' + which);
-            console.log('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.' + which);
             all.removeClass('active');
             thisone.addClass('active');
             all.find('input,select').prop('required', false);
@@ -185,11 +183,9 @@ SOFTWARE.
         }
         jQuery(document).ready(function () {
             jQuery('.url-section .link-selector .vipps_urltype').on('change', function () {
-                console.log("clickety!");
                 select_url_bit(jQuery(this).val());
             });
-            console.log("val is " + jQuery('.url-section .link-selector .vipps_urltype').val());
-            select_url_bit(jQuery('.url-section .link-selector .vipps_urltype').val());
+            select_url_bit(jQuery('.url-section .link-selector .vipps_urltype:checked').val());
         });
     }
 

@@ -74,8 +74,33 @@ class VippsQRCodeController {
         $qr = get_post_meta($pid, '_vipps_qr_img', true); // The QR image
         $qrpid  = get_post_meta($pid, '_vipps_qr_pid', true); // If linking to a product or page, this would be it
 
+
         $urltype = get_post_meta($pid, '_vipps_urltype', true); // What kind of URL we are working with
-        if (!$urltype) $urltype = 'pageid';
+        if (!$urltype) {
+            // Unknown urltype, either a new QR or some database issue. Try to handle gracefully.
+            if ($qrpid) {
+               if (is_page($qrpid)) {
+                   $urltype = 'pageid';
+               } else if (get_post_type($qrpid) == 'product')  {
+                   $urltype = 'prodid';
+               }  else if ($url) { // Unknown product type, we should have the URL still though
+                   $urltype = 'url';
+               } else {
+                   // This should never happen
+                   $qrpid = 0;
+                   $urltype = 'url';
+               }
+            } else if ($url) {
+                $urltype = 'url';
+            } else {
+                // Brand new! Assume we want a page.
+                $urltype = 'pageid';
+            }
+        }
+echo "urltype $urltype <br>";
+
+        $pageid = ($urltype == 'pageid') ? $qrpid : 0;
+        $prodid = ($urltype == 'productid') ? $qrpid : 0;
 
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
         ?>
@@ -100,12 +125,19 @@ class VippsQRCodeController {
   <div class="url-options">
   <div class="url-option pageid <?php if ($urltype=='pageid') echo " active "; ?>">
      <label><?php echo esc_html__('Choose page', 'woo-vipps'); ?>:</label>
-<?php wp_dropdown_pages(['selected'=>0, 'echo'=>1, 'id'=>'page_id', 'class'=>'vipps-page-selector wc-enhanced-select', 'show_option_none'=> __('None chosen', 'woo-vipps')]); ?>
+<?php wp_dropdown_pages(['selected'=>$pageid, 'echo'=>1, 'id'=>'page_id', 'class'=>'vipps-page-selector wc-enhanced-select', 'show_option_none'=> __('None chosen', 'woo-vipps')]); ?>
    </div>
 
    <div class="url-option productid <?php if ($urltype=='productid') echo " active "; ?>">
     <label><?php echo esc_html__('Choose product', 'woo-vipps'); ?>:</label>
-        <select class="wc-product-search" style="width:100%"  id="product_id" name="product_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products"></select>
+        <select class="wc-product-search" style="width:100%"  id="product_id" name="product_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products">
+<?php if ($prodid): 
+      $product = wc_get_product($prodid);
+      if (is_a($product, 'WC_Product')):
+        echo "<option value='" . intval($prodid) . "' selected>" . wp_kses_post( $product->get_formatted_name() ) . "</option>";
+      endif; 
+endif; ?> 
+        </select>
    </div>
 
 
@@ -184,6 +216,13 @@ img.onload = function () {
     // This handles "save post" from the admin backend. IOK 2022-04-13  
     public function save_post ($pid, $post, $update) {
         if (!isset($_POST['vipps_qr_metabox_nonce']) || !wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
+
+        $urltype = sanitize_title($_POST['_vipps_urltype']);
+        if (!$urltype) return false;
+
+        // Product or page id
+        $pid = intval($_POST['_vipps_qr_pid']);
+        
         if ( isset( $_POST['_vipps_qr_url'] ) ) {
             $newurl = $_POST['_vipps_qr_url'];
             update_post_meta( $pid, '_vipps_qr_url', sanitize_url($newurl));
