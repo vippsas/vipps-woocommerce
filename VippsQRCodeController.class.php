@@ -61,9 +61,7 @@ class VippsQRCodeController {
         add_meta_box( '_vipps_qr_data', __( 'URL', 'woo-vipps' ), array( $this, 'metabox_url' ), 'vipps_qr_code', 'normal', 'default' );
         add_action('save_post_vipps_qr_code', array($this, 'save_post'), 10, 3);
 
-
         wp_enqueue_script('wc-enhanced-select');
-
     }
 
     public function metabox_url () {
@@ -73,9 +71,8 @@ class VippsQRCodeController {
         $url = get_post_meta($pid, '_vipps_qr_url', true); // The URL to add/modify
         $qr = get_post_meta($pid, '_vipps_qr_img', true); // The QR image
         $qrpid  = get_post_meta($pid, '_vipps_qr_pid', true); // If linking to a product or page, this would be it
+        $urltype = get_post_meta($pid, '_vipps_qr_urltype', true); // What kind of URL we are working with
 
-
-        $urltype = get_post_meta($pid, '_vipps_urltype', true); // What kind of URL we are working with
         if (!$urltype) {
             // Unknown urltype, either a new QR or some database issue. Try to handle gracefully.
             if ($qrpid) {
@@ -110,27 +107,27 @@ echo "urltype $urltype <br>";
   <label><?php echo esc_html('Select link type', 'woo-vipps'); ?></label>
     <div class="link-selector">
        <label for="pageidtab"><?php _e("Page", 'woo-vipps'); ?>
-        <input type=radio class="vipps_urltype" id=pageidtab value="pageid" name="vipps_urltype" <?php if ($urltype=='pageid') echo " checked "; ?>>
+        <input type=radio class="vipps_urltype" id=pageidtab value="pageid" name="_vipps_qr_urltype" <?php if ($urltype=='pageid') echo " checked "; ?>>
        </label>
 
        <label for="productidtab"><?php _e("Product", 'woo-vipps'); ?>
-         <input type=radio class="vipps_urltype" id=productidtab value="productid" name="vipps_urltype" <?php if ($urltype=='productid') echo " checked "; ?>>
+         <input type=radio class="vipps_urltype" id=productidtab value="productid" name="_vipps_qr_urltype" <?php if ($urltype=='productid') echo " checked "; ?>>
        </label>
 
        <label for="urltab"><?php _e("URL", 'woo-vipps'); ?>
-         <input type=radio class="vipps_urltype" id=urltab value="url" name="vipps_urltype" <?php if ($urltype=='url') echo " checked "; ?>>
+         <input type=radio class="vipps_urltype" id=urltab value="url" name="_vipps_qr_urltype" <?php if ($urltype=='url') echo " checked "; ?>>
        </label>
 
     </div>
   <div class="url-options">
   <div class="url-option pageid <?php if ($urltype=='pageid') echo " active "; ?>">
      <label><?php echo esc_html__('Choose page', 'woo-vipps'); ?>:</label>
-<?php wp_dropdown_pages(['selected'=>$pageid, 'echo'=>1, 'id'=>'page_id', 'class'=>'vipps-page-selector wc-enhanced-select', 'show_option_none'=> __('None chosen', 'woo-vipps')]); ?>
+<?php wp_dropdown_pages(['selected'=>$pageid, 'echo'=>1, 'id'=>'page_id', 'name'=>'_vipps_qr_pid', 'class'=>'vipps-page-selector wc-enhanced-select', 'show_option_none'=> __('None chosen', 'woo-vipps')]); ?>
    </div>
 
    <div class="url-option productid <?php if ($urltype=='productid') echo " active "; ?>">
     <label><?php echo esc_html__('Choose product', 'woo-vipps'); ?>:</label>
-        <select class="wc-product-search" style="width:100%"  id="product_id" name="product_id" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products">
+        <select class="wc-product-search" style="width:100%"  id="product_id" name="_vipps_qr_pid" data-placeholder="<?php esc_attr_e( 'Search for a product&hellip;', 'woocommerce' ); ?>" data-action="woocommerce_json_search_products">
 <?php if ($prodid): 
       $product = wc_get_product($prodid);
       if (is_a($product, 'WC_Product')):
@@ -214,18 +211,36 @@ img.onload = function () {
 
 
     // This handles "save post" from the admin backend. IOK 2022-04-13  
-    public function save_post ($pid, $post, $update) {
-        if (!isset($_POST['vipps_qr_metabox_nonce']) || !wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
+    public function save_post ($qid, $post, $update) {
 
-        $urltype = sanitize_title($_POST['_vipps_urltype']);
+
+        if (!isset($_POST['vipps_qr_metabox_nonce']) || !wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
+        if (!isset($_POST['_vipps_qr_urltype'])) return;
+
+        $urltype = sanitize_title($_POST['_vipps_qr_urltype']);
         if (!$urltype) return false;
 
         // Product or page id
         $pid = intval($_POST['_vipps_qr_pid']);
-        
-        if ( isset( $_POST['_vipps_qr_url'] ) ) {
-            $newurl = $_POST['_vipps_qr_url'];
-            update_post_meta( $pid, '_vipps_qr_url', sanitize_url($newurl));
+        // Literal url
+        $url = sanitize_url($_POST['_vipps_qr_url']); 
+
+        $newurl = "";
+        switch ($urltype) {
+            case 'productid':
+            case 'pageid':
+                $newurl = get_permalink($pid);
+                break;
+            case 'url':
+                $newurl = $url;
+                $pid = 0;
+                break;
+        }
+        update_post_meta( $qid, '_vipps_qr_urltype', sanitize_title($urltype));
+        update_post_meta( $qid, '_vipps_qr_pid', intval($pid));
+
+        if ($newurl){
+            update_post_meta( $qid, '_vipps_qr_url', sanitize_url($newurl));
         }
     }
 
@@ -294,17 +309,14 @@ img.onload = function () {
               if (!$vid) {
                   $prefix = $api->get_orderprefix();
                   $vid = apply_filters('woo_vipps_qr_id', $prefix . "-qr-" . $pid);
-                  error_log("No stored id, creating as $vid");
                   delete_post_meta($pid, '_vipps_qr_img');
                   $ok = $api->create_merchant_redirect_qr ($vid, $url);
                   // Get actual vid from call here, but 
                   update_post_meta( $pid, '_vipps_qr_id', $vid);
               } else {
                  if ($url == $prev && $gotimage) {
-                    error_log("No change, no sync");
                     $ok = null;
                  }  else {
-                    error_log("Updating URL");
                     $ok = $api->update_merchant_redirect_qr ($vid, $url) ;
                  }
               }
