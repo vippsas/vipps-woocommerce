@@ -755,7 +755,13 @@ class VippsApi {
         return $res;
     }
 
-    // the QR api 2022-04-13. PUT is update (on id), DELETE is deletion (of id), GET is get the .. thing. Arguments would be Accept
+    // the QR api 2022-04-13. PUT is update (on id), DELETE is deletion (of id), GET is get the .. thing. Arguments would be Accept for image/png or image/svg+xml
+    public function get_merchant_redirect_qr_entry ($id,$accept="text/targetUrl") {
+        return $this->call_qr_merchant_redirect("GET", $id, null, $accept);
+    }
+    public function get_all_merchant_redirect_qr () {
+        return $this->call_qr_merchant_redirect("GET", "", null, "text/targetUrl");
+    }
     public function create_merchant_redirect_qr ($id,$url){
         $action = "POST";
         return $this->call_qr_merchant_redirect($action, $id, $url);
@@ -768,7 +774,7 @@ class VippsApi {
         $action = "DELETE";
         return $this->call_qr_merchant_redirect($action, $id, $url);
     }
-    private function call_qr_merchant_redirect($action, $id, $url=null) {
+    private function call_qr_merchant_redirect($action, $id, $url=null, $accept='image/svg+xml') {
         $command = 'qr/v1/merchant-redirect/';
         if ($action != "POST") $command .= $id;
         $at = $this->get_access_token();
@@ -791,9 +797,12 @@ class VippsApi {
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
-        $headers['Accept'] = 'image/svg+xml'; // IOK FIXME make this modifiable - png is also possible 
+        $headers['Accept'] = $accept;
 
-        $data = array('id' => $id);
+        error_log("Headers are " . print_r($headers, true));
+
+        $data = array();
+        if ($id)  $data['id']  = $id;
         if ($url) $data['redirectUrl'] = $url;
 
         $res = $this->http_call($command,$data,$action,$headers, 'json');
@@ -875,6 +884,8 @@ class VippsApi {
         if ($verb == 'GET' && $data_encoded) {
             $url .= "?$data_encoded";
         }
+
+        error_log("Url is $url");
 
         $return = wp_remote_request($url,$args);
         $headers = array();

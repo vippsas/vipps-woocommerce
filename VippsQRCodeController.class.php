@@ -80,11 +80,20 @@ class VippsQRCodeController {
     public function admin_footer() {
       $screen = get_current_screen();
       if ($screen && $screen->id == 'edit-vipps_qr_code') {
+      $api = WC_Gateway_Vipps::instance()->api;
+      $all = $api->get_all_merchant_redirect_qr();
+      foreach($all as &$entry) {
+          $entry['get'] = $api->get_merchant_redirect_qr_entry($entry['id']);
+      }
+
+
 ?>
 <!-- The modal / dialog box, hidden somewhere near the footer -->
 <div id="vipps_unsynchronized_qr_codes" class="hidden" style="max-width:1200px;min-width:600px;" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
  <div>
   <p><?php _e("There are some QR codes present at Vipps that are not part of this Website. This may be because these are part of some <i>other</i> website using this same account, or they may have gotten 'lost' in a database restore - or maybe you are creating an entire new site. If neccessary, you can import these into your current site and manage them from here", 'woo-vipps'); ?></p>
+  <pre><?php print_r($all); ?></pre>
+
 </div>
 <?php
       }
