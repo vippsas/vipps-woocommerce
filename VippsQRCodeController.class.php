@@ -43,6 +43,11 @@ class VippsQRCodeController {
     }
 
     public static function register_hooks() {
+        // We can only support the QR api if we are connected to Vipps.
+        if (!get_option('woo-vipps-configured', false)) return;
+        // Some people may want to turn this off
+        if (!apply_filters('woo_vipps_support_qr_codes', true)) return;
+
         $controller = static::instance();
         if (is_admin()) {
             add_action('admin_init',array($controller,'admin_init'));
