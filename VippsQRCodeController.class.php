@@ -63,9 +63,24 @@ class VippsQRCodeController {
         add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts')); 
         add_action('admin_footer', array($this, 'admin_footer'));
 
-
         add_filter('views_edit-vipps_qr_code', array($this, 'qr_list_views'));
 
+        add_action('in_admin_header', function () {
+            $screen = get_current_screen();
+            if ($screen && $screen->id == 'vipps_qr_code') {
+                  global $post;
+                  if (!$post) return;
+                  $errors =  get_post_meta($post->ID, '_vipps_qr_errors', true);
+                  if ($errors) {
+                      foreach ($errors as $err) {
+                          add_action('admin_notices', function () use ($err) {
+                              printf( '<div class="notice notice-error"><p>%s</p></div>',  esc_html( $err) ); 
+                          });
+                      }
+                  delete_post_meta($post->ID, '_vipps_qr_errors');
+                  }
+            }
+        });
     }
  
     public function admin_enqueue_scripts ($hook) {
@@ -77,18 +92,26 @@ class VippsQRCodeController {
       }
     }
 
+    // This also does some garbage collection/cleanup by deleting code-objects no longer present at Vipps. It is called on the QR code overview screen.
+    public function get_all_qr_codes_at_vipps () {
+        delete_transient('_woo_vipps_qr_codes'); // IOK FIXME REMOVE AFTER TESTING
+        $stored = get_transient('_woo_vipps_qr_codes');
+        if (is_array($stored)) return $stored;
+        $api = WC_Gateway_Vipps::instance()->api;
+        $all = $api->get_all_merchant_redirect_qr();
+        foreach($all as &$entry) {
+            $entry['get'] = $api->get_merchant_redirect_qr_entry($entry['id']);
+        }
+        set_transient('_woo_vipps_qr_codes', $all, HOUR_IN_SECONDS);
+        return $all;
+    }
+
     public function admin_footer() {
       $screen = get_current_screen();
       if ($screen && $screen->id == 'edit-vipps_qr_code') {
-      $api = WC_Gateway_Vipps::instance()->api;
-      $all = $api->get_all_merchant_redirect_qr();
-      foreach($all as &$entry) {
-          $entry['get'] = $api->get_merchant_redirect_qr_entry($entry['id']);
-      }
-
-
+          $all = $this->get_all_qr_codes_at_vipps();
 ?>
-<!-- The modal / dialog box, hidden somewhere near the footer -->
+<!-- The modal / dialog box, hidden somewhere near the footer on the QR screen. -->
 <div id="vipps_unsynchronized_qr_codes" class="hidden" style="max-width:1200px;min-width:600px;" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
  <div>
   <p><?php _e("There are some QR codes present at Vipps that are not part of this Website. This may be because these are part of some <i>other</i> website using this same account, or they may have gotten 'lost' in a database restore - or maybe you are creating an entire new site. If neccessary, you can import these into your current site and manage them from here", 'woo-vipps'); ?></p>
@@ -120,6 +143,9 @@ class VippsQRCodeController {
         $qrpid  = get_post_meta($pid, '_vipps_qr_pid', true); // If linking to a product or page, this would be it
         $urltype = get_post_meta($pid, '_vipps_qr_urltype', true); // What kind of URL we are working with
 
+        $pngsize = apply_filters('woo_vipps_qr_png_size', 640);  // width/height of PNG qr code
+        $imagefilename = sanitize_file_name($post->post_title);  // Filename for downloaded svgs and pngs
+
         if (!$urltype) {
             // Unknown urltype, either a new QR or some database issue. Try to handle gracefully.
             if ($qrpid) {
@@ -141,10 +167,12 @@ class VippsQRCodeController {
                 $urltype = 'pageid';
             }
         }
-echo "urltype $urltype <br>";
-
         $pageid = ($urltype == 'pageid') ? $qrpid : 0;
         $prodid = ($urltype == 'productid') ? $qrpid : 0;
+
+
+       $screen = get_current_screen();
+        echo "current screen: " . $screen->id  . "<br>";
 
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
         ?>
@@ -215,7 +243,7 @@ var svgUrl = domUrl.createObjectURL(svgBlob);
 var downloadLink = document.createElement("a");
 downloadLink.href = svgUrl;
 downloadLink.target = "_blank";
-downloadLink.download = "mysvgfile.svg"; // FIXME ADD NICE TITLE
+downloadLink.download = <?php echo json_encode($imagefilename . ".svg"); ?>;
 document.body.appendChild(downloadLink);
 downloadLink.click();
 document.body.removeChild(downloadLink);
@@ -227,8 +255,8 @@ var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
 var domUrl = window.URL || window.webkitURL || window;
 var svgUrl = domUrl.createObjectURL(svgBlob);
 var canvas = document.createElement("canvas");
-canvas.width = 640; // FIXME ADD FILTER MAYBE
-canvas.height= 640;
+canvas.width = <?php echo json_encode($pngsize); ?>; 
+canvas.height= <?php echo json_encode($pngsize); ?>;
 var ctx = canvas.getContext('2d');
 var img = new Image();
 img.onload = function () {
@@ -239,7 +267,7 @@ img.onload = function () {
     var downloadLink = document.createElement("a");
     downloadLink.href = imgURI;
     downloadLink.target = "_blank";
-    downloadLink.download = "mypngfile.png"; // FIXME ADD NICE TITLE
+    downloadLink.download = <?php echo json_encode($imagefilename . ".png"); ?>;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -259,8 +287,6 @@ img.onload = function () {
 
     // This handles "save post" from the admin backend. IOK 2022-04-13  
     public function save_post ($qid, $post, $update) {
-
-
         if (!isset($_POST['vipps_qr_metabox_nonce']) || !wp_verify_nonce($_POST['vipps_qr_metabox_nonce'], 'vipps_qr_metabox_save')) return;
         if (!isset($_POST['_vipps_qr_urltype'])) return;
 
@@ -318,9 +344,9 @@ img.onload = function () {
             $api = WC_Gateway_Vipps::instance()->api;
             try {
                 $api->delete_merchant_redirect_qr($vid);
+                delete_transient('_woo_vipps_qr_codes');
              } catch (Exception $e) {
-                 $Vipps::instance()->log(sprintf(__("Error deleting QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
-                 // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
+                 Vipps::instance()->log(sprintf(__("Error deleting QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
              }
              // Delete data from Vipps, including the ID which should now be free again
              delete_post_meta($pid, '_vipps_qr_img');
@@ -350,15 +376,22 @@ img.onload = function () {
     public function synch_url($pid, $url , $prev) {
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
           $gotimage = get_post_meta($pid, '_vipps_qr_img', true); // We only fetch this if necessary
- 
+
           try {
               $api = WC_Gateway_Vipps::instance()->api;
+              $stored = $vid ? $api-> get_merchant_redirect_qr_entry($vid) : null;
+
+              // Generate a new Vipps ID if we have none.
               if (!$vid) {
                   $prefix = $api->get_orderprefix();
                   $vid = apply_filters('woo_vipps_qr_id', $prefix . "-qr-" . $pid);
-                  delete_post_meta($pid, '_vipps_qr_img');
+              }
+  
+              // If object does not exist at Vipps, create it
+              if (!$stored) {
                   $ok = $api->create_merchant_redirect_qr ($vid, $url);
-                  // Get actual vid from call here, but 
+                  delete_post_meta($pid, '_vipps_qr_img');
+                  delete_transient('_woo_vipps_qr_codes');
                   update_post_meta( $pid, '_vipps_qr_id', $vid);
               } else {
                  if ($url == $prev && $gotimage) {
@@ -375,21 +408,26 @@ img.onload = function () {
                       $img = $data['message']; // Could also be png if we allow that, currenlty svg
                       update_post_meta($pid, '_vipps_qr_img', $img);
                   } catch (Exception $e) {
-                    $Vipps::instance()->log(sprintf(__("Error downloading QR code image: %s", 'woo-vipps'), $e->getMessage()), 'error');
-                    // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
-                    // We couldn't get an image. Maybe link is to old, or something. Best thing to do would be to just 
-                    // ask the user to save the link again.
-                    // MUST THEN ENSURE THE url == prev ABOVE DOES NOT KICK IN. SO ADD CHECK FOR EXISTING IMG!
+                    Vipps::instance()->log(sprintf(__("Error downloading QR code image: %s", 'woo-vipps'), $e->getMessage()), 'error');
+                    if (is_admin() && ! wp_doing_ajax()) {
+                      update_post_meta($pid, '_vipps_qr_errors', array(sprintf(__("Couldn't download QR image: try saving post again! Error was: %s", 'woo-vipps'), $e->getMessage())));
+                    }
                     return false; // Means *do not* store value.
                   }
               }
           }  catch (Exception $e) {
               // IOK here *in particular* catch the 409 thing for previously used ID and retry (If not handled in api).
-              // IOK FIXME ADD ADMIN MESSAGE
-              // IOK FIXME ADD ADMIN MESSAGE IF ADMIN
-              global $Vipps;
-              $Vipps::instance()->log(sprintf(__("Error creating or updating QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
-              error_log(print_r($e, true));
+              Vipps::instance()->log(sprintf(__("Error creating or updating QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
+              if (is_admin() && ! wp_doing_ajax()) {
+                      $errors = array();
+                      $errors[]=sprintf(__("Couldn't create or update QR image: %s", 'woo-vipps'),$e->getMessage());
+                      $errors[] = "Code is '" . $e->responsecode . "'";
+                      if ($e->responsecode == 409) {
+                          $errors[] = __("It seems a QR code with this ID already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings) - then delete this entry and create a new code", 'woo-vipps');
+                      }
+                 
+                      update_post_meta($pid, '_vipps_qr_errors', $errors);
+              }
               return false; // Means *do not* store value.
           }
 
