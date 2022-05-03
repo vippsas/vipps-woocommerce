@@ -84,6 +84,19 @@ class VippsQRCodeController {
                       }
                   delete_post_meta($post->ID, '_vipps_qr_errors');
                   }
+
+                  $vid =  get_post_meta($post->ID, '_vipps_qr_id', true);
+                  if ($vid) {
+                   // This is kept in a transient, so we should not need to call out
+                   $all = $this->get_all_qr_codes_at_vipps();
+                   if (!isset($all[$vid])) {
+                          delete_post_meta($post->ID, '_vipps_qr_img');
+                          add_action('admin_notices', function () use ($err) {
+                              printf( '<div class="notice notice-error"><p>%s</p></div>',  __("Somehow, this QR code has disappeard at Vipps. Save it to make it work again!", 'woo-vipps'));
+                          });
+                   }
+                  }
+
             }
         });
     }
@@ -104,11 +117,13 @@ class VippsQRCodeController {
         if (is_array($stored)) return $stored;
         $api = WC_Gateway_Vipps::instance()->api;
         $all = $api->get_all_merchant_redirect_qr();
+        $table = array();
         foreach($all as &$entry) {
             $entry['get'] = $api->get_merchant_redirect_qr_entry($entry['id']);
+            $table[$entry['id']] = $entry;
         }
-        set_transient('_woo_vipps_qr_codes', $all, HOUR_IN_SECONDS);
-        return $all;
+        set_transient('_woo_vipps_qr_codes', $table, HOUR_IN_SECONDS);
+        return $table;
     }
 
     public function admin_footer() {
@@ -177,7 +192,6 @@ class VippsQRCodeController {
 
 
        $screen = get_current_screen();
-        echo "current screen: " . $screen->id  . "<br>";
 
         wp_nonce_field("vipps_qr_metabox_save", 'vipps_qr_metabox_nonce' );
         ?>
@@ -382,9 +396,16 @@ img.onload = function () {
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
           $gotimage = get_post_meta($pid, '_vipps_qr_img', true); // We only fetch this if necessary
 
+          $api = WC_Gateway_Vipps::instance()->api;
+
+          $stored = null;
           try {
-              $api = WC_Gateway_Vipps::instance()->api;
               $stored = $vid ? $api-> get_merchant_redirect_qr_entry($vid) : null;
+          } catch (Exception $e) {
+              Vipps::instance()->log(sprintf(__("QR image with id %s that was supposed to be stored at Vipps, isnt. Recreating it. Error was:. : %s", 'woo-vipps'), $e->getMessage()), 'debug');
+          }
+
+          try {
 
               // Generate a new Vipps ID if we have none.
               if (!$vid) {
@@ -426,7 +447,6 @@ img.onload = function () {
               if (is_admin() && ! wp_doing_ajax()) {
                       $errors = array();
                       $errors[]=sprintf(__("Couldn't create or update QR image: %s", 'woo-vipps'),$e->getMessage());
-                      $errors[] = "Code is '" . $e->responsecode . "'";
                       if ($e->responsecode == 409) {
                           $errors[] = __("It seems a QR code with this ID already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings) - then delete this entry and create a new code", 'woo-vipps');
                       }
