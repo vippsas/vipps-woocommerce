@@ -1049,7 +1049,7 @@ else:
                 $customerinfo = array(); break;
             }
         }
-
+        $customerinfo = apply_filters('woo_vipps_customerinfo', $customerinfo, $order);
 
         try {
             $current_vipps_session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken,$requestid); 
