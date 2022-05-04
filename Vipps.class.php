@@ -294,7 +294,8 @@ class Vipps {
         $subscriptioninstall = 'https://woocommerce.com/products/woocommerce-subscriptions/';
         $recurringinstall = admin_url('/plugin-install.php?s=vipps-recurring-payments-gateway-for-woocommerce&tab=search&type=term');
 
-        $logs = admin_url('/admin.php?page=wc-status&tab=logs');
+        $logspage = admin_url('/admin.php?page=wc-status&tab=logs');
+        $forumpage = 'https://wordpress.org/support/plugin/woo-vipps/';
 
         $portalurl = 'https://portal.vipps.no';
 
@@ -307,8 +308,25 @@ class Vipps {
         $slogan = __('- very, very simple', 'woo-vipps');
  
 
+        $gw = $this->gateway();
+        $configured =  get_option('woo-vipps-configured', false);
+        $isactive = ($gw->enabled == 'yes');
+        $istestmode = $gw->is_test_mode();
+        $ischeckout = false;
+        if ($isactive) {
+           $ischeckout = ($gw->get_option('vipps_checkout_enabled') == 'yes');
+        }
+/*
+        $connected = false;
+        $connerror = "";
+        // Don't do this unless by button press. IOK 2022-05-04.
+        if ($configured) {
+            list($connected,$connerror)  = $gw->check_connection();
+        }
+*/
 
-// configured // is active // is test mode // checkout is active // link to logs
+
+
 
     ?>
     <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
@@ -317,23 +335,54 @@ class Vipps {
     </header>
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
- 
+            <h1><?php _e("Vipps for WordPress and WooCommerce", 'woo-vipps'); ?></h1>
+            <p><?php _e("Vipps officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an Express Checkout for WooCommerce, an optional complete checkout solution powered by Vipps, a system for managing QR-codes that link to your products or landing pages,  a plugin for recurring payments, and a system for passwordless logins", 'woo-vipps');?></p>
+            <p><?php echo sprintf( __("To order or  configure your Vipps account that powers these plugins, log onto <a target='_blank'  href='%s'>the Vipps portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), $portalurl); ?></p>
+
+            <h1><?php _e("The Vipps plugins", 'woo-vipps'); ?></h1>
             <div class="pluginsection woo-vipps">
                <h2><?php _e('Pay with Vipps for WooCommerce', 'woo-vipps' );?></h2>
+               <p><?php _e("This plugin, currently active at your site, implements a Vipps checkout solution in WooCommerce, and Express Checkout solution for instant buys using the Vipps app, and an alternate Vipps-hosted checkout supporting both Vipps and credit cards. It also supports Vipps' QR-api for creating QR-codes to your landing pages or products", 'woo-vipps'); ?></p>
+               <p><?php echo sprintf(__("Configure the plugin on its <a href='%s'>settings page</a> and  get your keys from the <a target='_blank'>Vipps portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl);?></p>
+               <p><?php echo sprintf(__("If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%s'>WooCommerce logs page</a>.", 'woo-vipps'), $logspage); ?></p>
+               <p><?php echo sprintf(__("If you need support, please use the <a href='%s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no.", 'woo-vipps'), $forumpage); ?></p>
+               <?php if ($istestmode): ?>
+                  <p><b>
+                   <?php _e('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps'); ?>
+                  </b></p>
+               <?php endif; ?>
+               <p>
+                  <?php if ($configured): ?>
+                    <?php echo sprintf(__("<a href='%s'>Vipps configuration</a> is complete.", 'woo-vipps'), $checkoutsettings); ?> 
+                  <?php else: ?>
+                    <?php echo sprintf(__("Vipps configuration is not yet complete - you must get your keys from the Vipps portal and enter them on the <a href='%s'>settings page</a>", 'woo-vipps'), $checkoutsettings); ?> 
+                  <?php endif; ?>
+               </p>
+               <?php if ($isactive): ?>
+                 <p> 
+                   <?php _e("The plugin is currently <b>active</b> - Vipps is available as a payment method.", 'woo-vipps'); ?>
+                   <?php if ($ischeckout): ?>
+                      <?php _e("You are using Vipps Checkout instead of the standard WooCommerce Checkout page.", 'woo-vipps'); ?>     
+                   <?php endif; ?>
+                 </p>
+               <?php else:; ?>
+               <?php endif; ?>
+
+
             </div>
 
             <div class="pluginsection vipps-recurring">
                <h2><?php _e( 'Vipps Recurring Payments', 'woo-vipps' );?></h2>
                <p>
                   <?php echo sprintf(__("<a href='%s' target='_blank'>Vipps Recurring Payments for WooCommerce</a> by <a href='%s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', 'https://everyday.no/'); ?>
-                  <?php _e("Vipps Recurring Payments requires the <a href='%s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'); ?>
+                  <?php echo sprintf(__("Vipps Recurring Payments requires the <a href='%s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
                <?php if ($recurringactive): ?>
                      <p>
-                       <?php echo sprintf(__("Vipps Recurring Payments is installed and active. You can configure the plugin at its <a href='%s'>settings page</a>", 'woo-vipps'),$recurringsettings); ?>
+                       <?php echo sprintf(__("Vipps Recurring Payments is <b>installed and active</b>. You can configure the plugin at its <a href='%s'>settings page</a>", 'woo-vipps'),$recurringsettings); ?>
                     </p>
                <?php elseif ($recurringinstalled): ?>
                      <p>
-                     <?php echo sprintf(__("Vipps Recurring Payments is installed, but not active. Activate it on the <a href='%s'>plugins page</a>", 'woo-vipps'), admin_url("/plugins.php")); ?>
+                     <?php echo sprintf(__("Vipps Recurring Payments is installed, but <em>not active</em>. Activate it on the <a href='%s'>plugins page</a>", 'woo-vipps'), admin_url("/plugins.php")); ?>
                      </p>
                <?php else: ?>
                      <p>
@@ -346,6 +395,25 @@ class Vipps {
 
             <div class="pluginsection login-with-vipps">
                <h2><?php _e( 'Login with Vipps', 'woo-vipps' );?></h2>
+               <p><?php echo sprintf(__("<a href='%s' target='_blank'>Login with Vipps</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the Vipps app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/'); ?></p>
+               <p> <?php _e("If you use Vipps Checkout or Express Checkout in WooCommerce, this allows your Vipps customers to safely log in without ever using a password.", 'woo-vipps'); ?>
+               <?php if ($loginactive): ?>
+                     <p>
+                       <?php echo sprintf(__("Login with Vipps is installed and active. You can configure the plugin at its <a href='%s'>settings page</a>", 'woo-vipps'),$loginsettings); ?>
+                    </p>
+                     <p>
+                       <?php echo sprintf(__("Remember, you need to set up Login with Vipps at the <a target='_blank' href='%s'>Vipps Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),$portalurl); ?>
+                    </p>
+               <?php elseif ($logininstalled): ?>
+                     <p>
+                     <?php echo sprintf(__("Login with Vipps is installed, but not active. Activate it on the <a href='%s'>plugins page</a>", 'woo-vipps'), admin_url("/plugins.php")); ?>
+                     </p>
+               <?php else: ?>
+                     <p>
+                     <?php echo sprintf(__("Login with Vipps is not installed. You can install it <a href='%s'>here!</a>", 'woo-vipps'), $logininstall); ?>
+                     </p>
+               <?php endif; ?>
+
             </div>
    
     </div> 

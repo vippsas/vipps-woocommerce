@@ -79,6 +79,9 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
    color:  #161225;
    font-family: "Vipps Text", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
 }
+.wrap.vipps-admin-page p {
+    font-size: larger;
+}
 .vipps-admin-page-header h1 img {
     vertical-align: middle;
     height: 8rem;
