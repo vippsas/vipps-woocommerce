@@ -237,7 +237,6 @@ class Vipps {
 
         // Ajax just for the backend
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
-        add_action('wp_ajax_vipps_link_qr', array($this, 'ajax_vipps_link_qr'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
 
         // Handle permanent dismissal of notices
@@ -639,12 +638,13 @@ class Vipps {
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
     public function product_options_vipps() {
         $gw = $this->gateway();
-        if ($gw->get_option('singleproductexpress') == 'some') {
+        $choice = $gw->get_option('singleproductexpress');
+        echo '<div class="options_group">';
+        echo "<div class='blurb' style='margin-left:13px'><h4>";
+        echo __("Buy-now button", 'woo-vipps') ;
+        echo "<h4></div>";
+        if ($choice == 'some') {
             $button = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_buy_now_button', true));
-            echo '<div class="options_group">';
-            echo "<div class='blurb' style='margin-left:13px'><h4>";
-            echo __("Buy-now button", 'woo-vipps') ;
-            echo "<h4></div>";
             echo "<input type='hidden' name='woo_vipps_add_buy_now_button' value='no' />";
             woocommerce_wp_checkbox( array(
                         'id'      => 'woo_vipps_add_buy_now_button',
@@ -653,19 +653,43 @@ class Vipps {
                         'desc_tip' => true,
                         'description' => __('Add a \'Buy now with Vipps\'-button to this product','woo-vipps')
                         ) ); 
-            echo '</div>';
+        } else if ($choice == "all") {
+          $prod = wc_get_product(get_the_ID());
+          $canbebought = false;
+          if (is_a($prod, 'WC_Product')) {
+              $canbebought = $gw->product_supports_express_checkout(wc_get_product(get_the_ID()));
+          }
+
+          echo "<p>";
+          $settings = esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
+          echo sprintf(__("The <a href='%s'>Vipps settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $settings); 
+          echo " ";
+          if ($canbebought) {
+            echo __("This product supports express checkout, and so will have a Buy Now button." , 'woo-vipps');
+          } else {
+            echo __("This product does <b>not</b> support express checkout, and so will <b>not</b> have a Buy Now button." , 'woo-vipps');
+          } 
+          echo "</p>";
+        } else {
+         $settings = esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
+          echo "<p>";
+          echo sprintf(__("The <a href='%s'>Vipps settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $settings);
+          echo "</p>";
         }
+        echo '</div>';
     }
     public function product_options_vipps_shareable_link() {
         global $post;
         $product = wc_get_product($post->ID);
         $variable = ($product->get_type() == 'variable');
         $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+        $qradmin = admin_url("/edit.php?post_type=vipps_qr_code");
         ?>
             <div class="options_group">
             <div class='blurb' style='margin-left:13px'>
             <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
             <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
+            <p><?php echo sprintf(__("To create a QR code for your shareable link, we recommend copying the URL and then using the <a href='%s'>Vipps QR Api</a>", 'woo-vipps'), $qradmin); ?> </p>
             <input type=hidden id=vipps_sharelink_id value='<?php echo $product->get_id(); ?>'>
             <?php 
             echo wp_nonce_field('share_link_nonce','vipps_share_sec',1,false); 
@@ -689,7 +713,6 @@ else:
             </div>
             <div style="display:none;" id='woo_vipps_shareable_command_template'>
             <a class="copyaction" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
-            <a class="qraction" href='javascript:void(0)'>[QR]</a>
             <a class="deleteaction" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
             </div>
             <style>
@@ -718,7 +741,6 @@ else:
            <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
            <td align=center>
            <a class="copyaction" title="<?php echo __('Click to copy','woo-vipps'); ?>" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
-           <a class="qraction" title="<?php echo __('Create QR-code for link','woo-vipps'); ?>" href='javascript:void(0)'>[QR]</a>
            <a class="deleteaction" title="<?php echo __('Mark this link for deletion', 'woo-vipps'); ?>" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
            </td>
            </tr>
@@ -791,29 +813,6 @@ else:
         add_post_meta($prodid,'_vipps_shareable_links',$payload);
 
         echo json_encode(array('ok'=>1,'msg'=>'ok', 'url'=>$url, 'variant'=> $varname, 'key'=>$key));
-        wp_die();
-    }
-
-    // Create a QR code for a shareable link for printing on posters and such.. or just for demos
-    public function ajax_vipps_link_qr() {
-        $ok = check_ajax_referer('share_link_nonce','vipps_share_sec',false);
-        if (!$ok) {
-            wp_die(__("You are not allowed to use this link to create QR codes",'woo-vipps'));
-        }
-        $url = sanitize_text_field($_GET['url']);
-        $key = sanitize_text_field($_GET['key']);
-        if (!$url) {
-            wp_die(__("The requested link does not exist", 'woo-vipps'));
-        }
-        // External library, may have been included by other parties IOK 2018-10-04
-        if (!class_exists('QRcode')) {
-            require_once(dirname(__FILE__) ."/tools/phpqrcode/phpqrcode.php");
-        }
-        if (!method_exists('QRcode','png')) {
-            wp_die(__("Cannot create QR code - library is missing or does not work", 'woo-vipps'));
-        }
-        header("Content-disposition: inline; filename='qr-$key.png'");
-        QRcode::png($url,false, QR_ECLEVEL_H, 4);
         wp_die();
     }
 
