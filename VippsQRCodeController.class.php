@@ -132,7 +132,7 @@ class VippsQRCodeController {
           $all = $this->get_all_qr_codes_at_vipps();
 ?>
 <!-- The modal / dialog box, hidden somewhere near the footer on the QR screen. -->
-<div id="vipps_unsynchronized_qr_codes" class="hidden" style="max-width:1200px;min-width:600px;" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
+<div id="vipps_unsynchronized_qr_codes" class="hidden" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
  <div>
   <p><?php _e("There are some QR codes present at Vipps that are not part of this Website. This may be because these are part of some <i>other</i> website using this same account, or they may have gotten 'lost' in a database restore - or maybe you are creating an entire new site. If neccessary, you can import these into your current site and manage them from here", 'woo-vipps'); ?></p>
   <pre><?php print_r($all); ?></pre>
@@ -370,6 +370,7 @@ img.onload = function () {
              // Delete data from Vipps, including the ID which should now be free again
              delete_post_meta($pid, '_vipps_qr_img');
              delete_post_meta($pid, '_vipps_qr_id');
+             delete_post_meta($pid, '_vipps_qr_stored');
         }
     }
     // Called when undeleting a post. We just need to recreate the QR code, so we do the same as when creating it.
@@ -395,30 +396,31 @@ img.onload = function () {
     public function synch_url($pid, $url , $prev) {
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
           $gotimage = get_post_meta($pid, '_vipps_qr_img', true); // We only fetch this if necessary
+          $notnew = get_post_meta($pid, '_vipps_qr_stored', true); // Only false if we have never stored this entry.
 
           $api = WC_Gateway_Vipps::instance()->api;
 
           $stored = null;
           try {
-              $stored = $vid ? $api-> get_merchant_redirect_qr_entry($vid) : null;
+              $stored = $notnew ? $api-> get_merchant_redirect_qr_entry($vid) : null;
           } catch (Exception $e) {
               Vipps::instance()->log(sprintf(__("QR image with id %s that was supposed to be stored at Vipps, isnt. Recreating it. Error was:. : %s", 'woo-vipps'), $e->getMessage()), 'debug');
           }
 
           try {
-
               // Generate a new Vipps ID if we have none.
               if (!$vid) {
                   $prefix = $api->get_orderprefix();
-                  $vid = apply_filters('woo_vipps_qr_id', $prefix . "-qr-" . $pid);
+                  $vid = apply_filters('woo_vipps_qr_id', $prefix . "-qr-" . get_post($pid)->post_name, $pid);
               }
   
               // If object does not exist at Vipps, create it
               if (!$stored) {
                   $ok = $api->create_merchant_redirect_qr ($vid, $url);
+                  update_post_meta( $pid, '_vipps_qr_stored', true);
+                  update_post_meta( $pid, '_vipps_qr_id', $vid);
                   delete_post_meta($pid, '_vipps_qr_img');
                   delete_transient('_woo_vipps_qr_codes');
-                  update_post_meta( $pid, '_vipps_qr_id', $vid);
               } else {
                  if ($url == $prev && $gotimage) {
                     $ok = null;
@@ -448,7 +450,10 @@ img.onload = function () {
                       $errors = array();
                       $errors[]=sprintf(__("Couldn't create or update QR image: %s", 'woo-vipps'),$e->getMessage());
                       if ($e->responsecode == 409) {
-                          $errors[] = __("It seems a QR code with this ID already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings) - then delete this entry and create a new code", 'woo-vipps');
+                          delete_post_meta($pid, '_vipps_qr_id');
+                          delete_post_meta($pid, '_vipps_qr_stored');
+                          delete_post_meta($pid, '_vipps_qr_img');
+                          $errors[] = sprintf(__("It seems a QR code with this ID (%s) already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings). You can try to change the permalink/slug of this entry and save again if you don't care about the duplicate. ", 'woo-vipps'), sanitize_title($vid));
                       }
                  
                       update_post_meta($pid, '_vipps_qr_errors', $errors);

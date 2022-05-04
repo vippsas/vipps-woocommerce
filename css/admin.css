@@ -67,3 +67,8 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option {
 body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.active {
     display:block;
 }
+
+#vipps_unsynchronized_qr_codes {
+    max-width:1000px;
+    min-width:600px;
+}
