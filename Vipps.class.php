@@ -247,7 +247,7 @@ class Vipps {
 
         if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
             $what = __('Vipps is currently in test mode - no real transactions will occur', 'woo-vipps');
-            $this->add_vipps_admin_notice($what,'info');
+            $this->add_vipps_admin_notice($what,'info', '', 'test-mode');
         }
 
 
@@ -285,7 +285,71 @@ class Vipps {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
-        print "<h1> Hey yo! </h1>";
+
+        $recurringsettings = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring');
+        $checkoutsettings  = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps');
+        $loginsettings = admin_url('/options-general.php?page=vipps_login_options');
+
+        $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
+        $subscriptioninstall = 'https://woocommerce.com/products/woocommerce-subscriptions/';
+        $recurringinstall = admin_url('/plugin-install.php?s=vipps-recurring-payments-gateway-for-woocommerce&tab=search&type=term');
+
+        $logs = admin_url('/admin.php?page=wc-status&tab=logs');
+
+        $portalurl = 'https://portal.vipps.no';
+
+        $installed = get_plugins();
+        $recurringinstalled = array_key_exists('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php',$installed);
+        $recurringactive = class_exists('WC_Vipps_Recurring');
+
+        $logininstalled = array_key_exists('login-with-vipps/login-with-vipps.php', $installed);
+        $loginactive = class_exists('ContinueWithVipps');
+        $slogan = __('- very, very simple', 'woo-vipps');
+ 
+
+
+// configured // is active // is test mode // checkout is active // link to logs
+
+    ?>
+    <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
+    <header class="vipps-admin-page-header">
+            <h1><span><img src="<?php echo plugins_url('/img/vipps-rgb-orange-pos.svg', __FILE__);?>" alt="Vipps"></span><span class="slogan"><?php echo esc_html($slogan); ?></span></h1>
+    </header>
+    <div class='wrap vipps-admin-page'>
+            <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
+ 
+            <div class="pluginsection woo-vipps">
+               <h2><?php _e('Pay with Vipps for WooCommerce', 'woo-vipps' );?></h2>
+            </div>
+
+            <div class="pluginsection vipps-recurring">
+               <h2><?php _e( 'Vipps Recurring Payments', 'woo-vipps' );?></h2>
+               <p>
+                  <?php echo sprintf(__("<a href='%s' target='_blank'>Vipps Recurring Payments for WooCommerce</a> by <a href='%s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', 'https://everyday.no/'); ?>
+                  <?php _e("Vipps Recurring Payments requires the <a href='%s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'); ?>
+               <?php if ($recurringactive): ?>
+                     <p>
+                       <?php echo sprintf(__("Vipps Recurring Payments is installed and active. You can configure the plugin at its <a href='%s'>settings page</a>", 'woo-vipps'),$recurringsettings); ?>
+                    </p>
+               <?php elseif ($recurringinstalled): ?>
+                     <p>
+                     <?php echo sprintf(__("Vipps Recurring Payments is installed, but not active. Activate it on the <a href='%s'>plugins page</a>", 'woo-vipps'), admin_url("/plugins.php")); ?>
+                     </p>
+               <?php else: ?>
+                     <p>
+                     <?php echo sprintf(__("Vipps Recurring Payments is not installed. You can install it <a href='%s'>here!</a>", 'woo-vipps'), $recurringinstall); ?>
+                     </p>
+               <?php endif; ?> 
+               <?php do_action('vipps_page_vipps_recurring_payments_section'); ?>
+
+            </div>
+
+            <div class="pluginsection login-with-vipps">
+               <h2><?php _e( 'Login with Vipps', 'woo-vipps' );?></h2>
+            </div>
+   
+    </div> 
+    <?php
     }
 
     // Add a link to the settings page from the plugin list
@@ -336,16 +400,16 @@ class Vipps {
     }
 
     // Add a backend notice to stand out a bit, using a Vipps logo and the Vipps color for info-level messages. IOK 2020-02-16
-    public function add_vipps_admin_notice ($text, $type='info',$key='') {
+    public function add_vipps_admin_notice ($text, $type='info',$key='', $extraclasses='') {
                 if ($key) {
                     $dismissed = get_option('_vipps_dismissed_notices');
                     if (isset($dismissed[$key])) return;
                 }
-                add_action('admin_notices', function() use ($text,$type, $key) {
+                add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
                         $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
                         $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
-                        echo "<div class='notice notice-vipps notice-$type is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
+                        echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
 
@@ -464,6 +528,10 @@ class Vipps {
         wp_enqueue_script('vipps-admin');
 
         wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
+        error_log("enqueuing vipps fonts");
+        wp_enqueue_style('vipps-fonts');
+        wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
+
     }
 
     public function notice_is_test_mode() {

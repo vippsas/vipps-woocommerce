@@ -1,0 +1,53 @@
+@font-face {
+    font-family: "Vipps Text";
+    src:          url("../fonts/VippsText-Regular-Web.woff2") format("woff2"),
+         url("../fonts/VippsText-Regular-Web.woff") format("woff"),
+         url("../fonts/VippsText-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Vipps Display";
+    src:          url("../fonts/VippsDisplay-Regular-Web.woff2") format("woff2"),
+         url("../fonts/VippsDisplay-Regular-Web.woff") format("woff");
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Vipps Text";
+    src:          url("../fonts/VippsText-Medium-Web.woff2") format("woff2"),
+         url("../fonts/VippsText-Medium-Web.woff") format("woff"),
+         url("../fonts/VippsText-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Vipps Text";
+    src:          url("../fonts/VippsText-Bold-Web.woff2") format("woff2"),
+         url("../fonts/VippsText-Bold-Web.woff") format("woff"),
+         url("../fonts/VippsText-Bold.ttf") format("truetype");
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Vipps Text";
+    src:          url("../fonts/VippsText-Extrabold-Web.woff2") format("woff2"),
+         url("../fonts/VippsText-Extrabold-Web.woff") format("woff"),
+         url("../fonts/VippsText-Extrabold.ttf") format("truetype");
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Vipps Text";
+    src:          url("../fonts/VippsText-Black-Web.woff2") format("woff2"),
+         url("../fonts/VippsText-Black-Web.woff") format("woff"),
+         url("../fonts/VippsText-Black.ttf") format("truetype");
+    font-weight: 900;
+    font-style: normal;
+}
+

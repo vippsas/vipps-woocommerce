@@ -140,6 +140,16 @@ img.inline {
 .vippsorange {
  background-color: #fe5b24;
 }
+.vippsorange-light {
+ background-color: #fff4ec;
+}
+.vippspurple {
+ background-color: #551488;
+}
+.vippsdarkgray {
+ background-color: #161225;
+}
+
 
 .vipps_checkout_button_wrapper {
     margin-top: 1rem;
