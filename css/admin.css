@@ -79,13 +79,15 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
    color:  #161225;
    font-family: "Vipps Text", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
 }
+.vipps-admin-page h2, .vipps-admin-page h3{
+    font-size: 1.6em;
+}
 .wrap.vipps-admin-page p {
     font-size: larger;
 }
 .vipps-admin-page-header h1 img {
     vertical-align: middle;
     height: 8rem;
-    
 }
 .vipps-admin-page-header h1 {
     color: #fe5b24;;
@@ -101,4 +103,29 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     margin-top: -2rem;
     padding-top: 1rem;
     padding-bottom: 0.2rem;
+}
+
+.vipps-admin-page .vipps_admin_highlighted_section {
+    background-color: #fff4ec;
+    color: #fe5b24;
+    margin-left: -2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    margin-right: -2rem;
+    padding-bottom: .2rem;
+    padding-top: .2rem;
+}
+.vipps-admin-page .vipps_admin_highlighted_section a {
+    color: #551488;
+}
+.vipps-admin-page .vipps_admin_highlighted_section a:visited {
+    color: #551488;
+}
+.vipps-admin-page .vipps_admin_highlighted_section a:hover {
+    color: #551488;
+    font-weight: 500;
+}
+.vipps-admin-page .vipps_admin_highlighted_section a:active {
+    color: #551488;
+    font-weight: 500;
 }
