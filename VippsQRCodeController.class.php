@@ -125,11 +125,37 @@ class VippsQRCodeController {
         set_transient('_woo_vipps_qr_codes', $table, HOUR_IN_SECONDS);
         return $table;
     }
+    // Called only to check if there are unsynchronized codes, which are cached.
+    public function get_all_local_qr_codes () {
+        global $wpdb;
+        $all = $wpdb->get_results("SELECT post_id, meta_key, meta_value from `{$wpdb->postmeta}` WHERE meta_key = '_vipps_qr_id'", ARRAY_A);
+        if (!$all) return [];
+        $table = [];
+        foreach ($all as $entry) {
+            $table[$entry['meta_value']] = $entry['post_id'];
+        }
+        return $table;
+    }
+    public function get_unsynchronized_qr_codes() {
+        delete_transient('_woo_vipps_unsynched_qr_codes'); // IOK FIXME REMOVE AFTER TESTING
+        $stored = get_transient('_woo_vipps_unsynched_qr_codes');
+        if (is_array($stored)) return $stored;
+        $all = $this->get_all_qr_codes_at_vipps();
+        $local = $this->get_all_local_qr_codes();
+        $table = [];
+        foreach(array_keys($all) as $key) {
+            if (!isset($local[$key])) {
+               $table[$key] = $all[$key];
+            }
+        }
+        set_transient('_woo_vipps_unsynched_qr_codes', $table, HOUR_IN_SECONDS);
+        return $table;
+    }
 
     public function admin_footer() {
       $screen = get_current_screen();
       if ($screen && $screen->id == 'edit-vipps_qr_code') {
-          $all = $this->get_all_qr_codes_at_vipps();
+          $all = $this->get_unsynchronized_qr_codes();
 ?>
 <!-- The modal / dialog box, hidden somewhere near the footer on the QR screen. -->
 <div id="vipps_unsynchronized_qr_codes" class="hidden" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
@@ -143,13 +169,16 @@ class VippsQRCodeController {
     }
 
     public function qr_list_views ($views) {
-        $count = 2;
-        $unsynch = "<a class='open_unsynchronized_qr_codes' href=\"javascript:void(0);\" title='" . __("Show QR codes not synchronized to this site", 'woo-vipps') . "'>";
-        $unsynch .= __("Unsynchronized QR codes", 'woo-vipps');
-        $unsynch .= " <span class='count'>($count)</span>";
-        $unsynch .= "</a>";
+        $all = $this->get_unsynchronized_qr_codes();
+        $count = count(array_keys($all));
+        if ($count>0) {
+            $unsynch = "<a class='open_unsynchronized_qr_codes' href=\"javascript:void(0);\" title='" . __("Show QR codes not synchronized to this site", 'woo-vipps') . "'>";
+            $unsynch .= __("Unsynchronized QR codes", 'woo-vipps');
+            $unsynch .= " <span class='count'>($count)</span>";
+            $unsynch .= "</a>";
 
-        $views['unsynchronized'] = $unsynch;
+            $views['unsynchronized'] = $unsynch;
+        }
         return $views;
 
     }
@@ -364,6 +393,7 @@ img.onload = function () {
             try {
                 $api->delete_merchant_redirect_qr($vid);
                 delete_transient('_woo_vipps_qr_codes');
+                delete_transient('_woo_vipps_unsynched_qr_codes'); 
              } catch (Exception $e) {
                  Vipps::instance()->log(sprintf(__("Error deleting QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
              }
@@ -421,6 +451,7 @@ img.onload = function () {
                   update_post_meta( $pid, '_vipps_qr_id', $vid);
                   delete_post_meta($pid, '_vipps_qr_img');
                   delete_transient('_woo_vipps_qr_codes');
+                  delete_transient('_woo_vipps_unsynched_qr_codes'); 
               } else {
                  if ($url == $prev && $gotimage) {
                     $ok = null;
