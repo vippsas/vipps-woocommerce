@@ -577,7 +577,7 @@ img.onload = function () {
                           delete_post_meta($pid, '_vipps_qr_id');
                           delete_post_meta($pid, '_vipps_qr_stored');
                           delete_post_meta($pid, '_vipps_qr_img');
-                          $errors[] = sprintf(__("It seems a QR code with this ID (%s) already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings). You can try to change the permalink/slug of this entry and save again if you don't care about the duplicate. ", 'woo-vipps'), sanitize_title($vid));
+                          $errors[] = sprintf(__("It seems a QR code with this ID (%s) already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings). You can try to change the slug of this entry (you may need to enable this in the page settings) and save again if you don't care about the duplicate. ", 'woo-vipps'), sanitize_title($vid));
                       }
                  
                       update_post_meta($pid, '_vipps_qr_errors', $errors);
@@ -636,7 +636,7 @@ img.onload = function () {
                 'supports'              => array( 'title',  'custom-fields' ),
                 'taxonomies'            => array( 'post', 'tag' ),
                 'hierarchical'          => false,
-                'public'                => true,
+                'public'                => false,
                 'show_ui'               => true,
                 'show_in_menu'          => false,
                 'menu_position'         => 10,
@@ -645,7 +645,7 @@ img.onload = function () {
                 'can_export'            => true,
                 'has_archive'           => false,
                 'exclude_from_search'   => true,
-                'publicly_queryable'    => true,
+                'publicly_queryable'    => false,
                 'capabilities'          => $capabilities,
                 'show_in_rest'          => true,
                 );

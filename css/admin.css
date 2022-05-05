@@ -117,6 +117,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 }
 .vipps-admin-page .vipps_admin_highlighted_section a {
     color: #551488;
+    text-decoration:none;
 }
 .vipps-admin-page .vipps_admin_highlighted_section a:visited {
     color: #551488;
