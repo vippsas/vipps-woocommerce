@@ -70,6 +70,8 @@ class VippsQRCodeController {
 
         add_filter('views_edit-vipps_qr_code', array($this, 'qr_list_views'));
 
+        add_action('admin_post_vipps_qr_handle_unsynched', array($this, 'handle_unsynched'));
+
         add_action('in_admin_header', function () {
             $screen = get_current_screen();
             if ($screen && $screen->id == 'vipps_qr_code') {
@@ -119,7 +121,6 @@ class VippsQRCodeController {
         $all = $api->get_all_merchant_redirect_qr();
         $table = array();
         foreach($all as &$entry) {
-            $entry['get'] = $api->get_merchant_redirect_qr_entry($entry['id']);
             $table[$entry['id']] = $entry;
         }
         set_transient('_woo_vipps_qr_codes', $table, HOUR_IN_SECONDS);
@@ -152,16 +153,80 @@ class VippsQRCodeController {
         return $table;
     }
 
+    // POST handler for the import-unsynched feature
+    public function handle_unsynched  () {
+        print "ok"; 
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
+        if (!isset($_POST['vipps_qr_import']) || !wp_verify_nonce($_POST['vipps_qr_import'], 'vipps_qr_import')) {
+            wp_die(__('Invalid request', 'woo-vipps'));
+        }
+print "<pre>";print_r($_POST); print "</pre>";
+
+        $operation = "";
+        if (isset($_POST['operation-delete']) && $_POST['operation-delete']) {
+            $operation = "delete";
+        } else if (isset($_POST['operation-import']) && $_POST['operation-import']) {
+            $operation = "import";
+        } else {
+            wp_die(__('Unknown operation', 'woo-vipps'));
+        }
+       
+        $qrids = isset($_POST['qrids']) ? $_POST['qrids'] : [];
+        if (!is_array($qrids)) $qrids = [];
+        if ($operation == 'delete') {
+             $api = WC_Gateway_Vipps::instance()->api;
+             foreach($qrids as $vid){
+                try {
+                    $api->delete_merchant_redirect_qr($vid);
+                } catch (Exception $e) {
+                    Vipps::instance()->log(sprintf(__("Error deleting unsynched QR code with id %s: %s", 'woo-vipps'),$vid, $e->getMessage()), 'error');
+                }
+             }
+        } else if ($operation == 'import')  {
+
+        }
+        wp_redirect(admin_url("/edit.php?post_type=vipps_qr_code"));
+    }
+
     public function admin_footer() {
       $screen = get_current_screen();
       if ($screen && $screen->id == 'edit-vipps_qr_code') {
           $all = $this->get_unsynchronized_qr_codes();
 ?>
 <!-- The modal / dialog box, hidden somewhere near the footer on the QR screen. -->
-<div id="vipps_unsynchronized_qr_codes" class="hidden" title="<?php _e('QR-codes not present on this site', 'woo-vipps'); ?>"
+<div id="vipps_unsynchronized_qr_codes" class="hidden" title="<?php _e('Vipps QR-codes not present on this site', 'woo-vipps'); ?>"
  <div>
   <p><?php _e("There are some QR codes present at Vipps that are not part of this Website. This may be because these are part of some <i>other</i> website using this same account, or they may have gotten 'lost' in a database restore - or maybe you are creating an entire new site. If neccessary, you can import these into your current site and manage them from here", 'woo-vipps'); ?></p>
-  <pre><?php print_r($all); ?></pre>
+  <div class="importsection">
+    <form action="<?php echo admin_url('/admin-post.php'); ?>" method="POST" onsubmit="return confirm('<?php _e("Are you sure?", 'woo-vipps'); ?>');">
+    <?php wp_nonce_field("vipps_qr_import", 'vipps_qr_import' ); ?>
+    <input type="hidden" name="action" value="vipps_qr_handle_unsynched">
+    <div class="buttonsection">
+        <button class="button btn primary" name="operation-import" value="vipps_qr_unsynch_import"><?php _e("Import", 'woo-vipps'); ?></button>
+        <button class="button btn secondary" name="operation-delete" value="vipps_qr_unsynch_delete"><?php _e("delete", 'woo-vipps'); ?></button>
+    </div>
+    <table class="table importtable">
+      <thead>
+        <tr><th class='checkboxcell'><th class="idcell"><?php _e("Id", 'woo-vipps'); ?></th><th class='urlcell'><?php _e('URL', 'woo-vipps'); ?></th></tr>
+      </thead>
+      <tbody>
+      <?php foreach ($all as $id=>$entry): ?>
+        <tr>
+         <td class='checkboxcell'><input type="checkbox" name='qrids[]' value="<?php echo esc_attr($id); ?>"></td>
+         <td class='idcell'><?php echo esc_html($id); ?></td>
+         <?php $urlvalue = (isset($entry['redirectUrl'])) ? $entry['redirectUrl'] : home_url("/"); ?>
+         <td class='urlcell'><input type="url" readonly value="<?php echo esc_url($urlvalue); ?>"></td>
+        </tr>
+      
+
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+    
+    </form>
+  </div>
 
 </div>
 <?php
@@ -392,8 +457,6 @@ img.onload = function () {
             $api = WC_Gateway_Vipps::instance()->api;
             try {
                 $api->delete_merchant_redirect_qr($vid);
-                delete_transient('_woo_vipps_qr_codes');
-                delete_transient('_woo_vipps_unsynched_qr_codes'); 
              } catch (Exception $e) {
                  Vipps::instance()->log(sprintf(__("Error deleting QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
              }
@@ -402,6 +465,8 @@ img.onload = function () {
              delete_post_meta($pid, '_vipps_qr_id');
              delete_post_meta($pid, '_vipps_qr_stored');
         }
+        delete_transient('_woo_vipps_qr_codes');
+        delete_transient('_woo_vipps_unsynched_qr_codes'); 
     }
     // Called when undeleting a post. We just need to recreate the QR code, so we do the same as when creating it.
     public function undelete_qr_code($pid) {
@@ -437,6 +502,10 @@ img.onload = function () {
               Vipps::instance()->log(sprintf(__("QR image with id %s that was supposed to be stored at Vipps, isnt. Recreating it. Error was:. : %s", 'woo-vipps'), $e->getMessage()), 'debug');
           }
 
+          // Assume these have or will change. This way these can be updated by saving any QR code. 
+          delete_transient('_woo_vipps_qr_codes');
+          delete_transient('_woo_vipps_unsynched_qr_codes'); 
+
           try {
               // Generate a new Vipps ID if we have none.
               if (!$vid) {
@@ -450,8 +519,6 @@ img.onload = function () {
                   update_post_meta( $pid, '_vipps_qr_stored', true);
                   update_post_meta( $pid, '_vipps_qr_id', $vid);
                   delete_post_meta($pid, '_vipps_qr_img');
-                  delete_transient('_woo_vipps_qr_codes');
-                  delete_transient('_woo_vipps_unsynched_qr_codes'); 
               } else {
                  if ($url == $prev && $gotimage) {
                     $ok = null;

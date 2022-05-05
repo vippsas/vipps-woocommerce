@@ -129,3 +129,40 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     color: #551488;
     font-weight: 500;
 }
+#vipps_unsynchronized_qr_codes .importtable {
+    width: 100%;
+    max-width: 100%;
+}
+#vipps_unsynchronized_qr_codes .importtable .checkboxcell {
+   width: 2rem;
+}
+#vipps_unsynchronized_qr_codes .importtable .idcell{
+   text-align:left;
+   width:25%;
+}
+#vipps_unsynchronized_qr_codes .importtable .urlcell{
+}
+#vipps_unsynchronized_qr_codes .importtable .urlcell input {
+   width: 100%;
+}
+
+#vipps_unsynchronized_qr_codes .buttonsection {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+}
+#vipps_unsynchronized_qr_codes .buttonsection .button.primary {
+    background-color: #fff4ec;
+    color: #fe5b24;
+    border-color:  #fe5b24;
+    box-shadow: 0 0 0 1px #fff4ec;
+    font-family: "Vipps Display", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+}
+#vipps_unsynchronized_qr_codes .buttonsection .button.secondary{
+    border-color:  red;
+    color: red;
+    box-shadow: 0 0 0 1px #fff4ec;
+    font-family: "Vipps Display", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+}
