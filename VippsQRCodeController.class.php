@@ -114,7 +114,6 @@ class VippsQRCodeController {
 
     // This also does some garbage collection/cleanup by deleting code-objects no longer present at Vipps. It is called on the QR code overview screen.
     public function get_all_qr_codes_at_vipps () {
-        delete_transient('_woo_vipps_qr_codes'); // IOK FIXME REMOVE AFTER TESTING
         $stored = get_transient('_woo_vipps_qr_codes');
         if (is_array($stored)) return $stored;
         $api = WC_Gateway_Vipps::instance()->api;
@@ -123,7 +122,7 @@ class VippsQRCodeController {
         foreach($all as &$entry) {
             $table[$entry['id']] = $entry;
         }
-        set_transient('_woo_vipps_qr_codes', $table, HOUR_IN_SECONDS);
+        set_transient('_woo_vipps_qr_codes', $table, DAY_IN_SECONDS);
         return $table;
     }
     // Called only to check if there are unsynchronized codes, which are cached.
@@ -138,7 +137,6 @@ class VippsQRCodeController {
         return $table;
     }
     public function get_unsynchronized_qr_codes() {
-        delete_transient('_woo_vipps_unsynched_qr_codes'); // IOK FIXME REMOVE AFTER TESTING
         $stored = get_transient('_woo_vipps_unsynched_qr_codes');
         if (is_array($stored)) return $stored;
         $all = $this->get_all_qr_codes_at_vipps();
@@ -149,7 +147,7 @@ class VippsQRCodeController {
                $table[$key] = $all[$key];
             }
         }
-        set_transient('_woo_vipps_unsynched_qr_codes', $table, HOUR_IN_SECONDS);
+        set_transient('_woo_vipps_unsynched_qr_codes', $table, DAY_IN_SECONDS);
         return $table;
     }
 
@@ -162,8 +160,6 @@ class VippsQRCodeController {
         if (!isset($_POST['vipps_qr_import']) || !wp_verify_nonce($_POST['vipps_qr_import'], 'vipps_qr_import')) {
             wp_die(__('Invalid request', 'woo-vipps'));
         }
-print "<pre>";print_r($_POST); print "</pre>";
-
         $operation = "";
         if (isset($_POST['operation-delete']) && $_POST['operation-delete']) {
             $operation = "delete";
@@ -185,8 +181,37 @@ print "<pre>";print_r($_POST); print "</pre>";
                 }
              }
         } else if ($operation == 'import')  {
+             $all = $this->get_all_qr_codes_at_vipps();
+             foreach($qrids as $vid){
+                 $entry = $all[$vid];
+                 $url = isset($entry['redirectUrl']) ? $entry['redirectUrl'] : home_url("/");
+                 if (!$url) {
+                    continue;
+                 }
+                 try {
+                     $postargs = array(
+                        'post_title' => __("Imported QR Code", 'woo-vipps'),
+                        'post_excerpt' => __("Imported QR Code", 'woo-vipps'),
+                        'post_status' => 'publish',
+                        'post_type' => 'vipps_qr_code',
+                        'meta_input' => ['_vipps_qr_id' => $vid, '_vipps_qr_urltype'=>'url', '_vipps_qr_stored' => true]
+                     );
+                     $ok = wp_insert_post($postargs, 'wp_error', true);
+                     if ($ok) {
+                         // This will trigger update + image download
+                         update_post_meta($ok, '_vipps_qr_url', sanitize_url($url));
+                     }
+                     if (is_wp_error($ok)) {
+                        Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %s: %s", 'woo-vipps'),$vid, $e->get_error_message()), 'error');
+                     }
+                 } catch (Exception $e) {
+                     Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %s: %s", 'woo-vipps'),$vid, $e->getMessage()), 'error');
+                 }
+             }
 
         }
+        delete_transient('_woo_vipps_qr_codes');
+        delete_transient('_woo_vipps_unsynched_qr_codes'); 
         wp_redirect(admin_url("/edit.php?post_type=vipps_qr_code"));
     }
 
@@ -425,6 +450,7 @@ img.onload = function () {
         update_post_meta( $qid, '_vipps_qr_urltype', sanitize_title($urltype));
         update_post_meta( $qid, '_vipps_qr_pid', intval($pid));
 
+        // MUST BE LAST!
         if ($newurl){
             update_post_meta( $qid, '_vipps_qr_url', sanitize_url($newurl));
         }
@@ -477,7 +503,8 @@ img.onload = function () {
     }
 
 
-    public function update_post_metadata ($nullonsuccess, $pid, $meta_key, $meta_value, $prev_value) {
+    public function update_post_metadata ($nullonsuccess, $pid, $meta_key, $meta_value, $prev_value) { 
+
                 if ($meta_key != '_vipps_qr_url') return $nullonsuccess;
                 if (get_post_type($pid) != 'vipps_qr_code') return $nullonsuccess;
          
@@ -492,7 +519,6 @@ img.onload = function () {
           $vid = get_post_meta($pid, '_vipps_qr_id', true); // Reference at Vipps
           $gotimage = get_post_meta($pid, '_vipps_qr_img', true); // We only fetch this if necessary
           $notnew = get_post_meta($pid, '_vipps_qr_stored', true); // Only false if we have never stored this entry.
-
           $api = WC_Gateway_Vipps::instance()->api;
 
           $stored = null;

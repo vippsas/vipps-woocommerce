@@ -602,7 +602,6 @@ class Vipps {
         wp_enqueue_script('vipps-admin');
 
         wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
-        error_log("enqueuing vipps fonts");
         wp_enqueue_style('vipps-fonts');
         wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
 

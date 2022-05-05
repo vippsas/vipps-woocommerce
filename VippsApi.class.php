@@ -799,19 +799,11 @@ class VippsApi {
 
         $headers['Accept'] = $accept;
 
-        error_log("Headers are " . print_r($headers, true));
-
         $data = array();
         if ($id)  $data['id']  = $id;
         if ($url) $data['redirectUrl'] = $url;
 
         $res = $this->http_call($command,$data,$action,$headers, 'json');
-
- // [responsecode] => 409
- //    [message:protected] => 409 Failed to create merchant redirect url - Conflict (id in use)
-
-
-        error_log("Res is " . print_r($res, true)); 
 
         return $res;
     }
@@ -884,8 +876,6 @@ class VippsApi {
         if ($verb == 'GET' && $data_encoded) {
             $url .= "?$data_encoded";
         }
-
-        error_log("Url is $url");
 
         $return = wp_remote_request($url,$args);
         $headers = array();
