@@ -117,7 +117,15 @@ class VippsQRCodeController {
         $stored = get_transient('_woo_vipps_qr_codes');
         if (is_array($stored)) return $stored;
         $api = WC_Gateway_Vipps::instance()->api;
-        $all = $api->get_all_merchant_redirect_qr();
+        $all = [];
+        try {
+            $all = $api->get_all_merchant_redirect_qr();
+        }   catch (Exception $e) {
+            Vipps::instance()->log(sprintf(__("Error getting list of QR codes from Vipps: %s", 'woo-vipps'), $e->getMessage()), 'error');
+            delete_transient('_woo_vipps_qr_codes');
+            delete_transient('_woo_vipps_unsynched_qr_codes'); 
+            return $all;
+        }
         $table = array();
         foreach($all as &$entry) {
             $table[$entry['id']] = $entry;
