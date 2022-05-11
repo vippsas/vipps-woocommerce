@@ -77,7 +77,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 .vipps-admin-page {
    background-color: white;
    color:  #161225;
-   font-family: "Vipps Text", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+   font-family: "Vipps Text", Roboto, Helvetica, Arial, sans-serif;
 }
 .vipps-admin-page h2, .vipps-admin-page h3{
     font-size: 1.6em;
@@ -91,10 +91,10 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 }
 .vipps-admin-page-header h1 {
     color: #fe5b24;;
-    font-family: "Vipps Display", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
 .vipps-admin-page-header {
-    font-family: "Vipps Display", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
     min-height: 2rem;
     background-color: #fff4ec;
     color: #fe5b24;
@@ -159,11 +159,11 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     color: #fe5b24;
     border-color:  #fe5b24;
     box-shadow: 0 0 0 1px #fff4ec;
-    font-family: "Vipps Display", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
 #vipps_unsynchronized_qr_codes .buttonsection .button.secondary{
     border-color:  red;
     color: red;
     box-shadow: 0 0 0 1px #fff4ec;
-    font-family: "Vipps Display", "Comic Sans MS", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
