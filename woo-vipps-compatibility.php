@@ -40,6 +40,26 @@ add_action('plugins_loaded', function () {
         }
     }
 
+    // Snap Pixel for WooCommerce adds javascript to ajax functions if the do add-to-cart. We do that for single product express checkout,
+    // so better remove that action. IOK 2022-05-13
+    if (class_exists('snap_pixel_functions')) {
+        add_action('woocommerce_add_to_cart', function ($args) {
+            $doing_express_checkout = (did_action('wp_ajax_nopriv_do_single_product_express_checkout') || did_action('wp_ajax_do_single_product_express_checkout'));
+            if (!$doing_express_checkout) return;
+            global $wp_filter;
+            $carthooks = @$wp_filter['woocommerce_add_to_cart'];
+            if ($carthooks && $carthooks[10]) {
+                foreach($carthooks[10] as $callback) {
+                    $f = $callback['function'];
+                    if (is_array($f) && $f[1] == 'snap_pixel_code_add_to_cart')  {
+                        remove_action('woocommerce_add_to_cart', array($f[0], $f[1]), 10);
+                    }
+                }
+            }
+        },1, 2);
+
+    }
+
 }, 20);
 
 // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
