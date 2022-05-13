@@ -204,6 +204,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2022.05.xx version 1.x.xx =
+* Ensure the Snap Pixel for WooCommerce plugin does not break express checkout by outputting pixels when it shouldn't. Thanks to @optiflow at wp.org for detailed error reporting.
+
 = 2022.04.07 version 1.8.21 =
 * Protect "process_payment" from being called repeatedly when this is not allowed
 * From Johnny Oskarsson:
