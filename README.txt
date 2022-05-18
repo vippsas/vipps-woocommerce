@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.2 =
+* Fixed: Changing payment gateway to Vipps now works again.
+
 = 1.14.1 =
 * Fixed: Renamed our Vipps access token transient to prevent conflicts with Vipps Checkout when two different sets of merchant tokens are used.
 

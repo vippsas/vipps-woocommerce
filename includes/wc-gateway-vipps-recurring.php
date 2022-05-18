@@ -1325,7 +1325,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order     = wc_get_order( $order_id );
 			$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
-			if ( ! wcs_order_contains_subscription( $order ) && ! wcs_order_contains_early_renewal( $order ) ) {
+			if ( ! wcs_order_contains_subscription( $order ) && ! wcs_order_contains_early_renewal( $order ) && ! $is_gateway_change ) {
 				return [
 					'result'   => 'fail',
 					'redirect' => ''
