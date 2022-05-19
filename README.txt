@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.3 =
+* Fixed: You will now get an error message when trying to refund an order that is older than 365 days via Vipps.
+
 = 1.14.2 =
 * Fixed: Changing payment gateway to Vipps now works again.
 

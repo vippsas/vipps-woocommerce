@@ -893,6 +893,17 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 			$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
 
+			$created = $order->get_date_created( null );
+			if ( $created ) {
+				$diff = ( new DateTime() )->diff( $created );
+
+				if ( $diff->days > 365 ) {
+					/* translators: %s is the days as an integer since the order was created */
+					$err = sprintf( __( 'You cannot refund a Vipps charge that was made more than 365 days ago. This order was created %s days ago.', 'woo-vipps-recurring' ), $diff->days );
+					throw new Exception( $err );
+				}
+			}
+
 			try {
 				if ( $amount !== null ) {
 					$amount = WC_Vipps_Recurring_Helper::get_vipps_amount( $amount );
@@ -1450,12 +1461,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
 				$subscription_items = array_filter( $items, static function ( $item ) {
-					return apply_filters('wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item);
+					return apply_filters( 'wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item );
 				} );
 
-				$item               = array_pop( $subscription_items );
-				$product            = $item->get_product();
-				$parent_product     = wc_get_product( $item->get_product_id() );
+				$item           = array_pop( $subscription_items );
+				$product        = $item->get_product();
+				$parent_product = wc_get_product( $item->get_product_id() );
 
 				$extra_initial_charge_description = '';
 
