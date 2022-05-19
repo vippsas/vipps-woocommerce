@@ -14,7 +14,7 @@ License URI: https://choosealicense.com/licenses/mit/
 
 == Description ==
 
-*Official Vipps payment plugin for WooCommerce. More than 4 millon Norwegians use Vipps, more than 400 000 use Vipps on a daily basis. Give them an easy, fast and familiar shopping experience.*
+*Official Vipps payment plugin for WooCommerce. More than 4 million Norwegians use Vipps, more than 400 000 use Vipps on a daily basis. Give them an easy, fast and familiar shopping experience.*
 
 This is the official Vipps plugin for Vipps Checkout, Vipps ePayments (*Vipps Nettbetaling*) and Vipps Express Checkout (*Vipps Hurtigkasse*). Increase your conversion rate by  letting your customers choose Vipps directly in the checkout or even do an Express Checkout from the cart.
 
@@ -26,7 +26,7 @@ Read [information from Vipps](https://www.vipps.no/produkter-og-tjenester/bedrif
 With Vipps Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps. It contains regular Vipps payments, a card payment option for those that can't or won't use Vipps as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps Checkout here](https://vipps.no/checkout)
 
 === Vipps ePayment ===
-When you enable this plugin, your customers will be able to choose Vipps as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialougue. Then she confirms the payment in the Vipps app. Customer info like name and address is sent to the store from Vipps.
+When you enable this plugin, your customers will be able to choose Vipps as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialogue. Then she confirms the payment in the Vipps app. Customer info like name and address is sent to the store from Vipps.
 
 === Vipps Express Checkout ===
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
@@ -93,7 +93,7 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
 
 = Why are orders put on-hold and not reserved or completed? =
-When the order is on-hold the payment is reserved, but not yet transferred to the merchant. The money must be 'captured' before they are acutally transfered to the merchang. You are normally only allowed to do this at the same time as the order is shipped. You can 'capture' the money explitly on the order screen; but the money will be captured automatically when the order is set to "Processing" or "Complete".
+When the order is on-hold the payment is reserved, but not yet transferred to the merchant. The money must be 'captured' before they are actually transferred to the merchant. You are normally only allowed to do this at the same time as the order is shipped. You can 'capture' the money explicitly on the order screen; but the money will be captured automatically when the order is set to "Processing" or "Complete".
 
 There is an exception for orders where all items are both virtual and downloadable: These are not considered to need processing and will be captured automatically (and go directly to the 'Complete' status). It is possible to customize this property for your needs using the woocommerce_order_item_needs_processing filter.
 
@@ -144,16 +144,15 @@ If this isn't practical for your usage, we recommend that you "test in productio
 There are several filters and hooks you can use to customize the behaviour of this plugin:
  * Filter: 'woo_vipps_is_available': Takes a boolean availability argument and the gateway and must return true or false
  * Filter: 'woo_vipps_express_checkout_available': Takes a boolean availability argument and the gateway and must return true or false. 
- * Filter: 'woo_vipps_cart_express_checkout_button': Recieves a complete button text and the URL needed to proceed to the express checkout page.
+ * Filter: 'woo_vipps_cart_express_checkout_button': Receives a complete button text and the URL needed to proceed to the express checkout page.
  * Filter: 'woo_vipps_express_checkout_banner': Receives a message with an express checkout button and an URL for the same, should return a message for the express checkout banner normally shown on the checkout page
  * Filter: 'woo_vipps_buy_now_button': Takes HTML for the button, and optionally product id, variation id, sku and if the button is to be shown as disabled by default
  * Filter: 'woo_vipps_show_express_checkout' - Takes a boolean, returns whether or not to show the express checkout button
  * Filter: 'woo_vipps_show_single_product_buy_now' - Takes a boolean and a product, returns true if the product should show a 'buy now with vipps' button
  * Filter: 'woo_vipps_show_single_product_buy_now_in_loop' - Like above, but especially for products shown in the loop - catalog pages, archives and so forth
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
- * Filter 'woo_vipps_express_checkout_shipping_rates' which replaces the 'woo_vipps_shipping_methods'. It takes a list of shippinig methods, and order, and a cart. The format of the shipping methods is an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
- * Filter: 'woo_vipps_default_shipping_method' taking the default shipping method ID, a list of the shipping methods available (as a table from method id to WC_Shipping_Rate object) and the order. Return a shipping rate id, like 'loca
-l_pickup:5'
+ * Filter 'woo_vipps_express_checkout_shipping_rates' which replaces the 'woo_vipps_shipping_methods'. It takes a list of shipping methods, and order, and a cart. The format of the shipping methods is an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
+ * Filter: 'woo_vipps_default_shipping_method' taking the default shipping method ID, a list of the shipping methods available (as a table from method id to WC_Shipping_Rate object) and the order. Return a shipping rate id, like 'local_pickup:5'
  * Filter:  'woo_vipps_vipps_formatted_shipping_methods'. This will take an array of the methods to be sent to Vipps, formatted as required by Vipps. This is mostly for debugging.
  * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
  * Filter  'woo_vipps_express_checkout_final_shipping_rate': Takes an WC_Shipping_Rate object, the order, and the shipping info from Vipps. Must return a WC_Shipping_Rate object which will be added to the order.
@@ -163,8 +162,8 @@ l_pickup:5'
  * Filter: 'woo_vipps_transaction_text': Takes a transaction text and an order object, must return a text to be passed to Vipps and displayed to the user along the lines of "Please confirm your order"
  * Filter: 'woo_vipps_special_page_template': Takes a (complete) template path as returned by locate_template and the ID of the Vipps special page, should return a new template path (using locate_template or similar).
  * Filter: 'woo_vipps_order_failed_redirect': Takes an empty string or an url and an order id. If URL is returned, go there on cancelled or failed orders.
- * Filter: 'woo_vipps_product_supports_express_checkout': Takes a boolean and a product, returns true if the product can be bought with expres checkout
- * Filter: 'woo_vipps_cart_supports_express_checkout': Takes a boolean and a cart, returns true if the cart can be bought with expres checkout
+ * Filter: 'woo_vipps_product_supports_express_checkout': Takes a boolean and a product, returns true if the product can be bought with express checkout
+ * Filter: 'woo_vipps_cart_supports_express_checkout': Takes a boolean and a cart, returns true if the cart can be bought with express checkout
  * Filter: 'woo_vipps_express_checkout_supported_product_types': Returns a list of product types (as strings) that can be bought with express checkout
  * Filter: 'woo_vipps_orderid': Takes default Vipps orderid, the order prefix, and an order object. Must return an unique (at Vipps) order ID with 30 chars or less. Default is the prefix + orderid, e.g. 'Woo364'.
  * Action: 'woo_vipps_shipping_details_callback_order': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
@@ -180,7 +179,7 @@ l_pickup:5'
  * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipp
  * Action: 'woo_vipps_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
  * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
- * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Userful for logging.
+ * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Useful for logging.
  * Action: 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
  * Action: 'woo_vipps_shipping_details_callback': Is ran when Vipps does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps, and the callback args. For debugging.
  * Action: 'woo_vipps_shipping_details_before_cart_creation': Run after order is updated but before a cart is created to do shipping calculations. Takes an order, The order-id at Vipps and the callback arguments from Vipps
@@ -294,7 +293,7 @@ It seems this may ruin the session of other active users however, and we can't h
  Updating for latest versions of WP and Woo
 
 = 2021.06.22 version 1.7.10 =
- Added a failsafe for situations where the Vipps callback fails and the customer does not return to the store
+ Added a fail safe for situations where the Vipps callback fails and the customer does not return to the store
 
 = 2021.06.14 version 1.7.9 =
  Tiny change in "No shipping required" setup
@@ -422,7 +421,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
  * New option in settings: Override the page template used for the Vipps special pages (choose 'full width' and so forth here.)
  * New shipping handling of shipping callbacks in Express Checkout makes shipping methods using meta data work - that is, all shipping methods that have added meta data for for instance integration with transport companies and so forth.t
  * DEPRECATION: The filter 'woo_vipps_shipping_methods' is _deprecated_ as of version 1.4.0. If you use it, it will continue to work as before, but it will disable the new Express Checkout Shipping mechanism, and thus will not support metadata in the shipping methods; which certain shipping methods need - in particular those with integration with other services. A notice will be printed on the admin screen, and an option will be shown in the settings that will allow you to silence this warning (and then everything will work as before) or to disable this filter if you prefer to use the new method.
- * New filter 'woo_vipps_express_checkout_shipping_rates' which replaces the filter above, taking the same arguments (a list of shippinig methods, and order, and a cart). The format of the shipping methods is however different: They will consist of an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
+ * New filter 'woo_vipps_express_checkout_shipping_rates' which replaces the filter above, taking the same arguments (a list of shipping methods, and order, and a cart). The format of the shipping methods is however different: They will consist of an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
  * New filter 'woo_vipps_default_shipping_method' taking the default shipping method ID, a list of the shipping methods available (as a table from method id to WC_Shipping_Rate object) and the order. Return a shipping rate id, like 'local_pickup:5'.
  * New filter 'woo_vipps_vipps_formatted_shipping_methods'. This will take an array of the methods to be sent to Vipps, formatted as required by Vipps. This is mostly for debugging.
  * DEPRECATION: the filter 'woo_vipps_express_checkout_shipping_rate' will only be applied if you use the old method of doing shipping for express checkout; thus you will have to have overridden the  'woo_vipps_shipping_methods' filter too. This is replaced by the filter 'woo_vipps_express_checkout_final_shipping_rate', which takes an WC_Shipping_Rate object, the order and the shipping info from Vipps and must return a WC_Shipping_Rate object.
@@ -466,10 +465,10 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2019.10.07 version 1.2.3 =
  * Added actions and filters when creating Express Checkout order: 'woo_vipps_before_create_express_checkout_order' 'woo_vipps_create_express_checkout_cart_contents' and 'woo_vipps_express_checkout_order_created'
- * Added a call to 'get_payment_details' before capturing or refunding money - this ensures that orders are synched with Vipps before this is done and eliminates a difficult error that previously only was fixable by pressing "Show complete transaction details".
+ * Added a call to 'get_payment_details' before capturing or refunding money - this ensures that orders are synced with Vipps before this is done and eliminates a difficult error that previously only was fixable by pressing "Show complete transaction details".
 
 = 2019.09.16 version 1.2.2 =
- * Ensure situations where the first and second addresslines are duplicates are silently fixed
+ * Ensure situations where the first and second address lines are duplicates are silently fixed
  * Add option for deleting Express Checkout orders that are abandoned (from 'Pending' to 'Cancelled' without any customer or address info)
  * Add 'developer mode' and in this, 'test mode' with a separate set of keys for testing Vipps. Remember, you will also need to install a test Vipps app from Testflight on a separate device from your normal Vipps-device.
 
@@ -479,7 +478,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2019.08.06 version 1.2.0 =
 * Removed separate Access Key subscription, now only one subscription key is required
-* Documentation updated to reflect that the keys are now to be fetched from portal.vipps.no, and that the separate Access Key subscription is no longer neccessary
+* Documentation updated to reflect that the keys are now to be fetched from portal.vipps.no, and that the separate Access Key subscription is no longer necessary
 
 
 = 2019.06.24 version 1.1.18 =
@@ -530,8 +529,8 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2019.01.01 version 1.1.10 =
 * Ensure order edits don't confuse the captured amount. Make 'amount' required argument to Api's capture_payment, and make it be in cents only
-* Added button to refund any accidently over-captured amount on a completed order
-* As a sideeffect of retrieving the complete payment history, update the order with the status and postmeta values directly from Vipps
+* Added button to refund any accidentally over-captured amount on a completed order
+* As a side effect of retrieving the complete payment history, update the order with the status and postmeta values directly from Vipps
 * Fixed spelling error in 'woo_vipps_set_order_shipping_details'
 
 = 2018.12.17 version 1.1.9 =
@@ -556,7 +555,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2018.11.26 version 1.1.5
 * Disable "pay" button on the order listing of aborted express checkout orders for logged-in users (thanks to lykkelig@wp.org for the report)
-* Added a failsafe to retrieve the order id on return to the shop even when session has been destroyed or is in another browser
+* Added a fail safe to retrieve the order id on return to the shop even when session has been destroyed or is in another browser
 * Added filter 'woo_vipps_special_page_template' for choosing template of special pages
 * Added no-cache headers to return-from-vipps page
 * Added text about shipping and express checkout
@@ -609,7 +608,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 * Improvement - For order that do not need processing, payment_complete will be called iff capture is successful. This allows for auto-capture of virtual and downloadable products.
 
 = 2018.09.12 version 1.0.4 =
-* Change - Added more logging for shipping metods
+* Change - Added more logging for shipping methods
 * Fix - Make Description and Payment Method Name in settings actually affect the checkout page
 * Fix - Make plugin work in network installs of WooCommerce for multisite shops (Thanks to Thomas Audunhus for the bug report)
 
