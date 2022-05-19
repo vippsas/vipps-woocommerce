@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.21
-Stable tag: 1.8.21
+Version: 1.8.22
+Stable tag: 1.8.22
 Requires at least: 4.7
-Tested up to: 5.9.3
+Tested up to: 6.0.0
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 6.4.1
+WC tested up to: 6.5.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -80,9 +80,9 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.8.21 =
-* Bugfix release
-* Improved support for headless themes
+= 1.8.22 =
+* Improved compatibility for other plugins
+* Tested for WP 6.0
 
 == Frequently Asked Questions ==
 
@@ -204,8 +204,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.05.xx version 1.x.xx =
+= 2022.05.xx version 1.8.22 =
 * Ensure the Snap Pixel for WooCommerce plugin does not break express checkout by outputting pixels when it shouldn't. Thanks to @optiflow at wp.org for detailed error reporting.
+* Testing for WP 6.0.0
 
 = 2022.04.07 version 1.8.21 =
 * Protect "process_payment" from being called repeatedly when this is not allowed
