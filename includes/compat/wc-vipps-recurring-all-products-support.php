@@ -32,9 +32,7 @@ class WC_Vipps_Recurring_All_Products_Support {
 		if ( class_exists( 'WCS_ATT_Cart' ) && ! $item_is_subscription ) {
 			$is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme( $item );
 
-			if ( $is_wcs_att_sub !== null ) {
-				return ! is_bool( $is_wcs_att_sub );
-			}
+			return ! is_bool( $is_wcs_att_sub );
 		}
 
 		return $item_is_subscription;
