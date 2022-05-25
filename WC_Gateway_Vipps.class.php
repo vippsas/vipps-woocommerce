@@ -559,7 +559,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title' => __( 'Description', 'woocommerce' ),
                         'type' => 'textarea',
                         'description' => __( 'This controls the description which the user sees during checkout.', 'woocommerce' ),
-                        'default' => __("Pay with Vipps", 'woo-vipps')
+                        'default' => __("Almost done! Remember, there are no fees using Vipps when shopping online.", 'woo-vipps')
                         ),
 
                 'vippsdefault' => array(
