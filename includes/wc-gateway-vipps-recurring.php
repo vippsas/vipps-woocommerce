@@ -1541,6 +1541,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
 				$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
 
+				// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
+				// also not when the order total is the same as the agreement total
+				if ( $has_free_campaign && $has_synced_product && $order->get_total() === $agreement_total ) {
+					$has_campaign = false;
+				}
+
 				if ( ! $is_zero_amount ) {
 					$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
 					if ( ! empty( $extra_initial_charge_description ) ) {
