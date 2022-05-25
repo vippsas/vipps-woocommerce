@@ -2,7 +2,7 @@
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 5.9
+Tested up to: 6.0
 Stable tag: trunk
 Requires PHP: 7.0
 License: AGPLv3.0 or later
@@ -162,6 +162,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 = 1.14.3 =
 * Fixed: You will now get an error message when trying to refund an order that is older than 365 days via Vipps.
+* Fixed: Do not show this gateway if `WCS_ATT_Cart::get_subscription_scheme` returns null.
 
 = 1.14.2 =
 * Fixed: Changing payment gateway to Vipps now works again.
