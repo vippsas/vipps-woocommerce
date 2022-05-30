@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.8.22
-Stable tag: 1.8.22
+Version: 1.9.0
+Stable tag: 1.9.0
 Requires at least: 4.7
 Tested up to: 6.0.0
 Requires PHP: 5.6
@@ -80,9 +80,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
-= 1.8.22 =
-* Improved compatibility for other plugins
-* Tested for WP 6.0
+= 1.9.0 =
+Support for Vipps' QR-api
 
 == Frequently Asked Questions ==
 
@@ -202,6 +201,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.05.30 version 1.9.0 =
+* Support for Vipps QR-api
 
 = 2022.05.25 version 1.8.22 =
 * Ensure the Snap Pixel for WooCommerce plugin does not break express checkout by outputting pixels when it shouldn't. Thanks to @optiflow at wp.org for detailed error reporting.
