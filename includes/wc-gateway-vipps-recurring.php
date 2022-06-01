@@ -1336,7 +1336,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$order     = wc_get_order( $order_id );
 			$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
-			if ( ! wcs_order_contains_subscription( $order ) && ! wcs_order_contains_early_renewal( $order ) && ! $is_gateway_change ) {
+			$is_failed_renewal_order = wcs_cart_contains_failed_renewal_order_payment() !== false;
+
+			if ( ! $is_gateway_change
+				 && ! $is_failed_renewal_order
+				 && ! wcs_order_contains_subscription( $order )
+				 && ! wcs_order_contains_early_renewal( $order ) ) {
 				return [
 					'result'   => 'fail',
 					'redirect' => ''
@@ -1396,7 +1401,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$agreement_id              = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 				$already_swapping_to_vipps = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
 
-				if ( $agreement_id && ( ! $is_gateway_change || $already_swapping_to_vipps ) ) {
+				if ( $agreement_id && ( ! $is_gateway_change || $already_swapping_to_vipps ) && ! $is_failed_renewal_order ) {
 					if ( ! $already_swapping_to_vipps ) {
 						$agreement = $this->get_agreement_from_order( $order );
 					} else {
@@ -1588,15 +1593,17 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
 
 				// mark the old agreement for cancellation to leave no dangling agreements in Vipps
-				$should_cancel_old = $is_gateway_change || $is_subscription_switch;
+				$should_cancel_old = $is_gateway_change || $is_subscription_switch || $is_failed_renewal_order;
 				if ( $should_cancel_old ) {
 					if ( $is_gateway_change ) {
 						/* translators: Vipps Agreement ID */
 						$message = sprintf( __( 'Request to change gateway to Vipps with agreement ID: %s.', 'woo-vipps-recurring' ), $response['agreementId'] );
 						$subscription->add_order_note( $message );
 						$debug_msg .= 'Request to change gateway to Vipps' . "\n";
-					} else {
+					} elseif ( $is_subscription_switch ) {
 						$debug_msg .= 'Request to switch subscription variation' . "\n";
+					} else {
+						$debug_msg .= 'Request to pay for a failed renewal order' . "\n";
 					}
 
 					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_old_agreement_id', WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ) );

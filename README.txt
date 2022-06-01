@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.4 =
+* Fixed: You can now pay for failed renewal orders. It will cancel the old agreement and substitute it with a new one.
+
 = 1.14.3 =
 * Fixed: You will now get an error message when trying to refund an order that is older than 365 days via Vipps.
 * Fixed: Do not show this gateway if `WCS_ATT_Cart::get_subscription_scheme` returns null.
