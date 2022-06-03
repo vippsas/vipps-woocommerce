@@ -2354,6 +2354,8 @@ EOF;
         if (WC()->customer) {  
             WC()->customer->set_billing_location($country,'',$postcode,$city);
             WC()->customer->set_shipping_location($country,'',$postcode,$city);
+        } else {
+            $this->log("No customer! when trying to calculate shipping");
         }
 
 
@@ -2377,22 +2379,8 @@ EOF;
             $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', WC_Tax::get_shipping_tax_rates());
             $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,$no_shipping_taxes, 'none_required', 0);
         } else {
-            $package = array();
-            $package['contents'] = $acart->cart_contents;
-            $package['contents_cost'] = wc_format_decimal($order->get_total() - $order->get_shipping_total() - $order->get_shipping_tax(),'');
-            $package['destination'] = array();
-            $package['destination']['country']  = $country;
-            $package['destination']['state']    = '';
-            $package['destination']['postcode'] = $postcode;
-            $package['destination']['city']     = $city;
-            $package['destination']['address']  = $addressline1;
-            if ($addressline2 && !$addressline2 == 'null') {
-                $package['destination']['address_2']= $addressline2;
-            }
-
-            $packages = apply_filters('woo_vipps_shipping_callback_packages', array($package));
+            $packages = apply_filters('woo_vipps_shipping_callback_packages', WC()->cart->get_shipping_packages());
             $shipping =  WC()->shipping->calculate_shipping($packages);
-
             $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
          }
 

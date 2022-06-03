@@ -80,6 +80,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 
+= 1.9.1 = 
+Improved compatibility with shipping modules
 = 1.9.0 =
 Support for Vipps' QR-api
 
@@ -201,6 +203,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.06.xx version 1.9.1 =
+* Improve compatibility with shipping modules
 
 = 2022.05.30 version 1.9.0 =
 * Support for Vipps QR-api
