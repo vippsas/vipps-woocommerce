@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.5 =
+* Fixed: You can now swap gateway to Vipps Recurring Payments from a subscription again.
+
 = 1.14.4 =
 * Fixed: You can now pay for failed renewal orders. It will cancel the old agreement and substitute it with a new one.
 
