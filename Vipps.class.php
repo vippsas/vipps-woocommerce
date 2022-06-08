@@ -3379,8 +3379,17 @@ EOF;
         $prodid = $product->get_id();
         if (!$gw->product_supports_express_checkout($product)) return;
 
+        // Vipps does not support 0,- products, so we need to check.
+        // get_price() should normally return the lowest price for variable products, but that can fail, 
+        // so we dispatch on the type and use the *minimum* price instead, requiring that to be nonzero. IOK 2022-06-08
         $showit = true;
-        if ($product->get_price() <= 0)  $showit = false; 
+        if (is_a($product, 'WC_Product_Variable')) {
+            $minprice = $product->get_variation_price('min', 0);
+            if ($minprice > 0) $showit = true;
+        } else {
+            if ($product->get_price() <= 0)  $showit = false; 
+        }
+
         if ( $how=='some' && 'yes' != get_post_meta($prodid,  '_vipps_buy_now_button', true)) $showit = false;
         $showit = apply_filters('woo_vipps_show_single_product_buy_now', $showit, $product);
         if (!$showit) return;
