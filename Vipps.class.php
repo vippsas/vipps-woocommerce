@@ -783,7 +783,7 @@ class Vipps {
     public function cart_express_checkout_button_html() {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
+        $imgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
         $title = __('Buy now with Vipps!', 'woo-vipps');
         $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
         $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
@@ -3691,7 +3691,7 @@ EOF;
         wp_enqueue_script('vipps-express-checkout');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
-        $buttonimgurl= plugins_url('img/hurtigkasse.svg',__FILE__);
+        $buttonimgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
 
 
         $orderspec = $this->get_orderspec_from_arguments($productinfo);
@@ -3759,7 +3759,7 @@ EOF;
             $content .= $extraHTML;
             $content .= $termsHTML;
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
-            $imgurl = plugins_url('img/hurtigkasse.svg',__FILE__);
+            $imgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
             $title = __('Buy now with Vipps!', 'woo-vipps');
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
             $content .= "<div id='vipps-status-message'></div>";
