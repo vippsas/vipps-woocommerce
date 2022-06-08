@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.9.0
-Stable tag: 1.9.0
+Version: 1.9.1
+Stable tag: 1.9.1
 Requires at least: 4.7
 Tested up to: 6.0.0
 Requires PHP: 5.6
@@ -82,6 +82,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 = 1.9.1 = 
 Improved compatibility with shipping modules
+Use newest SVG buttons
+Fix issues with the All Products Gutenberg block
 = 1.9.0 =
 Support for Vipps' QR-api
 
@@ -206,6 +208,8 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2022.06.xx version 1.9.1 =
 * Improve compatibility with shipping modules
+* Fix breakage in Vipps support for the All Products block
+* Change SVG buttons to current elements
 
 = 2022.05.30 version 1.9.0 =
 * Support for Vipps QR-api

@@ -1787,7 +1787,7 @@ else:
                    if (empty($_SERVER['REQUEST_URI'])) return $description;
                    if (!did_action('rest_api_init')) return $description;
                    $request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-                   $storeapi = "wc/store/products";
+                   $storeapi = "/wc/store/";
                    if (false === strpos($request_uri, $storeapi)) return $description;;
 
                    // Now add a small tag to product descriptions if this product should be purchasable.
@@ -1807,9 +1807,9 @@ else:
         // become the default, depending on how this goes. IOK 2020-11-16
         add_action( 'wp_enqueue_scripts', function () {
                 $support_all_products_block = function_exists('has_block') && has_block('woocommerce/all-products');
-                $supoort_all_products_block = apply_filters('woo_vipps_support_all_products_block', $support_all_products_block);
+                $support_all_products_block = apply_filters('woo_vipps_support_all_products_block', $support_all_products_block);
                 if ($support_all_products_block) {
-                    wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), '1.0.0', true );
+                    wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), filemtime(dirname(__FILE__) . "/Blocks/Products/js/index.js"), true );
                 }
        });
         

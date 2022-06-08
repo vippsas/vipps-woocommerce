@@ -27,6 +27,8 @@ const VippsBuyNow = ( props ) => {
                        el('img', { "class":"inline vipps-logo negative", 
                                   "src":VippsConfig['vippslogourl'],
                                   "alt":"Vipps", "border":0})));
+    } else {
+      // console.log("Product %j not purchasable", props.product);
     }
     return null;
 };
