@@ -186,39 +186,41 @@ function VippsGetPaymentDetails(orderid,nonce) {
 }
 
 jQuery(document).ready(function () {
-  jQuery('#vipps_unsynchronized_qr_codes').dialog({
-    dialogClass: 'wp-dialog',
-    autoOpen: false,
-    draggable: true,
-    width: 'auto',
-    modal: true,
-    resizable: true,
-    closeOnEscape: true,
+  var unsynch = jQuery('#vipps_unsynchronized_qr_codes');
+  if (unsynch.length > 0) {
+      jQuery('#vipps_unsynchronized_qr_codes').dialog({
+        dialogClass: 'wp-dialog',
+        autoOpen: false,
+        draggable: true,
+        width: 'auto',
+        modal: true,
+        resizable: true,
+        closeOnEscape: true,
 
-    position: {
-      my: "top+10%",
-      at: "top",
-      of: window,
-      collision: 'fit'
-    },
+        position: {
+          my: "top+10%",
+          at: "top",
+          of: window,
+          collision: 'fit'
+        },
 
-    open: function () {
-      // close dialog by clicking the overlay behind it
-      jQuery('.ui-widget-overlay').bind('click', function(){
-        jQuery('#vipps_unsynchronized_qr_codes').dialog('close');
-      })
-    },
-    create: function () {
-      // style fix for WordPress admin
-      jQuery('.ui-dialog-titlebar-close').addClass('ui-button');
-    },
-  });
-
-  // bind a button or a link to open the dialog
-  jQuery('a.open_unsynchronized_qr_codes').click(function(e) {
-    e.preventDefault();
-    jQuery('#vipps_unsynchronized_qr_codes').dialog('open');
-  });
+        open: function () {
+          // close dialog by clicking the overlay behind it
+          jQuery('.ui-widget-overlay').bind('click', function(){
+            jQuery('#vipps_unsynchronized_qr_codes').dialog('close');
+          })
+        },
+        create: function () {
+          // style fix for WordPress admin
+          jQuery('.ui-dialog-titlebar-close').addClass('ui-button');
+        },
+      });
+      // bind a button or a link to open the dialog
+      jQuery('a.open_unsynchronized_qr_codes').click(function(e) {
+        e.preventDefault();
+        jQuery('#vipps_unsynchronized_qr_codes').dialog('open');
+      });
+    }
 });
 
 
