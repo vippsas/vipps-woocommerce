@@ -206,7 +206,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.06.xx version 1.9.1 =
+= 2022.06.13 version 1.9.1 =
 * Improve compatibility with shipping modules
 * Fix breakage in Vipps support for the All Products block
 * Change SVG buttons to current elements
