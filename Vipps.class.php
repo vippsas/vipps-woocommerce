@@ -1796,8 +1796,8 @@ else:
                    },10,2);
 
         add_action( 'enqueue_block_editor_assets', function () {
-                wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-admin' ), '1.0.0', true );
-                wp_enqueue_script( 'create-block-vipps-products-block-editor', plugins_url( 'Blocks/Products/js/editor.js', __FILE__ ), array( 'wc-blocks','wp-i18n','wp-element','vipps-admin'), '1.0.0', true );
+                wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-admin' ), filemtime(dirname(__FILE__) . "/Blocks/Products/js/index.js"), true );
+                wp_enqueue_script( 'create-block-vipps-products-block-editor', plugins_url( 'Blocks/Products/js/editor.js', __FILE__ ), array( 'wc-blocks','wp-i18n','wp-element','vipps-admin'),  filemtime(dirname(__FILE__) . "/Blocks/Products/js/editor.js"), true );
         });
 
 
