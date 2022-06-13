@@ -1931,6 +1931,7 @@ EOF;
         $this->vippsJSConfig['vippsbuynowbutton'] = __( 'Vipps Buy Now button', 'woo-vipps' );
         $this->vippsJSConfig['vippsbuynowdescription'] =  __( 'Add a Vipps Buy Now-button to the product block', 'woo-vipps');
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
+        $this->vippsJSConfig['vippsexpressbuttonurl'] = plugins_url('img/pay-with-vipps.svg', __FILE__);
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
