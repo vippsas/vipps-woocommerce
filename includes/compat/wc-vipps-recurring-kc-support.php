@@ -86,13 +86,6 @@ class WC_Vipps_Recurring_Kc_Support {
 			'default'     => 'yes',
 		];
 
-		$settings['epm_vipps_recurring_name'] = [
-			'title'       => __( 'Name', 'woo-vipps-recurring' ),
-			'type'        => 'text',
-			'description' => __( 'Title for Vipps Recurring Payments method. This controls the title which the user sees in the checkout form.', 'woo-vipps-recurring' ),
-			'default'     => __( 'Vipps', 'woo-vipps-recurring' ),
-		];
-
 		$settings['epm_vipps_recurring_description'] = [
 			'title'       => __( 'Description', 'woo-vipps-recurring' ),
 			'type'        => 'textarea',
@@ -126,8 +119,9 @@ class WC_Vipps_Recurring_Kc_Support {
 
 		$kco_settings = get_option( 'woocommerce_kco_settings' );
 
-		$activate = ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes';
-		$activate = apply_filters( 'wc_vipps_recurring_activate_kco_external_payment', ( $activate && WC_Vipps_Recurring::get_instance()->gateway->is_available() ) );
+		$activate = ( ! isset( $kco_settings['epm_vipps_recurring_activate'] ) || $kco_settings['epm_vipps_recurring_activate'] === 'yes' )
+					&& WC_Vipps_Recurring::get_instance()->gateway_should_be_active();
+		$activate = apply_filters( 'wc_vipps_recurring_activate_kco_external_payment', $activate );
 
 		if ( ! isset( $create['external_payment_methods'] ) || ! is_array( $create['external_payment_methods'] ) ) {
 			$create['external_payment_methods'] = [];
@@ -137,12 +131,11 @@ class WC_Vipps_Recurring_Kc_Support {
 			return $create;
 		}
 
-		$name        = $kco_settings['epm_vipps_recurring_name'] ?? '';
 		$image_url   = $kco_settings['epm_vipps_recurring_img_url'] ?? '';
 		$description = $kco_settings['epm_vipps_recurring_description'] ?? '';
 
 		$gateway = [
-			'name'         => $name,
+			'name'         => 'Vipps',
 			'redirect_url' => add_query_arg( [
 				'kco-external-payment' => WC_Vipps_Recurring::get_instance()->gateway->id,
 				'order_id'             => $create['agreement_id'] ?? '{checkout.order.id}'

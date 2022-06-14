@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.6 =
+* Fixed: Fixed a conflict that prevented Vipps from working in Klarna if Vipps Recurring and Vipps Checkout were installed at the same time.
+
 = 1.14.5 =
 * Fixed: You can now swap gateway to Vipps Recurring Payments from a subscription again.
 

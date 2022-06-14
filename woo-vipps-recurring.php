@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.14.5
+ * Version: 1.14.6
  * Requires at least: 4.4
  * Tested up to: 6.0
  * WC tested up to: 6.5
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.14.5' );
+define( 'WC_VIPPS_RECURRING_VERSION', '1.14.6' );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
@@ -399,16 +399,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 				<?php
 			}
 
-			public function maybe_disable_gateway( $methods ) {
+			public function gateway_should_be_active() {
 				global $wp;
 
-				if ( is_admin() || ! is_checkout() ) {
-					return $methods;
-				}
-
 				$is_gateway_change = count( WC()->cart->get_cart_contents() ) === 0
-									 && is_checkout()
-									 && isset( $wp->query_vars['order-pay'] );
+				                     && is_checkout()
+				                     && isset( $wp->query_vars['order-pay'] );
 
 				$has_subscription_product = $is_gateway_change;
 
@@ -420,11 +416,18 @@ function woocommerce_gateway_vipps_recurring_init() {
 					}
 				}
 
-				$has_subscription_product = apply_filters( 'wc_vipps_recurring_cart_has_subscription_product', $has_subscription_product, WC()->cart->get_cart_contents() );
+				return apply_filters( 'wc_vipps_recurring_cart_has_subscription_product', $has_subscription_product, WC()->cart->get_cart_contents() );
+			}
+
+			public function maybe_disable_gateway( $methods ) {
+				if ( is_admin() || ! is_checkout() ) {
+					return $methods;
+				}
+
+				$has_subscription_product = $this->gateway_should_be_active();
 
 				if ( ! $has_subscription_product ) {
 					unset( $methods['vipps_recurring'] );
-					add_filter( 'wc_vipps_recurring_activate_kco_external_payment', '__return_false' );
 				}
 
 				return $methods;
@@ -455,7 +458,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function setup_screen() {
 				global $wc_vipps_recurring_list_table_pending_charges,
-					   $wc_vipps_recurring_list_table_failed_charges;
+				       $wc_vipps_recurring_list_table_failed_charges;
 
 				$screen_id = false;
 
@@ -481,16 +484,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				if ( $wc_vipps_recurring_list_table_pending_charges
-					 && $wc_vipps_recurring_list_table_pending_charges->current_action()
-					 && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
+				     && $wc_vipps_recurring_list_table_pending_charges->current_action()
+				     && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
 					$sendback = $this->handle_check_statuses_bulk_action();
 
 					wp_redirect( $sendback );
 				}
 
 				if ( $wc_vipps_recurring_list_table_failed_charges
-					 && $wc_vipps_recurring_list_table_failed_charges->current_action()
-					 && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
+				     && $wc_vipps_recurring_list_table_failed_charges->current_action()
+				     && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
 					$sendback = $this->handle_check_statuses_bulk_action();
 
 					wp_redirect( $sendback );
@@ -628,10 +631,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$order_status        = $order->get_status();
 				$show_capture_button = ( ! in_array( $order_status, $this->gateway->statuses_to_attempt_capture, true ) )
-									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
-									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
-									   && ! wcs_order_contains_renewal( $order )
-									   && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
+				                       && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
+				                       && ! (int) WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
+				                       && ! wcs_order_contains_renewal( $order )
+				                       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
 
 				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;
