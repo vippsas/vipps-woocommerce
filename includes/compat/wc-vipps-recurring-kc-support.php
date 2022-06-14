@@ -90,7 +90,7 @@ class WC_Vipps_Recurring_Kc_Support {
 			'title'       => __( 'Description', 'woo-vipps-recurring' ),
 			'type'        => 'textarea',
 			'description' => __( 'Description for Vipps Recurring Payments method. This controls the description which the user sees in the checkout form.', 'woo-vipps-recurring' ),
-			'default'     => '',
+			'default'     => __('Remember: Vipps is always has no fees when paying businesses.', 'woo-vipps-recurring'),
 		];
 
 		$settings['epm_vipps_recurring_img_url'] = [
