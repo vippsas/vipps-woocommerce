@@ -104,6 +104,72 @@ class VippsApi {
         }
     }
 
+    # Order Management API functions
+    // 200, 400, 401, 404, 409, 409 invalid params also
+    public function add_image ($image){
+       "POST:/order-management/v1/images";
+        // imageid =  ^[0-9A-Za-z-_\.] - 128 chars
+        // SHA512 (Secure Hash Algorithm) is a cryptographic hash function designed by the National Security Agency (NSA). SHA512 produces a 512-bit (64-byte) hash value, typically rendered as a hexadecimal number, 128 digits long. 512 bits (!)
+        $args = ['imageId'=>$imageid,'src'=>$base64,'type'=>'base64'];
+
+
+//         returnerer imageid wrappet i et objekt
+
+    }
+    public function add_receipt ($order, $paymenttype="ecom") {
+       "POST: /order-management/v2/paymenttype/receipts/<orderid>";
+
+       /*
+{
+    "orderLines": [
+    {
+        "name": "Vipps socks",
+            "id": "1234567890",
+            "totalAmount": 1000,
+            "totalAmountExcludingTax": 1000,
+            "totalTaxAmount": 250,
+            "taxPercentage": 25,
+            "unitInfo": {
+                "unitPrice": 0,
+                "quantity": "0.822",
+                "quantityUnit": "PCS"
+            },
+            "discount": 0,
+            "productUrl": "https://www.vipps.no/store/socks"
+    }
+    ],
+    "bottomLine": {
+        "totalAmount": 0,
+        "totalTax": 0,
+        "totalDiscount": 0,
+        "currency": "NOK",
+        "shippingAmount": 0,
+        "tipAmount": 0,
+        "giftCardAmount": 0,
+        "terminalId": "string"
+    }
+}
+
+       */
+
+       // returneer en uuid
+    }
+    public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
+       "PUT: https://api.vipps.no/order-management/v2/{paymentType}/categories/{orderId}";
+
+       // Enum: "GENERAL" "RECEIPT" "ORDER_CONFIRMATION" "DELIVERY" "TICKET" "BOOKING"
+
+       $args = [ 'imageId' => $imageid, 'category'=>$categorytype, 'orderDetailsUrl' => $link ];
+ 
+    // Returnerer en uuid
+    }
+    public function get_receipt($order, $paymenttype = "ecom") {
+      "GET https://api.vipps.no/order-management/v2/{paymentType}/{orderId} ";
+    }
+
+
+    # End Order Management API functions
+
     public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
         $command = 'Ecomm/v2/payments';
         $date = gmdate('c');
