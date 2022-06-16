@@ -1166,9 +1166,6 @@ print "</pre>";
             }
         }
         if (!empty(@$details['shippingDetails'])) {
-
-print "<pre>";print_r($details['shippingDetails']); print "</pre>";
-
             $ss = $details['shippingDetails'];
             print "<h3>" . __('Shipping details', 'woo-vipps') . "</h3>";
             print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_values(@$ss['address']))) . "<br>";
