@@ -1091,6 +1091,14 @@ else:
         $gw = $this->gateway();
         try {
             $details = $gw->get_payment_details($order);
+            if ($details && $order->get_meta('_vipps_api') == 'epayment') {
+               try {
+                   $details['epaymentLog'] =  $gw->api->epayment_get_payment_log ($order);
+               } catch (Exception $e) {
+                   print("NOPE<br>");
+                   $this->log("Could not get transaction log for " . $order->get_id() . " : " . $e->getMessage(), 'error');
+               }
+            }
             $order =   $gw->update_vipps_payment_details($order, $details);
         } catch (Exception $e) {
             print "<p>"; 
@@ -1098,6 +1106,42 @@ else:
             print "</p>";
             exit();
         }
+
+if (false) {
+print "<pre>";
+print '{
+    "orderLines": [
+    {
+        "name": "Vipps socks",
+            "id": "1234567890",
+            "totalAmount": 1000,
+            "totalAmountExcludingTax": 1000,
+            "totalTaxAmount": 250,
+            "taxPercentage": 25,
+            "unitInfo": {
+                "unitPrice": 0,
+                "quantity": "0.822",
+                "quantityUnit": "PCS"
+            },
+            "discount": 0,
+            "productUrl": "https://www.vipps.no/store/socks"
+    }
+    ],
+    "bottomLine": {
+        "totalAmount": 0,
+        "totalTax": 0,
+        "totalDiscount": 0,
+        "currency": "NOK",
+        "shippingAmount": 0,
+        "tipAmount": 0,
+        "giftCardAmount": 0,
+        "terminalId": "string"
+    }
+}';
+print "</pre>";
+}
+
+
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
@@ -1107,6 +1151,7 @@ else:
         } else {
             print __("Payment method", 'woo-vipps') . ": Vipps <br>";
         }
+        print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
         print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
@@ -1121,11 +1166,14 @@ else:
             }
         }
         if (!empty(@$details['shippingDetails'])) {
+
+print "<pre>";print_r($details['shippingDetails']); print "</pre>";
+
             $ss = $details['shippingDetails'];
             print "<h3>" . __('Shipping details', 'woo-vipps') . "</h3>";
             print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_values(@$ss['address']))) . "<br>";
-            print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
-            print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
+            if (@$ss['shippingMethod']) print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
+            if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
             print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";
         }
         if (!empty(@$details['userDetails'])) {
@@ -1149,6 +1197,22 @@ else:
                 print __('Transaction text','woo-vipps') . ": " . htmlspecialchars(@$td['transactionText']) . "<br>";
                 print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['transactionId']) . "<br>";
                 print __('Request ID','woo-vipps') . ": " . htmlspecialchars(@$td['requestId']) . "<br>";
+            }
+        }
+        if (!empty(@$details['epaymentLog']) && is_array($details['epaymentLog'])) {
+            print "<h3>" . __('Transaction Log', 'woo-vipps') . "</h3>";
+            $i = count($details['epaymentLog'])+1; 
+            $reversed = array_reverse($details['epaymentLog']);
+            foreach ($reversed  as $td) {
+                print "<br>";
+                print __('Operation','woo-vipps') . ": " . htmlspecialchars(@$td['paymentAction']) . "<br>";
+                $value = intval(@$td['amount']['value'])/100;
+                $curr = $td['amount']['currency'];
+
+                print __('Amount','woo-vipps') . ": " . esc_html($value) . " " . esc_html($curr) . "<br>";
+                print __('Success','woo-vipps') . ": " . @$td['success'] . "<br>";
+                print __('Timestamp','woo-vipps') . ": " . htmlspecialchars(@$td['processedAt']) . "<br>";
+                print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['pspReference']) . "<br>";
             }
         }
         exit();

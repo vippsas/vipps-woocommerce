@@ -152,7 +152,7 @@ class VippsApi {
 
        */
 
-       // returneer en uuid
+       // returneer en uuid - som er ordreid
     }
     public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
        "PUT: https://api.vipps.no/order-management/v2/{paymentType}/categories/{orderId}";
@@ -162,6 +162,7 @@ class VippsApi {
        $args = [ 'imageId' => $imageid, 'category'=>$categorytype, 'orderDetailsUrl' => $link ];
  
     // Returnerer en uuid
+       // returneer en uuid - som er ordreid
     }
     public function get_receipt($order, $paymenttype = "ecom") {
       "GET https://api.vipps.no/order-management/v2/{paymentType}/{orderId} ";
@@ -784,7 +785,6 @@ class VippsApi {
         return $res;
     }
     // For the new epayment API, also used by checkout, return payment log (as for old payment_details. Will be used for debugging.
-    // IOK This function is not  yet implemented (2022-02-17) so it is not to be called. Will produce a transaction log for the 
     // epayment api.
     public function epayment_get_payment_log ($order) {
         $orderid = $order->get_meta('_vipps_orderid');
@@ -805,10 +805,6 @@ class VippsApi {
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
         $headers['Merchant-Serial-Number'] = $merch;
-
-        # IOK FIXME for debugging 2022-01-15 - documented values above do not work.
-        $headers['ocpApimSubscriptionKey'] = $subkey;
-        $headers['merchantSerialNumber'] = $merch;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;

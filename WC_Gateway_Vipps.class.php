@@ -1543,6 +1543,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($poll) {
             try {
                 $result = $this->api->poll_checkout($poll);
+
                 if ($result == 'EXPIRED') {
                     $result = array('status'=>'CANCEL'); 
                     return $result;
@@ -1601,8 +1602,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $result['userDetails']['userId'] = $result['userDetails']['phoneNumber'];
            }
 
-           # IOK 2022-01-19 FIXME this doesn't work yet.
+           # IOK 2022-06-16 Not user for epayment; a separate call is available and used for debugging in Vipps.class.php
            $result['transactionLogHistory'] = array();
+           # IOK 2022-06-16 And this is called on-demand, if "is-array" then we're good.
+           $result['epaymentLog'] = null;
 
            # IOK 2022-02-20 Try to always return a status
            if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionTerminated') {
@@ -1657,6 +1660,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($result) {
             // We would like e to have a single enum as the payment status like in the old API or v2 before march 2021, so find one and store it. IOK 2021-01-20
+            // For epayment, this is 'state'
             $result['status'] = $this->get_payment_status_from_payment_details($result);
 
             // Add for backwards compatibility from the old order_status interface - last operations transactionInfo IOK 2021-01-20
