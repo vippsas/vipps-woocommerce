@@ -1095,7 +1095,6 @@ else:
                try {
                    $details['epaymentLog'] =  $gw->api->epayment_get_payment_log ($order);
                } catch (Exception $e) {
-                   print("NOPE<br>");
                    $this->log("Could not get transaction log for " . $order->get_id() . " : " . $e->getMessage(), 'error');
                }
             }
@@ -1107,40 +1106,64 @@ else:
             exit();
         }
 
-if (false) {
-print "<pre>";
-print '{
-    "orderLines": [
-    {
-        "name": "Vipps socks",
-            "id": "1234567890",
-            "totalAmount": 1000,
-            "totalAmountExcludingTax": 1000,
-            "totalTaxAmount": 250,
-            "taxPercentage": 25,
-            "unitInfo": {
-                "unitPrice": 0,
-                "quantity": "0.822",
-                "quantityUnit": "PCS"
-            },
-            "discount": 0,
-            "productUrl": "https://www.vipps.no/store/socks"
-    }
-    ],
-    "bottomLine": {
-        "totalAmount": 0,
-        "totalTax": 0,
-        "totalDiscount": 0,
-        "currency": "NOK",
-        "shippingAmount": 0,
-        "tipAmount": 0,
-        "giftCardAmount": 0,
-        "terminalId": "string"
-    }
-}';
-print "</pre>";
-}
+$receiptdata =  [];
+$orderlines = [];
+$bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'NOK', 'shippingAmount'=>0, 'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
 
+ foreach ($order->get_items() as $key => $order_item) {
+    $orderline = [];
+    $prodid = $order_item->get_product_id(); // sku can be tricky
+    $totalNoTax = $order_item->get_total();
+    $tax = $order_item->get_total_tax();
+    $total = $tax+$totalNoTax;
+    $subtotalNoTax = $order_item->get_subtotal();
+    $subtotalTax = $order_item->get_subtotal_tax();
+    $subtotal = $subtotalNoTax + $subtotalTax;
+
+    $quantity = $order_item->get_quantity();
+    $unitprice = $subtotal/$quantity;
+
+    $discount = $subtotal - $total;
+    if ($discount < 0) $discount = 0;
+
+    $product = wc_get_product($prodid);
+    $url = home_url("/");
+    if ($product) {
+       $url = get_permalink($prodid);
+    }
+
+    $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+    $taxpercentage = round($taxpercentage * 10)/10;
+  
+    $unitInfo = [];
+
+    $orderline['name'] = $order_item->get_name();
+    $orderline['id'] = $prodid;
+    $orderline['totalAmount'] = round($total*100);
+    $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
+    $orderline['totalTaxAmount'] = round($tax*100);
+    $orderline['taxPercentage'] = $taxpercentage; // FIXME
+
+    $unitinfo['unitPrice'] = round($unitprice*100);
+    $unitinfo['quantity'] = $quantity;
+    $unitinfo['quantityUnit'] = 'PCS';
+
+    $orderline['unitInfo'] = $unitinfo;
+
+    $orderline['discount'] = round(100*$discount);
+    $orderline['productUrl'] = $url;
+
+    print "<br>";
+    print $order_item->get_subtotal(); // pre discount
+    print $order_item->get_subtotal_tax();
+    print "<br>";
+    $orderlines[] = $orderline;
+ }
+
+$receiptdata['orderLines'] = $orderlines;
+$receiptdata['bottomLine'] = $bottomline;
+
+print "<pre>";
 
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
