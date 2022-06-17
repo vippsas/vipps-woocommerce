@@ -2469,6 +2469,9 @@ EOF;
         WC()->cart->calculate_totals();
         $acart = WC()->cart;
 
+        // IOK FIXME add logging for empty carts here so we can discover when woo changes things so that the sessions
+        // get invalidated.. IOK 2022-07-17
+
         $shipping_methods = array();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
