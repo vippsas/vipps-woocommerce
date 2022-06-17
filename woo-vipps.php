@@ -7,13 +7,13 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.9.1
-   Stable tag: 1.9.1
+   Version: 1.9.2
+   Stable tag: 1.9.2
    Requires at least: 4.7
    Tested up to: 6.0.0
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 6.5.1
+   WC tested up to: 6.6.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.9.1');
+define('WOO_VIPPS_VERSION', '1.9.2');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -80,11 +80,13 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
 }
 
-
 add_action ('before_woocommerce_init', function () {
  $url = sanitize_text_field($_SERVER['REQUEST_URI']);
  # This removes cookies for the wc-api callback events for the vipps plugin, to be 100% sure no sessions are restored when they ought not be IOK 2020-07-01
- if (preg_match("!\bvipps\b!", $url) && preg_match("!\bwc-api\b!", $url)) {
+ if (preg_match("!vipps!", $url) && preg_match("!\bwc-api\b!", $url)) {
+    if (!empty($_COOKIE)) {
+         // Log this if neccessary
+    }
     foreach($_COOKIE as $key=>$value) unset($_COOKIE[$key]);
  }
 },1);
