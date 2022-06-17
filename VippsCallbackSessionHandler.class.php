@@ -126,4 +126,9 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
         $this->_customer_id = $this->generate_customer_id();
     }
 
+    // This is only used for callbacks, so *never* set cookies.
+    public function set_customer_session_cookie( $set ) {
+        return;
+    }
+
 }
