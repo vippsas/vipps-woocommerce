@@ -1110,20 +1110,38 @@ $receiptdata =  [];
 $orderlines = [];
 $bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'NOK', 'shippingAmount'=>0, 'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
 
+ $bottomline['totalAmount'] = round($order->get_total()*100);
+ $bottomline['totalTax'] = round($order->get_total_tax()*100);
+ $bottomline['currency'] == $order->get_currency();
+ $bottomline['totalDiscount'] = ($order->get_discount_total()*100) + ($order->get_discount_tax()*100);
+ $bottomline['shippingAmount'] = round($order->get_shipping_total()*100);
+
+ $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
+ $tipamount = apply_filters('woo_vipps_order_tip_amount', 0, $order);
+
+ $bottomline['tipAmount'] = round($tipamount*100);
+ $bottomline['giftCardAmount'] = round($giftcardamount*100);
+
+ $bottomline['terminalId'] = apply_filters('woo_vipps_order_terminalid', 'woocommerce', $order);
+
  foreach ($order->get_items() as $key => $order_item) {
     $orderline = [];
     $prodid = $order_item->get_product_id(); // sku can be tricky
     $totalNoTax = $order_item->get_total();
     $tax = $order_item->get_total_tax();
     $total = $tax+$totalNoTax;
+
     $subtotalNoTax = $order_item->get_subtotal();
     $subtotalTax = $order_item->get_subtotal_tax();
     $subtotal = $subtotalNoTax + $subtotalTax;
 
+
+
     $quantity = $order_item->get_quantity();
     $unitprice = $subtotal/$quantity;
 
-    $discount = $subtotal - $total;
+    // Must do this to avoid rounding errors, since we get floats instead of money here :(
+    $discount = round(100*$subtotal) - round(100*$total);
     if ($discount < 0) $discount = 0;
 
     $product = wc_get_product($prodid);
@@ -1142,7 +1160,7 @@ $bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'
     $orderline['totalAmount'] = round($total*100);
     $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
     $orderline['totalTaxAmount'] = round($tax*100);
-    $orderline['taxPercentage'] = $taxpercentage; // FIXME
+    $orderline['taxPercentage'] = $taxpercentage;
 
     $unitinfo['unitPrice'] = round($unitprice*100);
     $unitinfo['quantity'] = $quantity;
@@ -1150,21 +1168,14 @@ $bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'
 
     $orderline['unitInfo'] = $unitinfo;
 
-    $orderline['discount'] = round(100*$discount);
+    $orderline['discount'] = $discount;
     $orderline['productUrl'] = $url;
 
-    print "<br>";
-    print $order_item->get_subtotal(); // pre discount
-    print $order_item->get_subtotal_tax();
-    print "<br>";
     $orderlines[] = $orderline;
  }
 
 $receiptdata['orderLines'] = $orderlines;
 $receiptdata['bottomLine'] = $bottomline;
-
-print "<pre>";
-
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
