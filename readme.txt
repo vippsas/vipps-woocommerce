@@ -208,7 +208,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.06.xx version 1.9.2 =
+= 2022.06.20 version 1.9.2 =
 * Make extra double sure we dont get session cookies in callbacks
 
 = 2022.06.13 version 1.9.1 =

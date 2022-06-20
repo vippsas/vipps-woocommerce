@@ -81,12 +81,18 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 }
 
 add_action ('before_woocommerce_init', function () {
+
+
  $url = sanitize_text_field($_SERVER['REQUEST_URI']);
  # This removes cookies for the wc-api callback events for the vipps plugin, to be 100% sure no sessions are restored when they ought not be IOK 2020-07-01
- if (preg_match("!vipps!", $url) && preg_match("!\bwc-api\b!", $url)) {
-    if (!empty($_COOKIE)) {
-         // Log this if neccessary
-    }
+ # Re-added and modified IOK 2022-06-20
+ if (preg_match("!(wc_gateway_vipps|vipps_shipping_details|vipps-consent-removal)!", $url) && preg_match("!\bwc-api\b!", $url)) {
+    // Disallow woo from setting any cookies for these URLs. This happens very early, so we need to do this a bit awkwardly.
+    add_filter('woocommerce_set_cookie_enabled', function ($val,$name ,$value, $expire, $secure) {
+                return false;
+    }, 999, 5);
+    // Any cookies that was previously set: Remove them.
     foreach($_COOKIE as $key=>$value) unset($_COOKIE[$key]);
  }
 },1);
+
