@@ -116,43 +116,124 @@ class VippsApi {
 //         returnerer imageid wrappet i et objekt
 
     }
-    public function add_receipt ($order, $paymenttype="ecom") {
-       "POST: /order-management/v2/paymenttype/receipts/<orderid>";
+    public function add_receipt ($order) {
+        if ($order->get_meta('_vipps_receipt_sent')) {
+            return true;
+        }
+        $vippsid = $order->get_meta('_vipps_orderid');
+        if (!$vippsid) {
+           $this->log(sprintf(__("Cannot add receipt for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           return false;
+        }
+        // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
+        $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
 
-       /*
-{
-    "orderLines": [
-    {
-        "name": "Vipps socks",
-            "id": "1234567890",
-            "totalAmount": 1000,
-            "totalAmountExcludingTax": 1000,
-            "totalTaxAmount": 250,
-            "taxPercentage": 25,
-            "unitInfo": {
-                "unitPrice": 0,
-                "quantity": "0.822",
-                "quantityUnit": "PCS"
-            },
-            "discount": 0,
-            "productUrl": "https://www.vipps.no/store/socks"
-    }
-    ],
-    "bottomLine": {
-        "totalAmount": 0,
-        "totalTax": 0,
-        "totalDiscount": 0,
-        "currency": "NOK",
-        "shippingAmount": 0,
-        "tipAmount": 0,
-        "giftCardAmount": 0,
-        "terminalId": "string"
-    }
-}
+        $command = 'order-management/v2/' . $paymenttype . '/receipts/' . $vippsid;
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
 
-       */
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
 
-       // returneer en uuid - som er ordreid
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        try {
+            $receiptdata =  [];
+            $orderlines = [];
+            $bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'NOK', 'shippingAmount'=>0, 'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
+
+            # See below - these are the values including shipping, which we are *not* to use apparently.
+            # IOK FIXME VERIFY THIS
+            $bottomline['totalTax'] = round($order->get_total_tax()*100);
+            $bottomline['totalAmount'] = round($order->get_total()*100);
+  
+            $bottomline['currency'] == $order->get_currency();
+            $bottomline['totalDiscount'] = ($order->get_discount_total()*100) + ($order->get_discount_tax()*100);
+            $shipping = $order->get_shipping_tax() + $order->get_shipping_total();
+            $bottomline['shippingAmount'] = round($shipping*100);
+            $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
+            $tipamount = apply_filters('woo_vipps_order_tip_amount', 0, $order);
+            $bottomline['tipAmount'] = round($tipamount*100);
+            $bottomline['giftCardAmount'] = round($giftcardamount*100);
+            $bottomline['terminalId'] = apply_filters('woo_vipps_order_terminalid', 'woocommerce', $order);
+
+            $totalsum = 0;
+            $totaltax = 0;
+
+            foreach ($order->get_items() as $key => $order_item) {
+                $orderline = [];
+                $prodid = $order_item->get_product_id(); // sku can be tricky
+                $totalNoTax = $order_item->get_total();
+                $tax = $order_item->get_total_tax();
+                $total = $tax+$totalNoTax;
+                $subtotalNoTax = $order_item->get_subtotal();
+                $subtotalTax = $order_item->get_subtotal_tax();
+                $subtotal = $subtotalNoTax + $subtotalTax;
+                $quantity = $order_item->get_quantity();
+                $unitprice = $subtotal/$quantity;
+                // Must do this to avoid rounding errors, since we get floats instead of money here :(
+                $discount = round(100*$subtotal) - round(100*$total);
+                if ($discount < 0) $discount = 0;
+                $product = wc_get_product($prodid);
+                $url = home_url("/");
+                if ($product) {
+                    $url = get_permalink($prodid);
+                }
+                $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                $taxpercentage = round($taxpercentage * 10)/10;
+                $unitInfo = [];
+                $orderline['name'] = $order_item->get_name();
+                $orderline['id'] = $prodid;
+                $orderline['totalAmount'] = round($total*100);
+                $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
+                $orderline['totalTaxAmount'] = round($tax*100);
+
+                // Apparently the final total is exclusive of shipping, so add the orderlines.
+                // FIXME VERIFY THIS
+                $totalsum += $orderline['totalAmount'];
+                $totaltax += $orderline['totalTaxAmount'];
+
+
+                $orderline['taxPercentage'] = $taxpercentage;
+                $unitinfo['unitPrice'] = round($unitprice*100);
+                $unitinfo['quantity'] = $quantity;
+                $unitinfo['quantityUnit'] = 'PCS';
+                $orderline['unitInfo'] = $unitinfo;
+                $orderline['discount'] = $discount;
+                $orderline['productUrl'] = $url;
+                $orderlines[] = $orderline;
+            }
+
+            $bottomline['totalTax'] = $totaltax;
+            $bottomline['totalAmount'] = $totalsum;
+
+            $receiptdata['orderLines'] = $orderlines;
+            $receiptdata['bottomLine'] = $bottomline;
+
+            error_log("Receipt is " . print_r($receiptdata, true));
+
+            $res = $this->http_call($command,$receiptdata,'POST',$headers,'json'); 
+
+            error_log("Result is " . print_r($res, true));
+
+            $order->update_meta_data('_vipps_receipt_sent', true);
+            $order->save();
+            return true;
+        } catch (Exception $e) {
+            error_log("nope: " . $e->getMessage());
+            $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
+            return false;
+        }
     }
     public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
        "PUT: https://api.vipps.no/order-management/v2/{paymentType}/categories/{orderId}";
@@ -992,6 +1073,11 @@ class VippsApi {
             // From initiate payment, at least some times. IOK 2018-06-18
             if (isset($content['message'])) {
                 $msg = $content['message'];
+            // From the receipt api
+            } elseif (isset($content['detail'])) {
+                $msg = "$response";
+                $msg .= (isset($content['title'])) ?  (" " . $content['title']) : "";
+                $msg .= ": " .  $content['detail'];
             } elseif (isset($content['errors'])) {
                 $msg = print_r($content['errors'], true);
             } elseif (isset($content['error'])) {

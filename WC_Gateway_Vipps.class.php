@@ -111,6 +111,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         add_action( 'woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
 
+        add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
+
     }
 
     // True iff this gateway is currently in test mode. IOK 2019-08-30
@@ -2192,6 +2194,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $order->add_order_note(__( 'Payment authorized at Vipps', 'woo-vipps' ));
             }
             $order->payment_complete();
+    }
+
+    // Hook run by Woo after order is complete (authorized or sale). We'll add receipt info etc here.
+    public function order_payment_complete ($orderid) {
+        $order = wc_get_order($orderid);
+        if (!is_a($order, 'WC_Order')) return false;
+        if ($order->get_payment_method() != 'vipps') return false;
+        try {
+                $result = $this->api->add_receipt($order);
+                return $result;
+        } catch (Exception $e) {
+                // This is non-critical so just log it.
+                $this->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");
+        }
     }
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
