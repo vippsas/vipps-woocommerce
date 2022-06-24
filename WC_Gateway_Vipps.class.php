@@ -2202,8 +2202,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!is_a($order, 'WC_Order')) return false;
         if ($order->get_payment_method() != 'vipps') return false;
         try {
-                $result = $this->api->add_receipt($order);
-                return $result;
+error_log("Would try to do receipt here");
+//                $result = $this->api->add_receipt($order);
+ //               return $result;
         } catch (Exception $e) {
                 // This is non-critical so just log it.
                 $this->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");

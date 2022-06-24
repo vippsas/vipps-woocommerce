@@ -214,6 +214,46 @@ class VippsApi {
                 $orderlines[] = $orderline;
             }
 
+            // Handle shipping as normal orderlines if there are more than 1
+            if (true or count($order->get_items('shipping'))>1) {
+                unset($bottomline['shippingAmount']);
+                foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
+                    $shippingline =  [];
+                    $orderline['name'] = "Frakt: " . $order_item->get_name();
+                    $orderline['id'] = $order_item->get_method_id() . ":" . $order_item->get_instance_id();
+
+                    $totalNoTax = $order_item->get_total();
+                    $tax = $order_item->get_total_tax();
+                    $total = $tax+$totalNoTax;
+                    $subtotalNoTax =$totalNoTax;
+                    $subtotalTax = $tax;
+                    $subtotal = $subtotalNoTax + $subtotalTax;
+
+                    $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                    $taxpercentage = round($taxpercentage * 10)/10;
+
+                    $orderline['totalAmount'] = round($total*100);
+                    $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
+                    $orderline['totalTaxAmount'] = round($tax*100);
+
+                    // Apparently the final total is exclusive of shipping, so add the orderlines.
+                    // FIXME VERIFY THIS
+                    $totalsum += $orderline['totalAmount'];
+                    $totaltax += $orderline['totalTaxAmount'];
+
+                    $orderline['taxPercentage'] = $taxpercentage;
+
+                    $unitinfo  = [];
+
+                    $unitinfo['unitPrice'] = round($total*100);
+                    $unitinfo['quantity'] = 1;
+                    $unitinfo['quantityUnit'] = 'PCS';
+                    $orderline['unitInfo'] = $unitinfo;
+                    $orderline['discount'] = 0;
+                    $orderlines[] = $orderline;
+                }
+            }
+
             $bottomline['totalTax'] = $totaltax;
             $bottomline['totalAmount'] = $totalsum;
 
@@ -222,12 +262,14 @@ class VippsApi {
 
             error_log("Receipt is " . print_r($receiptdata, true));
 
+
             $res = $this->http_call($command,$receiptdata,'POST',$headers,'json'); 
 
             error_log("Result is " . print_r($res, true));
 
             $order->update_meta_data('_vipps_receipt_sent', true);
             $order->save();
+
             return true;
         } catch (Exception $e) {
             error_log("nope: " . $e->getMessage());
