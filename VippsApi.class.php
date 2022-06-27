@@ -106,15 +106,58 @@ class VippsApi {
 
     # Order Management API functions
     // 200, 400, 401, 404, 409, 409 invalid params also
-    public function add_image ($image){
-       "POST:/order-management/v1/images";
+    public function add_image ($image, $is_bytes=false){
+        $command = 'order-management/v1/images/';
+
+        if (!$is_bytes){
+            if ($image && is_readable($image)) {
+                $bytes = file_get_contents($image);
+                if (!$bytes) {
+                    $this->log(__("Could not read image file: ",'woo-vipps') .' '. $image, 'error');
+                    return false;
+                }
+            }
+        }
+        if ($is_bytes) {
+           $bytes = $image;
+        }
+
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
         // imageid =  ^[0-9A-Za-z-_\.] - 128 chars
-        // SHA512 (Secure Hash Algorithm) is a cryptographic hash function designed by the National Security Agency (NSA). SHA512 produces a 512-bit (64-byte) hash value, typically rendered as a hexadecimal number, 128 digits long. 512 bits (!)
+        $imageid = hash('sha512',$bytes); // Yields 128 hex chars
+        $base64 = base64_encode($bytes);
         $args = ['imageId'=>$imageid,'src'=>$base64,'type'=>'base64'];
+        try {
 
-
-//         returnerer imageid wrappet i et objekt
-
+            $res = $this->http_call($command,$args,'POST',$headers,'json'); 
+            return $res['imageId'];
+        } catch (Exception $e) {
+            if (is_a($e, 'VippsApiException') && $e->responsecode == 400) {
+                $msg = $e->getMessage();
+                if (preg_match("!duplicate!i", $msg)) {
+                   // Duplicate image, which is ok
+                   return $imageid;
+                }
+            }
+            $this->log(__("Could not send image to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
+            return false;
+        }
     }
     public function add_receipt ($order) {
         if ($order->get_meta('_vipps_receipt_sent')) {
@@ -189,7 +232,11 @@ class VippsApi {
                 if ($product) {
                     $url = get_permalink($prodid);
                 }
-                $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                if ($subtotalNoTax == 0) {
+                    $taxpercentage = 0;
+                } else {
+                    $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                }
                 $taxpercentage = round($taxpercentage * 10)/10;
                 $unitInfo = [];
                 $orderline['name'] = $order_item->get_name();
@@ -219,7 +266,7 @@ class VippsApi {
                 unset($bottomline['shippingAmount']);
                 foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                     $shippingline =  [];
-                    $orderline['name'] = "Frakt: " . $order_item->get_name();
+                    $orderline['name'] = __('Shipping:', 'woo-vipps') . $order_item->get_name();
                     $orderline['id'] = $order_item->get_method_id() . ":" . $order_item->get_instance_id();
 
                     $totalNoTax = $order_item->get_total();
@@ -229,7 +276,11 @@ class VippsApi {
                     $subtotalTax = $tax;
                     $subtotal = $subtotalNoTax + $subtotalTax;
 
-                    $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                    if ($subtotalNoTax == 0) {
+                        $taxpercentage = 0;
+                    }  else {
+                        $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                    }
                     $taxpercentage = round($taxpercentage * 10)/10;
 
                     $orderline['totalAmount'] = round($total*100);
@@ -268,7 +319,7 @@ class VippsApi {
             error_log("Result is " . print_r($res, true));
 
             $order->update_meta_data('_vipps_receipt_sent', true);
-            $order->save();
+           $order->save();
 
             return true;
         } catch (Exception $e) {
@@ -281,6 +332,11 @@ class VippsApi {
        "PUT: https://api.vipps.no/order-management/v2/{paymentType}/categories/{orderId}";
 
        // Enum: "GENERAL" "RECEIPT" "ORDER_CONFIRMATION" "DELIVERY" "TICKET" "BOOKING"
+       // receipt: *kvittering*. Order confimation: "ordrestatus på ordren"
+       // delivery info: sorry
+       // ticket: sorry
+       // booking: sorry
+       // general alt annet. Så det får være download-saken.
 
        $args = [ 'imageId' => $imageid, 'category'=>$categorytype, 'orderDetailsUrl' => $link ];
  

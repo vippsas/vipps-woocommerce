@@ -1109,6 +1109,22 @@ else:
         // Just in case this hasn't been done yet. IOK 2022-06-20
         $gw->api->add_receipt($order);
 
+        // Also try to add an image IOK 2022-06-27
+        foreach ($order->get_items() as $orderline) {
+            if (is_a($orderline, 'WC_Order_Item_Product')) {
+                $downloads = $orderline->get_item_downloads();
+                $prod = $orderline->get_product();
+                if (is_a($prod, 'WC_Product')) {
+                    $imgid = $prod->get_image_id();
+                    $imgfile = get_attached_file($imgid);
+print "<pre>";
+print_r( $gw->api->add_image($imgfile));
+print "</pre>";
+                }
+            }
+        }
+        
+
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
         print "<p>";
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
