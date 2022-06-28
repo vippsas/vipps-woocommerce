@@ -206,6 +206,8 @@ class VippsApi {
             $bottomline['totalAmount'] = round($order->get_total()*100);
   
             $bottomline['currency'] == $order->get_currency();
+
+            // We actually recalculate this from the order lines, because Woo gets this wrong at times :(
             $bottomline['totalDiscount'] = ($order->get_discount_total()*100) + ($order->get_discount_tax()*100);
 
             $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
@@ -231,6 +233,8 @@ class VippsApi {
             $totalsum = 0;
             $totaltax = 0;
 
+            // Calculate this from order lines to avoid Woo doing it wrong 
+            $totaldiscount = 0;
             foreach ($order->get_items() as $key => $order_item) {
                 $orderline = [];
                 $prodid = $order_item->get_product_id(); // sku can be tricky
@@ -245,6 +249,7 @@ class VippsApi {
                 // Must do this to avoid rounding errors, since we get floats instead of money here :(
                 $discount = round(100*$subtotal) - round(100*$total);
                 if ($discount < 0) $discount = 0;
+                $totaldiscount += $discount;
                 $product = wc_get_product($prodid);
                 $url = home_url("/");
                 if ($product) {
@@ -306,7 +311,9 @@ class VippsApi {
                     $unitinfo['quantity'] = 1;
                     $unitinfo['quantityUnit'] = 'PCS';
                     $orderline['unitInfo'] = $unitinfo;
-                    $orderline['discount'] = 0;
+                    $discount = 0;
+                    $orderline['discount'] = $discount;
+                    $totaldiscount += $discount;
                     $orderlines[] = $orderline;
                 }
             }
@@ -315,7 +322,8 @@ class VippsApi {
                // Add shipping cost to bottom line total
                $bottomline['shippingInfo'] = $shippinginfo;
             }
-
+            // We cannot trust Woos values here, unfortunately
+            $bottomline['totalDiscount'] = $totaldiscount;
             $receiptdata['orderLines'] = $orderlines;
             $receiptdata['bottomLine'] = $bottomline;
 
