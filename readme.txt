@@ -210,7 +210,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.0x.xx version 1.9.3 =
+= 2022.06.28 version 1.9.3 =
 * Added compatibility for Dibs/Nets Easy Payment gateway, which made certain untenable assumptionts
 * Fix coupon handling in express checkout - thanks to @kimbertelsen for debugging
 
