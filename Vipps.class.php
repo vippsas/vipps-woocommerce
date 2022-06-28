@@ -1106,21 +1106,51 @@ else:
             exit();
         }
 
-        // Just in case this hasn't been done yet. IOK 2022-06-20
-        $gw->api->add_receipt($order);
 
-        // Also try to add an image IOK 2022-06-27
+        // Just in case this hasn't been done yet. IOK 2022-06-20
+        $start = microtime(true);
+        $gw->api->add_receipt($order);
+        $end = microtime(true);
+        $time = ($end - $start);
+        print("<pre> Receipt took $time</pre>");
+
+        // Also try to add a (product) image IOK 2022-06-27
+        $prodimage = false;
+        $uploads = wp_get_upload_dir();
         foreach ($order->get_items() as $orderline) {
             if (is_a($orderline, 'WC_Order_Item_Product')) {
                 $downloads = $orderline->get_item_downloads();
                 $prod = $orderline->get_product();
                 if (is_a($prod, 'WC_Product')) {
                     $imgid = $prod->get_image_id();
-                    $imgfile = get_attached_file($imgid);
-print_r( $gw->api->add_image($imgfile));
+                    if ($imgid) {
+                        $single = image_get_intermediate_size($imgid, 'woocommerce_single');
+                        if ($single && isset($single['path'])) {
+                           $prodimage = join(DIRECTORY_SEPARATOR, [$uploads['basedir'] , $single['path']]);
+                           error_log("prodimg $prodimage");
+                           break;
+                        }
+                    }
                 }
             }
-        }
+         }
+$start = microtime(true);
+$imgdata = $gw->api->add_image($prodimage);
+$end = microtime(true);
+$time = ($end - $start);
+print("<pre>time: $time imgdata: $imgdata</pre>");
+
+
+
+        // Add link to returnurl / receipt for order
+        $rec = $gw->get_return_url($order);
+        $start = microtime(true);
+//        "RECEIPT","ORDER_CONFIRMATION", "GENERAL" etc
+        $catresult = $gw->api->add_category($order, $rec, $imgdata, "RECEIPT");
+        $end = microtime(true);
+        $time = ($end - $start);
+        print("catresult: $time " . print_r($catresult, true));
+        
         
 
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";

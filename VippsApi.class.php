@@ -112,6 +112,7 @@ class VippsApi {
 
         if (!$is_bytes){
             if ($image && is_readable($image)) {
+                error_log("Sending image $image filesize " . filesize($image));
                 $bytes = file_get_contents($image);
                 if (!$bytes) {
                     $this->log(__("Could not read image file: ",'woo-vipps') .' '. $image, 'error');
@@ -336,20 +337,58 @@ class VippsApi {
         }
     }
     public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
-       "PUT: https://api.vipps.no/order-management/v2/{paymentType}/categories/{orderId}";
 
-       // Enum: "GENERAL" "RECEIPT" "ORDER_CONFIRMATION" "DELIVERY" "TICKET" "BOOKING"
-       // receipt: *kvittering*. Order confimation: "ordrestatus på ordren"
-       // delivery info: sorry
-       // ticket: sorry
-       // booking: sorry
-       // general alt annet. Så det får være download-saken.
+        $vippsid = $order->get_meta('_vipps_orderid');
+        if (!$vippsid) {
+           $this->log(sprintf(__("Cannot add category for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           return false;
+        }
 
-       $args = [ 'imageId' => $imageid, 'category'=>$categorytype, 'orderDetailsUrl' => $link ];
- 
-    // Returnerer en uuid
-       // returneer en uuid - som er ordreid
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+
+        // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
+        $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
+        $command = "order-management/v2/$paymenttype/categories/$vippsid";
+
+        if (! in_array($categorytype, [ "GENERAL","RECEIPT","ORDER_CONFIRMATION","DELIVERY","TICKET","BOOKING"])) {
+           $this->log(sprintf(__("add_category: Unknown category type %s", 'woo-vipps'), $categorytype), 'error');
+           return false;
+        }
+
+       $args = ['category'=>$categorytype, 'orderDetailsUrl' => $link ];
+       if ($imageid) {
+           $args['imageId'] = $imageid;
+       }
+       try {
+            error_log("catdata " . print_r($args, true));
+            $res = $this->http_call($command,$args,'PUT',$headers,'json'); 
+            error_log("Cat result is " . print_r($res, true));
+            $order->save();
+            return true;
+        } catch (Exception $e) {
+            error_log("cat nope: " . $e->getMessage());
+            $this->log(sprintf(__("Could not add category %s to Vipps: ", 'woo-vipps'), $categorytype) . $e->getMessage(), 'error');
+            return false;
+        }
     }
+
     public function get_receipt($order, $paymenttype = "ecom") {
       "GET https://api.vipps.no/order-management/v2/{paymentType}/{orderId} ";
     }
