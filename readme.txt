@@ -81,6 +81,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 == Upgrade Notice ==
 = 1.9.3 = 
 Added defensive code for certain other payment gateways
+Fix coupon handling in express checkout
 = 1.9.2 = 
 Fix weird issue where we get session cookies in callbacks, sometimes invalidating the real sessions
 = 1.9.1 = 
@@ -211,6 +212,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2022.0x.xx version 1.9.3 =
 * Added compatibility for Dibs/Nets Easy Payment gateway, which made certain untenable assumptionts
+* Fix coupon handling in express checkout - thanks to @kimbertelsen for debugging
 
 = 2022.06.20 version 1.9.2 =
 * Make extra double sure we dont get session cookies in callbacks
