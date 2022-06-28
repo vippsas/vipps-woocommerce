@@ -1117,9 +1117,7 @@ else:
                 if (is_a($prod, 'WC_Product')) {
                     $imgid = $prod->get_image_id();
                     $imgfile = get_attached_file($imgid);
-print "<pre>";
 print_r( $gw->api->add_image($imgfile));
-print "</pre>";
                 }
             }
         }

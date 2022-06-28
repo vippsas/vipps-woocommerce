@@ -120,6 +120,8 @@ class VippsApi {
             }
         }
 
+       
+
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $at = $this->get_access_token();
@@ -142,7 +144,6 @@ class VippsApi {
         $base64 = base64_encode($bytes);
         $args = ['imageId'=>$imageid,'src'=>$base64,'type'=>'base64'];
         try {
-
             $res = $this->http_call($command,$args,'POST',$headers,'json'); 
             return $res['imageId'];
         } catch (Exception $e) {
