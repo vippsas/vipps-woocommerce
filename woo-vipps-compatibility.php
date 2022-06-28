@@ -73,7 +73,40 @@ add_action('plugins_loaded', function () {
             VippsKCSupport::init();
         }
     }
+
+
+    // IOK 2022-06-28 This plugin erroneously tries to create an order on the order-received page when reached via the 
+    // Vipps Express Checkout route. Reported, but avoiding the issue by disabling it on this page.
+    if (class_exists('DIBS_Easy')) {
+        add_action('template_redirect', function () {
+            if (is_order_received_page()) {
+                global $wp;
+                if (!isset($wp->query_vars['order-received'])) return;
+                $order_id  = absint($wp->query_vars['order-received']);
+                $order = wc_get_order($order_id);
+                if (!$order || is_wp_error($order)) {
+                    return;
+                }
+                if ($order->get_payment_method() != 'vipps') {
+                    return;
+                }
+                add_filter('option_woocommerce_dibs_easy_settings', function ($value, $option) {
+                    if (!empty($value)) {
+                        $value['enabled'] = 'no';
+                        $value['description'] = '#yolo';
+                        $value['test_mode'] = 'no';
+                            return $value;
+                    } else {
+                    }
+                    return $value;
+                }, 10, 2);
+            }
+        });
+    }
+
 });
+
+
 
 // Anti-support for WooCommerce subscriptions; but allow turning it off using an (advanced) setting or filter. IOK 2021-10-26
 add_filter('woo_vipps_is_available', function ($ok, $gateway) {
