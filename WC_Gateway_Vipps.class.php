@@ -2289,17 +2289,19 @@ error_log("Would try to do receipt here");
         $sessioncookie = array();
         $sessionhandler = WC()->session;
         if ($sessionhandler && is_a($sessionhandler, 'WC_Session_Handler')) {
+            // If customer is actually logged in, take note IOK 2019-10-25
+            WC()->session->set('express_customer_id',get_current_user_id());
             WC()->session->save_data();
             $sessioncookie=$sessionhandler->get_session_cookie();
         }  else {
             // This actually can't happen. IOK 2020-04-08. Branch added for debugging only.
         }
 
-        // If customer is actually logged in, take note IOK 2019-10-25
-        if ($sessionhandler) WC()->session->set('express_customer_id',get_current_user_id());
-
         if (!empty($sessioncookie)) {
           // Customer id, session expiration, session-epiring and cookie-hash is the contents. IOK 2019-10-21
+          error_log("At creation time, this cart: " . print_r(WC()->cart->get_applied_coupons(), true));
+          error_log("At creation, in session: " .  print_r(WC()->session->get( 'applied_coupons', array()), true));
+
           $order->update_meta_data('_vipps_sessiondata',json_encode($sessioncookie));
           $order->save();
         }

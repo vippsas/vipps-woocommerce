@@ -1850,6 +1850,8 @@ print("<pre>time: $time imgdata: $imgdata</pre>");
     }
 
     public function woocommerce_loaded () {
+
+
         /* IOK 2020-09-03 experimental support for the All Products type product block */
         // This is for product blocks - augment the description when using the StoreAPI so that we know that a button should be added
         add_filter('woocommerce_product_get_description', function ($description, $product) {
@@ -2261,25 +2263,26 @@ EOF;
         // Therefore, we will just recreate the 'data' bit of the contents and set the cart contents directly
         // from the now restored session. IOK 2020-04-08
         $newcart = array();
-
         if (WC()->session->get('cart', false)) {
             foreach(WC()->session->get('cart',[]) as $key => $values) {
                 $product = wc_get_product( $values['variation_id'] ? $values['variation_id'] : $values['product_id'] );
-                $values['data'] = $product;
-                $newcart[$key] = $values;
+                $session_data = array_merge($values, array( 'data' => $product));
+                $newcart[$key] = apply_filters( 'woocommerce_get_cart_item_from_session', $session_data, $values, $key );
             }
-        } else {
         }
         if (WC()->cart) {
+            WC()->cart->set_totals( WC()->session->get( 'cart_totals', null ) );
+            WC()->cart->set_applied_coupons( WC()->session->get( 'applied_coupons', array() ) );
+            WC()->cart->set_coupon_discount_totals( WC()->session->get( 'coupon_discount_totals', array() ) );
+            WC()->cart->set_coupon_discount_tax_totals( WC()->session->get( 'coupon_discount_tax_totals', array() ) );
+            WC()->cart->set_removed_cart_contents( WC()->session->get( 'removed_cart_contents', array() ) );
             WC()->cart->set_cart_contents($newcart);
-            WC()->cart->calculate_totals();
             // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
             do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
             WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
         } else {
             // Apparently this happens quite a lot, so don't log it or anything. IOK 2021-06-21
         }
-
         return WC()->session;
     }
 
@@ -2444,9 +2447,6 @@ EOF;
         // now be able to calculate shipping for the actual cart with no further manipulation. IOK 2020-04-08
         WC()->cart->calculate_totals();
         $acart = WC()->cart;
-
-        // IOK FIXME add logging for empty carts here so we can discover when woo changes things so that the sessions
-        // get invalidated.. IOK 2022-07-17
 
         $shipping_methods = array();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
