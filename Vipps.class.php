@@ -2262,6 +2262,8 @@ EOF;
         // We have already created the order, so we only want this cart for the shipping calculations.
         // Therefore, we will just recreate the 'data' bit of the contents and set the cart contents directly
         // from the now restored session. IOK 2020-04-08
+        // IOK 2022-06-28 Updated to also call the woocommerce_get_cart_item_from_session filters and to correctly handle
+        // coupons.
         $newcart = array();
         if (WC()->session->get('cart', false)) {
             foreach(WC()->session->get('cart',[]) as $key => $values) {
@@ -2285,6 +2287,8 @@ EOF;
         }
         return WC()->session;
     }
+
+
 
     // Based on either a logged-in user, or the stores' default address, get the address to use when using
     // the Express Checkout static shipping feature
