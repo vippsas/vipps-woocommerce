@@ -337,7 +337,6 @@ class VippsApi {
         }
     }
     public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
-
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
            $this->log(sprintf(__("Cannot add category for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
@@ -390,7 +389,43 @@ class VippsApi {
     }
 
     public function get_receipt($order, $paymenttype = "ecom") {
-      "GET https://api.vipps.no/order-management/v2/{paymentType}/{orderId} ";
+        $vippsid = $order->get_meta('_vipps_orderid');
+        if (!$vippsid) {
+           $this->log(sprintf(__("Cannot add category for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           return false;
+        }
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'];
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
+        $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
+        $command = "order-management/v2/$paymenttype/$vippsid";
+       try {
+            error_log("catdata " . print_r($args, true));
+            $res = $this->http_call($command,[],'GET',$headers);
+            error_log("rec result is " . print_r($res, true));
+            return $res;
+        } catch (Exception $e) {
+            error_log("cat nope: " . $e->getMessage());
+            $this->log(sprintf(__("Could not get receipt data for order %s from Vipps: ", 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
+            return false;
+        }
+
     }
 
 

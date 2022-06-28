@@ -1106,7 +1106,6 @@ else:
             exit();
         }
 
-
         // Just in case this hasn't been done yet. IOK 2022-06-20
         $start = microtime(true);
         $gw->api->add_receipt($order);
