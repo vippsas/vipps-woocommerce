@@ -148,13 +148,20 @@ class VippsApi {
             $res = $this->http_call($command,$args,'POST',$headers,'json'); 
             return $res['imageId'];
         } catch (Exception $e) {
+            // Previous versions of the API returned 400 for duplicate images, future will use 409;
+            // in both cases we can just return the imageid because of how we created it. IOK 2022-06-28
+            $duperror = false;
             if (is_a($e, 'VippsApiException') && $e->responsecode == 400) {
                 $msg = $e->getMessage();
                 if (preg_match("!duplicate!i", $msg)) {
-                   // Duplicate image, which is ok
-                   return $imageid;
+                   $duperror = true;
                 }
             }
+            if (is_a($e, 'VippsApiException') && $e->responsecode == 409) {
+                   $duperror = true;
+            }
+            if ($duperror) return $imageid;
+
             $this->log(__("Could not send image to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
             return false;
         }
