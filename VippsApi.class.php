@@ -108,6 +108,7 @@ class VippsApi {
     // 200, 400, 401, 404, 409, 409 invalid params also
     public function add_image ($image, $is_bytes=false){
         $command = 'order-management/v1/images/';
+        $bytes = $image;
 
         if (!$is_bytes){
             if ($image && is_readable($image)) {
@@ -117,9 +118,6 @@ class VippsApi {
                     return false;
                 }
             }
-        }
-        if ($is_bytes) {
-           $bytes = $image;
         }
 
         $date = gmdate('c');
@@ -200,22 +198,33 @@ class VippsApi {
         try {
             $receiptdata =  [];
             $orderlines = [];
-            $bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'NOK', 'shippingAmount'=>0, 'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
+            $bottomline = ['totalAmount'=>0, 'totalTax'=>0,'totalDiscount'=>0, 'currency'=>'NOK',  'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
 
-            # See below - these are the values including shipping, which we are *not* to use apparently.
-            # IOK FIXME VERIFY THIS
             $bottomline['totalTax'] = round($order->get_total_tax()*100);
             $bottomline['totalAmount'] = round($order->get_total()*100);
   
             $bottomline['currency'] == $order->get_currency();
             $bottomline['totalDiscount'] = ($order->get_discount_total()*100) + ($order->get_discount_tax()*100);
-            $shipping = $order->get_shipping_tax() + $order->get_shipping_total();
-            $bottomline['shippingAmount'] = round($shipping*100);
+
             $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
             $tipamount = apply_filters('woo_vipps_order_tip_amount', 0, $order);
             $bottomline['tipAmount'] = round($tipamount*100);
             $bottomline['giftCardAmount'] = round($giftcardamount*100);
             $bottomline['terminalId'] = apply_filters('woo_vipps_order_terminalid', 'woocommerce', $order);
+
+            $shippinginfo = [];
+            $shippingtax = $order->get_shipping_tax();
+            $shippingExTax = $order->get_shipping_total();
+            $shipping = $shippingtax + $shippingExTax;
+            $shippinginfo['amount'] = round($shipping*100);
+            $shippinginfo['amountExcludingTax'] = round($shippingExTax*100);
+            $shippinginfo['taxAmount'] = round($shippingtax*100);
+            $taxpercentage = 0;
+            if ($shippingExTax > 0) {
+                $taxpercentage = (($shipping - $shippingExTax) / $shippingExTax)*100;
+            }
+            $shippinginfo['taxPercentage'] = $taxpercentage;
+
 
             $totalsum = 0;
             $totaltax = 0;
@@ -252,12 +261,6 @@ class VippsApi {
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
                 $orderline['totalTaxAmount'] = round($tax*100);
 
-                // Apparently the final total is exclusive of shipping, so add the orderlines.
-                // FIXME VERIFY THIS
-                $totalsum += $orderline['totalAmount'];
-                $totaltax += $orderline['totalTaxAmount'];
-
-
                 $orderline['taxPercentage'] = $taxpercentage;
                 $unitinfo['unitPrice'] = round($unitprice*100);
                 $unitinfo['quantity'] = $quantity;
@@ -269,8 +272,8 @@ class VippsApi {
             }
 
             // Handle shipping as normal orderlines if there are more than 1
-            if (true or count($order->get_items('shipping'))>1) {
-                unset($bottomline['shippingAmount']);
+            $shipping_as_orderlines = apply_filters('woo_vipps_receipt_shipping_as_orderlines', count($order->get_items('shipping'))>1, $order);
+            if ($shipping_as_orderlines) {
                 foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                     $shippingline =  [];
                     $orderline['name'] = __('Shipping:', 'woo-vipps') . $order_item->get_name();
@@ -293,12 +296,6 @@ class VippsApi {
                     $orderline['totalAmount'] = round($total*100);
                     $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
                     $orderline['totalTaxAmount'] = round($tax*100);
-
-                    // Apparently the final total is exclusive of shipping, so add the orderlines.
-                    // FIXME VERIFY THIS
-                    $totalsum += $orderline['totalAmount'];
-                    $totaltax += $orderline['totalTaxAmount'];
-
                     $orderline['taxPercentage'] = $taxpercentage;
 
                     $unitinfo  = [];
@@ -312,8 +309,10 @@ class VippsApi {
                 }
             }
 
-            $bottomline['totalTax'] = $totaltax;
-            $bottomline['totalAmount'] = $totalsum;
+            if (!$shipping_as_orderlines) {
+               // Add shipping cost to bottom line total
+               $bottomline['shippingInfo'] = $shippinginfo;
+            }
 
             $receiptdata['orderLines'] = $orderlines;
             $receiptdata['bottomLine'] = $bottomline;
