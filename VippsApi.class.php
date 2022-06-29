@@ -110,6 +110,8 @@ class VippsApi {
         $command = 'order-management/v1/images/';
         $bytes = $image;
 
+$start = microtime(true);
+
         if (!$is_bytes){
             if ($image && is_readable($image)) {
                 error_log("Sending image $image filesize " . filesize($image));
@@ -144,12 +146,21 @@ class VippsApi {
         $imageid = hash('sha512',$bytes); // Yields 128 hex chars
         $base64 = base64_encode($bytes);
         $args = ['imageId'=>$imageid,'src'=>$base64,'type'=>'base64'];
+
+$end= microtime(true);
+error_log("Packing the thing: " . ($end-$start));
+
         try {
+$start = microtime(true);
             $res = $this->http_call($command,$args,'POST',$headers,'json'); 
+$end = microtime(true);
+error_log("success : time is " . ($end - $start));
             return $res['imageId'];
         } catch (Exception $e) {
             // Previous versions of the API returned 400 for duplicate images, future will use 409;
             // in both cases we can just return the imageid because of how we created it. IOK 2022-06-28
+$end = microtime(true);
+error_log("Error: time is " . ($end - $start));
             $duperror = false;
             if (is_a($e, 'VippsApiException') && $e->responsecode == 400) {
                 $msg = $e->getMessage();

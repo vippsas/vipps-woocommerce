@@ -2201,14 +2201,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
         if (!is_a($order, 'WC_Order')) return false;
         if ($order->get_payment_method() != 'vipps') return false;
-        try {
-error_log("Would try to do receipt here");
-//                $result = $this->api->add_receipt($order);
- //               return $result;
-        } catch (Exception $e) {
+
+        add_action('shutdown', function () use ($order) {
+            sleep(10);
+            error_log("In the shutdown hook, with order " . $order->get_id());
+            error_log("With gateway " . WC_Gateway_Vipps::instance()->id);
+
+            try {
+                error_log("Would try to do receipt here");
+                                $result = WC_Gateway_Vipps::instance()->api->add_receipt($order);
+                                return $result;
+            } catch (Exception $e) {
                 // This is non-critical so just log it.
-                $this->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");
-        }
+                WC_Gateway_Vipps::instance()->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");
+            }
+
+        }, 1);
+
     }
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();
