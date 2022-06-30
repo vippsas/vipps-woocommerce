@@ -64,7 +64,61 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             return self::$instance;
     } 
-        
+
+    public function add_image_upload_setting_widget () {
+        add_action( 'admin_enqueue_scripts', function ($suff) {
+            if ($suff  == 'woocommerce_page_wc-settings' && @$_REQUEST['section'] == 'vipps') {
+               if (!did_action( 'wp_enqueue_media')) {
+		wp_enqueue_media();
+	       }
+            } 
+        });
+    }         
+
+    public function generate_woo_vipps_image_html  ($key, $field) {
+        $field_key = $this->get_field_key( $key );
+        $defaults  = array(
+                'title'             => '',
+                'disabled'          => false,
+                'class'             => '',
+                'css'               => '',
+                'placeholder'       => '',
+                'type'              => 'woo_vipps_image',
+                'desc_tip'          => false,
+                'description'       => '',
+                'custom_attributes' => array(),
+                );
+        $data = wp_parse_args( $field, $defaults );
+
+        $imgid = intval($this->get_option($key));
+        $image = $imgid ?  wp_get_attachment_image_src($imgid) : "";
+
+        ob_start();
+        ?>
+            <tr valign="top">
+            <th scope="row" class="titledesc">
+            <label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+        </th>
+            <td class="forminp">
+            <fieldset>
+            <legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
+<?php if ($image): ?>
+         <a href="#" class="woo-vipps-image-upload"><img style="max-width: 360px; max-height: 360px" src="<?php echo $image[0]; ?>" /><span style="display:none" class='uploadtext'><?php _e('Upload image', 'woo-vipps'); ?></span></a>
+         <a href="#" class="woo-vipps-image-remove"><?php _e('Remove image', 'woo-vipps');?></a>
+<?php else: ?>
+         <a href="#" class="woo-vipps-image-upload"><img style="display:none; max-width:360px; max-height: 360px"/><span class='uploadtext'><?php _e('Upload image', 'woo-vipps'); ?></span></a>
+         <a href="#" class="woo-vipps-image-remove" style="display:none;"><?php _e('Remove image', 'woo-vipps');?></a>
+<?php endif; ?>
+            <input type="hidden" class="woo-vipps-image-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr($imgid); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
+        <?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+        </fieldset>
+            </td>
+            </tr>
+            <?php
+
+            return ob_get_clean();
+    }
+
 
     public function __construct() {
         $this->testapiurl = 'https://apitest.vipps.no';
@@ -87,6 +141,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
 
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+        add_action( 'admin_init', array($this, 'add_image_upload_setting_widget'));
 
         //  Capturing, refunding and cancelling the order when transitioning states:
         //   This are the statuses for which the Vipps plugin should try to ensure capture has been made.
@@ -630,6 +685,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'),
                         'default'     => $expresscreateuserdefault,
+                        ),
+
+                'receiptimage' => array (
+                        'title'       => __( 'Use this image for the receipt uploaded to the customers\' Vipps app', 'woo-vipps' ),
+                        'label'       => __( 'Profile image for the Vipps App', 'woo-vipps' ),
+                        'type'        => 'woo_vipps_image',
+                        'description' => __('If set, this image will be uploaded to Vipps and used to profile your store in the Vipps app for receipts etc', 'woo-vipps'),
+                        'default'     => 0,
                         ),
 
                 'singleproductbuynowcompatmode' => array(
@@ -2308,9 +2371,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if (!empty($sessioncookie)) {
           // Customer id, session expiration, session-epiring and cookie-hash is the contents. IOK 2019-10-21
-          error_log("At creation time, this cart: " . print_r(WC()->cart->get_applied_coupons(), true));
-          error_log("At creation, in session: " .  print_r(WC()->session->get( 'applied_coupons', array()), true));
-
           $order->update_meta_data('_vipps_sessiondata',json_encode($sessioncookie));
           $order->save();
         }

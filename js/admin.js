@@ -35,6 +35,49 @@ SOFTWARE.
    jQuery('input.vippspw').focus( function () { jQuery(this).attr('type','text') });; 
    jQuery('input.vippspw').focusout( function () { jQuery(this).attr('type','password');  });
   });
+
+  // Image upload stuff
+  jQuery('body').on( 'click', '.woo-vipps-image-upload', function(e){
+                e.preventDefault();
+		var button = jQuery(this),
+		custom_uploader = wp.media({
+			library : {
+				type : 'image'
+			},
+			button: {
+			},
+			multiple: false
+		}).on('select', function() {
+		var attachment = custom_uploader.state().get('selection').first().toJSON();
+console.log("attachment %j", attachment);
+
+                url = false;
+                if (attachment['url']) {
+                    url = attachment.url;
+                }
+                if (attachment['sizes'] && attachment['sizes']['thumbnail']) {
+                    url = attachment.sizes.thumbnail.url;
+                }
+                if (!url) return;
+
+                button.find('img').attr('src', url);
+                button.find('img').show();
+                button.find('span').hide();
+                button.next().next().val(attachment.id);
+                button.next().show();
+		}).open();
+	});
+   jQuery('body').on('click', '.woo-vipps-image-remove', function(e){
+		e.preventDefault();
+		var button = jQuery(this);
+		button.next().val('');
+                button.prev().find('img').attr('src', '');
+                button.prev().find('img').hide();
+                button.prev().find('span').show();
+                button.hide();
+	});
+ 
+
  }
 
  // Handle permanent notice dismissal
