@@ -1133,11 +1133,32 @@ else:
                 }
             }
          }
+
 $start = microtime(true);
-$imgdata = $gw->api->add_image($prodimage);
+$receiptimage = $gw->get_option('receiptimage');
+$imagefile = get_attached_file($receiptimage);
+$imageid = is_file($imagefile) ? get_post_meta($receiptimage, '_vipps_imageid', true) : 0;
+
+error_log("Stored imagefile for $receiptimage: $imageid  $imagefile");
+
+if ($imagefile && !$imageid) {
+    $uploads = wp_get_upload_dir();
+    $medium = image_get_intermediate_size($imageid, 'medium');
+    if ($single && isset($single['path'])) {
+        $imagefile = join(DIRECTORY_SEPARATOR, [$uploads['basedir'] , $single['path']]);
+        error_log("Imagefile$imagefile");
+    }
+    if ($imagefile) {
+        $imageid = $gw->api->add_image($imagefile);
+        error_log("Imageid $imageid");
+        if ($imageid) {
+            update_post_meta( $receiptimage, '_vipps_imageid', $imageid);
+        }
+    }
+}
 $end = microtime(true);
 $time = ($end - $start);
-print("<pre>time: $time imgdata: $imgdata</pre>");
+print("<pre>time: $time imgdata: $imageid</pre>");
 
 
 
@@ -1145,7 +1166,7 @@ print("<pre>time: $time imgdata: $imgdata</pre>");
         $rec = $gw->get_return_url($order);
         $start = microtime(true);
 //        "RECEIPT","ORDER_CONFIRMATION", "GENERAL" etc
-        $catresult = $gw->api->add_category($order, $rec, $imgdata, "RECEIPT");
+        $catresult = $gw->api->add_category($order, $rec, $imageid, "RECEIPT");
         $end = microtime(true);
         $time = ($end - $start);
         print("catresult: $time " . print_r($catresult, true));
