@@ -1166,7 +1166,7 @@ print("<pre>time: $time imgdata: $imageid</pre>");
         $rec = $gw->get_return_url($order);
         $start = microtime(true);
 //        "RECEIPT","ORDER_CONFIRMATION", "GENERAL" etc
-        $catresult = $gw->api->add_category($order, $rec, $imageid, "RECEIPT");
+        $catresult = $gw->api->add_category($order, $rec, $imageid, "ORDER_CONFIRMATION");
         $end = microtime(true);
         $time = ($end - $start);
         print("catresult: $time " . print_r($catresult, true));

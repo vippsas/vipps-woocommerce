@@ -161,7 +161,6 @@ class VippsQRCodeController {
 
     // POST handler for the import-unsynched feature
     public function handle_unsynched  () {
-        print "ok"; 
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }

@@ -688,10 +688,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'receiptimage' => array (
-                        'title'       => __( 'Use this image for the receipt uploaded to the customers\' Vipps app', 'woo-vipps' ),
-                        'label'       => __( 'Profile image for the Vipps App', 'woo-vipps' ),
+                        'title'       => __( 'Use this image for the order confirmation link uploaded to the customers\' Vipps app', 'woo-vipps' ),
+                        'label'       => __( 'Profile image used in the Vipps App', 'woo-vipps' ),
                         'type'        => 'woo_vipps_image',
-                        'description' => __('If set, this image will be uploaded to Vipps and used to profile your store in the Vipps app for receipts etc', 'woo-vipps'),
+                        'description' => __('If set, this image will be uploaded to Vipps and used to profile your store in the Vipps app for links to the order confirmation etc', 'woo-vipps'),
                         'default'     => 0,
                         ),
 
