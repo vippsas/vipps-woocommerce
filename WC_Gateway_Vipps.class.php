@@ -2265,22 +2265,109 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!is_a($order, 'WC_Order')) return false;
         if ($order->get_payment_method() != 'vipps') return false;
 
-        add_action('shutdown', function () use ($order) {
-            sleep(10);
-            error_log("In the shutdown hook, with order " . $order->get_id());
-            error_log("With gateway " . WC_Gateway_Vipps::instance()->id);
+        $do_order_management = apply_filters('woo_vipps_order_management_on_payment_complete', true, $orderid);
+        if (!$do_order_management) return;
 
-            try {
-                error_log("Would try to do receipt here");
-                                $result = WC_Gateway_Vipps::instance()->api->add_receipt($order);
-                                return $result;
-            } catch (Exception $e) {
-                // This is non-critical so just log it.
-                WC_Gateway_Vipps::instance()->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");
+        // We do the actual order management call in a separate request which we call non-blocking to avoid it locking
+        // up the users' session on return from the store. This won't work if your Wordpress doesn't support non-blocking calls,
+        // so in this case, allow the user to set a longer timeout (5 seconds should be plenty.) IOK 2022-07-01
+        // Yes, it will block until timeout even if non-blocking is set. IOK 2022-07-01
+        $timeout = apply_filters('woo_vipps_asynch_timeout', 0.5);
+        $data = [ 'action'=> 'woo_vipps_order_management','orderid'=>$orderid, 'orderkey' => $order->get_order_key() ];
+        $args = array( "method" => "POST", "body"=>$data, "timeout"=>$timeout,  "blocking" => false);
+        $url = admin_url('admin-post.php');
+        $asynch = wp_remote_request($url,$args);
+        if (is_wp_error($asynch))  {
+            $this->log(__("Error calling the Order Management API: %s ", 'woo-vipps'), $asynch->get_error_message());
+        }
+    }
+
+    // The below actions *may* be long-running, and we can't be sure
+    // they will happen at callback-time. Some user may be affected, even if using wp-cron.
+    // We therefore set them up to be run at shutdown, as soon as payment complete is done
+    public function payment_complete_at_shutdown ($orderid, $orderkey) {
+        // Ensure consistent environment here
+        global $Vipps;
+        if (!$Vipps) $Vipps = Vipps::instance();
+        $order = wc_get_order($orderid);
+        if (!is_a($order, 'WC_Order')) {
+            error_log("Wrong order id");
+            return false;
+        }
+        if ($order->get_order_key() != wc_clean($orderkey)) {
+            error_log("Wrong order key");
+            return false;
+        }
+        try {
+            $this->api->add_receipt($order);
+            $this->order_add_vipps_categories($order);
+        } catch (Exception $e) {
+            // This is non-critical so just log it.
+            $this->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $orderid,  $e->getMessage()), "error");
+        }
+        do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
+    }
+
+    // This is run on payment complete. Per default will it only add a link to the order confirmation page, but 
+    // the hook added should be used if selling tickets, bookings etc to add these to the Vipps app receipt; with images if desired (eg. QR images).
+    public function order_add_vipps_categories ($order) {
+        if (!is_a($order, 'WC_Order')) return;
+        $none  = ['link'=>null, 'image'=>null, 'imagesize'=>null];
+        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => intval($this->get_option('receiptimage')), 'imagesize'=>'medium'];
+        // Do these in this order, in case we get terminated at some point during processing
+        $default = ['TICKET'=>$none,'ORDER_CONFIRMATION' => $orderconfirmation, 'RECEIPT' => $none,"BOOKING" => $none, "DELIVERY" => $none, "GENERAL" => $none];
+        $categories = apply_filters('woo_vipps_add_order_categories', $default, $order, $this);
+
+        foreach ($categories as $category=>$data) {
+            if ($data['link']) {
+                $this->order_add_vipps_category($category, $order, $data['link'], $data['image'], $data['imagesize']);
             }
+            // Let people handle this in other ways if not using filter above IOK 2022-07-01
+            do_action('woo_vipps_add_order_category', $category, $order, $this);
+            
+        }
+    }
 
-        }, 1);
+    // Use the Order Management API to add a link with a category name and an optional image, which is viewable in the order.
+    public function order_add_vipps_category($categoryname, $order, $link, $image=null, $imagesize='medium') {
+        $imageid = $image ? $this->add_vipps_image($image, $imagesize) : null;
+        return $this->api->add_category($order, $link, $imageid, $categoryname);
+    }
 
+    // Use the Order Management API to upload an image that can be attached to the order.
+    public function add_vipps_image ($imagespec, $size = 'medium')  {
+        // Imagespec is an attachmend id (of an image) or a filename (to an image), and a size if using an attachment id.
+        $filename = null;
+        $imageid = 0;
+        $imagefile = "";
+        $vippsid = null;
+        $uploads = wp_get_upload_dir();
+        if (is_numeric($imagespec)) {
+           // Don't send same image twice if we have an id
+           $stored = get_post_meta($imagespec, '_vipps_imageid', true);
+           if ($stored && !$this->is_test_mode()) {
+               return $stored;
+           }
+           $imageid = intval($imagespec);
+           $imagefile = get_attached_file($imageid);
+        }
+        if (!is_file($imagefile)) {
+           $this->log(sprintf(__('%s is not an image that can be uploaded to Vipps', 'woo-vipps'), $imagefile), 'error');
+           return null;
+        }
+        if ($imageid) {
+            $intermediate = image_get_intermediate_size($imageid, $size);
+            if ($intermediate && isset($intermediate['path'])) {
+                $imagefile = join(DIRECTORY_SEPARATOR, [$uploads['basedir'] , $intermediate['path']]);
+            }
+        }
+        if ($imagefile) {
+            $vippsid = $this->api->add_image($imagefile);
+            if ($vippsid) {
+                update_post_meta( $imageid, '_vipps_imageid', $vippsid);
+            }
+        }
+        return $vippsid;
     }
 
     // For the express checkout mechanism, create a partial order without shipping details by simulating checkout->create_order();

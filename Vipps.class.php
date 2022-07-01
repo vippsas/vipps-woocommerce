@@ -188,6 +188,10 @@ class Vipps {
         // Some stuff in the head for dynamic css etc
         add_action('wp_head', array($this, 'wp_head'));
 
+        // Handle the hopefully asynch call to send Order Management data on payment complete.
+        add_action('admin_post_nopriv_woo_vipps_order_management', array($this, 'do_order_management'));
+        add_action('admin_post_woo_vipps_order_management', array($this, 'do_order_management'));
+
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
@@ -214,6 +218,8 @@ class Vipps {
 
 
         });
+
+
 
         $this->add_shortcodes();
 
@@ -644,6 +650,17 @@ class Vipps {
             wp_delete_post($del['ID']);
         }
     }
+
+    // This is called asynch/nonblocking on payment_complete
+    public function do_order_management() {
+        $orderid = isset($_POST['orderid']) ? $_POST['orderid'] : false;
+        $orderkey = isset($_POST['orderkey']) ? $_POST['orderkey'] : false;
+        if ($orderid && $orderkey) {
+          // This will keep running even if the request ends, and this method is called asynchrounously.
+          add_action('shutdown', function () use ($orderid, $orderkey) { WC_Gateway_Vipps::instance()->payment_complete_at_shutdown ($orderid, $orderkey); });
+        }
+    }
+
 
     public function admin_head() {
         // Add some styling to the Vipps product-meta box
@@ -1106,71 +1123,9 @@ else:
             exit();
         }
 
-        // Just in case this hasn't been done yet. IOK 2022-06-20
-        $start = microtime(true);
-        $gw->api->add_receipt($order);
-        $end = microtime(true);
-        $time = ($end - $start);
-        print("<pre> Receipt took $time</pre>");
-
-        // Also try to add a (product) image IOK 2022-06-27
-        $prodimage = false;
-        $uploads = wp_get_upload_dir();
-        foreach ($order->get_items() as $orderline) {
-            if (is_a($orderline, 'WC_Order_Item_Product')) {
-                $downloads = $orderline->get_item_downloads();
-                $prod = $orderline->get_product();
-                if (is_a($prod, 'WC_Product')) {
-                    $imgid = $prod->get_image_id();
-                    if ($imgid) {
-                        $single = image_get_intermediate_size($imgid, 'woocommerce_single');
-                        if ($single && isset($single['path'])) {
-                           $prodimage = join(DIRECTORY_SEPARATOR, [$uploads['basedir'] , $single['path']]);
-                           error_log("prodimg $prodimage");
-                           break;
-                        }
-                    }
-                }
-            }
-         }
-
-$start = microtime(true);
-$receiptimage = $gw->get_option('receiptimage');
-$imagefile = get_attached_file($receiptimage);
-$imageid = is_file($imagefile) ? get_post_meta($receiptimage, '_vipps_imageid', true) : 0;
-
-error_log("Stored imagefile for $receiptimage: $imageid  $imagefile");
-
-if ($imagefile && !$imageid) {
-    $uploads = wp_get_upload_dir();
-    $medium = image_get_intermediate_size($imageid, 'medium');
-    if ($single && isset($single['path'])) {
-        $imagefile = join(DIRECTORY_SEPARATOR, [$uploads['basedir'] , $single['path']]);
-        error_log("Imagefile$imagefile");
-    }
-    if ($imagefile) {
-        $imageid = $gw->api->add_image($imagefile);
-        error_log("Imageid $imageid");
-        if ($imageid) {
-            update_post_meta( $receiptimage, '_vipps_imageid', $imageid);
-        }
-    }
-}
-$end = microtime(true);
-$time = ($end - $start);
-print("<pre>time: $time imgdata: $imageid</pre>");
-
-
-
-        // Add link to returnurl / receipt for order
-        $rec = $gw->get_return_url($order);
-        $start = microtime(true);
-//        "RECEIPT","ORDER_CONFIRMATION", "GENERAL" etc
-        $catresult = $gw->api->add_category($order, $rec, $imageid, "ORDER_CONFIRMATION");
-        $end = microtime(true);
-        $time = ($end - $start);
-        print("catresult: $time " . print_r($catresult, true));
-        
+       // This is for testing; but maybe add a button for it (interacts with the Order Management API.)
+       // IOK 2022-07-01
+       // $gw->order_payment_complete($orderid);
         
 
         print "<h2>" . __('Transaction details','woo-vipps') . "</h2>";
@@ -2198,6 +2153,7 @@ EOF;
         } else {
              do_action('woo_vipps_callback', $result);
         }
+
 
 
         $gw = $this->gateway();

@@ -114,7 +114,6 @@ $start = microtime(true);
 
         if (!$is_bytes){
             if ($image && is_readable($image)) {
-                error_log("Sending image $image filesize " . filesize($image));
                 $bytes = file_get_contents($image);
                 if (!$bytes) {
                     $this->log(__("Could not read image file: ",'woo-vipps') .' '. $image, 'error');
@@ -147,20 +146,12 @@ $start = microtime(true);
         $base64 = base64_encode($bytes);
         $args = ['imageId'=>$imageid,'src'=>$base64,'type'=>'base64'];
 
-$end= microtime(true);
-error_log("Packing the thing: " . ($end-$start));
-
         try {
-$start = microtime(true);
             $res = $this->http_call($command,$args,'POST',$headers,'json'); 
-$end = microtime(true);
-error_log("success : time is " . ($end - $start));
             return $res['imageId'];
         } catch (Exception $e) {
             // Previous versions of the API returned 400 for duplicate images, future will use 409;
             // in both cases we can just return the imageid because of how we created it. IOK 2022-06-28
-$end = microtime(true);
-error_log("Error: time is " . ($end - $start));
             $duperror = false;
             if (is_a($e, 'VippsApiException') && $e->responsecode == 400) {
                 $msg = $e->getMessage();
@@ -215,7 +206,7 @@ error_log("Error: time is " . ($end - $start));
 
             $bottomline['totalTax'] = round($order->get_total_tax()*100);
             $bottomline['totalAmount'] = round($order->get_total()*100);
-  
+
             $bottomline['currency'] == $order->get_currency();
 
             // We actually recalculate this from the order lines, because Woo gets this wrong at times :(
@@ -330,27 +321,20 @@ error_log("Error: time is " . ($end - $start));
             }
 
             if (!$shipping_as_orderlines) {
-               // Add shipping cost to bottom line total
-               $bottomline['shippingInfo'] = $shippinginfo;
+                // Add shipping cost to bottom line total
+                $bottomline['shippingInfo'] = $shippinginfo;
             }
             // We cannot trust Woos values here, unfortunately
             $bottomline['totalDiscount'] = $totaldiscount;
             $receiptdata['orderLines'] = $orderlines;
             $receiptdata['bottomLine'] = $bottomline;
 
-            error_log("Receipt is " . print_r($receiptdata, true));
-
-
             $res = $this->http_call($command,$receiptdata,'POST',$headers,'json'); 
-
-            error_log("Result is " . print_r($res, true));
-
             $order->update_meta_data('_vipps_receipt_sent', true);
-           $order->save();
-
+            $order->save();
+            $this->log(sprintf(__("Receipt for order %d sent to Vipps ", 'woo-vipps'), $order->get_id()), 'info');
             return true;
         } catch (Exception $e) {
-            error_log("nope: " . $e->getMessage());
             $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
             return false;
         }
@@ -385,23 +369,14 @@ error_log("Error: time is " . ($end - $start));
         $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
         $command = "order-management/v2/$paymenttype/categories/$vippsid";
 
-        if (! in_array($categorytype, [ "GENERAL","RECEIPT","ORDER_CONFIRMATION","DELIVERY","TICKET","BOOKING"])) {
-           $this->log(sprintf(__("add_category: Unknown category type %s", 'woo-vipps'), $categorytype), 'error');
-           return false;
-        }
-
        $args = ['category'=>$categorytype, 'orderDetailsUrl' => $link ];
        if ($imageid) {
            $args['imageId'] = $imageid;
        }
        try {
-            error_log("catdata " . print_r($args, true));
             $res = $this->http_call($command,$args,'PUT',$headers,'json'); 
-            error_log("Cat result is " . print_r($res, true));
-            $order->save();
             return true;
         } catch (Exception $e) {
-            error_log("cat nope: " . $e->getMessage());
             $this->log(sprintf(__("Could not add category %s to Vipps: ", 'woo-vipps'), $categorytype) . $e->getMessage(), 'error');
             return false;
         }
@@ -435,12 +410,9 @@ error_log("Error: time is " . ($end - $start));
         $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
         $command = "order-management/v2/$paymenttype/$vippsid";
        try {
-            error_log("catdata " . print_r($args, true));
             $res = $this->http_call($command,[],'GET',$headers);
-            error_log("rec result is " . print_r($res, true));
             return $res;
         } catch (Exception $e) {
-            error_log("cat nope: " . $e->getMessage());
             $this->log(sprintf(__("Could not get receipt data for order %s from Vipps: ", 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
             return false;
         }
