@@ -2294,6 +2294,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log("Wrong order id");
             return false;
         }
+        if ($order->get_payment_method() != 'vipps') return false;
         if ($order->get_order_key() != wc_clean($orderkey)) {
             error_log("Wrong order key");
             return false;
