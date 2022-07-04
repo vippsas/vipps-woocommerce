@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.9.3
-Stable tag: 1.9.3
+Version: 1.10.0
+Stable tag: 1.10.0
 Requires at least: 4.7
 Tested up to: 6.0.0
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 6.5.1
+WC tested up to: 6.6.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,17 +79,10 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-= 1.9.3 = 
-Added defensive code for certain other payment gateways
-Fix coupon handling in express checkout
-= 1.9.2 = 
-Fix weird issue where we get session cookies in callbacks, sometimes invalidating the real sessions
-= 1.9.1 = 
-Improved compatibility with shipping modules
-Use newest SVG buttons
-Fix issues with the All Products Gutenberg block
-= 1.9.0 =
-Support for Vipps' QR-api
+= 1.10.0 = 
+Added support for Vipps' Order management API - receipts and links are now added to the customers' app in the order history.
+
+You can extend this, adding your own links and images to the order, displayed in the customers' App by using the filter 'woo_vipps_add_order_categories'.
 
 == Frequently Asked Questions ==
 
@@ -197,6 +190,22 @@ There are several filters and hooks you can use to customize the behaviour of th
  * [woo_vipps_express_checkout_banner] will print the express checkout banner normally shown on the checkout page for non-logged-in users
  * [woo_vipps_buy_now sku=<SKU> id=<productid> variant=<variant id>] prints a "buy now" button given a SKU or an (product or variant) id. Just the SKU is sufficient.
 
+== Extending the Order Management API integration ==
+From version 1.10.0, this plugin implements the Vipps Order Management API, sending a receipt to the customers' app, and sending the order confirmation link as the Order Confirmation link category.  You can, using this api, send over an image and a link for the categories receipt (RECEIPT), ticket (TICKET), shipping (DELIVERY), booking (BOOKING) and a general category (GENERAL).
+
+For instance, if you have a page or url for tracking shipping, you can add this to the customers' app by extending the 'woo_vipps_add_order_categories' filter like so:
+
+   `add_filter('woo_vipps_add_order_categories', function ($categories, $order, $gateway) {
+       $shippingpagedata = array(
+         'link' => <your shipping URL here>, 
+         'image' => <filename or attachment ID of your illustration for shipping here, if required>,
+         'imagesize' => <for attachments, the image size to use>);
+       $categories['DELIVERY'] = $shippingpagedata;
+       return $categories;
+   }, 10, 3);`
+
+You can similarily send ticket information (with e.g. a QR code) for the TICKET or BOOKING category and so forth.
+
 = Javascript filters and actions =
 From version 1.1.13 you can also modify the javascript using the new WP hooks library for javascript:
  * 'vippsBuySingleProduct' - action which is run whenever a customer tries to buy a single product using express checkout
@@ -209,6 +218,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.07.04 version 1.10.0 =
+* Added support for the Order Management Api, which stores the receipt and other order information in the customers' app. See the 'woo_vipps_add_order_categories' filter for extending the information passedd.
 
 = 2022.06.28 version 1.9.3 =
 * Added compatibility for Dibs/Nets Easy Payment gateway, which made certain untenable assumptionts
