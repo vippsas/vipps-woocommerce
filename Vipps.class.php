@@ -658,6 +658,13 @@ class Vipps {
         if ($orderid && $orderkey) {
           // This will keep running even if the request ends, and this method is called asynchrounously.
           add_action('shutdown', function () use ($orderid, $orderkey) { WC_Gateway_Vipps::instance()->payment_complete_at_shutdown ($orderid, $orderkey); });
+          http_response_code(200);
+          header('Content-Type: application/json; charset=utf-8');
+          header("Content-length: 1");
+          print "1";
+          flush();
+        } else {
+          http_response_code(403);
         }
     }
 
