@@ -1,10 +1,10 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.10.0
-Stable tag: 1.10.0
+Version: 1.10.1
+Stable tag: 1.10.1
 Requires at least: 4.7
-Tested up to: 6.0.0
+Tested up to: 6.8.0
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 6.6.1
@@ -83,6 +83,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 Added support for Vipps' Order management API - receipts and links are now added to the customers' app in the order history.
 
 You can extend this, adding your own links and images to the order, displayed in the customers' App by using the filter 'woo_vipps_add_order_categories'.
+= 1.10.1 = 
+Updated to follow the Order Management API
 
 == Frequently Asked Questions ==
 
@@ -218,6 +220,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.08.17 version 1.10.1 =
+* Small change in Order Management API following changes to shipping handling
 
 = 2022.07.04 version 1.10.0 =
 * Added support for the Order Management Api, which stores the receipt and other order information in the customers' app. See the 'woo_vipps_add_order_categories' filter for extending the information passedd.
