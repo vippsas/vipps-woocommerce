@@ -235,7 +235,7 @@ $start = microtime(true);
                 } else {
                     $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
-                $taxpercentage = round($taxpercentage * 10)/10;
+                $taxpercentage = round($taxpercentage);
                 $unitInfo = [];
                 $orderline['name'] = $order_item->get_name();
                 $orderline['id'] = $prodid;
@@ -272,7 +272,7 @@ $start = microtime(true);
                 }  else {
                     $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
-                $taxpercentage = round($taxpercentage * 10)/10;
+                $taxpercentage = round($taxpercentage);
 
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
