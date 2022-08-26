@@ -2563,9 +2563,10 @@ EOF;
                           );
                   $m2['product'] = $m['shippingMethod'];
                   $m2['id'] = $m['shippingMethodId'];
-                  $m2['description'] = ""; // We haven't got this
-                  $m2['brand'] = ""; // We haven't got a "Brand" per se, but we could create a filter for the specific fields
-                                     // posten, helthjem, postnord is supported.
+                  // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
+                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2);
+                  // Not present in WordPress, so allow filters to add it
+                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2);
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;
