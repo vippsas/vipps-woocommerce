@@ -2564,9 +2564,9 @@ EOF;
                   $m2['product'] = $m['shippingMethod'];
                   $m2['id'] = $m['shippingMethodId'];
                   // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
-                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2);
+                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', '',  $m2);
                   // Not present in WordPress, so allow filters to add it
-                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2);
+                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $m2);
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;
