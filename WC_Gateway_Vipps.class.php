@@ -1581,7 +1581,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $this->payment_complete($order);
                     break;
                 case 'complete':
-                    $order->add_order_note(__( 'Payment captured directly at Vipps', 'woo-vipps' ));
+                    $msg = __( 'Payment captured directly at Vipps', 'woo-vipps' );
+                    $msg = $msg + __(" - order does not need processing", 'woo-vipps');
+                    $order->add_order_note($msg);
                     $order = $this->update_vipps_payment_details($order, $paymentdetails); 
                     $order->payment_complete();
                     break;
