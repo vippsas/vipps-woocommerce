@@ -167,3 +167,19 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     box-shadow: 0 0 0 1px #fff4ec;
     font-family: "Vipps Display", Roboto, Helvetica, Arial, sans-serif;
 }
+
+/* Options CSS for the modified settings page */
+.vippsoptions.vippstabs.active { display: block; }
+.vippsoptions.vippstabs { display: none; }
+#vippstabholder { display: flex; justify-content: flex-start; }
+#vippstabholder h3 { padding-left: 1rem; padding-right: 1rem; opacity:0.65; border: 1px solid darkgray; border-top-left-radius:0.3rem; border-top-right-radius:0.3rem; padding-top:0.3rem; padding-bottom:0.3rem; border-bottom: 0.8px solid lightgrey; background-color:rgba(0,0,0,0.1); }
+#vippstabholder h3.active { opacity:1; border-bottom:0; background-color:transparent;}
+#vippstabholder h3.last { flex: 1; border-top:0;border-right:0;border-left:0; background-color:transparent;}
+
+
+@media screen and (max-width: 600px) {
+    .woocommerce_page_wc-settings #vippstabholder h3.wc-settings-sub-title {
+        font-size: 0.8rem;
+    }
+}
+

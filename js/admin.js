@@ -80,6 +80,67 @@ console.log("attachment %j", attachment);
 
  }
 
+ /* Tab-ify the settings page */
+ if (pagenow == 'woocommerce_page_wc-settings') {
+     let toptitle = jQuery('h3.wc-settings-sub-title').parent().find('h2').first();
+     let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
+
+     /* Pick out all the h3 subheadings, wrap their following elements in a div, and move them to the tabholder above */
+     jQuery('h3.wc-settings-sub-title').each(function () {
+             let curid = jQuery(this).attr('id');
+             let optionstab = jQuery('<div id="' + curid + '-table' + '" class="vippsoptions vippstabs ' + curid + '"></div>').insertAfter(jQuery(this));
+             jQuery(this).nextUntil('h3.wc-settings-sub-title,p.submit').each(function () {
+                     optionstab.append(jQuery(this));
+                     });
+             tabholder.append(jQuery(this));
+             });
+     /* Add a final empty h3 for the   a e s t h e t i c s */
+     tabholder.append(jQuery('<h3 id="lasttab" class="wc-settings-sub-title last"></h3>'));
+
+     /* Set the main options tab to active */
+     let thetab = 'woocommerce_vipps_main_options';
+     let tabselected = window.location.hash ? window.location.hash.match(/tab:(.+)/) : false;
+     if (tabselected && tabselected.length>0) {
+        thetab = tabselected[1];
+     }
+     jQuery('#'+thetab+',.vippsoptions.vippstabs.'+thetab).addClass('active');
+
+     /* Make the tab headers active */
+     jQuery('div#vippstabholder h3.wc-settings-sub-title').click(function (e) {
+             e.preventDefault();
+
+             let curid = jQuery(this).attr('id');
+             if (curid == 'lasttab') return;
+
+             if (curid == 'woocommerce_vipps_main_options') {
+                 history.pushState(null, null, ' ')
+             } else {
+                 history.pushState({}, "", "#tab:"+curid);
+             }
+
+             jQuery('#vippstabholder .active').removeClass('active');
+             jQuery('.vippsoptions.vippstabs.active').removeClass('active');
+
+             jQuery(this).addClass('active');
+             jQuery('.vippsoptions.vippstabs.' + curid).addClass('active');
+
+     });
+     // Integrate with history
+     addEventListener('hashchange', function (e) {
+             jQuery('#vippstabholder .active').removeClass('active');
+             jQuery('.vippsoptions.vippstabs.active').removeClass('active');
+             let thetab = 'woocommerce_vipps_main_options';
+             let tabselected = window.location.hash ? window.location.hash.match(/tab:(.+)/) : false;
+             if (tabselected && tabselected.length>0) {
+             thetab = tabselected[1];
+             }   
+             jQuery('#'+thetab+',.vippsoptions.vippstabs.'+thetab).addClass('active');
+             });
+
+
+ }
+
+
  // Handle permanent notice dismissal
  jQuery(document).ready(function () {
     jQuery('.notice-vipps .notice-dismiss').click(function () { 

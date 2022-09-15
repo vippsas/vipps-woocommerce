@@ -531,34 +531,38 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
 
-        $this->form_fields = array(
-            'main_options'             => array(
-                'title' => __('Main options', 'woo-vipps'),
-                'type'  => 'title',
-            ),
-            'enabled' => array(
-                'title'       => __( 'Enable/Disable', 'woocommerce' ),
-                'label'       => __( 'Enable Vipps', 'woo-vipps' ),
-                'type'        => 'checkbox',
-                'description' => '',
-                'default'     => 'no',
-            )
-        );
 
 
-        if ($vipps_checkout_activated) {
-            $this->form_fields['vipps_checkout_enabled'] = 
-                    array(
-                        'title'       => __( 'Activate Alternative Vipps Checkout', 'woocommerce' ),
-                        'label'       => __( 'Enable Alternative Vipps Checkout screen, replacing the standard checkout page', 'woo-vipps' ),
-                        'type'        => 'checkbox',
-                        'description' => __('If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
-                        'default'     => 'no',
-                        );
-        }
+        $checkoutfields = array(
+                'checkout_options' => array(
+                    'title' => __('Vipps Checkout', 'woo-vipps'),
+                    'type'  => 'title',
+                    'description' => __("Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.", 'woo-vipps')
+                    ),
+
+                'vipps_checkout_enabled' => array(
+                    'title'       => __( 'Activate Alternative Vipps Checkout', 'woocommerce' ),
+                    'label'       => __( 'Enable Alternative Vipps Checkout screen, replacing the standard checkout page', 'woo-vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => __('If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
+                    'default'     => 'no',
+                    )
+                );
      
 
-        $standardfields = array(
+        $mainfields = array(
+                'main_options'             => array(
+                    'title' => __('Main options', 'woo-vipps'),
+                    'type'  => 'title',
+                    ),
+                'enabled' => array(
+                    'title'       => __( 'Enable/Disable', 'woocommerce' ),
+                    'label'       => __( 'Enable Vipps', 'woo-vipps' ),
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'no',
+                    ),
+
                 'orderprefix' => array(
                     'title' => __('Order-id Prefix', 'woo-vipps'),
                     'label'       => __( 'Order-id Prefix', 'woo-vipps' ),
@@ -574,13 +578,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
                 'clientId' => array(
-                    'title' => __('Client Id', 'woo-vipps'),
-                    'class' => 'vippspw',
-                    'label'       => __( 'Client Id', 'woo-vipps' ),
-                    'type'        => 'password',
-                    'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                    'default'     => '',
-                    ),
+                        'title' => __('Client Id', 'woo-vipps'),
+                        'class' => 'vippspw',
+                        'label'       => __( 'Client Id', 'woo-vipps' ),
+                        'type'        => 'password',
+                        'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                        'default'     => '',
+                        ),
                 'secret' => array(
                         'title' => __('Client Secret', 'woo-vipps'),
                         'label'       => __( 'Client Secret', 'woo-vipps' ),
@@ -629,12 +633,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('Enable this to use Vipps as the default payment method on the checkout page, regardless of order.', 'woo-vipps'),
                         'default'     => 'yes',
-                        ),
+                        )
+                    );
 
-                'express_options'             => array(
-                   'title' => __('Express Checkout', 'woo-vipps'),
-                   'type'  => 'title',
-                 ),
+         $expressfields = array(  
+                'express_options' => array(
+                        'title' => __('Vipps Express Checkout', 'woo-vipps'),
+                        'type'  => 'title',
+                        'description' => __("Vipps Express Checkout allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps')
+                        ),
 
                 'cartexpress' => array(
                         'title'       => __( 'Enable Express Checkout in cart', 'woo-vipps' ),
@@ -645,15 +652,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes',
                         ),
 
-                 'useExplicitCheckoutFlow' => array(
+                'useExplicitCheckoutFlow' => array(
                         'title'       => __( 'Use explicit flow for shipping in Express Checkout', 'woo-vipps' ),
                         'label'       => __( 'Enable explicit checkout flow', 'woo-vipps' ),
                         'type'        => 'select',
                         'options' => array(
-                          'no' => __('Use the normal Express checkout flow', 'woo-vipps'),
-                          'yes' => __('Use a multi-step explicit flow for Express checkout', 'woo-vipps'),
-                          'shipping' => __('Use the explicit flow only if the order needs shipping', 'woo-vipps'),
-                        ),
+                            'no' => __('Use the normal Express checkout flow', 'woo-vipps'),
+                            'yes' => __('Use a multi-step explicit flow for Express checkout', 'woo-vipps'),
+                            'shipping' => __('Use the explicit flow only if the order needs shipping', 'woo-vipps'),
+                            ),
                         'description' => __('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps') . '.<br>' .
                         __('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps'),
                         'default'     => 'no',
@@ -687,6 +694,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
+                'enablestaticshipping' => array(
+                        'title'       => __( 'Enable static shipping for Express Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Enable static shipping', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Express Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'),
+                        'default'     => 'no',
+                        ),
+
 
                 'expresscreateuser' => array (
                         'title'       => __( 'Create new customers on Express Checkout', 'woo-vipps' ),
@@ -712,14 +727,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no',
                         ),
 
-                'enablestaticshipping' => array(
-                        'title'       => __( 'Enable static shipping for Express Checkout', 'woo-vipps' ),
-                        'label'       => __( 'Enable static shipping', 'woo-vipps' ),
-                        'type'        => 'checkbox',
-                        'description' => __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Express Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'),
-                        'default'     => 'no',
-                        ),
-
 
                 'deletefailedexpressorders' => array(
                         'title'       => __( 'Delete failed Express Checkout Orders', 'woo-vipps' ),
@@ -727,56 +734,74 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'description' => __('As Express Checkout orders are anonymous, failed orders will end up as "cancelled" orders with no information in them. Enable this to delete these automatically when cancelled - but test to make sure no other plugin needs them for anything.', 'woo-vipps'),
                         'default'     => 'no',
-                        ),
-
-                'vippsspecialpagetemplate' => array(
-                        'title'       => __( 'Override page template used for the special Vipps pages', 'woo-vipps' ),
-                        'label'       => __( 'Use specific template for Vipps', 'woo-vipps' ),
-                        'type'        => 'select',
-                        'options' =>  $page_templates,
-                        'description' => __('Use this template from your theme or child-theme to display all the special Vipps pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'),
-                        ),
-
-                'vippsspecialpageid' =>  array(
-                        'title' => __('Use a real page ID for the special Vipps pages - neccessary for some themes', 'woo-vipps'),
-                        'label' => __('Use a real page ID', 'woo-vipps'),
-                        'type'  => 'select',
-                        'options' => $page_list,
-                        'description' => __('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special Vipps pages.', 'woo-vipps'),
-                        'default'=>'')
-
-
-                    );
-
-       // Add all the standard fields
-       foreach($standardfields as $key=>$field) {
-          $this->form_fields[$key] = $field;
-       }
-        
-
-        $this->form_fields['developermode'] = array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
-                    'title'       => __( 'Enable developer mode', 'woo-vipps' ),
-                    'label'       => __( 'Enable developer mode', 'woo-vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => __('Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption', 'woo-vipps'),
-                    'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+                        )
         );
+        // New shipping in express checkout is available, but merchant has overridden the old shipping callback. Ask what to do! IOK 2020-02-12
+       if (has_action('woo_vipps_shipping_methods')) {
+            $shippingoptions = array(
+                    'newshippingcallback' => array(
+                        'title'       => __( 'Use old-style shipping callback for express checkout', 'woo-vipps' ),
+                        'label'       => __( 'Use your current shipping filters', 'woo-vipps' ),
+                        'type'        => 'select',
+                        'options' => array(
+                            'none' => __('Select one','woo-vipps'),
+                            'old' => __('Keep using old shipping callback with my custom filter', 'woo-vipps'),
+                            'new' => __('Use new shipping callback','woo-vipps')
+                            ),
+                        'description' => __('Since version 1.4 this plugin uses a new method of providing shipping methods to Vipps when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'),
+                        'default'     => 'none',
+                        )
+                    );
+              $expressfields = array_merge(array_slice($expressfields ,0,1), $shippingoptions, array_slice($expressfields,1));
+       }
 
-    $this->dev_form_fields = array(
+       $advancedfields = array(
+               'advanced_options' => array(
+                   'title' => __('Advanced', 'woo-vipps'),
+                   'type'  => 'title',
+                   'description' => __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps')
+                   ),
+
+                 'vippsspecialpagetemplate' => array(
+                     'title'       => __( 'Override page template used for the special Vipps pages', 'woo-vipps' ),
+                     'label'       => __( 'Use specific template for Vipps', 'woo-vipps' ),
+                     'type'        => 'select',
+                     'options' =>  $page_templates,
+                     'description' => __('Use this template from your theme or child-theme to display all the special Vipps pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'),
+                     ),
+
+                 'vippsspecialpageid' =>  array(
+                     'title' => __('Use a real page ID for the special Vipps pages - neccessary for some themes', 'woo-vipps'),
+                     'label' => __('Use a real page ID', 'woo-vipps'),
+                     'type'  => 'select',
+                     'options' => $page_list,
+                     'description' => __('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special Vipps pages.', 'woo-vipps'),
+                     'default'=>''),
+
+                 'developermode' => array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
+                     'title'       => __( 'Enable developer mode', 'woo-vipps' ),
+                     'label'       => __( 'Enable developer mode', 'woo-vipps' ),
+                     'type'        => 'checkbox',
+                     'description' => __('Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption', 'woo-vipps'),
+                     'default'     => VIPPS_TEST_MODE ? 'yes' : 'no',
+                     ) 
+
+
+       );
+
+       $developerfields = array(
             'developertitle' => array(
-                'title' => __('Developer mode settings', 'woo-vipps'),
+                'title' => __('Developer mode', 'woo-vipps'),
                 'type'  => 'title',
                 'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
                 ),
-                        'use_flock' => array (
+                'use_flock' => array (
                             'title'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
                             'label'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
                             'type'        => 'checkbox',
                             'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
                             'default'     => 'no',
                             ),
-
-
 
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
@@ -820,33 +845,37 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
             );
 
-        // Developer mode settings: Only shown when active. IOK 2019-08-30
-    if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-        $this->form_fields = array_merge($this->form_fields,$this->dev_form_fields);
-                if (VIPPS_TEST_MODE) {
-                   $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
-                   $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
-                }
-    }
+       // Add all the standard fields
+       foreach($mainfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
+       foreach($expressfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
+       foreach($checkoutfields as $key=>$field) {
+               $this->form_fields[$key] = $field;
+       }
+       foreach($advancedfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
 
-        // New shipping in express checkout is available, but merchant has overridden the old shipping callback. Ask what to do! IOK 2020-02-12
-        if (has_action('woo_vipps_shipping_methods')) {
-            $shippingoptions = array( 
-                    'newshippingcallback' => array(
-                        'title'       => __( 'Use old-style shipping callback for express checkout', 'woo-vipps' ),
-                        'label'       => __( 'Use your current shipping filters', 'woo-vipps' ),
-                        'type'        => 'select',
-                        'options' => array(
-                            'none' => __('Select one','woo-vipps'),
-                            'old' => __('Keep using old shipping callback with my custom filter', 'woo-vipps'),
-                            'new' => __('Use new shipping callback','woo-vipps')
-                            ),
-                        'description' => __('Since version 1.4 this plugin uses a new method of providing shipping methods to Vipps when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>\'woo_vipps_shipping_methods\'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. ', 'woo-vipps'),
-                        'default'     => 'none',
-                        )
-                    );
-            $this->form_fields = array_merge(array_slice($this->form_fields,0,1), $shippingoptions, array_slice($this->form_fields,1));
-        }
+       // Developer mode settings: Only shown when active. IOK 2019-08-30
+       if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
+           foreach($developerfields as $key=>$field) {
+              $this->form_fields[$key] = $field;
+           }
+           if (VIPPS_TEST_MODE) {
+               $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
+               $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
+           }
+       }
+
+
+
+        
+
+
+
 
 
    
@@ -2536,6 +2565,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     
         <?php // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+ 
         if (!$vipps_checkout_activated): ?>
         <div id="activate_vipps_checkout"  style="width:95%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding: 1rem 1rem 1rem 1rem; margin-top:2rem; margin-bottom: 1rem;font-weight:800">
                  <h2><?php _e('Use Vipps Checkout for all purchases', 'woo-vipps');?></h2>
