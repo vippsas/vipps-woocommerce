@@ -169,6 +169,7 @@ class Vipps {
         __("The <a href='%s'>Vipps settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps');
         __("To create a QR code for your shareable link, we recommend copying the URL and then using the <a href='%s'>Vipps QR Api</a>", 'woo-vipps');
         // pre 1.9 end
+        __('Your order from','woo-vipps');
     }
 
 
