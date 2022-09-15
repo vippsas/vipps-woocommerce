@@ -532,14 +532,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
 
         $this->form_fields = array(
-                'enabled' => array(
-                    'title'       => __( 'Enable/Disable', 'woocommerce' ),
-                    'label'       => __( 'Enable Vipps', 'woo-vipps' ),
-                    'type'        => 'checkbox',
-                    'description' => '',
-                    'default'     => 'no',
-                    )
-                );
+            'main_options'             => array(
+                'title' => __('Main options', 'woo-vipps'),
+                'type'  => 'title',
+            ),
+            'enabled' => array(
+                'title'       => __( 'Enable/Disable', 'woocommerce' ),
+                'label'       => __( 'Enable Vipps', 'woo-vipps' ),
+                'type'        => 'checkbox',
+                'description' => '',
+                'default'     => 'no',
+            )
+        );
 
 
         if ($vipps_checkout_activated) {
@@ -626,6 +630,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('Enable this to use Vipps as the default payment method on the checkout page, regardless of order.', 'woo-vipps'),
                         'default'     => 'yes',
                         ),
+
+                'express_options'             => array(
+                   'title' => __('Express Checkout', 'woo-vipps'),
+                   'type'  => 'title',
+                 ),
 
                 'cartexpress' => array(
                         'title'       => __( 'Enable Express Checkout in cart', 'woo-vipps' ),
@@ -2395,12 +2404,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_payment_method($this);
             if ($ischeckout) {
                 $order->update_meta_data('_vipps_api', 'epayment');
-                $order->set_created_via('Vipps Checkout');
                 $order->set_payment_method_title('Vipps Checkout');
             } else {
-                $order->set_created_via('Vipps Express Checkout');
                 $order->set_payment_method_title('Vipps Express Checkout');
             }
+            // We use 'checkout' as the created_via key as per requests, but allow merchants to use their own. IOK 2022-09-15
+            $created_via = apply_filters('woo_vipps_express_checkout_created_via', 'checkout', $order, $ischeckout);
+            $order->set_created_via($created_via);
+
             $dummy = __('Vipps Express Checkout', 'woo-vipps'); //  this is so gettext will find this string.
             $dummy = __('Vipps Checkout', 'woo-vipps'); //  this is so gettext will find this string.
 
