@@ -1243,7 +1243,7 @@ else:
 
 
                     try {
-                        $this->maybe_add_static_shipping($this->gateway(),$order->get_id());
+                        $this->maybe_add_static_shipping($this->gateway(),$order->get_id(), 'vippscheckout');
                     } catch (Exception $e) {
                         // In this case, we just have to continue.
                         $this->log(sprintf(__("Error calculating static shipping for order %s", 'woo-vipps'), $order->get_id()), 'error');
@@ -3239,7 +3239,7 @@ EOF;
         }
 
         try {
-            $this->maybe_add_static_shipping($gw,$orderid); 
+            $this->maybe_add_static_shipping($gw,$orderid);
         } catch (Exception $e) {
                 $this->log(__("Error calculating static shipping", 'woo-vipps'), 'error');
                 $this->log($e->getMessage(),'error');
@@ -3269,8 +3269,9 @@ EOF;
 
     // This calculates and adds static shipping info to a partial order for express checkout if merchant has enabled this. IOK 2020-03-19
     // Made visible for consistency with add_static_shipping. IOK 2021-10-22
-    public function maybe_add_static_shipping($gw, $orderid) {
-        $ok = $gw->get_option('enablestaticshipping') == 'yes';
+    public function maybe_add_static_shipping($gw, $orderid, $ischeckout=false) {
+        $key = $ischeckout ? 'enablestaticshipping_checkout' :  'enablestaticshipping';
+        $ok = $gw->get_option($key) == 'yes';
         $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
         if ($ok) {
             return $this->add_static_shipping($gw, $orderid);

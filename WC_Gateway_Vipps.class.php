@@ -546,7 +546,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'type'        => 'checkbox',
                     'description' => __('If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
                     'default'     => 'no',
-                    )
+                    ),
+
+                'enablestaticshipping_checkout' => array(
+                        'title'       => __( 'Enable static shipping for Vipps Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Enable static shipping', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'),
+                        'default'     => $this->get_option('enablestaticshipping', 'no')
+                        ),
+
+
+
                 );
      
 
@@ -778,6 +789,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'description' => __('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special Vipps pages.', 'woo-vipps'),
                      'default'=>''),
 
+                'use_flock' => array (
+                            'title'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
+                            'label'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
+                            'type'        => 'checkbox',
+                            'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
+                            'default'     => 'no',
+                            ),
+
                  'developermode' => array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
                      'title'       => __( 'Enable developer mode', 'woo-vipps' ),
                      'label'       => __( 'Enable developer mode', 'woo-vipps' ),
@@ -795,13 +814,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'type'  => 'title',
                 'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
                 ),
-                'use_flock' => array (
-                            'title'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
-                            'label'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
-                            'type'        => 'checkbox',
-                            'description' => __('Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this', 'woo-vipps'),
-                            'default'     => 'no',
-                            ),
 
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
