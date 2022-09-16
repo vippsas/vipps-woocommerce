@@ -181,10 +181,10 @@ console.log("attachment %j", attachment);
              thetab = tabselected[1];
              }   
 
-             let idselector = '#'+thetab;
-             let fieldselector = ',.vippsoptions.vippstabs.'+thetab;
+             let idselector = '#' + thetab;
+             let fieldselector = '.vippsoptions.vippstabs.' + thetab;
 
-             jQuery(idselector + "," + tabselector).addClass('active');
+             jQuery(idselector + ',' + fieldselector).addClass('active');
              jQuery(idselector).attr('aria-selected', true);
              jQuery(idselector).attr('tabindex', 0);
              jQuery(idselector).focus();
