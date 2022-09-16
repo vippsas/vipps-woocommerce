@@ -92,10 +92,42 @@ console.log("attachment %j", attachment);
              jQuery(this).nextUntil('h3.wc-settings-sub-title,p.submit').each(function () {
                      optionstab.append(jQuery(this));
                      });
+             jQuery(this).attr('tabindex', -1);
+             jQuery(this).attr('aria-selected', false);
+             jQuery(this).attr('title', jQuery(this).text());
+ 
              tabholder.append(jQuery(this));
              });
-     /* Add a final empty h3 for the   a e s t h e t i c s */
+     /* Add a final empty h3 for the   a e s t h e t i c s   */
      tabholder.append(jQuery('<h3 id="lasttab" class="wc-settings-sub-title last"></h3>'));
+
+     /* Navigate tabs using left + right key */
+     jQuery(document).keydown(function (e) {
+        if (e.target.parentElement.id == "vippstabholder") {
+            if (e.key == "ArrowRight") {
+               e.preventDefault();
+               let next = jQuery(e.target).next('h3.wc-settings-sub-title');
+               if (next.length == 0 || next.attr('id') == 'lasttab') {
+                 jQuery('#vippstabholder h3').first().click();
+               } else  {
+                 next.click();
+               }
+            } else if (e.key == "ArrowLeft") {
+               console.log("Left arrow!");
+               e.preventDefault();
+               let current = jQuery(e.target);
+               console.log("id " + e.target.id);
+               if (e.target.id == 'woocommerce_vipps_main_options') {
+                  current = jQuery('#vippstabholder h3.wc-settings-sub-title#lasttab');
+               }
+               let prev= current.prev('h3.wc-settings-sub-title');
+               if (prev.length>0) {
+                  prev.click();
+               }
+            }
+         }
+     });
+
 
      /* Set the main options tab to active */
      let thetab = 'woocommerce_vipps_main_options';
@@ -103,7 +135,13 @@ console.log("attachment %j", attachment);
      if (tabselected && tabselected.length>0) {
         thetab = tabselected[1];
      }
-     jQuery('#'+thetab+',.vippsoptions.vippstabs.'+thetab).addClass('active');
+     let idselector = '#' + thetab;
+     let fieldselector = '.vippsoptions.vippstabs.' + thetab;
+     jQuery(idselector + ',' + fieldselector).addClass('active');
+     jQuery(idselector).attr('aria-selected', true);
+     jQuery(idselector).attr('tabindex', 0);
+     jQuery(idselector).focus();
+
 
      /* Make the tab headers active */
      jQuery('div#vippstabholder h3.wc-settings-sub-title').click(function (e) {
@@ -123,6 +161,14 @@ console.log("attachment %j", attachment);
 
              jQuery(this).addClass('active');
              jQuery('.vippsoptions.vippstabs.' + curid).addClass('active');
+             
+         
+             jQuery('#vippstabholder h3').attr('tabindex', -1);
+             jQuery('#vippstabholder h3').attr('aria-selected', false);
+             jQuery(this).attr('aria-selected', true);
+             jQuery(this).attr('tabindex', 0);
+             jQuery(this).focus();
+
 
      });
      // Integrate with history
@@ -134,7 +180,15 @@ console.log("attachment %j", attachment);
              if (tabselected && tabselected.length>0) {
              thetab = tabselected[1];
              }   
-             jQuery('#'+thetab+',.vippsoptions.vippstabs.'+thetab).addClass('active');
+
+             let idselector = '#'+thetab;
+             let fieldselector = ',.vippsoptions.vippstabs.'+thetab;
+
+             jQuery(idselector + "," + tabselector).addClass('active');
+             jQuery(idselector).attr('aria-selected', true);
+             jQuery(idselector).attr('tabindex', 0);
+             jQuery(idselector).focus();
+
              });
 
 
