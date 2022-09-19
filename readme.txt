@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.10.2
-Stable tag: 1.10.2
+Version: 1.10.3
+Stable tag: 1.10.3
 Requires at least: 4.7
-Tested up to: 6.0.1
+Tested up to: 6.0.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 6.8.2
+WC tested up to: 6.9.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,12 +79,13 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.10.2 =
+Minor improvements to transaction text and other details
+
 = 1.10.0 = 
 Added support for Vipps' Order management API - receipts and links are now added to the customers' app in the order history.
 
 You can extend this, adding your own links and images to the order, displayed in the customers' App by using the filter 'woo_vipps_add_order_categories'.
-= 1.10.1 = 
-Updated to follow the Order Management API
 
 == Frequently Asked Questions ==
 
@@ -220,6 +221,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.09.19 version 1.10.3 =
+* Fix _created_via so it will just say 'checkout' to be consistent with other payment gateways
+* Fix transaction text so it does not refer to confirming the transaction; this is better because it is also displayed on order history page
 
 = 2022.08.26 version 1.10.2 =
 * Fix typo in version numbers and type of VAT percentage for order management API
