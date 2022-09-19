@@ -613,6 +613,18 @@ $start = microtime(true);
          $data['customerInteraction'] = "";
         }
 
+        if (!$needs_shipping) {
+            $nocontacts = $this->gateway->get_option('noContactFields') == 'yes';
+            $noaddress = $this->gateway->get_option('noAddressFields') == 'yes';
+
+            if ($noaddress) {
+                $data['addressFields'] = false;
+            }
+//          AddressFields cannot be enabled while ContactFields is disabled
+            if ($noaddress && $nocontacts) {
+                $data['contactFields'] = false;
+            }
+        }
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 

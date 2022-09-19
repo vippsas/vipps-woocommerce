@@ -556,6 +556,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => $this->get_option('enablestaticshipping', 'no')
                         ),
 
+                'noAddressFields' => array(
+                        'title'       => __( 'Drop the address fields on the Checkout screen', 'woo-vipps' ),
+                        'label'       => __( 'Don\'t require the address fields', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If your products <i>don\'t require shipping</i>, either because they are digital downloads, immaterial products or delivering the products directly on purchase, you can check this box. The user will then not be required to provide an address, which should speed things up a bit. If your products require shipping, this will have no effect. NB: If you have plugins that require shipping information, then this is not going to work very well.','woo-vipps'),
+                        'default'     => 'no'
+                    ),
+
+                'noContactFields' => array(
+                        'title'       => __( 'Drop the contact fields on the Checkout screen', 'woo-vipps' ),
+                        'label'       => __( 'Don\'t require the contact fields', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If your products <i>don\'t require shipping</i> as above, and you also don\'t care about the customers name or contact information, you can drop this too! The customer fields will then be filled with a placeholder. NB: If you have plugins that require contact information, then this is not going to work very well. Also, for this to work you have to check the \'no addresses\' box as well.','woo-vipps'),
+                        'default'     => 'no'
+                    ),
+
 
 
                 );
@@ -1585,10 +1601,38 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
+                        if (isset($polldata['userDetails'])) {
+                            $paymentdetails['userDetails'] = $polldata['userDetails'];
+                        } else {
+                            // It is possible to not require user details in Checkout.
+                            $paymentdetails['userDetails'] = array(
+                                'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
+                                'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
+                                'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
+                                'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
+                            );
+                        }
                         if (isset($polldata['shippingDetails'])) {
                             $paymentdetails['shippingDetails'] = $polldata['shippingDetails'];
-                            $paymentdetails['userDetails'] = $polldata['userDetails'];
+                        } else {
+                            // It is possible to drop shipping details from Checkout!
+                            // We'll fill out the minimum of info
+                            $countries=new WC_Countries();
+                            $paymentdetails['shippingDetails'] = array(
+                                'firstName' => $polldata['userDetails']['firstName'],
+                                'lastName' => $polldata['userDetails']['lastName'],
+                                'email' => $polldata['userDetails']['email'],
+                                'phoneNumber' => $polldata['userDetails']['phoneNumber'],
+                                'country' =>  $countries->get_base_country()
+                            );
+                        } 
+
+                        // Also fill out required fields for billing details
+                        if (isset($paymentdetails['billingDetails']) && !isset($paymentdetails['billingDetails']['country'])) {
+                            $paymentdetails['billingDetails']['country'] = $paymentdetails['shippingDetails']['country'];
                         }
+
+
                     } catch (Exception $e) {
                         $this->log(__("Cannot get address information for Vipps Checkout order:",'woo-vipps') . $orderid . "\n" . $e->getMessage(), 'error');
                     }
@@ -1600,6 +1644,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($address_set) {
                // Callback has handled the situation, do nothing
             } elseif (@$paymentdetails['shippingDetails']) {
+
+
                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing);
@@ -2238,6 +2284,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
+
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
@@ -2254,7 +2301,36 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        if (@$result['shippingDetails'] && $order->get_meta('_vipps_express_checkout')) {
+        $express = $order->get_meta('_vipps_express_checkout');
+        if ($express && $order->get_meta('_vipps_checkout')) {
+            // This can happen when using Vipps Checkout and the store has turned off the address/user fields
+            if (!isset($result['userDetails'])) {
+                $result['userDetails'] = array(
+                    'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
+                    'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
+                    'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
+                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
+                );
+            }
+            if (!isset($result['shippingDetails'])) {
+                // It is possible to drop shipping details from Checkout!
+                // We'll fill out the minimum of info
+                $countries=new WC_Countries();
+                $result['shippingDetails'] = array(
+                                'firstName' => $result['userDetails']['firstName'],
+                                'lastName' => $result['userDetails']['lastName'],
+                                'email' => $result['userDetails']['email'],
+                                'phoneNumber' => $result['userDetails']['phoneNumber'],
+                                'country' =>  $countries->get_base_country()
+                            );
+
+            }
+            if (isset($result['billingDetails']) && !isset($result['billingDetails']['country'])) {
+                $result['billingDetails']['country'] = $result['shippingDetails']['country'];
+            }
+        }
+
+        if ($express && @$result['shippingDetails']) {
             $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing);
         }
