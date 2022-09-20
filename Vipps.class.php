@@ -2512,9 +2512,10 @@ EOF;
         $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
         if (!$storedmethods) $storedmethods= array();
 
+        // Just a utility from shippingMethodIds to the non-serialized rates
+        $ratemap = array();
+
         foreach($methods as $method) {
-
-
            $rate = $method['rate'];
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
@@ -2530,19 +2531,16 @@ EOF;
            // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
            $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
-
            $vippsmethod = array();
-
            $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
            $vippsmethod['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
            $vippsmethod['shippingMethod'] = $rate->get_label();
            $vippsmethod['shippingMethodId'] = $key;
-
            $vippsmethods[]=$vippsmethod;
-
            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
            $storedmethods[$key] = $serialized;
+           $ratemap[$key]=$rate;
         }
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save();
@@ -2564,10 +2562,16 @@ EOF;
                           );
                   $m2['product'] = $m['shippingMethod'];
                   $m2['id'] = $m['shippingMethodId'];
+
+                  // Extra fields available for Checkout only, using the Rate as input   
+                  $rate = $ratemap[$m2['id']];
                   // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
-                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', '',  $m2);
+                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', '',  $rate);
                   // Not present in WordPress, so allow filters to add it
-                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $m2);
+                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $rate);
+                  // Pickup points! But only if the shipping method supports it, which is currently for Bring and PostNord
+                  $m2['isPickupPoint'] = apply_filters('woo_vipps_shipping_method_pickup_point', false, $rate);
+
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;
