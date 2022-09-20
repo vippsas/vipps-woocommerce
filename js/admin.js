@@ -82,254 +82,257 @@ console.log("attachment %j", attachment);
 
  /* Tab-ify the settings page */
  if (pagenow == 'woocommerce_page_wc-settings') {
-     let toptitle = jQuery('h3.wc-settings-sub-title').parent().find('h2').first();
-     let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
+     if (jQuery('#vipps-settings-page').length > 0) {
+         console.log("Yes!");
+         let toptitle = jQuery('h3.wc-settings-sub-title').parent().find('h2').first();
+         let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
 
-     /* Pick out all the h3 subheadings, wrap their following elements in a div, and move them to the tabholder above */
-     jQuery('h3.wc-settings-sub-title').each(function () {
-             let curid = jQuery(this).attr('id');
-             let optionstab = jQuery('<div id="' + curid + '-table' + '" class="vippsoptions vippstabs ' + curid + '"></div>').insertAfter(jQuery(this));
-             jQuery(this).nextUntil('h3.wc-settings-sub-title,p.submit').each(function () {
-                     optionstab.append(jQuery(this));
-                     });
-             jQuery(this).attr('tabindex', -1);
-             jQuery(this).attr('aria-selected', false);
-             jQuery(this).attr('title', jQuery(this).text());
- 
-             tabholder.append(jQuery(this));
-             });
-     /* Add a final empty h3 for the   a e s t h e t i c s   */
-     tabholder.append(jQuery('<h3 id="lasttab" class="wc-settings-sub-title last"></h3>'));
+         /* Pick out all the h3 subheadings, wrap their following elements in a div, and move them to the tabholder above */
+         jQuery('h3.wc-settings-sub-title').each(function () {
+                 let curid = jQuery(this).attr('id');
+                 let optionstab = jQuery('<div id="' + curid + '-table' + '" class="vippsoptions vippstabs ' + curid + '"></div>').insertAfter(jQuery(this));
+                 jQuery(this).nextUntil('h3.wc-settings-sub-title,p.submit').each(function () {
+                         optionstab.append(jQuery(this));
+                         });
+                 jQuery(this).attr('tabindex', -1);
+                 jQuery(this).attr('aria-selected', false);
+                 jQuery(this).attr('title', jQuery(this).text());
 
-     /* Navigate tabs using left + right key */
-     jQuery(document).keydown(function (e) {
-        if (e.target.parentElement.id == "vippstabholder") {
-            if (e.key == "ArrowRight") {
-               e.preventDefault();
-               let next = jQuery(e.target).next('h3.wc-settings-sub-title');
-               if (next.length == 0 || next.attr('id') == 'lasttab') {
+                 tabholder.append(jQuery(this));
+                 });
+         /* Add a final empty h3 for the   a e s t h e t i c s   */
+         tabholder.append(jQuery('<h3 id="lasttab" class="wc-settings-sub-title last"></h3>'));
+
+         /* Navigate tabs using left + right key */
+         jQuery(document).keydown(function (e) {
+                 if (e.target.parentElement.id == "vippstabholder") {
+                 if (e.key == "ArrowRight") {
+                 e.preventDefault();
+                 let next = jQuery(e.target).next('h3.wc-settings-sub-title');
+                 if (next.length == 0 || next.attr('id') == 'lasttab') {
                  jQuery('#vippstabholder h3').first().click();
-               } else  {
+                 } else  {
                  next.click();
-               }
-            } else if (e.key == "ArrowLeft") {
-               console.log("Left arrow!");
-               e.preventDefault();
-               let current = jQuery(e.target);
-               console.log("id " + e.target.id);
-               if (e.target.id == 'woocommerce_vipps_main_options') {
-                  current = jQuery('#vippstabholder h3.wc-settings-sub-title#lasttab');
-               }
-               let prev= current.prev('h3.wc-settings-sub-title');
-               if (prev.length>0) {
-                  prev.click();
-               }
-            }
-         }
-     });
+                 }
+                 } else if (e.key == "ArrowLeft") {
+                 console.log("Left arrow!");
+                 e.preventDefault();
+                 let current = jQuery(e.target);
+                 console.log("id " + e.target.id);
+                 if (e.target.id == 'woocommerce_vipps_main_options') {
+                 current = jQuery('#vippstabholder h3.wc-settings-sub-title#lasttab');
+                 }
+                 let prev= current.prev('h3.wc-settings-sub-title');
+                 if (prev.length>0) {
+                 prev.click();
+                 }
+                 }
+                 }
+         });
 
 
-     /* Set the main options tab to active */
-     let thetab = 'woocommerce_vipps_main_options';
-     let tabselected = window.location.hash ? window.location.hash.match(/tab:(.+)/) : false;
-     if (tabselected && tabselected.length>0) {
-        thetab = tabselected[1];
-     }
-     let idselector = '#' + thetab;
-     let fieldselector = '.vippsoptions.vippstabs.' + thetab;
-     jQuery(idselector + ',' + fieldselector).addClass('active');
-     jQuery(idselector).attr('aria-selected', true);
-     jQuery(idselector).attr('tabindex', 0);
-     jQuery(idselector).focus();
-
-
-     /* Make the tab headers active */
-     jQuery('div#vippstabholder h3.wc-settings-sub-title').click(function (e) {
-             e.preventDefault();
-
-             let curid = jQuery(this).attr('id');
-             if (curid == 'lasttab') return;
-
-             if (curid == 'woocommerce_vipps_main_options') {
-                 history.pushState(null, null, ' ')
-             } else {
-                 history.pushState({}, "", "#tab:"+curid);
-             }
-
-             jQuery('#vippstabholder .active').removeClass('active');
-             jQuery('.vippsoptions.vippstabs.active').removeClass('active');
-
-             jQuery(this).addClass('active');
-             jQuery('.vippsoptions.vippstabs.' + curid).addClass('active');
-             
-         
-             jQuery('#vippstabholder h3').attr('tabindex', -1);
-             jQuery('#vippstabholder h3').attr('aria-selected', false);
-             jQuery(this).attr('aria-selected', true);
-             jQuery(this).attr('tabindex', 0);
-             jQuery(this).focus();
-
-
-     });
-     // Integrate with history
-     addEventListener('hashchange', function (e) {
-             jQuery('#vippstabholder .active').removeClass('active');
-             jQuery('.vippsoptions.vippstabs.active').removeClass('active');
-             let thetab = 'woocommerce_vipps_main_options';
-             let tabselected = window.location.hash ? window.location.hash.match(/tab:(.+)/) : false;
-             if (tabselected && tabselected.length>0) {
+         /* Set the main options tab to active */
+         let thetab = 'woocommerce_vipps_main_options';
+         let tabselected = window.location.hash ? window.location.hash.match(/tab:(.+)/) : false;
+         if (tabselected && tabselected.length>0) {
              thetab = tabselected[1];
-             }   
+         }
+         let idselector = '#' + thetab;
+         let fieldselector = '.vippsoptions.vippstabs.' + thetab;
+         jQuery(idselector + ',' + fieldselector).addClass('active');
+         jQuery(idselector).attr('aria-selected', true);
+         jQuery(idselector).attr('tabindex', 0);
+         jQuery(idselector).focus();
 
-             let idselector = '#' + thetab;
-             let fieldselector = '.vippsoptions.vippstabs.' + thetab;
 
-             jQuery(idselector + ',' + fieldselector).addClass('active');
-             jQuery(idselector).attr('aria-selected', true);
-             jQuery(idselector).attr('tabindex', 0);
-             jQuery(idselector).focus();
+         /* Make the tab headers active */
+         jQuery('div#vippstabholder h3.wc-settings-sub-title').click(function (e) {
+                 e.preventDefault();
 
+                 let curid = jQuery(this).attr('id');
+                 if (curid == 'lasttab') return;
+
+                 if (curid == 'woocommerce_vipps_main_options') {
+                 history.pushState(null, null, ' ')
+                 } else {
+                 history.pushState({}, "", "#tab:"+curid);
+                 }
+
+                 jQuery('#vippstabholder .active').removeClass('active');
+                 jQuery('.vippsoptions.vippstabs.active').removeClass('active');
+
+                 jQuery(this).addClass('active');
+                 jQuery('.vippsoptions.vippstabs.' + curid).addClass('active');
+
+
+                 jQuery('#vippstabholder h3').attr('tabindex', -1);
+                 jQuery('#vippstabholder h3').attr('aria-selected', false);
+                 jQuery(this).attr('aria-selected', true);
+                 jQuery(this).attr('tabindex', 0);
+                 jQuery(this).focus();
+
+
+         });
+         // Integrate with history
+         addEventListener('hashchange', function (e) {
+                 jQuery('#vippstabholder .active').removeClass('active');
+                 jQuery('.vippsoptions.vippstabs.active').removeClass('active');
+                 let thetab = 'woocommerce_vipps_main_options';
+                 let tabselected = window.location.hash ? window.location.hash.match(/tab:(.+)/) : false;
+                 if (tabselected && tabselected.length>0) {
+                 thetab = tabselected[1];
+                 }   
+
+                 let idselector = '#' + thetab;
+                 let fieldselector = '.vippsoptions.vippstabs.' + thetab;
+
+                 jQuery(idselector + ',' + fieldselector).addClass('active');
+                 jQuery(idselector).attr('aria-selected', true);
+                 jQuery(idselector).attr('tabindex', 0);
+                 jQuery(idselector).focus();
+
+                 });
+
+
+     }
+
+
+     // Handle permanent notice dismissal
+     jQuery(document).ready(function () {
+             jQuery('.notice-vipps .notice-dismiss').click(function () { 
+                     let nonce = VippsConfig['vippssecnonce'];
+                     let key = jQuery(this).closest('.notice').data('key');
+                     if (! key) return;
+                     let data = { 'action': 'vipps_dismiss_notice', 'vipps_sec':nonce, 'key': key };
+                     jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0 });
+                     });
              });
 
+     if  (pagenow == 'product') {
 
- }
+         // Called on the product edit screen by a button.
+         function vipps_create_shareable_link() {
+             jQuery('#vipps-share-link').attr('disabled','disabled');
 
-
- // Handle permanent notice dismissal
- jQuery(document).ready(function () {
-    jQuery('.notice-vipps .notice-dismiss').click(function () { 
-        let nonce = VippsConfig['vippssecnonce'];
-        let key = jQuery(this).closest('.notice').data('key');
-        if (! key) return;
-        let data = { 'action': 'vipps_dismiss_notice', 'vipps_sec':nonce, 'key': key };
-        jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0 });
-    });
- });
-
- if  (pagenow == 'product') {
-
-     // Called on the product edit screen by a button.
-     function vipps_create_shareable_link() {
-      jQuery('#vipps-share-link').attr('disabled','disabled');
-
-      jQuery('#vipps-shareable-link-error').text('');
-      jQuery('.vipps-shareable-link-error').hide();
+             jQuery('#vipps-shareable-link-error').text('');
+             jQuery('.vipps-shareable-link-error').hide();
 
 
-      var prodid = jQuery('#vipps_sharelink_id').val();
-      var varid=0;
-      var isvariant = false;
-      if (!prodid) {
-         jQuery('#vipps-share-link').removeAttr('disabled');
-         return false; 
-      }
-      var varselector = jQuery('#vipps_sharelink_variant');
-      if (varselector.length > 0) isvariant = true;
-      if (isvariant) {
-        varid = varselector.val();
-        if (!varid) {
-          jQuery('#vipps-share-link').removeAttr('disabled');
-          return false;
-        }
-      }
-      var nonce = jQuery('#vipps_share_sec').val();
-      var data = { 'action': 'vipps_create_shareable_link', 'prodid':prodid,'varid':varid, 'vipps_share_sec':nonce };
+             var prodid = jQuery('#vipps_sharelink_id').val();
+             var varid=0;
+             var isvariant = false;
+             if (!prodid) {
+                 jQuery('#vipps-share-link').removeAttr('disabled');
+                 return false; 
+             }
+             var varselector = jQuery('#vipps_sharelink_variant');
+             if (varselector.length > 0) isvariant = true;
+             if (isvariant) {
+                 varid = varselector.val();
+                 if (!varid) {
+                     jQuery('#vipps-share-link').removeAttr('disabled');
+                     return false;
+                 }
+             }
+             var nonce = jQuery('#vipps_share_sec').val();
+             var data = { 'action': 'vipps_create_shareable_link', 'prodid':prodid,'varid':varid, 'vipps_share_sec':nonce };
 
-      jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
-        "error": function (xhr, statustext, error) {
-           jQuery('#vipps-share-link').removeAttr('disabled');
-           console.log("Error creating shareable link" + statustext + " " + error);
-           jQuery('#vipps-shareable-link-error').text(' : ' +error);
-           jQuery('.vipps-shareable-link-error').show();
-        },
-        "success": function (result, statustext, xhr) {
-          jQuery('#vipps-share-link').removeAttr('disabled');
-          if (result["ok"]) {
-             console.log("Shareable link created ");
-             jQuery('#woo_vipps_shareables').show();
-             var newrow = jQuery('<tr>');
-             if (result['variant']) newrow.append('<td>'+result['variant']+'</td>');
-             var link = jQuery('#woo_vipps_shareable_link_template').clone();
-             link.removeAttr('id');
-             link.find('a').text(result['url']);
-             link.find('input').attr('value',result['key']);
-             newrow.append('<td>'+link.html()+'</td>');
-             var actions = jQuery('#woo_vipps_shareable_command_template').clone();
-             actions.removeAttr('id');
-             newrow.append('<td align=center>' + actions.html() + '<td>');
-             jQuery('#woo_vipps_shareables tbody').append(newrow);
-             add_shareable_commands(newrow);
-          } else {
-             console.log("Error creating shareable link " + result['msg']);
-             jQuery('#vipps-shareable-link-error').text(' : ' +result['msg']);
-             jQuery('.vipps-shareable-link-error').show();
-          }
-         },
-      });
+             jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
+                     "error": function (xhr, statustext, error) {
+                     jQuery('#vipps-share-link').removeAttr('disabled');
+                     console.log("Error creating shareable link" + statustext + " " + error);
+                     jQuery('#vipps-shareable-link-error').text(' : ' +error);
+                     jQuery('.vipps-shareable-link-error').show();
+                     },
+                     "success": function (result, statustext, xhr) {
+                     jQuery('#vipps-share-link').removeAttr('disabled');
+                     if (result["ok"]) {
+                     console.log("Shareable link created ");
+                     jQuery('#woo_vipps_shareables').show();
+                     var newrow = jQuery('<tr>');
+                     if (result['variant']) newrow.append('<td>'+result['variant']+'</td>');
+                     var link = jQuery('#woo_vipps_shareable_link_template').clone();
+                     link.removeAttr('id');
+                     link.find('a').text(result['url']);
+                     link.find('input').attr('value',result['key']);
+                     newrow.append('<td>'+link.html()+'</td>');
+                     var actions = jQuery('#woo_vipps_shareable_command_template').clone();
+                     actions.removeAttr('id');
+                     newrow.append('<td align=center>' + actions.html() + '<td>');
+                     jQuery('#woo_vipps_shareables tbody').append(newrow);
+                     add_shareable_commands(newrow);
+                     } else {
+                         console.log("Error creating shareable link " + result['msg']);
+                         jQuery('#vipps-shareable-link-error').text(' : ' +result['msg']);
+                         jQuery('.vipps-shareable-link-error').show();
+                     }
+                     },
+             });
 
-      return false;
-     } 
+             return false;
+         } 
 
-     function add_shareable_commands(element) {
-       if (!element) element = jQuery('#woo_vipps_shareables');
-       element.find('.shareable').click(function () {
-         jQuery('<input type=hidden/>').appendTo('body').val(jQuery(this).text()).select(); 
-         document.execCommand('copy');
-       }); 
-       element.find('.copyaction').click(function () {
-         var link = jQuery(this).closest('tr').find('.shareable');
-         jQuery('<input type=hidden/>').appendTo('body').val(link.text()).select();
-         document.execCommand('copy');
-       });
-       element.find('.deleteaction').click(function () {
-         var link = jQuery(this).closest('tr').find('.shareable');
-         link.toggleClass('deleted');
-         if (link.hasClass('deleted')) {
-          link.siblings('.deletemarker').attr('name','woo_vipps_shareable_delenda[]');
-         } else {
-          link.siblings('.deletemarker').removeAttr('name');
+         function add_shareable_commands(element) {
+             if (!element) element = jQuery('#woo_vipps_shareables');
+             element.find('.shareable').click(function () {
+                     jQuery('<input type=hidden/>').appendTo('body').val(jQuery(this).text()).select(); 
+                     document.execCommand('copy');
+                     }); 
+             element.find('.copyaction').click(function () {
+                     var link = jQuery(this).closest('tr').find('.shareable');
+                     jQuery('<input type=hidden/>').appendTo('body').val(link.text()).select();
+                     document.execCommand('copy');
+                     });
+             element.find('.deleteaction').click(function () {
+                     var link = jQuery(this).closest('tr').find('.shareable');
+                     link.toggleClass('deleted');
+                     if (link.hasClass('deleted')) {
+                     link.siblings('.deletemarker').attr('name','woo_vipps_shareable_delenda[]');
+                     } else {
+                     link.siblings('.deletemarker').removeAttr('name');
+                     }
+
+                     if (jQuery('a.shareable.deleted').length>0) {
+                     jQuery('#vipps-shareable-link-delete-message').show();
+                     } else {
+                     jQuery('#vipps-shareable-link-delete-message').hide();
+                     }
+
+                     });
          }
 
-         if (jQuery('a.shareable.deleted').length>0) {
-          jQuery('#vipps-shareable-link-delete-message').show();
-         } else {
-          jQuery('#vipps-shareable-link-delete-message').hide();
-         }
-
-       });
+         jQuery(document).ready(function () {
+                 // Require a variant to have been selected in order for the shareable-link thing to work
+                 jQuery('#vipps_sharelink_variant').change(function () {
+                         if (jQuery(this).val()) {
+                         jQuery('#vipps-share-link').removeAttr('disabled');
+                         } else {
+                         jQuery('#vipps-share-link').attr('disabled','disabled');
+                         }
+                         });
+                 jQuery('#vipps-share-link').click(vipps_create_shareable_link);
+                 add_shareable_commands();
+                 });
      }
 
-     jQuery(document).ready(function () {
-       // Require a variant to have been selected in order for the shareable-link thing to work
-       jQuery('#vipps_sharelink_variant').change(function () {
-         if (jQuery(this).val()) {
-           jQuery('#vipps-share-link').removeAttr('disabled');
-         } else {
-           jQuery('#vipps-share-link').attr('disabled','disabled');
+
+     if (pagenow == 'vipps_qr_code') {
+         function select_url_bit (which) {
+             let all = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option');
+             let thisone  = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.' + which);
+             all.removeClass('active');
+             thisone.addClass('active');
+             all.find('input,select').prop('required', false);
+             thisone.find('input,select').prop('required', true);
          }
-       });
-       jQuery('#vipps-share-link').click(vipps_create_shareable_link);
-       add_shareable_commands();
-     });
+         jQuery(document).ready(function () {
+                 jQuery('.url-section .link-selector .vipps_urltype').on('change', function () {
+                         select_url_bit(jQuery(this).val());
+                         });
+                 select_url_bit(jQuery('.url-section .link-selector .vipps_urltype:checked').val());
+                 });
+     }
  }
-
-
-    if (pagenow == 'vipps_qr_code') {
-        function select_url_bit (which) {
-            let all = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option');
-            let thisone  = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.' + which);
-            all.removeClass('active');
-            thisone.addClass('active');
-            all.find('input,select').prop('required', false);
-            thisone.find('input,select').prop('required', true);
-        }
-        jQuery(document).ready(function () {
-            jQuery('.url-section .link-selector .vipps_urltype').on('change', function () {
-                select_url_bit(jQuery(this).val());
-            });
-            select_url_bit(jQuery('.url-section .link-selector .vipps_urltype:checked').val());
-        });
-    }
 
 })();
 

@@ -2628,7 +2628,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->update_option( 'enabled', 'no' );
         }
         ?>
-            <h2><?php _e('Vipps','woo-vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
+            <h2 id='vipps-settings-page'><?php _e('Vipps','woo-vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
 
             <?php 
