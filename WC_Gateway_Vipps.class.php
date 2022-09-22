@@ -737,15 +737,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'),
                         'default'     => $expresscreateuserdefault,
                         ),
-
-                'receiptimage' => array (
-                        'title'       => __( 'Use this image for the order confirmation link uploaded to the customers\' Vipps app', 'woo-vipps' ),
-                        'label'       => __( 'Profile image used in the Vipps App', 'woo-vipps' ),
-                        'type'        => 'woo_vipps_image',
-                        'description' => __('If set, this image will be uploaded to Vipps and used to profile your store in the Vipps app for links to the order confirmation etc', 'woo-vipps'),
-                        'default'     => 0,
-                        ),
-
                 'singleproductbuynowcompatmode' => array(
                         'title'       => __( '"Buy now" compatibility mode', 'woo-vipps' ),
                         'label'       => __( 'Activate compatibility mode for all "Buy now" buttons', 'woo-vipps' ),
@@ -804,6 +795,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'options' => $page_list,
                      'description' => __('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special Vipps pages.', 'woo-vipps'),
                      'default'=>''),
+
+                'receiptimage' => array (
+                        'title'       => __( 'Use this image for the order confirmation link uploaded to the customers\' Vipps app', 'woo-vipps' ),
+                        'label'       => __( 'Profile image used in the Vipps App', 'woo-vipps' ),
+                        'type'        => 'woo_vipps_image',
+                        'description' => __('If set, this image will be uploaded to Vipps and used to profile your store in the Vipps app for links to the order confirmation etc', 'woo-vipps'),
+                        'default'     => 0,
+                        ),
+
 
                 'use_flock' => array (
                             'title'       => __( 'Use flock() to lock orders for Express Checkout', 'woo-vipps' ),
