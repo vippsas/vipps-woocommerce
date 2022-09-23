@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Pay with Vipps for WooCommerce - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2022-09-22 11:45+0000\n"
+"PO-Revision-Date: 2022-09-23 12:27+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,7 +15,7 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1681
 msgid " - order does not need processing"
-msgstr ""
+msgstr " - bestillingen trenger ingen behandling"
 
 #: WC_Gateway_Vipps.class.php:495 WC_Gateway_Vipps.class.php:512
 #: WC_Gateway_Vipps.class.php:1296
@@ -137,7 +137,7 @@ msgstr "Addresse"
 
 #: WC_Gateway_Vipps.class.php:787
 msgid "Advanced"
-msgstr ""
+msgstr "Avansert"
 
 #: WC_Gateway_Vipps.class.php:704
 msgid "All products"
@@ -194,7 +194,7 @@ msgstr "Uvanlig callback fra Vipps - håndter feil og rydd opp"
 
 #: WC_Gateway_Vipps.class.php:1609 WC_Gateway_Vipps.class.php:2309
 msgid "Anonymous customer"
-msgstr ""
+msgstr "Anonym kunde"
 
 #: Vipps.class.php:1148
 msgid "API"
@@ -635,7 +635,7 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:829
 msgid "Developer mode"
-msgstr ""
+msgstr "Utviklermodus"
 
 #: Vipps.class.php:2126
 msgid "Did not understand callback from Vipps:"
@@ -656,19 +656,19 @@ msgstr "Avvist melding"
 
 #: WC_Gateway_Vipps.class.php:561
 msgid "Don't require the address fields"
-msgstr ""
+msgstr "Ikke krev addressefelter"
 
 #: WC_Gateway_Vipps.class.php:569
 msgid "Don't require the contact fields"
-msgstr ""
+msgstr "Ikke krev kontaktinformasjonsfelter"
 
 #: WC_Gateway_Vipps.class.php:560
 msgid "Drop the address fields on the Checkout screen"
-msgstr ""
+msgstr "Dropp addressefeltene på Checkout-skjermen"
 
 #: WC_Gateway_Vipps.class.php:568
 msgid "Drop the contact fields on the Checkout screen"
-msgstr ""
+msgstr "Dropp kontaktfeltene på Checkout-skjermen"
 
 #: VippsQRCodeController.class.php:613 Vipps.class.php:121
 msgid "Edit QR Code"
@@ -711,7 +711,7 @@ msgstr "Skru på statisk fraktberegning for Hurtigkassen"
 
 #: WC_Gateway_Vipps.class.php:552
 msgid "Enable static shipping for Vipps Checkout"
-msgstr ""
+msgstr "Skru på statisk frakt for Vipps Checkout"
 
 #: WC_Gateway_Vipps.class.php:836
 msgid "Enable test mode"
@@ -1037,6 +1037,8 @@ msgid ""
 "If you have issues with your theme, you might find a setting here that will "
 "help. Normally you do not need to change these."
 msgstr ""
+"Hvis du har problemer med theme eller andre plugins, kan det tenkes du vil "
+"finne instillinger her som hjelper. Du vil normalt ikke trenge å endre disse."
 
 #: Vipps.class.php:148 Vipps.class.php:429
 msgid ""
@@ -1065,6 +1067,12 @@ msgid ""
 "very well. Also, for this to work you have to check the 'no addresses' box "
 "as well."
 msgstr ""
+"Hvis produktene dine <i>ikke krever frakt</i> som over, og du heller ikke "
+"bryr deg om å lagre kundenes navn eller kontaktinformasjon, kan du også "
+"velge å droppe disse! Kundefeltene vil da bli fyllet ut med \"Anonym kunde\"."
+" NB: Hvis du har utvidelser som krever kontaktinformasjon på ordre, så vil "
+"ikke dette virke så bra. Du må også ha krysset av for \"ingen addresser\" om "
+"dette skal virke."
 
 #: WC_Gateway_Vipps.class.php:563
 msgid ""
@@ -1075,6 +1083,12 @@ msgid ""
 "require shipping, this will have no effect. NB: If you have plugins that "
 "require shipping information, then this is not going to work very well."
 msgstr ""
+"Hvis produktene <i>ikke krever frakt</i>, enten fordi de er digitale "
+"nedlastinger, immaterielle produkter eller fordi du leverer produktene med "
+"en gang de kjøpes, kan du huke av for denne boksen. Brukeren vil da ikke "
+"trenge å oppgi addresse, som burde få ting til å gå litt fortere. Hvis "
+"produktene krever frakt vil dette ikke ha noen effekt. NB: Hvis du har "
+"utvidelser som krever fraktinformasjon så vil ikke dette virke så bra."
 
 #: WC_Gateway_Vipps.class.php:555
 msgid ""
@@ -1088,6 +1102,16 @@ msgid ""
 "in, their address as registered in the store will be used, so if your "
 "customers are always logged in, you may be able to use this too."
 msgstr ""
+"Hvis frakt-valgene dine ikke er avhengig av kundens adresse, kan du skru på "
+"\"Statisk fraktberegning\". Dette beregner fraktvalg- og kostnader på "
+"forhånd når du bruker Vipps Checkout, slik at denne blir mye raskere. Hvis "
+"du gjør dette og kunden ikke er innlogget, så vil butikkens egen addresse "
+"bli brukt til å beregne fraktvalgene.  Du bør bare bruke dette hvis "
+"fraktvalgene dine faktisk er \"statiske\", det vil si at de ikke varierer "
+"med kundens addresse. Dermed vil fastpris og gratis frakt foreksempel virke. "
+"Hvis kunden er logget inn, så vil adressen deres slik som den er satt i "
+"butikken bli brukt; så hvis kundene dine alltid er innlogget, vil du "
+"antagelig kunne bruke dette da også."
 
 #: WC_Gateway_Vipps.class.php:728
 msgid ""
@@ -1235,7 +1259,7 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:582
 msgid "Main options"
-msgstr ""
+msgstr "Hovedvalg"
 
 #: Vipps.class.php:984
 msgid "Mark this link for deletion"
@@ -2268,6 +2292,9 @@ msgid ""
 "cart page or directly from product or catalog pages. Product will get a 'buy "
 "now' button which will start the purchase process immediately."
 msgstr ""
+"Vipps Hurtigkasse lar deg kjøpe produkter med et enkelt klikk fra "
+"handlekurven, eller direkte fra produkt- eller katalogsider. Produktene vil "
+"da få en \"Kjøp nå\"-knapp som starter handelen direkte."
 
 #: WC_Gateway_Vipps.class.php:2156
 msgid ""
