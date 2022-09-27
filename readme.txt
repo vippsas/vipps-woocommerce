@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.11.0
-Stable tag: 1.11.0
+Version: 1.11.1
+Stable tag: 1.11.1
 Requires at least: 4.7
 Tested up to: 6.0.2
 Requires PHP: 5.6
@@ -79,8 +79,11 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.11.1 =
+Fix breaking bug for 1.11.0 under php 8.0 and above
 = 1.11.0 =
 New and improved options screen, with new options in Vipps Checkout for dropping the address/contact fields for virtual orders
+
 
 == Frequently Asked Questions ==
 
@@ -216,6 +219,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.09.27 version 1.11.1 =
+* Fix default-setting of new settings; the old method broke on php8.0
 
 = 2022.09.26 version 1.11.0 =
 * Improved settings-screen with a tabbed view and organization
