@@ -532,6 +532,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
 
 
+        // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
+        $current = get_option('woocommerce_vipps_setting');
+        $default_static_shipping_for_checkout = $current ? $current : 'no';
 
         $checkoutfields = array(
                 'checkout_options' => array(
@@ -553,7 +556,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __( 'Enable static shipping', 'woo-vipps' ),
                         'type'        => 'checkbox',
                         'description' => __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps'),
-                        'default'     => $this->get_option('enablestaticshipping', 'no')
+                        'default'     => $default_static_shipping_for_checkout
                         ),
 
                 'noAddressFields' => array(
