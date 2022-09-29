@@ -106,7 +106,7 @@ The plugin is currently in a pre-release phase and will have more filters, actio
 
 Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-config.php`.
 
-`WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 3
+`WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 4
 
 The amount of days Vipps will retry a charge for before it fails. Documentation can be found [here](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-retries).
 

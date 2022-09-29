@@ -188,12 +188,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				// testing code
-				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
-					add_action( 'wp_loaded', [
-						$this,
-						'check_order_statuses'
-					] );
-				}
+//				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+//					add_action( 'wp_loaded', [
+//						$this,
+//						'check_order_statuses'
+//					] );
+//				}
 				// end testing code
 
 				// schedule recurring payment charge status checking event
