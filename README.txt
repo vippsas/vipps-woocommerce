@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.14.7 =
+* Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.
+
 = 1.14.6 =
 * Fixed: Fixed a conflict that prevented Vipps from working in Klarna if Vipps Recurring and Vipps Checkout were installed at the same time.
 

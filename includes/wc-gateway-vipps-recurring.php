@@ -1579,12 +1579,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				if ( $has_campaign ) {
 					$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 					$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
+					$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
 
-					$campaign_price = $has_free_campaign ? 0 : $order->get_total();
+					$campaign_price    = $has_free_campaign ? 0 : $order->get_total();
+					$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
 
 					$agreement_body['campaign'] = [
 						'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
-						'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $next_payment ),
+						'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $campaign_end_date ),
 						'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ),
 					];
 				}
