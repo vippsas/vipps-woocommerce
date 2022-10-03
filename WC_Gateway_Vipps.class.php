@@ -2165,6 +2165,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
             $it = null;       
+
+            $total_shipping = 0;
+            $total_shipping_tax = 0;
+
             if ($shipping_rate) {
                 $it = new WC_Order_Item_Shipping();
                 $it->set_shipping_rate($shipping_rate);
@@ -2176,9 +2180,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $it->save();
                 $order->add_item($it);
+
+                $total_shipping = $it->get_total();
+                $total_shipping_tax = $it->get_total_tax();
+
+                // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
+                // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
+                // value reserved at Vipps and the order total is the same. IOK 2022-10-03
+                $order->set_shipping_total($total_shipping);
+                $order->set_shipping_tax($total_shipping_tax);
+                $order->set_total($order->get_total() + $total_shipping + $total_shipping_tax);
             }
             $order->save(); 
-            $order->calculate_totals(true);
+            // NB: WE DO NOT CALL CALCULATE TOTALS!
+            // THIS WILL CALCULATE SHIPPING FOR TAX IF THERE IS A TAX RATE FOR THE GIVEN AREA WITH THE 'shipping' PROPERTY CHECKED - EVEN IF THE SHIPPING RATE IT SELF IS NOT THUS CONFIGURED.
+            // Same thing happens when using the "recalculate" button in the backend
+            // This will *only* affect users that choose "No tax" for the shipping rates themselves, which is mostly just wrong, but we want to ensure consistency here since this is hard
+            // to debug.
+            // $order->calculate_totals(true);
         }
 
 
