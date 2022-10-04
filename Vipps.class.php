@@ -574,6 +574,7 @@ class Vipps {
     protected function delete_old_cancelled_orders() {
         global $wpdb;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
+        // IOK 2022-10-04 FIXME STOP USING POSTMETA FOR ORDERS
         $delendaq = $wpdb->prepare("SELECT o.ID from {$wpdb->postmeta} m join {$wpdb->posts} o on (m.meta_key='_vipps_delendum' and o.id=m.post_id)
                 WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc-cancelled' && o.post_modified_gmt < %s limit 30", gmdate('Y-m-d H:i:s', $cutoff));
         $delenda = $wpdb->get_results($delendaq, ARRAY_A);
@@ -1677,6 +1678,7 @@ else:
     // by the user, we will store that as a meta and use this for callbacks etc.
     public function getOrderIdByVippsOrderId($vippsorderid) {
         global $wpdb;
+        // IOK 2022-10-04 STOP USING POSTMETA FOR ORDERS
         return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
     }
 
@@ -2891,6 +2893,7 @@ EOF;
             if (!$user) return null;
             $customerid = $user->ID;
             $order->save(); 
+            // IOK FIXME 2022-10-04 stop using post_meta for orders
             update_post_meta( $order->get_id(), '_customer_user', $customerid );
 
             if (is_multisite() && ! is_user_member_of_blog($customerid, get_current_blog_id())) {
@@ -2911,6 +2914,7 @@ EOF;
         $customerid = wc_create_new_customer( $email, '', wp_generate_password(), $userdata);
         if ($customerid && !is_wp_error($customerid)) {
             $order->save(); 
+            // IOK FIXME 2022-10-04 stop using post_meta for orders
             update_post_meta( $order->get_id(), '_customer_user', $customerid );
 
             // Ensure the standard WP user fields are set too IOK 2020-11-03
