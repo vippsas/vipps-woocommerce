@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.11.2
-Stable tag: 1.11.2
+Version: 1.11.3
+Stable tag: 1.11.3
 Requires at least: 4.7
 Tested up to: 6.0.2
 Requires PHP: 5.6
@@ -79,6 +79,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.11.3 =
+Fix javascript bug that stopped dismissable banners from being dismissed
 = 1.11.1, 1.11.2 =
 Fix breaking bugs for 1.11.0 under php 8.0 and above
 = 1.11.0 =
@@ -219,6 +221,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2022.10.05 version 1.11.3 =
+* Fix admin javascript bug that kept dismissible banners non-dismissed
 
 = 2022.09.29 version 1.11.2 =
 * Fix string concatenation bug crashing php8.x
