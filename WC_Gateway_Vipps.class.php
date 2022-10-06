@@ -799,6 +799,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'description' => __('Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special Vipps pages.', 'woo-vipps'),
                      'default'=>''),
 
+                'sendreceipts' => array(
+                     'title' => __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps'),
+                      'label' => __("Send receipts to the customers Vipps app", 'woo-vipps'),
+                      'type'        => 'checkbox',
+                      'description' => __("If this is checked, a receipt will be sent to Vipps which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps'),
+                      'default' => 'yes'
+                ),
+
                 'receiptimage' => array (
                         'title'       => __( 'Use this image for the order confirmation link uploaded to the customers\' Vipps app', 'woo-vipps' ),
                         'label'       => __( 'Profile image used in the Vipps App', 'woo-vipps' ),
@@ -2451,13 +2459,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
         try {
-            $this->api->add_receipt($order);
-            $this->order_add_vipps_categories($order);
+ 
+            $sendreceipt = apply_filters('woo_vipps_send_receipt', ($this->get_option('sendreceipts') == 'yes'), $order);
+            if ($sendreceipt) {
+                $this->api->add_receipt($order);
+                $this->order_add_vipps_categories($order);
+            }
+            do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
         } catch (Exception $e) {
-            // This is non-critical so just log it.
+            // This is/should be non-critical so just log it.
             $this->log(sprintf(__("Could not do all payment-complete actions on Vipps order %d: %s ", 'woo-vipps'), $orderid,  $e->getMessage()), "error");
         }
-        do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
     }
 
     // This is run on payment complete. Per default will it only add a link to the order confirmation page, but 
