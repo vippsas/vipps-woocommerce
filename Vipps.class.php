@@ -84,22 +84,9 @@ class Vipps {
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
         // For new settings setup
-        __(" - order does not need processing", 'woo-vipps');
-        __('Advanced', 'woo-vipps');
-        __('Anonymous customer', 'woo-vipps');
-        __('Developer mode', 'woo-vipps');
-        __( 'Don\'t require the address fields', 'woo-vipps' );
-        __( 'Don\'t require the contact fields', 'woo-vipps' );
-        __( 'Drop the address fields on the Checkout screen', 'woo-vipps' );
-        __( 'Drop the contact fields on the Checkout screen', 'woo-vipps' );
-        __( 'Enable static shipping for Vipps Checkout', 'woo-vipps' );
-        __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps');
-        __('If your products <i>don\'t require shipping</i>, either because they are digital downloads, immaterial products or delivering the products directly on purchase, you can check this box. The user will then not be required to provide an address, which should speed things up a bit. If your products require shipping, this will have no effect. NB: If you have plugins that require shipping information, then this is not going to work very well.','woo-vipps');
-        __('If your products <i>don\'t require shipping</i> as above, and you also don\'t care about the customers name or contact information, you can drop this too! The customer fields will then be filled with a placeholder. NB: If you have plugins that require contact information, then this is not going to work very well. Also, for this to work you have to check the \'no addresses\' box as well.','woo-vipps');
-        __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Express Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps');
-        __('If your shipping options do not depend on the customers address, you can enable \'Static shipping\', which will precompute the shipping options when using Checkout so that this will be much faster. If you do this and the customer isn\'t logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually \'static\', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too.', 'woo-vipps');
-            __('Main options', 'woo-vipps');
-        __("Vipps Express Checkout allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps');
+        __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps');
+        __("Send receipts to the customers Vipps app", 'woo-vipps');
+        __("If this is checked, a receipt will be sent to Vipps which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps');
     }
 
 
