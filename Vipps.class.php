@@ -2879,9 +2879,8 @@ EOF;
             $user = get_user_by( 'email', $email);
             if (!$user) return null;
             $customerid = $user->ID;
+            $order->set_customer_id( $user->ID );
             $order->save(); 
-            // IOK FIXME 2022-10-04 stop using post_meta for orders
-            update_post_meta( $order->get_id(), '_customer_user', $customerid );
 
             if (is_multisite() && ! is_user_member_of_blog($customerid, get_current_blog_id())) {
                 add_user_to_blog( get_current_blog_id(), $customerid, 'customer' );
@@ -2900,9 +2899,8 @@ EOF;
 
         $customerid = wc_create_new_customer( $email, '', wp_generate_password(), $userdata);
         if ($customerid && !is_wp_error($customerid)) {
+            $order->set_customer_id( $customerid );
             $order->save(); 
-            // IOK FIXME 2022-10-04 stop using post_meta for orders
-            update_post_meta( $order->get_id(), '_customer_user', $customerid );
 
             // Ensure the standard WP user fields are set too IOK 2020-11-03
             wp_update_user(array('ID' => $customerid, 'first_name' => $firstname, 'last_name' => $lastname, 'display_name' => "$firstname $lastname", 'nickname' => $firstname));
