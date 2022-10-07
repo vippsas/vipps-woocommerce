@@ -558,15 +558,35 @@ class Vipps {
 
     // This function will delete old orders that were cancelled before the Vipps action was completed. We keep them for
     // 10 minutes so we can work with them in hooks and callbacks after they are cancelled. IOK 2019-10-22
-    protected function delete_old_cancelled_orders() {
+#    protected function delete_old_cancelled_orders() {
+    public function delete_old_cancelled_orders() {
         global $wpdb;
+        $limit = 30;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
-        // IOK 2022-10-04 FIXME STOP USING POSTMETA FOR ORDERS
-        $delendaq = $wpdb->prepare("SELECT o.ID from {$wpdb->postmeta} m join {$wpdb->posts} o on (m.meta_key='_vipps_delendum' and o.id=m.post_id)
-                WHERE o.post_type = 'shop_order' && m.meta_value=1 && o.post_status = 'wc-cancelled' && o.post_modified_gmt < %s limit 30", gmdate('Y-m-d H:i:s', $cutoff));
-        $delenda = $wpdb->get_results($delendaq, ARRAY_A);
+        $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
+
+        // FIXME does this work with the new api?
+        add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
+            if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
+                if (!isset($query['meta_query'])) $query['meta_query'] = array();
+                $query['meta_query'][] = array(
+                    'key' => '_vipps_delendum',
+                    'value' => 1
+                );
+            }
+            return $query;
+        }, 10, 2);
+
+        $delenda = wc_get_orders( array(
+            'status' => 'cancelled',
+            'type' => 'shop_order',
+            'limit' => $limit,
+            'date_modified' => "$oldorders...$cutoff",
+            'meta_vipps_delendum' => 1
+        ) );
+
         foreach ($delenda as $del) {
-            wp_delete_post($del['ID']);
+            $del->delete(true);
         }
     }
 
