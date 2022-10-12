@@ -586,7 +586,13 @@ class Vipps {
         ) );
 
         foreach ($delenda as $del) {
-            $del->delete(true);
+            // Delete only if there is no customer info for the order IOK 2022-10-12
+            if (!$del->get_billing_email()) {
+                $del->delete(true);
+            }  else {
+                // If we've gotten a billing email, don't delete this. IOK 2022-10-12
+                $del->delete_meta_data('_vipps_delendum');
+            }
         }
     }
 
