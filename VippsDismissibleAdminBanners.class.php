@@ -55,7 +55,7 @@ class VippsDismissibleAdminBanners {
            // If WooCommerce Subscriptions is installed, but Vipps Recurring isn't, create a banner.
            $this->add_recurring_vipps_dismissible_admin_banner();
            // Advertise Vipps Checkout for users who haven't seen/dismissed the banner
-           $this->add_vipps_checkout_dismissible_admin_banner();
+           // $this->add_vipps_checkout_dismissible_admin_banner();
         }
    }
 
