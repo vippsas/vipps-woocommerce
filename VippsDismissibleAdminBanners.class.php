@@ -36,16 +36,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class VippsDismissibleAdminBanners {
     private static $instance = null;
+    private $dismissed =  null;
     public static function instance()  {
         if (!static::$instance) static::$instance = new VippsDismissibleAdminBanners();
         return static::$instance;
     }
 
+    function __construct() {
+       $this->dismissed = get_option('_vipps_dismissed_notices');
+       $this->configured = get_option('woo-vipps-configured');
+       $this->vipps_checkout_enabled = get_option('woo_vipps_checkout_activated'); // if true, the pages exists etc
+    }
+
     public function add_vipps_dismissible_admin_banners() {
-        // Login with Vipps 
-        $this->add_login_vipps_dismissible_admin_banner();
-        // If WooCommerce Subscriptions is installed, but Vipps Recurring isn't, create a banner.
-        $this->add_recurring_vipps_dismissible_admin_banner();
+        if ($this->configured) {
+           // Login with Vipps 
+           $this->add_login_vipps_dismissible_admin_banner();
+           // If WooCommerce Subscriptions is installed, but Vipps Recurring isn't, create a banner.
+           $this->add_recurring_vipps_dismissible_admin_banner();
+           // Advertise Vipps Checkout for users who haven't seen/dismissed the banner
+           $this->add_vipps_checkout_dismissible_admin_banner();
+        }
    }
 
     public static function add() {
@@ -64,14 +75,59 @@ class VippsDismissibleAdminBanners {
         $dismissed[$key] = time();
         Vipps::instance()->log(__("Dismissed message ", 'woo-vipps')  . $key, 'info');
         update_option('_vipps_dismissed_notices', $dismissed, false);
+        $this->dismissed = $dismissed;
         wp_cache_flush();
     }
 
-    // Advertise The Other Plugin if not installed
+    // Advertise Vipps Checkout if not installed
+    public function add_vipps_checkout_dismissible_admin_banner () {
+
+        $dismissed = $this->dismissed;
+        if (isset($dismissed['vippscheckout01'])) {
+           return;
+        }
+
+        $dont_advertise_checkout = $this->vipps_checkout_enabled; // if "yes" or "no", the user has interacted with Vipps Checkout
+      
+        if ($dont_advertise_checkout) {
+           if (!is_array($dismissed)) $dismissed = array();
+           $dismissed['vippscheckout01'] = time();
+           update_option('_vipps_dismissed_notices', $dismissed, false);
+           $this->dismissed = $dismissed;
+           return;
+        }
+
+        add_action('admin_notices', function () {
+            $logo = plugins_url('img/vipps-rgb-orange-neg.svg',__FILE__);
+            $settingsurl = admin_url("admin.php?page=wc-settings&tab=checkout&section=vipps");
+            $screen = get_current_screen();
+            if ($screen && $screen->id == 'woocommerce_page_wc-settings' && $_GET['tab'] == 'checkout') return;
+            error_log("Adding admin notices");
+            ?>
+            <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippscheckout01'>
+            <a   href="<?php echo $settingsurl; ?>">
+            <img src="<?php echo $logo; ?>" style="float:right; height: 3rem; margin-top: 0.2rem" alt="Vipps-logo">
+             <div>
+                 <p style="font-size:1rem">
+                     Vipps Checkout er tilgjengelig på Woocommerce! Du får:
+                    <ul style='margin-left: 1rem; list-style-type: "✓  ";'>
+                     <li>Betaling med Vipps eller kort.</li>
+                     <li>Ferdig utfylt informasjon for brukerne.</li>
+                     <li>Oppgjør etter 3 dager.</li>
+                    </ul>
+                 </p>
+             </div>
+             </a>
+            </div>
+            <?php
+            });
+    }
+
+    // Advertise The Login Plugin if not installed
     public function add_login_vipps_dismissible_admin_banner () {
         if (!function_exists('get_plugins')) return;
 
-        $dismissed = get_option('_vipps_dismissed_notices');
+        $dismissed = $this->dismissed;
         if (isset($dismissed['vippslogin01'])) return;
 
         $installed_plugins = get_plugins();
@@ -79,6 +135,7 @@ class VippsDismissibleAdminBanners {
            if (!is_array($dismissed)) $dismissed = array();
            $dismissed['vippslogin01'] = time();
            update_option('_vipps_dismissed_notices', $dismissed, false);
+           $this->dismissed = $dismissed;
            return;
         }
 
@@ -99,11 +156,11 @@ class VippsDismissibleAdminBanners {
             });
     }
 
-    // Advertise The Other Plugin if not installed and WooCommerce subscriptions is
+    // Advertise The Recurring Plugin if not installed and WooCommerce subscriptions is
     public function add_recurring_vipps_dismissible_admin_banner () {
         if (!function_exists('get_plugins')) return;
 
-        $dismissed = get_option('_vipps_dismissed_notices');
+        $dismissed = $this->dismissed;
         if (isset($dismissed['vippssub01'])) return;
 
         if (!class_exists('WC_Subscriptions')) {
@@ -117,6 +174,7 @@ class VippsDismissibleAdminBanners {
             if (!is_array($dismissed)) $dismissed = array();
             $dismissed['vippssub01'] = time();
             update_option('_vipps_dismissed_notices', $dismissed, false);
+            $this->dismissed = $dismissed;
            return;
         }
 
