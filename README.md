@@ -4,7 +4,7 @@ This repo contains "Checkout with Vipps for WooCommerce". For more information a
 
 The Vipps product page is here: https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/
 
-See the main GitHub page for Vipps contact information, etc: https://github.com/vippsas
+See the main GitHub page for Vipps contact information, etc: (https://vippsas.github.io/vipps-developer-docs/)
 
 # Description
 
@@ -44,7 +44,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
 
-See: [Getting Started](https://github.com/vippsas/vipps-developers/blob/master/vipps-developer-portal-getting-started.md) with the Vipps Portal, and the Vipps eCommerce [FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md).
+See: [Getting Started](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-getting-started) with the Vipps Portal, and the Vipps eCommerce [FAQ](https://vippsas.github.io/vipps-developer-docs/docs/APIs/ecom-api/vipps-ecom-api-faq).
 
 # Screenshots
 Enable Vipps as a payment method
@@ -75,14 +75,14 @@ to "upgrade" your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
 trough Testflight. See
-[Vipps test apps](https://github.com/vippsas/vipps-developers#vipps-test-apps)
+[Vipps test apps](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-test-environment#vipps-test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
-See [Getting the API keys](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys)
+See [Getting the API keys](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-getting-started#getting-the-api-keys)
 in the
-[Getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md)
+[Getting started](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-getting-started)
 guide for more information.
 
 To use test mode in WooCommerce, switch "Developer mode" on. There you can input
@@ -95,12 +95,12 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ## How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
+For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/contact).
 
 ## Vipps FAQ
 
 See the
-[Vipps eCom API FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+[Vipps eCom API FAQ](https://vippsas.github.io/vipps-developer-docs/docs/APIs/ecom-api/vipps-ecom-api-faq)
 for more help with Vipps eCommerce.
 
 # What are the requirements?

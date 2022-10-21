@@ -2727,7 +2727,6 @@ function activate_vipps_checkout(yesno) {
             }
     }
    );
-   console.log("That!");
    return false;
 }
 </script>
