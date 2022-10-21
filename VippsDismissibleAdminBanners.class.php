@@ -101,7 +101,6 @@ class VippsDismissibleAdminBanners {
             $settingsurl = admin_url("admin.php?page=wc-settings&tab=checkout&section=vipps");
             $screen = get_current_screen();
             if ($screen && $screen->id == 'woocommerce_page_wc-settings' && $_GET['tab'] == 'checkout') return;
-            error_log("Adding admin notices");
             ?>
             <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippscheckout01'>
             <a   href="<?php echo $settingsurl; ?>">
