@@ -220,7 +220,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2022.10.10 version 1.11.5 =
+= 2022.10.24 version 1.11.5 =
 Reorganization of banner code
 
 = 2022.10.10 version 1.11.4 =
