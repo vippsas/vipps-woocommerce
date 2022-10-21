@@ -55,7 +55,7 @@ class VippsDismissibleAdminBanners {
            // If WooCommerce Subscriptions is installed, but Vipps Recurring isn't, create a banner.
            $this->add_recurring_vipps_dismissible_admin_banner();
            // Advertise Vipps Checkout for users who haven't seen/dismissed the banner
-           // $this->add_vipps_checkout_dismissible_admin_banner();
+           $this->add_vipps_checkout_dismissible_admin_banner();
         }
    }
 
@@ -81,7 +81,6 @@ class VippsDismissibleAdminBanners {
 
     // Advertise Vipps Checkout if not installed
     public function add_vipps_checkout_dismissible_admin_banner () {
-
         $dismissed = $this->dismissed;
         if (isset($dismissed['vippscheckout01'])) {
            return;
@@ -109,11 +108,11 @@ class VippsDismissibleAdminBanners {
             <img src="<?php echo $logo; ?>" style="float:right; height: 3rem; margin-top: 0.2rem" alt="Vipps-logo">
              <div>
                  <p style="font-size:1rem">
-                     Vipps Checkout er tilgjengelig på Woocommerce! Du får:
+                     <?php  _e("You can get Vipps Checkout now!", 'woo-vipps'); ?>
                     <ul style='margin-left: 1rem; list-style-type: "✓  ";'>
-                     <li>Betaling med Vipps eller kort.</li>
-                     <li>Ferdig utfylt informasjon for brukerne.</li>
-                     <li>Oppgjør etter 3 dager.</li>
+                     <li><?php _e("Your customers can pay with Vipps, Visa or Mastercard", 'woo-vipps'); ?></li>
+                     <li><?php _e("Shipping information is autofilled with Vipps", 'woo-vipps'); ?></li>
+                     <li><?php _e("You get settlement in three days", 'woo-vipps'); ?>.</li>
                     </ul>
                  </p>
              </div>
