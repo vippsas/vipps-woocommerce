@@ -87,6 +87,12 @@ class Vipps {
         __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps');
         __("Send receipts to the customers Vipps app", 'woo-vipps');
         __("If this is checked, a receipt will be sent to Vipps which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps');
+
+        __("You can get Vipps Checkout now!", 'woo-vipps');
+        __("Your customers can pay with Vipps, Visa or Mastercard", 'woo-vipps');
+        __("Shipping information is autofilled with Vipps", 'woo-vipps');
+        __("You get settlement in three days", 'woo-vipps');
+
     }
 
 
