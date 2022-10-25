@@ -1786,7 +1786,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $result['status'] = 'CANCEL';
                $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
                $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
-               $order->update_meta_data('_vipps_delendum',1);
                $order->save();
            }
 
@@ -1808,7 +1807,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                if ($minutes > 120) {
                    $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
                    $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
-                   $order->update_meta_data('_vipps_delendum',1);
                    $order->save();
                    $result['status'] = 'CANCEL';
                }
