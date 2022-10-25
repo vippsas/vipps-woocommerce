@@ -226,7 +226,8 @@ class Vipps {
         add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
         add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
 
-        add_action('save_post', array($this, 'save_order'), 10, 3);
+        // IOK PROBABLY REPLACE WITH ADMIN_POST AND AJAX
+        add_action('woocommerce_process_shop_order_meta', array($this, 'save_order', 10));
 
         add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
 
@@ -510,6 +511,25 @@ class Vipps {
             return $query;
         }, 10, 2);
 
+ 
+        // New API has meta_query built in,
+
+// -- and also "field_query (field == ...
+
+        /*
+array(
+        'meta_query' => array(
+            array(
+                'key' => 'color',
+            ),
+            array(
+                'key'        => 'size',
+                'value'      => 'small',
+                'comparison' => 'LIKE'
+            ),
+        ),
+*/
+
         $delenda = wc_get_orders( array(
             'status' => 'cancelled',
             'type' => 'shop_order',
@@ -592,16 +612,11 @@ class Vipps {
     }
 
     public function add_meta_boxes () {
-        // Metabox showing order status at Vipps IOK 2018-05-07
-        global $post;
-        if ($post && get_post_type($post) == 'shop_order' ) {
-            $order = wc_get_order($post);
-            $pm = $order->get_payment_method();
-            if ($pm == 'vipps') { 
-                add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), 'shop_order', 'side', 'core' );
-            }
-        }
+        $screen = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+        // IOK CHECK PAYMENT METHOD FIXME
+        add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
     }
+
     public function wp_register_scripts () {
         //  We are going to use the 'hooks' library introduced by WP 5.1, but we still support WP 4.7. So if this isn't enqueues 
         //  (which it only is if Gutenberg is active) or not provided at all, add it now.
@@ -922,7 +937,8 @@ else:
     }
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
-    public function add_vipps_metabox ($post) {
+    public function add_vipps_metabox ($post_or_order_object) {
+        $order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
         $order = wc_get_order($post);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
@@ -1879,11 +1895,13 @@ EOF;
         return $language;
     }
     
-    public function save_order($postid,$post,$update) {
-        if ($post->post_type != 'shop_order') return;
-        $order = wc_get_order($postid);
+    public function save_order($orderid) {
+        $order = wc_get_order($orderid);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
+
+        // IOK FIXME WHAT vi må gjøre noe her 
+        error_log("Did this happen?");
 
         if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
             $gw = $this->gateway();
