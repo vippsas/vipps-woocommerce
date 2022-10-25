@@ -496,7 +496,9 @@ class Vipps {
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
 
-        // FIXME does this work with the new api?
+        /*
+         * A. If you are joining custom metadata, then using WC_Query with meta_query param will handle both data storage types. If you are joining a meta_key, which is now migrated to a proper column in the HPOS, then you should be able to use a field_query param with the same property as a meta_query. We plan to backport this to CPT so that the same query works for both tables.
+         */
         add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
             if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
                 if (!isset($query['meta_query'])) $query['meta_query'] = array();
