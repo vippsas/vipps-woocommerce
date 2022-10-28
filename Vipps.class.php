@@ -2610,6 +2610,7 @@ EOF;
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return $actions;
 
+        // IOK FIXME WHAT IOK 2022-10-28
         if ($order->get_meta('_vipps_express_checkout')) {
             unset($actions['pay']);
         }
