@@ -1035,10 +1035,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         $content = null;
 
+         // IOK FIXME TEST
+
         // Should be impossible, but there we go IOK 2022-04-21
-        // IOK FIXME ADD NOTICE
-        if (! $order->has_status('pending', 'failed')) return false;
-        // ALSO FIXME LOG FAILED STATUS
+        if (! $order->has_status('pending', 'failed')) {
+             $this->log(sprintf(__("Trying to start order %s with status %s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
+             wc_add_notice(__('This order cannot be paid with Vipps - please try another payment method or try again later', 'woo-vipps'), 'error');
+             return false;
+        }
+
+        // FIXME crucial logic
+        // This is a second attempt to pay them same order with Vipps
+        if ($order->get_meta('_vipps_init_timestamp')) {
+           $oldurl = $order->get_meta('_vipps_orderurl');
+           $oldstatus = $order->get_meta('_vipps_status');
+           wc_add_notice("En ordre er allerede i gang på  $oldurl med status $oldstatus");
+           return false;
+        }
+        // END FIXMEISM
+
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
         $this->save_session_in_order($order);
@@ -1091,6 +1106,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
+        $order->update_meta_data('_vipps_orderurl', $url); // IOK FIXME TESTING
+ 
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','woo-vipps'));
         $order->add_order_note(__('Awaiting Vipps payment confirmation','woo-vipps'));

@@ -496,7 +496,6 @@ class Vipps {
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
 
-        // FIXME does this work with the new api?
         add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
             if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
                 if (!isset($query['meta_query'])) $query['meta_query'] = array();
@@ -2610,7 +2609,6 @@ EOF;
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return $actions;
 
-        // IOK FIXME WHAT IOK 2022-10-28
         if ($order->get_meta('_vipps_express_checkout')) {
             unset($actions['pay']);
         }
