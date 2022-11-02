@@ -1035,8 +1035,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         $content = null;
 
-         // IOK FIXME TEST
-
         // Should be impossible, but there we go IOK 2022-04-21
         if (! $order->has_status('pending', 'failed')) {
              $this->log(sprintf(__("Trying to start order %s with status %s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
@@ -1044,18 +1042,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
              return false;
         }
 
-        // FIXME crucial logic
-        // This is a second attempt to pay them same order with Vipps
+        // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
+        // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
+        // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
+        // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
         if ($order->get_meta('_vipps_init_timestamp')) {
            $oldurl = $order->get_meta('_vipps_orderurl');
            $oldstatus = $order->get_meta('_vipps_status');
 
-           // We should check payment status etc for this, and potentially return a failure after *cancelling* this order.
-           // IOK FIXME but first test this thoroughly. The important thing is that we do not call initiate payment twice.
+           $order->add_order_note(__('Vipps payment restarted','woo-vipps'));
 
+           // FIXME for supporting retries of *failed Vipps orders*, we should inspect the payment status
+           // and if not active at Vipps, increment a retry suffix for the Vipps orderid - and then *do* another 
+           // initiate payment. But this should be correct in most circumstances. IOK 2022-11-02
            return array('result'=>'success','redirect'=>$oldurl);
         }
-        // END FIXMEISM
 
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
@@ -1108,8 +1109,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($authtoken) {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
+        // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
-        $order->update_meta_data('_vipps_orderurl', $url); // IOK FIXME TESTING
+        $order->update_meta_data('_vipps_orderurl', $url);
  
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','woo-vipps'));
