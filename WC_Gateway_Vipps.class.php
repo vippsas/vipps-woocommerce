@@ -1049,8 +1049,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->get_meta('_vipps_init_timestamp')) {
            $oldurl = $order->get_meta('_vipps_orderurl');
            $oldstatus = $order->get_meta('_vipps_status');
-           wc_add_notice("En ordre er allerede i gang på  $oldurl med status $oldstatus");
-           return false;
+
+           // We should check payment status etc for this, and potentially return a failure after *cancelling* this order.
+           // IOK FIXME but first test this thoroughly. The important thing is that we do not call initiate payment twice.
+
+           return array('result'=>'success','redirect'=>$oldurl);
         }
         // END FIXMEISM
 
