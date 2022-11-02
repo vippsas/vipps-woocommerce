@@ -1096,6 +1096,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','woo-vipps'),'error');
             return false;
         } catch (Exception $e) {
+
+            // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
+            // log some more info IOK 2022-11-02
+            if (preg_match("/Duplicate Order Id/i", $e->getMessage())) {
+               do_action('woo_vipps_duplicate_order_id', $order);
+               $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %s Status: %s User agent: %s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
+               $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
+            }
+
             $this->log(__('Could not initiate Vipps payment','woo-vipps') . ' ' . $e->getMessage(), 'error');
             wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','woo-vipps'),'error');
             return false;
