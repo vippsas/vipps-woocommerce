@@ -1050,6 +1050,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $oldurl = $order->get_meta('_vipps_orderurl');
            $oldstatus = $order->get_meta('_vipps_status');
 
+           // This isn't actually an expired session but it is the same logic; so we'll keep the
+           // text in this 'can't happen' branch
+           if (!$oldurl) {
+              $this->log(sprintf(__("Order %d was attempted restarted, but had no Vipps session url stored. Cannot continue!", 'woo-vipps'), $order_id), 'error');
+              wc_add_notice(__('Order session expired at Vipps, please try again!', 'woo-vipps'), 'error');
+              $order->update_status('cancelled', __('Cannot restart order at Vipps', 'woo-vipps'));
+              return false;
+           }
+
            $order->add_order_note(__('Vipps payment restarted','woo-vipps'));
 
            // FIXME for supporting retries of *failed Vipps orders*, we should inspect the payment status
