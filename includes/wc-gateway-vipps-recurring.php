@@ -1101,7 +1101,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				} );
 
 				if ( count( $charges ) === 0 ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] No RESERVED charges found in capture_payment for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement_id['id'] ) );
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] No RESERVED charges found in capture_payment for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement['id'] ) );
 
 					return false;
 				}
