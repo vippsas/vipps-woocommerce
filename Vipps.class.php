@@ -1077,6 +1077,8 @@ else:
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $url = ""; 
         $redir = "";
+        $token = "";
+
         // First, check that we haven't already done this like in another window or something:
         $session = $this->vipps_checkout_current_pending_session();
         if (isset($sessioninfo['redirect'])) {
@@ -1087,11 +1089,16 @@ else:
             $src = $sessioninfo['session']['checkoutFrontendUrl'];
             $url = $src; 
         }
+        // And if we do, just return what we have. NB: This *should not happen*.
+        if ($url || $redir) {
+            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token));
+        }
+
+        // Otherwise, create an order and start a new session
         $current_vipps_session = null;
         $current_pending = 0;
         $current_authtoken = "";
-        if (!$redir && !$url) {
-            try {
+        try {
                 WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
                 if ($current_pending) {
@@ -1117,10 +1124,10 @@ else:
                 } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
                 }
-            } catch (Exception $e) {
-                return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
-            }
+        } catch (Exception $e) {
+            return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
         }
+
         // Ensure we get the latest updates to the order too IOK 2021-10-22
         $order = wc_get_order($current_pending);
         if (is_user_logged_in()) {
