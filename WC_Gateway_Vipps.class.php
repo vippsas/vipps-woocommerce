@@ -1150,13 +1150,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
         if (!$ok) {
-            $msg = __("Could not capture Vipps payment - status set to", 'woo-vipps') . ' ' . __('on-hold','woocommerce');
-            $this->adminerr($msg);
-            $order->set_status('on-hold',$msg);
+            $msg = __("Could not capture Vipps payment for this order!", 'woo-vipps');
+            $order->add_order_note($msg);
             $order->save();
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
+            if (apply_filters('woo_vipps_on_hold_on_failed_capture', true, $order)) {
+                $msg = __("Could not capture Vipps payment - status set to", 'woo-vipps') . ' ' . __('on-hold','woocommerce');
+                $order->set_status('on-hold',$msg);
+                $order->save();
+                global $Vipps;
+                $this->adminerr($msg);
+                $Vipps->store_admin_notices();
+                return false;
+            } 
         }
     }
 
