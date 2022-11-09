@@ -1,10 +1,10 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.11.6
-Stable tag: 1.11.6
+Version: 1.11.7
+Stable tag: 1.11.7
 Requires at least: 4.7
-Tested up to: 6.1.0
+Tested up to: 6.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 7.0.1
@@ -79,7 +79,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-= 1.11.6 =
+= 1.11.7 =
 Fix problems where it would be possible to restart an order causing a 400 Duplicate Order ID at Vipps
 = 1.11.5 =
 Internal changes only
@@ -221,6 +221,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2022.11.09 version 1.11.7 =
+Fix issue with duplicate order ID's, but for real this time
+
 = 2022.11.07 version 1.11.6 =
 Fix issue with duplicate order ID's
 
