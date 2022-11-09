@@ -109,6 +109,20 @@ class Vipps {
         // Used in 'compat mode' only to add products to the cart
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
+        // START BADGE FIXME
+        add_action('wp_enqueue_scripts', function () {
+            // Only if active tho
+            wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+            wp_enqueue_script('vipps-onsite-messageing');
+        });
+        add_action('woocommerce_before_add_to_cart_form', function () {
+          // Get language, get metadata from product, other options, mesh with global options FIXME
+          echo "<vipps-badge></vipps-badge>";
+        });
+        // END BADGE FIXME
+
+
+  
         // Some stuff in the head for dynamic css etc
         add_action('wp_head', array($this, 'wp_head'));
 
@@ -279,6 +293,13 @@ class Vipps {
 
     }
 
+    public function badge_menu_page () {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
+        print "Yo!";
+    }
+
     public function admin_menu_page () {
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
         if (!current_user_can('manage_woocommerce')) {
@@ -315,15 +336,6 @@ class Vipps {
         if ($isactive) {
            $ischeckout = ($gw->get_option('vipps_checkout_enabled') == 'yes');
         }
-/*
-        $connected = false;
-        $connerror = "";
-        // Don't do this unless by button press. IOK 2022-05-04.
-        if ($configured) {
-            list($connected,$connerror)  = $gw->check_connection();
-        }
-*/
-
 
 
 
@@ -585,8 +597,9 @@ class Vipps {
     }
 
     public function admin_menu () {
-            $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
-            add_menu_page(__("Vipps", 'woo-vipps'), __("Vipps", 'woo-vipps'), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+        $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
+        add_menu_page(__("Vipps", 'woo-vipps'), __("Vipps", 'woo-vipps'), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
     }
 
     public function add_meta_boxes () {
