@@ -109,17 +109,49 @@ class Vipps {
         // Used in 'compat mode' only to add products to the cart
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
-        // START BADGE FIXME
-        add_action('wp_enqueue_scripts', function () {
-            // Only if active tho
-            wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
-            wp_enqueue_script('vipps-onsite-messageing');
-        });
-        add_action('woocommerce_before_add_to_cart_form', function () {
-          // Get language, get metadata from product, other options, mesh with global options FIXME
-          echo "<vipps-badge></vipps-badge>";
-        });
-        // END BADGE FIXME
+        $badge_options = get_option('vipps_badge_options');
+        if (@$badge_options['badgeon']) {
+            add_action('wp_enqueue_scripts', function () {
+                    wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+                    wp_enqueue_script('vipps-onsite-messageing');
+                    });
+            add_action('woocommerce_before_add_to_cart_form', function () use ($badge_options)  {
+                    global $product;
+                    if (!is_a($product, 'WC_Product')) return; 
+                    if (!apply_filters('woo_vipps_show_vipps_badge_for_product', true, $product)) {
+                       return;
+                    } 
+        
+                    // Get language, get metadata from product, other options, mesh with global options FIXME
+                    $attr = "";
+                    if (isset($badge_options['variant'])) {
+                        $attr .= " variant='" . sanitize_title($badge_options['variant']) . "' ";
+                    }
+                    if (apply_filters('woo_vipps_product_badge_show_later', @$badge_options['later'])) {
+                        $attr .= " vipps-senere='" . sanitize_title($badge_options['later']) . "' ";
+                    }
+
+                    $lang = $this->get_customer_language();
+                    if ($lang) {
+                        $attr .= " language=' ". $lang . "' ";
+                    }
+
+                    global $product;
+                    $supported_currencies = ['NOK'];
+                    $currency = get_woocommerce_currency();
+
+                    if ($product && in_array($currency, $supported_currencies)) {
+                        // Currently only supports NOK! 2022-11-11 IOK 
+                        $price = $product->get_price();
+                        $price = round($price * 100);
+                        $attr .= " amount ='". $price. "' ";
+                    }
+
+                    $badge = "<vipps-badge $attr></vipps-badge>";
+
+                    echo apply_filters('woo_vipps_product_badge_html', $badge); 
+                    });
+        } 
 
 
   
@@ -254,6 +286,9 @@ class Vipps {
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
 
+        // POST actions for the backend
+        add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
+
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
@@ -310,7 +345,12 @@ class Vipps {
            <p>
             <?php _e('The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.', 'woo-vipps'); ?>
            </p>
-           <p id=badgeholder style="font-size:1.5rem"><vipps-badge id="vipps-badge-demo"></vipps-badge></p>
+           <p id=badgeholder style="font-size:1.5rem">
+              <vipps-badge id="vipps-badge-demo"
+                <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
+                <?php if (@$badge_options['later']) echo ' vipps-senere="' . esc_attr($badge_options['later']) . '" ' ?>
+></vipps-badge>
+           </p>
            <p>
             <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
            </p>
@@ -319,6 +359,7 @@ class Vipps {
  
            <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
            <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+            <input type="hidden" name="action" value="update_vipps_badge_settings" />
             <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
             <div>
              <label for="badgeon"><?php _e('Turn on Vipps On-site Messaging badges', 'woo-vipps'); ?></label>
@@ -341,6 +382,9 @@ class Vipps {
              <label for="vippsLater"><?php _e('Support "Vipps Later"', 'woo-vipps'); ?></label>
              <input type="hidden" name="later" value="0" />
              <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" />
+            </div>
+            <div>
+              <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
             </div>
 
            </form>
@@ -380,6 +424,33 @@ class Vipps {
         </script> 
         <?php
     }
+
+    public function update_badge_settings () {
+        $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
+            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
+        }
+
+        $current = get_option('vipps_badge_options');
+        if (isset($_POST['badgeon'])) {
+            $current['badgeon'] = intval($_POST['badgeon']);
+        }
+        if (isset($_POST['variant'])) {
+            $current['variant'] = sanitize_title($_POST['variant']);
+        }
+        if (isset($_POST['later'])) {
+            $current['later'] = intval($_POST['later']);
+        }
+
+        update_option('vipps_badge_options', $current);
+        wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
+        exit();
+    }
+
 
     public function admin_menu_page () {
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
