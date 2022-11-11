@@ -310,10 +310,13 @@ class Vipps {
            <p>
             <?php _e('The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.', 'woo-vipps'); ?>
            </p>
-           <p><vipps-badge id="vipps-badge-demo"></vipps-badge></p>
+           <p id=badgeholder style="font-size:1.5rem"><vipps-badge id="vipps-badge-demo"></vipps-badge></p>
            <p>
             <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
            </p>
+
+           <p><?php _e('The language attribute will come from your website\'s settings; and if shown on a product page, the price will be inferred from the products price.', 'woo-vipps'); ?></p>
+ 
            <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
            <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
             <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
@@ -323,9 +326,9 @@ class Vipps {
              <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
             </div>
             <div>
-              <label for="variant"><?php _e('Variant', 'woo-vipps'); ?></label>
+              <label for="vippsBadgeVariant"><?php _e('Variant', 'woo-vipps'); ?></label>
             
-              <select name="variant">
+              <select id=vippsBadgeVariant  name="variant" onChange='changeVariant()'>
                <option value=""><?php _e('Choose color variant:', 'woo-vipps'); ?></option>
                <?php foreach($variants as $key=>$name): ?>
                 <option value="<?php echo $key; ?>" <?php if (@$badge_options['variant'] == $key) echo " selected "; ?> >
@@ -335,15 +338,46 @@ class Vipps {
               </select>
 
             <div>
-             <label for="later"><?php _e('Support "Vipps Later"', 'woo-vipps'); ?></label>
+             <label for="vippsLater"><?php _e('Support "Vipps Later"', 'woo-vipps'); ?></label>
              <input type="hidden" name="later" value="0" />
-             <input <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="later" name="later" />
+             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" />
             </div>
 
-            </div>
-         
            </form>
+         
         </div>
+        <script>
+         function changeVariant() {
+             let badge = document.getElementById('vipps-badge-demo');
+             let variantSelector = document.getElementById('vippsBadgeVariant');
+             let holder = document.getElementById('badgeholder');
+             let newbadge = badge.cloneNode();
+            
+             let variant = variantSelector.options[variantSelector.selectedIndex].value 
+            console.log("variant " + variant);
+ 
+             newbadge.setAttribute('variant', variant);
+             badge.remove();
+             console.log("newbadge %j", newbadge);
+             holder.appendChild(newbadge);
+         }
+         function changeLater() {
+             let badge = document.getElementById('vipps-badge-demo');
+             let later = document.getElementById('vippsLater').checked;
+             if (later) {
+                 console.log("later");
+                 badge.setAttribute('vipps-senere', true);
+             } else {
+                 console.log("after");
+                 badge.removeAttribute('vipps-senere');
+             }
+             let holder = document.getElementById('badgeholder');
+             let newbadge = badge.cloneNode();
+             badge.remove();
+             holder.appendChild(newbadge);
+         }
+
+        </script> 
         <?php
     }
 
