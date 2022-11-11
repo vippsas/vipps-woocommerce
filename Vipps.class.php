@@ -127,7 +127,21 @@ class Vipps {
                     if (isset($badge_options['variant'])) {
                         $attr .= " variant='" . sanitize_title($badge_options['variant']) . "' ";
                     }
-                    if (apply_filters('woo_vipps_product_badge_show_later', @$badge_options['later'])) {
+
+                    $price = 0;
+
+                    $supported_currencies = ['NOK'];
+                    $currency = get_woocommerce_currency();
+                    if ($product && in_array($currency, $supported_currencies)) {
+                        // Currently only supports NOK! 2022-11-11 IOK 
+                        $price = $product->get_price();
+                        $price = round($price * 100);
+                        $attr .= " amount ='". $price. "' ";
+                    }
+
+                    $showlater = @$badge_options['later'] && $price>=intval(@$badge_options['minLater']);
+
+                    if (apply_filters('woo_vipps_product_badge_show_later', $showlater, $product)) {
                         $attr .= " vipps-senere='" . sanitize_title($badge_options['later']) . "' ";
                     }
 
@@ -136,16 +150,7 @@ class Vipps {
                         $attr .= " language=' ". $lang . "' ";
                     }
 
-                    global $product;
-                    $supported_currencies = ['NOK'];
-                    $currency = get_woocommerce_currency();
 
-                    if ($product && in_array($currency, $supported_currencies)) {
-                        // Currently only supports NOK! 2022-11-11 IOK 
-                        $price = $product->get_price();
-                        $price = round($price * 100);
-                        $attr .= " amount ='". $price. "' ";
-                    }
 
                     $badge = "<vipps-badge $attr></vipps-badge>";
 
@@ -384,6 +389,13 @@ class Vipps {
              <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" />
             </div>
             <div>
+             <label for="vippsLater"><?php _e('Minimum price for "Vipps Later""', 'woo-vipps'); ?></label>
+             <input style="text-align:right; width: 8rem" type="text" pattern="[0-9]+" name="minLater" 
+                 <?php if (@$badge_options['minLater']) echo 'value="' . intval($badge_options['minLater']) . '"'; ?>
+              />
+            </div>
+
+            <div>
               <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
             </div>
 
@@ -444,6 +456,9 @@ class Vipps {
         }
         if (isset($_POST['later'])) {
             $current['later'] = intval($_POST['later']);
+        }
+        if (isset($_POST['minLater'])) {
+            $current['minLater'] = intval($_POST['minLater']);
         }
 
         update_option('vipps_badge_options', $current);
