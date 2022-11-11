@@ -899,6 +899,17 @@ class Vipps {
         if (isset($_POST['woo_vipps_add_buy_now_button'])) {
             update_post_meta($id, '_vipps_buy_now_button', sanitize_text_field($_POST['woo_vipps_add_buy_now_button']));
         }
+        // This is for overriding Vipps Badge settings
+        if (isset($_POST['woo_vipps_show_badge'])) {
+            update_post_meta($id, '_vipps_show_badge', sanitize_text_field($_POST['woo_vipps_show_badge']));
+        }
+        if (isset($_POST['woo_vipps_badge_pay_later'])) {
+            update_post_meta($id, '_vipps_badge_pay_later', sanitize_text_field($_POST['woo_vipps_badge_pay_later']));
+        }
+       
+       
+
+
         // This is for the shareable links.
         if (isset($_POST['woo_vipps_shareable_delenda'])) {
             $delenda = array_map('sanitize_text_field',$_POST['woo_vipps_shareable_delenda']);
@@ -926,6 +937,7 @@ class Vipps {
         global $post;
         echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
         $this->product_options_vipps();
+        $this->product_options_vipps_badges();
         $this->product_options_vipps_shareable_link();
         echo "</div>";
     }
@@ -972,6 +984,48 @@ class Vipps {
         }
         echo '</div>';
     }
+
+    public function product_options_vipps_badges() {
+        $current = get_option('vipps_badge_options');
+        if (!@$current['badgeon']) return;
+        echo '<div class="options_group">';
+        echo "<div class='blurb' style='margin-left:13px'><h4>";
+        echo __("On-site messaging badge", 'woo-vipps') ;
+        echo "<h4></div>";
+        $showbadge = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_show_badge', true));
+        $later = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_badge_pay_later', true));
+        woocommerce_wp_select( 
+                array( 
+                    'id'      => 'woo_vipps_show_badge', 
+                    'label'   => __( 'Override default settings', 'woo-vipps' ),
+                    'options' => array(
+                        '' => __('Default setting', 'woo-vipps'),
+                        'none' => __('No badge', 'woo-vipps'),
+                        'white' => __('White', 'woo-vipps'),
+                        'grey' => __('Grey', 'woo-vipps'),
+                        'orange' => __('Orange', 'woo-vipps'),
+                        'light-orange' => __('Light orange', 'woo-vipps'),
+                        'purple' => __('Purple', 'woo-vipps'),
+                        ),
+                    'value' => $showbadge
+                    )
+                );
+        woocommerce_wp_select( 
+                array( 
+                    'id'      => 'woo_vipps_badge_pay_later', 
+                    'label'   => __( 'Override Vipps Later', 'woo-vipps' ),
+                    'options' => array(
+                        '' => __('Default setting', 'woo-vipps'),
+                        'later' => __('Use Vipps Later', 'woo-vipps'),
+                        'no' => __('Do not use Vipps Later', 'woo-vipps'),
+                        ),
+                    'value' => $later
+                    )
+                );
+        echo "</div>";
+        
+    } 
+
     public function product_options_vipps_shareable_link() {
         global $post;
         $product = wc_get_product($post->ID);
