@@ -297,7 +297,54 @@ class Vipps {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
-        print "Yo!";
+        $badge_options = get_option('vipps_badge_options');
+        $variants = ['white'=> __('White', 'woo-vipps'), 'grey' => __('Grey','woo-vipps'), 
+                     'orange'=> __('Orange', 'woo-vipps'), 'light-orange'=>__('Light Orange','woo-vipps'), 
+                     'purple'=> __('Purple', 'woo-vipps')];
+
+        ?>
+        <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script>
+        <div class='wrap vipps-badge-settings'>
+
+          <h1><?php _e('Vipps On-site Messaging', 'woo-vipps'); ?></h1>
+           <p>
+            <?php _e('The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.', 'woo-vipps'); ?>
+           </p>
+           <p><vipps-badge id="vipps-badge-demo"></vipps-badge></p>
+           <p>
+            <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
+           </p>
+           <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
+           <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+            <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
+            <div>
+             <label for="badgeon"><?php _e('Turn on Vipps On-site Messaging badges', 'woo-vipps'); ?></label>
+             <input type="hidden" name="badgeon" value="0" />
+             <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
+            </div>
+            <div>
+              <label for="variant"><?php _e('Variant', 'woo-vipps'); ?></label>
+            
+              <select name="variant">
+               <option value=""><?php _e('Choose color variant:', 'woo-vipps'); ?></option>
+               <?php foreach($variants as $key=>$name): ?>
+                <option value="<?php echo $key; ?>" <?php if (@$badge_options['variant'] == $key) echo " selected "; ?> >
+                   <?php echo $name ; ?>
+                </option>
+               <?php endforeach; ?>
+              </select>
+
+            <div>
+             <label for="later"><?php _e('Support "Vipps Later"', 'woo-vipps'); ?></label>
+             <input type="hidden" name="later" value="0" />
+             <input <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="later" name="later" />
+            </div>
+
+            </div>
+         
+           </form>
+        </div>
+        <?php
     }
 
     public function admin_menu_page () {
