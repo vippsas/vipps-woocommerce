@@ -118,14 +118,20 @@ class Vipps {
             add_action('woocommerce_before_add_to_cart_form', function () use ($badge_options)  {
                     global $product;
                     if (!is_a($product, 'WC_Product')) return; 
-                    if (!apply_filters('woo_vipps_show_vipps_badge_for_product', true, $product)) {
+
+                    $show = intval(@$badge_options['defaultall']);
+                    $forthis = $product->get_meta('_vipps_show_badge', true);
+  
+                    $doshow = $show || ($forthis &&  $forthis  != 'none');
+
+                    if (!apply_filters('woo_vipps_show_vipps_badge_for_product', $doshow, $product)) {
                        return;
                     } 
         
-                    // Get language, get metadata from product, other options, mesh with global options FIXME
                     $attr = "";
-                    if (isset($badge_options['variant'])) {
-                        $attr .= " variant='" . sanitize_title($badge_options['variant']) . "' ";
+                    if ($forthis != 'none' || isset($badge_options['variant'])) {
+                        $variant = ($forthis && $forthis != 'none') ? $forthis : $badge_options['variant'];
+                        $attr .= " variant='" . sanitize_title($variant) . "' ";
                     }
 
                     $price = 0;
@@ -140,6 +146,12 @@ class Vipps {
                     }
 
                     $showlater = @$badge_options['later'] && $price>=intval(@$badge_options['minLater']);
+                    $showlaterforthis =  $product->get_meta('_vipps_badge_pay_later', true);
+                    if ($showlaterforthis == 'no') {
+                        $showlater = false;
+                    } else if ($showlaterforthis == 'later') {
+                        $showlater = true;
+                    }
 
                     if (apply_filters('woo_vipps_product_badge_show_later', $showlater, $product)) {
                         $attr .= " vipps-senere='" . sanitize_title($badge_options['later']) . "' ";
@@ -371,6 +383,14 @@ class Vipps {
              <input type="hidden" name="badgeon" value="0" />
              <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
             </div>
+
+            <div>
+             <label for="defaultall"><?php _e('Add badge to all products by default', 'woo-vipps'); ?></label>
+             <input type="hidden" name="defaultall" value="0" />
+             <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
+             <p><?php _e("If selected, all products will get a badge, but you can override this on the Vipps tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'); ?></p>
+            </div>
+
             <div>
               <label for="vippsBadgeVariant"><?php _e('Variant', 'woo-vipps'); ?></label>
             
@@ -450,6 +470,9 @@ class Vipps {
         $current = get_option('vipps_badge_options');
         if (isset($_POST['badgeon'])) {
             $current['badgeon'] = intval($_POST['badgeon']);
+        }
+        if (isset($_POST['defaultall'])) {
+            $current['defaultall'] = intval($_POST['defaultall']);
         }
         if (isset($_POST['variant'])) {
             $current['variant'] = sanitize_title($_POST['variant']);
