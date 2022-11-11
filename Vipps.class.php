@@ -367,7 +367,7 @@ class Vipps {
             <input type="hidden" name="action" value="update_vipps_badge_settings" />
             <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
             <div>
-             <label for="badgeon"><?php _e('Turn on Vipps On-site Messaging badges', 'woo-vipps'); ?></label>
+             <label for="badgeon"><?php _e('Turn on support for Vipps On-site Messaging badges', 'woo-vipps'); ?></label>
              <input type="hidden" name="badgeon" value="0" />
              <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
             </div>
