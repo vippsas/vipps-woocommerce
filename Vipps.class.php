@@ -83,15 +83,56 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-        // For new settings setup
-        __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps');
-        __("Send receipts to the customers Vipps app", 'woo-vipps');
-        __("If this is checked, a receipt will be sent to Vipps which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps');
-
-        __("You can get Vipps Checkout now!", 'woo-vipps');
-        __("Your customers can pay with Vipps, Visa or Mastercard", 'woo-vipps');
-        __("Shipping information is autofilled with Vipps", 'woo-vipps');
-        __("You get settlement in three days", 'woo-vipps');
+       // For the On-Site Messaging Badge feature
+        __("Add badge to all products by default");
+        __("Add support for Vipps Senere, if your store provides it");
+        __("Amount in minor units");
+        __("Badges");
+        __("Cannot restart order at Vipps");
+        __("Cannot restart order with same order ID: Must cancel");
+        __("Check this if your store supports Vipps Senere and you want the specialized badge for that");
+        __("Choose color variant:");
+        __("Choose language, or use the default");
+        __("Choose the badge variant with the perfect colors for your site");
+        __("Could not capture Vipps payment for this order!");
+        __("Default");
+        __("Default setting");
+        __("Do not use Vipps Later");
+        __("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %s Status: %s User agent: %s" );
+        __("English");
+        __("Grey");
+        __("If selected, all products will get a badge, but you can override this on the Vipps tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page");
+        __("If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href=\"%s\" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.");
+        __("If you use Gutenberg, you should be able to add a Vipps Badge block wherever you need it. It is called Vipps On-Site Messaging Badge Block.");
+        __("Language");
+        __("Light Orange");
+        __("Minimum price for \"Vipps Later\"\"");
+        __("No badge");
+        __("Norwegian");
+        __("On-site messaging badge");
+        __("Orange");
+        __("Order %d was attempted restarted, but had no Vipps session url stored. Cannot continue!");
+        __("Order session expired at Vipps, please try again!");
+        __("Override default settings");
+        __("Override Vipps Later");
+        __("Please refer to the documentation for the meaning of the parameters.");
+        __("Purple");
+        __("Shortcodes");
+        __("Support \"Vipps Later\"");
+        __("The Gutenberg Block");
+        __("The language attribute will come from your website's settings; and if shown on a product page, the price will be inferred from the products price.");
+        __("The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.");
+        __("The shortcode looks like this:");
+        __("Trying to start order %s with status %s - only 'pending' and 'failed' are allowed, so this will fail");
+        __("Turn on support for Vipps On-site Messaging badges");
+        __("Update settings");
+        __("Use Vipps Later");
+        __("Vipps On-Site Messaging Badge");
+        __("Vipps payment restarted");
+        __("Vipps senere");
+        __("White");
+        __("You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)");
+        __("You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block");
 
     }
 
