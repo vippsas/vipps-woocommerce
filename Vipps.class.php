@@ -358,7 +358,7 @@ class Vipps {
         <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script>
         <div class='wrap vipps-badge-settings'>
 
-          <h1><?php _e('Vipps On-site Messaging', 'woo-vipps'); ?></h1>
+          <h1><?php _e('Vipps On-Site Messaging', 'woo-vipps'); ?></h1>
            <p>
             <?php _e('The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.', 'woo-vipps'); ?>
            </p>
@@ -1069,7 +1069,7 @@ class Vipps {
                         'white' => __('White', 'woo-vipps'),
                         'grey' => __('Grey', 'woo-vipps'),
                         'orange' => __('Orange', 'woo-vipps'),
-                        'light-orange' => __('Light orange', 'woo-vipps'),
+                        'light-orange' => __('Light Orange', 'woo-vipps'),
                         'purple' => __('Purple', 'woo-vipps'),
                         ),
                     'value' => $showbadge
