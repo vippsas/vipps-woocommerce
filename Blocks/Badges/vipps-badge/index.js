@@ -10,8 +10,6 @@
         const CheckboxControl = components.CheckboxControl;
         const TextControl = components.TextControl;
 
-        const RichText = wp.blockEditor.RichText;
-
         const useBlockProps = wp.blockEditor.useBlockProps;
         const BlockControls = wp.blockEditor.BlockControls;
         const InspectorControls = wp.blockEditor.InspectorControls;
@@ -104,7 +102,15 @@
                           options: [true, false],
                           checked: props.attributes.later,
                           help: VippsBadgeBlockConfig['VippsLaterText']  }),
+                      el(TextControl, { onChange: x=>props.setAttributes({'amount': x}),
+                          label: VippsBadgeBlockConfig['Amount'], value: attributes.amount,
+                          help: VippsBadgeBlockConfig['AmountText']  }),
+                      el(SelectControl, { onChange: x=>props.setAttributes({language: x}) , 
+                          label: VippsBadgeBlockConfig['Language'], value:attributes.language, 
+                          options: VippsBadgeBlockConfig['languages'],
+                          help:  VippsBadgeBlockConfig['LanguageText']  }),
                     ),
+                         
                     
             )
 

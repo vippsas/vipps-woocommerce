@@ -58,13 +58,24 @@ function vipps_badge_init() {
         $localizations['variants'] = $variants;
         $localizations['defaultvariant'] = 'white';
 
-        $localizations['BlockTitle'] = __('Vipps On-site Messaging badge', 'woo-vipps'); 
+        $localizations['BlockTitle'] = __('Vipps On-Site Messaging Badge', 'woo-vipps'); 
 
         $localizations['Variant'] = __('Variant', 'woo-vipps');
         $localizations['VariantText'] = __('Choose the badge variant with the perfect colors for your site', 'woo-vipps');
 
         $localizations['VippsLater'] = __('Vipps senere', 'woo-vipps');
         $localizations['VippsLaterText'] = __('Add support for Vipps Senere, if your store provides it', 'woo-vipps');
+
+        $localizations['Language'] = __('Language', 'woo-vipps');
+        $localizations['LanguageText'] = __('Choose language, or use the default', 'woo-vipps');
+        $localizations['languages'] = array(
+            ['label'=>__('Default', 'woo-vipps'), 'value'=>'default'],
+            ['label'=>__('English', 'woo-vipps'), 'value'=>'en'],
+            ['label'=>__('Norwegian', 'woo-vipps'), 'value'=>'no']);
+
+        $localizations['Amount'] = __('Amount in minor units', 'woo-vipps');
+        $localizations['AmountText'] = __('You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)', 'woo-vipps');
+ 
 
         $localizations['vippssmileurl'] = plugins_url('../../img/vipps-smile-orange.png',__FILE__);
 
