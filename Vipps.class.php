@@ -107,6 +107,7 @@ class Vipps {
         __("Language");
         __("Light Orange");
         __("Minimum price for \"Vipps Later\"\"");
+        __("Minimum price for \"Vipps Later\"");
         __("No badge");
         __("Norwegian");
         __("On-site messaging badge");
