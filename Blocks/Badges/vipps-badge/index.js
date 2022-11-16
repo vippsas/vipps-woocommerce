@@ -77,7 +77,7 @@
 
             return el(
                 'div',
-                { className: 'vipps-badge-wrapper inline ' + props.className },
+                { className: 'vipps-badge-wrapper ' + props.className },
 
                    el('vipps-badge', { className: props.className }, []), 
 
@@ -100,22 +100,10 @@
 
 	    save: function( props ) {
 		var attributes = props.attributes;
-		return el( 'span', { className: 'continue-with-vipps-wrapper inline ' + props.className   },
-                    el("a", { className: "button vipps-orange vipps-button continue-with-vipps continue-with-vipps-action", 
-                              title:attributes.title, 'data-application':attributes.application, href: "javascript: void(0);" },
-                    el( RichText.Content, {
-                       tagName: 'span',
-                       className: 'prelogo',
-                       value:attributes.prelogo,
-                     }),
-                      el("img", {alt:attributes.title, src: VippsBadgeBlockConfig['logosrc'] }),
-                    el( RichText.Content, {
-                       tagName: 'span',
-                       className: 'postlogo',
-                       value: attributes.postlogo
-                     }),
+		return el( 'div', { className: 'vipps-badge-wrapper ' + props.className   },
+                    el('vipps-badge', { className: props.className }, []),
 
-                    ));
+                    );
             },
                 
   });
