@@ -48,24 +48,24 @@ function vipps_badge_init() {
 
      
         $localizations = array();
-        $applications = array(array('label'=> __("Test Thing", 'woo-vipps'), 'value'=>'wordpress'));
+        $variants = array (
+           array('label'=> __("White", 'woo-vipps'), 'value'=>'white'),
+           array('label'=> __("Grey", 'woo-vipps'), 'value'=>'grey'),
+           array('label'=> __("Orange", 'woo-vipps'), 'value'=>'orange'),
+           array('label'=> __("Light Orange", 'woo-vipps'), 'value'=>'light-orange'),
+           array('label'=> __("Purple", 'woo-vipps'), 'value'=>'purple'));
 
-        $applications[] = array('label'=> __("Other Thing", 'woo-vipps'), 'value'=>'other');
-        $localizations['applications'] = $applications;
+        $localizations['variants'] = $variants;
+        $localizations['defaultvariant'] = 'white';
 
         $localizations['BlockTitle'] = __('Vipps On-site Messaging badge', 'woo-vipps'); 
 
-        $localizations['Application'] = __('Application', 'woo-vipps');
-        $localizations['ApplicationsText'] = __('The continue with Vipps-button can perform different actions depending on what is defined in your system. Per default it will log you in to WordPress or WooCommerce if installed, but plugins and themes can define more', 'woo-vipps');
-        $localizations['Title'] = __('Title', 'woo-vipps');
-        $localizations['TitleText'] = __('This will be used as the title/popup of the button', 'woo-vipps');
- 
-        $localizations['DefaultTextPrelogo'] = __('Whatever', 'woo-vipps'); 
-        $localizations['DefaultTextPostlogo'] = __('!', 'woo-vipps'); 
-        $localizations['DefaultTitle'] = __('Whatever!', 'woo-vipps'); 
+        $localizations['Variant'] = __('Variant', 'woo-vipps');
+        $localizations['VariantText'] = __('Choose the badge variant with the perfect colors for your site', 'woo-vipps');
 
+        $localizations['VippsLater'] = __('Vipps senere', 'woo-vipps');
+        $localizations['VippsLaterText'] = __('Add support for Vipps Senere, if your store provides it', 'woo-vipps');
 
-        $localizations['logosrc'] = plugins_url('../../img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $localizations['vippssmileurl'] = plugins_url('../../img/vipps-smile-orange.png',__FILE__);
 
 	$index_js = 'vipps-badge/index.js';
@@ -79,7 +79,7 @@ function vipps_badge_init() {
 			'wp-compose',
 			'wp-i18n',
 			'wp-element',
-            'vipps-onsite-messageing'
+                       'vipps-onsite-messageing'
 		),
 		filemtime( "$dir/$index_js" )
 	);
@@ -102,6 +102,7 @@ function vipps_badge_init() {
 	);
 
 	register_block_type( 'woo-vipps/vipps-badge', array(
+                'textdomain' => 'woo-vipps',
 		'editor_script' => 'vipps-badge-block-editor',
 		'editor_style'  => 'vipps-badge-block-editor',
 		'style'         => 'vipps-badge-block',
