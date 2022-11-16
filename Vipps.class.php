@@ -170,6 +170,7 @@ class Vipps {
         } 
 
 
+
   
         // Some stuff in the head for dynamic css etc
         add_action('wp_head', array($this, 'wp_head'));
@@ -361,12 +362,6 @@ class Vipps {
            <p>
             <?php _e('The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.', 'woo-vipps'); ?>
            </p>
-           <p id=badgeholder style="font-size:1.5rem">
-              <vipps-badge id="vipps-badge-demo"
-                <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
-                <?php if (@$badge_options['later']) echo ' vipps-senere="' . esc_attr($badge_options['later']) . '" ' ?>
-></vipps-badge>
-           </p>
            <p>
             <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
            </p>
@@ -389,6 +384,13 @@ class Vipps {
              <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
              <p><?php _e("If selected, all products will get a badge, but you can override this on the Vipps tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'); ?></p>
             </div>
+
+           <p id=badgeholder style="font-size:1.5rem">
+              <vipps-badge id="vipps-badge-demo"
+                <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
+                <?php if (@$badge_options['later']) echo ' vipps-senere="' . esc_attr($badge_options['later']) . '" ' ?>
+></vipps-badge>
+           </p>
 
             <div>
               <label for="vippsBadgeVariant"><?php _e('Variant', 'woo-vipps'); ?></label>
@@ -496,6 +498,30 @@ class Vipps {
         update_option('vipps_badge_options', $current);
         wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
         exit();
+    }
+
+    public function vipps_badge_shortcode($atts) {
+        $args = shortcode_atts( array('id'=>'', 'class'=>'', 'variant' => '','language'=>'','amount' => '', 'vipps-senere'=>''), $atts );
+        
+        $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
+        $language = in_array($args['language'], ['en','no']) ? $args['language'] : $this->get_customer_language();
+        $amount = intval($args['amount']);
+        $later = $args['vipps-senere'];
+        $id = sanitize_title($args['id']);
+        $class = sanitize_text_field($args['class']);
+
+        $attributes = [];
+        if ($variant) $attributes['variant'] = $variant;
+        if ($language) $attributes['language'] = $language;
+        if ($amount) $attributes['amount'] = $amount;
+        if ($later) $attributes['vipps-senere'] = 1;
+        if ($id) $attributes['id'] = $id;
+        if ($class) $attributes['class'] = $class;
+        
+        $badgeatts = "";
+        foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
+
+        return "<vipps-badge $badgeatts></vipps-badge>";
     }
 
 
@@ -841,7 +867,10 @@ class Vipps {
         add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
         // The Vipps Checkout feature which overrides the normal checkout process.
         add_shortcode('vipps_checkout', array($this, 'vipps_checkout_shortcode'));
+        // Badges, if using shortcodes
+        add_shortcode('vipps-badge', array($this, 'vipps_badge_shortcode'));
     }
+
 
     public function log ($what,$type='info') {
         $logger = wc_get_logger();
