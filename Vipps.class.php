@@ -374,7 +374,7 @@ class Vipps {
            <p><?php _e('The language attribute will come from your website\'s settings; and if shown on a product page, the price will be inferred from the products price.', 'woo-vipps'); ?></p>
  
            <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
-           <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+           <form class="vipps-badge-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
             <input type="hidden" name="action" value="update_vipps_badge_settings" />
             <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
             <div>
@@ -405,7 +405,7 @@ class Vipps {
             <div>
              <label for="vippsLater"><?php _e('Support "Vipps Later"', 'woo-vipps'); ?></label>
              <input type="hidden" name="later" value="0" />
-             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" />
+             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" /><div style="display:inline-block"><?php _e("Check this if your store supports Vipps Senere and you want the specialized badge for that", 'woo-vipps'); ?>
             </div>
             <div>
              <label for="vippsLater"><?php _e('Minimum price for "Vipps Later""', 'woo-vipps'); ?></label>
@@ -419,7 +419,17 @@ class Vipps {
             </div>
 
            </form>
-         
+
+           <h2><?php _e('The Gutenberg Block', 'woo-vipps'); ?></h2>
+           <p><?php _e('If you use Gutenberg, you should be able to add a Vipps Badge block wherever you need it. It is called Vipps On-Site Messaging Badge Block.', 'woo-vipps'); ?>
+
+           <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
+           <p><?php echo sprintf(__('If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href="%s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), "https://vippsas.github.io/vipps-developer-docs/docs/APIs/checkout-api/vipps-checkout-on-site-messaging"); ?></p>
+           <p><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
+              <pre>[vipps-badge variant={white|orange|light-orange|grey|purple}<br>             language={en|no}<br>             amount={amount in minor units}<br>             vipps-senere={false|true}]</pre><br>
+              <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?>
+           </p>
+
         </div>
         <script>
          function changeVariant() {

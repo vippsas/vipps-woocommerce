@@ -183,3 +183,13 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     }
 }
 
+/* Badge page stuff */
+.vipps-badge-settings label {
+    width: 40%;
+    display: inline-block;
+    font-weight: 550;
+}
+
+.vipps-badge-settings  div {
+    margin-top: .5rem;
+}
