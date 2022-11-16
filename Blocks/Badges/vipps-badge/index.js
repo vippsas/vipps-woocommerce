@@ -1,7 +1,7 @@
 ( function( wp ) {
 
 	const registerBlockType = wp.blocks.registerBlockType;
-    const AlignmentToolbar = wp.blockEditor.AlignmentToolbar;
+         const AlignmentToolbar = wp.blockEditor.AlignmentToolbar;
 
 	const el  = wp.element.createElement;
         const components = wp.components;
@@ -14,7 +14,8 @@
         const BlockControls = wp.blockEditor.BlockControls;
         const InspectorControls = wp.blockEditor.InspectorControls;
 
-        const onChangeAlignment = function (event) {
+        const onChangeAlignment = function (what) {
+           console.log("Change to %j", what); 
         };
 
 	registerBlockType( 'woo-vipps/vipps-badge', {
@@ -24,11 +25,14 @@
 		supports: {
 			html: true,
                         anchor: true,
-                        align:true,
+                        align:['left', 'right', 'center'],
                         customClassName: true,
 		},
 
                 attributes: {
+                  align: {
+                       type: "string",
+                  },
                   variant: {
                        default: VippsBadgeBlockConfig['defaultvariant'],
                        type: "string",
@@ -92,14 +96,25 @@
                 }
             } 
 
+            let extraclass =  props.className  ? props.className : "";
+            switch(props.attributes.align) {
+                case 'center':
+                    extraclass += " aligncenter"; break;
+                case 'left':
+                    extraclass += " alignleft"; break;
+                case 'right':
+                    extraclass += " alignright"; break;
+            }
+
+
             return el(
                 'div',
-                { className: 'vipps-badge-wrapper ' + props.className },
+                { className: 'vipps-badge-wrapper ' + extraclass},
 
                    el('vipps-badge', attrs, []), 
 
                    el(BlockControls, {}, 
-                        el(AlignmentToolbar,{ value: attributes.alignment, onChange: onChangeAlignment  } )
+                        el(AlignmentToolbar,{ value: attributes.alignment, onChange: x=>console.log("new %j", x)} )
                    ),
                   
                     el(InspectorControls, {},
@@ -144,8 +159,10 @@
                         attrs['amount'] = props.attributes.amount;
                     }
                 } 
+            
+                let extraclass =  props.className  ? props.className : "";
 
-		return el( 'div', { className: 'vipps-badge-wrapper ' + props.className   },
+		return el( 'div', { className: 'vipps-badge-wrapper ' + props.extraclass},
                     el('vipps-badge', attrs, []),
 
                     );

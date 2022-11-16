@@ -43,6 +43,11 @@ SOFTWARE.
  min-width:15em;
 }
 
+/* This is for the badge block IOK 2022-11-16 */
+.vipps-badge-wrapper.aligncenter {
+  text-align: center;
+}
+
 /* end block stuff for now */
 
 form#vippsdata {
