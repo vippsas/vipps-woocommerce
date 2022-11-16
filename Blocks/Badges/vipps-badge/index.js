@@ -15,7 +15,6 @@
         const InspectorControls = wp.blockEditor.InspectorControls;
 
         const onChangeAlignment = function (event) {
-            console.log("Alignment change: %j", event);
         };
 
 	registerBlockType( 'woo-vipps/vipps-badge', {
@@ -51,8 +50,8 @@
                        attribute: "vipps-senere"
                   },
                   amount:  {
-                       default: 0,
-                       type: "number",
+                       default: "",
+                       type: "text",
                        source: "attribute",
                        selector: "vipps-badge",
                        attribute: "amount"
@@ -81,6 +80,17 @@
             if (props.attributes.later) {
                 attrs["vipps-senere"] = true;
             }
+            if (props.attributes.language !== 'default') {
+                attrs['language'] = props.attributes.language;
+            } else {
+                attrs['language'] = "";
+            }
+            if (props.attributes.amount ) {
+                let am = parseInt(props.attributes.amount);
+                if (!isNaN(am)) {
+                    attrs['amount'] = props.attributes.amount;
+                }
+            } 
 
             return el(
                 'div',
@@ -123,8 +133,17 @@
                 if (props.attributes.later) {
                     attrs["vipps-senere"] = "true";
                 }
-                
-                 console.log("Saving the vipps-badge with %j", attrs);
+                if (props.attributes.language !== 'default') {
+                    attrs['language'] = props.attributes.language;
+                } else {
+                    attrs['language'] = "";
+                }
+                if (props.attributes.amount ) {
+                    let am = parseInt(props.attributes.amount);
+                    if (!isNaN(am)) {
+                        attrs['amount'] = props.attributes.amount;
+                    }
+                } 
 
 		return el( 'div', { className: 'vipps-badge-wrapper ' + props.className   },
                     el('vipps-badge', attrs, []),

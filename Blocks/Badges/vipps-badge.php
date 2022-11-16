@@ -104,19 +104,11 @@ function vipps_badge_init() {
 		filemtime( "$dir/$editor_css" )
 	);
 
-	$style_css = 'vipps-badge/style.css';
-	wp_register_style(
-		'vipps-badge-block',
-		plugins_url( $style_css, __FILE__ ),
-		array(),
-		filemtime( "$dir/$style_css" )
-	);
 
 	register_block_type( 'woo-vipps/vipps-badge', array(
                 'textdomain' => 'woo-vipps',
 		'editor_script' => 'vipps-badge-block-editor',
-		'editor_style'  => 'vipps-badge-block-editor',
-		'style'         => 'vipps-badge-block',
+		'editor_style'  => 'vipps-badge-block-editor'
 	) );
 }
 add_action( 'init', 'vipps_badge_init' );
