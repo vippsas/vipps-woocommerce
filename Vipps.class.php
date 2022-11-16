@@ -112,7 +112,6 @@ class Vipps {
         $badge_options = get_option('vipps_badge_options');
         if (@$badge_options['badgeon']) {
             add_action('wp_enqueue_scripts', function () {
-                    wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
                     wp_enqueue_script('vipps-onsite-messageing');
                     });
             add_action('woocommerce_before_add_to_cart_form', function () use ($badge_options)  {
@@ -780,6 +779,8 @@ class Vipps {
         wp_enqueue_style('vipps-fonts');
         wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
 
+        wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+
     }
 
     public function notice_is_test_mode() {
@@ -819,6 +820,8 @@ class Vipps {
     public function wp_enqueue_scripts() {
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
+
+        wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
     }
 
 

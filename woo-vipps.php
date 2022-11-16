@@ -78,6 +78,9 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     VippsQRCodeController::register_hooks();
 
     require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
+
+    // Gutenberg block for on-site messaging badges, if Gutenberg is installed. IOK 2022-11-16
+    require_once(dirname(__FILE__) . '/Blocks/Badges/vipps-badge.php');
 }
 
 add_action ('before_woocommerce_init', function () {
