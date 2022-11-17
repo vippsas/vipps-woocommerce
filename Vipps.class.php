@@ -359,15 +359,13 @@ class Vipps {
         <div class='wrap vipps-badge-settings'>
 
           <h1><?php _e('Vipps On-Site Messaging', 'woo-vipps'); ?></h1>
-           <p>
-            <?php _e('The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.', 'woo-vipps'); ?>
-           </p>
+
+           <h3><?php _e('Vipps On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that Vipps payment is accepted.', 'woo-vipps'); ?></h3>
+
            <p>
             <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
            </p>
 
-           <p><?php _e('The language attribute will come from your website\'s settings; and if shown on a product page, the price will be inferred from the products price.', 'woo-vipps'); ?></p>
- 
            <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
            <form class="vipps-badge-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
             <input type="hidden" name="action" value="update_vipps_badge_settings" />
