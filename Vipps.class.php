@@ -84,6 +84,7 @@ class Vipps {
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
        // For the On-Site Messaging Badge feature
+        __('Vipps On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that Vipps payment is accepted.', 'woo-vipps');
         __("Add badge to all products by default");
         __("Add support for Vipps Senere, if your store provides it");
         __("Amount in minor units");
