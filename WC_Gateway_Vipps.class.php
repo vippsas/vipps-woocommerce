@@ -1265,7 +1265,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        if (!empty($content)) {
+        if (!empty($content) && isset($content['transactionInfo'])) {
            // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
            // status 'captured'
            $transactionInfo = $content['transactionInfo'];
@@ -1461,7 +1461,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
         }
 
-        if (!empty($content)) {
+        if (!empty($content)  && isset($content['transactionInfo']) {
             // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
             $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
             $transactionSummary= $content['transactionSummary'];
