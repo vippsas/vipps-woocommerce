@@ -482,21 +482,17 @@ class Vipps {
              let newbadge = badge.cloneNode();
             
              let variant = variantSelector.options[variantSelector.selectedIndex].value 
-            console.log("variant " + variant);
  
              newbadge.setAttribute('variant', variant);
              badge.remove();
-             console.log("newbadge %j", newbadge);
              holder.appendChild(newbadge);
          }
          function changeLater() {
              let badge = document.getElementById('vipps-badge-demo');
              let later = document.getElementById('vippsLater').checked;
              if (later) {
-                 console.log("later");
                  badge.setAttribute('vipps-senere', true);
              } else {
-                 console.log("after");
                  badge.removeAttribute('vipps-senere');
              }
              let holder = document.getElementById('badgeholder');

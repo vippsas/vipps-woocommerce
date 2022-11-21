@@ -2745,7 +2745,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           </div>
 <script>
 function activate_vipps_checkout(yesno) {
- console.log("This!");
   var nonce = <?php echo json_encode(wp_create_nonce('woo_vipps_activate_checkout')); ?>;
   var referer = jQuery('input[name="_wp_http_referer"]').val();
   var args = { '_wpnonce' : nonce, '_wp_http_referer' : referer, 'activate': yesno, 'action' : 'woo_vipps_activate_checkout_page' }

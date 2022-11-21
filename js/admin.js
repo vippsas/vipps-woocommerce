@@ -48,7 +48,6 @@ SOFTWARE.
                     multiple: false
                 }).on('select', function() {
                     var attachment = custom_uploader.state().get('selection').first().toJSON();
-                    console.log("attachment %j", attachment);
 
                     url = false;
                     if (attachment['url']) {
@@ -80,7 +79,6 @@ SOFTWARE.
     /* Tab-ify the settings page */
     if (pagenow == 'woocommerce_page_wc-settings') {
         if (jQuery('#vipps-settings-page').length > 0) {
-            console.log("Yes!");
             let toptitle = jQuery('h3.wc-settings-sub-title').parent().find('h2').first();
             let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
 
@@ -112,7 +110,6 @@ SOFTWARE.
                             next.click();
                         }
                     } else if (e.key == "ArrowLeft") {
-                        console.log("Left arrow!");
                         e.preventDefault();
                         let current = jQuery(e.target);
                         console.log("id " + e.target.id);
@@ -383,4 +380,4 @@ jQuery(document).ready(function () {
 });
 
 
-console.log("Vipps admin scripts loaded - v1.9.0");
+console.log("Vipps admin scripts loaded - v1.12.0");

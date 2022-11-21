@@ -14,10 +14,6 @@
         const BlockControls = wp.blockEditor.BlockControls;
         const InspectorControls = wp.blockEditor.InspectorControls;
 
-        const onChangeAlignment = function (what) {
-           console.log("Change to %j", what); 
-        };
-
 	registerBlockType( 'woo-vipps/vipps-badge', {
 		title: VippsBadgeBlockConfig['BlockTitle'],
 		category: 'widgets',
