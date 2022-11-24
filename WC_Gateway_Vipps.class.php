@@ -2369,6 +2369,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
+        $this->log(__("Vipps callback: Handling order: ", 'woo-vipps') . " " .  $orderid, 'debug');
+
         // Modify payment method name if neccessary
         if (isset($result['paymentMethod']) && $result['paymentMethod'] == 'Card') {
             if ($order->get_meta('_vipps_checkout_poll')) {

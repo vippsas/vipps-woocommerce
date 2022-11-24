@@ -104,6 +104,20 @@ add_action('plugins_loaded', function () {
         });
     }
 
+    // IOK 2022-11-24 support adwords-tracking with Monster Insights
+    if (class_exists('MonsterInsights_eCommerce_WooCommerce_Integration')) {
+        add_action('woo_vipps_express_checkout_order_created', function ($orderid) {
+            $mi = MonsterInsights_eCommerce_WooCommerce_Integration::get_instance();
+	    $vipps = Vipps::instance();
+            if (method_exists($mi, 'save_user_cid')) {
+		$vipps->log("Saving monster insights tracking info to order $orderid", 'debug');
+                $mi->save_user_cid($orderid);
+	    } else {
+		$vipps->log("Tried adding monster insights session to order $orderid, but save_user_cid does not exist in object", 'debug');
+	    }
+        });
+    }
+
 });
 
 
