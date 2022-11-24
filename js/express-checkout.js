@@ -171,7 +171,9 @@ jQuery(document).ready(function () {
  // No interaction neccessary => just buy stuff
  var buttons = jQuery('#do-express-checkout');
  if (buttons.length == 0) {
-   doExpressCheckout();
+   // Give other scripts a chance to run
+   setTimeout(doExpressCheckout, 100);
+//   doExpressCheckout();
  } else {
    buttons.click(doExpressCheckout);   
    jQuery('input').change(removeErrorMessages);

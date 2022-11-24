@@ -3783,7 +3783,8 @@ EOF;
 
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
-            return $classes;
+            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
         });
 
         do_action('woo_vipps_express_checkout_page');
@@ -3851,7 +3852,8 @@ EOF;
 
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
-            return $classes;
+            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
         });
 
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
@@ -3864,7 +3866,6 @@ EOF;
         }
 
         do_action('woo_vipps_express_checkout_page');
-
 
         $this->print_express_checkout_page($ok,'do_express_checkout');
     }
@@ -4002,7 +4003,10 @@ EOF;
 
         $content = $this->spinner();
 
-        $content .= "<form id='vippsdata'>";
+        // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
+        $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
+
+        $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
