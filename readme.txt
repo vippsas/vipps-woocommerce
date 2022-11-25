@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.12.0
-Stable tag: 1.12.0
+Version: 1.12.1
+Stable tag: 1.12.1
 Requires at least: 4.7
 Tested up to: 6.1.1
 Requires PHP: 5.6
@@ -79,6 +79,9 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.12.1 =
+Add specific support for Monster Insights for tracking GAv4 and AdWords conversions
+Add support for Pixel Your Site for Express Checkout
 = 1.12.0 =
 Add support for Vipps On-Site Messsaging Badges for products, with shortcodes and a Gutenberg Block
 = 1.11.7 =
@@ -218,6 +221,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2022.11.28 version 1.12.1 =
+Added support for ecommerce-tracking in GAv4 and AdWords for Monster Insights, plus extra support for Express Checkout for Pixel Your Site.
+
 = 2022.11.21 version 1.12.0 =
 Added support for Vipps On-Site Messaging badges 
 
