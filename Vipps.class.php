@@ -307,6 +307,35 @@ class Vipps {
             add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
+
+
+    }
+
+
+   // IOK 2022-12-02 This is currently used in two places: In the code that finds orders marked "to be deleted", and 
+   // in the getOrderIdByVippsOrderId function. This is for the old-style Woo order tables, and do nothing for HPOS right now.
+   // This should however be replaced by its own table so it can be done more efficiently.
+    public static function add_wc_order_meta_key_support() {
+        if (did_action('woo_vipps_add_order_meta_key_support')) return;
+        do_action('woo_vipps_add_order_meta_key_support');
+        add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
+            if (isset($query_vars['meta_vipps_orderid']) && $query_vars['meta_vipps_orderid'] ) {
+                if (!isset($query['meta_query'])) $query['meta_query'] = array();
+                $query['meta_query'][] = array(
+                    'key' => '_vipps_orderid',
+                    'value' => $query_vars['meta_vipps_orderid']
+                );
+            }
+            if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
+                if (!isset($query['meta_query'])) $query['meta_query'] = array();
+                $query['meta_query'][] = array(
+                    'key' => '_vipps_delendum',
+                    'value' => 1
+                );
+            }
+            return $query;
+        }, 10, 2);
+
     }
 
     public function admin_init () {
@@ -770,25 +799,16 @@ class Vipps {
         $limit = 30;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
-        // For the old-style tables, we need to add meta-queries with a filter. For HPOS, this does nothing. IOK 2022-12-02
-        add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
-            if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
-                if (!isset($query['meta_query'])) $query['meta_query'] = array();
-                $query['meta_query'][] = array(
-                    'key' => '_vipps_delendum',
-                    'value' => 1
-                );
-            }
-            return $query;
-        }, 10, 2);
+        // Ensure the old order table understands the meta query IOK 2022-12-02
+        static::add_wc_order_meta_key_support();
         $delenda = wc_get_orders( array(
             'status' => 'cancelled',
             'type' => 'shop_order',
             'limit' => $limit,
             'date_modified' => "$oldorders...$cutoff",
-            'meta_vipps_delendum' => 1
+            'meta_vipps_delendum' => 1,
             /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
-            'meta_query' =>  [[ 'key'   => '_vipps_delendum', 'value' => 1 ]]
+            'meta_query' =>  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]]
         ));
 
         foreach ($delenda as $del) {
@@ -1948,10 +1968,21 @@ else:
 
     // Because the prefix used to create the Vipps order id is editable
     // by the user, we will store that as a meta and use this for callbacks etc.
+    // IOK: This needs to be replaced by a separate table, but in the meantime, we will use
+    // wc_get_orders and not $wpdb directly, so it should work with HPOS too.
     public function getOrderIdByVippsOrderId($vippsorderid) {
-        global $wpdb;
-        // IOK 2022-10-04 STOP USING POSTMETA FOR ORDERS
-        return $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->prefix}postmeta WHERE meta_key = '_vipps_orderid' AND meta_value = %s", $vippsorderid) );
+        // Ensure the old order table understands the meta query IOK 2022-12-02
+        static::add_wc_order_meta_key_support();
+        $result = wc_get_orders( array(
+            'type' => 'shop_order',
+            'limit' => 1,
+            'meta_vipps_orderid' => $vippsorderid,
+            /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
+            'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
+        ));
+        if ($result && is_array($result)) return $result[0]->get_id();
+
+        return 0;
     }
 
     // Special pages, and some callbacks. IOK 2018-05-18 
