@@ -83,15 +83,58 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-        // For new settings setup
-        __("Send receipts and order confirmation info to the customers' app on completed purchases.", 'woo-vipps');
-        __("Send receipts to the customers Vipps app", 'woo-vipps');
-        __("If this is checked, a receipt will be sent to Vipps which will be viewable in the users' app, specifying the order items, shipping et cetera", 'woo-vipps');
-
-        __("You can get Vipps Checkout now!", 'woo-vipps');
-        __("Your customers can pay with Vipps, Visa or Mastercard", 'woo-vipps');
-        __("Shipping information is autofilled with Vipps", 'woo-vipps');
-        __("You get settlement in three days", 'woo-vipps');
+       // For the On-Site Messaging Badge feature
+        __('Vipps On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that Vipps payment is accepted.', 'woo-vipps');
+        __("Add badge to all products by default");
+        __("Add support for Vipps Senere, if your store provides it");
+        __("Amount in minor units");
+        __("Badges");
+        __("Cannot restart order at Vipps");
+        __("Cannot restart order with same order ID: Must cancel");
+        __("Check this if your store supports Vipps Senere and you want the specialized badge for that");
+        __("Choose color variant:");
+        __("Choose language, or use the default");
+        __("Choose the badge variant with the perfect colors for your site");
+        __("Could not capture Vipps payment for this order!");
+        __("Default");
+        __("Default setting");
+        __("Do not use Vipps Later");
+        __("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %s Status: %s User agent: %s" );
+        __("English");
+        __("Grey");
+        __("If selected, all products will get a badge, but you can override this on the Vipps tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page");
+        __("If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href=\"%s\" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.");
+        __("If you use Gutenberg, you should be able to add a Vipps Badge block wherever you need it. It is called Vipps On-Site Messaging Badge Block.");
+        __("Language");
+        __("Light Orange");
+        __("Minimum price for \"Vipps Later\"\"");
+        __("Minimum price for \"Vipps Later\"");
+        __("No badge");
+        __("Norwegian");
+        __("On-site messaging badge");
+        __("Orange");
+        __("Order %d was attempted restarted, but had no Vipps session url stored. Cannot continue!");
+        __("Order session expired at Vipps, please try again!");
+        __("Override default settings");
+        __("Override Vipps Later");
+        __("Please refer to the documentation for the meaning of the parameters.");
+        __("Purple");
+        __("Shortcodes");
+        __("Support \"Vipps Later\"");
+        __("The Gutenberg Block");
+        __("The language attribute will come from your website's settings; and if shown on a product page, the price will be inferred from the products price.");
+        __("The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.");
+        __("The shortcode looks like this:");
+        __("Trying to start order %s with status %s - only 'pending' and 'failed' are allowed, so this will fail");
+        __("Turn on support for Vipps On-site Messaging badges");
+        __("Update settings");
+        __("Use Vipps Later");
+        __("Vipps On-Site Messaging Badge");
+        __("Vipps payment restarted");
+        __("Vipps senere");
+        __("White");
+        __("You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)");
+        __("You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block");
 
     }
 
@@ -109,6 +152,69 @@ class Vipps {
         // Used in 'compat mode' only to add products to the cart
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
+        $badge_options = get_option('vipps_badge_options');
+        if (@$badge_options['badgeon']) {
+            add_action('wp_enqueue_scripts', function () {
+                    wp_enqueue_script('vipps-onsite-messageing');
+                    });
+            add_action('woocommerce_before_add_to_cart_form', function () use ($badge_options)  {
+                    global $product;
+                    if (!is_a($product, 'WC_Product')) return; 
+
+                    $show = intval(@$badge_options['defaultall']);
+                    $forthis = $product->get_meta('_vipps_show_badge', true);
+  
+                    $doshow = $show || ($forthis &&  $forthis  != 'none');
+
+                    if (!apply_filters('woo_vipps_show_vipps_badge_for_product', $doshow, $product)) {
+                       return;
+                    } 
+        
+                    $attr = "";
+                    if ($forthis != 'none' || isset($badge_options['variant'])) {
+                        $variant = ($forthis && $forthis != 'none') ? $forthis : $badge_options['variant'];
+                        $attr .= " variant='" . sanitize_title($variant) . "' ";
+                    }
+
+                    $price = 0;
+
+                    $supported_currencies = ['NOK'];
+                    $currency = get_woocommerce_currency();
+                    if ($product && in_array($currency, $supported_currencies)) {
+                        // Currently only supports NOK! 2022-11-11 IOK 
+                        $price = $product->get_price();
+                        $price = round($price * 100);
+                        $attr .= " amount ='". $price. "' ";
+                    }
+
+                    $showlater = @$badge_options['later'] && $price>=intval(@$badge_options['minLater']);
+                    $showlaterforthis =  $product->get_meta('_vipps_badge_pay_later', true);
+                    if ($showlaterforthis == 'no') {
+                        $showlater = false;
+                    } else if ($showlaterforthis == 'later') {
+                        $showlater = true;
+                    }
+
+                    if (apply_filters('woo_vipps_product_badge_show_later', $showlater, $product)) {
+                        $attr .= " vipps-senere='" . sanitize_title($badge_options['later']) . "' ";
+                    }
+
+                    $lang = $this->get_customer_language();
+                    if ($lang) {
+                        $attr .= " language=' ". $lang . "' ";
+                    }
+
+
+
+                    $badge = "<vipps-badge $attr></vipps-badge>";
+
+                    echo apply_filters('woo_vipps_product_badge_html', $badge); 
+                    });
+        } 
+
+
+
+  
         // Some stuff in the head for dynamic css etc
         add_action('wp_head', array($this, 'wp_head'));
 
@@ -241,6 +347,9 @@ class Vipps {
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
 
+        // POST actions for the backend
+        add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
+
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
@@ -280,6 +389,180 @@ class Vipps {
 
     }
 
+    public function badge_menu_page () {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
+        $badge_options = get_option('vipps_badge_options');
+        $variants = ['white'=> __('White', 'woo-vipps'), 'grey' => __('Grey','woo-vipps'), 
+                     'orange'=> __('Orange', 'woo-vipps'), 'light-orange'=>__('Light Orange','woo-vipps'), 
+                     'purple'=> __('Purple', 'woo-vipps')];
+
+        ?>
+        <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script>
+        <div class='wrap vipps-badge-settings'>
+
+          <h1><?php _e('Vipps On-Site Messaging', 'woo-vipps'); ?></h1>
+
+           <h3><?php _e('Vipps On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that Vipps payment is accepted.', 'woo-vipps'); ?></h3>
+
+           <p>
+            <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
+           </p>
+
+           <h2> <?php _e('Settings', 'woo-vipps'); ?></h2>
+           <form class="vipps-badge-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+            <input type="hidden" name="action" value="update_vipps_badge_settings" />
+            <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
+            <div>
+             <label for="badgeon"><?php _e('Turn on support for Vipps On-site Messaging badges', 'woo-vipps'); ?></label>
+             <input type="hidden" name="badgeon" value="0" />
+             <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
+            </div>
+
+            <div>
+             <label for="defaultall"><?php _e('Add badge to all products by default', 'woo-vipps'); ?></label>
+             <input type="hidden" name="defaultall" value="0" />
+             <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
+             <p><?php _e("If selected, all products will get a badge, but you can override this on the Vipps tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'); ?></p>
+            </div>
+
+           <p id=badgeholder style="font-size:1.5rem">
+              <vipps-badge id="vipps-badge-demo"
+                <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
+                <?php if (@$badge_options['later']) echo ' vipps-senere="' . esc_attr($badge_options['later']) . '" ' ?>
+></vipps-badge>
+           </p>
+
+            <div>
+              <label for="vippsBadgeVariant"><?php _e('Variant', 'woo-vipps'); ?></label>
+            
+              <select id=vippsBadgeVariant  name="variant" onChange='changeVariant()'>
+               <option value=""><?php _e('Choose color variant:', 'woo-vipps'); ?></option>
+               <?php foreach($variants as $key=>$name): ?>
+                <option value="<?php echo $key; ?>" <?php if (@$badge_options['variant'] == $key) echo " selected "; ?> >
+                   <?php echo $name ; ?>
+                </option>
+               <?php endforeach; ?>
+              </select>
+
+            <div>
+             <label for="vippsLater"><?php _e('Support "Vipps Later"', 'woo-vipps'); ?></label>
+             <input type="hidden" name="later" value="0" />
+             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" /><div style="display:inline-block"><?php _e("Check this if your store supports Vipps Senere and you want the specialized badge for that", 'woo-vipps'); ?>
+            </div>
+            <div>
+             <label for="vippsLater"><?php _e('Minimum price for "Vipps Later""', 'woo-vipps'); ?></label>
+             <input style="text-align:right; width: 8rem" type="text" pattern="[0-9]+" name="minLater" 
+                 <?php if (@$badge_options['minLater']) echo 'value="' . intval($badge_options['minLater']) . '"'; ?>
+              />
+            </div>
+
+            <div>
+              <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
+            </div>
+
+           </form>
+
+           <h2><?php _e('The Gutenberg Block', 'woo-vipps'); ?></h2>
+           <p><?php _e('If you use Gutenberg, you should be able to add a Vipps Badge block wherever you need it. It is called Vipps On-Site Messaging Badge Block.', 'woo-vipps'); ?>
+
+           <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
+           <p><?php echo sprintf(__('If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href="%s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), "https://vippsas.github.io/vipps-developer-docs/docs/APIs/checkout-api/vipps-checkout-on-site-messaging"); ?></p>
+           <p><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
+              <pre>[vipps-badge variant={white|orange|light-orange|grey|purple}<br>             language={en|no}<br>             amount={amount in minor units}<br>             vipps-senere={false|true}]</pre><br>
+              <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?>
+           </p>
+
+        </div>
+        <script>
+         function changeVariant() {
+             let badge = document.getElementById('vipps-badge-demo');
+             let variantSelector = document.getElementById('vippsBadgeVariant');
+             let holder = document.getElementById('badgeholder');
+             let newbadge = badge.cloneNode();
+            
+             let variant = variantSelector.options[variantSelector.selectedIndex].value 
+ 
+             newbadge.setAttribute('variant', variant);
+             badge.remove();
+             holder.appendChild(newbadge);
+         }
+         function changeLater() {
+             let badge = document.getElementById('vipps-badge-demo');
+             let later = document.getElementById('vippsLater').checked;
+             if (later) {
+                 badge.setAttribute('vipps-senere', true);
+             } else {
+                 badge.removeAttribute('vipps-senere');
+             }
+             let holder = document.getElementById('badgeholder');
+             let newbadge = badge.cloneNode();
+             badge.remove();
+             holder.appendChild(newbadge);
+         }
+
+        </script> 
+        <?php
+    }
+
+    public function update_badge_settings () {
+        $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
+            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
+        }
+
+        $current = get_option('vipps_badge_options');
+        if (isset($_POST['badgeon'])) {
+            $current['badgeon'] = intval($_POST['badgeon']);
+        }
+        if (isset($_POST['defaultall'])) {
+            $current['defaultall'] = intval($_POST['defaultall']);
+        }
+        if (isset($_POST['variant'])) {
+            $current['variant'] = sanitize_title($_POST['variant']);
+        }
+        if (isset($_POST['later'])) {
+            $current['later'] = intval($_POST['later']);
+        }
+        if (isset($_POST['minLater'])) {
+            $current['minLater'] = intval($_POST['minLater']);
+        }
+
+        update_option('vipps_badge_options', $current);
+        wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
+        exit();
+    }
+
+    public function vipps_badge_shortcode($atts) {
+        $args = shortcode_atts( array('id'=>'', 'class'=>'', 'variant' => '','language'=>'','amount' => '', 'vipps-senere'=>''), $atts );
+        
+        $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
+        $language = in_array($args['language'], ['en','no']) ? $args['language'] : $this->get_customer_language();
+        $amount = intval($args['amount']);
+        $later = $args['vipps-senere'];
+        $id = sanitize_title($args['id']);
+        $class = sanitize_text_field($args['class']);
+
+        $attributes = [];
+        if ($variant) $attributes['variant'] = $variant;
+        if ($language) $attributes['language'] = $language;
+        if ($amount) $attributes['amount'] = $amount;
+        if ($later) $attributes['vipps-senere'] = 1;
+        if ($id) $attributes['id'] = $id;
+        if ($class) $attributes['class'] = $class;
+        
+        $badgeatts = "";
+        foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
+
+        return "<vipps-badge $badgeatts></vipps-badge>";
+    }
+
+
     public function admin_menu_page () {
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
         if (!current_user_can('manage_woocommerce')) {
@@ -316,15 +599,6 @@ class Vipps {
         if ($isactive) {
            $ischeckout = ($gw->get_option('vipps_checkout_enabled') == 'yes');
         }
-/*
-        $connected = false;
-        $connerror = "";
-        // Don't do this unless by button press. IOK 2022-05-04.
-        if ($configured) {
-            list($connected,$connerror)  = $gw->check_connection();
-        }
-*/
-
 
 
 
@@ -601,14 +875,17 @@ array(
         wp_enqueue_style('vipps-fonts');
         wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
 
+        wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+
     }
 
     public function notice_is_test_mode() {
     }
 
     public function admin_menu () {
-            $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
-            add_menu_page(__("Vipps", 'woo-vipps'), __("Vipps", 'woo-vipps'), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+        $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
+        add_menu_page(__("Vipps", 'woo-vipps'), __("Vipps", 'woo-vipps'), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
     }
 
     public function add_meta_boxes () {
@@ -634,6 +911,8 @@ array(
     public function wp_enqueue_scripts() {
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
+
+        wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
     }
 
 
@@ -643,7 +922,10 @@ array(
         add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
         // The Vipps Checkout feature which overrides the normal checkout process.
         add_shortcode('vipps_checkout', array($this, 'vipps_checkout_shortcode'));
+        // Badges, if using shortcodes
+        add_shortcode('vipps-badge', array($this, 'vipps_badge_shortcode'));
     }
+
 
     public function log ($what,$type='info') {
         $logger = wc_get_logger();
@@ -737,6 +1019,17 @@ array(
         if (isset($_POST['woo_vipps_add_buy_now_button'])) {
             update_post_meta($id, '_vipps_buy_now_button', sanitize_text_field($_POST['woo_vipps_add_buy_now_button']));
         }
+        // This is for overriding Vipps Badge settings
+        if (isset($_POST['woo_vipps_show_badge'])) {
+            update_post_meta($id, '_vipps_show_badge', sanitize_text_field($_POST['woo_vipps_show_badge']));
+        }
+        if (isset($_POST['woo_vipps_badge_pay_later'])) {
+            update_post_meta($id, '_vipps_badge_pay_later', sanitize_text_field($_POST['woo_vipps_badge_pay_later']));
+        }
+       
+       
+
+
         // This is for the shareable links.
         if (isset($_POST['woo_vipps_shareable_delenda'])) {
             $delenda = array_map('sanitize_text_field',$_POST['woo_vipps_shareable_delenda']);
@@ -764,6 +1057,7 @@ array(
         global $post;
         echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
         $this->product_options_vipps();
+        $this->product_options_vipps_badges();
         $this->product_options_vipps_shareable_link();
         echo "</div>";
     }
@@ -810,6 +1104,48 @@ array(
         }
         echo '</div>';
     }
+
+    public function product_options_vipps_badges() {
+        $current = get_option('vipps_badge_options');
+        if (!@$current['badgeon']) return;
+        echo '<div class="options_group">';
+        echo "<div class='blurb' style='margin-left:13px'><h4>";
+        echo __("On-site messaging badge", 'woo-vipps') ;
+        echo "<h4></div>";
+        $showbadge = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_show_badge', true));
+        $later = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_badge_pay_later', true));
+        woocommerce_wp_select( 
+                array( 
+                    'id'      => 'woo_vipps_show_badge', 
+                    'label'   => __( 'Override default settings', 'woo-vipps' ),
+                    'options' => array(
+                        '' => __('Default setting', 'woo-vipps'),
+                        'none' => __('No badge', 'woo-vipps'),
+                        'white' => __('White', 'woo-vipps'),
+                        'grey' => __('Grey', 'woo-vipps'),
+                        'orange' => __('Orange', 'woo-vipps'),
+                        'light-orange' => __('Light Orange', 'woo-vipps'),
+                        'purple' => __('Purple', 'woo-vipps'),
+                        ),
+                    'value' => $showbadge
+                    )
+                );
+        woocommerce_wp_select( 
+                array( 
+                    'id'      => 'woo_vipps_badge_pay_later', 
+                    'label'   => __( 'Override Vipps Later', 'woo-vipps' ),
+                    'options' => array(
+                        '' => __('Default setting', 'woo-vipps'),
+                        'later' => __('Use Vipps Later', 'woo-vipps'),
+                        'no' => __('Do not use Vipps Later', 'woo-vipps'),
+                        ),
+                    'value' => $later
+                    )
+                );
+        echo "</div>";
+        
+    } 
+
     public function product_options_vipps_shareable_link() {
         global $post;
         $product = wc_get_product($post->ID);
@@ -1096,6 +1432,8 @@ else:
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $url = ""; 
         $redir = "";
+        $token = "";
+
         // First, check that we haven't already done this like in another window or something:
         $session = $this->vipps_checkout_current_pending_session();
         if (isset($sessioninfo['redirect'])) {
@@ -1106,11 +1444,16 @@ else:
             $src = $sessioninfo['session']['checkoutFrontendUrl'];
             $url = $src; 
         }
+        // And if we do, just return what we have. NB: This *should not happen*.
+        if ($url || $redir) {
+            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token));
+        }
+
+        // Otherwise, create an order and start a new session
         $current_vipps_session = null;
         $current_pending = 0;
         $current_authtoken = "";
-        if (!$redir && !$url) {
-            try {
+        try {
                 WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
                 if ($current_pending) {
@@ -1136,10 +1479,10 @@ else:
                 } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
                 }
-            } catch (Exception $e) {
-                return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
-            }
+        } catch (Exception $e) {
+            return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
         }
+
         // Ensure we get the latest updates to the order too IOK 2021-10-22
         $order = wc_get_order($current_pending);
         if (is_user_logged_in()) {
@@ -3461,7 +3804,8 @@ EOF;
 
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
-            return $classes;
+            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
         });
 
         do_action('woo_vipps_express_checkout_page');
@@ -3529,7 +3873,8 @@ EOF;
 
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
-            return $classes;
+            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
         });
 
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
@@ -3542,7 +3887,6 @@ EOF;
         }
 
         do_action('woo_vipps_express_checkout_page');
-
 
         $this->print_express_checkout_page($ok,'do_express_checkout');
     }
@@ -3680,7 +4024,10 @@ EOF;
 
         $content = $this->spinner();
 
-        $content .= "<form id='vippsdata'>";
+        // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
+        $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
+
+        $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 

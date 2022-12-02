@@ -7,13 +7,13 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.11.5
-   Stable tag: 1.11.5
+   Version: 1.12.1
+   Stable tag: 1.12.1
    Requires at least: 4.7
-   Tested up to: 6.1.0
+   Tested up to: 6.1.1
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 7.0.0
+   WC tested up to: 7.1.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.11.5');
+define('WOO_VIPPS_VERSION', '1.12.1');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -78,6 +78,9 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     VippsQRCodeController::register_hooks();
 
     require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
+
+    // Gutenberg block for on-site messaging badges, if Gutenberg is installed. IOK 2022-11-16
+    require_once(dirname(__FILE__) . '/Blocks/Badges/vipps-badge.php');
 }
 
 add_action ('before_woocommerce_init', function () {

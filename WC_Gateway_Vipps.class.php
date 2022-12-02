@@ -1036,7 +1036,37 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $content = null;
 
         // Should be impossible, but there we go IOK 2022-04-21
-        if (! $order->has_status('pending', 'failed')) return false;
+        if (! $order->has_status('pending', 'failed')) {
+             $this->log(sprintf(__("Trying to start order %s with status %s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
+             wc_add_notice(__('This order cannot be paid with Vipps - please try another payment method or try again later', 'woo-vipps'), 'error');
+             return false;
+        }
+
+        // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
+        // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
+        // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
+        // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
+        if ($order->get_meta('_vipps_init_timestamp')) {
+           $oldurl = $order->get_meta('_vipps_orderurl');
+           $oldstatus = $order->get_meta('_vipps_status');
+
+           // This isn't actually an expired session but it is the same logic; so we'll keep the
+           // text in this 'can't happen' branch
+           if (!$oldurl) {
+              $this->log(sprintf(__("Order %d was attempted restarted, but had no Vipps session url stored. Cannot continue!", 'woo-vipps'), $order_id), 'error');
+              wc_add_notice(__('Order session expired at Vipps, please try again!', 'woo-vipps'), 'error');
+              $order->update_status('cancelled', __('Cannot restart order at Vipps', 'woo-vipps'));
+              return false;
+           }
+
+           $order->add_order_note(__('Vipps payment restarted','woo-vipps'));
+
+           // FIXME for supporting retries of *failed Vipps orders*, we should inspect the payment status
+           // and if not active at Vipps, increment a retry suffix for the Vipps orderid - and then *do* another 
+           // initiate payment. But this should be correct in most circumstances. IOK 2022-11-02
+           return array('result'=>'success','redirect'=>$oldurl);
+        }
+
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
         $this->save_session_in_order($order);
@@ -1066,6 +1096,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wc_add_notice(__('Unfortunately, the Vipps payment method is temporarily unavailable. Please wait or  choose another method.','woo-vipps'),'error');
             return false;
         } catch (Exception $e) {
+
+            // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
+            // log some more info IOK 2022-11-02
+            if (preg_match("/Duplicate Order Id/i", $e->getMessage())) {
+               do_action('woo_vipps_duplicate_order_id', $order);
+               $this->log(sprintf(__("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %s Status: %s User agent: %s", 'woo-vipps'), $order->get_meta('_vipps_express_checkout'), $order->get_status(), $order->get_customer_user_agent()), 'error');
+               $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
+            }
+
             $this->log(__('Could not initiate Vipps payment','woo-vipps') . ' ' . $e->getMessage(), 'error');
             wc_add_notice(__('Unfortunately, the Vipps payment method is currently unavailable. Please choose another method.','woo-vipps'),'error');
             return false;
@@ -1088,7 +1127,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($authtoken) {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
         }
+        // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
+        $order->update_meta_data('_vipps_orderurl', $url);
+ 
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
         $order->add_order_note(__('Vipps payment initiated','woo-vipps'));
         $order->add_order_note(__('Awaiting Vipps payment confirmation','woo-vipps'));
@@ -1150,13 +1192,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
         if (!$ok) {
-            $msg = __("Could not capture Vipps payment - status set to", 'woo-vipps') . ' ' . __('on-hold','woocommerce');
-            $this->adminerr($msg);
-            $order->set_status('on-hold',$msg);
+            $msg = __("Could not capture Vipps payment for this order!", 'woo-vipps');
+            $order->add_order_note($msg);
             $order->save();
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
+            if (apply_filters('woo_vipps_on_hold_on_failed_capture', true, $order)) {
+                $msg = __("Could not capture Vipps payment - status set to", 'woo-vipps') . ' ' . __('on-hold','woocommerce');
+                $order->set_status('on-hold',$msg);
+                $order->save();
+                global $Vipps;
+                $this->adminerr($msg);
+                $Vipps->store_admin_notices();
+                return false;
+            } 
         }
     }
 
@@ -1218,7 +1265,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        if (!empty($content)) {
+        if (!empty($content) && isset($content['transactionInfo'])) {
            // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
            // status 'captured'
            $transactionInfo = $content['transactionInfo'];
@@ -1414,7 +1461,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
         }
 
-        if (!empty($content)) {
+        if (!empty($content)  && isset($content['transactionInfo'])) {
             // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
             $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
             $transactionSummary= $content['transactionSummary'];
@@ -2322,6 +2369,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
+        $this->log(__("Vipps callback: Handling order: ", 'woo-vipps') . " " .  $orderid, 'debug');
+
         // Modify payment method name if neccessary
         if (isset($result['paymentMethod']) && $result['paymentMethod'] == 'Card') {
             if ($order->get_meta('_vipps_checkout_poll')) {
@@ -2448,12 +2497,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$Vipps) $Vipps = Vipps::instance();
         $order = wc_get_order($orderid);
         if (!is_a($order, 'WC_Order')) {
-            error_log("Wrong order id");
             return false;
         }
         if ($order->get_payment_method() != 'vipps') return false;
         if ($order->get_order_key() != wc_clean($orderkey)) {
-            error_log("Wrong order key");
             return false;
         }
         try {
@@ -2700,7 +2747,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           </div>
 <script>
 function activate_vipps_checkout(yesno) {
- console.log("This!");
   var nonce = <?php echo json_encode(wp_create_nonce('woo_vipps_activate_checkout')); ?>;
   var referer = jQuery('input[name="_wp_http_referer"]').val();
   var args = { '_wpnonce' : nonce, '_wp_http_referer' : referer, 'activate': yesno, 'action' : 'woo_vipps_activate_checkout_page' }

@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.11.5
-Stable tag: 1.11.5
+Version: 1.12.1
+Stable tag: 1.12.1
 Requires at least: 4.7
-Tested up to: 6.1.0
+Tested up to: 6.1.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 7.0.0
+WC tested up to: 7.1.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,11 +79,13 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-= 1.11.5 =
-Internal changes only
-= 1.11.4 =
-Make receipts optional in the settings
-Fix issue which caused tax-free shipping having tax added after reservation at Vipps
+= 1.12.1 =
+Add specific support for Monster Insights for tracking GAv4 and AdWords conversions
+Add support for Pixel Your Site for Express Checkout
+= 1.12.0 =
+Add support for Vipps On-Site Messsaging Badges for products, with shortcodes and a Gutenberg Block
+= 1.11.7 =
+Fix problems where it would be possible to restart an order causing a 400 Duplicate Order ID at Vipps
 
 == Frequently Asked Questions ==
 
@@ -219,6 +221,17 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2022.11.28 version 1.12.1 =
+Added support for ecommerce-tracking in GAv4 and AdWords for Monster Insights, plus extra support for Express Checkout for Pixel Your Site.
+
+= 2022.11.21 version 1.12.0 =
+Added support for Vipps On-Site Messaging badges 
+
+= 2022.11.09 version 1.11.7 =
+Fix issue with duplicate order ID's, but for real this time
+
+= 2022.11.07 version 1.11.6 =
+Fix issue with duplicate order ID's
 
 = 2022.10.24 version 1.11.5 =
 Reorganization of banner code
