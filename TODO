@@ -5,3 +5,7 @@
 * hooks på save_post !
 
 * use a new table for vipps_session
+
+
+* [ ] TEST: _vipps_delendum logikk (ok på gammel)
+* [ ] TEST: getOrderIdByVippsOrderId() (ok på gammel)

@@ -888,8 +888,9 @@ class Vipps {
     }
 
     public function add_meta_boxes () {
-        $screen = wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+        $screen = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
         // IOK CHECK PAYMENT METHOD FIXME
+        // AlSO LIFT THE ABOVE THING INTO INTO INIT OR ADMIN INIT OR SOMETHING.
         add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
     }
 
@@ -1274,7 +1275,7 @@ else:
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post_or_order_object) {
         $order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
-        $order = wc_get_order($post);
+        $order = wc_get_order($post_or_order_object);
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
         $orderid=$order->get_id();
@@ -2246,6 +2247,14 @@ EOF;
         if ($language == 'nb' || $language == 'nn') $language = 'no';
         if (! in_array($language, ['en', 'no'])) $language = 'en';
         return $language;
+    }
+
+
+    // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
+    public function order_handle_vipps_action () {
+           $order = wc_get_order(intval($_REQUEST['orderid']));
+           $action = sanitize_title($_REQUEST['action']);
+           // IOK FIXME REPLACE SAVE ORDER WITH THIS AJAX
     }
     
     public function save_order($orderid) {
