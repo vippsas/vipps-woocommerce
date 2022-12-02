@@ -29,6 +29,10 @@ SOFTWARE.
 // This file contains various javascript code for Vipps-specific functionality in the backend. 
 //
 (function () {
+
+    console.log("Pagenow: " + pagenow);
+
+
     if (pagenow == 'woocommerce_page_wc-settings') {
         jQuery(document).ready(function ()  {
             jQuery('input.vippspw').focus( function () { jQuery(this).attr('type','text') });; 
@@ -191,7 +195,6 @@ SOFTWARE.
         }
     }
     if  (pagenow == 'product') {
-
         // Called on the product edit screen by a button.
         function vipps_create_shareable_link() {
             jQuery('#vipps-share-link').attr('disabled','disabled');
@@ -297,7 +300,6 @@ SOFTWARE.
         });
     }
 
-
     if (pagenow == 'vipps_qr_code') {
         function select_url_bit (which) {
             let all = jQuery('body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option');
@@ -315,6 +317,37 @@ SOFTWARE.
         });
     }
 
+    if (pagenow == 'shop_order') {
+      console.log("Shop order page!");
+
+      jQuery('button.vipps-action').click(function (e) {
+         e.preventDefault();
+         let button = jQuery(this);
+         button.attr('disabled', 'disabled');
+         button.addClass('disabled');
+         if (button.hasClass('disabled')) return;
+
+         let nonce = VippsConfig['vippssecnonce'];
+         let orderid  = jQuery(this).data('orderid');
+         let action = jQuery(this).data('action');
+
+         let data = { 'action': 'vipps_order_action', 'do': action, 'orderid':orderid, 'vipps_share_sec':nonce };
+
+         jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
+                "error": function (xhr, statustext, error) {
+                    button.removeAttr('disabled');
+                    button.removeClass('disabled');
+                    console.log("Error performing Vipps action " + statustext + " " + error);
+                    alert("Error performing Vipps action " + statustext + " " + error);
+                },
+                "success": function (result, statustext, xhr) {
+                    button.removeAttr('disabled');
+                    button.removeClass('disabled');
+                    window.location.reload();
+                }
+         });
+      });
+    }
 
 })();
 
@@ -330,7 +363,6 @@ function VippsGetPaymentDetails(orderid,nonce) {
 
 // Handle permanent notice dismissal
 jQuery(document).ready(function () {
-    console.log("The dismiss thing");
     jQuery('.notice-vipps .notice-dismiss').click(function () { 
         let nonce = VippsConfig['vippssecnonce'];
         let key = jQuery(this).closest('.notice').data('key');
@@ -380,4 +412,4 @@ jQuery(document).ready(function () {
 });
 
 
-console.log("Vipps admin scripts loaded - v1.12.0");
+console.log("Vipps admin scripts loaded - v1.12.3");
