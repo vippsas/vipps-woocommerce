@@ -3,3 +3,5 @@
 * alt som går til shop_order
 * taxonomies
 * hooks på save_post !
+
+* use a new table for vipps_session
