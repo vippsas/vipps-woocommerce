@@ -320,34 +320,38 @@ SOFTWARE.
     if (pagenow == 'shop_order') {
       console.log("Shop order page!");
 
-      jQuery('button.vipps-action').click(function (e) {
-         e.preventDefault();
-         let button = jQuery(this);
-         button.attr('disabled', 'disabled');
-         button.addClass('disabled');
-         if (button.hasClass('disabled')) return;
+      jQuery(document).ready(function () {
+       jQuery('button.vipps-action').click(function (e) {
+          console.log("Clickety");
+          e.preventDefault();
 
-         let nonce = VippsConfig['vippssecnonce'];
-         let orderid  = jQuery(this).data('orderid');
-         let action = jQuery(this).data('action');
+          let button = jQuery(this);
+          if (button.hasClass('disabled')) return;
+          button.attr('disabled', 'disabled');
+          button.addClass('disabled');
+ 
+          let nonce = VippsConfig['vippssecnonce'];
+          let orderid  = jQuery(this).data('orderid');
+          let action = jQuery(this).data('action');
+ 
+          let data = { 'action': 'woo_vipps_order_action', 'do': action, 'orderid':orderid, 'vipps_sec':nonce };
 
-         let data = { 'action': 'vipps_order_action', 'do': action, 'orderid':orderid, 'vipps_share_sec':nonce };
-
-         jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
-                "error": function (xhr, statustext, error) {
-                    button.removeAttr('disabled');
-                    button.removeClass('disabled');
-                    console.log("Error performing Vipps action " + statustext + " " + error);
-                    alert("Error performing Vipps action " + statustext + " " + error);
-                },
-                "success": function (result, statustext, xhr) {
-                    button.removeAttr('disabled');
-                    button.removeClass('disabled');
-                    window.location.reload();
-                }
-         });
-      });
-    }
+          console.log("Ajaxurl " + ajaxurl + " and data %j", data);
+ 
+          jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
+                 "error": function (xhr, statustext, error) {
+                     button.removeAttr('disabled');
+                     button.removeClass('disabled');
+                     console.log("Error performing Vipps action " + statustext + " " + error);
+                     alert("Error performing Vipps action " + statustext + " " + error);
+                  },
+                 "success": function (result, statustext, xhr) {
+                     window.location.reload();
+                  }
+          });
+       });
+     });
+   }
 
 })();
 

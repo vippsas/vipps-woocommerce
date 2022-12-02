@@ -83,58 +83,6 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-       // For the On-Site Messaging Badge feature
-        __('Vipps On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that Vipps payment is accepted.', 'woo-vipps');
-        __("Add badge to all products by default");
-        __("Add support for Vipps Senere, if your store provides it");
-        __("Amount in minor units");
-        __("Badges");
-        __("Cannot restart order at Vipps");
-        __("Cannot restart order with same order ID: Must cancel");
-        __("Check this if your store supports Vipps Senere and you want the specialized badge for that");
-        __("Choose color variant:");
-        __("Choose language, or use the default");
-        __("Choose the badge variant with the perfect colors for your site");
-        __("Could not capture Vipps payment for this order!");
-        __("Default");
-        __("Default setting");
-        __("Do not use Vipps Later");
-        __("Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %s Status: %s User agent: %s" );
-        __("English");
-        __("Grey");
-        __("If selected, all products will get a badge, but you can override this on the Vipps tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page");
-        __("If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href=\"%s\" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.");
-        __("If you use Gutenberg, you should be able to add a Vipps Badge block wherever you need it. It is called Vipps On-Site Messaging Badge Block.");
-        __("Language");
-        __("Light Orange");
-        __("Minimum price for \"Vipps Later\"\"");
-        __("Minimum price for \"Vipps Later\"");
-        __("No badge");
-        __("Norwegian");
-        __("On-site messaging badge");
-        __("Orange");
-        __("Order %d was attempted restarted, but had no Vipps session url stored. Cannot continue!");
-        __("Order session expired at Vipps, please try again!");
-        __("Override default settings");
-        __("Override Vipps Later");
-        __("Please refer to the documentation for the meaning of the parameters.");
-        __("Purple");
-        __("Shortcodes");
-        __("Support \"Vipps Later\"");
-        __("The Gutenberg Block");
-        __("The language attribute will come from your website's settings; and if shown on a product page, the price will be inferred from the products price.");
-        __("The On-Site Messaging library contains an easy to integrate badge with tailor made message for use in your online store. The badge comes in five variants with different color-pallets to suite your website.");
-        __("The shortcode looks like this:");
-        __("Trying to start order %s with status %s - only 'pending' and 'failed' are allowed, so this will fail");
-        __("Turn on support for Vipps On-site Messaging badges");
-        __("Update settings");
-        __("Use Vipps Later");
-        __("Vipps On-Site Messaging Badge");
-        __("Vipps payment restarted");
-        __("Vipps senere");
-        __("White");
-        __("You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)");
-        __("You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block");
 
     }
 
@@ -221,6 +169,9 @@ class Vipps {
         // Handle the hopefully asynch call to send Order Management data on payment complete.
         add_action('admin_post_nopriv_woo_vipps_order_management', array($this, 'do_order_management'));
         add_action('admin_post_woo_vipps_order_management', array($this, 'do_order_management'));
+
+        // Extra order actions on the order screen, now using ajax to be compatible with HPOS. IOK 2022-12-02
+        add_action('wp_ajax_woo_vipps_order_action', array($this, 'order_handle_vipps_action'));
 
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
@@ -360,9 +311,6 @@ class Vipps {
         add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
         add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
         add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
-
-        // IOK PROBABLY REPLACE WITH ADMIN_POST AND AJAX
-        add_action('woocommerce_process_shop_order_meta', array($this, 'save_order', 10));
 
         add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
 
@@ -803,7 +751,6 @@ class Vipps {
         static::add_wc_order_meta_key_support();
         $delenda = wc_get_orders( array(
             'status' => 'cancelled',
-            'type' => 'shop_order',
             'limit' => $limit,
             'date_modified' => "$oldorders...$cutoff",
             'meta_vipps_delendum' => 1,
@@ -889,6 +836,8 @@ class Vipps {
 
     public function add_meta_boxes () {
         $screen = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
+
+        $screen = 'shop_order';
         // IOK CHECK PAYMENT METHOD FIXME
         // AlSO LIFT THE ABOVE THING INTO INTO INIT OR ADMIN INIT OR SOMETHING.
         add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
@@ -1975,13 +1924,13 @@ else:
         // Ensure the old order table understands the meta query IOK 2022-12-02
         static::add_wc_order_meta_key_support();
         $result = wc_get_orders( array(
-            'type' => 'shop_order',
             'limit' => 1,
+            'return' => 'ids',
             'meta_vipps_orderid' => $vippsorderid,
             /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
             'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
         ));
-        if ($result && is_array($result)) return $result[0]->get_id();
+        if ($result && is_array($result)) return $result[0];
 
         return 0;
     }
@@ -2252,34 +2201,33 @@ EOF;
 
     // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
     public function order_handle_vipps_action () {
+           check_ajax_referer('vippssecnonce','vipps_sec');
            $order = wc_get_order(intval($_REQUEST['orderid']));
-           $action = sanitize_title($_REQUEST['action']);
-           // IOK FIXME REPLACE SAVE ORDER WITH THIS AJAX
+           if (!is_a($order, 'WC_Order')) return;
+           $pm = $order->get_payment_method();
+           if ($pm != 'vipps') return;
+ 
+           $action = isset($_REQUEST['do']) ? sanitize_title($_REQUEST['do']) : 'none';
+
+           error_log("Action is $action");
+        
+           if ($action == 'do_capture') {
+               $gw = $this->gateway();
+               $ok = $gw->maybe_capture_payment($order->get_id());
+               error_log("ok is $ok");
+               // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
+               $this->store_admin_notices();
+           }
+           if ($action == 'refund_superfluous') {
+               $gw = $this->gateway();
+               $ok = $gw->refund_superfluous_capture($order);
+               // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
+               $this->store_admin_notices();
+           }
+           $this->store_admin_notices();
+           print "1";
     }
     
-    public function save_order($orderid) {
-        $order = wc_get_order($orderid);
-        $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return;
-
-        // IOK FIXME WHAT vi må gjøre noe her 
-        error_log("Did this happen?");
-
-        if (isset($_POST['do_capture_vipps']) && $_POST['do_capture_vipps']) {
-            $gw = $this->gateway();
-            $ok = $gw->maybe_capture_payment($postid);
-            // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
-            $this->store_admin_notices();
-        }
-
-        if (isset($_POST['do_refund_superfluous_vipps']) && $_POST['do_refund_superfluous_vipps']) {
-            $gw = $this->gateway();
-            $ok = $gw->refund_superfluous_capture($order);
-            // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
-            $this->store_admin_notices();
-        }
-
-    }
 
     // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
     public function store_admin_notices() {
@@ -2314,14 +2262,19 @@ EOF;
 
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
 
-        print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vippsbutton generate-items"><img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','woo-vipps') . '</button>';
-        print "<input id=docapture type=hidden name=do_capture_vipps value=0>"; 
+        print '<button type="button" class="button vippsbutton generate-items vipps-action" 
+                 data-orderid="' . $order->get_id() . '" data-action="do_capture"
+                 style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" >
+                <img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','woo-vipps') . '</button>';
+
     } 
 
     public function order_item_refund_superfluous_captured_amount ($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return;
         $status = $order->get_status();
+
+        error_log("Status $status");
 
         if ($status != 'completed') return;
 
@@ -2331,13 +2284,19 @@ EOF;
 
         $superfluous = $captured-$total-$refunded;
 
+        error_log("captured $captured total $total refunded $refunded super $superfluous");
+
 
         if ($superfluous<=0) {
             return;
         }
+        $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         print "<div><strong>" . __('More funds than the order total has been captured at Vipps. Press this button to refund this amount at Vipps without editing this order', 'woo_vipps') . "</strong></div>";
-        print '<button type="button" onclick="document.getElementById(\'dorefundsuperfluous\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button generate-items">' .__('Refund superfluous payment','woo-vipps') . '</button>';
-        print "<input id=dorefundsuperfluous type=hidden name=do_refund_superfluous_vipps value=0>"; 
+        print '<button type="button" class="button vippsbutton generate-items vipps-action" 
+                 data-orderid="' . $order->get_id() . '" data-action="refund_superfluous"
+                 style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" >
+                <img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Refund superfluous payment','woo-vipps')  . '</button>';
+
     } 
 
 
