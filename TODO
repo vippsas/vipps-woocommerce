@@ -1,8 +1,10 @@
 
 * alle kall til postmeta
+** byttet til wc_get_orders
 * alt som går til shop_order
-* taxonomies
-* hooks på save_post !
+** metabokser
+* [X] taxonomies
+* [X] hooks på save_post !
 
 * use a new table for vipps_session
 
