@@ -770,10 +770,7 @@ class Vipps {
         $limit = 30;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
-
-        /*
-         * A. If you are joining custom metadata, then using WC_Query with meta_query param will handle both data storage types. If you are joining a meta_key, which is now migrated to a proper column in the HPOS, then you should be able to use a field_query param with the same property as a meta_query. We plan to backport this to CPT so that the same query works for both tables.
-         */
+        // For the old-style tables, we need to add meta-queries with a filter. For HPOS, this does nothing. IOK 2022-12-02
         add_filter('woocommerce_order_data_store_cpt_get_orders_query', function ($query, $query_vars) {
             if (isset($query_vars['meta_vipps_delendum']) && $query_vars['meta_vipps_delendum'] ) {
                 if (!isset($query['meta_query'])) $query['meta_query'] = array();
@@ -784,33 +781,15 @@ class Vipps {
             }
             return $query;
         }, 10, 2);
-
- 
-        // New API has meta_query built in,
-
-// -- and also "field_query (field == ...
-
-        /*
-array(
-        'meta_query' => array(
-            array(
-                'key' => 'color',
-            ),
-            array(
-                'key'        => 'size',
-                'value'      => 'small',
-                'comparison' => 'LIKE'
-            ),
-        ),
-*/
-
         $delenda = wc_get_orders( array(
             'status' => 'cancelled',
             'type' => 'shop_order',
             'limit' => $limit,
             'date_modified' => "$oldorders...$cutoff",
             'meta_vipps_delendum' => 1
-        ) );
+            /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
+            'meta_query' =>  [[ 'key'   => '_vipps_delendum', 'value' => 1 ]]
+        ));
 
         foreach ($delenda as $del) {
             // Delete only if there is no customer info for the order IOK 2022-10-12
