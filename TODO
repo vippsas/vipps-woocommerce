@@ -1,7 +1,7 @@
 
-* alle kall til postmeta
-** byttet til wc_get_orders
-* alt som går til shop_order
+*  [X] alle kall til postmeta
+** [X] byttet til wc_get_orders
+* [X] alt som går til shop_order - delvis ihvertfall
 ** metabokser
 * [X] taxonomies
 * [X] hooks på save_post !

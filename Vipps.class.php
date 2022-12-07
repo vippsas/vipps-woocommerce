@@ -2209,12 +2209,9 @@ EOF;
  
            $action = isset($_REQUEST['do']) ? sanitize_title($_REQUEST['do']) : 'none';
 
-           error_log("Action is $action");
-        
            if ($action == 'do_capture') {
                $gw = $this->gateway();
                $ok = $gw->maybe_capture_payment($order->get_id());
-               error_log("ok is $ok");
                // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
                $this->store_admin_notices();
            }
@@ -2274,8 +2271,6 @@ EOF;
         if ($pm != 'vipps') return;
         $status = $order->get_status();
 
-        error_log("Status $status");
-
         if ($status != 'completed') return;
 
         $captured = intval($order->get_meta('_vipps_captured'));
@@ -2283,9 +2278,6 @@ EOF;
         $refunded = intval($order->get_meta('_vipps_refunded'));
 
         $superfluous = $captured-$total-$refunded;
-
-        error_log("captured $captured total $total refunded $refunded super $superfluous");
-
 
         if ($superfluous<=0) {
             return;
