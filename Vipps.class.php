@@ -743,7 +743,6 @@ class Vipps {
     // 10 minutes so we can work with them in hooks and callbacks after they are cancelled. IOK 2019-10-22
 #    protected function delete_old_cancelled_orders() {
     public function delete_old_cancelled_orders() {
-        global $wpdb;
         $limit = 30;
         $cutoff = time() - 600; // Ten minutes old orders: Delete them
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
