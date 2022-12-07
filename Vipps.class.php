@@ -835,18 +835,26 @@ class Vipps {
 
     public function add_meta_boxes () {
         $screen = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
-        $screen = 'shop_order';
         // AlSO LIFT THE ABOVE THING INTO INTO INIT OR ADMIN INIT OR SOMETHING. FIXME
 
-        // IOK CHECK PAYMENT METHOD FIXME
         $vippsorder = false;
+        $order = null;
         global $post;
         if ($post && $post->post_type == 'shop_order') {
            $order = wc_get_order($post);
-           if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
-              $vippsorder = true;
-           }
+        } else {
+            // New style HPOS order table doesn't let us inspect the order, so we must fetch it from query args
+            $screen = get_current_screen();
+            if ($screen && $screen->id == 'woocommerce_page_wc-orders') {
+                $orderid = isset($_REQUEST['id']) ?  $_REQUEST['id'] : 0;
+                $order = wc_get_order($orderid);
+            }
         }
+        if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
+          $vippsorder = true;
+        }
+
+
         if ($vippsorder) {
            add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
         }
