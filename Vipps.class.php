@@ -92,7 +92,8 @@ class Vipps {
     // True iff support for HPOS has been activated IOK 2022-12-07
     public function useHPOS() {
         if ($this->HPOSActive == null) {
-            if (function_exists('wc_get_container') && function_exists('wc_get_page_screen_id') &&
+            if (function_exists('wc_get_container') &&  // 4.4.0
+                function_exists('wc_get_page_screen_id') && // Part of HPOS, not yet released
                 class_exists("Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController") &&
                 wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()            ) {
                 $this->HPOSActive = true;

@@ -12,7 +12,7 @@
    Requires at least: 4.7
    Tested up to: 6.1.1
    Requires PHP: 5.6
-   WC requires at least: 4.4.0
+   WC requires at least: 3.3.4
    WC tested up to: 7.1.0
 
    License: MIT
@@ -97,11 +97,9 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-// HPOS!
-if (true) {
+// Declare our support for the HPOS feature IOK 2022-12-07
 add_action( 'before_woocommerce_init', function() {
 	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 	}
 });
-}
