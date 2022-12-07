@@ -11,3 +11,8 @@
 
 * [ ] TEST: _vipps_delendum logikk (ok på gammel)
 * [ ] TEST: getOrderIdByVippsOrderId() (ok på gammel)
+* [ ] TEST:  Vipps Hurtigkasse
+* [ ] TEST:  Vipps Checkout
+* [ ] TEST:  Woo Checkout
+* [ ] TEST:  Capture via knapp
+* [ ] TEST:  Partial refund via knapp
