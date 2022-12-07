@@ -6,13 +6,13 @@
 * [X] taxonomies
 * [X] hooks på save_post !
 
-* use a new table for vipps_session
+* NOT DONE use a new table for vipps_session
 
 
-* [ ] TEST: _vipps_delendum logikk (ok på gammel)
-* [ ] TEST: getOrderIdByVippsOrderId() (ok på gammel)
-* [ ] TEST:  Vipps Hurtigkasse
-* [ ] TEST:  Vipps Checkout
-* [ ] TEST:  Woo Checkout
-* [ ] TEST:  Capture via knapp
-* [ ] TEST:  Partial refund via knapp
+* [X] TEST: _vipps_delendum logikk (ok på gammel)
+* [X] TEST: getOrderIdByVippsOrderId() (ok på gammel)
+* [X] TEST:  Vipps Hurtigkasse
+* [X] TEST:  Vipps Checkout
+* [X] TEST:  Woo Checkout
+* [X] TEST:  Capture via knapp (NOPE: MANGLENDE JSAVASCRIPT)
+* [X] TEST:  Partial refund via knapp
