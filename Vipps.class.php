@@ -885,7 +885,7 @@ class Vipps {
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
 
-        $sdkurl = $this->gateway()->is_test_mode() ? 'https://checkout.vipps.no/vippsCheckoutSDK.js' : 'https://vippscheckoutprod.z6.web.core.windows.net/vippsCheckoutSDK.js';
+        $sdkurl = 'https://checkout.vipps.no/vippsCheckoutSDK.js';
         wp_register_script('vipps-sdk',$sdkurl,array());
         wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
     }
