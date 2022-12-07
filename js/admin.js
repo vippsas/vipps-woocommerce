@@ -317,7 +317,7 @@ SOFTWARE.
         });
     }
 
-    if (pagenow == 'shop_order') {
+    if (pagenow == 'shop_order' || pagenow == 'woocommerce_page_wc-orders') {
       console.log("Shop order page!");
 
       jQuery(document).ready(function () {

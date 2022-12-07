@@ -232,7 +232,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($email) return false;
 
         // Only delete if we have to
-        if ($this->get_option('deletefailedexpressorders'  != 'yes')) return false;
+        if ($this->get_option('deletefailedexpressorders')  != 'yes') return false;
         // Mark this order that an order that wasn't completed with any user info - it can be deleted. IOK 2019-11-13
         $order->update_meta_data('_vipps_delendum',1);
         $order->save();
