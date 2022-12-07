@@ -44,6 +44,9 @@ class Vipps {
     // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
     public $callbackorder = 0;
 
+    // True if HPOS is being used
+    public $HPOSActive = null;
+
     // used in the fake locking mechanism using transients
     private $lockKey = null; 
 
@@ -86,6 +89,19 @@ class Vipps {
 
     }
 
+    // True iff support for HPOS has been activated IOK 2022-12-07
+    public function useHPOS() {
+        if ($this->HPOSActive == null) {
+            if (function_exists('wc_get_container') && function_exists('wc_get_page_screen_id') &&
+                class_exists("Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController") &&
+                wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()            ) {
+                $this->HPOSActive = true;
+            } else {
+                $this->HPOSActive = false;
+            }
+        }
+        return $this->HPOSActive;
+    }
 
     public function init () {
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
@@ -834,8 +850,12 @@ class Vipps {
     }
 
     public function add_meta_boxes () {
-        $screen = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled() ? wc_get_page_screen_id( 'shop-order' ) : 'shop_order';
-        // AlSO LIFT THE ABOVE THING INTO INTO INIT OR ADMIN INIT OR SOMETHING. FIXME
+        $screen = 'shop_order';
+        $useHPOS = $this->useHPOS();
+
+        if ($useHPOS && function_exists('wc_get_page_screen_id')) {
+            $screen = wc_get_page_screen_id('shop-order');
+        }
 
         $vippsorder = false;
         $order = null;
@@ -853,7 +873,6 @@ class Vipps {
         if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
           $vippsorder = true;
         }
-
 
         if ($vippsorder) {
            add_meta_box( 'vippsdata', __('Vipps','woo-vipps'), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
