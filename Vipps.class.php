@@ -2260,16 +2260,11 @@ EOF;
            if ($action == 'do_capture') {
                $gw = $this->gateway();
                $ok = $gw->maybe_capture_payment($order->get_id());
-               // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
-               $this->store_admin_notices();
            }
            if ($action == 'refund_superfluous') {
                $gw = $this->gateway();
                $ok = $gw->refund_superfluous_capture($order);
-               // This will result in a redirect, so store admin notices, then display them. IOK 2018-05-07
-               $this->store_admin_notices();
            }
-           $this->store_admin_notices();
            print "1";
     }
     
