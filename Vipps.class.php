@@ -78,8 +78,13 @@ class Vipps {
 
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
-        require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        return WC_Gateway_Vipps::instance();
+        if (class_exists('WC_Payment_Gateway')) {
+            require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
+            return WC_Gateway_Vipps::instance();
+        } else {
+          $this->log(__("Error: Cannot instantiate payment gateway, because WooCommerce is not loaded! This can happen when WooCommerce updates itself; but if it didn't, please activate WooCommerce again", 'woo-vipps'), 'error');
+          return null;
+        }
     }
 
 
@@ -269,9 +274,15 @@ class Vipps {
         // Check periodically for orders that are stuck pending with no callback IOK 2021-06-21
         add_action('vipps_cron_missing_callback_hook', array($this, 'cron_check_for_missing_callbacks'));
 
+        // For the rest, we need to read the payment gateways setting, and the payment gateway may not actually 
+        // exist at this point. This is because for it to exist, WooCommerce must have loaded, and if it hasn't, for instance
+        // because it is self-updating or because it has been deactivated just now or something, we won't have access to it.
+        // Therefore test it first. IOK 2022-12-08
+        $gw = $this->gateway();
+ 
         // This is a developer-mode level feature because flock() is not portable. This ensures callbacks and shopreturns do not
         // simultaneously update the orders, in particular not the express checkout order lines wrt shipping. IOK 2020-05-19
-        if ($this->gateway()->get_option('use_flock') == 'yes') {
+        if ($gw && $gw->get_option('use_flock') == 'yes') {
             add_filter('woo_vipps_lock_order', array($this,'flock_lock_order'));
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
@@ -889,7 +900,7 @@ class Vipps {
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
 
-        $sdkurl = $this->gateway()->is_test_mode() ? 'https://checkout.vipps.no/vippsCheckoutSDK.js' : 'https://vippscheckoutprod.z6.web.core.windows.net/vippsCheckoutSDK.js';
+        $sdkurl = 'https://checkout.vipps.no/vippsCheckoutSDK.js';
         wp_register_script('vipps-sdk',$sdkurl,array());
         wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
     }
