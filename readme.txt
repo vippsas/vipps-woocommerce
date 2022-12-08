@@ -80,7 +80,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 = 1.13.0 =
-Support new High Performance Order Storage feature
+Support new High Performance Order Storage (HPOS) feature - https://woocommerce.com/document/high-performance-order-storage/
 Add protection for race condition where Vipps ran without WooCommerce having loaded
 = 1.12.1 =
 Add specific support for Monster Insights for tracking GAv4 and AdWords conversions
