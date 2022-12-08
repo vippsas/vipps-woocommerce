@@ -258,7 +258,10 @@ $start = microtime(true);
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                 $shippingline =  [];
                 $orderline['name'] = $order_item->get_name();
-                $orderline['id'] = $order_item->get_method_id() . ":" . $order_item->get_instance_id();
+                $orderline['id'] = $order_item->get_method_id();
+                if (method_exists($order_item, 'get_instance_id')) {
+                   $orderline['id'] .= ":" . $order_item->get_instance_id();
+                }
 
                 $totalNoTax = $order_item->get_total();
                 $tax = $order_item->get_total_tax();
@@ -574,6 +577,10 @@ $start = microtime(true);
         }
 
         # This have to exist, but we'll not check it now.
+        if (! function_exists("wc_terms_and_conditions_page_id")) {
+            $this->log(__("You need a newer version of WooCommerce to use Vipps Checkout!", 'woo-vipps'), 'error');;
+            throw new Exception(__("You need a newer version of WooCommerce to use Vipps Checkout!", 'woo-vipps'));
+        }
         $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
         $data = array();
 
