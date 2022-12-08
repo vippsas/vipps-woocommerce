@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.12.1
-Stable tag: 1.12.1
+Version: 1.13.0
+Stable tag: 1.13.0
 Requires at least: 4.7
 Tested up to: 6.1.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 7.1.1
+WC tested up to: 7.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,6 +79,9 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.13.0 =
+Support new High Performance Order Storage feature
+Add protection for race condition where Vipps ran without WooCommerce having loaded
 = 1.12.1 =
 Add specific support for Monster Insights for tracking GAv4 and AdWords conversions
 Add support for Pixel Your Site for Express Checkout
