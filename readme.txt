@@ -224,6 +224,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2022.12.12 version 1.12.1 =
+Added support for HPOS (https://woocommerce.com/document/high-performance-order-storage/)
+Added protection from Vipps being ran while WooCommerce is deactivated
+
 = 2022.11.28 version 1.12.1 =
 Added support for ecommerce-tracking in GAv4 and AdWords for Monster Insights, plus extra support for Express Checkout for Pixel Your Site.
 
