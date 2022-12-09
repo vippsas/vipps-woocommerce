@@ -52,8 +52,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Used to signal state to process_payment
     public $express_checkout = 0;
-    // Used to sometimes use the standard checkout screen if using Vipps Checkout
-    public $get_real_checkout_screen = false;
 
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
@@ -210,12 +208,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $prefix;
     }
 
-    // The return URL will normally use the Checkout page, but if we are using Vipps Checkout, we'll want to use the *normal* checkout
-    // page to handle the thankyous. This way we don't have to handle the "thankyou" endpoint. IOK 2021-10-04
+    // We did shenanigans here earlier, we don't have to do that anymore. IOK 2022-12-09
     public function get_return_url($order=null) {
-        $this->get_real_checkout_screen = true;
         $url = parent::get_return_url($order); 
-        $this->get_real_checkout_screen = false;
         return $url;
     }
 

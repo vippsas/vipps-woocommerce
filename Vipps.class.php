@@ -1747,6 +1747,11 @@ else:
         if (defined('REST_REQUEST') && REST_REQUEST ) return;
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 
+        // Defer to the normal code for endpoints IOK 2022-12-09
+        if (is_wc_endpoint_url( 'order-pay' ) || is_wc_endpoint_url( 'order-received' )) {
+           return do_shortcode("[woocommerce_checkout]");
+        } 
+
         if (!WC()->cart ||  WC()->cart->is_empty() ) {
             $this->abandonVippsCheckoutOrder(false);
             ob_start();
@@ -2127,11 +2132,6 @@ EOF;
                 # Only do this if Vipps Checkout was ever activated
                 $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
                 if (!$vipps_checkout_activated) return $id;
-
-                # We sometimes want to use the 'real' checkout screen, ie, like for "thankyou"
-                # IOK TODO: Instead, we probably should implement the endpoints for thankyou and so forth directly, just in case someone
-                # deletes the standard page or somethng.
-                if ($this->gateway()->get_real_checkout_screen) return $id;
 
                 # If Vipps Checkout is enabled, can be used etc, use that.
                 $checkoutid = $this->gateway()->vipps_checkout_available();
