@@ -900,6 +900,10 @@ class Vipps {
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
 
+        // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
+        $strings = array('Continue with Vipps'=>__('Continue with Vipps', 'woo-vipps'),'Vipps'=> __('Vipps', 'woo-vipps'));
+        wp_localize_script('vipps-gw', 'VippsLocale', $strings);
+
         $sdkurl = 'https://checkout.vipps.no/vippsCheckoutSDK.js';
         wp_register_script('vipps-sdk',$sdkurl,array());
         wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
