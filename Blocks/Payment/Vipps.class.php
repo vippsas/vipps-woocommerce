@@ -32,21 +32,17 @@ final class Vipps extends AbstractPaymentMethodType {
                 $version = filemtime(dirname(__FILE__) . "/js/wc-payment-method-vipps.js");
                 $path = plugins_url('js/wc-payment-method-vipps.js', __FILE__);
                 $handle = 'wc-payment-method-vipps';
-                $dependencies = array('wp-hooks');
+                $dependencies = array('wp-hooks', 'vipps-gw');
 
                 wp_register_script($handle, $path, $dependencies,$version,true);
 
 
                 // Will not use wp_set_script_translations yet, it seems to be not fully compatible with Loco Translate etc. Instead use
-                // old-fashioned localize-script. IOK 2020-08-11
+                // old-fashioned localize-script IOK 2020-08-11
                 // wp_set_script_translations( 'wc-payment-method-vipps', 'woo-vipps' );
-               
-                // This script gets called several times; localize only once.  IOK 2020-08-11
-                if (!$this->localized) {
-                    $strings = array('Continue with Vipps'=>__('Continue with Vipps', 'woo-vipps'),'Vipps'=> __('Vipps', 'woo-vipps'));
-                    wp_localize_script('wc-payment-method-vipps', 'VippsLocale', $strings);
-                    $this->localized=1;
-                }
+                // VippsLocale is localized for vipps-gw instead of this, as it seems it does no longer work to do localize-script at this point.
+                // IOK 2022-12-13
+
 		return [ 'wc-payment-method-vipps' ];
 	}
 
