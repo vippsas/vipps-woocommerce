@@ -1414,13 +1414,13 @@ else:
             $reversed = array_reverse($details['epaymentLog']);
             foreach ($reversed  as $td) {
                 print "<br>";
-                print __('Operation','woo-vipps') . ": " . htmlspecialchars(@$td['paymentAction']) . "<br>";
+                print __('Operation','woo-vipps') . ": " . htmlspecialchars(@$td['name']) . "<br>";
                 $value = intval(@$td['amount']['value'])/100;
                 $curr = $td['amount']['currency'];
 
                 print __('Amount','woo-vipps') . ": " . esc_html($value) . " " . esc_html($curr) . "<br>";
                 print __('Success','woo-vipps') . ": " . @$td['success'] . "<br>";
-                print __('Timestamp','woo-vipps') . ": " . htmlspecialchars(@$td['processedAt']) . "<br>";
+                print __('Timestamp','woo-vipps') . ": " . htmlspecialchars(@$td['timestamp']) . "<br>";
                 print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['pspReference']) . "<br>";
             }
         }
