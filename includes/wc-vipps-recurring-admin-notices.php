@@ -22,7 +22,7 @@ class WC_Vipps_Recurring_Admin_Notices {
 	}
 
 	public function action_admin_init(): void {
-		$dismiss_name = filter_input( INPUT_GET, 'vipps_recurring_dismiss', FILTER_SANITIZE_STRING );
+		$dismiss_name = filter_input( INPUT_GET, 'vipps_recurring_dismiss', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( is_string( $dismiss_name ) ) {
 			if ( $dismiss_name === 'one-or-more' ) {

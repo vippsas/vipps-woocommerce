@@ -2,9 +2,9 @@
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 6.0
+Tested up to: 6.1
 Stable tag: trunk
-Requires PHP: 7.0
+Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
@@ -159,6 +159,13 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Synchronized products can not be paid via Vipps when using KCO if the price at this moment in time is 0.
 
 == Changelog ==
+
+= 1.15.0 =
+* Refactored: We are now using the Vipps Recurring API v3
+* Changed: We now require at least PHP 7.4. You should however already be on 8.0+ as PHP 7.4 is end of life.
+* Added: Much more type safety to the entire codebase.
+* Refactored: We no longer pass product descriptions to Vipps unless you choose to do so.
+* Refactored: We now use Vipps' new campaign system
 
 = 1.14.7 =
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.

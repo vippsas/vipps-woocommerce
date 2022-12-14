@@ -43,3 +43,13 @@ class WC_Vipps_Recurring_Temporary_Exception extends WC_Vipps_Recurring_Exceptio
 class WC_Vipps_Recurring_Config_Exception extends WC_Vipps_Recurring_Exception {
 	//
 }
+
+// Missing required value
+class WC_Vipps_Recurring_Missing_Value_Exception extends WC_Vipps_Recurring_Exception {
+	//
+}
+
+// Invalid value value
+class WC_Vipps_Recurring_Invalid_Value_Exception extends WC_Vipps_Recurring_Exception {
+	//
+}
