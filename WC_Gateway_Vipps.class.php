@@ -2582,7 +2582,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 
          // In *some* cases you may need to actually load classes and reload the cart, because some plugins do not load when DOING_AJAX.
-        do_action('woo_vipps_express_checkout_beforce_calculate_totals');
+        do_action('woo_vipps_express_checkout_before_calculate_totals');
         WC()->cart->calculate_fees();
         WC()->cart->calculate_totals();
         do_action('woo_vipps_before_create_express_checkout_order', WC()->cart);
@@ -2623,6 +2623,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             WC()->checkout->create_order_fee_lines( $order, WC()->cart);
             WC()->checkout->create_order_tax_lines( $order, WC()->cart);
             WC()->checkout->create_order_coupon_lines( $order, WC()->cart);
+            do_action('woo_vipps_before_calculate_totals_partial_order', $order);
             $order->calculate_totals(true);
 
             // Added to support third-party plugins that wants to do stuff with the order before it is saved. IOK 2020-07-03

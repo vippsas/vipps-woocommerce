@@ -118,6 +118,31 @@ add_action('plugins_loaded', function () {
         });
     }
 
+
+    // For WooCommerce Smart Coupons, which at 6.9.0 thought that doing_ajax and WP_ADMIN => this was an admin call
+    // IOK 2022-12-19 reported, but many older versions are likely to exist
+    if (class_exists('WC_SC_Purchase_Credit')) {
+        function woo_vipps_pretend_not_doing_ajax ($doingit) {
+            if ($doingit && isset($_REQUEST['action']) &&
+                ($_REQUEST['action'] == 'do_single_product_express_checkout' ||
+                 $_REQUEST['action'] == 'do_express_checkout')) {
+                return false;
+            }
+            return $doingit;
+        }
+        function woo_vipps_add_no_ajax () {
+            add_filter('wp_doing_ajax', 'woo_vipps_pretend_not_doing_ajax');
+        }
+        function woo_vipps_remove_no_ajax() {
+            remove_filter('wp_doing_ajax', 'woo_vipps_pretend_not_doing_ajax');
+        }
+        add_action('woo_vipps_before_calculate_totals_partial_order', function ($order) {
+            add_action('woocommerce_new_order_item', 'woo_vipps_add_no_ajax' , 9);
+            add_action('woocommerce_new_order_item', 'woo_vipps_remove_no_ajax' , 11);
+        });
+    }
+
+
 });
 
 
