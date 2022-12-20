@@ -82,6 +82,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 = 1.13.2 =
 Workaround for WooCommerce Smart Coupons bug
 Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
+Support for Pixel Your Site-like mechanisms for Vipps Checkout
 
 = 1.13.1 =
 Changes required for newer version of epayment-api
@@ -233,6 +234,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 = 202x.xx.xx version 1.13.2 =
+Workaround for WooCommerce Smart Coupons bug
+Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
+Support for Pixel Your Site-like mechanisms for Vipps Checkout
 
 = 2022.12.13 version 1.13.1 =
 Changes required for newer version of epayment-api
