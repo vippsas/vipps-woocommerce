@@ -1806,9 +1806,14 @@ else:
         $out .= "<div id='vippscheckoutframe'>";
 
         $out .= "</div>";
-        $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
         $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
+
+        // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
+        $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
+        $out .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
+        $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
+        $out .= "</form>";
 
         return $out;
     }
@@ -4042,8 +4047,8 @@ EOF;
         $content = $this->spinner();
 
         // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
+        // The form data below is sent on order creation; the sec is also used to poll session status
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
-
         $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
         $content .= "<input type='hidden' name='action' value='$action'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
@@ -4203,7 +4208,9 @@ EOF;
 
         $content .= "</p></div>";
 
-        $content .= "<form id='vippsdata'>";
+        // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
+        $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
+        $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
         $content .= "<input type='hidden' id='fkey' name='fkey' value='".htmlspecialchars($signalurl)."'>";
         $content .= "<input type='hidden' name='key' value='".htmlspecialchars($order->get_order_key())."'>";
         $content .= "<input type='hidden' name='action' value='check_order_status'>";

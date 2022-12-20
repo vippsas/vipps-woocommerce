@@ -62,7 +62,6 @@ jQuery( document ).ready( function() {
 
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
-         console.log("In session state thing");
          if (!VippsSessionState) return false;
          let args = { 
                      checkoutFrontendUrl: VippsSessionState['checkoutFrontendUrl'].replace(/\/$/, ''),
@@ -71,7 +70,6 @@ jQuery( document ).ready( function() {
                      language: VippsConfig['vippslanguage']
          };
          let vippsCheckout = VippsCheckout(args);
-         console.log("Started with %j", args);
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
          jQuery('.vipps_checkout_startdiv').hide();
@@ -80,11 +78,24 @@ jQuery( document ).ready( function() {
       }
 
       if (!doVippsCheckout()) {
+          let data  = {};
+          let formdata = jQuery("#vippsdata").serializeArray();
+          for(i=0;i<formdata.length;i++) {
+              let entry = formdata[i];
+              data[entry.name] = entry.value;
+          }
+          if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+              data = wp.hooks.applyFilters('vippsCheckoutInitalizeSessionData', data);
+          }
+          data['action'] = 'vipps_checkout_start_session';
+          data['vipps_checkout_sec'] = jQuery('#vipps_checkout_sec').val();
+
           jQuery.ajax(VippsConfig['vippsajaxurl'],
                     {   cache:false,
                         timeout: 0,
                         dataType:'json',
-                        data: { 'action': 'vipps_checkout_start_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
+
+                        data: data,
                         method: 'POST', 
                         error: function (xhr, statustext, error) {
                             jQuery("body").css("cursor", "default");
@@ -212,7 +223,7 @@ jQuery( document ).ready( function() {
       }
     }
 
-    console.log("Vipps Checkout Initialized version 110");
+    console.log("Vipps Checkout Initialized version 111");
     
     listenToFrame(); // Start now if we have an iframe. This will also start the polling.
     initWhenVisible(); // Or start the session maybe
