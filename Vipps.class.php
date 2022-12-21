@@ -123,7 +123,7 @@ class Vipps {
         add_filter('woocommerce_add_to_cart_redirect', array($this,  'woocommerce_add_to_cart_redirect'), 10, 1);
 
         $badge_options = get_option('vipps_badge_options');
-        if (@$badge_options['badgeon']) {
+        if ($badge_options && @$badge_options['badgeon']) {
             add_action('wp_enqueue_scripts', function () {
                     wp_enqueue_script('vipps-onsite-messageing');
                     });
