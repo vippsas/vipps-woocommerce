@@ -79,10 +79,13 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-= 1.13.2 =
+= 1.13.3 =
 Workaround for WooCommerce Smart Coupons bug
 Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
 Support for Pixel Your Site-like mechanisms for Vipps Checkout
+
+= 1.13.2 =
+Fix for a php8 issue with unset options for the badge feature
 
 = 1.13.1 =
 Changes required for newer version of epayment-api
@@ -233,10 +236,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 202x.xx.xx version 1.13.2 =
+= 202x.xx.xx version 1.13.3 =
 Workaround for WooCommerce Smart Coupons bug
 Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
 Support for Pixel Your Site-like mechanisms for Vipps Checkout
+
+= 2022.12.21 version 1.13.2 =
+Fix for a php8 issue with unset options for the badge feature
 
 = 2022.12.13 version 1.13.1 =
 Changes required for newer version of epayment-api
