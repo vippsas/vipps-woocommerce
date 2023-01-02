@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.13.2
-Stable tag: 1.13.2
+Version: 1.13.3
+Stable tag: 1.13.3
 Requires at least: 4.7
 Tested up to: 6.1.1
 Requires PHP: 5.6
@@ -236,7 +236,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 202x.xx.xx version 1.13.3 =
+= 2023.01.02 version 1.13.3 =
 Workaround for WooCommerce Smart Coupons bug
 Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
 Support for Pixel Your Site-like mechanisms for Vipps Checkout
