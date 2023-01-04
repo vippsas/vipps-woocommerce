@@ -40,21 +40,21 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		"retry_days"
 	];
 
-	private string $id;
-	private string $status;
-	private string $type;
-	private int $amount;
-	private string $transaction_id;
-	private string $transaction_type;
-	private string $description;
-	private string $currency;
-	private DateTime $due;
-	private int $retry_days;
-	private string $order_id;
-	private string $failure_reason;
-	private string $failure_description;
-	private array $summary;
-	private array $history;
+	public ?string $id = null;
+	public ?string $status = null;
+	public ?string $type = null;
+	public ?int $amount = null;
+	public ?string $transaction_id = null;
+	public ?string $transaction_type = null;
+	public ?string $description = null;
+	public ?string $currency = null;
+	public ?DateTime $due = null;
+	public ?int $retry_days = null;
+	public ?string $order_id = null;
+	public ?string $failure_reason = null;
+	public ?string $failure_description = null;
+	public ?array $summary = null;
+	public ?array $history = null;
 
 	public function set_amount( int $amount ): self {
 		$this->amount = $amount;
@@ -103,16 +103,18 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	function to_array(): array {
-		$this->check_required();
+	public function to_array( $check_required = true ): array {
+		if ( $check_required ) {
+			$this->check_required();
+		}
 
 		return [
-			"amount" => $this->amount,
+			"amount"      => $this->amount,
 			"description" => $this->description,
-			"due" => $this->due,
-			"retryDays" => $this->retry_days,
-			...$this->conditional("transactionType", $this->transaction_type),
-			...$this->conditional("orderId", $this->order_id),
+			"due"         => $this->due,
+			"retryDays"   => $this->retry_days,
+			...$this->conditional( "transactionType", $this->transaction_type ),
+			...$this->conditional( "orderId", $this->order_id ),
 		];
 	}
 }

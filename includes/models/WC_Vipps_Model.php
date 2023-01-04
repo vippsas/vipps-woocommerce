@@ -3,19 +3,47 @@
 abstract class WC_Vipps_Model {
 	protected array $required_fields = [];
 
-	public function __construct() {
-		return $this;
+	public function __construct( array $data ) {
+		$this->from_array( $data );
 	}
 
-	abstract function to_array(): array;
+	private function from_array( array $data ): void {
+		foreach ( $data as $key => $value ) {
+			$snake_case_key = $this->camel_to_snake( $key );
+			$func_name      = "set_$snake_case_key";
+
+			if ( ! method_exists( get_class( $this ), $func_name ) || !$value ) {
+				continue;
+			}
+
+			$this->{$func_name}( $value );
+		}
+	}
+
+	private function camel_to_snake( $input ): string {
+		return strtolower( preg_replace( '/(?<!^)[A-Z]/', '_$0', $input ) );
+	}
+
+	abstract function to_array($check_required = true): array;
+
+	protected function set_value($name, $value, $class = null): self
+	{
+		if ( is_array( $value ) && $class ) {
+			$this->{$name} = new $class( $value );
+		} else {
+			$this->{$name} = $value;
+		}
+
+		return $this;
+	}
 
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	protected function check_required(?string $keyed_by = null): void {
+	protected function check_required( ?string $keyed_by = null ): void {
 		$class = get_class( $this );
 
-		$fields = !$keyed_by ? $this->required_fields : $this->required_fields[$keyed_by];
+		$fields = ! $keyed_by ? $this->required_fields : $this->required_fields[ $keyed_by ];
 
 		foreach ( $fields as $value ) {
 			if ( ! $this->{$value} ) {

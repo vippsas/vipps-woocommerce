@@ -23,14 +23,14 @@ class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 		"LEGACY_CAMPAIGN"    => [ "type", "price", "end" ],
 	];
 
-	private string $type;
-	private int $price;
-	private DateTime $end;
-	private string $explanation;
-	private DateTime $event_date;
-	private string $event_text;
-	private WC_Vipps_Agreement_Interval $period;
-	private WC_Vipps_Agreement_Interval $interval;
+	public ?string $type = null;
+	public ?int $price = null;
+	public ?DateTime $end = null;
+	public ?string $explanation = null;
+	public ?DateTime $event_date = null;
+	public ?string $event_text = null;
+	public ?WC_Vipps_Agreement_Interval $period = null;
+	public ?WC_Vipps_Agreement_Interval $interval = null;
 
 	/**
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
@@ -91,18 +91,20 @@ class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	function to_array(): array {
-		$this->check_required($this->type);
+	public function to_array( $check_required = true ): array {
+		if ( $check_required ) {
+			$this->check_required( $this->type );
+		}
 
 		return [
-			"type" => $this->type,
+			"type"  => $this->type,
 			"price" => $this->price,
-			"end" => $this->conditional("end", $this->end),
-			...$this->conditional("explanation", $this->explanation),
-			...$this->conditional("eventDate", $this->event_date),
-			...$this->conditional("eventText", $this->event_text),
-			...$this->conditional("period", $this->period),
-			...$this->conditional("interval", $this->interval),
+			"end"   => $this->conditional( "end", $this->end ),
+			...$this->conditional( "explanation", $this->explanation ),
+			...$this->conditional( "eventDate", $this->event_date ),
+			...$this->conditional( "eventText", $this->event_text ),
+			...$this->conditional( "period", $this->period ),
+			...$this->conditional( "interval", $this->interval ),
 		];
 	}
 }

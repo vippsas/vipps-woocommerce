@@ -14,11 +14,11 @@ class WC_Vipps_Agreement_Pricing extends WC_Vipps_Model {
 		"LEGACY"   => [ "type", "currency", "amount" ],
 	];
 
-	private string $type;
-	private string $currency;
-	private int $amount;
-	private int $suggested_max_amount;
-	private int $max_amount;
+	public ?string $type = null;
+	public ?string $currency = null;
+	public ?int $amount = null;
+	public ?int $suggested_max_amount = null;
+	public ?int $max_amount = null;
 
 	/**
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
@@ -61,8 +61,10 @@ class WC_Vipps_Agreement_Pricing extends WC_Vipps_Model {
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	function to_array(): array {
-		$this->check_required( $this->type );
+	public function to_array( $check_required = true ): array {
+		if ( $check_required ) {
+			$this->check_required( $this->type );
+		}
 
 		return [
 			"type"     => $this->type,

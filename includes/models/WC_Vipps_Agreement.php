@@ -2,8 +2,8 @@
 
 class WC_Vipps_Agreement extends WC_Vipps_Model {
 	const STATUS_ACTIVE = "ACTIVE";
-	const STATUS_PENDING = "PENDING ";
-	const STATUS_STOPPED = "STOPPED ";
+	const STATUS_PENDING = "PENDING";
+	const STATUS_STOPPED = "STOPPED";
 	const STATUS_EXPIRED = "EXPIRED";
 
 	protected array $valid_statuses = [
@@ -21,20 +21,20 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 		"product_name"
 	];
 
-	private string $id;
-	private string $status;
-	private WC_Vipps_Agreement_Campaign $campaign;
-	private WC_Vipps_Agreement_Pricing $pricing;
-	private string $phone_number;
-	private WC_Vipps_Agreement_Initial_Charge $initial_charge;
-	private WC_Vipps_Agreement_Interval $interval;
-	private bool $is_app;
-	private string $merchant_agreement_url;
-	private string $merchant_redirect_url;
-	private string $product_name;
-	private string $product_description;
-	private string $scope;
-	private bool $skip_landing_page;
+	public ?string $id = null;
+	public ?string $status = null;
+	public ?WC_Vipps_Agreement_Campaign $campaign = null;
+	public ?WC_Vipps_Agreement_Pricing $pricing = null;
+	public ?string $phone_number = null;
+	public ?WC_Vipps_Agreement_Initial_Charge $initial_charge = null;
+	public ?WC_Vipps_Agreement_Interval $interval = null;
+	public ?bool $is_app = null;
+	public ?string $merchant_agreement_url = null;
+	public ?string $merchant_redirect_url = null;
+	public ?string $product_name = null;
+	public ?string $product_description = null;
+	public ?string $scope = null;
+	public ?bool $skip_landing_page = null;
 
 	/**
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
@@ -50,16 +50,24 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_campaign( WC_Vipps_Agreement_Campaign $campaign ): self {
-		$this->campaign = $campaign;
+	public function set_id( string $id ): self {
+		$this->id = $id;
 
 		return $this;
 	}
 
-	public function set_pricing( WC_Vipps_Agreement_Pricing $pricing ): self {
-		$this->pricing = $pricing;
+	/**
+	 * @param WC_Vipps_Agreement_Campaign|array $campaign
+	 */
+	public function set_campaign( $campaign ): self {
+		return $this->set_value( 'campaign', $campaign, WC_Vipps_Agreement_Campaign::class );
+	}
 
-		return $this;
+	/**
+	 * @param WC_Vipps_Agreement_Pricing|array $pricing
+	 */
+	public function set_pricing( $pricing ): self {
+		return $this->set_value( 'pricing', $pricing, WC_Vipps_Agreement_Pricing::class );
 	}
 
 	public function set_phone_number( string $phone_number ): self {
@@ -68,16 +76,18 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_initial_charge( WC_Vipps_Agreement_Initial_Charge $initial_charge ): self {
-		$this->initial_charge = $initial_charge;
-
-		return $this;
+	/**
+	 * @param WC_Vipps_Agreement_Initial_Charge|array $initial_charge
+	 */
+	public function set_initial_charge( $initial_charge ): self {
+		return $this->set_value( 'initial_charge', $initial_charge, WC_Vipps_Agreement_Initial_Charge::class );
 	}
 
-	public function set_interval( WC_Vipps_Agreement_Interval $interval ): self {
-		$this->interval = $interval;
-
-		return $this;
+	/**
+	 * @param WC_Vipps_Agreement_Interval|array $interval
+	 */
+	public function set_interval( $interval ): self {
+		return $this->set_value( 'interval', $interval, WC_Vipps_Agreement_Interval::class );
 	}
 
 	public function set_is_app( bool $is_app ): self {
@@ -125,13 +135,16 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	public function to_array(): array {
-		$this->check_required();
+	public function to_array( $check_required = true ): array {
+		if ( $check_required ) {
+			$this->check_required();
+		}
 
 		return [
-			"product_name" => $this->product_name,
-			"pricing"      => $this->pricing->to_array(),
-			"interval"     => $this->interval->to_array(),
+			"productName" => $this->product_name,
+			"pricing"     => $this->pricing->to_array($check_required),
+			"interval"    => $this->interval->to_array($check_required),
+			...$this->conditional( "id", $this->id ),
 			...$this->conditional( "status", $this->status ),
 			...$this->conditional( "campaign", $this->campaign ),
 			...$this->conditional( "phoneNumber", $this->phone_number ),

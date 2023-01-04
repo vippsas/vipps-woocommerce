@@ -11,10 +11,10 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 
 	protected array $required_fields = [ "amount", "description", "transaction_type" ];
 
-	private int $amount;
-	private string $description;
-	private string $transaction_type;
-	private string $order_id;
+	public ?int $amount = null;
+	public ?string $description = null;
+	public ?string $transaction_type = null;
+	public ?string $order_id = null;
 
 	public function set_amount( int $amount ): self {
 		$this->amount = $amount;
@@ -51,8 +51,10 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	function to_array(): array {
-		$this->check_required();
+	public function to_array( $check_required = true ): array {
+		if ( $check_required ) {
+			$this->check_required();
+		}
 
 		return [
 			"amount"          => $this->amount,

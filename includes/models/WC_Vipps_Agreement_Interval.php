@@ -15,8 +15,9 @@ class WC_Vipps_Agreement_Interval extends WC_Vipps_Model {
 
 	protected array $required_fields = [ "unit", "count" ];
 
-	private string $unit;
-	private int $count;
+	public ?string $unit = null;
+	public ?int $count = null;
+	public ?string $text = null;
 
 	/**
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
@@ -38,15 +39,24 @@ class WC_Vipps_Agreement_Interval extends WC_Vipps_Model {
 		return $this;
 	}
 
+	public function set_text( string $text ): self {
+		$this->text = $text;
+
+		return $this;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	function to_array(): array {
-		$this->check_required();
+	public function to_array( $check_required = true ): array {
+		if ( $check_required ) {
+			$this->check_required();
+		}
 
 		return [
 			"unit"  => $this->unit,
 			"count" => $this->count,
+			"text" => $this->text,
 		];
 	}
 }

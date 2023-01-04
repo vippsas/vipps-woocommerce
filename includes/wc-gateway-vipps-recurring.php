@@ -3,6 +3,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( class_exists( 'WC_Payment_Gateway' ) ) {
+	require_once( __DIR__ . '/wc-vipps-models.php' );
 	require_once( __DIR__ . '/wc-vipps-recurring-api.php' );
 
 	/**
@@ -13,98 +14,71 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 	class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		/**
 		 * API access secret key
-		 *
-		 * @var string
 		 */
-		public $secret_key;
+		public string $secret_key;
 
 		/**
 		 * Api access client id
-		 *
-		 * @var string
 		 */
-		public $client_id;
+		public string $client_id;
 
 		/**
 		 * Api access subscription key
-		 *
-		 * @var string
 		 */
-		public $subscription_key;
+		public string $subscription_key;
 
 		/**
 		 * Is test mode active?
-		 *
-		 * @var bool
 		 */
-		public $testmode;
+		public bool $testmode;
 
 		/**
-		 * Is test mode active?
-		 *
-		 * @var bool
+		 * The Vipps API url
 		 */
-		public $api_url;
+		public string $api_url;
 
 		/**
 		 * The page to redirect to for cancelled orders
-		 *
-		 * @var integer
 		 */
-		public $cancelled_order_page;
+		public int $cancelled_order_page;
 
 		/**
 		 * The default status to give pending renewals
-		 *
-		 * @var string
 		 */
-		public $default_renewal_status;
+		public string $default_renewal_status;
 
 		/**
 		 * The default status pending orders that have yet to be captured (reserved charges in Vipps) should be given
-		 *
-		 * @var string
 		 */
-		public $default_reserved_charge_status;
+		public string $default_reserved_charge_status;
 
 		/**
 		 * Status where when transitioned to we will attempt to capture the payment
-		 *
-		 * @var array
 		 */
-		public $statuses_to_attempt_capture;
+		public array $statuses_to_attempt_capture;
 
 		/**
-		 * Transition the order status to completed when a renewal order has been charged successfully
+		 * Transition the order status to 'completed' when a renewal order has been charged successfully
 		 * regardless of previous status
-		 *
-		 * @var string
 		 */
-		public $transition_renewals_to_completed;
+		public string $transition_renewals_to_completed;
 
 		/**
 		 * The amount of charges to check in wp-cron at a time
-		 *
-		 * @var integer
 		 */
-		public $check_charges_amount;
+		public int $check_charges_amount;
 
 		/**
 		 * The sort order in which we check charges in wp-cron
-		 *
-		 * @var string
 		 */
-		public $check_charges_sort_order;
+		public string $check_charges_sort_order;
 
 		/**
-		 * @var WC_Gateway_Vipps_Recurring The reference the *Singleton* instance of this class
+		 * The reference the *Singleton* instance of this class
 		 */
-		private static $instance;
+		private static WC_Gateway_Vipps_Recurring $instance;
 
-		/**
-		 * @var WC_Vipps_Recurring_Api
-		 */
-		private $api;
+		private WC_Vipps_Recurring_Api $api;
 
 		/**
 		 * Returns the *Singleton* instance of this class.

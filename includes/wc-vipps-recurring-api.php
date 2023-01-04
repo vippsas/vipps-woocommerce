@@ -8,17 +8,12 @@ require_once( __DIR__ . '/wc-vipps-recurring-exceptions.php' );
  * Class WC_Vipps_Recurring_Api
  */
 class WC_Vipps_Recurring_Api {
-	/**
-	 * @var $gateway
-	 */
-	public $gateway;
+	public WC_Gateway_Vipps_Recurring $gateway;
 
 	/**
 	 * Amount of days to retry a payment for when creating a charge
-	 *
-	 * @var int $retry_days
 	 */
-	public $retry_days = WC_VIPPS_RECURRING_RETRY_DAYS;
+	public int $retry_days = WC_VIPPS_RECURRING_RETRY_DAYS;
 
 	/**
 	 * WC_Vipps_Recurring_Api constructor.

@@ -4,8 +4,8 @@ defined( 'ABSPATH' ) || exit;
 
 class WC_Vipps_Recurring_Exception extends Exception {
 
-	/** @var string sanitized/localized error message */
-	protected $localized_message;
+	/** sanitized/localized error message */
+	protected string $localized_message;
 
 	public $response_code;
 	public $is_idempotent_error = false;
