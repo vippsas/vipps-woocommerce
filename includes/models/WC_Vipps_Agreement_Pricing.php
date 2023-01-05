@@ -1,8 +1,10 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class WC_Vipps_Agreement_Pricing extends WC_Vipps_Model {
-	const TYPE_LEGACY = "LEGACY";
-	const TYPE_VARIABLE = "VARIABLE";
+	public const TYPE_LEGACY = "LEGACY";
+	public const TYPE_VARIABLE = "VARIABLE";
 
 	protected array $valid_types = [
 		self::TYPE_LEGACY,
@@ -24,7 +26,7 @@ class WC_Vipps_Agreement_Pricing extends WC_Vipps_Model {
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
 	 */
 	public function set_type( string $type ): self {
-		if ( ! in_array( $type, $this->valid_types ) ) {
+		if ( ! in_array( $type, $this->valid_types, true ) ) {
 			$class = get_class( $this );
 			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$type is not a valid value for `type` in $class." );
 		}

@@ -1,10 +1,12 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class WC_Vipps_Agreement_Interval extends WC_Vipps_Model {
-	const UNIT_YEAR = "YEAR";
-	const UNIT_MONTH = "MONTH";
-	const UNIT_WEEK = "WEEK";
-	const UNIT_DAY = "DAY";
+	public const UNIT_YEAR = "YEAR";
+	public const UNIT_MONTH = "MONTH";
+	public const UNIT_WEEK = "WEEK";
+	public const UNIT_DAY = "DAY";
 
 	protected array $valid_units = [
 		self::UNIT_YEAR,

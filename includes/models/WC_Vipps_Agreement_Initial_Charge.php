@@ -1,8 +1,10 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
-	const TRANSACTION_TYPE_RESERVE_CAPTURE = "RESERVE_CAPTURE";
-	const TRANSACTION_TYPE_DIRECT_CAPTURE = "DIRECT_CAPTURE";
+	public const TRANSACTION_TYPE_RESERVE_CAPTURE = "RESERVE_CAPTURE";
+	public const TRANSACTION_TYPE_DIRECT_CAPTURE = "DIRECT_CAPTURE";
 
 	protected array $valid_transaction_types = [
 		self::TRANSACTION_TYPE_RESERVE_CAPTURE,
@@ -23,6 +25,10 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 	}
 
 	public function set_description( string $description ): self {
+		if ( strlen( $description ) > 45 ) {
+			$description = mb_substr( $description, 0, 42 ) . '...';
+		}
+
 		$this->description = $description;
 
 		return $this;
@@ -32,7 +38,7 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
 	 */
 	public function set_transaction_type( string $transaction_type ): self {
-		if ( ! in_array( $transaction_type, $this->valid_transaction_types ) ) {
+		if ( ! in_array( $transaction_type, $this->valid_transaction_types, true ) ) {
 			$class = get_class( $this );
 			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$transaction_type is not a valid value for `transaction_type` in $class." );
 		}

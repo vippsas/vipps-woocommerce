@@ -71,7 +71,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
+		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.4.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
 		define( 'WC_VIPPS_RECURRING_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
@@ -93,26 +93,20 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 		class WC_Vipps_Recurring {
 			/**
-			 * @var WC_Vipps_Recurring The reference the *Singleton* instance of this class
+			 * The reference the *Singleton* instance of this class
 			 */
-			private static $instance;
+			private static ?WC_Vipps_Recurring $instance = null;
 
-			/**
-			 * @var WC_Vipps_Recurring_Admin_Notices
-			 */
-			public $notices;
+			public WC_Vipps_Recurring_Admin_Notices $notices;
 
-			/**
-			 * @var WC_Gateway_Vipps_Recurring
-			 */
-			public $gateway;
+			public WC_Gateway_Vipps_Recurring $gateway;
 
 			/**
 			 * Returns the *Singleton* instance of this class.
 			 *
-			 * @return WC_Vipps_Recurring The *Singleton* instance.
+			 * @return WC_Vipps_Recurring
 			 */
-			public static function get_instance(): \WC_Vipps_Recurring {
+			public static function get_instance(): WC_Vipps_Recurring {
 				if ( null === self::$instance ) {
 					self::$instance = new self();
 				}
@@ -188,12 +182,43 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				// testing code
-//				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+					$agreement = new WC_Vipps_Agreement( [
+						"start"                => "2022-09-29T09:48:02Z",
+						"stop"                 => null,
+						"status"               => "ACTIVE",
+						"pricing"              => [
+							"type"     => "LEGACY",
+							"currency" => "NOK",
+							"amount"   => 14900
+						],
+						"productName"          => "This is a name of a really long product wh...",
+						"productDescription"   => "[På vent] This is a name of a really long product which will be truncated",
+						"interval"             => [
+							"unit"  => "MONTH",
+							"count" => 1,
+							"text"  => "every month"
+						],
+						"campaign"             => [
+							"price"       => 12665,
+							"end"         => "2022-10-29T09:47:45Z",
+							"explanation" => "Original price 149 kr
+starts October 29",
+							"type"        => "LEGACY_CAMPAIGN"
+						],
+						"sub"                  => null,
+						"userinfoUrl"          => null,
+						"merchantAgreementUrl" => "https://8e9f-141-0-97-106.eu.ngrok.io/my-account/",
+						"id"                   => "agr_GqnvsHY"
+					] );
+
+					die(var_dump($agreement->to_array(false)));
+
 //					add_action( 'wp_loaded', [
 //						$this,
 //						'check_order_statuses'
 //					] );
-//				}
+				}
 				// end testing code
 
 				// schedule recurring payment charge status checking event
@@ -260,7 +285,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				add_action( 'save_post', [ $this, 'save_order' ], 10, 3 );
 
-				if ( $this->gateway->testmode ) {
+				if ( $this->gateway->test_mode ) {
 					$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
 					$this->notices->warning( $notice );
 				}

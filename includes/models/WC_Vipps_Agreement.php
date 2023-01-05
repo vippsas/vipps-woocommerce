@@ -1,10 +1,12 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class WC_Vipps_Agreement extends WC_Vipps_Model {
-	const STATUS_ACTIVE = "ACTIVE";
-	const STATUS_PENDING = "PENDING";
-	const STATUS_STOPPED = "STOPPED";
-	const STATUS_EXPIRED = "EXPIRED";
+	public const STATUS_ACTIVE = "ACTIVE";
+	public const STATUS_PENDING = "PENDING";
+	public const STATUS_STOPPED = "STOPPED";
+	public const STATUS_EXPIRED = "EXPIRED";
 
 	protected array $valid_statuses = [
 		self::STATUS_ACTIVE,
@@ -22,6 +24,14 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	];
 
 	public ?string $id = null;
+	/**
+	 * @var DateTime|string $start
+	 */
+	public $start;
+	/**
+	 * @var DateTime|string $start
+	 */
+	public $stop;
 	public ?string $status = null;
 	public ?WC_Vipps_Agreement_Campaign $campaign = null;
 	public ?WC_Vipps_Agreement_Pricing $pricing = null;
@@ -35,17 +45,49 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	public ?string $product_description = null;
 	public ?string $scope = null;
 	public ?bool $skip_landing_page = null;
+	public ?string $sub = null;
+	public ?string $userinfo_url = null;
 
 	/**
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
 	 */
 	public function set_status( string $status ): self {
-		if ( ! in_array( $status, $this->valid_statuses ) ) {
+		if ( ! in_array( $status, $this->valid_statuses, true ) ) {
 			$class = get_class( $this );
 			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$status is not a valid value for `status` in $class." );
 		}
 
 		$this->status = $status;
+
+		return $this;
+	}
+
+	/**
+	 * @param DateTime|string $start
+	 *
+	 * @throws Exception
+	 */
+	public function set_start( $start ): self {
+		if ( is_string( $start ) ) {
+			$this->start = new DateTime( $start );
+		} else {
+			$this->start = $start;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param DateTime|string $stop
+	 *
+	 * @throws Exception
+	 */
+	public function set_stop( $stop ): self {
+		if ( is_string( $stop ) ) {
+			$this->stop = new DateTime( $stop );
+		} else {
+			$this->stop = $stop;
+		}
 
 		return $this;
 	}
@@ -109,12 +151,20 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	}
 
 	public function set_product_name( string $product_name ): self {
+		if ( strlen( $product_name ) > 45 ) {
+			$product_name = mb_substr( $product_name, 0, 42 ) . '...';
+		}
+
 		$this->product_name = $product_name;
 
 		return $this;
 	}
 
 	public function set_product_description( string $product_description ): self {
+		if ( strlen( $product_description ) > 100 ) {
+			$product_description = mb_substr( $product_description, 0, 97 ) . '...';
+		}
+
 		$this->product_description = $product_description;
 
 		return $this;
@@ -132,6 +182,18 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 		return $this;
 	}
 
+	public function set_sub( string $sub ): self {
+		$this->sub = $sub;
+
+		return $this;
+	}
+
+	public function set_userinfo_url( string $userinfo_url ): self {
+		$this->userinfo_url = $userinfo_url;
+
+		return $this;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
@@ -142,8 +204,10 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 
 		return [
 			"productName" => $this->product_name,
-			"pricing"     => $this->pricing->to_array($check_required),
-			"interval"    => $this->interval->to_array($check_required),
+			"pricing"     => $this->pricing->to_array( $check_required ),
+			"interval"    => $this->interval->to_array( $check_required ),
+			...$this->conditional( "start", $this->start ),
+			...$this->conditional( "stop", $this->stop ),
 			...$this->conditional( "id", $this->id ),
 			...$this->conditional( "status", $this->status ),
 			...$this->conditional( "campaign", $this->campaign ),
@@ -155,6 +219,8 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 			...$this->conditional( "productDescription", $this->product_description ),
 			...$this->conditional( "scope", $this->scope ),
 			...$this->conditional( "skipLandingPage", $this->skip_landing_page ),
+			...$this->conditional( "sub", $this->sub ),
+			...$this->conditional( "userinfoUrl", $this->userinfo_url ),
 		];
 	}
 }

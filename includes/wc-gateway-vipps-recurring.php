@@ -30,7 +30,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Is test mode active?
 		 */
-		public bool $testmode;
+		public bool $test_mode;
 
 		/**
 		 * The Vipps API url
@@ -76,7 +76,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * The reference the *Singleton* instance of this class
 		 */
-		private static WC_Gateway_Vipps_Recurring $instance;
+		private static ?WC_Gateway_Vipps_Recurring $instance = null;
 
 		private WC_Vipps_Recurring_Api $api;
 
@@ -131,7 +131,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->title                            = $this->get_option( 'title' );
 			$this->description                      = $this->get_option( 'description' );
 			$this->enabled                          = $this->get_option( 'enabled' );
-			$this->testmode                         = WC_VIPPS_RECURRING_TEST_MODE;
+			$this->test_mode                         = WC_VIPPS_RECURRING_TEST_MODE;
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
@@ -143,7 +143,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 			$this->order_button_text                = __( 'Pay with Vipps', 'woo-vipps-recurring' );
 
-			$this->api_url = $this->testmode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
+			$this->api_url = $this->test_mode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 			$this->api     = new WC_Vipps_Recurring_Api( $this );
 
 			/*
@@ -999,7 +999,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$idempotency_key = $this->get_idempotence_key( $renewal_order );
 
-			$charge = $this->api->create_charge( $agreement, $renewal_order, $idempotency_key, $amount );
+			$charge = $this->api->create_charge( $agreement, $idempotency_key, $amount );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['chargeId'] );
 			WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
@@ -1152,7 +1152,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 */
 		public function create_charge( $agreement, $order, $idempotency_key ) {
 			try {
-				$charge = $this->api->create_charge( $agreement, $order, $idempotency_key );
+				$charge = $this->api->create_charge( $agreement, $idempotency_key );
 
 				// add due charge note
 				$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );

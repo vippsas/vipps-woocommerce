@@ -1,16 +1,18 @@
 <?php
 
+defined( 'ABSPATH' ) || exit;
+
 class WC_Vipps_Charge extends WC_Vipps_Model {
-	const STATUS_PENDING = "PENDING";
-	const STATUS_DUE = "DUE";
-	const STATUS_RESERVED = "RESERVED";
-	const STATUS_CHARGED = "CHARGED";
-	const STATUS_PARTIALLY_CAPTURED = "PARTIALLY_CAPTURED";
-	const STATUS_FAILED = "FAILED";
-	const STATUS_CANCELLED = "CANCELLED";
-	const STATUS_PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED";
-	const STATUS_REFUNDED = "REFUNDED";
-	const STATUS_PROCESSING = "PROCESSING";
+	public const STATUS_PENDING = "PENDING";
+	public const STATUS_DUE = "DUE";
+	public const STATUS_RESERVED = "RESERVED";
+	public const STATUS_CHARGED = "CHARGED";
+	public const STATUS_PARTIALLY_CAPTURED = "PARTIALLY_CAPTURED";
+	public const STATUS_FAILED = "FAILED";
+	public const STATUS_CANCELLED = "CANCELLED";
+	public const STATUS_PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED";
+	public const STATUS_REFUNDED = "REFUNDED";
+	public const STATUS_PROCESSING = "PROCESSING";
 
 	protected array $valid_statuses = [
 		self::STATUS_PENDING,
@@ -25,8 +27,8 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		self::STATUS_PROCESSING,
 	];
 
-	const TRANSACTION_TYPE_RECURRING = "RECURRING";
-	const TRANSACTION_TYPE_INITIAL = "INITIAL";
+	public const TRANSACTION_TYPE_RECURRING = "RECURRING";
+	public const TRANSACTION_TYPE_INITIAL = "INITIAL";
 
 	protected array $valid_transaction_types = [
 		self::TRANSACTION_TYPE_RECURRING,
@@ -48,7 +50,11 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	public ?string $transaction_type = null;
 	public ?string $description = null;
 	public ?string $currency = null;
-	public ?DateTime $due = null;
+
+	/**
+	 * @var DateTime|string $due
+	 */
+	public $due;
 	public ?int $retry_days = null;
 	public ?string $order_id = null;
 	public ?string $failure_reason = null;
@@ -66,7 +72,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
 	 */
 	public function set_transaction_type( string $transaction_type ): self {
-		if ( ! in_array( $transaction_type, $this->valid_transaction_types ) ) {
+		if ( ! in_array( $transaction_type, $this->valid_transaction_types, true ) ) {
 			$class = get_class( $this );
 			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$transaction_type is not a valid value for `transaction_type` in $class." );
 		}
@@ -82,8 +88,18 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_due( DateTime $due ): self {
-		$this->due = $due;
+	/**
+	 * @param DateTime|string $due
+	 *
+	 * @throws Exception
+	 */
+	public function set_due( $due ): self {
+		if ( is_string( $due ) ) {
+			$this->due = new DateTime( $due );
+		} else {
+			$this->due = $due;
+		}
+
 
 		return $this;
 	}
