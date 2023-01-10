@@ -34,3 +34,15 @@ Vipps address hash var for å rekalkulere shipping tror, så det kan kanskje fje
 men åå hente adresseinfo er relevatn igjen for delendum
 
 
+REMOVE ALL userDetails from checkout
+
+HANDLE LOGIN AND USER CREATION BY USING
+
+
+    [userInfo] => Array
+        (
+            [sub] => 0ea76f1a-7102-4947-b53f-9a7aff1ea5e9
+            [email] => iver+test@wp-hosting.no
+        )
+
+- IF PRESENT - but check against actual order used? order->get_meta('vipps_email', 'vipps, sub')?

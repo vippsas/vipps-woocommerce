@@ -630,7 +630,11 @@ class VippsApi {
         // ISO-3166 Alpha 2 country list
         $countries = array_keys((new WC_Countries())->get_allowed_countries());
         $allowed_countries = apply_filters('woo_vipps_checkout_countries', $countries, $orderid);
-        $configuration['countries'] = $allowed_countries;
+        if ($allowed_countries) {
+            $configuration['countries'] = ['supported' => $allowed_countries ];
+        } else {
+       
+        }
 
         if (!$needs_shipping) {
             $nocontacts = $this->gateway->get_option('noContactFields') == 'yes';
@@ -648,6 +652,7 @@ class VippsApi {
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
         error_log("Data is " . print_r($data, true)); // FIXME
+        $this->log("data is " . print_r($data, true), 'debug');
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 

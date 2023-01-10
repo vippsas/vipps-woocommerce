@@ -1365,6 +1365,8 @@ else:
         }
         print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
         print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
+
+
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
             print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";
@@ -1385,6 +1387,21 @@ else:
             if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
             print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";
         }
+        if (!empty(@$details['billingDetails'])) {
+            $us = $details['billingDetails'];
+            print "<h3>" . __('Billing details', 'woo-vipps') . "</h3>";
+            print __('First Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['firstName']) . "<br>"; 
+            print __('Last Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['lastName']) . "<br>";
+            print __('Mobile Number', 'woo-vipps') . ": " . htmlspecialchars(@$us['phoneNumber']) . "<br>";
+            print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
+        }
+        // Checkout v3: No userDetails, but Vipps email may be present
+        if (!empty(@$details['userInfo'])) {
+            $us = $details['userInfo'];
+            print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
+            print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
+        }
+        // Older versions of the api, as well as express checkout has "userDetails"
         if (!empty(@$details['userDetails'])) {
             $us = $details['userDetails'];
             print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
@@ -1652,7 +1669,9 @@ else:
 
         // IOK FIXME
         error_log("iverok status of order " . print_r($status, true)); // FIXME
+//      FIXME THIS GETS ORDER DATA, INCLUDING PERSONALIA, BUT NEVER USER DETAILS
 
+// IOK FIXME REMOVE THE BELOW
         if ($ok && $change && isset($status['userDetails']))  {
             $contact = $status['userDetails'];
             $order->set_billing_email($contact['email']);
@@ -2356,6 +2375,8 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
+        error_log("callback data: " . print_r($result, true)); // FIXME
+
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
@@ -2415,10 +2436,7 @@ EOF;
              do_action('woo_vipps_callback', $result);
         }
 
-
-
         $gw = $this->gateway();
-
         $gw->handle_callback($result, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
