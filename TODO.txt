@@ -46,3 +46,14 @@ HANDLE LOGIN AND USER CREATION BY USING
         )
 
 - IF PRESENT - but check against actual order used? order->get_meta('vipps_email', 'vipps, sub')?
+
+
+
+In the poll handler: line 1655. Poll checkout, then get userDetails, anonymouse them if neccessary, then set billing and shipping
+Finally handle set_order_shipping_details line 1704
+
+In getPaymentDetails, on line around 1816, normalize phoneNumber, userId, phoneNumber
+
+Then again in handle callback anonymousify userDetails on 2379, set shipping details on 2407
+
+så jeg må lage en "ensureUserDetails"
