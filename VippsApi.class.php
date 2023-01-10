@@ -110,7 +110,6 @@ class VippsApi {
         $command = 'order-management/v1/images/';
         $bytes = $image;
 
-$start = microtime(true);
 
         if (!$is_bytes){
             if ($image && is_readable($image)) {
@@ -463,7 +462,6 @@ $start = microtime(true);
 
         $data = array();
         $data['customerInfo'] = array('mobileNumber' => $phone); 
-      
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
 
         $express = $this->gateway->express_checkout;
@@ -505,8 +503,9 @@ $start = microtime(true);
     }
 
     // This is Vipps Checkout IOK 2021-06-19
+    // Updated for V3 2023-01-09
     public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$requestid) {
-        $command = 'checkout/v2/session';
+        $command = 'checkout/v3/session';
         $date = gmdate('c');
         $ip = $_SERVER['SERVER_ADDR'];
         $clientid = $this->get_clientid();
@@ -556,7 +555,9 @@ $start = microtime(true);
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
         $headers['merchant-Serial-Number'] = $merch;
 
-        $callback = $this->gateway->payment_callback_url($authtoken);
+        // The string returned is a prefix ending with callback=, for v3 we need to send a complete URL
+        // so we just add the callback type here.
+        $callback = $this->gateway->payment_callback_url($authtoken) . "checkout";
         $fallback = $returnurl;
 
         $transaction = array();
@@ -584,7 +585,7 @@ $start = microtime(true);
         $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
         $data = array();
 
-        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackPrefix'=>$callback, 'returnUrl'=>$fallback);
+        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackUrl'=>$callback, 'returnUrl'=>$fallback);
 
         if (!empty($termsAndConditionsUrl)) {
             $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
@@ -602,37 +603,51 @@ $start = microtime(true);
             $logistics = array();
             if ($static_shipping) {
                 $logistics['fixedOptions'] = $static_shipping["shippingDetails"];
-                $logistics['dynamicOptionsCallback'] = null;
+                unset($logistics['dynamicOptionsCallback']);
             } else {
                 $logistics['dynamicOptionsCallback'] = $shippingcallback;
             }
+            // 'integrations': 'porterbuddy', 'instabox', 'helthjem'
+            //  porterbuddy => publicToken, apiKey, origin
+            //  instabox => clientId, clientSecret
+            //  helthjem => username, password, shopId
             $data['logistics'] = $logistics;
         }
+
 
         if (!empty($customerinfo)) {
             $data['prefillCustomer'] = $customerinfo;
         }
 
-        // IOK 2022-01-11 This string-valued field be set to true (or whatever the correct value is) only if the 
-        // customer is present in the store when completing the order.
-        if (false) {
-         // Enum: "CUSTOMER_PRESENT" "CUSTOMER_NOT_PRESENT"
-         $data['customerInteraction'] = "";
-        }
+        // From v3: Certain data moved to a 'configuration' field
+        $configuration = [];
+        $configuration['elements'] = "Full";
+        $configuration['customerInteraction'] = apply_filters('woo_vipps_checkout_customerInteraction', 'CUSTOMER_NOT_PRESENT', $orderid);
+        $configuration['userFlow'] = "WEB_REDIRECT"; // Change to NATIVE_REDIRECT for apps in below filter
+        // Require consent of email and openid sub - really for login
+        $configuration['requireUserInfo'] = apply_filters('woo_vipps_checkout_requireUserInfo', true, $orderid);
+
+        // ISO-3166 Alpha 2 country list
+        $countries = array_keys((new WC_Countries())->get_allowed_countries());
+        $allowed_countries = apply_filters('woo_vipps_checkout_countries', $countries, $orderid);
+        $configuration['countries'] = $allowed_countries;
 
         if (!$needs_shipping) {
             $nocontacts = $this->gateway->get_option('noContactFields') == 'yes';
             $noaddress = $this->gateway->get_option('noAddressFields') == 'yes';
-
             if ($noaddress) {
-                $data['addressFields'] = false;
+                $configuration['elements'] = false;
             }
 //          AddressFields cannot be enabled while ContactFields is disabled
             if ($noaddress && $nocontacts) {
-                $data['contactFields'] = false;
+                $configuration['elements'] = "PaymentOnly";
             }
         }
+        $data['configuration'] = $configuration;
+
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
+
+        error_log("Data is " . print_r($data, true)); // FIXME
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 

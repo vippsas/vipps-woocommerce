@@ -1650,6 +1650,9 @@ else:
         }
         if ($complete) $change = true;
 
+        // IOK FIXME
+        error_log("iverok status of order " . print_r($status, true)); // FIXME
+
         if ($ok && $change && isset($status['userDetails']))  {
             $contact = $status['userDetails'];
             $order->set_billing_email($contact['email']);
@@ -1659,18 +1662,18 @@ else:
         }
         if ($ok &&  $change && isset($status['shippingDetails']))  {
             $contact = $status['shippingDetails'];
-            $countrycode =  $this->country_to_code($contact['country']);
+            $countrycode =  $this->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
             $order->set_shipping_first_name($contact['firstName']);
             $order->set_shipping_last_name($contact['lastName']);
             $order->set_shipping_address_1($contact['streetAddress']);
             $order->set_shipping_address_2("");
-            $order->set_shipping_city($contact['region']);
+            $order->set_shipping_city($contact['city']);
             $order->set_shipping_postcode($contact['postalCode']);
             $order->set_shipping_country($countrycode);
 
             $order->set_billing_address_1($contact['streetAddress']);
             $order->set_billing_address_2("");
-            $order->set_billing_city($contact['region']);
+            $order->set_billing_city($contact['city']);
             $order->set_billing_postcode($contact['postalCode']);
             $order->set_billing_country($countrycode);
         }
@@ -2346,6 +2349,7 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
+        error_log("callback headers: " . print_r($_SERVER, true)); // FIXME
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
@@ -2355,8 +2359,8 @@ EOF;
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
-	    $parts = array_reverse(explode("/", $callback));
-        if (isset($parts[3]) && $parts[3] == 'checkout') {
+        // For Vipps Checkout v3 and onwards, we control the callback so the type is just this field
+        if ($callback == 'checkout') {
             $ischeckout = true;
         }
 
@@ -2809,17 +2813,24 @@ EOF;
                             'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
                             'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                           );
-                  $m2['product'] = $m['shippingMethod'];
+                  $m2['brand'] = "OTHER";
+                  $m2['title'] = $m['shippingMethod']; // Only for "other"
                   $m2['id'] = $m['shippingMethodId'];
+
+//                  $m2['type'] == "HOME_DELIVERY", "PICKUP_POINT" only for certain brands
 
                   // Extra fields available for Checkout only, using the Rate as input   
                   $rate = $ratemap[$m2['id']];
                   // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
-                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', '',  $rate);
                   // Not present in WordPress, so allow filters to add it
                   $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $rate);
+
                   // Pickup points! But only if the shipping method supports it, which is currently for Bring and PostNord
-                  $m2['isPickupPoint'] = apply_filters('woo_vipps_shipping_method_pickup_point', false, $rate);
+                  // Instead of isPickupPoint we need to set "type == HOME_DELIVERY or PICKUP_POINT where supported, per 
+                  // shipping provider, and for "OTHER", nothing
+                  // FIXME brand POSTEN, POSTNORD, PORTERBUDDY, ISNTABOX, HELTHJEM, OTHER
+                  //
+                  // 'title' is only used for OTHER
 
                   $translated[] = $m2;
             }

@@ -1792,7 +1792,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $result['status'] = $details['state'];
 
                // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
-               if ($result['status'] == 'AUTHORISED' && isset($result['directCapture']) && $result['directCapture']) {
+               if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
                    $result['status'] = "SALE";
                }
 
@@ -2134,7 +2134,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This only happens with ecommerce though, so we need to check before canonicalizing. IOK 2022-03-21
         $shipping_empty = true;
         if ($billing && array_key_exists('streetAddress', $address)) {
-            $keys = ['firstName', 'lastName', 'email', 'phoneNumber', 'streetAddress', 'postalCode', 'region', 'country'];
+            $keys = ['firstName', 'lastName', 'email', 'phoneNumber', 'streetAddress', 'postalCode', 'city', 'country'];
             foreach ($keys as $key) {
                 if (isset($address[$key]) && $address[$key]) {
                     $shipping_empty = false; break;
@@ -2146,7 +2146,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if (!$billing) $billing = $address;
-
         $address = $this->canonicalize_vipps_address($address, $user);
         $billing = $this->canonicalize_vipps_address($billing, $user);
 
@@ -2431,7 +2430,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_currency',$vippscurrency);
         $order->update_meta_data('_vipps_status',$vippsstatus);  // Still uses the old status values - could call update_vipps_payment_details instead at the cost of an extra callIOK 2021-01-21
 
-        if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
+        if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'AUTHORIZED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09
+
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
