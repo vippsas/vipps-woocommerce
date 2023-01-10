@@ -1654,17 +1654,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
+                        $polldata = $this->ensure_userDetails($polldata);
+
                         if (isset($polldata['userDetails'])) {
                             $paymentdetails['userDetails'] = $polldata['userDetails'];
-                        } else {
-                            // It is possible to not require user details in Checkout.
-                            $paymentdetails['userDetails'] = array(
-                                'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
-                                'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
-                                'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
-                                'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
-                            );
-                        }
+                        } 
                         if (isset($polldata['shippingDetails'])) {
                             $paymentdetails['shippingDetails'] = $polldata['shippingDetails'];
                         } else {
@@ -1808,6 +1802,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $result['transactionSummary'] = $transactionSummary;
            }
 
+           // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+           $result = $this->ensure_userDetails($result);
+          
            if (isset($result['shippingDetails'])) {
                 $addr  = $result['shippingDetails'];
                 unset($addr['shippingMethodId']);
@@ -1887,6 +1884,52 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         return $result;
+    }
+
+    // Vipps Checkout v3 does *not* provide userDetails. Vipps Checkout v2 and epayment *does*. But Checkout additionally allows
+    // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
+    // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
+    // if not, we use shippingDetails. IOK 2023-01-10
+    private function ensure_userDetails($vippsdata) {
+        // If we have userDetails, return it
+        if (isset($vippsdata['userDetails'])) return $vippsdata;
+ 
+       
+        // Otherwise prefer to get it from billing
+        if (isset($vippsdata['billingDetails'])) {
+            $addr = $vippsdata['billingDetails'];
+            $phone = $addr['phoneNumber'] ? $addr['phoneNumber'] : ($addr['mobileNumber'] ? $addr['mobileNumber'] : "");
+            $vippsdata['userDetails'] = array(
+                    'firstName' => $addr['firstName'],
+                    'lastName' => $addr['lastName'],
+                    'email' => $addr['email'],
+                    'phoneNumber' => $phone,
+                    'mobileNumber' => $phone
+                    );
+
+        // But use shipping if there is no other
+        } else if (isset($vippsdata['shippingDetails'])) {
+            $addr = $vippsdata['shippingDetails'];
+            $phone = $addr['phoneNumber'] ? $addr['phoneNumber'] : ($addr['mobileNumber'] ? $addr['mobileNumber'] : "");
+            $vippsdata['userDetails'] = array(
+                    'firstName' => $addr['firstName'],
+                    'lastName' => $addr['lastName'],
+                    'email' => $addr['email'],
+                    'phoneNumber' => $phone,
+                    'mobileNumber' => $phone
+                    );
+
+        // And it is possible to not require user details in Checkout at all
+        } else {
+            $vippsdata['userDetails'] = array(
+                    'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
+                    'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
+                    'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
+                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
+                    );
+        }
+
+        return $vippsdata;
     }
 
     // Update the order with Vipps payment details, either passed or called using the API.
@@ -2374,16 +2417,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $express = $order->get_meta('_vipps_express_checkout');
+
+        // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
+        // including adding anonoymous users if there is no other data. IOK 2023-01-10
+        $result = $this->ensure_userDetails($result);
+ 
         if ($express && $order->get_meta('_vipps_checkout')) {
-            // This can happen when using Vipps Checkout and the store has turned off the address/user fields
-            if (!isset($result['userDetails'])) {
-                $result['userDetails'] = array(
-                    'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
-                    'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
-                    'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
-                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
-                );
-            }
             if (!isset($result['shippingDetails'])) {
                 // It is possible to drop shipping details from Checkout!
                 // We'll fill out the minimum of info

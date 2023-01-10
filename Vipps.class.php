@@ -1400,9 +1400,8 @@ else:
             $us = $details['userInfo'];
             print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
             print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
-        }
-        // Older versions of the api, as well as express checkout has "userDetails"
-        if (!empty(@$details['userDetails'])) {
+        } else if (!empty(@$details['userDetails'])) {
+            // Older versions of the api, as well as express checkout has "userDetails"
             $us = $details['userDetails'];
             print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
             print __('User ID', 'woo-vipps') . ": " . htmlspecialchars(@$us['userId']) . "<br>";
@@ -2367,14 +2366,11 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        error_log("callback headers: " . print_r($_SERVER, true)); // FIXME
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
-
-        error_log("callback data: " . print_r($result, true)); // FIXME
 
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
