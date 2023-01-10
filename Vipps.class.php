@@ -1667,17 +1667,21 @@ else:
         }
         if ($complete) $change = true;
 
-        // IOK FIXME
-        error_log("iverok status of order " . print_r($status, true)); // FIXME
-//      FIXME THIS GETS ORDER DATA, INCLUDING PERSONALIA, BUT NEVER USER DETAILS
+        // IOK FIXME this is the actual status of the order when this is called, which will
+        // include personalia only when continuing to payment
+        //error_log("iverok status of order " . print_r($status, true)); // FIXME
 
-// IOK FIXME REMOVE THE BELOW
-        if ($ok && $change && isset($status['userDetails']))  {
-            $contact = $status['userDetails'];
+        if ($ok && $change && isset($status['billingDetails']))  {
+            $contact = $status['billingDetails'];
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
+            $order->set_billing_address_1($contact['streetAddress']);
+            $order->set_billing_address_2("");
+            $order->set_billing_city($contact['city']);
+            $order->set_billing_postcode($contact['postalCode']);
+            $order->set_billing_country($countrycode);
         }
         if ($ok &&  $change && isset($status['shippingDetails']))  {
             $contact = $status['shippingDetails'];
@@ -1690,11 +1694,6 @@ else:
             $order->set_shipping_postcode($contact['postalCode']);
             $order->set_shipping_country($countrycode);
 
-            $order->set_billing_address_1($contact['streetAddress']);
-            $order->set_billing_address_2("");
-            $order->set_billing_city($contact['city']);
-            $order->set_billing_postcode($contact['postalCode']);
-            $order->set_billing_country($countrycode);
         }
         if ($change) $order->save();
 
