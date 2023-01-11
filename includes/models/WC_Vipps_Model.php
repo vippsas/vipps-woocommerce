@@ -53,9 +53,9 @@ abstract class WC_Vipps_Model {
 		}
 	}
 
-	protected function serialize_value( $value ) {
+	protected function serialize_value( $value, string $date_format = 'c' ) {
 		if ( $value instanceof DateTime ) {
-			$value = $value->format( 'c' );
+			$value = $value->format( $date_format );
 		}
 
 		if ( is_subclass_of( $value, __CLASS__ ) ) {

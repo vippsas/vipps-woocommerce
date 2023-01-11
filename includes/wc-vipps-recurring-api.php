@@ -78,7 +78,7 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		return $this->http_call( 'recurring/v3/agreements', 'POST', $agreement->to_array(true), $headers );
+		return $this->http_call( 'recurring/v3/agreements', 'POST', $agreement->to_array( true ), $headers );
 	}
 
 	/**
@@ -105,7 +105,7 @@ class WC_Vipps_Recurring_Api {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'   => 'Bearer ' . $token,
 			'Idempotency-Key' => $idempotency_key,
 		];
 
@@ -139,7 +139,7 @@ class WC_Vipps_Recurring_Api {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'   => 'Bearer ' . $token,
 			'Idempotency-Key' => $idempotency_key,
 		];
 
@@ -188,14 +188,13 @@ class WC_Vipps_Recurring_Api {
 		// minimum of 2 days
 		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
-		$data = [
-			'amount'      => $amount,
-			'description' => $agreement->product_description,
-			'due'         => $due_at,
-			'retryDays'   => $this->retry_days,
-		];
+		$charge = ( new WC_Vipps_Charge() )->set_amount( $amount )
+		                                   ->set_description( $agreement->product_description )
+		                                   ->set_transaction_type( WC_Vipps_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE )
+		                                   ->set_due( $due_at )
+		                                   ->set_retry_days( $this->retry_days );
 
-		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges', 'POST', $data, $headers );
+		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges', 'POST', $charge->to_array(), $headers );
 	}
 
 	/**
@@ -207,7 +206,7 @@ class WC_Vipps_Recurring_Api {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'   => 'Bearer ' . $token,
 			'Idempotency-Key' => $idempotency_key,
 		];
 

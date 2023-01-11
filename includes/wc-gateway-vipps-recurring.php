@@ -582,7 +582,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return 'SUCCESS';
 			}
 
-			$is_captured = $charge->status !== WC_Vipps_Charge::STATUS_PENDING;
+			$is_captured = ! in_array( $charge->status, [
+				WC_Vipps_Charge::STATUS_PENDING,
+				WC_Vipps_Charge::STATUS_RESERVED
+			], true );
+
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, $is_captured );
 
 			if ( (int) $initial ) {
@@ -1018,7 +1022,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$charge = $this->api->get_charge( $agreement->id, $charge['chargeId'] );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge->to_array() ) ) );
 
 			$this->process_order_charge( $renewal_order, $charge );
 			$renewal_order->save();

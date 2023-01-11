@@ -169,7 +169,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return [
 			"amount"      => $this->amount,
 			"description" => $this->description,
-			"due"         => $this->due,
+			"due"         => $this->serialize_value($this->due, 'Y-m-d'),
 			"retryDays"   => $this->retry_days,
 			...$this->conditional( "type", $this->type ),
 			...$this->conditional( "transactionType", $this->transaction_type ),

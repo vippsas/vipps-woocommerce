@@ -182,7 +182,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				// testing code
-				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+//				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
 //					$agreement = new WC_Vipps_Agreement( [
 //						"start"                => "2022-09-29T09:48:02Z",
 //						"stop"                 => null,
@@ -218,7 +218,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 //						$this,
 //						'check_order_statuses'
 //					] );
-				}
+//				}
 				// end testing code
 
 				// schedule recurring payment charge status checking event
@@ -555,7 +555,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Force check status of all pending charges
 			 */
-			public function wp_ajax_vipps_recurring_force_check_charge_statuses() {
+			public function wp_ajax_vipps_recurring_force_check_charge_statuses(): void {
 				try {
 					/* translators: amount of orders checked */
 					echo sprintf( __( 'Done. Checked the status of %s orders', 'woo-vipps-recurring' ), count( $this->check_order_statuses( - 1 ) ) );
@@ -584,7 +584,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Tab content
 			 */
-			public function woocommerce_product_data_panels() {
+			public function woocommerce_product_data_panels(): void {
 				echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 				woocommerce_wp_checkbox( [
@@ -636,14 +636,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * @param $order
 			 */
-			public function order_item_add_action_buttons( $order ) {
+			public function order_item_add_action_buttons( $order ): void {
 				$this->order_item_add_capture_button( $order );
 			}
 
 			/**
 			 * @param $order
 			 */
-			public function order_item_add_capture_button( $order ) {
+			public function order_item_add_capture_button( $order ): void {
 				if ( $order->get_type() !== 'shop_order' ) {
 					return;
 				}
@@ -681,7 +681,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 *
 			 * @throws Exception
 			 */
-			public function save_order( $postid, $post ) {
+			public function save_order( $postid, $post ): void {
 				if ( $post->post_type !== 'shop_order' ) {
 					return;
 				}
