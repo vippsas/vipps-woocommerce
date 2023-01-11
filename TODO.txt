@@ -70,6 +70,9 @@ Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
 INTEGRATIONS: Kan jeg få til dette i *en global setting*-ting?
 ** ser ikke sånn ut - jeg kan lage en shipping method uten supports "shippingzones" men denne er altså da legacy og dette kan 
 ** bli borte. Det er ingen filtre, untatt de som registrerer metoden, så man får da ikke settingsene.
+** Only shipping methods that support Shipping Zones are listed. If you have a method that does not support Shipping Zone, it is shown in the navigation menu and works globally/independent of Shipping Zones.
+** => så man kan returnere false osv fra is available osv.
+
 
 
 integrations	: porterbuddy, instabox, helthjem

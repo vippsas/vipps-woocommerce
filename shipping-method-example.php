@@ -19,7 +19,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         //add to shipping zones list
         $this->supports = array(
 
-//                'shipping-zones', // TO AVOID SHOWING THE PARENT
+//                'shipping-zones', // TO AVOID SHOWING THE PARENT in the zone setup thing
 
                 'settings', //use this for separate settings page
                 'instance-settings',
@@ -33,6 +33,11 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
         $this->init();
 
+    }
+
+    // BLERH - will ensure this is not shown to end user
+    public function is_enabled() {
+       return false;
     }
 
     function init() {
@@ -80,8 +85,12 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         // Register the rate
         $this->add_rate( array(
                     'id'      => $this->id,
+                    'label' => "impossible_choice",
+                    'cost' => 1,
+/*
                     'label'   => $intance_settings['title'],
                     'cost'    => $intance_settings['cost'],
+*/
                     'package' => $package,
                     'taxes'   => false,
                     )
