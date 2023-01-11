@@ -57,3 +57,6 @@ In getPaymentDetails, on line around 1816, normalize phoneNumber, userId, phoneN
 Then again in handle callback anonymousify userDetails on 2379, set shipping details on 2407
 
 så jeg må lage en "ensureUserDetails"
+
+TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
+TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
