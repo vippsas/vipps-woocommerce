@@ -70,7 +70,7 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function create_agreement( WC_Vipps_Agreement $agreement, string $idempotency_key ): WC_Vipps_Agreement {
+	public function create_agreement( WC_Vipps_Agreement $agreement, string $idempotency_key ): array {
 		$token = $this->get_access_token();
 
 		$headers = [
@@ -78,7 +78,7 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		return new WC_Vipps_Agreement( $this->http_call( 'recurring/v3/agreements', 'POST', $agreement->to_array(), $headers ) );
+		return $this->http_call( 'recurring/v3/agreements', 'POST', $agreement->to_array(true), $headers );
 	}
 
 	/**

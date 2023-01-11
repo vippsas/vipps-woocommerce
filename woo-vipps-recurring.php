@@ -183,36 +183,36 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				// testing code
 				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
-					$agreement = new WC_Vipps_Agreement( [
-						"start"                => "2022-09-29T09:48:02Z",
-						"stop"                 => null,
-						"status"               => "ACTIVE",
-						"pricing"              => [
-							"type"     => "LEGACY",
-							"currency" => "NOK",
-							"amount"   => 14900
-						],
-						"productName"          => "This is a name of a really long product wh...",
-						"productDescription"   => "[På vent] This is a name of a really long product which will be truncated",
-						"interval"             => [
-							"unit"  => "MONTH",
-							"count" => 1,
-							"text"  => "every month"
-						],
-						"campaign"             => [
-							"price"       => 12665,
-							"end"         => "2022-10-29T09:47:45Z",
-							"explanation" => "Original price 149 kr
-starts October 29",
-							"type"        => "LEGACY_CAMPAIGN"
-						],
-						"sub"                  => null,
-						"userinfoUrl"          => null,
-						"merchantAgreementUrl" => "https://8e9f-141-0-97-106.eu.ngrok.io/my-account/",
-						"id"                   => "agr_GqnvsHY"
-					] );
-
-					die(var_dump($agreement->to_array()));
+//					$agreement = new WC_Vipps_Agreement( [
+//						"start"                => "2022-09-29T09:48:02Z",
+//						"stop"                 => null,
+//						"status"               => "ACTIVE",
+//						"pricing"              => [
+//							"type"     => "LEGACY",
+//							"currency" => "NOK",
+//							"amount"   => 14900
+//						],
+//						"productName"          => "This is a name of a really long product wh...",
+//						"productDescription"   => "[På vent] This is a name of a really long product which will be truncated",
+//						"interval"             => [
+//							"unit"  => "MONTH",
+//							"count" => 1,
+//							"text"  => "every month"
+//						],
+//						"campaign"             => [
+//							"price"       => 12665,
+//							"end"         => "2022-10-29T09:47:45Z",
+//							"explanation" => "Original price 149 kr
+//starts October 29",
+//							"type"        => "LEGACY_CAMPAIGN"
+//						],
+//						"sub"                  => null,
+//						"userinfoUrl"          => null,
+//						"merchantAgreementUrl" => "https://8e9f-141-0-97-106.eu.ngrok.io/my-account/",
+//						"id"                   => "agr_GqnvsHY"
+//					] );
+//
+//					die(var_dump($agreement->to_array()));
 
 //					add_action( 'wp_loaded', [
 //						$this,

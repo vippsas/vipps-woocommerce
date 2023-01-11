@@ -131,7 +131,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->title                            = $this->get_option( 'title' );
 			$this->description                      = $this->get_option( 'description' );
 			$this->enabled                          = $this->get_option( 'enabled' );
-			$this->test_mode                         = WC_VIPPS_RECURRING_TEST_MODE;
+			$this->test_mode                        = WC_VIPPS_RECURRING_TEST_MODE;
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
@@ -974,7 +974,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$agreement = $this->api->get_agreement( $agreement_id );
 			$amount    = WC_Vipps_Recurring_Helper::get_vipps_amount( $amount );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment on agreement: %s', $renewal_order->get_id(), json_encode( $agreement ) ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment on agreement: %s', $renewal_order->get_id(), json_encode( $agreement->to_array() ) ) );
 
 			/*
 			 * if this is triggered by the Woo Subscriptions retry system we need to delete the data related to the old payment
@@ -1006,7 +1006,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
 
-			$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
+			$charge = $this->api->get_charge( $agreement->id, $charge->id );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
 
@@ -1297,13 +1297,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * "Putting it all Together"
 		 *
 		 * @param int $order_id
-		 * @param bool $retry
-		 * @param false $previous_error
 		 *
-		 * @return array|string[]
 		 * @throws Exception
 		 */
-		public function process_payment( $order_id, bool $retry = true, bool $previous_error = false ) {
+		public function process_payment( $order_id, bool $retry = true, bool $previous_error = false ): array {
 			$is_gateway_change = wcs_is_subscription( $order_id );
 			$subscription      = null;
 
@@ -1331,9 +1328,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
 				if ( $agreement_id ) {
-					$agreement = $this->api->get_agreement( $agreement_id );
+					$existing_agreement = $this->api->get_agreement( $agreement_id );
 
-					if ( $agreement['status'] === 'ACTIVE' ) {
+					if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 						WC_Subscriptions_Payment_Gateways::trigger_gateway_renewal_payment_hook( $renewal_order );
 
 						// Trigger the subscription payment complete hooks and reset suspension counts and user roles.
@@ -1377,18 +1374,18 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				if ( $agreement_id && ( ! $is_gateway_change || $already_swapping_to_vipps ) && ! $is_failed_renewal_order ) {
 					if ( ! $already_swapping_to_vipps ) {
-						$agreement = $this->get_agreement_from_order( $order );
+						$existing_agreement = $this->get_agreement_from_order( $order );
 					} else {
-						$new_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_new_agreement_id' );
-						$agreement        = $this->api->get_agreement( $new_agreement_id );
+						$new_agreement_id   = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_new_agreement_id' );
+						$existing_agreement = $this->api->get_agreement( $new_agreement_id );
 					}
 
-					if ( $agreement['status'] === 'ACTIVE' ) {
+					if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 						throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps. You can leave this page.', 'woo-vipps-recurring' ) );
 					}
 
 					// todo: remove this if Idempotency-Key starts working as expected in Vipps' API (ideally confirmation url should be the same as long as the same idempotency key is passed)
-					if ( $agreement['status'] === 'PENDING' ) {
+					if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_PENDING ) {
 						$confirmation_url = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL );
 
 						if ( $confirmation_url ) {
@@ -1494,21 +1491,25 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					}
 				}
 
-				$agreement_body = [
-					'currency'             => $order->get_currency(),
-					'price'                => WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ),
-					'interval'             => strtoupper( $subscription_period ),
-					'intervalCount'        => (int) $subscription_interval,
-					'productName'          => $item->get_name(),
-					'productDescription'   => WC_Vipps_Recurring_Helper::get_product_description( $product ),
-					'isApp'                => false,
-					'merchantAgreementUrl' => apply_filters( 'wc_vipps_recurring_merchant_agreement_url', $agreement_url ),
-					'merchantRedirectUrl'  => apply_filters( 'wc_vipps_recurring_merchant_redirect_url', $redirect_url ),
-				];
+				$agreement = ( new WC_Vipps_Agreement() )
+					->set_pricing(
+						( new WC_Vipps_Agreement_Pricing() )
+							->set_currency( $order->get_currency() )
+							->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ) )
+					)
+					->set_interval(
+						( new WC_Vipps_Agreement_Interval() )
+							->set_unit( strtoupper( $subscription_period ) )
+							->set_count( (int) $subscription_interval )
+					)
+					->set_product_name( $item->get_name() )
+					->set_product_description( WC_Vipps_Recurring_Helper::get_product_description( $product ) )
+					->set_merchant_agreement_url( apply_filters( 'wc_vipps_recurring_merchant_agreement_url', $agreement_url ) )
+					->set_merchant_redirect_url( apply_filters( 'wc_vipps_recurring_merchant_redirect_url', $redirect_url ) );
 
 				// validate phone number and only add it if it's up to Vipps' standard to avoid errors
 				if ( WC_Vipps_Recurring_Helper::is_valid_phone_number( $order->get_billing_phone() ) ) {
-					$agreement_body['customerPhoneNumber'] = $order->get_billing_phone();
+					$agreement = $agreement->set_phone_number( $order->get_billing_phone() );
 				}
 
 				$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
@@ -1536,14 +1537,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 						}
 					}
 
-					$agreement_body = array_merge( $agreement_body, [
-						'initialCharge' => [
-							'amount'          => WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ),
-							'currency'        => $order->get_currency(),
-							'description'     => $initial_charge_description,
-							'transactionType' => $capture_immediately ? 'DIRECT_CAPTURE' : 'RESERVE_CAPTURE',
-						],
-					] );
+					$agreement = $agreement->set_initial_charge(
+						( new WC_Vipps_Agreement_Initial_Charge() )
+							->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
+							->set_description( $initial_charge_description )
+							->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
+					);
 
 					if ( ! $capture_immediately ) {
 						WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_reserved_capture', true );
@@ -1551,22 +1550,24 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 
 				if ( $has_campaign ) {
-					$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
+//					$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
 					$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 					$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
 
 					$campaign_price    = $has_free_campaign ? 0 : $order->get_total();
 					$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
 
-					$agreement_body['campaign'] = [
-						'start'         => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ),
-						'end'           => WC_Vipps_Recurring_Helper::get_rfc_3999_date( $campaign_end_date ),
-						'campaignPrice' => WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ),
-					];
+					$agreement = $agreement->set_campaign(
+						( new WC_Vipps_Agreement_Campaign() )
+							->set_type( WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN )
+							->set_price( WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ) )
+//							->set_event_date(WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ))
+							->set_end( WC_Vipps_Recurring_Helper::get_rfc_3999_date( $campaign_end_date ) )
+					);
 				}
 
 				$idempotency_key = $this->get_idempotence_key( $order );
-				$response        = $this->api->create_agreement( $agreement_body, $idempotency_key );
+				$response        = $this->api->create_agreement( $agreement, $idempotency_key );
 
 				// mark the old agreement for cancellation to leave no dangling agreements in Vipps
 				$should_cancel_old = $is_gateway_change || $is_subscription_switch || $is_failed_renewal_order;
@@ -1617,7 +1618,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order->save();
 				$subscription->save();
 
-				$debug_msg .= sprintf( 'Debug body: %s', json_encode( $agreement_body ) ) . "\n";
+				$debug_msg .= sprintf( 'Debug body: %s', json_encode( $agreement->to_array() ) ) . "\n";
 				$debug_msg .= sprintf( 'Debug response: %s', json_encode( array_merge( $response, [ 'vippsConfirmationUrl' => 'redacted' ] ) ) );
 				WC_Vipps_Recurring_Logger::log( $debug_msg );
 

@@ -5,7 +5,7 @@ defined( 'ABSPATH' ) || exit;
 abstract class WC_Vipps_Model {
 	protected array $required_fields = [];
 
-	public function __construct( array $data ) {
+	public function __construct( array $data = [] ) {
 		$this->from_array( $data );
 	}
 
