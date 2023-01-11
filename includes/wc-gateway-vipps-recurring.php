@@ -290,7 +290,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $subscription
 		 * @param $renewal_order
 		 */
-		public function update_failing_payment_method( $subscription, $renewal_order ) {
+		public function update_failing_payment_method( $subscription, $renewal_order ): void {
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $renewal_order ) );
 		}
 
@@ -299,7 +299,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
-		public function process_redirect_payment( $order_id ) {
+		public function process_redirect_payment( $order_id ): void {
 			$order = wc_get_order( $order_id );
 			if ( ! is_object( $order ) ) {
 				return;
@@ -322,12 +322,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * @param $status
 		 */
-		public function maybe_redirect_to_cancelled_order_page( $status ) {
+		public function maybe_redirect_to_cancelled_order_page( $status ): void {
 			if ( $status !== 'CANCELLED' ) {
 				return;
 			}
 
-			// redirect to checkout or cancelled page?
+			// redirect to check out, or cancelled page?
 			$page = $this->ensure_cancelled_order_page();
 			wp_redirect( $page->guid . '?vipps_recurring_order_cancelled=true' );
 			exit;
@@ -344,9 +344,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					return $page;
 				}
 
-				if ( ! $page ) {
-					$this->update_option( 'cancelled_order_page', 0 );
-				}
+				$this->update_option( 'cancelled_order_page', 0 );
 			}
 
 			/**
@@ -372,10 +370,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 			}
 
-			$author_id = 0;
-			if ( $author ) {
-				$author_id = $author->ID;
-			}
+			$author_id = $author->ID ?? 0;
 
 			$content = __( 'It looks like you cancelled your order in Vipps. If this was a mistake you can try again by checking out again :)', 'woo-vipps-recurring' );
 
@@ -416,7 +411,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @param $order
 		 *
-		 * @return bool|mixed
+		 * @return bool|WC_Vipps_Charge
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
 		public function get_latest_charge_from_order( $order ) {
@@ -445,16 +440,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * @param $order
-		 * @param $agreement_id
-		 * @param $charge_id
+		 * @param object|WC_Order $order
+		 * @param string $agreement_id
+		 * @param string $charge_id
 		 *
-		 * @return mixed|null
+		 * @return false|null|WC_Vipps_Charge
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 * @throws WC_Vipps_Recurring_Exception
 		 * @throws WC_Vipps_Recurring_Temporary_Exception
 		 */
-		public function get_latest_charge_for_agreement( $order, $agreement_id, $charge_id ) {
+		public function get_latest_charge_for_agreement( $order, string $agreement_id, string $charge_id ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed checking charge directly for charge: %s and agreement: %s. This might mean we have not set the right charge id somewhere. Finding latest charge instead.', WC_Vipps_Recurring_Helper::get_id( $order ), $charge_id, $agreement_id ) );
 
 			$charges = $this->api->get_charges_for( $agreement_id );
@@ -476,9 +471,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Receives the agreement associated with an order
 		 *
-		 * @param $order
+		 * @param object|WC_Order $order
 		 *
-		 * @return bool|mixed
+		 * @return bool|WC_Vipps_Agreement
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
 		public function get_agreement_from_order( $order ) {
@@ -492,9 +487,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * @param $order
+		 * @param object|WC_Order $order
 		 */
-		public function unlock_order( $order ) {
+		public function unlock_order( $order ): void {
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_locked_for_update_time', 0 );
 			$order->save();
 		}
@@ -543,15 +538,18 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// logic for zero amounts when a charge does not exist
 			if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) && ! wcs_order_contains_renewal( $order ) ) {
 				// if there's a campaign with a price of 0 we can complete the order immediately
-				if ( $agreement['status'] === 'ACTIVE' ) {
-					$this->complete_order( $order, $agreement['id'] );
+				if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
+					$this->complete_order( $order, $agreement->id );
 
 					$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps-recurring' ) );
 					$order->save();
 				}
 
 				// if EXPIRED or STOPPED we can fail this order
-				if ( in_array( $agreement['status'], [ 'EXPIRED', 'STOPPED' ] ) ) {
+				if ( in_array( $agreement->status, [
+					WC_Vipps_Agreement::STATUS_EXPIRED,
+					WC_Vipps_Agreement::STATUS_STOPPED
+				], true ) ) {
 					$this->check_charge_agreement_cancelled( $order, $agreement );
 
 					return 'CANCELLED';
@@ -568,10 +566,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// set _charge_id on order
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
 
 			// set _vipps_recurring_latest_api_status
-			WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge['status'] );
+			WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge->status );
 
 			$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) ) && ! wcs_order_contains_renewal( $order );
 			$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
@@ -584,7 +582,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return 'SUCCESS';
 			}
 
-			$is_captured = $charge['status'] !== 'RESERVED';
+			$is_captured = $charge->status !== WC_Vipps_Charge::STATUS_PENDING;
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, $is_captured );
 
 			if ( (int) $initial ) {
@@ -600,7 +598,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->process_order_charge( $order, $charge );
 
 			// agreement is expired or stopped
-			if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] ) ) {
+			if ( in_array( $agreement->status, [
+				WC_Vipps_Agreement::STATUS_STOPPED,
+				WC_Vipps_Agreement::STATUS_EXPIRED
+			], true ) ) {
 				$this->check_charge_agreement_cancelled( $order, $agreement, $charge );
 
 				return 'CANCELLED';
@@ -611,24 +612,25 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		/**
 		 * @param $order
-		 * @param $agreement
-		 * @param $charge
+		 * @param WC_Vipps_Agreement $agreement
+		 * @param bool|WC_Vipps_Charge $charge
 		 *
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 * @throws WC_Vipps_Recurring_Exception
 		 * @throws WC_Vipps_Recurring_Temporary_Exception
 		 */
-		public function check_charge_agreement_cancelled( $order, $agreement, $charge = false ) {
+		public function check_charge_agreement_cancelled( $order, WC_Vipps_Agreement $agreement, $charge = false ): void {
 			$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps', 'woo-vipps-recurring' ) );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 			$order->save();
 
 			// cancel charge
-			if ( $charge ) {
-				if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
-					$this->api->cancel_charge( $agreement['id'], $charge['id'] );
-				}
+			if ( $charge && in_array( $charge->status, [
+					WC_Vipps_Charge::STATUS_DUE,
+					WC_Vipps_Charge::STATUS_PENDING
+				], true ) ) {
+				$this->api->cancel_charge( $agreement->id, $charge->id );
 			}
 		}
 
@@ -636,7 +638,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $order
 		 * @param $transaction_id
 		 */
-		public function complete_order( $order, $transaction_id ) {
+		public function complete_order( $order, $transaction_id ): void {
 			$order->payment_complete( $transaction_id );
 
 			// Controlled by the `transition_renewals_to_completed` setting
@@ -652,9 +654,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		/**
 		 * @param $order
-		 * @param $charge
+		 * @param WC_Vipps_Charge|null $charge
 		 */
-		public function process_order_charge( $order, $charge ) {
+		public function process_order_charge( $order, ?WC_Vipps_Charge $charge = null ): void {
 			if ( ! $charge ) {
 				// No charge
 				return;
@@ -667,11 +669,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			do_action( 'wc_vipps_recurring_before_process_order_charge', $order );
 
-			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['id'] );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
 			$transaction_id = WC_Vipps_Recurring_Helper::get_transaction_id_for_order( $order );
 
 			// Reduce stock
-			$reduce_stock = 'CHARGED' === $charge['status'] || in_array( $charge['status'], [ 'DUE', 'PENDING' ] );
+			$reduce_stock = 'CHARGED' === $charge->status || in_array( $charge->status, [
+					WC_Vipps_Charge::STATUS_DUE,
+					WC_Vipps_Charge::STATUS_PENDING
+				], true );
 			if ( $reduce_stock ) {
 				$order_stock_reduced = WC_Vipps_Recurring_Helper::is_stock_reduced_for_order( $order );
 
@@ -681,51 +686,51 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// status: CHARGED
-			if ( 'CHARGED' === $charge['status'] ) {
-				$this->complete_order( $order, $charge['id'] );
+			if ( 'CHARGED' === $charge->status ) {
+				$this->complete_order( $order, $charge->id );
 
 				/* translators: Vipps Charge ID */
-				$message = sprintf( __( 'Vipps charge completed (Charge ID: %s)', 'woo-vipps-recurring' ), $charge['id'] );
+				$message = sprintf( __( 'Vipps charge completed (Charge ID: %s)', 'woo-vipps-recurring' ), $charge->id );
 				$order->add_order_note( $message );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Completed order for charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Completed order for charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
 			}
 
 			// status: RESERVED
 			// not auto captured, so we need to put the order status to `$this->default_reserved_charge_status`
-			if ( ! $transaction_id && $charge['status'] === 'RESERVED'
+			if ( ! $transaction_id && $charge->status === WC_Vipps_Charge::STATUS_RESERVED
 				 && ! wcs_order_contains_renewal( $order ) ) {
-				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
+				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
 
 				$message = __( 'Vipps awaiting manual capture', 'woo-vipps-recurring' );
 				$order->update_status( $this->default_reserved_charge_status, $message );
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge reserved: %s (%s)', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $charge['status'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge reserved: %s (%s)', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $charge->status ) );
 			}
 
 			// status: DUE or PENDING
-			// when DUE we need to check that it becomes another status in a cron
-			if ( ! $transaction_id && ( $charge['status'] === 'DUE'
-										|| ( $charge['status'] === 'PENDING'
+			// when DUE, we need to check that it becomes another status in a cron
+			if ( ! $transaction_id && ( $charge->status === WC_Vipps_Charge::STATUS_DUE
+										|| ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
 											 && wcs_order_contains_renewal( $order ) ) ) ) {
-				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge['id'] );
+				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, true );
 
 				$order->update_status( $this->default_renewal_status, $this->get_due_charge_note( $charge ) );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge due or pending: %s (%s)', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $charge['status'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge due or pending: %s (%s)', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $charge->status ) );
 			}
 
 			// status: CANCELLED
-			if ( 'CANCELLED' === $charge['status'] ) {
+			if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
 				$order->update_status( 'cancelled', __( 'Vipps payment cancelled.', 'woo-vipps-recurring' ) );
 				WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge cancelled: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge cancelled: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
 			}
 
 			// status: FAILED
-			if ( 'FAILED' === $charge['status'] ) {
+			if ( $charge->status === WC_Vipps_Charge::STATUS_FAILED ) {
 				$order->update_status( 'failed', __( 'Vipps payment failed.', 'woo-vipps-recurring' ) );
 				WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, $charge );
 
@@ -740,14 +745,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$subscription->update_status( 'cancelled' );
 				}
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge failed: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge failed: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
 			}
 
 			// if status was FAILED, but no longer is
-			if ( WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
-				 && 'FAILED' !== $charge['status']
-				 && in_array( $charge['status'], [ 'PROCESSING', 'DUE', 'PENDING' ] ) ) {
-				WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge['id'] );
+			if ( $charge->status !== WC_Vipps_Charge::STATUS_FAILED
+				 && WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
+				 && in_array( $charge->status, [ WC_Vipps_Charge::STATUS_PROCESSING, 'DUE', 'PENDING' ], true ) ) {
+				WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge->id );
 			}
 		}
 
@@ -756,7 +761,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @param $cookie
 		 */
-		public function set_cookie_on_current_request( $cookie ) {
+		public function set_cookie_on_current_request( $cookie ): void {
 			$_COOKIE[ LOGGED_IN_COOKIE ] = $cookie;
 		}
 
@@ -805,8 +810,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			try {
 				return $this->process_subscription_payment( $amount_to_charge, $order );
 			} catch ( Exception $e ) {
-				// if we reach this point we consider the error the be completely unrecoverable.
-				WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, [] );
+				// if we reach this point we consider the error to be completely unrecoverable.
+				WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, new WC_Vipps_Charge() );
 				$order->update_status( 'failed' );
 
 				/* translators: Error message */
@@ -826,7 +831,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
-		public function cancel_subscription( $subscription ) {
+		public function cancel_subscription( $subscription ): void {
 			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
 			if ( $payment_method !== $this->id ) {
 				// If this is not the payment method, an agreement would not be available.
@@ -844,7 +849,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
 			$agreement    = $this->api->get_agreement( $agreement_id );
 
-			if ( $agreement['status'] === 'ACTIVE' ) {
+			if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 				$this->maybe_handle_subscription_status_transitions( $subscription, 'cancelled', 'active' );
 				$this->maybe_update_subscription_details_in_app( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
 
@@ -859,10 +864,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param null $amount
 		 * @param string $reason
 		 *
-		 * @return bool
 		 * @throws Exception
 		 */
-		public function process_refund( $order_id, $amount = null, $reason = '' ) {
+		public function process_refund( $order_id, $amount = null, $reason = '' ): ?bool {
 			$order        = wc_get_order( $order_id );
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 			$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
@@ -874,7 +878,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				if ( $diff->days > 365 ) {
 					/* translators: %s is the days as an integer since the order was created */
 					$err = sprintf( __( 'You cannot refund a Vipps charge that was made more than 365 days ago. This order was created %s days ago.', 'woo-vipps-recurring' ), $diff->days );
-					throw new Exception( $err );
+					throw new \RuntimeException( $err );
 				}
 			}
 
@@ -890,7 +894,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return true;
 			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
 				$msg = __( 'A temporary error occurred when refunding a payment through Vipps. Please ensure the order is refunded manually or reset the order to "Processing" and try again.', 'woo-vipps-recurring' );
-				throw new Exception( $msg );
+				throw new \RuntimeException( $msg );
 			} catch ( WC_Vipps_Recurring_Exception $e ) {
 				// attempt to cancel charge instead
 				if ( (float) $order->get_remaining_refund_amount() === 0.00 ) {
@@ -908,11 +912,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				// that probably means we are trying to partially refund a charge that hasn't yet cleared
 				if ( (float) $order->get_remaining_refund_amount() !== 0.00 ) {
 					$err = __( 'You can not partially refund a pending or due Vipps charge. Please wait till the payment clears first or refund the full amount instead.', 'woo-vipps-recurring' );
-					throw new Exception( $err );
+					throw new \RuntimeException( $err );
 				}
 
 				$err = __( 'An unexpected error occurred while refunding a payment in Vipps.', 'woo-vipps-recurring' );
-				throw new Exception( $err );
+				throw new \RuntimeException( $err );
 			}
 		}
 
@@ -936,7 +940,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @return string
 		 */
-		protected function generate_idempotency_key( $order ) {
+		protected function generate_idempotency_key( $order ): string {
 			$idempotence_key = $this->api->generate_idempotency_key();
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotence_key );
@@ -985,7 +989,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// if the previous charge is 'FAILED' we can assume this is an automatic retry instead of a normal renewal process.
 			if ( $charge_has_failed ) {
 				// check that the currently attached charge is in fact failed
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] it looks like the charge on agreement: %s failed. Deleting renewal meta and creating a new charge.', $renewal_order->get_id(), $agreement['id'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] it looks like the charge on agreement: %s failed. Deleting renewal meta and creating a new charge.', $renewal_order->get_id(), $agreement->id ) );
 
 				// note: delete transaction id as we use this to determine whether to update the order status in check_charge_status.
 				$renewal_order->set_transaction_id( 0 );
@@ -1018,17 +1022,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			return true;
 		}
 
-		/**
-		 * @param $charge
-		 *
-		 * @return string
-		 */
-		private function get_due_charge_note( $charge ): string {
-			$timestamp_gmt   = WC_Vipps_Recurring_Helper::rfc_3999_date_to_unix( $charge['due'] );
+		private function get_due_charge_note( WC_Vipps_Charge $charge ): string {
+			$timestamp_gmt   = WC_Vipps_Recurring_Helper::rfc_3999_date_to_unix( $charge->due );
 			$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
 
 			// translators: Vipps Charge ID, human diff timestamp
-			return sprintf( __( 'Vipps charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps-recurring' ), $charge['id'], strtolower( $date_to_display ) );
+			return sprintf( __( 'Vipps charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps-recurring' ), $charge->id, strtolower( $date_to_display ) );
 		}
 
 		/**
@@ -1038,7 +1037,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
-		public function maybe_capture_payment( $order_id ) {
+		public function maybe_capture_payment( $order_id ): void {
 			$order = wc_get_order( $order_id );
 
 			if ( wcs_order_contains_renewal( $order )
@@ -1067,15 +1066,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$idempotency_key = $this->get_idempotence_key( $order );
 
-				$charges = $this->api->get_charges_for( $agreement['id'] );
+				$charges = $this->api->get_charges_for( $agreement->id );
 
 				// if a charge exists and the status is RESERVED we need to simply capture it
-				$charges = array_filter( $charges, function ( $item ) {
-					return $item['status'] === 'RESERVED';
+				$charges = array_filter( $charges, static function ( $charge ) {
+					return $charge->status === WC_Vipps_Charge::STATUS_RESERVED;
 				} );
 
 				if ( count( $charges ) === 0 ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] No RESERVED charges found in capture_payment for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement['id'] ) );
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] No RESERVED charges found in capture_payment for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement->id ) );
 
 					return false;
 				}
@@ -1083,7 +1082,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$latest_charge = $charges[ array_key_last( $charges ) ];
 				$charge        = $this->capture_reserved_charge( $latest_charge, $agreement, $order, $idempotency_key );
 
-				WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge['id'] );
+				WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge->id );
 				$order->save();
 
 				$this->process_order_charge( $order, $charge );
@@ -1106,24 +1105,24 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * @param $charge
-		 * @param $agreement
+		 * @param WC_Vipps_Charge $charge
+		 * @param WC_Vipps_Agreement $agreement
 		 * @param $order
-		 * @param $idempotency_key
+		 * @param string $idempotency_key
 		 *
-		 * @return false|mixed|string|null
+		 * @return false|WC_Vipps_Charge
 		 */
-		public function capture_reserved_charge( $charge, $agreement, $order, $idempotency_key ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Attempting to capture reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement['id'] ) );
+		public function capture_reserved_charge( WC_Vipps_Charge $charge, WC_Vipps_Agreement $agreement, $order, string $idempotency_key ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Attempting to capture reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 
 			// capture reserved charge
 			try {
 				$this->api->capture_reserved_charge( $agreement, $charge, $idempotency_key );
 
 				// get charge
-				$charge = $this->api->get_charge( $agreement['id'], $charge['id'] );
+				$charge = $this->api->get_charge( $agreement->id, $charge->id );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement['id'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 
 				return $charge;
 			} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
@@ -1144,22 +1143,22 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Creates a charge on an agreement, order and idempotency_key
 		 *
-		 * @param $agreement
+		 * @param WC_Vipps_Agreement $agreement
 		 * @param $order
-		 * @param $idempotency_key
+		 * @param string $idempotency_key
 		 *
-		 * @return mixed|bool
+		 * @return bool|WC_Vipps_Charge
 		 */
-		public function create_charge( $agreement, $order, $idempotency_key ) {
+		public function create_charge( WC_Vipps_Agreement $agreement, $order, string $idempotency_key ) {
 			try {
 				$charge = $this->api->create_charge( $agreement, $idempotency_key );
 
 				// add due charge note
-				$charge = $this->api->get_charge( $agreement['id'], $charge['chargeId'] );
+				$charge = $this->api->get_charge( $agreement->id, $charge['chargeId'] );
 
 				$order->add_order_note( $this->get_due_charge_note( $charge ) );
 
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge['id'], $agreement['id'] ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 
 				return $charge;
 			} catch ( Exception $e ) {
@@ -1190,14 +1189,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
-		public function maybe_process_gateway_change( $subscription_id ) {
+		public function maybe_process_gateway_change( $subscription_id ): void {
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( $subscription->meta_exists( '_new_agreement_id' ) ) {
 				$new_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_new_agreement_id' );
 				$agreement        = $this->api->get_agreement( $new_agreement_id );
 
-				if ( $agreement['status'] === 'ACTIVE' ) {
+				if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 					$old_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_old_agreement_id' );
 
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Processing subscription gateway change with new agreement id: %s and old agreement id: %s', WC_Vipps_Recurring_Helper::get_id( $subscription ), $new_agreement_id, $old_agreement_id ) );
@@ -1212,11 +1211,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $this->id );
 				}
 
-				if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED' ] ) ) {
+				if ( in_array( $agreement->status, [ WC_Vipps_Agreement::STATUS_STOPPED, 'EXPIRED' ], true ) ) {
 					$subscription->add_order_note( __( 'Payment gateway change request cancelled in Vipps', 'woo-vipps-recurring' ) );
 				}
 
-				if ( in_array( $agreement['status'], [ 'STOPPED', 'EXPIRED', 'ACTIVE' ] ) ) {
+				if ( in_array( $agreement->status, [
+					WC_Vipps_Agreement::STATUS_STOPPED,
+					WC_Vipps_Agreement::STATUS_EXPIRED
+				], true ) ) {
 					$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
 					$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
 					$subscription->delete_meta_data( '_new_agreement_id' );
@@ -1234,7 +1236,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @throws WC_Vipps_Recurring_Exception
 		 * @throws WC_Vipps_Recurring_Temporary_Exception
 		 */
-		public function maybe_update_subscription_details_in_app( $subscription_id ) {
+		public function maybe_update_subscription_details_in_app( $subscription_id ): void {
 			$subscription = wcs_get_subscription( $subscription_id );
 
 			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
@@ -1243,7 +1245,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			$agreement = $this->get_agreement_from_order( $subscription );
-			if ( $agreement !== false && $agreement['status'] !== 'ACTIVE' ) {
+			if ( $agreement !== false && $agreement->status !== WC_Vipps_Agreement::STATUS_ACTIVE ) {
 				WC_Vipps_Recurring_Helper::set_update_in_app_completed( $subscription );
 
 				return;
@@ -1267,11 +1269,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$product_description = "[$prefix] $product_description";
 			}
 
-			$body = [
-				'price'              => WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ),
-				'productName'        => $item_name,
-				'productDescription' => $product_description
-			];
+			$updated_agreement = ( new WC_Vipps_Agreement() )
+				->set_pricing( ( new WC_Vipps_Agreement_Pricing() )
+					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ) ) )
+				->set_product_name( $item_name )
+				->set_product_description( $product_description );
 
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
 			if ( empty( $agreement_id ) ) {
@@ -1281,7 +1283,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( $agreement_id ) {
 				try {
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement updated in app for agreement id: %s', $subscription_id, $agreement_id ) );
-					$this->api->update_agreement( $agreement_id, $body );
+					$this->api->update_agreement( $agreement_id, $updated_agreement );
 				} catch ( Exception $e ) {
 					// do nothing
 				}
@@ -1736,15 +1738,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * Initialise Gateway Settings Form Fields
 		 */
-		public function init_form_fields() {
+		public function init_form_fields(): void {
 			$this->form_fields = require( __DIR__ . '/admin/vipps-recurring-settings.php' );
 		}
 
 		/**
 		 * @param $what
 		 */
-		private function admin_error( $what ) {
-			add_action( 'admin_notices', function () use ( $what ) {
+		private function admin_error( $what ): void {
+			add_action( 'admin_notices', static function () use ( $what ) {
 				echo "<div class='notice notice-error is-dismissible'><p>$what</p></div>";
 			} );
 		}
@@ -1752,8 +1754,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * @param $what
 		 */
-		private function admin_notify( $what ) {
-			add_action( 'admin_notices', function () use ( $what ) {
+		private function admin_notify( $what ): void {
+			add_action( 'admin_notices', static function () use ( $what ) {
 				echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
 			} );
 		}
@@ -1761,7 +1763,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * @param $subscription_id
 		 */
-		public function save_subscription_order_items( $subscription_id ) {
+		public function save_subscription_order_items( $subscription_id ): void {
 			$post = get_post( $subscription_id );
 
 			if ( 'shop_subscription' === get_post_type( $post ) ) {
@@ -1771,7 +1773,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 		}
 
-		public function process_admin_options() {
+		public function process_admin_options(): bool {
 			$saved = parent::process_admin_options();
 
 			$this->init_form_fields();
@@ -1798,7 +1800,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function append_valid_statuses_for_payment_complete( $statuses ): array {
 			$statuses = array_merge( $statuses, $this->statuses_to_attempt_capture );
 
-			if ( ! in_array( 'completed', $statuses, true ) && $this->transition_renewals_to_completed ) {
+			if ( $this->transition_renewals_to_completed && ! in_array( 'completed', $statuses, true ) ) {
 				$statuses[] = 'completed';
 			}
 
@@ -1830,7 +1832,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @throws Exception
 		 */
-		public function validate_subscription_payment_meta( $payment_method_id, $payment_meta ) {
+		public function validate_subscription_payment_meta( $payment_method_id, $payment_meta ): void {
 			if ( $this->id !== $payment_method_id ) {
 				return;
 			}
@@ -1840,14 +1842,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			try {
 				$this->api->get_agreement( $agreement_id );
 			} catch ( Exception $e ) {
-				throw new Exception( __( 'This Vipps agreement ID is invalid.', 'woo-vipps-recurring' ) );
+				throw new \RuntimeException( __( 'This Vipps agreement ID is invalid.', 'woo-vipps-recurring' ) );
 			}
 		}
 
 		/**
 		 * @param $subscription
 		 */
-		public function handle_subscription_switches( $subscription ) {
+		public function handle_subscription_switches( $subscription ): void {
 			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
 			if ( $this->id !== $payment_method ) {
 				return;
@@ -1862,7 +1864,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $new_status
 		 * @param $old_status
 		 */
-		public function maybe_handle_subscription_status_transitions( WC_Subscription $subscription, $new_status, $old_status ) {
+		public function maybe_handle_subscription_status_transitions( WC_Subscription $subscription, $new_status, $old_status ): void {
 			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
 
 			/*
@@ -1918,7 +1920,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @param mixed $resubscribe_order The order created for the customer to resubscribe to the old expired/cancelled subscription
 		 */
-		public function delete_resubscribe_meta( $resubscribe_order ) {
+		public function delete_resubscribe_meta( $resubscribe_order ): void {
 			$resubscribe_order_id = WC_Vipps_Recurring_Helper::get_id( $resubscribe_order );
 
 			delete_post_meta( $resubscribe_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
@@ -1949,7 +1951,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * @param $order_id
 		 */
-		public function maybe_cancel_due_charge( $order_id ) {
+		public function maybe_cancel_due_charge( $order_id ): void {
 			$order        = wc_get_order( $order_id );
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 			$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
@@ -1965,7 +1967,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					set_transient( 'maybe_cancel_due_charge_lock' . $order_id, uniqid( '', true ), 30 );
 
 					$charge = $this->api->get_charge( $agreement_id, $charge_id );
-					if ( in_array( $charge['status'], [ 'DUE', 'PENDING' ] ) ) {
+					if ( in_array( $charge->status, [
+						WC_Vipps_Charge::STATUS_DUE,
+						WC_Vipps_Charge::STATUS_PENDING
+					], true ) ) {
 						$this->api->cancel_charge( $agreement_id, $charge_id );
 						$order->add_order_note( __( 'Cancelled due charge in Vipps.', 'woo-vipps-recurring' ) );
 						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelled DUE charge with ID: %s for agreement with ID: %s', $order_id, $charge_id, $agreement_id ) );
@@ -1987,7 +1992,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @return void
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
-		public function after_renew_early_from_another_gateway( $order_id ) {
+		public function after_renew_early_from_another_gateway( $order_id ): void {
 			if ( ! wcs_order_contains_early_renewal( $order_id ) ) {
 				return;
 			}
@@ -2004,7 +2009,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 
 				$agreement = $this->get_agreement_from_order( $subscription );
-				if ( ! $agreement || $agreement['status'] !== 'ACTIVE' ) {
+				if ( ! $agreement || $agreement->status !== WC_Vipps_Agreement::STATUS_ACTIVE ) {
 					continue;
 				}
 
@@ -2023,7 +2028,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @return string|null
 		 */
-		public function prevent_backwards_transition_on_completed_order( $status, $order_id, $order ) {
+		public function prevent_backwards_transition_on_completed_order( $status, $order_id, $order ): ?string {
 			if ( $status === 'processing'
 				 && $order->has_status( 'completed' )
 				 && $order->get_payment_method() === $this->id ) {

@@ -11,73 +11,56 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * Vipps charges
 	 */
-	const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';
-	const META_CHARGE_FAILED_REASON = '_vipps_recurring_failed_charge_reason';
-	const META_CHARGE_FAILED_DESCRIPTION = '_vipps_recurring_failed_charge_description';
-	const META_CHARGE_CAPTURED = '_vipps_recurring_captured';
-	const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
-	const META_CHARGE_ID = '_charge_id';
-	const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
+	public const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';
+	public const META_CHARGE_FAILED_REASON = '_vipps_recurring_failed_charge_reason';
+	public const META_CHARGE_FAILED_DESCRIPTION = '_vipps_recurring_failed_charge_description';
+	public const META_CHARGE_CAPTURED = '_vipps_recurring_captured';
+	public const META_CHARGE_PENDING = '_vipps_recurring_pending_charge';
+	public const META_CHARGE_ID = '_charge_id';
+	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
 
 	/**
 	 * Vipps agreements
 	 */
-	const META_AGREEMENT_ID = '_agreement_id';
-	const META_AGREEMENT_CONFIRMATION_URL = '_agreement_confirmation_url';
+	public const META_AGREEMENT_ID = '_agreement_id';
+	public const META_AGREEMENT_CONFIRMATION_URL = '_agreement_confirmation_url';
 
 	/**
 	 * Product
 	 */
-	const META_PRODUCT_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
-	const META_PRODUCT_DESCRIPTION_SOURCE = '_vipps_recurring_product_description_source';
-	const META_PRODUCT_DESCRIPTION_TEXT = '_vipps_recurring_product_description_text';
+	public const META_PRODUCT_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
+	public const META_PRODUCT_DESCRIPTION_SOURCE = '_vipps_recurring_product_description_source';
+	public const META_PRODUCT_DESCRIPTION_TEXT = '_vipps_recurring_product_description_text';
 
 	/**
 	 * Orders
 	 */
-	const META_ORDER_STOCK_REDUCED = '_order_stock_reduced';
-	const META_ORDER_TRANSACTION_ID = '_transaction_id';
-	const META_ORDER_INITIAL = '_vipps_recurring_initial';
-	const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
-	const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
+	public const META_ORDER_STOCK_REDUCED = '_order_stock_reduced';
+	public const META_ORDER_TRANSACTION_ID = '_transaction_id';
+	public const META_ORDER_INITIAL = '_vipps_recurring_initial';
+	public const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
+	public const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
 
 	/**
 	 * Subscription
 	 */
-	const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
-	const META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS = '_vipps_recurring_swapping_gateway_to_vipps';
-	const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
-	const META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX = '_vipps_recurring_update_in_app_description_prefix';
-	const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON = '_vipps_recurring_latest_failed_charge_reason';
-	const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
-	const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
+	public const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
+	public const META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS = '_vipps_recurring_swapping_gateway_to_vipps';
+	public const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
+	public const META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX = '_vipps_recurring_update_in_app_description_prefix';
+	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON = '_vipps_recurring_latest_failed_charge_reason';
+	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
+	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
 
 	/**
 	 * Get Vipps amount to pay
 	 *
-	 * @param float $total Amount due.
+	 * @param float|int $total Amount due.
 	 *
 	 * @return int
 	 */
 	public static function get_vipps_amount( $total ): int {
 		return absint( wc_format_decimal( ( (float) $total * 100 ), wc_get_price_decimals() ) ); // In cents.
-	}
-
-	/**
-	 * Vipps uses smallest denomination in currencies such as cents/øre.
-	 * We need to format the returned currency from Vipps into human readable form.
-	 * The amount is not used in any calculations so returning string is sufficient.
-	 *
-	 * @param object $balance_transaction
-	 *
-	 * @return string
-	 */
-	public static function format_balance_fee( $balance_transaction ): string {
-		if ( ! is_object( $balance_transaction ) ) {
-			return false;
-		}
-
-		return number_format( $balance_transaction->net / 100, 2, '.', '' );
 	}
 
 	/**
@@ -103,26 +86,12 @@ class WC_Vipps_Recurring_Helper {
 	 * @return bool
 	 * @since 1.0.0
 	 */
-	public static function is_wc_lt( $version ): bool {
+	public static function is_wc_lt( string $version ): bool {
 		if ( defined( 'WC_VERSION' ) ) {
 			return version_compare( WC_VERSION, $version, '<' );
 		}
 
 		return true;
-	}
-
-	/**
-	 * Checks if WP version is less than passed in version.
-	 *
-	 * @param string $version Version to check against.
-	 *
-	 * @return bool
-	 * @since 1.1.1
-	 */
-	public static function is_wp_lt( $version ): bool {
-		global $wp_version;
-
-		return version_compare( $wp_version, $version, '<' );
 	}
 
 	/**
@@ -146,18 +115,22 @@ class WC_Vipps_Recurring_Helper {
 	}
 
 	/**
-	 * @param string $date
+	 * @param string|DateTime $date
 	 *
 	 * @return string
 	 */
-	public static function rfc_3999_date_to_unix( string $date ): string {
+	public static function rfc_3999_date_to_unix( $date ): string {
+		if ( $date instanceof DateTime ) {
+			$date = self::get_rfc_3999_date( $date );
+		}
+
 		return strtotime( $date );
 	}
 
 	/**
 	 * Gets the id of a resource
 	 *
-	 * @param $order
+	 * @param $resource
 	 *
 	 * @return mixed
 	 */
@@ -188,7 +161,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $meta_key
 	 * @param $meta_value
 	 */
-	public static function update_meta_data( $resource, $meta_key, $meta_value ) {
+	public static function update_meta_data( $resource, $meta_key, $meta_value ): void {
 		self::is_wc_lt( '3.0' )
 			? update_post_meta( self::get_id( $resource ), $meta_key, $meta_value )
 			: $resource->update_meta_data( $meta_key, $meta_value );
@@ -234,7 +207,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $order
 	 * @param $status
 	 */
-	public static function set_latest_api_status_for_order( $order, $status ) {
+	public static function set_latest_api_status_for_order( $order, $status ): void {
 		self::update_meta_data( $order, self::META_CHARGE_LATEST_STATUS, $status );
 	}
 
@@ -253,7 +226,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $order
 	 * @param $transaction_id
 	 */
-	public static function set_transaction_id_for_order( $order, $transaction_id ) {
+	public static function set_transaction_id_for_order( $order, $transaction_id ): void {
 		self::is_wc_lt( '3.0' )
 			? update_post_meta( $order->id, self::META_ORDER_TRANSACTION_ID, $transaction_id )
 			: $order->set_transaction_id( $transaction_id );
@@ -269,7 +242,7 @@ class WC_Vipps_Recurring_Helper {
 			? get_post_meta( self::get_id( $order ), self::META_ORDER_TRANSACTION_ID )
 			: $order->get_transaction_id();
 
-		if ( is_integer( $transaction_id ) && ! $transaction_id ) {
+		if ( is_int( $transaction_id ) && ! $transaction_id ) {
 			$transaction_id = false;
 		}
 
@@ -280,7 +253,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $order
 	 * @param $charge_id
 	 */
-	public static function set_order_as_pending( $order, $charge_id ) {
+	public static function set_order_as_pending( $order, $charge_id ): void {
 		self::update_meta_data( $order, self::META_CHARGE_PENDING, true );
 		self::update_meta_data( $order, self::META_CHARGE_CAPTURED, true );
 		self::update_meta_data( $order, self::META_CHARGE_ID, $charge_id );
@@ -289,16 +262,16 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * @param $order
 	 */
-	public static function set_order_as_not_pending( $order ) {
+	public static function set_order_as_not_pending( $order ): void {
 		self::update_meta_data( $order, self::META_CHARGE_PENDING, false );
 		self::update_meta_data( $order, self::META_CHARGE_CAPTURED, false );
 	}
 
 	/**
 	 * @param $order
-	 * @param $charge
+	 * @param WC_Vipps_Charge $charge
 	 */
-	public static function set_order_charge_failed( $order, $charge ) {
+	public static function set_order_charge_failed( $order, WC_Vipps_Charge $charge ): void {
 		self::set_order_as_not_pending( $order );
 		self::update_meta_data( $order, self::META_CHARGE_FAILED, true );
 
@@ -307,22 +280,22 @@ class WC_Vipps_Recurring_Helper {
 
 	/**
 	 * @param $order
-	 * @param $charge
+	 * @param WC_Vipps_Charge $charge
 	 */
-	public static function set_order_failure_reasons( $order, $charge ) {
+	public static function set_order_failure_reasons( $order, WC_Vipps_Charge $charge ): void {
 		$subscriptions = self::get_subscriptions_for_order( $order );
 		$subscription  = $subscriptions[ array_key_first( $subscriptions ) ];
 
-		if ( isset( $charge['failureReason'] ) ) {
-			self::update_meta_data( $order, self::META_CHARGE_FAILED_REASON, $charge['failureReason'] );
+		if ( isset( $charge->failure_reason ) ) {
+			self::update_meta_data( $order, self::META_CHARGE_FAILED_REASON, $charge->failure_reason );
 			// set on subscription too, this is useful for plugins like WP Sheet Editor
-			self::update_meta_data( $subscription, self::META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON, $charge['failureReason'] );
+			self::update_meta_data( $subscription, self::META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON, $charge->failure_reason );
 		}
 
-		if ( isset( $charge['failureDescription'] ) ) {
-			self::update_meta_data( $order, self::META_CHARGE_FAILED_DESCRIPTION, $charge['failureDescription'] );
+		if ( isset( $charge->failure_description ) ) {
+			self::update_meta_data( $order, self::META_CHARGE_FAILED_DESCRIPTION, $charge->failure_description );
 			// set on subscription too, this is useful for plugins like WP Sheet Editor
-			self::update_meta_data( $subscription, self::META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION, $charge['failureDescription'] );
+			self::update_meta_data( $subscription, self::META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION, $charge->failure_description );
 		}
 
 		$order->save();
@@ -336,7 +309,7 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * @param WC_Subscription $subscription
 	 */
-	public static function set_update_in_app_completed( WC_Subscription $subscription ) {
+	public static function set_update_in_app_completed( WC_Subscription $subscription ): void {
 		$subscription->delete_meta_data( self::META_SUBSCRIPTION_UPDATE_IN_APP );
 		$subscription->delete_meta_data( self::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
 		$subscription->save();
@@ -346,7 +319,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $order
 	 * @param $charge_id
 	 */
-	public static function set_order_charge_not_failed( $order, $charge_id ) {
+	public static function set_order_charge_not_failed( $order, $charge_id ): void {
 		self::update_meta_data( $order, self::META_CHARGE_FAILED, false );
 		self::set_order_as_pending( $order, $charge_id );
 	}
@@ -411,7 +384,7 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * @param $order
 	 */
-	public static function reduce_stock_for_order( $order ) {
+	public static function reduce_stock_for_order( $order ): void {
 		self::is_wc_lt( '3.0' )
 			? $order->reduce_order_stock()
 			: wc_reduce_stock_levels( self::get_id( $order ) );
