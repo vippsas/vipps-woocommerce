@@ -60,3 +60,69 @@ så jeg må lage en "ensureUserDetails"
 
 TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
 TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
+
+
+	
+stringHELTHJEM
+Default: "HELTHJEM"
+Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
+
+INTEGRATIONS: Kan jeg få til dette i *en global setting*-ting?
+** ser ikke sånn ut - jeg kan lage en shipping method uten supports "shippingzones" men denne er altså da legacy og dette kan 
+** bli borte. Det er ingen filtre, untatt de som registrerer metoden, så man får da ikke settingsene.
+
+
+integrations	: porterbuddy, instabox, helthjem
+object or null
+Some optional checkout features require carrier-specific configuration. Can not be used with AddressFields set to false.
+
+porterbuddy	
+object or null
+Configuration required to enable Porterbuddy logistics options
+
+publicToken	
+string
+The public key provided to you by Porterbuddy
+
+apiKey	
+string
+The API key provided to you by Porterbuddy
+
+origin	object Information about the sender
+
+name	string The name of your store
+
+email	string Your email address where Porterbuddy booking confirmation will be sent
+
+phoneNumber	string Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: "4791234567"
+
+address	object Your address where Porterbuddy will pick up the parcels
+
+streetAddress	string Example: "Robert Levins gate 5"
+
+postalCode	string Example: "0154"
+
+city	string Example: "Oslo"
+
+country	string
+The ISO-3166-1 Alpha-2 representation of the country. Example: "NO"
+
+instabox	object or null
+Configuration required to enable Instabox logistics options
+
+clientId	string
+The client id provided to you by Instabox
+
+clientSecret	string
+The client secret provided to you by Instabox
+
+helthjem	object or null
+Configuration required to enable Helthjem logistics options
+
+username	string
+The Username provided to you by Helthjem
+password	string
+The Password provided to you by Helthjem
+
+shopId	integer <int32>
+The ShopId provided to you by Helthjem

@@ -18,14 +18,17 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         $this->method_description = __( 'Delivery to office of Vipps Checkout Express', 'woo-vipps' );
         //add to shipping zones list
         $this->supports = array(
-                'shipping-zones',
+
+//                'shipping-zones', // TO AVOID SHOWING THE PARENT
+
                 'settings', //use this for separate settings page
                 'instance-settings',
                 'instance-settings-modal',
                 );
-        //make it always enabled
 
         $this->title = __( 'Vipps Checkout Shipping', 'woo-vipps' );
+
+        //make it always enabled
         $this->enabled = 'yes';
 
         $this->init();
