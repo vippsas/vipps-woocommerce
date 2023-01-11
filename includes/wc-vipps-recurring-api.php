@@ -108,7 +108,7 @@ class WC_Vipps_Recurring_Api {
 			'Authorization' => 'Bearer ' . $token,
 		];
 
-		$this->http_call( 'recurring/v3/agreements/' . $agreement_id, 'PATCH', $agreement->to_array( false ), $headers );
+		$this->http_call( 'recurring/v3/agreements/' . $agreement_id, 'PATCH', $agreement->to_array(), $headers );
 	}
 
 	/**
@@ -162,7 +162,7 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges/' . $charge->id . '/capture', 'POST', $charge->to_array( false ), $headers );
+		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges/' . $charge->id . '/capture', 'POST', $charge->to_array(), $headers );
 	}
 
 	/**

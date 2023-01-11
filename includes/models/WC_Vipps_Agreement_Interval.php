@@ -50,7 +50,7 @@ class WC_Vipps_Agreement_Interval extends WC_Vipps_Model {
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
-	public function to_array( $check_required = true ): array {
+	public function to_array( bool $check_required = false ): array {
 		if ( $check_required ) {
 			$this->check_required();
 		}

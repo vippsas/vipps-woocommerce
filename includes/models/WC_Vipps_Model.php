@@ -26,7 +26,7 @@ abstract class WC_Vipps_Model {
 		return strtolower( preg_replace( '/(?<!^)[A-Z]/', '_$0', $input ) );
 	}
 
-	abstract function to_array( $check_required = true ): array;
+	abstract function to_array( bool $check_required = false ): array;
 
 	protected function set_value( $name, $value, $class = null ): self {
 		if ( is_array( $value ) && $class ) {

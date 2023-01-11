@@ -212,7 +212,7 @@ starts October 29",
 						"id"                   => "agr_GqnvsHY"
 					] );
 
-					die(var_dump($agreement->to_array(false)));
+					die(var_dump($agreement->to_array()));
 
 //					add_action( 'wp_loaded', [
 //						$this,
