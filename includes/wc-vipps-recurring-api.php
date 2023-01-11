@@ -166,13 +166,12 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
-	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws Exception
 	 */
-	public function create_charge( WC_Vipps_Agreement $agreement, string $idempotency_key, ?int $amount = null ) {
+	public function create_charge( WC_Vipps_Agreement $agreement, string $idempotency_key, ?int $amount = null ): array {
 		$token = $this->get_access_token();
 
 		$headers = [

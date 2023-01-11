@@ -1006,14 +1006,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment created charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
 
-			$charge = $this->api->get_charge( $agreement->id, $charge->id );
+			$charge = $this->api->get_charge( $agreement->id, $charge['chargeId'] );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment fetched charge: %s', $renewal_order->get_id(), json_encode( $charge ) ) );
 
 			$this->process_order_charge( $renewal_order, $charge );
 			$renewal_order->save();
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge['id'], $agreement['id'] ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment for charge: %s and agreement: %s', $renewal_order->get_id(), $charge->id, $agreement->id ) );
 
 			return true;
 		}
