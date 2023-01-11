@@ -204,8 +204,8 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 
 		return [
 			"productName" => $this->product_name,
-			"pricing"     => $this->pricing->to_array( $check_required ),
-			"interval"    => $this->interval->to_array( $check_required ),
+			"pricing"     => $this->pricing ? $this->pricing->to_array( $check_required ) : null,
+			"interval"    => $this->interval ? $this->interval->to_array( $check_required ) : null,
 			...$this->conditional( "start", $this->start ),
 			...$this->conditional( "stop", $this->stop ),
 			...$this->conditional( "id", $this->id ),

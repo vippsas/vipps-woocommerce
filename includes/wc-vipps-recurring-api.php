@@ -101,11 +101,12 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function update_agreement( string $agreement_id, WC_Vipps_Agreement $agreement ): void {
+	public function update_agreement( string $agreement_id, WC_Vipps_Agreement $agreement, string $idempotency_key ): void {
 		$token = $this->get_access_token();
 
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
+			'Idempotency-Key' => $idempotency_key,
 		];
 
 		$this->http_call( 'recurring/v3/agreements/' . $agreement_id, 'PATCH', $agreement->to_array(), $headers );
@@ -134,11 +135,12 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function cancel_agreement( string $agreement_id ): void {
+	public function cancel_agreement( string $agreement_id, string $idempotency_key ): void {
 		$token = $this->get_access_token();
 
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
+			'Idempotency-Key' => $idempotency_key,
 		];
 
 		$data = [
@@ -201,11 +203,12 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function cancel_charge( string $agreement_id, string $charge_id ): void {
+	public function cancel_charge( string $agreement_id, string $charge_id, string $idempotency_key ): void {
 		$token = $this->get_access_token();
 
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
+			'Idempotency-Key' => $idempotency_key,
 		];
 
 		$this->http_call( 'recurring/v3/agreements/' . $agreement_id . '/charges/' . $charge_id, 'DELETE', [], $headers );

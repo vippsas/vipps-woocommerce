@@ -27,12 +27,20 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		self::STATUS_PROCESSING,
 	];
 
-	public const TRANSACTION_TYPE_RECURRING = "RECURRING";
-	public const TRANSACTION_TYPE_INITIAL = "INITIAL";
+	public const TYPE_RECURRING = "RECURRING";
+	public const TYPE_INITIAL = "INITIAL";
+
+	protected array $valid_types = [
+		self::TYPE_RECURRING,
+		self::TYPE_INITIAL,
+	];
+
+	public const TRANSACTION_TYPE_DIRECT_CAPTURE = "DIRECT_CAPTURE";
+	public const TRANSACTION_TYPE_RESERVE_CAPTURE = "RESERVE_CAPTURE";
 
 	protected array $valid_transaction_types = [
-		self::TRANSACTION_TYPE_RECURRING,
-		self::TRANSACTION_TYPE_INITIAL,
+		self::TRANSACTION_TYPE_DIRECT_CAPTURE,
+		self::TRANSACTION_TYPE_RESERVE_CAPTURE,
 	];
 
 	protected array $required_fields = [
@@ -62,8 +70,42 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	public ?array $summary = null;
 	public ?array $history = null;
 
+	public function set_id( string $id ): self {
+		$this->id = $id;
+
+		return $this;
+	}
+
 	public function set_amount( int $amount ): self {
 		$this->amount = $amount;
+
+		return $this;
+	}
+
+	/**
+	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
+	 */
+	public function set_type( string $type ): self {
+		if ( ! in_array( $type, $this->valid_types, true ) ) {
+			$class = get_class( $this );
+			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$type is not a valid value for `type` in $class." );
+		}
+
+		$this->type = $type;
+
+		return $this;
+	}
+
+	/**
+	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
+	 */
+	public function set_status( string $status ): self {
+		if ( ! in_array( $status, $this->valid_statuses, true ) ) {
+			$class = get_class( $this );
+			throw new WC_Vipps_Recurring_Invalid_Value_Exception( "$status is not a valid value for `status` in $class." );
+		}
+
+		$this->status = $status;
 
 		return $this;
 	}
@@ -129,6 +171,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 			"description" => $this->description,
 			"due"         => $this->due,
 			"retryDays"   => $this->retry_days,
+			...$this->conditional( "type", $this->type ),
 			...$this->conditional( "transactionType", $this->transaction_type ),
 			...$this->conditional( "orderId", $this->order_id ),
 		];

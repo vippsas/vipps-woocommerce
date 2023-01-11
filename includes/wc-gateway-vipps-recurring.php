@@ -630,7 +630,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					WC_Vipps_Charge::STATUS_DUE,
 					WC_Vipps_Charge::STATUS_PENDING
 				], true ) ) {
-				$this->api->cancel_charge( $agreement->id, $charge->id );
+				$idempotency_key = $this->get_idempotency_key( $order );
+
+				$this->api->cancel_charge( $agreement->id, $charge->id, $idempotency_key );
 			}
 		}
 
@@ -673,10 +675,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$transaction_id = WC_Vipps_Recurring_Helper::get_transaction_id_for_order( $order );
 
 			// Reduce stock
-			$reduce_stock = 'CHARGED' === $charge->status || in_array( $charge->status, [
+			$reduce_stock = $charge->status === WC_Vipps_Charge::STATUS_CHARGED || in_array( $charge->status, [
 					WC_Vipps_Charge::STATUS_DUE,
 					WC_Vipps_Charge::STATUS_PENDING
 				], true );
+
 			if ( $reduce_stock ) {
 				$order_stock_reduced = WC_Vipps_Recurring_Helper::is_stock_reduced_for_order( $order );
 
@@ -686,7 +689,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// status: CHARGED
-			if ( 'CHARGED' === $charge->status ) {
+			if ( $charge->status === WC_Vipps_Charge::STATUS_CHARGED ) {
 				$this->complete_order( $order, $charge->id );
 
 				/* translators: Vipps Charge ID */
@@ -853,7 +856,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$this->maybe_handle_subscription_status_transitions( $subscription, 'cancelled', 'active' );
 				$this->maybe_update_subscription_details_in_app( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
 
-				$this->api->cancel_agreement( $agreement_id );
+				$idempotency_key = $this->get_idempotency_key( $subscription );
+				$this->api->cancel_agreement( $agreement_id, $idempotency_key );
 			}
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
@@ -898,7 +902,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			} catch ( WC_Vipps_Recurring_Exception $e ) {
 				// attempt to cancel charge instead
 				if ( (float) $order->get_remaining_refund_amount() === 0.00 ) {
-					$this->api->cancel_charge( $agreement_id, $charge_id );
+					$idempotency_key = $this->get_idempotency_key( $order );
+
+					$this->api->cancel_charge( $agreement_id, $charge_id, $idempotency_key );
 
 					WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 					$order->save();
@@ -925,7 +931,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @return mixed|string
 		 */
-		public function get_idempotence_key( $order ) {
+		public function get_idempotency_key( $order ) {
 			$idempotence_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
 
 			if ( ! $idempotence_key ) {
@@ -1001,7 +1007,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				clean_post_cache( $renewal_order_id );
 			}
 
-			$idempotency_key = $this->get_idempotence_key( $renewal_order );
+			$idempotency_key = $this->get_idempotency_key( $renewal_order );
 
 			$charge = $this->api->create_charge( $agreement, $idempotency_key, $amount );
 
@@ -1064,7 +1070,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			try {
 				$agreement = $this->api->get_agreement( $agreement_id );
 
-				$idempotency_key = $this->get_idempotence_key( $order );
+				$idempotency_key = $this->get_idempotency_key( $order );
 
 				$charges = $this->api->get_charges_for( $agreement->id );
 
@@ -1202,7 +1208,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Processing subscription gateway change with new agreement id: %s and old agreement id: %s', WC_Vipps_Recurring_Helper::get_id( $subscription ), $new_agreement_id, $old_agreement_id ) );
 					if ( ! empty( $old_agreement_id ) && $new_agreement_id !== $old_agreement_id ) {
 						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling old agreement id: %s in Vipps due to gateway change', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
-						$this->api->cancel_agreement( $old_agreement_id );
+
+
+						$idempotency_key = $this->get_idempotency_key( $subscription );
+						$this->api->cancel_agreement( $old_agreement_id, $idempotency_key );
 					}
 
 					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $new_agreement_id );
@@ -1283,7 +1292,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( $agreement_id ) {
 				try {
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Agreement updated in app for agreement id: %s', $subscription_id, $agreement_id ) );
-					$this->api->update_agreement( $agreement_id, $updated_agreement );
+
+					$idempotency_key = $this->get_idempotency_key( $subscription );
+					$this->api->update_agreement( $agreement_id, $updated_agreement, $idempotency_key );
 				} catch ( Exception $e ) {
 					// do nothing
 				}
@@ -1496,6 +1507,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$agreement = ( new WC_Vipps_Agreement() )
 					->set_pricing(
 						( new WC_Vipps_Agreement_Pricing() )
+							->set_type( WC_Vipps_Agreement_Pricing::TYPE_LEGACY )
 							->set_currency( $order->get_currency() )
 							->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ) )
 					)
@@ -1568,7 +1580,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					);
 				}
 
-				$idempotency_key = $this->get_idempotence_key( $order );
+				$idempotency_key = $this->get_idempotency_key( $order );
 				$response        = $this->api->create_agreement( $agreement, $idempotency_key );
 
 				// mark the old agreement for cancellation to leave no dangling agreements in Vipps
@@ -1971,7 +1983,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 						WC_Vipps_Charge::STATUS_DUE,
 						WC_Vipps_Charge::STATUS_PENDING
 					], true ) ) {
-						$this->api->cancel_charge( $agreement_id, $charge_id );
+						$idempotency_key = $this->get_idempotency_key( $order );
+						$this->api->cancel_charge( $agreement_id, $charge_id, $idempotency_key );
 						$order->add_order_note( __( 'Cancelled due charge in Vipps.', 'woo-vipps-recurring' ) );
 						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelled DUE charge with ID: %s for agreement with ID: %s', $order_id, $charge_id, $agreement_id ) );
 					}
