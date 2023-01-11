@@ -103,3 +103,7 @@ add_action( 'before_woocommerce_init', function() {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 	}
 });
+
+
+// IOK FIXME CLEANUP
+require_once(dirname(__FILE__) . "/shipping-method-example.php");
