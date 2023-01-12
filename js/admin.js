@@ -87,7 +87,7 @@ SOFTWARE.
             let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
 
             /* Pick out all the h3 subheadings, wrap their following elements in a div, and move them to the tabholder above */
-            jQuery('h3.wc-settings-sub-title').each(function () {
+            jQuery('h3.wc-settings-sub-title').not('.notab').each(function () {
                 let curid = jQuery(this).attr('id');
                 let optionstab = jQuery('<div id="' + curid + '-table' + '" class="vippsoptions vippstabs ' + curid + '"></div>').insertAfter(jQuery(this));
                 jQuery(this).nextUntil('h3.wc-settings-sub-title,p.submit').each(function () {

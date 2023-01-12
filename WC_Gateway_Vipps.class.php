@@ -73,6 +73,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         });
     }         
 
+    
+    // Generates html for the woo_vipps_image settings widget type
     public function generate_woo_vipps_image_html  ($key, $field) {
         $field_key = $this->get_field_key( $key );
         $defaults  = array(
@@ -570,7 +572,101 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no'
                     ),
 
+      
+                );
 
+        $vipps_checkout_shipping_fields = array(
+
+                'checkout_shipping' => array(
+                    'title' => __('Vipps Checkout Shipping Methods', 'woo-vipps'),
+                    'type'  => 'title',
+                    'class' => 'notab',
+                    'description' => __("When using Vipps Checkout, you have the option to use Vipps Checkout specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the Vipps Checkout screen.", 'woo-vipps')
+                    ),
+
+                'vcs_porterbuddy' => array(
+                        'title'       => __( 'Porterbuddy', 'woo-vipps' ),
+                        'class'       => 'vcs_porterbuddy vcs_main',
+                        'label'       => __( 'Support Porterbuddy as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Porterbuddy as a Vipps Checkout Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.' ,'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+                'vcs_porterbuddy_publicToken' => array(
+                        'title' => __('Porterbuddy public token', 'woo-vipps'),
+                        'class' => 'vippspw vcs_porterbuddy vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('The public key provided to you by Porterbuddy','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_porterbuddy_apiKey' => array(
+                        'title' => __('Porterbuddy API key', 'woo-vipps'),
+                        'class' => 'vippspw vcs_porterbuddy vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('The API key provided to you by Porterbuddy','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_porterbuddy_phoneNumber' => array(
+                        'title' => __('Porterbuddy Phone Number', 'woo-vipps'),
+                        'class' => 'vcs_porterbuddy vcs_depend',
+                        'type'        => 'text',
+                        'description' => __('Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: "4791234567"','woo-vipps'),
+                        'default'     => '',
+                        ),
+
+                // Vipps checkout *shipping options* - extra shipping options that only work with Vipps Checkout
+                'vcs_instabox' => array(
+                        'title'       => __( 'Instabox', 'woo-vipps' ),
+                        'label'       => __( 'Support Instabox as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Instabox as a Vipps Checkout Shipping method.' ,'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+                'vcs_instabox_clientId' => array(
+                        'title' => __('Instabox Client Id', 'woo-vipps'),
+                        'class' => 'vippspw',
+                        'type'        => 'password',
+                        'description' => __('The client id provided to you by Instabox','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_instabox_clientSecret' => array(
+                        'title' => __('Instabox Client Secret', 'woo-vipps'),
+                        'class' => 'vippspw',
+                        'type'        => 'password',
+                        'description' => __('Client secret provided to you by Instabox','woo-vipps'),
+                        'default'     => '',
+                        ),
+
+                'vcs_helthjem' => array(
+                        'title'       => __( 'Helthjem', 'woo-vipps' ),
+                        'label'       => __( 'Support Helthjem as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Helthjem as a Vipps Checkout Shipping method.' ,'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+
+                'vcs_helthjem_shopId' => array(
+                        'title' => __('Helthjem Shop Id', 'woo-vipps'),
+                        'class' => '',
+                        'type'        => 'text',
+                        'description' => __('The ShopId provided to you by Helthjem','woo-vipps'),
+                        'default'     => '',
+                        ),
+
+                'vcs_helthjem_username' => array(
+                        'title' => __('Helthjem Username', 'woo-vipps'),
+                        'class' => '',
+                        'type'        => 'text',
+                        'description' => __('The Username provided to you by Helthjem','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_helthjem_password' => array(
+                        'title' => __('Helthjem Password', 'woo-vipps'),
+                        'class' => 'vippspw',
+                        'type'        => 'password',
+                        'description' => __('Password provided to you by Helthjem','woo-vipps'),
+                        'default'     => '',
+                        ),
 
                 );
      
@@ -887,6 +983,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->form_fields[$key] = $field;
        }
        foreach($checkoutfields as $key=>$field) {
+               $this->form_fields[$key] = $field;
+       }
+       foreach($vipps_checkout_shipping_fields as $key=>$field) {
                $this->form_fields[$key] = $field;
        }
        foreach($advancedfields as $key=>$field) {
@@ -1654,7 +1753,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
-                        $polldata = $this->ensure_userDetails($polldata);
+                        $polldata = $this->ensure_userDetails($polldata, $order);
 
                         if (isset($polldata['userDetails'])) {
                             $paymentdetails['userDetails'] = $polldata['userDetails'];
@@ -1803,7 +1902,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            }
 
            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-           $result = $this->ensure_userDetails($result);
+           $result = $this->ensure_userDetails($result, $order);
           
            if (isset($result['shippingDetails'])) {
                 $addr  = $result['shippingDetails'];
@@ -1890,7 +1989,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
-    private function ensure_userDetails($vippsdata) {
+    private function ensure_userDetails($vippsdata, $order) {
         // If we have userDetails, return it
         if (isset($vippsdata['userDetails'])) return $vippsdata;
  
@@ -1922,6 +2021,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // And it is possible to not require user details in Checkout at all
         } else {
             $vippsdata['userDetails'] = array(
+                    
                     'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
                     'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
                     'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
@@ -2420,7 +2520,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
         // including adding anonoymous users if there is no other data. IOK 2023-01-10
-        $result = $this->ensure_userDetails($result);
+        $result = $this->ensure_userDetails($result, $order);
  
         if ($express && $order->get_meta('_vipps_checkout')) {
             if (!isset($result['shippingDetails'])) {

@@ -592,13 +592,12 @@ class VippsApi {
         } else {
             $this->log(__("Your site does not have a Terms and Conditions page defined - starting Vipps Checkout anyway, but this should be defined", 'woo-vipps'));
         }
-
         $data['transaction'] = $transaction;
 
-        ## Shipping!
+        ## Vipps Checkout Shipping
         $needs_shipping =  WC()->cart->needs_shipping();
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
-        $shippingcallback .= "/v2/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
+        $shippingcallback .= "/v3/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
         if ($needs_shipping) {
             $logistics = array();
             if ($static_shipping) {
@@ -607,10 +606,38 @@ class VippsApi {
             } else {
                 $logistics['dynamicOptionsCallback'] = $shippingcallback;
             }
+
+            // Add integration data if present
+            $integrations = array();
+            $gw = $this->gateway;
+            if ($gw->get_option('vcs_porterbuddy') == 'yes') {
+               $porterbuddy = array();
+               $porterbuddy['publicToken'] = $gw->get_option('vcs_porterbuddy_publicToken');
+               $porterbuddy['apiKey'] = $gw->get_option('vcs_porterbuddy_apiKey');
+               $origin = array();
+               $origin['name'] = get_bloginfo('name');
+               $origin['phoneNumber'] =  $gw->get_option('vcs_porterbuddy_phoneNumber');
+               $origin['email'] = get_option('admin_email');
+               $address = array();
+               $address['streetAddress'] = join(", ", [WC()->countries->get_base_address(), WC()->countries->get_base_address_2()]);
+               $address['postalCode'] = WC()->countries->get_base_postcode();
+               $address['city'] = WC()->countries->get_base_city();
+               $address['country'] = WC()->countries->get_base_country();
+
+               $origin['address'] = $address;
+
+               $porterbuddy['origin'] = apply_filters('woo_vipps_porterbuddy_origin', $origin);
+               $integrations['porterbuddy'] = $porterbuddy;
+            }
+// FIXME
             // 'integrations': 'porterbuddy', 'instabox', 'helthjem'
-            //  porterbuddy => publicToken, apiKey, origin
             //  instabox => clientId, clientSecret
             //  helthjem => username, password, shopId
+
+            if (!empty($integrations))  {
+               $logistics['integrations'] = $integrations;
+            }
+
             $data['logistics'] = $logistics;
         }
 

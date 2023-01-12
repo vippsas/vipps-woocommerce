@@ -1,4 +1,5 @@
 
+
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw
 
@@ -73,7 +74,9 @@ INTEGRATIONS: Kan jeg få til dette i *en global setting*-ting?
 ** Only shipping methods that support Shipping Zones are listed. If you have a method that does not support Shipping Zone, it is shown in the navigation menu and works globally/independent of Shipping Zones.
 ** => så man kan returnere false osv fra is available osv.
 
+AVGJØRELSE: Putt alt i betalings-dingsen 
 
+SKJUL DETALJ-FELTER HELT TIL DU HAR VALGT EN METODE bruker vcs_main, vcs_depend og vcs_method_<X> fx og så javascript
 
 integrations	: porterbuddy, instabox, helthjem
 object or null
@@ -83,41 +86,28 @@ porterbuddy
 object or null
 Configuration required to enable Porterbuddy logistics options
 
-publicToken	
-string
-The public key provided to you by Porterbuddy
-
-apiKey	
-string
-The API key provided to you by Porterbuddy
+publicToken	string The public key provided to you by Porterbuddy
+apiKey	string The API key provided to you by Porterbuddy
 
 origin	object Information about the sender
 
 name	string The name of your store
-
 email	string Your email address where Porterbuddy booking confirmation will be sent
-
 phoneNumber	string Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: "4791234567"
-
 address	object Your address where Porterbuddy will pick up the parcels
-
 streetAddress	string Example: "Robert Levins gate 5"
-
 postalCode	string Example: "0154"
-
 city	string Example: "Oslo"
-
 country	string
 The ISO-3166-1 Alpha-2 representation of the country. Example: "NO"
 
 instabox	object or null
 Configuration required to enable Instabox logistics options
-
 clientId	string
 The client id provided to you by Instabox
-
 clientSecret	string
 The client secret provided to you by Instabox
+
 
 helthjem	object or null
 Configuration required to enable Helthjem logistics options
@@ -129,3 +119,4 @@ The Password provided to you by Helthjem
 
 shopId	integer <int32>
 The ShopId provided to you by Helthjem
+
