@@ -587,6 +587,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'vcs_porterbuddy' => array(
                         'title'       => __( 'Porterbuddy', 'woo-vipps' ),
                         'class'       => 'vcs_porterbuddy vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
                         'label'       => __( 'Support Porterbuddy as a shipping method in Vipps Checkout', 'woo-vipps' ),
                         'type'        => 'checkbox',
                         'description' => __('Activate this for Porterbuddy as a Vipps Checkout Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.' ,'woo-vipps'),
@@ -618,20 +619,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'vcs_instabox' => array(
                         'title'       => __( 'Instabox', 'woo-vipps' ),
                         'label'       => __( 'Support Instabox as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'class' => 'vcs_instabox vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_instabox'),
                         'type'        => 'checkbox',
                         'description' => __('Activate this for Instabox as a Vipps Checkout Shipping method.' ,'woo-vipps'),
                         'default'     => 'no'
                     ),
                 'vcs_instabox_clientId' => array(
                         'title' => __('Instabox Client Id', 'woo-vipps'),
-                        'class' => 'vippspw',
+                        'class' => 'vippspw vcs_instabox vcs_depend',
                         'type'        => 'password',
                         'description' => __('The client id provided to you by Instabox','woo-vipps'),
                         'default'     => '',
                         ),
                 'vcs_instabox_clientSecret' => array(
                         'title' => __('Instabox Client Secret', 'woo-vipps'),
-                        'class' => 'vippspw',
+                        'class' => 'vippspw vcs_instabox vcs_depend',
                         'type'        => 'password',
                         'description' => __('Client secret provided to you by Instabox','woo-vipps'),
                         'default'     => '',
@@ -641,13 +644,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __( 'Helthjem', 'woo-vipps' ),
                         'label'       => __( 'Support Helthjem as a shipping method in Vipps Checkout', 'woo-vipps' ),
                         'type'        => 'checkbox',
+                        'class' => 'vcs_helthjem vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_helthjem'),
                         'description' => __('Activate this for Helthjem as a Vipps Checkout Shipping method.' ,'woo-vipps'),
                         'default'     => 'no'
                     ),
 
                 'vcs_helthjem_shopId' => array(
                         'title' => __('Helthjem Shop Id', 'woo-vipps'),
-                        'class' => '',
+                        'class' => 'vcs_helthjem vcs_depend',
                         'type'        => 'text',
                         'description' => __('The ShopId provided to you by Helthjem','woo-vipps'),
                         'default'     => '',
@@ -655,14 +660,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 'vcs_helthjem_username' => array(
                         'title' => __('Helthjem Username', 'woo-vipps'),
-                        'class' => '',
+                        'class' => 'vcs_helthjem vcs_depend',
                         'type'        => 'text',
                         'description' => __('The Username provided to you by Helthjem','woo-vipps'),
                         'default'     => '',
                         ),
                 'vcs_helthjem_password' => array(
                         'title' => __('Helthjem Password', 'woo-vipps'),
-                        'class' => 'vippspw',
+                        'class' => 'vippspw vcs_helthjem vcs_depend',
                         'type'        => 'password',
                         'description' => __('Password provided to you by Helthjem','woo-vipps'),
                         'default'     => '',

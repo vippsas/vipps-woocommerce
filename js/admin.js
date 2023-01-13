@@ -80,6 +80,25 @@ SOFTWARE.
         });
     }
 
+    /* Make the Vipps Checkout shipping options only show if the method in question is activated */
+    if (pagenow == 'woocommerce_page_wc-settings') {
+        if (jQuery('#vipps-settings-page').length > 0) {
+            function vipps_cs_showhide_shipping (e) {
+                jQuery('input.vcs_main').each(function () {
+                    let showit = jQuery(this).data('vcs-show');
+                    if (jQuery(this).is(':checked')) {
+                        jQuery(showit).closest('tr').show();
+                    } else {
+                        jQuery(showit).closest('tr').hide();
+                    }
+                })
+
+            }
+            jQuery('input.vcs_main').change(vipps_cs_showhide_shipping);
+            vipps_cs_showhide_shipping();
+     }
+    }
+
     /* Tab-ify the settings page */
     if (pagenow == 'woocommerce_page_wc-settings') {
         if (jQuery('#vipps-settings-page').length > 0) {
