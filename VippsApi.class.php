@@ -623,21 +623,27 @@ class VippsApi {
                $address['postalCode'] = WC()->countries->get_base_postcode();
                $address['city'] = WC()->countries->get_base_city();
                $address['country'] = WC()->countries->get_base_country();
-
                $origin['address'] = $address;
-
                $porterbuddy['origin'] = apply_filters('woo_vipps_porterbuddy_origin', $origin);
                $integrations['porterbuddy'] = $porterbuddy;
             }
-// FIXME
-            // 'integrations': 'porterbuddy', 'instabox', 'helthjem'
-            //  instabox => clientId, clientSecret
-            //  helthjem => username, password, shopId
+            if ($gw->get_option('vcs_instabox')) {
+               $instabox = array();
+               $instabox['clientId'] = $gw->get_option('vcs_instabox_clientId');
+               $instabox['clientSecret'] = $gw->get_option('vcs_instabox_clientId');
+               $integrations['instabox'] = $instabox;
+            }
 
+            if ($gw->get_option('vcs_helthjem')) {
+               $helthjem = array();
+               $helthjem['username'] = $gw->get_option('vcs_helthjem_username');
+               $helthjem['password'] = $gw->get_option('vcs_helthjem_password');
+               $helthjem['shopId'] = $gw->get_option('vcs_helthjem_shopId');
+               $integrations['helthjem'] = $helthjem;
+            }
             if (!empty($integrations))  {
                $logistics['integrations'] = $integrations;
             }
-
             $data['logistics'] = $logistics;
         }
 
