@@ -35,9 +35,7 @@ Vipps address hash var for å rekalkulere shipping tror, så det kan kanskje fje
 men åå hente adresseinfo er relevatn igjen for delendum
 
 
-REMOVE ALL userDetails from checkout
-
-HANDLE LOGIN AND USER CREATION BY USING
+TODO HANDLE LOGIN AND USER CREATION BY USING
 
 
     [userInfo] => Array
@@ -49,74 +47,14 @@ HANDLE LOGIN AND USER CREATION BY USING
 - IF PRESENT - but check against actual order used? order->get_meta('vipps_email', 'vipps, sub')?
 
 
-
-In the poll handler: line 1655. Poll checkout, then get userDetails, anonymouse them if neccessary, then set billing and shipping
-Finally handle set_order_shipping_details line 1704
-
-In getPaymentDetails, on line around 1816, normalize phoneNumber, userId, phoneNumber
-
-Then again in handle callback anonymousify userDetails on 2379, set shipping details on 2407
-
 så jeg må lage en "ensureUserDetails"
 
 TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
 TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
-
+TODO: Forbedre integrajsonen med vipps login plz
 
 	
 stringHELTHJEM
 Default: "HELTHJEM"
 Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
-
-INTEGRATIONS: Kan jeg få til dette i *en global setting*-ting?
-** ser ikke sånn ut - jeg kan lage en shipping method uten supports "shippingzones" men denne er altså da legacy og dette kan 
-** bli borte. Det er ingen filtre, untatt de som registrerer metoden, så man får da ikke settingsene.
-** Only shipping methods that support Shipping Zones are listed. If you have a method that does not support Shipping Zone, it is shown in the navigation menu and works globally/independent of Shipping Zones.
-** => så man kan returnere false osv fra is available osv.
-
-AVGJØRELSE: Putt alt i betalings-dingsen 
-
-SKJUL DETALJ-FELTER HELT TIL DU HAR VALGT EN METODE bruker vcs_main, vcs_depend og vcs_method_<X> fx og så javascript
-
-integrations	: porterbuddy, instabox, helthjem
-object or null
-Some optional checkout features require carrier-specific configuration. Can not be used with AddressFields set to false.
-
-porterbuddy	
-object or null
-Configuration required to enable Porterbuddy logistics options
-
-publicToken	string The public key provided to you by Porterbuddy
-apiKey	string The API key provided to you by Porterbuddy
-
-origin	object Information about the sender
-
-name	string The name of your store
-email	string Your email address where Porterbuddy booking confirmation will be sent
-phoneNumber	string Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: "4791234567"
-address	object Your address where Porterbuddy will pick up the parcels
-streetAddress	string Example: "Robert Levins gate 5"
-postalCode	string Example: "0154"
-city	string Example: "Oslo"
-country	string
-The ISO-3166-1 Alpha-2 representation of the country. Example: "NO"
-
-instabox	object or null
-Configuration required to enable Instabox logistics options
-clientId	string
-The client id provided to you by Instabox
-clientSecret	string
-The client secret provided to you by Instabox
-
-
-helthjem	object or null
-Configuration required to enable Helthjem logistics options
-
-username	string
-The Username provided to you by Helthjem
-password	string
-The Password provided to you by Helthjem
-
-shopId	integer <int32>
-The ShopId provided to you by Helthjem
 
