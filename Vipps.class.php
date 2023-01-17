@@ -2820,6 +2820,7 @@ EOF;
             $currency = get_woocommerce_currency();
             foreach ($return['shippingDetails']  as $m) {
 
+
                   $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
                   $m2['priority'] = $m['priority'];
                   $m2['amount'] = array(
@@ -2834,15 +2835,22 @@ EOF;
 
                   // Extra fields available for Checkout only, using the Rate as input   
                   $rate = $ratemap[$m2['id']];
+                  $meta = $rate->get_meta_data();
+                  // FIXME handle better
+                  if (isset($meta['brand'])) {
+                     $m2['brand'] = $meta['brand'];
+                     unset($m2['title']);
+                  }
+                  if (isset($meta['type'])) {
+                     $m2['type'] = $meta['type'];
+                  }
+
+// FIXME DESCRIPTION             
+
                   // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
                   // Not present in WordPress, so allow filters to add it
                   $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $rate);
 
-                  // Pickup points! But only if the shipping method supports it, which is currently for Bring and PostNord
-                  // Instead of isPickupPoint we need to set "type == HOME_DELIVERY or PICKUP_POINT where supported, per 
-                  // shipping provider, and for "OTHER", nothing
-                  // FIXME brand POSTEN, POSTNORD, PORTERBUDDY, ISNTABOX, HELTHJEM, OTHER
-                  //
                   // 'title' is only used for OTHER
 
                   $translated[] = $m2;

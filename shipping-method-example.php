@@ -82,7 +82,16 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
     public $id = 'vipps_checkout_posten';
 
     public function instance_form_fields() {
-         $settings = array();
+        $settings = array(
+                'pickup' => array(
+                    'title' => __( 'Pickup Point', 'woo-vipps' ),
+                    'type' => 'checkbox',
+                    'description' => __( 'Allow user to select pickup point', 'woo-vipps' ),
+                    'default' => "no"
+                    ),
+
+
+                );
          return $settings;
     }
 
@@ -103,13 +112,19 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
     // Add free shipping trigger etc?
     public function calculate_shipping( $package = array()) {
         $instance_settings =  $this->instance_settings;
+        $meta = array();
+        $meta['brand'] = 'POSTEN';
+        if ($this->get_option('pickup') == 'yes') {
+           $meta['type'] = 'PICKUP_POINT';
+        }
         // Register the rate
         $this->add_rate( array(
                     'id'      => $this->id,
                     'cost' => 1,
                     'label'   => $instance_settings['title'],
-                    'cost'    => $instance_settings['cost'],
+                    'cost'    => 99, //$instance_settings['cost'],
                     'package' => $package,
+                    'meta_data' => $meta,
                     'taxes'   => true,
                     )
                 );
