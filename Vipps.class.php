@@ -1334,6 +1334,7 @@ else:
         $gw = $this->gateway();
         try {
             $details = $gw->get_payment_details($order);
+
             if ($details && $order->get_meta('_vipps_api') == 'epayment') {
                try {
                    $details['epaymentLog'] =  $gw->api->epayment_get_payment_log ($order);
@@ -1386,6 +1387,15 @@ else:
             if (@$ss['shippingMethod']) print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
             if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
             print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";
+            if (isset($ss['pickupPoint'])) {
+               $pp = $ss['pickupPoint'];
+               print "<h3>" . __('Pickup Point', 'woo-vipps') . "</h3>";
+               print $pp['name'] . "<br>";
+               print $pp['address'] . "<br>";
+               print $pp['postalCode'] . " ";
+               print $pp['city'] . "<br>";
+               print $pp['country'] . "<br>";
+            }
         }
         if (!empty(@$details['billingDetails'])) {
             $us = $details['billingDetails'];

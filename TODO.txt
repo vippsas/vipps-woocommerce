@@ -58,3 +58,28 @@ stringHELTHJEM
 Default: "HELTHJEM"
 Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
 
+
+ [shippingDetails] => Array
+        (
+            [firstName] => Iver
+            [lastName] => Odin Kvello
+            [email] => iverodin@gmail.com
+            [phoneNumber] => 4797125562
+            [streetAddress] => obs terrasse 4a
+            [postalCode] => 0253
+            [city] => oslo
+            [country] => NO
+            [shippingMethodId] => $vipps_checkout_posten$f64c40723c8ca29ec0529ece2fa05f2158f7102f
+            [pickupPoint] => Array
+                (
+                    [id] => 128026
+                    [name] => REMA 1000 Parkveien
+                    [address] => PARKVEIEN 21
+                    [postalCode] => 0352
+                    [city] => OSLO
+                    [country] => NO
+                )
+
+        )
+
+
