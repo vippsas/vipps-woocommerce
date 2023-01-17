@@ -106,10 +106,10 @@ SOFTWARE.
             let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
 
             /* Pick out all the h3 subheadings, wrap their following elements in a div, and move them to the tabholder above */
-            jQuery('h3.wc-settings-sub-title').not('.notab').each(function () {
+            jQuery('h3.wc-settings-sub-title.tab').each(function () {
                 let curid = jQuery(this).attr('id');
                 let optionstab = jQuery('<div id="' + curid + '-table' + '" class="vippsoptions vippstabs ' + curid + '"></div>').insertAfter(jQuery(this));
-                jQuery(this).nextUntil('h3.wc-settings-sub-title,p.submit').each(function () {
+                jQuery(this).nextUntil('h3.wc-settings-sub-title.tab,p.submit').each(function () {
                     optionstab.append(jQuery(this));
                 });
                 jQuery(this).attr('tabindex', -1);
@@ -119,7 +119,7 @@ SOFTWARE.
                 tabholder.append(jQuery(this));
             });
             /* Add a final empty h3 for the   a e s t h e t i c s   */
-            tabholder.append(jQuery('<h3 id="lasttab" class="wc-settings-sub-title last"></h3>'));
+            tabholder.append(jQuery('<h3 id="lasttab" class="wc-settings-sub-title tab last"></h3>'));
 
             /* Navigate tabs using left + right key */
             jQuery(document).keydown(function (e) {

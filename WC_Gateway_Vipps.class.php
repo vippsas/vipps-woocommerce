@@ -537,6 +537,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'checkout_options' => array(
                     'title' => __('Vipps Checkout', 'woo-vipps'),
                     'type'  => 'title',
+                    'class' => 'tab',
                     'description' => __("Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.", 'woo-vipps')
                     ),
 
@@ -580,7 +581,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'checkout_shipping' => array(
                     'title' => __('Vipps Checkout Shipping Methods', 'woo-vipps'),
                     'type'  => 'title',
-                    'class' => 'notab',
                     'description' => __("When using Vipps Checkout, you have the option to use Vipps Checkout specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the Vipps Checkout screen.", 'woo-vipps')
                     ),
 
@@ -680,6 +680,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'main_options'             => array(
                     'title' => __('Main options', 'woo-vipps'),
                     'type'  => 'title',
+                    'class' => 'tab',
                     ),
                 'enabled' => array(
                     'title'       => __( 'Enable/Disable', 'woocommerce' ),
@@ -766,6 +767,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'express_options' => array(
                         'title' => __('Vipps Express Checkout', 'woo-vipps'),
                         'type'  => 'title',
+                        'class' => 'tab',
                         'description' => __("Vipps Express Checkout allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps')
                         ),
 
@@ -876,6 +878,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'advanced_options' => array(
                    'title' => __('Advanced', 'woo-vipps'),
                    'type'  => 'title',
+                    'class' => 'tab',
                    'description' => __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps')
                    ),
 
@@ -935,6 +938,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'developertitle' => array(
                 'title' => __('Developer mode', 'woo-vipps'),
                 'type'  => 'title',
+                'class' => 'tab',
                 'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
                 ),
 
