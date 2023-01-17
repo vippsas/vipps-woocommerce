@@ -2362,6 +2362,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                 } 
             }
+
+
+            // Possible extra metadata from Vipps Checkout IOK 2023-01-17
+            if ($shipping_rate && isset($shipping['pickupPoint'])) {
+               $pp = $shipping['pickupPoint'];
+               $shipping_rate->add_meta_data('Pickup Point', $pp['id']);
+               unset($pp['id']);
+               $addr = join(", ", array_values($pp));
+               $shipping_rate->add_meta_data('Pickup Point Address', $addr);
+            }
+
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
             $it = null;       
 

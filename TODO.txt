@@ -83,3 +83,4 @@ Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
         )
 
 
+Add a link to the shipping method from the shipping rate so we don't have to add Meta Data for Brand as well.
