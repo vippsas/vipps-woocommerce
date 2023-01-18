@@ -2382,6 +2382,8 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
+error_log("callback: " . print_r($result, true)); // FIXME
+
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
@@ -2841,8 +2843,6 @@ EOF;
                   $m2['title'] = $m['shippingMethod']; // Only for "other"
                   $m2['id'] = $m['shippingMethodId'];
 
-//                  $m2['type'] == "HOME_DELIVERY", "PICKUP_POINT" only for certain brands
-
                   // Extra fields available for Checkout only, using the Rate as input   
                   $rate = $ratemap[$m2['id']];
                   $meta = $rate->get_meta_data();
@@ -2854,15 +2854,13 @@ EOF;
                   if (isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
                   }
+                  if (isset($meta['description'])) {
+                     $m2['description'] = $meta['description'];
+                  } else {
+                     $m2['description'] = "";
+                  }
 
-// FIXME DESCRIPTION             
-
-                  // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
-                  // Not present in WordPress, so allow filters to add it
-                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $rate);
-
-                  // 'title' is only used for OTHER
-
+                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2['description'], $rate);
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;

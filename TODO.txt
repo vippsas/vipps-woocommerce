@@ -53,11 +53,8 @@ TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
 TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
 TODO: Forbedre integrajsonen med vipps login plz
 
-	
-stringHELTHJEM
-Default: "HELTHJEM"
-Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
 
+* PICKUP_POINT gir	
 
  [shippingDetails] => Array
         (
@@ -82,5 +79,10 @@ Enum: "POSTEN" "POSTNORD" "PORTERBUDDY" "INSTABOX" "HELTHJEM" "OTHER"
 
         )
 
+* HOME_DELIVERY gir
+ <nugazi>
+
+Legg til som order note også, og kjør hook
+på ordren
 
 Add a link to the shipping method from the shipping rate so we don't have to add Meta Data for Brand as well.
