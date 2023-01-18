@@ -2198,7 +2198,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         if (!$statusdata) return null;
 
-        $vippsstatus = $statusdata['status'];
+        $vippsstatus = isset($statusdata['status']) ? $statusdata['status'] : "";
         if (!$vippsstatus) {
             $this->log("Unknown Vipps Status: " . print_r($statusdata, true), 'debug');
         }

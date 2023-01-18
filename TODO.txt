@@ -86,3 +86,6 @@ Legg til som order note også, og kjør hook
 på ordren
 
 Add a link to the shipping method from the shipping rate so we don't have to add Meta Data for Brand as well.
+
+TODO: Hvis bestilling er cancelled når man kommer tilbake til butikken - sjekk 1 gang hos Vipps likevel, kanskje den er i orden
+

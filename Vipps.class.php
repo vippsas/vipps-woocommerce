@@ -2723,6 +2723,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
         } else {
             $packages = apply_filters('woo_vipps_shipping_callback_packages', WC()->cart->get_shipping_packages());
             $shipping =  WC()->shipping->calculate_shipping($packages);
+
             $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
          }
 
@@ -2748,7 +2749,6 @@ error_log("callback: " . print_r($result, true)); // FIXME
         // Vipps method list
         $methods = array();
         $i=-1;
-
 
         foreach ($shipping_methods as  $key=>$rate) {
             $i++;
@@ -2790,10 +2790,16 @@ error_log("callback: " . print_r($result, true)); // FIXME
         $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
         if (!$storedmethods) $storedmethods= array();
 
-        // Just a utility from shippingMethodIds to the non-serialized rates
+        // Just a utility from shippingMethodIds to the non-serialized rates, and from the same to the non-serialized 
+        // shipping methods - the last stores settings, the first store metadata
         $ratemap = array();
+        $methodmap = array();
 
+        // We need access to the extended settings of the shipping methods.
+        $methods_classes = WC()->shipping->get_shipping_method_class_names();
         foreach($methods as $method) {
+           $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
+           $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
            $rate = $method['rate'];
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
@@ -2819,6 +2825,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
            $storedmethods[$key] = $serialized;
            $ratemap[$key]=$rate;
+           $methodmap[$key]=$shipping_method;
         }
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save();
@@ -2845,6 +2852,8 @@ error_log("callback: " . print_r($result, true)); // FIXME
 
                   // Extra fields available for Checkout only, using the Rate as input   
                   $rate = $ratemap[$m2['id']];
+                  $shipping_method = $methodmap[$m2['id']];
+
                   $meta = $rate->get_meta_data();
                   // FIXME handle better
                   if (isset($meta['brand'])) {
@@ -2854,13 +2863,13 @@ error_log("callback: " . print_r($result, true)); // FIXME
                   if (isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
                   }
-                  if (isset($meta['description'])) {
-                     $m2['description'] = $meta['description'];
+                  if ($shipping_method) {
+                     $m2['description'] = $shipping_method->get_option('description', '');
                   } else {
                      $m2['description'] = "";
                   }
 
-                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2['description'], $rate);
+                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2['description'], $rate, $shipping_method);
                   $translated[] = $m2;
             }
             $return['shippingDetails'] = $translated;

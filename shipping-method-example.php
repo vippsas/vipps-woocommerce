@@ -131,9 +131,6 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         if ($option) {
            $meta['type'] = $option;
         }
-        if ($description) {
-           $meta['description'] = $description;
-        }
  
         $this->add_rate( array(
                     'id'      => $this->id,
