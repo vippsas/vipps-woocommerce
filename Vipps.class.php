@@ -2797,9 +2797,13 @@ error_log("callback: " . print_r($result, true)); // FIXME
 
         // We need access to the extended settings of the shipping methods.
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
+
         foreach($methods as $method) {
+
+           // Extended settings are stored in these objects
            $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
            $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
+
            $rate = $method['rate'];
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
@@ -2824,6 +2828,8 @@ error_log("callback: " . print_r($result, true)); // FIXME
            $vippsmethods[]=$vippsmethod;
            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
            $storedmethods[$key] = $serialized;
+
+           // Metadata and settings stored for later use for Vipps Checkout
            $ratemap[$key]=$rate;
            $methodmap[$key]=$shipping_method;
         }
@@ -2850,12 +2856,11 @@ error_log("callback: " . print_r($result, true)); // FIXME
                   $m2['title'] = $m['shippingMethod']; // Only for "other"
                   $m2['id'] = $m['shippingMethodId'];
 
-                  // Extra fields available for Checkout only, using the Rate as input   
+                  // Now to fetch the metadata for Brand, Type, Description
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
-
+                  // Some data must be visible in the Order screen, so add meta data
                   $meta = $rate->get_meta_data();
-                  // FIXME handle better
                   if (isset($meta['brand'])) {
                      $m2['brand'] = $meta['brand'];
                      unset($m2['title']);
@@ -2863,15 +2868,18 @@ error_log("callback: " . print_r($result, true)); // FIXME
                   if (isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
                   }
+                  // But the description is stored only in the shipping method.
                   if ($shipping_method) {
                      $m2['description'] = $shipping_method->get_option('description', '');
                   } else {
                      $m2['description'] = "";
                   }
 
+                  // Old filter kept for backwards compatibility
                   $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2['description'], $rate, $shipping_method);
                   $translated[] = $m2;
             }
+
             $return['shippingDetails'] = $translated;
             unset($return['addressId']); // Not used it seems for checkout
             unset($return['orderId']);
