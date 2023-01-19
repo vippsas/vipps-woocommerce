@@ -684,9 +684,6 @@ class VippsApi {
 
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
-        error_log("Data is " . print_r($data, true)); // FIXME
-        $this->log("data is " . print_r($data, true), 'debug');
-
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
 
         return $res;

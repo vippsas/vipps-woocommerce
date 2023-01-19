@@ -149,6 +149,10 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
            return false;
         }
+
+        error_log("This is method ". get_class($this) . " wondering if it is enabled. Cart: " . is_cart() . " checkout " . is_checkout());
+
+
         return true;
     }
 
