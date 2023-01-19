@@ -29,7 +29,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     }
 
     // Instance setting, common for all submethods
-    function init_form_fields() {
+    public function init_form_fields() {
         $this->instance_form_fields = array(
 
                 'title' => array(
