@@ -52,6 +52,7 @@ så jeg må lage en "ensureUserDetails"
 TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
 TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
 TODO: Forbedre integrajsonen med vipps login plz
+TODO: Hold session aktiv i Vipps checkout ved å endre addressen helt til den blir cancellet. Revive den ved retur.
 
 
 * PICKUP_POINT gir	

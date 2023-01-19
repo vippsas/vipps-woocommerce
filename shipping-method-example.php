@@ -84,6 +84,12 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
             $this->instance_form_fields[$key] = $setting;
         }
     }
+
+    // True if the method contains extended options for Vipps Checkout
+    public function is_extended() {
+       return $this->get_option('type', false);
+    }
+
     public function __construct( $instance_id = 0 ) {
         $this->instance_id 	  = absint( $instance_id );
 
@@ -108,8 +114,6 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         $this->tax_status           = 'taxable'; //$this->get_option( 'tax_status' );
         $this->cost                 = $this->get_option( 'cost' );
 
-        // see above - fix this somehow
-        $this->enabled = "yes";
         // Never enable parent method
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
            $this->enabled = "no";
@@ -145,15 +149,17 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     }
 
     public function is_enabled() {
-        // Only show when Vipps Checkout is active, if the settings are on etc. Also, never the parent method.
+        // Never show the parent method
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
            return false;
         }
+        $is_vipps_checkout = apply_filters('woo_vipps_is_vipps_checkout', false);
+        if ($is_vipps_checkout) return true;
+        if (is_cart()) return true;
 
-        error_log("This is method ". get_class($this) . " wondering if it is enabled. Cart: " . is_cart() . " checkout " . is_checkout());
-
-
-        return true;
+        // Extended methods must only be shown in Cart and on Vipps Checkout
+        if ($this->is_extended()) return false;
+        return true;         
     }
 
 }

@@ -1621,6 +1621,7 @@ else:
             return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
         }
 
+        add_filter('woo_vipps_is_vipps_checkout', '__return_true');
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
@@ -1780,6 +1781,7 @@ else:
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST ) return;
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+        add_filter('woo_vipps_is_vipps_checkout', '__return_true');
 
         // Defer to the normal code for endpoints IOK 2022-12-09
         if (is_wc_endpoint_url( 'order-pay' ) || is_wc_endpoint_url( 'order-received' )) {
@@ -2649,9 +2651,14 @@ error_log("callback: " . print_r($result, true)); // FIXME
    
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
 
-       // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
-       // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
-       // checkout: {"streetAddress":"Observatorie terrasse 4a","postalCode":"0254","region":"Oslo","country":"NO"}
+        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
+        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
+        // This needs to be done before "calculate totals"
+        $is_checkout = false;
+        if ($order->get_meta('_vipps_checkout')) {
+            $is_checkout = true;
+            add_filter('woo_vipps_is_vipps_checkout', '__return_true');
+        }
 
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
@@ -2699,7 +2706,6 @@ error_log("callback: " . print_r($result, true)); // FIXME
         } else {
             $this->log("No customer! when trying to calculate shipping");
         }
-
 
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
@@ -2840,12 +2846,10 @@ error_log("callback: " . print_r($result, true)); // FIXME
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
-        if ($order->get_meta('_vipps_checkout')) {
+        if ($is_checkout) {
             $translated = array();
             $currency = get_woocommerce_currency();
             foreach ($return['shippingDetails']  as $m) {
-
-
                   $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
                   $m2['priority'] = $m['priority'];
                   $m2['amount'] = array(
