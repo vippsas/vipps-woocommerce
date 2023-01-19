@@ -1,3 +1,4 @@
+PICKUP POINT  => Pakke til hentested
 
 
 // Betale eksisterende ordre ser *slik* ut:
@@ -53,6 +54,9 @@ TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
 TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
 TODO: Forbedre integrajsonen med vipps login plz
 TODO: Hold session aktiv i Vipps checkout ved å endre addressen helt til den blir cancellet. Revive den ved retur.
+TODO: Hør med vipps og edisoft
+TODO: checkout direct:
+https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vipps-checkout-direct
 
 
 * PICKUP_POINT gir	
