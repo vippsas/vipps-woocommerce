@@ -7,6 +7,11 @@ TODO: ADD ORDER ID TO RETURN URL
 
    $returnurl = add_query_arg('t',$authtoken,$returnurl);
 
+Ellers brukes *tk* men
+!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) 
+
+så man kan sjekke denne mot ordreid.
+
 ^^^^^^ add the order id here. Check both. Remove transients.
 
 
