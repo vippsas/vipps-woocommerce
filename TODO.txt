@@ -95,3 +95,10 @@ Add a link to the shipping method from the shipping rate so we don't have to add
 
 TODO: Hvis bestilling er cancelled når man kommer tilbake til butikken - sjekk 1 gang hos Vipps likevel, kanskje den er i orden
 
+TODO: Porterbuddy krever 0 i pris - _dynamisk prising_ . IKKE FREE SHIPPING
+** pris kommer per *epost*, pris hadde vært .  testnøkler?
+
+
+
+
+https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
