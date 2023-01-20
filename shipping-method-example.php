@@ -12,6 +12,31 @@ add_action( 'woocommerce_shipping_init', function () {
       return $methods;
   });
 
+  // Add a 'description' field to every shipping method that can have it. Run late, after all methods have been registered.
+  add_action( 'woocommerce_load_shipping_methods', function ($package) {
+          foreach(WC()->shipping->get_shipping_method_class_names() as $key => $classname) {
+          add_filter('woocommerce_shipping_instance_form_fields_' . $key, function ($form_fields) {
+                  if (! array_key_exists('description', $form_fields)) {
+                  $description = array('description' =>  array( 
+                              'title' => __( 'Description', 'woo-vipps' ),
+                              'type' => 'text',
+                              'description' => __( 'Short description of shipping method used in Vipps Checkout', 'woo-vipps' ),
+                              'default' => "",
+                              ));
+                  $index = array_search('title', array_keys($form_fields));
+                  if ($index === false) {
+                  $form_fields['description'] = $description['description'];
+                  } else {
+                  $pos = $index+1;
+                  $form_fields = array_merge(array_slice($form_fields, 0, $pos), $description, array_slice($form_fields, $pos));
+                  }
+                  }
+                  return $form_fields;
+                  }, 999, 1);
+          }
+  });
+
+
 
 /* Abstract class used just to mark the special Vipps Checkout shipping methods. Don't instantiate this */
 class VippsCheckout_Shipping_Method extends WC_Shipping_Method {

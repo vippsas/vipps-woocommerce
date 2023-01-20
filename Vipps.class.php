@@ -2860,7 +2860,8 @@ error_log("callback: " . print_r($result, true)); // FIXME
                   $m2['title'] = $m['shippingMethod']; // Only for "other"
                   $m2['id'] = $m['shippingMethodId'];
 
-                  // Now to fetch the metadata for Brand, Type, Description
+                  // Now to fetch the metadata for Brand and Type. FIXME change meta names here or limit to VC methods
+   
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
                   // Some data must be visible in the Order screen, so add meta data
