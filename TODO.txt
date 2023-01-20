@@ -1,5 +1,7 @@
 PICKUP POINT  => Pakke til hentested
 
+TODO: ADD ORDER ID TO RETURN URL
+
 
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw
@@ -54,25 +56,12 @@ TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
 TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
 TODO: Forbedre integrajsonen med vipps login plz
 TODO: Hold session aktiv i Vipps checkout ved å endre addressen helt til den blir cancellet. Revive den ved retur.
-TODO: Hør med vipps og edisoft
+DONE : Hør med vipps og edisoft
 TODO: checkout direct:
 https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vipps-checkout-direct
-TODO: Add extra shipping metafields for default shipping method
 
 
-* PICKUP_POINT gir	
-
- [shippingDetails] => Array
-        (
-            [firstName] => Iver
-            [lastName] => Odin Kvello
-            [email] => iverodin@gmail.com
-            [phoneNumber] => 4797125562
-            [streetAddress] => obs terrasse 4a
-            [postalCode] => 0253
-            [city] => oslo
-            [country] => NO
-            [shippingMethodId] => $vipps_checkout_posten$f64c40723c8ca29ec0529ece2fa05f2158f7102f
+* PICKUP_POINT gir ekstra felt i shippingDetails med id + addressefelter
             [pickupPoint] => Array
                 (
                     [id] => 128026
@@ -82,21 +71,18 @@ TODO: Add extra shipping metafields for default shipping method
                     [city] => OSLO
                     [country] => NO
                 )
-
-        )
-
 * HOME_DELIVERY gir
  <nugazi>
 
-Legg til som order note også, og kjør hook
-på ordren
+TODO: Legg til som order note også, og kjør hook på ordren
 
-Add a link to the shipping method from the shipping rate so we don't have to add Meta Data for Brand as well.
+TODO: RENAME BRAND AND TYPE (ihverfall type!)
 
 TODO: Hvis bestilling er cancelled når man kommer tilbake til butikken - sjekk 1 gang hos Vipps likevel, kanskje den er i orden
 
 TODO: Porterbuddy krever 0 i pris - _dynamisk prising_ . IKKE FREE SHIPPING
 ** pris kommer per *epost*, pris hadde vært .  testnøkler?
+DYNAMISK PRISING ER EN TING
 
 
 
