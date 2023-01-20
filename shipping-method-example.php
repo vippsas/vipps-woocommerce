@@ -53,7 +53,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'default' => 0
                     ),
 
-                );
+                    );
         // Support pickup point/home delivery where appropriate
         if (!empty($this->delivery_types)) {
             $options = array('' => __('No delivery method specified', 'woo-vipps'));
@@ -79,6 +79,19 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'desc_tip'    => false,
                     );
         }
+
+        $this->instance_form_fields['tax_status'] =  array(
+                'title'   => __( 'Tax status', 'woocommerce' ),
+                'type'    => 'select',
+                'class'   => 'wc-enhanced-select',
+                'default' => 'taxable',
+                'options' => array(
+                    'taxable' => __( 'Taxable', 'woocommerce' ),
+                    'none'    => _x( 'None', 'Tax status', 'woocommerce' ),
+                    ),
+                );
+
+
         // From subclasses
         foreach($this->instance_form_fields() as $key=>$setting) {
             $this->instance_form_fields[$key] = $setting;
@@ -111,8 +124,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         $this->init_settings();
 
         $this->title                = $this->get_option( 'title' );
-        $this->tax_status           = 'taxable'; //$this->get_option( 'tax_status' );
-        $this->cost                 = $this->get_option( 'cost' );
+        $this->tax_status           = $this->get_option( 'tax_status' );
 
         // Never enable parent method
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
@@ -122,6 +134,11 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         $this->init();
 
         add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+    }
+
+
+    public function get_cost($package) {
+        return $this->get_option('cost');
     }
 
     // Add free shipping trigger etc?
@@ -135,12 +152,14 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         if ($option) {
            $meta['type'] = $option;
         }
+
+        $cost = apply_filters('woo_vipps_vipps_checkout_shipping_cost', $this->get_cost($package), $this);
  
         $this->add_rate( array(
                     'id'      => $this->id,
                     'cost' => 1,
                     'label'   => $this->get_option('title'),
-                    'cost'    => $this->get_option('cost'),
+                    'cost'    => $cost,
                     'package' => $package,
                     'meta_data' => $meta,
                     'taxes'   => true,

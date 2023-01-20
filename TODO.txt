@@ -57,6 +57,7 @@ TODO: Hold session aktiv i Vipps checkout ved å endre addressen helt til den bl
 TODO: Hør med vipps og edisoft
 TODO: checkout direct:
 https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vipps-checkout-direct
+TODO: Add extra shipping metafields for default shipping method
 
 
 * PICKUP_POINT gir	
