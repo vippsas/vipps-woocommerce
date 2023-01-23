@@ -69,6 +69,22 @@ https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vi
                     [city] => OSLO
                     [country] => NO
                 )
+
+.. men hvis instabox, 
+   instabox: 
+availabilityToken	
+string
+Identifies when the delivery options were fetched
+
+serviceType	
+string
+Identifies the service (For example "EXPRESS")
+
+sortCode	
+string
+Identifies the location
+
+
 * HOME_DELIVERY gir
  <nugazi>
 
