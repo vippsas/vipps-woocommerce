@@ -1,19 +1,5 @@
 PICKUP POINT  => Pakke til hentested
 
-TODO: ADD ORDER ID TO RETURN URL
-        // IOK 2019-11-19 We have to do this because even though we actually store the order ID in the session, we can a) be redirected to another browser than the one with
-        // the session, and b) some plugins wipe the session for guest purchases. So we might need to restore (enough of the) session to get to the than you page,
-        // even if the session is gone or in another castle.
-
-   $returnurl = add_query_arg('t',$authtoken,$returnurl);
-
-Ellers brukes *tk* men
-!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) 
-
-så man kan sjekke denne mot ordreid.
-
-^^^^^^ add the order id here. Check both. Remove transients.
-
 
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw
