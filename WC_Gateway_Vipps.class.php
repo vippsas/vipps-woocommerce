@@ -258,10 +258,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Create callback urls' using WC's callback API in a way that works with Vipps callbacks and both pretty and not so pretty urls.
-    private function make_callback_urls($forwhat,$token='') {
+    private function make_callback_urls($forwhat,$token='', $reference=0) {
         // Passing the token as GET arguments, as the Authorize header is stripped. IOK 2018-06-13
         $url = home_url("/", 'https');
-        $queryargs = ['tk'=>$token];
+        $queryargs = [];
+        if ($token) $queryargs['tk']=$token;
+        if ($reference) $queryargs['id']=$reference;
+
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
         if ( !get_option('permalink_structure')) {
@@ -271,14 +274,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // And we need to add an empty "callback" query arg as the very last arg to receive the actual callback.
         // We can't use add_query_arg for that, as an empty argument will remove the equals-sign.
-        return add_query_arg($queryargs, $url) . "&callback=";
+        $callbackurl = add_query_arg($queryargs, $url) . "&callback=";
+        return  $callbackurl;
     }
     // The main payment callback
-    public function payment_callback_url ($token='') {
-        return $this->make_callback_urls('wc_gateway_vipps',$token);
+    public function payment_callback_url ($token='', $reference=0) {
+        return $this->make_callback_urls('wc_gateway_vipps',$token, $reference);
     }
-    public function shipping_details_callback_url($token='') {
-        return $this->make_callback_urls('vipps_shipping_details',$token);
+    public function shipping_details_callback_url($token='',$reference=0) {
+        return $this->make_callback_urls('vipps_shipping_details',$token,$reference);
     }
     // Callback for the consetn removal callback. Must use template redirect directly, because wc-api doesn't handle DELETE.
     // IOK 2018-05-18
@@ -1183,7 +1187,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // IOK 2019-11-19 We have to do this because even though we actually store the order ID in the session, we can a) be redirected to another browser than the one with
         // the session, and b) some plugins wipe the session for guest purchases. So we might need to restore (enough of the) session to get to the than you page,
         // even if the session is gone or in another castle.
-        $returnurl = add_query_arg('t',$authtoken,$returnurl);
+        // IOK 2023-01-23 changed this around a bit; send the order id and use the token just as safety
+        $returnurl = add_query_arg('tk',$authtoken,$returnurl);
+        $returnurl = add_query_arg('id', $order_id, $returnurl);
+
 
         try {
             // If the order was 'failed', it isnt any more! yet!
@@ -1221,10 +1228,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $sessionorders[$order_id] = 1;
         WC()->session->set('_vipps_session_orders',$sessionorders);
         WC()->session->set('_vipps_pending_order',$order_id); // Send information to the 'please confirm' screen IOK 2018-04-24
-        // IOK 2018-11-19 And because the session may be dead, or stored in another browser, store the authtoken in a transient, used to retrieve the order
-        // in the waiting screen if the session is dead. Note that the transients-api doesn't really guarantee that this value will exist, but
-        // this is meant as a failsafe.
-        set_transient('_vipps_pending_order_'.$authtoken, $order_id,20*MINUTE_IN_SECONDS);
 
         $order = wc_get_order($order_id);
         if ($authtoken) {
@@ -2457,14 +2460,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Handle the callback from Vipps eCom.
-    public function handle_callback($result, $ischeckout=false) {
+    public function handle_callback($result, $order, $ischeckout=false) {
         global $Vipps;
 
-        // These can have a prefix added, which may have changed, so we'll use our own search
-        // to retrieve the order IOK 2018-05-03
         $vippsorderid = $result['orderId'];
-        $orderid = $Vipps->getOrderIdByVippsOrderId($vippsorderid);
-
         $merchant= $result['merchantSerialNumber'];
        
         $me = $this->get_merchant_serial();
@@ -2474,17 +2473,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        $order = wc_get_order($orderid);
         if (!$order) {
-            $this->log(__("Vipps callback for unknown order",'woo-vipps') . " " .  $orderid, 'warning');
+            $this->log(__("Vipps callback for unknown order",'woo-vipps') . " " .  $order->get_id(), 'warning');
             return false;
         }
-
+        $orderid = $order->get_id();
 
         // This is for express checkout - some added protection
         $authtoken = $order->get_meta('_vipps_authtoken');
         if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
             $this->log(__("Wrong auth token in callback from Vipps - possibly an attempt to fake a callback", 'woo-vipps'), 'warning');
+            clean_post_cache($order->get_id());
+            exit();
+        }
+        if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+            $this->log(__("Wrong Vipps Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), 'warning');
             clean_post_cache($order->get_id());
             exit();
         }

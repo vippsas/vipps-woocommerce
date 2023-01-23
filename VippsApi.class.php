@@ -439,7 +439,7 @@ class VippsApi {
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
-        $callback = $this->gateway->payment_callback_url($authtoken);
+        $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
         $fallback = $returnurl;
 
         $transaction = array();
@@ -466,7 +466,7 @@ class VippsApi {
 
         $express = $this->gateway->express_checkout;
         if ($express) {
-            $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
+            $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
             if ($authtoken) {
                 $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
             }
@@ -557,7 +557,7 @@ class VippsApi {
 
         // The string returned is a prefix ending with callback=, for v3 we need to send a complete URL
         // so we just add the callback type here.
-        $callback = $this->gateway->payment_callback_url($authtoken) . "checkout";
+        $callback = $this->gateway->payment_callback_url($authtoken,$orderid) . "checkout";
         $fallback = $returnurl;
 
         $transaction = array();
@@ -596,7 +596,7 @@ class VippsApi {
 
         ## Vipps Checkout Shipping
         $needs_shipping =  WC()->cart->needs_shipping();
-        $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
+        $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
         $shippingcallback .= "/v3/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
         if ($needs_shipping) {
             $logistics = array();

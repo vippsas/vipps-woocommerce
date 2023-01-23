@@ -1515,18 +1515,17 @@ else:
         if (is_user_logged_in()) {
             $phone = get_user_meta(get_current_user_id(), 'billing_phone', true);
         }
+        $order_id = $order->get_id();
         $requestid = 1;
         $returnurl = $this->payment_return_url();
-        $returnurl = add_query_arg('t',$current_authtoken,$returnurl);
+        $returnurl = add_query_arg('tk',$current_authtoken,$returnurl);
+        $returnurl = add_query_arg('id', $order_id, $returnurl);
 
-        $order_id = $order->get_id();
         $sessionorders= WC()->session->get('_vipps_session_orders');
         if (!$sessionorders) $sessionorders = array();
         $sessionorders[$order_id] = 1;
         WC()->session->set('_vipps_pending_order',$order_id);
         WC()->session->set('_vipps_session_orders',$sessionorders);
-        // For mobiles where we may return from a different browser than we started from.
-        set_transient('_vipps_pending_order_'.$current_authtoken, $order_id,20*MINUTE_IN_SECONDS);
 
         $customer_id = get_current_user_id();
         if ($customer_id) {
@@ -2014,6 +2013,8 @@ else:
     // by the user, we will store that as a meta and use this for callbacks etc.
     // IOK: This needs to be replaced by a separate table, but in the meantime, we will use
     // wc_get_orders and not $wpdb directly, so it should work with HPOS too.
+    // IOK 2023-01-23 this function is no longer used, and kept only for backwards compatibility with
+    // debug filters and similar.
     public function getOrderIdByVippsOrderId($vippsorderid) {
         // Ensure the old order table understands the meta query IOK 2022-12-02
         static::add_wc_order_meta_key_support();
@@ -2418,7 +2419,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
             exit();
         }
 
-        $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
+        $orderid = intval(@$_REQUEST['id']);
 
         if (!$orderid) {
             $this->log(__("There is no order with this Vipps orderid, callback fails:",'woo-vipps') . " " . $vippsorderid,  'error');
@@ -2436,6 +2437,11 @@ error_log("callback: " . print_r($result, true)); // FIXME
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
+        if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+            $this->log(__("Wrong Vipps Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), 'warning');
+            exit();
+        }
+
         // Ensure we use the same session as for the original order IOK 2019-10-21
         $this->callback_restore_session($orderid);
 
@@ -2446,7 +2452,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
         }
 
         $gw = $this->gateway();
-        $gw->handle_callback($result, $ischeckout);
+        $gw->handle_callback($result, $order, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
         if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
@@ -2608,16 +2614,13 @@ error_log("callback: " . print_r($result, true)); // FIXME
 
         $data = array_reverse(explode("/",$callback));
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
-        $orderid = $this->getOrderIdByVippsOrderId($vippsorderid);
-
-        $this->callback_restore_session($orderid);       
-
-        do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
-
+        $orderid = intval(@$_REQUEST['id']);
         if (!$orderid) {
             $this->log(__('Could not find Vipps order with id:', 'woo-vipps') . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
             exit();
         }
+
+        do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         $order = wc_get_order($orderid);
         if (!$order) {
@@ -2633,7 +2636,12 @@ error_log("callback: " . print_r($result, true)); // FIXME
             $this->log("Wrong authtoken on shipping details callback", 'error');
             exit();
         }
-        
+        if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+            $this->log(__("Wrong Vipps Orderid on shipping details callback", 'woo-vipps'), 'warning');
+            exit();
+        }
+
+        $this->callback_restore_session($orderid);       
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid);
  
         # Checkout does not have an addressID here, and should not be 'wrapped'
@@ -3665,20 +3673,20 @@ error_log("callback: " . print_r($result, true)); // FIXME
 
     // The various return URLs for special pages of the Vipps stuff depend on settings and pretty-URLs so we supply them from here
     // These are for the "fallback URL" mostly. IOK 2018-05-18
-    private function make_return_url($what) {
+    private function make_vipps_url($what) {
         if ( !get_option('permalink_structure')) {
             return add_query_arg('VippsSpecialPage', $what, home_url("/", 'https'));
         }
         return trailingslashit(home_url($what, 'https'));
     }
     public function payment_return_url() {
-        return apply_filters('woo_vipps_payment_return_url', $this->make_return_url('vipps-betaling')); 
+        return apply_filters('woo_vipps_payment_return_url', $this->make_vipps_url('vipps-betaling')); 
     }
     public function express_checkout_url() {
-        return $this->make_return_url('vipps-express-checkout');
+        return $this->make_vipps_url('vipps-express-checkout');
     }
     public function buy_product_url() {
-        return $this->make_return_url('vipps-buy-product');
+        return $this->make_vipps_url('vipps-buy-product');
     }
 
     // Return the method in the Vipps
@@ -4173,30 +4181,36 @@ error_log("callback: " . print_r($result, true)); // FIXME
         $gw = $this->gateway();
 
         // Failsafe for when the session disappears IOK 2018-11-19
-        $authtoken = sanitize_text_field(@$_GET['t']);
+        $no_session  = $orderid ? false : true;
+        $authtoken = sanitize_text_field(@$_GET['tk']);
 
-        // Now we *should* have a session at this point, but the session may have been deleted, or the session may be in another browser,
-        // because we get here by the Vipps app opening the app. If so, we use a 'fake' session stored with the transient API and restore this session
-        // so we can reload the screen, but don't have to worry about leaking stuff
-        // IOK 2019-11-19
-        if (!$orderid) {
-            if ($authtoken) {
-                $orderid = get_transient('_vipps_pending_order_'.$authtoken);
-                if ($orderid) {
-                    $session = WC()->session;
-                    if (!$session->has_session()) {
-                        $session->set_customer_session_cookie(true);
-                    }
-                    $session->set('_vipps_pending_order', $orderid);
-                }
-            }
+        // Now we *should* have a session at this point, but the session may have been deleted,
+        // or the session may be in another browser, because we get here by the Vipps app opening the app.
+        // If so, we will read the order id from the GET arguments and check if the auth token is correct,
+        // simulating the session with that.
+        // IOK 2019-11-19, changed to using GET 2023-01-23
+        if ($no_session && $authtoken) {
+            $orderid = intval(@$_GET['id']);
         }
-        delete_transient('_vipps_pending_order_'.$authtoken); 
-
         if ($orderid) {
             clean_post_cache($orderid);
             $order = wc_get_order($orderid); 
         }
+
+        // if we came here with no session, check to see if we are allowed to do stuff with the order.
+        if ($order && $no_session) {
+            if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($authtoken, $order->get_meta('_vipps_authtoken')))) {
+                $this->log("Wrong authtoken on Vipps payment return url", 'error');
+                $order = null; $orderid=0;
+            } else {
+                $session = WC()->session;
+                if (!$session->has_session()) {
+                    $session->set_customer_session_cookie(true);
+                }
+                $session->set('_vipps_pending_order', $orderid);
+            }
+        }
+
         do_action('woo_vipps_wait_for_payment_page',$order);
 
         $deleted_order=0;
