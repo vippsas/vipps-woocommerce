@@ -440,7 +440,7 @@ $start = microtime(true);
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
-        $callback = $this->gateway->payment_callback_url($authtoken);
+        $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
         $fallback = $returnurl;
 
         $transaction = array();
@@ -468,7 +468,7 @@ $start = microtime(true);
 
         $express = $this->gateway->express_checkout;
         if ($express) {
-            $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
+            $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
             if ($authtoken) {
                 $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
             }
@@ -556,7 +556,7 @@ $start = microtime(true);
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
         $headers['merchant-Serial-Number'] = $merch;
 
-        $callback = $this->gateway->payment_callback_url($authtoken);
+        $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
         $fallback = $returnurl;
 
         $transaction = array();
@@ -596,7 +596,7 @@ $start = microtime(true);
 
         ## Shipping!
         $needs_shipping =  WC()->cart->needs_shipping();
-        $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken);
+        $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
         $shippingcallback .= "/v2/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
         if ($needs_shipping) {
             $logistics = array();
