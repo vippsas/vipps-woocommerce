@@ -164,8 +164,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Refactored: We are now using the Vipps Recurring API v3
 * Changed: We now require at least PHP 7.4. You should however already be on 8.0+ as PHP 7.4 is end of life.
 * Added: Much more type safety to the entire codebase.
+* Fixed: We now check the order status before showing the "thank you" page, instead of after. This should fix the order status sometimes being wrong when the user lands on this page.
 * Refactored: We no longer pass product descriptions to Vipps unless you choose to do so.
-* Refactored: We now use Vipps' new campaign system
+* Refactored: We now use Vipps' new campaign system.
+* Refactored: We no longer need to store the agreement's confirmation url ourselves. Idempotency now works as expected.
 
 = 1.14.7 =
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.
