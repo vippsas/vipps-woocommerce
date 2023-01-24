@@ -23,7 +23,6 @@ class WC_Vipps_Recurring_Helper {
 	 * Vipps agreements
 	 */
 	public const META_AGREEMENT_ID = '_agreement_id';
-	public const META_AGREEMENT_CONFIRMATION_URL = '_agreement_confirmation_url';
 
 	/**
 	 * Product

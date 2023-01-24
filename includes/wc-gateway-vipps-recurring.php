@@ -1408,22 +1408,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 						throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps. You can leave this page.', 'woo-vipps-recurring' ) );
 					}
-
-					// todo: remove this if Idempotency-Key starts working as expected in Vipps' API (ideally confirmation url should be the same as long as the same idempotency key is passed)
-					if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_PENDING ) {
-						$confirmation_url = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL );
-
-						if ( $confirmation_url ) {
-							WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Customer has been redirected to an existing confirmation URL', $order_id ) );
-
-							return [
-								'result'   => 'success',
-								'redirect' => $confirmation_url,
-							];
-						}
-
-						throw new WC_Vipps_Recurring_Temporary_Exception( __( 'There is a pending agreement on this order. Check the Vipps app or wait and try again in a few minutes.', 'woo-vipps-recurring' ) );
-					}
 				}
 
 				$subscription_period = $subscription->get_billing_period();
@@ -1637,8 +1621,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				if ( isset( $response['chargeId'] ) ) {
 					WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $response['chargeId'] );
 				}
-
-				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_CONFIRMATION_URL, $response['vippsConfirmationUrl'] );
 
 				// save meta
 				$order->save();
