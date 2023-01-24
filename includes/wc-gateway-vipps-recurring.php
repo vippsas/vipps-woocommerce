@@ -1278,15 +1278,23 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$parent_product      = wc_get_product( $item->get_product_id() );
 			$product_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
 
+			$agreement_description = null;
 			if ( $prefix = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX ) ) {
-				$product_description = "[$prefix] $product_description";
+				$agreement_description = "[$prefix]";
+			}
+
+			if ( $product_description ) {
+				$agreement_description .= " $product_description";
 			}
 
 			$updated_agreement = ( new WC_Vipps_Agreement() )
 				->set_pricing( ( new WC_Vipps_Agreement_Pricing() )
 					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $subscription->get_total() ) ) )
-				->set_product_name( $item_name )
-				->set_product_description( $product_description );
+				->set_product_name( $item_name );
+
+			if ( $agreement_description ) {
+				$updated_agreement = $updated_agreement->set_product_description( $agreement_description );
+			}
 
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
 			if ( empty( $agreement_id ) ) {
@@ -1558,7 +1566,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$agreement = $agreement->set_initial_charge(
 						( new WC_Vipps_Agreement_Initial_Charge() )
 							->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
-							->set_description( $initial_charge_description )
+							->set_description( $initial_charge_description ?? $item->get_name() )
 							->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 					);
 

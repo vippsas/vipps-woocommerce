@@ -602,7 +602,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps app.', 'woo-vipps-recurring' ),
 					'desc_tip'    => true,
 					'options'     => [
-						'title'             => __( 'Product title', 'woo-vipps-recurring' ),
+						'none'             => __( 'None', 'woo-vipps-recurring' ),
 						'short_description' => __( 'Product short description', 'woo-vipps-recurring' ),
 						'custom'            => __( 'Custom', 'woo-vipps-recurring' )
 					]
