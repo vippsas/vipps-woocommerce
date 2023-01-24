@@ -2079,6 +2079,8 @@ else:
                     $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
                 }
             }
+            $order->delete_meta_data('_vipps_limited_session');
+            $order->save();
         }
     }
 

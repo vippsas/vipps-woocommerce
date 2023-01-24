@@ -1644,7 +1644,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return $oldstatus;
         }
-        $order->delete_meta_data('_vipps_limited_session'); // At this point, we no longer need this
         $order->save();
 
         $statuschange = 0;
@@ -2435,7 +2434,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->add_order_note(sprintf(__("Error message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
         }
 
-        $order->delete_meta_data('_vipps_limited_session'); // At this point, no longer keep this
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
         $order->update_meta_data('_vipps_amount',$vippsamount);
         $order->update_meta_data('_vipps_currency',$vippscurrency);
