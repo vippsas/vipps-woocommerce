@@ -239,7 +239,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023.01.24 version 1.13.4 =
+= 2023.01.25 version 1.13.4 =
 Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
 
 = 2023.01.02 version 1.13.3 =
