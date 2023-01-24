@@ -1513,9 +1513,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 							->set_count( (int) $subscription_interval )
 					)
 					->set_product_name( $item->get_name() )
-					->set_product_description( WC_Vipps_Recurring_Helper::get_product_description( $product ) )
 					->set_merchant_agreement_url( apply_filters( 'wc_vipps_recurring_merchant_agreement_url', $agreement_url ) )
 					->set_merchant_redirect_url( apply_filters( 'wc_vipps_recurring_merchant_redirect_url', $redirect_url ) );
+
+				$product_description = WC_Vipps_Recurring_Helper::get_product_description( $product );
+				if ( $product_description ) {
+					$agreement = $agreement->set_product_description( $product_description );
+				}
 
 				// validate phone number and only add it if it's up to Vipps' standard to avoid errors
 				if ( WC_Vipps_Recurring_Helper::is_valid_phone_number( $order->get_billing_phone() ) ) {

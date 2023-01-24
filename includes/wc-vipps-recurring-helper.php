@@ -353,12 +353,12 @@ class WC_Vipps_Recurring_Helper {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public static function get_product_description( WC_Product $product ): string {
+	public static function get_product_description( WC_Product $product ): ?string {
 		$source = self::get_meta( $product, self::META_PRODUCT_DESCRIPTION_SOURCE );
 
-		$description = $product->get_name( 'original' );
+		$description = null;
 		if ( $source === 'short_description' ) {
 			$description = $product->get_short_description();
 		}
