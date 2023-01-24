@@ -195,7 +195,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'cancel_subscription',
 			] );
 
-			add_action( 'woocommerce_thankyou_' . $this->id, [ $this, 'maybe_process_redirect_order' ], 1 );
+			add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_process_redirect_order' ], 1 );
 
 			add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [
 				$this,
@@ -398,8 +398,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 *
 		 * @throws WC_Vipps_Recurring_Exception
 		 */
-		public function maybe_process_redirect_order( $order_id ) {
+		public function maybe_process_redirect_order( $order_id ): void {
 			if ( ! is_order_received_page() ) {
+				return;
+			}
+
+			$order = wc_get_order($order_id);
+			if ($order->get_payment_method() !== $this->id) {
 				return;
 			}
 
