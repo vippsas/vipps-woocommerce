@@ -222,7 +222,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 = 2023.0x.xx version 1.14.0 =
 Support Vipps Checkout version 3 with extended support for shipping methods in Vipps Checkout, allowing for the selection of pickup points and more.
 
-= 2023.01.24 version 1.13.4 =
+= 2023.01.25 version 1.13.4 =
 Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
 
 = 2023.01.02 version 1.13.3 =

@@ -1480,6 +1480,7 @@ else:
         $current_vipps_session = null;
         $current_pending = 0;
         $current_authtoken = "";
+        $limited_session = "";
         try {
                 WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
@@ -1487,12 +1488,12 @@ else:
                     $order = wc_get_order($current_pending);
                     $order->update_meta_data('_vipps_checkout', true);
                     $current_authtoken = $this->gateway()->generate_authtoken();
+                    $limited_session = $this->gateway()->generate_authtoken();
                     WC()->session->set('vipps_checkout_authtoken', $current_authtoken);
                     $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
+                    $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
                     $order->save();
                     WC()->session->set('vipps_checkout_current_pending', $current_pending);
-
-
 
                     try {
                         $this->maybe_add_static_shipping($this->gateway(),$order->get_id(), 'vippscheckout');
@@ -1518,7 +1519,7 @@ else:
         $order_id = $order->get_id();
         $requestid = 1;
         $returnurl = $this->payment_return_url();
-        $returnurl = add_query_arg('tk',$current_authtoken,$returnurl);
+        $returnurl = add_query_arg('s',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
@@ -2038,7 +2039,9 @@ else:
 
         // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
+        // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
         if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) { 
+            add_filter('woocommerce_is_checkout', '__return_true');
             wc_nocache_headers();
         }
 
@@ -2061,7 +2064,6 @@ else:
                 $this->vipps_consent_removal_callback($consentremoval);
             }
         }
-
     }
     // Template handling for special pages. IOK 2018-11-21
     public function template_include($template) {
@@ -2110,6 +2112,8 @@ else:
                     $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
                 }
             }
+            $order->delete_meta_data('_vipps_limited_session');
+            $order->save();
         }
     }
 
@@ -2213,6 +2217,7 @@ EOF;
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'),1);
+
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
 
@@ -4177,19 +4182,20 @@ error_log("callback: " . print_r($result, true)); // FIXME
         wc_nocache_headers();
 
         $orderid = WC()->session->get('_vipps_pending_order');
+
         $order = null;
         $gw = $this->gateway();
 
         // Failsafe for when the session disappears IOK 2018-11-19
         $no_session  = $orderid ? false : true;
-        $authtoken = sanitize_text_field(@$_GET['tk']);
+        $limited_session = sanitize_text_field(@$_GET['s']);
 
         // Now we *should* have a session at this point, but the session may have been deleted,
         // or the session may be in another browser, because we get here by the Vipps app opening the app.
         // If so, we will read the order id from the GET arguments and check if the auth token is correct,
         // simulating the session with that.
         // IOK 2019-11-19, changed to using GET 2023-01-23
-        if ($no_session && $authtoken) {
+        if ($no_session && $limited_session) {
             $orderid = intval(@$_GET['id']);
         }
         if ($orderid) {
@@ -4199,8 +4205,8 @@ error_log("callback: " . print_r($result, true)); // FIXME
 
         // if we came here with no session, check to see if we are allowed to do stuff with the order.
         if ($order && $no_session) {
-            if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($authtoken, $order->get_meta('_vipps_authtoken')))) {
-                $this->log("Wrong authtoken on Vipps payment return url", 'error');
+            if (!$order->get_meta('_vipps_limited_session') || (!wp_check_password($limited_session, $order->get_meta('_vipps_limited_session')))) {
+                $this->log("Wrong order session id on Vipps payment return url", 'error');
                 $order = null; $orderid=0;
             } else {
                 $session = WC()->session;

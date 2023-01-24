@@ -1185,10 +1185,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $authtoken = $this->generate_authtoken();
 
         // IOK 2019-11-19 We have to do this because even though we actually store the order ID in the session, we can a) be redirected to another browser than the one with
-        // the session, and b) some plugins wipe the session for guest purchases. So we might need to restore (enough of the) session to get to the than you page,
-        // even if the session is gone or in another castle.
-        // IOK 2023-01-23 changed this around a bit; send the order id and use the token just as safety
-        $returnurl = add_query_arg('tk',$authtoken,$returnurl);
+        // the session, and b) some plugins wipe the session for guest purchases. 
+        // So we might need to restore (enough of the) session to get to the than you page, even if the session is gone
+        // or in another castle.
+        // IOK 2023-01-23 store the limited session in the order instead and separeted it from the authtoken
+        $limited_session = $this->generate_authtoken();
+        $returnurl = add_query_arg('s',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
 
 
@@ -1232,6 +1234,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         if ($authtoken) {
             $order->update_meta_data('_vipps_authtoken',wp_hash_password($authtoken));
+        }
+        if ($limited_session) {
+            $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
         }
         // Store the "session URL" for restarts of the order in the same session context. IOK 2022-11-02 
         $order->update_meta_data('_vipps_init_timestamp',$vippstamp);
