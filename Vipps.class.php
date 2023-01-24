@@ -2007,7 +2007,9 @@ else:
 
         // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
+        // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
         if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) { 
+            add_filter('woocommerce_is_checkout', '__return_true');
             wc_nocache_headers();
         }
 
@@ -2030,7 +2032,6 @@ else:
                 $this->vipps_consent_removal_callback($consentremoval);
             }
         }
-
     }
     // Template handling for special pages. IOK 2018-11-21
     public function template_include($template) {
@@ -2184,6 +2185,7 @@ EOF;
 
         // Special pages and callbacks handled by template_redirect
         add_action('template_redirect', array($this,'template_redirect'),1);
+
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
 
