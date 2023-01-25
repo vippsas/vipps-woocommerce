@@ -2390,8 +2390,6 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-error_log("callback: " . print_r($result, true)); // FIXME
-
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
@@ -2818,12 +2816,13 @@ error_log("callback: " . print_r($result, true)); // FIXME
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
 
         foreach($methods as $method) {
+           $rate = $method['rate'];
 
            // Extended settings are stored in these objects
            $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
            $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
 
-           $rate = $method['rate'];
+
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
            $label = $rate->get_label();
@@ -2835,6 +2834,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
                $this->log(sprintf(__("Cannot use shipping method %s in Vipps Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $label));
                continue;
            }
+
            // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
            $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
@@ -2877,6 +2877,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
    
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
+
                   // Some data must be visible in the Order screen, so add meta data
                   $meta = $rate->get_meta_data();
                   if (isset($meta['brand'])) {
