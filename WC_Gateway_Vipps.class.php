@@ -2373,12 +2373,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
             // Possible extra metadata from Vipps Checkout IOK 2023-01-17
-            if ($shipping_rate && isset($shipping['pickupPoint'])) {
-               $pp = $shipping['pickupPoint'];
-               $shipping_rate->add_meta_data('Pickup Point', $pp['id']);
-               unset($pp['id']);
-               $addr = join(", ", array_values($pp));
-               $shipping_rate->add_meta_data('Pickup Point Address', $addr);
+            // Store in the order, but also in the shipping rate so it will be visible in the order screen
+            // along with the shipping ragte
+            if (isset($shipping['pickupPoint'])) {
+                $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
+                if ($shipping_rate) {
+                    $pp = $shipping['pickupPoint'];
+                    $addr = [];
+                    foreach(['name', 'address', 'postalCode', 'city', 'country'] as $key) {
+                        $addr[] = $pp[$key];
+                    }
+                    $shipping_rate->add_meta_data('Pickup Point', $pp['id']);
+                    $shipping_rate->add_meta_data('Pickup Point Address', join(", ", $addr));
+                    if (isset($pp['instabox'])) {
+                       foreach(['serviceType', 'sortCode', 'availabilityToken'] as $key) {
+                           $shipping_rate->add_meta_data('Instabox ' . $key, $pp['instabox'][$key]);
+                       }
+                    }
+                }
             }
 
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
