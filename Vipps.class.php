@@ -2390,6 +2390,8 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
+error_log("callback: " . print_r($result, true)); // FIXME
+
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
@@ -2883,7 +2885,15 @@ EOF;
                   if (isset($meta['brand'])) {
                      $m2['brand'] = $meta['brand'];
                      unset($m2['title']);
+              
+                  } else {
+                      // specialcase some known methods so they get brands
+                      if (get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                         $m2['brand'] = "POSTEN";
+                      }
+                      $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
                   }
+
                   if (isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
                   }

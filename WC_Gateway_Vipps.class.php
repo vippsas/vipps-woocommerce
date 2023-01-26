@@ -1811,6 +1811,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
+error_log("setting shipping details via poll");
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing);
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
@@ -2400,6 +2401,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $total_shipping_tax = 0;
 
             if ($shipping_rate) {
+
+
+
                 $it = new WC_Order_Item_Shipping();
                 $it->set_shipping_rate($shipping_rate);
                 $it->set_order_id( $order->get_id() );
@@ -2415,6 +2419,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $total_shipping_tax = $it->get_total_tax();
                 $ordertotal = $order->get_total();
 
+// IVEROK ERROR FIXME THIS IS NOT YET SET AT THIS POINT
+                $vippsamount = intval($order->get_meta('_vipps_amount'));
+
+error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
+
                 // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
                 // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
                 // value reserved at Vipps and the order total is the same. IOK 2022-10-03
@@ -2422,6 +2431,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->set_shipping_tax($total_shipping_tax);
                 $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
             }
+
+            // Add an early hook for Vipps Checkout orders with special shipping methods
+            if ($shipping_rate) { 
+                $metadata = $shipping_rate->get_meta_data();
+                if (isset($metadata['type'])) {
+                    do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
+                }
+            }
+
             $order->save(); 
             // NB: WE DO NOT CALL CALCULATE TOTALS!
             // THIS WILL CALCULATE SHIPPING FOR TAX IF THERE IS A TAX RATE FOR THE GIVEN AREA WITH THE 'shipping' PROPERTY CHECKED - EVEN IF THE SHIPPING RATE IT SELF IS NOT THUS CONFIGURED.
@@ -2583,6 +2601,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($express && @$result['shippingDetails']) {
             $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
+error_log("Setting shipping details via callback");
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing);
         }
 

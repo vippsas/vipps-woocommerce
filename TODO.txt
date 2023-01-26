@@ -59,36 +59,7 @@ TODO: checkout direct:
 https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vipps-checkout-direct
 
 
-* PICKUP_POINT gir ekstra felt i shippingDetails med id + addressefelter
-            [pickupPoint] => Array
-                (
-                    [id] => 128026
-                    [name] => REMA 1000 Parkveien
-                    [address] => PARKVEIEN 21
-                    [postalCode] => 0352
-                    [city] => OSLO
-                    [country] => NO
-                )
-
-.. men hvis instabox, 
-   instabox: 
-availabilityToken	
-string
-Identifies when the delivery options were fetched
-
-serviceType	
-string
-Identifies the service (For example "EXPRESS")
-
-sortCode	
-string
-Identifies the location
-
-
-* HOME_DELIVERY gir
- <nugazi>
-
-TODO: Legg til som order note også, og kjør hook på ordren
+TODO: Legg til som order note også, og kjør hook på ordren ved pickup point/home delivery
 
 TODO: RENAME BRAND AND TYPE (ihverfall type!)
 
@@ -97,8 +68,9 @@ TODO: Hvis bestilling er cancelled når man kommer tilbake til butikken - sjekk 
 TODO: Porterbuddy krever 0 i pris - _dynamisk prising_ . IKKE FREE SHIPPING
 ** pris kommer per *epost*, pris hadde vært .  testnøkler?
 DYNAMISK PRISING ER EN TING
+** må nå sjekke vippsamount og sammenligne med order-amount *før* prisen er satt.. og så sette pris på fraktmetode
 
 
-
+TODO: Endre navn fra 'type' til noe annet
 
 https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
