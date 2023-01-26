@@ -2402,8 +2402,18 @@ error_log("setting shipping details via poll");
             $total_shipping_tax = 0;
 
             if ($shipping_rate) {
+                $ordertotal = $order->get_total();
 
+                // If the rate is "dynamic shipping" - we need to calculate the shipping price here FIXME
+                $vippsamount = intval($order->get_meta('_vipps_amount'));
+                $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
+                $compareamount = $ordertotal * 100;
+                $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
+                $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
+                $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
+                $actual = $amountdiff/100 - $difftax;
 
+error_log("ordertotal $ordertotal diff $amountdiff diffnotax $diffnotax difftax $difftax actual $actual");
 
                 $it = new WC_Order_Item_Shipping();
                 $it->set_shipping_rate($shipping_rate);
@@ -2414,14 +2424,13 @@ error_log("setting shipping details via poll");
                     $it->add_meta_data($key,$value,true);
                 }
                 $it->save();
-                $order->add_item($it);
 
+                $order->add_item($it);
                 $total_shipping = $it->get_total();
                 $total_shipping_tax = $it->get_total_tax();
-                $ordertotal = $order->get_total();
 
-                $vippsamount = intval($order->get_meta('_vipps_amount'));
-error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true)); // FIXME
+error_log("Total shipping $total_shipping tax $total_shipping_tax");
+
 
                 // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
                 // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the

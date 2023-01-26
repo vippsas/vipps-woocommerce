@@ -2734,9 +2734,10 @@ error_log("Ignoring callback"); return; // FIXME
         $acart = WC()->cart;
 
         $shipping_methods = array();
+        $shipping_tax_rates = WC_Tax::get_shipping_tax_rates();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
-            $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', WC_Tax::get_shipping_tax_rates());
+            $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', $shipping_tax_rates);
             $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,$no_shipping_taxes, 'none_required', 0);
         } else {
             $packages = apply_filters('woo_vipps_shipping_callback_packages', WC()->cart->get_shipping_packages());
@@ -2750,9 +2751,14 @@ error_log("Ignoring callback"); return; // FIXME
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
         }
 
-        // IOK FIXME TEST
-error_log("Shipping tax rates " . print_r(WC_Tax::get_shipping_tax_rates(), true));
-
+       
+        // Add shipping tax rates to the *order* so we can calculate this correctly when using Vipps Checkouts 
+        // 'dynamic pricing' 2023-01-26 
+        $taxrate = 0;
+        if (is_array($shipping_tax_rates) && !empty($shipping_tax_rates)) {
+          $taxrate = current($shipping_tax_rates)['rate'];
+        }
+        $order->update_meta_data('_vipps_shipping_tax_rates', $taxrate);
 
         $chosen = null;
         if (is_a(WC()->session, 'WC_Session_Handler')) {
