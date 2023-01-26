@@ -2390,8 +2390,6 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-error_log("callback: " . print_r($result, true)); // FIXME
-
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
@@ -2457,6 +2455,7 @@ error_log("callback: " . print_r($result, true)); // FIXME
         }
 
         $gw = $this->gateway();
+error_log("Ignoring callback"); return; // FIXME
         $gw->handle_callback($result, $order, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22

@@ -1723,12 +1723,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             } 
 
-            error_log("Payment details " . print_r($paymentdetails, true));
-
-
             # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
+error_log("In it to win it in ecom");
                 $vippsstamp = strtotime($transaction['timeStamp']);
                 $amount  = $transaction['amount'];
                 if (is_array($amount)) {
@@ -1738,15 +1736,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                 $order->update_meta_data('_vipps_amount',$vippsamount);
-            } else if ($paymentdetails and isset($paymentdetails['amount']))  {
+                $order->update_meta_data('_vipps_currency', 'NOK');
+            } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
+error_log("In it to win it in epayment");
                // IOK 2022-01-20 the epayment API does it differently
                $vippsstamp = time();
-               // IOK Check to see if this changes to aggregate or transactionAggregate's authorizedAmount
                $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
+               $vippscurrency = $paymentdetails['paymentDetails']['amount']['currency'];
                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                $order->update_meta_data('_vipps_amount',$vippsamount);
-
-
+               $order->update_meta_data('_vipps_currency',$vippscurrency);
             }
 
         } catch (Exception $e) {

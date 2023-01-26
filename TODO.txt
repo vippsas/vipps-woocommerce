@@ -123,3 +123,5 @@ og express:
     [transactionId] => 5003259633
     [currency] => NOK
 )
+
+TODO: SJEKK AT POLL RETURNERER userinfo! Foreløpig bare i callback? v2 vs v3?
