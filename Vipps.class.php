@@ -2751,6 +2751,10 @@ error_log("callback: " . print_r($result, true)); // FIXME
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
         }
 
+        // IOK FIXME TEST
+error_log("Shipping tax rates " . print_r(WC_Tax::get_shipping_tax_rates(), true));
+
+
         $chosen = null;
         if (is_a(WC()->session, 'WC_Session_Handler')) {
             $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );

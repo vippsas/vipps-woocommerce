@@ -74,3 +74,52 @@ DYNAMISK PRISING ER EN TING
 TODO: Endre navn fra 'type' til noe annet
 
 https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
+
+WC_Tax::get_shipping_tax_rates()
+Shipping tax rates Array
+(
+    [1] => Array
+        (
+            [rate] => 25
+            [label] => mva
+            [shipping] => yes
+            [compound] => no
+        )
+
+)
+
+
+OG FOR BEREGNINGEN:
+[26-Jan-2023 14:10:08 UTC] setting shipping details via poll
+[26-Jan-2023 14:10:09 UTC] ordertotal 199.00 vippsamount 0
+
+men også på callback (!)
+[26-Jan-2023 14:13:08 UTC] setting shipping details via poll
+[26-Jan-2023 14:13:08 UTC] ordertotal 199.00 vippsamount 0
+
+ah men også
+[26-Jan-2023 14:31:18 UTC] Setting shipping details via callback
+[26-Jan-2023 14:31:18 UTC] ordertotal 199.00 vippsamount 0
+
+ok så callback da, checkout:
+[26-Jan-2023 14:36:07 UTC] Setting shipping details via callback
+[26-Jan-2023 14:36:07 UTC] ordertotal 199.00 vippsamount 0
+[26-Jan-2023 14:36:07 UTC] vipsamount 23900 trnasaction Array
+(
+    [transactionId] => checkout_woodigitalt3238
+    [timeStamp] => 2023-01-26 14:36:07
+    [amount] => 23900
+    [currency] => NOK
+    [status] => AUTHORIZED
+)
+og express:
+[26-Jan-2023 14:37:15 UTC] Setting shipping details via callback
+[26-Jan-2023 14:37:15 UTC] ordertotal 1.00 vippsamount 0
+[26-Jan-2023 14:37:15 UTC] vipsamount 100 trnasaction Array
+(
+    [amount] => 100
+    [status] => RESERVE
+    [timeStamp] => 2023-01-26T14:37:03.223Z
+    [transactionId] => 5003259633
+    [currency] => NOK
+)

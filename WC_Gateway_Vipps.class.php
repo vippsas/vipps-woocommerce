@@ -1723,6 +1723,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             } 
 
+            error_log("Payment details " . print_r($paymentdetails, true));
+
 
             # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
@@ -2419,10 +2421,8 @@ error_log("setting shipping details via poll");
                 $total_shipping_tax = $it->get_total_tax();
                 $ordertotal = $order->get_total();
 
-// IVEROK ERROR FIXME THIS IS NOT YET SET AT THIS POINT
                 $vippsamount = intval($order->get_meta('_vipps_amount'));
-
-error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
+error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true)); // FIXME
 
                 // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
                 // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
@@ -2527,6 +2527,12 @@ error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
             exit();
         }
 
+        $errorInfo = @$result['errorInfo'];
+        if ($errorInfo) {
+            $this->log(__("Error message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
+            $order->add_order_note(sprintf(__("Error message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
+        }
+
         $transaction = array();
         if (isset($result['transactionInfo'])) {
             $transaction = $result['transactionInfo'];
@@ -2547,6 +2553,7 @@ error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
         }
 
         $order->add_order_note(__('Vipps callback received','woo-vipps'));
+        do_action('woo_vipps_callback_received', $order, $result, $transaction);
 
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
@@ -2555,7 +2562,6 @@ error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
             return;
         }
 
-
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
@@ -2563,6 +2569,18 @@ error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
             clean_post_cache($order->get_id());
             return;
         }
+
+        // Set Vipps metadata as early as possible
+        $transactionid = @$transaction['transactionId'];
+        $vippsstamp = strtotime($transaction['timeStamp']);
+        $vippsamount = $transaction['amount'];
+        $vippscurrency= $transaction['currency'];
+        $vippsstatus = $transaction['status'];
+
+        $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+        $order->update_meta_data('_vipps_amount',$vippsamount);
+        $order->update_meta_data('_vipps_currency',$vippscurrency);
+        $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         $this->log(__("Vipps callback: Handling order: ", 'woo-vipps') . " " .  $orderid, 'debug');
 
@@ -2575,7 +2593,6 @@ error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
         }
 
         $express = $order->get_meta('_vipps_express_checkout');
-
         // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
         // including adding anonoymous users if there is no other data. IOK 2023-01-10
         $result = $this->ensure_userDetails($result, $order);
@@ -2601,32 +2618,8 @@ error_log("ordertotal $ordertotal vippsamount " . print_r($vippsamount, true));
 
         if ($express && @$result['shippingDetails']) {
             $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-error_log("Setting shipping details via callback");
             $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing);
         }
-
-        $transactionid = @$transaction['transactionId'];
-        $vippsstamp = strtotime($transaction['timeStamp']);
-        $vippsamount = $transaction['amount'];
-        $vippscurrency= $transaction['currency'];
-        $vippsstatus = $transaction['status'];
-
-        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        try {
-            $Vipps->createCallbackSignal($order,'ok');
-        } catch (Exception $e) {
-                // Could not create a signal file, but that's ok.
-        }
-        $errorInfo = @$result['errorInfo'];
-        if ($errorInfo) {
-            $this->log(__("Error message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note(sprintf(__("Error message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
-        }
-
-        $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
-        $order->update_meta_data('_vipps_amount',$vippsamount);
-        $order->update_meta_data('_vipps_currency',$vippscurrency);
-        $order->update_meta_data('_vipps_status',$vippsstatus);  // Still uses the old status values - could call update_vipps_payment_details instead at the cost of an extra callIOK 2021-01-21
 
         if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'AUTHORIZED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09
 
@@ -2642,6 +2635,14 @@ error_log("Setting shipping details via callback");
         $order->save();
         clean_post_cache($order->get_id());
         $Vipps->unlockOrder($order);
+
+        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
+        try {
+            $Vipps->createCallbackSignal($order,'ok');
+        } catch (Exception $e) {
+                // Could not create a signal file, but that's ok.
+        }
+
     }
 
     // Do the 'payment_complete' logic for non-SALE orders IOK 2020-09-22
