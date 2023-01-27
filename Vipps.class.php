@@ -2040,8 +2040,21 @@ else:
         // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
-        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) { 
+        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
             add_filter('woocommerce_is_checkout', '__return_true');
+            add_filter('body_class', function ($classes) {
+                    $classes[] = 'vipps-checkout';
+                    $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+                    return apply_filters('woo_vipps_checkout_body_class', $classes);
+            });
+            /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
+            $post_to_hide_title_for = $post->ID;
+            add_filter('the_title', function ($title, $postid) use ($post_to_hide_title_for) {
+                if (!is_admin() && $postid ==  $post_to_hide_title_for && is_singular()  && in_the_loop()) {
+                    $title = "";
+                }
+                return $title;
+            }, 10, 2);
             wc_nocache_headers();
         }
 

@@ -26,6 +26,8 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     // Basic price, set by options
     public $cost = 0;
 
+    public $dynamic_cost = false;
+
     public function preinit () {
     }
     public function init () {
@@ -220,6 +222,10 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
         $this->defaulttitle = __( 'Posten Norge', 'woo-vipps' );
         $this->method_title = __( 'Vipps Checkout: Posten', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Posten Norge', 'woo-vipps' );
+
+
+        $this->dynamic_cost = true; // FIXME THIS IS WRONG, JUST FOR TESTING
+
     }
 }
 
@@ -260,6 +266,9 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
         $this->defaulttitle = __( 'Porterbuddy', 'woo-vipps' );
         $this->method_title = __( 'Vipps Checkout: Porterbuddy', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Porterbuddy', 'woo-vipps' );
+
+        $this->dynamic_cost = true; // FIXME ONLY IF OPTION IS SET (and if so remove cost..)
+
     }
 }
 

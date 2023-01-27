@@ -2402,18 +2402,34 @@ error_log("setting shipping details via poll");
             $total_shipping_tax = 0;
 
             if ($shipping_rate) {
+                // We may need the order total early on, so start with that
                 $ordertotal = $order->get_total();
 
-                // If the rate is "dynamic shipping" - we need to calculate the shipping price here FIXME
-                $vippsamount = intval($order->get_meta('_vipps_amount'));
-                $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
-                $compareamount = $ordertotal * 100;
-                $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
-                $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
-                $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
-                $actual = $amountdiff/100 - $difftax;
+                // Recover the Shipping Method class
+                $methods_classes = WC()->shipping->get_shipping_method_class_names();
+                $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
+                $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
+                $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
+                if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
 
-error_log("ordertotal $ordertotal diff $amountdiff diffnotax $diffnotax difftax $difftax actual $actual");
+error_log("Method used was " . get_class($shipping_method));
+error_log("This method uses dynamic cost!");
+
+                    $vippsamount = intval($order->get_meta('_vipps_amount'));
+                    $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
+                    $compareamount = $ordertotal * 100;
+                    $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
+                    $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
+                    $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
+                    $actual = $amountdiff/100 - $difftax;
+
+                    error_log("ordertotal $ordertotal diff $amountdiff diffnotax $diffnotax difftax $difftax actual $actual");
+                    error_log("cost: " . $shipping_rate->get_cost());
+                    error_log("taxes: " . print_r($shipping_rate->get_taxes(), true));
+
+                    $shipping_rate->set_cost($actual); // round ?
+                    $shipping_rate->set_taxes( [ 1 => $difftax] );
+                }
 
                 $it = new WC_Order_Item_Shipping();
                 $it->set_shipping_rate($shipping_rate);
@@ -2426,18 +2442,18 @@ error_log("ordertotal $ordertotal diff $amountdiff diffnotax $diffnotax difftax 
                 $it->save();
 
                 $order->add_item($it);
+
                 $total_shipping = $it->get_total();
                 $total_shipping_tax = $it->get_total_tax();
-
-error_log("Total shipping $total_shipping tax $total_shipping_tax");
-
 
                 // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
                 // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
                 // value reserved at Vipps and the order total is the same. IOK 2022-10-03
                 $order->set_shipping_total($total_shipping);
                 $order->set_shipping_tax($total_shipping_tax);
+
                 $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
+                $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
             }
 
             // Add an early hook for Vipps Checkout orders with special shipping methods
@@ -2537,8 +2553,8 @@ error_log("Total shipping $total_shipping tax $total_shipping_tax");
 
         $errorInfo = @$result['errorInfo'];
         if ($errorInfo) {
-            $this->log(__("Error message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note(sprintf(__("Error message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
+            $this->log(__("Message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
+            $order->add_order_note(sprintf(__("Message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
         }
 
         $transaction = array();

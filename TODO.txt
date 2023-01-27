@@ -1,11 +1,9 @@
 PICKUP POINT  => Pakke til hentested
 
-
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw
 
  $order_id = absint( get_query_var( 'order-pay' ) );
-
 
 https://vdev.digitalt.org/handlekurv/?cancel_order=true&order=wc_order_a8qIMx4figarw&order_id=3173&redirect=https%3A%2F%2Fvdev.digitalt.org%2Fmin-konto%2F&_wpnonce=1218cd637c
 
@@ -50,14 +48,11 @@ TODO HANDLE LOGIN AND USER CREATION BY USING
 
 så jeg må lage en "ensureUserDetails"
 
-TODO: Skift tittel på siden fra Vipps Checkout til <ikkenoe> elns
-TODO: Skift tekst på "feilmelding fra vipps" til "melding i vipps"
 TODO: Forbedre integrajsonen med vipps login plz
 TODO: Hold session aktiv i Vipps checkout ved å endre addressen helt til den blir cancellet. Revive den ved retur.
 DONE : Hør med vipps og edisoft
 TODO: checkout direct:
 https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vipps-checkout-direct
-
 
 TODO: Legg til som order note også, og kjør hook på ordren ved pickup point/home delivery
 
@@ -67,18 +62,11 @@ TODO: Hvis bestilling er cancelled når man kommer tilbake til butikken - sjekk 
 
 TODO: Porterbuddy krever 0 i pris - _dynamisk prising_ . IKKE FREE SHIPPING
 ** pris kommer per *epost*, pris hadde vært .  testnøkler?
-DYNAMISK PRISING ER EN TING
-** må nå sjekke vippsamount og sammenligne med order-amount *før* prisen er satt.. og så sette pris på fraktmetode
-
 
 TODO: Endre navn fra 'type' til noe annet
 
 https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
 
 TODO: SJEKK AT POLL RETURNERER userinfo! Foreløpig bare i callback? v2 vs v3?
-TODO TEST MOMS NÅR VI BARE HAR  1 DESIMAL I PRISENE
 
-
-[26-Jan-2023 15:52:20 UTC] ordertotal 20.00 diff 4000 diffnotax 32 difftax 8 actual 32
-[26-Jan-2023 15:52:20 UTC] Total shipping 32.00 tax 8
 
