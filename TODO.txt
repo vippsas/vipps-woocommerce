@@ -70,3 +70,7 @@ https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
 TODO: SJEKK AT POLL RETURNERER userinfo! Foreløpig bare i callback? v2 vs v3?
 
 
+
+TODO SJEKK AT KLARNA classes/class-kco-confirmation.php
+root@wp3:/kunder/wp/b/bongocommerce/wp/wp-content/plugins/klarna-checkout-for-woocommerce# 
+
