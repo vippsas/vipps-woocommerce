@@ -1679,6 +1679,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $status;
     }
 
+    // Called by callback_check_order_status and handle_callback to handle the situation where
+    // the payment method has been set to something else *after* Vipps has gotten the order.
+    // This happens very rarely for people who use Vipps as an external payment method in Klarna, so
+    // we only do it for orders that match this. IOK 2023-02-03
+    public function reset_erroneous_payment_method($order) {
+        // This is only called by methods that are Vipps-specific, but still lets be careful not to touch other orders
+        if ($order->get_payment_method() === "kco" && $order->get_meta("_vipps_orderid")) {
+            $order->set_payment_method('vipps');
+
+            $express = $order->get_meta('_vipps_express_checkout');
+            $checkout = $order->get_meta('_vipps_checkout');
+            $order->set_payment_method_title('Vipps');
+            if ($express) $order->set_payment_method_title('Vipps Express Checkout');
+            if ($checkout) $order->set_payment_method_title('Vipps Checkout');
+            $order->save();
+
+            $msg = sprintf(__("Payment method reset to Vipps - it had been set to KCO while completing the order for %d", 'woo-vipps'), $order->get_id());
+            $this->log($msg, 'debug');
+            $order->add_order_note($msg);
+        }
+    }
+
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
@@ -1699,6 +1721,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$Vipps->lockOrder($order)) {
             return $oldstatus;
         }
+
+         // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+        $this->reset_erroneous_payment_method($order);
 
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
@@ -2607,6 +2632,9 @@ error_log("This method uses dynamic cost!");
         $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         $this->log(__("Vipps callback: Handling order: ", 'woo-vipps') . " " .  $orderid, 'debug');
+
+        // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+        $this->reset_erroneous_payment_method($order);
 
         // Modify payment method name if neccessary
         if (isset($result['paymentMethod']) && $result['paymentMethod'] == 'Card') {
