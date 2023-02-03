@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.13.4
-Stable tag: 1.13.4
+Version: 1.13.5
+Stable tag: 1.13.5
 Requires at least: 4.7
 Tested up to: 6.1.1
 Requires PHP: 5.6
@@ -79,6 +79,9 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.13.5 =
+Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
+
 = 1.13.4 =
 Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
 
@@ -239,6 +242,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023.02.06 version 1.13.5 =
+Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
+
 = 2023.01.25 version 1.13.4 =
 Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
 
