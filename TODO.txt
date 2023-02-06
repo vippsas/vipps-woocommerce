@@ -70,7 +70,21 @@ https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
 TODO: SJEKK AT POLL RETURNERER userinfo! Foreløpig bare i callback? v2 vs v3?
 
 TODO implementer ekstra consent avhuking
+ => returns customConsentProvided boolean
+ => ved siden av requireUserInfo:
+  customConsent:
+CustomConsent:
+      type: object
+      properties:
+        text:
+          type: string
+          description: 'Text displayed next to the checkbox. This text can contain up to one link in markdown format like this: [linkText](https://example.com)'
+        required:
+          type: boolean
+          description: Whether box has to be checked to complete the checkout.
+      additionalProperties: false
+      description: 'If used, displays a checkbox that can be used to ask for extra consent.'
 
-TODO SJEKK AT KLARNA classes/class-kco-confirmation.php
-root@wp3:/kunder/wp/b/bongocommerce/wp/wp-content/plugins/klarna-checkout-for-woocommerce# 
+
+customConsent: { text: "Godtar du?", required: false } (kan ha markdown)
 

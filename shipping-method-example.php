@@ -88,6 +88,9 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
             $options = array('' => __('No delivery method specified', 'woo-vipps'));
             foreach($this->delivery_types as $type) {
                 switch ($type) {
+                    case 'MAILBOX':
+                        $options[$type] = __('Deliver to customers\' mailbox', 'woo-vipps');
+                        break;
                     case 'PICKUP_POINT':
                         $options[$type] = __('Allow user to choose pickup point', 'woo-vipps');
                         break;
@@ -214,7 +217,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
 class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method {
     public $id = 'vipps_checkout_posten';
-    public $delivery_types = ['PICKUP_POINT'];
+    public $delivery_types = ['MAILBOX','PICKUP_POINT','HOME_DELIVERY'];
     public $brand = "POSTEN";
 
     // Called by the parent constructor before loading settings
@@ -231,7 +234,7 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
 
 class VippsCheckout_Shipping_Method_Helthjem extends VippsCheckout_Shipping_Method {
     public $id = 'vipps_checkout_helthjem';
-    public $delivery_types = ['PICKUP_POINT', 'HOME_DELIVERY'];
+    public $delivery_types = ['HOME_DELIVERY', 'PICKUP_POINT'];
     public $brand = "HELTHJEM";
 
     // Called by the parent constructor before loading settings
@@ -245,7 +248,7 @@ class VippsCheckout_Shipping_Method_Helthjem extends VippsCheckout_Shipping_Meth
 
 class VippsCheckout_Shipping_Method_Postnord extends VippsCheckout_Shipping_Method {
     public $id = 'vipps_checkout_postnord';
-    public $delivery_types = ['PICKUP_POINT'];
+    public $delivery_types = ['PICKUP_POINT','HOME_DELIVERY'];
     public $brand = "POSTNORD";
 
     // Called by the parent constructor before loading settings
@@ -274,7 +277,7 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
 
 class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Method {
     public $id = 'vipps_checkout_instabox';
-    public $delivery_types = ['PICKUP_POINT'];
+    public $delivery_types = ['HOME_DELIVERY','PICKUP_POINT'];
     public $brand = "INSTABOX";
 
     // Called by the parent constructor before loading settings
