@@ -48,6 +48,14 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
        return [];
     }
 
+    // From WooCommerces' NumberUtil class
+    public static function round( $val, int $precision = 0, int $mode = PHP_ROUND_HALF_UP ) : float {
+                if ( ! is_numeric( $val ) ) {
+                        $val = floatval( $val );
+                }
+                return round( $val, $precision, $mode );
+    }
+
     public function free_shipping_form_fields() {
         return array(
                 'title'            => array(
@@ -249,9 +257,80 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     }
 
 
+    public function free_shipping_ok($package) {
+        if (!$this->supports_free_shipping) return false;
+
+        $has_coupon         = false;
+        $has_met_min_amount = false;
+
+        $requires = $this->get_option('requires', false);
+
+        if ( in_array( $requires , array( 'coupon', 'either', 'both' ), true ) ) {
+            $coupons = WC()->cart->get_coupons();
+            if ( $coupons ) {
+                foreach ( $coupons as $code => $coupon ) {
+                    if ( $coupon->is_valid() && $coupon->get_free_shipping() ) {
+                        $has_coupon = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ( in_array( $requires, array( 'min_amount', 'either', 'both' ), true ) ) {
+            $total = WC()->cart->get_displayed_subtotal();
+
+            if ( WC()->cart->display_prices_including_tax() ) {
+                $total = $total - WC()->cart->get_discount_tax();
+            }
+
+            if ( 'no' === $this->get_option('ignore_discounts')) {
+                $total = $total - WC()->cart->get_discount_total();
+            }
+
+            $total = static::round( $total, wc_get_price_decimals() );
+
+            if ( $total >= $this->get_option('min_amount',0) ) {
+                $has_met_min_amount = true;
+            }
+        }
+
+        switch ( $requires ) {
+            case 'min_amount':
+                $is_available = $has_met_min_amount;
+                break;
+            case 'coupon':
+                $is_available = $has_coupon;
+                break;
+            case 'both':
+                $is_available = $has_met_min_amount && $has_coupon;
+                break;
+            case 'either':
+                $is_available = $has_met_min_amount || $has_coupon;
+                break;
+            default:
+                $is_available = false;
+                break;
+        }
+
+        return $is_available;
+    }
+
+
     public function get_cost($package) {
+
+        error_log("in get cost for " . get_class($this));
+
         $cost = $this->get_option('cost');
+
+        error_log("Price $cost");
+
         if ($this->supports_dynamic_cost && $this->dynamic_cost ) {
+        error_log("dynamic pricing, so 0");
+              $cost = 0;
+        }
+        if ($this->free_shipping_ok($package)) {
+        error_log("free shipping, so 0");
               $cost = 0;
         }
 
@@ -281,7 +360,6 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'meta_data' => $meta,
                     );
 
-        error_log("Rate: " . print_r($ratedata, true));
 
         $ratedata = apply_filters('woo_vipps_vipps_checkout_shipping_rate', $ratedata, $this);
 
@@ -290,7 +368,6 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
     public function is_enabled() {
         $vc_activated =  get_option('woo_vipps_checkout_activated', false);
-        error_log("Parent thing with $vc_activated");
         return $vc_activated;
     }
 
