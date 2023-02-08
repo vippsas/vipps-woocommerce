@@ -123,15 +123,27 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'description' => __( 'Short description of shipping method', 'woo-vipps' ),
                     'default' => "",
                     'desc_tip'=>true
-                    ),
-                'cost' => array(
+                    ));
+
+        if ($this->supports_dynamic_cost) {
+            $this->instance_form_fields['dynamic_cost'] = array(
+                    'title'       => __( 'Calculate cost in Checkout', 'woo-vipps' ),
+                    'label'       => __( 'Calculate costs in the Checkout window', 'woo-vipps' ),
+                    'type'        => 'checkbox',
+                    'class'       => 'vipps_checkout_dynamic_cost_field',
+                    'description' => __( 'If checked, cost of shipping will be calculated dynamically in the Vipps Checkout window', 'woo-vipps' ),
+                    'default'     => 'no',
+                    'desc_tip'    => true,
+                    );
+
+        }
+       $this->instance_form_fields['cost'] = array(
                     'title' => __( 'Cost ', 'woo-vipps' ),
                     'type' => 'number',
+                    'class' => 'vipps_checkout_cost_field',
                     'description' => __( 'Cost of shipping', 'woo-vipps' ),
                     'default' => 0,
                     'desc_tip'=>true
-                    ),
-
                     );
         // Support pickup point/home delivery where appropriate
         if (!empty($this->delivery_types)) {
@@ -276,7 +288,32 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
     // Static so it gets loaded just once; must be loaded before 25. (See Free Shipping).
     public static function enqueue_admin_js() {
-        wc_enqueue_js( "jQuery(document).ready(function () { console.log('vipps checkouuuuut') }); ");
+        wc_enqueue_js( "jQuery(document).ready(function () {
+
+          function vipps_checkout_hide_cost_for_dynamic_pricing (el) {
+              let form = jQuery( el ).closest( 'form' );
+              let costfield = jQuery( '.vipps_checkout_cost_field', form ).closest( 'tr' );
+              if (jQuery(el).is(':checked')) {
+                  costfield.hide();
+              } else {
+                  costfield.show();
+              }
+          }
+
+          jQuery( document.body ).on( 'change', '.vipps_checkout_dynamic_cost_field', function() {
+             vipps_checkout_hide_cost_for_dynamic_pricing( this );
+          });
+          jQuery( '.vipps_checkout_dynamic_cost_field' ).trigger( 'change' );
+          jQuery(document.body).on( 'wc_backbone_modal_loaded', function( evt, target ) {
+            if ( 'wc-modal-shipping-method-settings' === target ) {
+                vipps_checkout_hide_cost_for_dynamic_pricing(jQuery('#wc-backbone-modal-dialog .vipps_checkout_dynamic_cost_field', evt.currentTarget));
+            }
+          });
+
+         console.log('vipps checkouuuuut')
+         });");
+
+
     }
 
 }
