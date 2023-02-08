@@ -37,6 +37,8 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     }
     public function init () {
     }
+    public function postinit () {
+    }
 
     public function instance_form_fields() {
        return [];
@@ -225,6 +227,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
         $this->title                = $this->get_option( 'title' );
         $this->tax_status           = $this->get_option( 'tax_status' );
+        $this->dynamic_cost = $this->supports_dynamic_cost && ('yes' == $this->get_option('dynamic_cost'));
 
         // Never enable parent method
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
@@ -232,6 +235,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         }
 
         $this->init();
+        $this->postinit();
 
         add_action( 'admin_footer', array( 'VippsCheckout_Shipping_Method', 'enqueue_admin_js' ), 10 ); // Priority needs to be higher than wc_print_js (25).
 
@@ -241,6 +245,10 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
     public function get_cost($package) {
         $cost = $this->get_option('cost');
+        if ($this->supports_dynamic_cost && $this->dynamic_cost ) {
+              $cost = 0;
+        }
+
         $cost = apply_filters('woo_vipps_vipps_checkout_shipping_cost', $cost, $this);
         return $cost;
     }
@@ -328,11 +336,11 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
         $this->defaulttitle = __( 'Posten Norge', 'woo-vipps' );
         $this->method_title = __( 'Vipps Checkout: Posten', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Posten Norge', 'woo-vipps' );
-
-
-        $this->dynamic_cost = true; // FIXME THIS IS WRONG, JUST FOR TESTING
-
     }
+    public function postinit () {
+        $this->get_option = true; // NO! just for testing FIXME
+    }
+
 }
 
 class VippsCheckout_Shipping_Method_Helthjem extends VippsCheckout_Shipping_Method {
@@ -375,10 +383,6 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
         $this->defaulttitle = __( 'Porterbuddy', 'woo-vipps' );
         $this->method_title = __( 'Vipps Checkout: Porterbuddy', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Porterbuddy', 'woo-vipps' );
-
-        $this->dynamic_cost = true; // FIXME ONLY IF OPTION IS SET (and if so remove cost..)
-
-
     }
 
 
