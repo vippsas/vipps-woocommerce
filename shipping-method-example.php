@@ -3,6 +3,9 @@ add_action( 'woocommerce_shipping_init', function () {
 
   //add your shipping method to WooCommers list of Shipping methods
   add_filter( 'woocommerce_shipping_methods',  function ($methods) {
+      $vc_activated =  get_option('woo_vipps_checkout_activated', false);
+      if (!$vc_activated) return false;
+
       $gw = Vipps::instance()->gateway();
       if (!$gw) return;
 
