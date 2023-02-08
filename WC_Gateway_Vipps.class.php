@@ -588,6 +588,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => __("When using Vipps Checkout, you have the option to use Vipps Checkout specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the Vipps Checkout screen.", 'woo-vipps')
                     ),
 
+                'vcs_posten' => array(
+                        'title'       => __( 'Posten Norge', 'woo-vipps' ),
+                        'class'       => 'vcs_posten vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posten'),
+                        'label'       => __( 'Support Posten Norge as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Posten Norge as a Vipps Checkout Shipping method.', 'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+
+                'vcs_postnord' => array(
+                        'title'       => __( 'PostNord', 'woo-vipps' ),
+                        'class'       => 'vcs_postnord vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_postnord'),
+                        'label'       => __( 'Support PostenNord as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for PostNord as a Vipps Checkout Shipping method.', 'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+
                 'vcs_porterbuddy' => array(
                         'title'       => __( 'Porterbuddy', 'woo-vipps' ),
                         'class'       => 'vcs_porterbuddy vcs_main',

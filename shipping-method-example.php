@@ -3,12 +3,16 @@ add_action( 'woocommerce_shipping_init', function () {
 
   //add your shipping method to WooCommers list of Shipping methods
   add_filter( 'woocommerce_shipping_methods',  function ($methods) {
+      $gw = Vipps::instance()->gateway();
+      if (!$gw) return;
+
 //      $methods['vipps_checkout'] = 'VippsCheckout_Shipping_Method';
-      $methods['vipps_checkout_posten'] = 'VippsCheckout_Shipping_Method_Posten';
-      $methods['vipps_checkout_postnord'] = 'VippsCheckout_Shipping_Method_Postnord';
-      $methods['vipps_checkout_helthjem'] = 'VippsCheckout_Shipping_Method_Helthjem';
-      $methods['vipps_checkout_porterbuddy'] = 'VippsCheckout_Shipping_Method_Porterbuddy';
-      $methods['vipps_checkout_instabox'] = 'VippsCheckout_Shipping_Method_Instabox';
+      if ("yes" == $gw->get_option('vcs_posten'))     $methods['vipps_checkout_posten'] = 'VippsCheckout_Shipping_Method_Posten';
+      if ("yes" == $gw->get_option('vcs_postnord'))   $methods['vipps_checkout_postnord'] = 'VippsCheckout_Shipping_Method_Postnord';
+      if ("yes" == $gw->get_option('vcs_helthjem'))   $methods['vipps_checkout_helthjem'] = 'VippsCheckout_Shipping_Method_Helthjem';
+      if ("yes" == $gw->get_option('vcs_porterbuddy'))$methods['vipps_checkout_porterbuddy'] = 'VippsCheckout_Shipping_Method_Porterbuddy';
+      if ("yes" == $gw->get_option('vcs_instabox'))   $methods['vipps_checkout_instabox'] = 'VippsCheckout_Shipping_Method_Instabox';
+
       return $methods;
   });
 
@@ -283,7 +287,9 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     }
 
     public function is_enabled() {
-        return true; // FIXME
+        $vc_activated =  get_option('woo_vipps_checkout_activated', false);
+        error_log("Parent thing with $vc_activated");
+        return $vc_activated;
     }
 
     public function is_available($package) {
@@ -415,6 +421,8 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
     public $id = 'vipps_checkout_instabox';
     public $delivery_types = ['HOME_DELIVERY','PICKUP_POINT'];
     public $brand = "INSTABOX";
+
+
 
     // Called by the parent constructor before loading settings
     function preinit() {
