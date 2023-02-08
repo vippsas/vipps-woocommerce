@@ -2454,6 +2454,9 @@ error_log("This method uses dynamic cost!");
 
                     $shipping_rate->set_cost($actual); // round ?
                     $shipping_rate->set_taxes( [ 1 => $difftax] );
+                } else {
+                    error_log("Method used was " . get_class($shipping_method));
+                    error_log("This method uses NOT use dynamic cost!");
                 }
 
                 $it = new WC_Order_Item_Shipping();

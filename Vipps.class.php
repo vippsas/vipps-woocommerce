@@ -2936,6 +2936,8 @@ error_log("Ignoring callback"); return; // FIXME
             unset($return['orderId']);
         }
 
+error_log("REturn is " . print_r($return, true)); // FIXME
+
         return $return;
     }
 

@@ -265,28 +265,47 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
            $meta['type'] = $option;
         }
 
-        $rate = array(
-                    'id'      => $this->id,
-                    'cost' => 1, 
+        $cost = $this->get_cost($package);
+
+        $ratedata = array(
+                    'id'      => $this->get_rate_id(),
                     'label'   => $this->get_option('title'),
                     'cost'    => $cost,
                     'package' => $package,
                     'meta_data' => $meta,
-                    'taxes'   => true,
                     );
-        $rate = apply_filters('woo_vipps_vipps_checkout_shipping_rate', $rate, $this);
 
-        $this->add_rate($rate);
+        error_log("Rate: " . print_r($ratedata, true));
+
+        $ratedata = apply_filters('woo_vipps_vipps_checkout_shipping_rate', $ratedata, $this);
+
+        $this->add_rate($ratedata);
     }
 
     public function is_enabled() {
+        return true; // FIXME
+    }
+
+    public function is_available($package) {
+
+error_log("In is_available for " . get_class($this) . " instance id " . $this->instance_id);
+
+
         // Never show the parent method
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
            return false;
         }
         $is_vipps_checkout = apply_filters('woo_vipps_is_vipps_checkout', false);
+
+error_log("Is vipps checkout: $is_vipps_checkout");
+
         if ($is_vipps_checkout) return true;
+
+error_log("Is cart: " . is_cart());
+
         if (is_cart()) return true;
+
+error_log("Is extended: " . $this->is_extended());
 
         // Extended methods must only be shown in Cart and on Vipps Checkout
         if ($this->is_extended()) return false;
@@ -337,8 +356,9 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
         $this->method_title = __( 'Vipps Checkout: Posten', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Posten Norge', 'woo-vipps' );
     }
+    // After all settings loaded
     public function postinit () {
-        $this->get_option = true; // NO! just for testing FIXME
+        $this->dynamic_cost= true; // NO! just for testing FIXME
     }
 
 }

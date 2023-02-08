@@ -88,3 +88,30 @@ CustomConsent:
 
 customConsent: { text: "Godtar du?", required: false } (kan ha markdown)
 
+
+CustomConsent:
+      type: object
+      properties:
+        text:
+          type: string
+          description: 'Text displayed next to the checkbox. This text can contain up to one link in markdown format like this: [linkText](https://example.com)'
+        required:
+          type: boolean
+          description: Whether box has to be checked to complete the checkout.
+      additionalProperties: false
+      description: 'If used, displays a checkbox that can be used to ask for extra consent.'
+
+
+/kunder/wp/m/moo/wp-utvikling/wp-content/plugins/mailchimp-for-wp (populær)
+               // specific hooks for klarna
+            add_filter( 'kco_create_order', array( $this, 'add_klarna_field' ) );
+            add_filter( 'klarna_after_kco_confirmation', array( $this, 'subscribe_from_klarna_checkout' ), 10, 2 );
+   class-woocommerce.php:			add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'save_woocommerce_checkout_checkbox_value' ) );
+class-woocommerce.php:		add_action( 'woocommerce_checkout_order_processed', array( $this, 'subscribe_from_woocommerce_checkout' ) );
+   $do_optin = get_post_meta( $order_id, '_mc4wp_optin', true );
+
+
+/kunder/wp/d/designbelysning/wp-utvikling/wp-content/plugins/mailchimp-for-woocommerce (offisiell)
+https://wordpress.org/plugins/woocommerce-mailchimp/ ("premium"?)
+
+includes/class-mailchimp-woocommerce.php:                       $this->loader->add_action('woocommerce_checkout_order_processed', $service, 'processNewsletterField', 10, 2);
