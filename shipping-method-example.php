@@ -60,7 +60,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                 'requires'         => array(
                     'title'   => __( 'Free shipping requires...', 'woocommerce' ),
                     'type'    => 'select',
-                    'class'   => 'wc-enhanced-select',
+                    'class'   => 'wc-enhanced-select vipps_checkout_free_shipping',
                     'default' => '',
                     'options' => array(
                         ''           => __( 'N/A', 'woocommerce' ),
@@ -76,6 +76,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                         'placeholder' => wc_format_localized_price( 0 ),
                         'description' => __( 'Users will need to spend this amount to get free shipping (if enabled above).', 'woocommerce' ),
                         'default'     => '0',
+                        'class'       => 'vipps_checkout_min_amount_field',
                         'desc_tip'    => true,
                         ),
                 'ignore_discounts' => array(
@@ -84,6 +85,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                         'type'        => 'checkbox',
                         'description' => __( 'If checked, free shipping would be available based on pre-discount order amount.', 'woocommerce' ),
                         'default'     => 'no',
+                        'class'       => 'vipps_checkout_ignore_discounts_field',
                         'desc_tip'    => true,
                         ),
                 );
@@ -198,11 +200,11 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         }
 
         if ($this->supports_free_shipping) {
- add_action( 'admin_footer', array( 'WC_Shipping_Free_Shipping', 'enqueue_admin_js' ), 10 ); // Priority needs to be higher than wc_print_js (25).
             $this->instance_form_fields = array_merge($this->instance_form_fields, $this->free_shipping_form_fields());
          }
 
     }
+
 
     // True if the method contains extended options for Vipps Checkout
     public function is_extended() {
@@ -343,7 +345,30 @@ error_log("Is extended: " . $this->is_extended());
             }
           });
 
-         console.log('vipps checkouuuuut')
+
+          /* Support Free Shipping for Vipps Checkout methods */
+          function vipps_checkoutFreeShippingShowHideMinAmountField( el ) {
+              var form = jQuery( el ).closest( 'form' );
+              var minAmountField = jQuery( '.vipps_checkout_min_amount_field', form ).closest( 'tr' );
+              var ignoreDiscountField = jQuery( '.vipps_checkout_ignore_discounts_field', form ).closest( 'tr' );
+              if ( 'coupon' === jQuery( el ).val() || '' === jQuery( el ).val() ) {
+                  minAmountField.hide();
+                  ignoreDiscountField.hide();
+              } else {
+                  minAmountField.show();
+                  ignoreDiscountField.show();
+              }
+          }
+          jQuery( document.body ).on( 'change', '.vipps_checkout_free_shipping', function() {
+                  vipps_checkoutFreeShippingShowHideMinAmountField( this );
+          });
+          jQuery( '.vipps_checkout_free_shipping' ).trigger( 'change' );
+          jQuery( document.body ).on( 'wc_backbone_modal_loaded', function( evt, target ) {
+           if ( 'wc-modal-shipping-method-settings' === target ) {
+                     vipps_checkoutFreeShippingShowHideMinAmountField( jQuery( '#wc-backbone-modal-dialog .vipps_checkout_free_shipping', evt.currentTarget ) );
+                  }
+          });
+
          });");
 
 
