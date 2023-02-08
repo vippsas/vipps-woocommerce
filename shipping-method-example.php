@@ -25,7 +25,12 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     public $defaulttitle = "";
     // Basic price, set by options
     public $cost = 0;
+    // Some methods may support free shipping
+    public $supports_free_shipping = true;
+    // Porterbuddy (only) supports having the cost calculated in Vipps Checkout itself.
+    public $supports_dynamic_cost = false;
 
+    // True for the instances where this has been set to true
     public $dynamic_cost = false;
 
     public function preinit () {
@@ -36,6 +41,51 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     public function instance_form_fields() {
        return [];
     }
+
+    public function free_shipping_form_fields() {
+        return array(
+                'title'            => array(
+                    'title'       => __( 'Title', 'woocommerce' ),
+                    'type'        => 'text',
+                    'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
+                    'default'     => $this->method_title,
+                    'desc_tip'    => true,
+                    ),
+                'requires'         => array(
+                    'title'   => __( 'Free shipping requires...', 'woocommerce' ),
+                    'type'    => 'select',
+                    'class'   => 'wc-enhanced-select',
+                    'default' => '',
+                    'options' => array(
+                        ''           => __( 'N/A', 'woocommerce' ),
+                        'coupon'     => __( 'A valid free shipping coupon', 'woocommerce' ),
+                        'min_amount' => __( 'A minimum order amount', 'woocommerce' ),
+                        'either'     => __( 'A minimum order amount OR a coupon', 'woocommerce' ),
+                        'both'       => __( 'A minimum order amount AND a coupon', 'woocommerce' ),
+                        ),
+                    ),
+                'min_amount'       => array(
+                        'title'       => __( 'Minimum order amount', 'woocommerce' ),
+                        'type'        => 'price',
+                        'placeholder' => wc_format_localized_price( 0 ),
+                        'description' => __( 'Users will need to spend this amount to get free shipping (if enabled above).', 'woocommerce' ),
+                        'default'     => '0',
+                        'desc_tip'    => true,
+                        ),
+                'ignore_discounts' => array(
+                        'title'       => __( 'Coupons discounts', 'woocommerce' ),
+                        'label'       => __( 'Apply minimum order rule before coupon discount', 'woocommerce' ),
+                        'type'        => 'checkbox',
+                        'description' => __( 'If checked, free shipping would be available based on pre-discount order amount.', 'woocommerce' ),
+                        'default'     => 'no',
+                        'desc_tip'    => true,
+                        ),
+                );
+
+
+
+    }
+
 
     // Add a description field to a standard shipping method
     public static function add_description_field($form_fields) {
@@ -60,7 +110,6 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     // Instance setting, common for all submethods
     public function init_form_fields() {
         $this->instance_form_fields = array(
-
                 'title' => array(
                     'title' => __( 'Title', 'woo-vipps' ),
                     'type' => 'text',
@@ -73,13 +122,14 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'type' => 'text',
                     'description' => __( 'Short description of shipping method', 'woo-vipps' ),
                     'default' => "",
+                    'desc_tip'=>true
                     ),
-
                 'cost' => array(
                     'title' => __( 'Cost ', 'woo-vipps' ),
                     'type' => 'number',
                     'description' => __( 'Cost of shipping', 'woo-vipps' ),
-                    'default' => 0
+                    'default' => 0,
+                    'desc_tip'=>true
                     ),
 
                     );
@@ -108,7 +158,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'description' => __( 'If you are using Vipps Checkout, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ),
                     'default'     => '',
                     'options'     => $options,
-                    'desc_tip'    => false,
+                    'desc_tip'    => true,
                     );
         }
 
@@ -128,6 +178,12 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         foreach($this->instance_form_fields() as $key=>$setting) {
             $this->instance_form_fields[$key] = $setting;
         }
+
+        if ($this->supports_free_shipping) {
+ add_action( 'admin_footer', array( 'WC_Shipping_Free_Shipping', 'enqueue_admin_js' ), 10 ); // Priority needs to be higher than wc_print_js (25).
+            $this->instance_form_fields = array_merge($this->instance_form_fields, $this->free_shipping_form_fields());
+         }
+
     }
 
     // True if the method contains extended options for Vipps Checkout
@@ -165,12 +221,16 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
         $this->init();
 
+        add_action( 'admin_footer', array( 'VippsCheckout_Shipping_Method', 'enqueue_admin_js' ), 10 ); // Priority needs to be higher than wc_print_js (25).
+
         add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
     }
 
 
     public function get_cost($package) {
-        return $this->get_option('cost');
+        $cost = $this->get_option('cost');
+        $cost = apply_filters('woo_vipps_vipps_checkout_shipping_cost', $cost, $this);
+        return $cost;
     }
 
     // Add free shipping trigger etc?
@@ -185,18 +245,18 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
            $meta['type'] = $option;
         }
 
-        $cost = apply_filters('woo_vipps_vipps_checkout_shipping_cost', $this->get_cost($package), $this);
- 
-        $this->add_rate( array(
+        $rate = array(
                     'id'      => $this->id,
-                    'cost' => 1,
+                    'cost' => 1, 
                     'label'   => $this->get_option('title'),
                     'cost'    => $cost,
                     'package' => $package,
                     'meta_data' => $meta,
                     'taxes'   => true,
-                    )
-                );
+                    );
+        $rate = apply_filters('woo_vipps_vipps_checkout_shipping_rate', $rate, $this);
+
+        $this->add_rate($rate);
     }
 
     public function is_enabled() {
@@ -211,6 +271,12 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         // Extended methods must only be shown in Cart and on Vipps Checkout
         if ($this->is_extended()) return false;
         return true;         
+    }
+
+
+    // Static so it gets loaded just once; must be loaded before 25. (See Free Shipping).
+    public static function enqueue_admin_js() {
+        wc_enqueue_js( "jQuery(document).ready(function () { console.log('vipps checkouuuuut') }); ");
     }
 
 }
@@ -263,6 +329,9 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
     public $id = 'vipps_checkout_porterbuddy';
     public $delivery_types = ['HOME_DELIVERY'];
     public $brand = "PORTERBUDDY";
+    // Cannot support free shipping, since cost == 0 means dynamic pricing
+    public $supports_free_shipping = false;
+    public $supports_dynamic_cost = true;
 
     // Called by the parent constructor before loading settings
     function preinit() {
@@ -272,7 +341,13 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
 
         $this->dynamic_cost = true; // FIXME ONLY IF OPTION IS SET (and if so remove cost..)
 
+
     }
+
+
+
+
+
 }
 
 class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Method {
@@ -286,6 +361,8 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
         $this->method_title = __( 'Vipps Checkout: Instabox', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Instabox', 'woo-vipps' );
     }
+
+
 }
 
 
