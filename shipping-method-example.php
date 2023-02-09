@@ -36,6 +36,9 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     public $supports_free_shipping = true;
     // Porterbuddy (only) supports having the cost calculated in Vipps Checkout itself.
     public $supports_dynamic_cost = false;
+    // Does not need to set "type"
+    public $no_type_needed = true;
+    public $default_delivery_method = '';
 
     // True for the instances where this has been set to true
     public $dynamic_cost = false;
@@ -166,7 +169,10 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     );
         // Support pickup point/home delivery where appropriate
         if (!empty($this->delivery_types)) {
-            $options = array('' => __('No delivery method specified', 'woo-vipps'));
+            $options = array();
+            if ($this->no_type_needed) {
+                $options[''] = __('No delivery method specified', 'woo-vipps');
+            }
             foreach($this->delivery_types as $type) {
                 switch ($type) {
                     case 'MAILBOX':
@@ -176,7 +182,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                         $options[$type] = __('Allow user to choose pickup point', 'woo-vipps');
                         break;
                     case 'HOME_DELIVERY':
-                        $options[$type] = __('Allow user to select home delivery', 'woo-vipps');
+                        $options[$type] = __('Deliver to customers\' home address', 'woo-vipps');
                         break;
                     default:
                             // inconceivable!
@@ -187,7 +193,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'type'        => 'select',
                     'class'       => 'wc-enhanced-select',
                     'description' => __( 'If you are using Vipps Checkout, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ),
-                    'default'     => '',
+                    'default'     => $this->default_delivery_method,
                     'options'     => $options,
                     'desc_tip'    => true,
                     );
@@ -219,7 +225,8 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
     // True if the method contains extended options for Vipps Checkout
     public function is_extended() {
-       return $this->get_option('type', false);
+       $delivery = $this->get_option('type', false);
+       return ($delivery == "PICKUP_POINT");
     }
 
     public function __construct( $instance_id = 0 ) {
@@ -450,6 +457,8 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
     public $id = 'vipps_checkout_posten';
     public $delivery_types = ['MAILBOX','PICKUP_POINT','HOME_DELIVERY'];
     public $brand = "POSTEN";
+    public $no_type_needed = false;
+    public $default_delivery_method = "MAILBOX";
 
     // Called by the parent constructor before loading settings
     function preinit() {
@@ -468,6 +477,13 @@ class VippsCheckout_Shipping_Method_Helthjem extends VippsCheckout_Shipping_Meth
     public $id = 'vipps_checkout_helthjem';
     public $delivery_types = ['HOME_DELIVERY', 'PICKUP_POINT'];
     public $brand = "HELTHJEM";
+    public $no_type_needed = false;
+    public $default_delivery_method = 'HOME_DELIVERY';
+
+     // Only useable by Vipps Checkout
+    public function is_extended() {
+       return true;
+    }
 
     // Called by the parent constructor before loading settings
     function preinit() {
@@ -482,6 +498,8 @@ class VippsCheckout_Shipping_Method_Postnord extends VippsCheckout_Shipping_Meth
     public $id = 'vipps_checkout_postnord';
     public $delivery_types = ['PICKUP_POINT','HOME_DELIVERY'];
     public $brand = "POSTNORD";
+    public $no_type_needed = true;
+    public $default_delivery_method = '';
 
     // Called by the parent constructor before loading settings
     function preinit() {
@@ -498,6 +516,8 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
     // Cannot support free shipping, since cost == 0 means dynamic pricing
     public $supports_free_shipping = false;
     public $supports_dynamic_cost = true;
+    public $no_type_needed = false;
+    public $default_delivery_method = 'HOME_DELIVERY';
 
     // Only useable by Vipps Checkout
     public function is_extended() {
@@ -521,6 +541,8 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
     public $id = 'vipps_checkout_instabox';
     public $delivery_types = ['HOME_DELIVERY','PICKUP_POINT'];
     public $brand = "INSTABOX";
+    public $no_type_needed = false;
+    public $default_delivery_method = 'HOME_DELIVERY';
 
     // Only useable by Vipps Checkout
     public function is_extended() {
