@@ -2897,8 +2897,6 @@ EOF;
                   $m2['brand'] = "OTHER";
                   $m2['title'] = $m['shippingMethod']; // Only for "other"
                   $m2['id'] = $m['shippingMethodId'];
-
-                  // Now to fetch the metadata for Brand and Type. FIXME change meta names here or limit to VC methods
    
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
@@ -2936,8 +2934,6 @@ EOF;
             unset($return['addressId']); // Not used it seems for checkout
             unset($return['orderId']);
         }
-
-error_log("REturn is " . print_r($return, true)); // FIXME
 
         return $return;
     }
