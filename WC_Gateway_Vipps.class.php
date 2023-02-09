@@ -677,7 +677,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'vcs_helthjem_shopId' => array(
                         'title' => __('Helthjem Shop Id', 'woo-vipps'),
                         'class' => 'vcs_helthjem vcs_depend',
-                        'type'        => 'text',
+                        'type'        => 'number',
+                        'custom_attributes' => array('pattern'=>'[0-9]'),
                         'description' => __('The ShopId provided to you by Helthjem','woo-vipps'),
                         'default'     => '',
                         ),
