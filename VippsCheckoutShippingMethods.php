@@ -1,6 +1,5 @@
 <?php
 add_action( 'woocommerce_shipping_init', function () {
-
   //add your shipping method to WooCommers list of Shipping methods
   add_filter( 'woocommerce_shipping_methods',  function ($methods) {
       $vc_activated =  get_option('woo_vipps_checkout_activated', false);
@@ -557,4 +556,4 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
 
 
 
-});
+}, 20);

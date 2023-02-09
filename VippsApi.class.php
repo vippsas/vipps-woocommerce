@@ -671,9 +671,6 @@ class VippsApi {
 
         // Custom consent checkbox, for integration with Mailchimp etc . 
         $customconsenttext = apply_filters('woo_vipps_checkout_consent_query', "");
-
-        $customconsenttext = "Enig eller? [Trykkmeg!](https://vdev.digitalt.org) jajaj";
-
         $customconsentrequired = apply_filters('woo_vipps_checkout_consent_required', false);
         if ($customconsenttext) {
             $customconsent = [];

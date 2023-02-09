@@ -104,6 +104,8 @@ add_action( 'before_woocommerce_init', function() {
 	}
 });
 
-
-// IOK FIXME CLEANUP
-require_once(dirname(__FILE__) . "/shipping-method-example.php");
+// Load the extra Vipps Checkout Shipping classes only when neccessary
+add_action( 'woocommerce_shipping_init', function () {
+    if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false))
+    require_once(dirname(__FILE__) . "/VippsCheckoutShippingMethods.php");
+});
