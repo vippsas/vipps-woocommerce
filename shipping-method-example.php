@@ -322,18 +322,12 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
     public function get_cost($package) {
 
-        error_log("in get cost for " . get_class($this));
-
         $cost = $this->get_option('cost');
 
-        error_log("Price $cost");
-
         if ($this->supports_dynamic_cost && $this->dynamic_cost ) {
-        error_log("dynamic pricing, so 0");
               $cost = 0;
         }
         if ($this->free_shipping_ok($package)) {
-        error_log("free shipping, so 0");
               $cost = 0;
         }
 
@@ -376,28 +370,24 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
     public function is_available($package) {
 
-error_log("In is_available for " . get_class($this) . " instance id " . $this->instance_id);
-
-
         // Never show the parent method
         if (get_class($this) == "VippsCheckout_Shipping_Method") {
            return false;
         }
+
+        // This handles zones etc as well as the basic filter
+        $ok = parent::is_available($package);
+
+        // We'll show all methods in Vipps Checkout or on the cart page, otherwise
+        // we'll not show the extended methods
         $is_vipps_checkout = apply_filters('woo_vipps_is_vipps_checkout', false);
+        if ($is_vipps_checkout || is_cart()) {
+            $ok = true;
+        } else if ($this->is_extended()) {
+            $ok = false;
+        }
 
-error_log("Is vipps checkout: $is_vipps_checkout");
-
-        if ($is_vipps_checkout) return true;
-
-error_log("Is cart: " . is_cart());
-
-        if (is_cart()) return true;
-
-error_log("Is extended: " . $this->is_extended());
-
-        // Extended methods must only be shown in Cart and on Vipps Checkout
-        if ($this->is_extended()) return false;
-        return true;         
+        return apply_filters('vipps_checkout_shipping_available', $ok, $this, $package);
     }
 
 
@@ -509,6 +499,11 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
     public $supports_free_shipping = false;
     public $supports_dynamic_cost = true;
 
+    // Only useable by Vipps Checkout
+    public function is_extended() {
+       return true;
+    }
+
     // Called by the parent constructor before loading settings
     function preinit() {
         $this->defaulttitle = __( 'Porterbuddy', 'woo-vipps' );
@@ -527,7 +522,10 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
     public $delivery_types = ['HOME_DELIVERY','PICKUP_POINT'];
     public $brand = "INSTABOX";
 
-
+    // Only useable by Vipps Checkout
+    public function is_extended() {
+       return true;
+    }
 
     // Called by the parent constructor before loading settings
     function preinit() {
