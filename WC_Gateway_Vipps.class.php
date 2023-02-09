@@ -595,7 +595,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __( 'Support Posten Norge as a shipping method in Vipps Checkout', 'woo-vipps' ),
                         'type'        => 'checkbox',
                         'description' => __('Activate this for Posten Norge as a Vipps Checkout Shipping method.', 'woo-vipps'),
-                        'default'     => 'no'
+                        'default'     => 'yes'
                     ),
 
                 'vcs_postnord' => array(
@@ -605,7 +605,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => __( 'Support PostenNord as a shipping method in Vipps Checkout', 'woo-vipps' ),
                         'type'        => 'checkbox',
                         'description' => __('Activate this for PostNord as a Vipps Checkout Shipping method.', 'woo-vipps'),
-                        'default'     => 'no'
+                        'default'     => 'yes'
                     ),
 
                 'vcs_porterbuddy' => array(
