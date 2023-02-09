@@ -2468,7 +2468,6 @@ EOF;
         }
 
         $gw = $this->gateway();
-error_log("Ignoring callback"); return; // FIXME
         $gw->handle_callback($result, $order, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
@@ -2887,6 +2886,8 @@ error_log("Ignoring callback"); return; // FIXME
             $translated = array();
             $currency = get_woocommerce_currency();
             foreach ($return['shippingDetails']  as $m) {
+                  $m2 = array();
+
                   $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
                   $m2['priority'] = $m['priority'];
                   $m2['amount'] = array(
@@ -2916,7 +2917,7 @@ error_log("Ignoring callback"); return; // FIXME
                       $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
                   }
 
-                  if (isset($meta['type'])) {
+                  if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
                   }
                   // But the description is stored only in the shipping method.

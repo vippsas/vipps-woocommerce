@@ -466,10 +466,6 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
         $this->method_title = __( 'Vipps Checkout: Posten', 'woo-vipps' );
         $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Posten Norge', 'woo-vipps' );
     }
-    // After all settings loaded
-    public function postinit () {
-        $this->dynamic_cost= true; // NO! just for testing FIXME
-    }
 
 }
 

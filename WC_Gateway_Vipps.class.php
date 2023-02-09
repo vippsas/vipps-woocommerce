@@ -1772,7 +1772,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
-error_log("In it to win it in ecom");
                 $vippsstamp = strtotime($transaction['timeStamp']);
                 $amount  = $transaction['amount'];
                 if (is_array($amount)) {
@@ -1784,7 +1783,6 @@ error_log("In it to win it in ecom");
                 $order->update_meta_data('_vipps_amount',$vippsamount);
                 $order->update_meta_data('_vipps_currency', 'NOK');
             } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
-error_log("In it to win it in epayment");
                // IOK 2022-01-20 the epayment API does it differently
                $vippsstamp = time();
                $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
@@ -1858,8 +1856,7 @@ error_log("In it to win it in epayment");
 
                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
-error_log("setting shipping details via poll");
-                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing);
+                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! 
@@ -2328,11 +2325,17 @@ error_log("setting shipping details via poll");
         return $address;
     }
 
-    public function set_order_shipping_details($order,$shipping, $user, $billing=false) {
+    public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null) {
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
         $order->update_meta_data('_vipps_shipping_set', true);
+
+        // This is for handling a custom consent checkbox for mailing lists etc. IOK 2023-02-09
+        if ($alldata && isset($alldata['customConsentProvided'])) {
+           $order->update_meta_data('_vipps_custom_consent_provided', intval($alldata['customConsentProvided']));
+        }
+
         $order->save(); // Limit the window for double shipping as much as possible.
 
         // We get different values from the normal callback and the Checkout callback, so be prepared for several results. IOK 2021-09-02
@@ -2456,11 +2459,9 @@ error_log("setting shipping details via poll");
                 $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
                 $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
                 $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
+
+                // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
                 if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
-
-error_log("Method used was " . get_class($shipping_method));
-error_log("This method uses dynamic cost!");
-
                     $vippsamount = intval($order->get_meta('_vipps_amount'));
                     $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
                     $compareamount = $ordertotal * 100;
@@ -2469,15 +2470,10 @@ error_log("This method uses dynamic cost!");
                     $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
                     $actual = $amountdiff/100 - $difftax;
 
-                    error_log("ordertotal $ordertotal diff $amountdiff diffnotax $diffnotax difftax $difftax actual $actual");
-                    error_log("cost: " . $shipping_rate->get_cost());
-                    error_log("taxes: " . print_r($shipping_rate->get_taxes(), true));
-
-                    $shipping_rate->set_cost($actual); // round ?
+                    $shipping_rate->set_cost($actual); 
                     $shipping_rate->set_taxes( [ 1 => $difftax] );
                 } else {
-                    error_log("Method used was " . get_class($shipping_method));
-                    error_log("This method uses NOT use dynamic cost!");
+                    // Noop
                 }
 
                 $it = new WC_Order_Item_Shipping();
@@ -2694,7 +2690,7 @@ error_log("This method uses dynamic cost!");
 
         if ($express && @$result['shippingDetails']) {
             $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing);
+            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
         }
 
         if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'AUTHORIZED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09

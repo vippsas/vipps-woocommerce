@@ -669,6 +669,19 @@ class VippsApi {
        
         }
 
+        // Custom consent checkbox, for integration with Mailchimp etc . 
+        $customconsenttext = apply_filters('woo_vipps_checkout_consent_query', "");
+
+        $customconsenttext = "Enig eller? [Trykkmeg!](https://vdev.digitalt.org) jajaj";
+
+        $customconsentrequired = apply_filters('woo_vipps_checkout_consent_required', false);
+        if ($customconsenttext) {
+            $customconsent = [];
+            $customconsent['text'] = $customconsenttext;
+            $customconsent['required'] = $customconsentrequired;
+            $configuration['customConsent']  = $customconsent;
+        }
+
         if (!$needs_shipping) {
             $nocontacts = $this->gateway->get_option('noContactFields') == 'yes';
             $noaddress = $this->gateway->get_option('noAddressFields') == 'yes';
