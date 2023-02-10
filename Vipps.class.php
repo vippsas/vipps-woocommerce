@@ -1679,7 +1679,6 @@ else:
 
         // IOK FIXME this is the actual status of the order when this is called, which will
         // include personalia only when continuing to payment
-        //error_log("iverok status of order " . print_r($status, true)); // FIXME
 
         if ($ok && $change && isset($status['billingDetails']))  {
             $contact = $status['billingDetails'];

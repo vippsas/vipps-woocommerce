@@ -1189,9 +1189,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
            $order->add_order_note(__('Vipps payment restarted','woo-vipps'));
 
-           // FIXME for supporting retries of *failed Vipps orders*, we should inspect the payment status
-           // and if not active at Vipps, increment a retry suffix for the Vipps orderid - and then *do* another 
-           // initiate payment. But this should be correct in most circumstances. IOK 2022-11-02
            return array('result'=>'success','redirect'=>$oldurl);
         }
 
