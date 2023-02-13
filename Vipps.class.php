@@ -1399,6 +1399,7 @@ else:
         $gw = $this->gateway();
         try {
             $details = $gw->get_payment_details($order);
+
             if ($details && $order->get_meta('_vipps_api') == 'epayment') {
                try {
                    $details['epaymentLog'] =  $gw->api->epayment_get_payment_log ($order);
@@ -1430,6 +1431,8 @@ else:
         }
         print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
         print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
+
+
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
             print "<h3>" . __('Transaction summary', 'woo-vipps') . "</h3>";
@@ -1449,8 +1452,31 @@ else:
             if (@$ss['shippingMethod']) print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
             if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
             print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";
+            if (isset($ss['pickupPoint'])) {
+               $pp = $ss['pickupPoint'];
+               print "<h3>" . __('Pickup Point', 'woo-vipps') . "</h3>";
+               print $pp['name'] . "<br>";
+               print $pp['address'] . "<br>";
+               print $pp['postalCode'] . " ";
+               print $pp['city'] . "<br>";
+               print $pp['country'] . "<br>";
+            }
         }
-        if (!empty(@$details['userDetails'])) {
+        if (!empty(@$details['billingDetails'])) {
+            $us = $details['billingDetails'];
+            print "<h3>" . __('Billing details', 'woo-vipps') . "</h3>";
+            print __('First Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['firstName']) . "<br>"; 
+            print __('Last Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['lastName']) . "<br>";
+            print __('Mobile Number', 'woo-vipps') . ": " . htmlspecialchars(@$us['phoneNumber']) . "<br>";
+            print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
+        }
+        // Checkout v3: No userDetails, but Vipps email may be present
+        if (!empty(@$details['userInfo'])) {
+            $us = $details['userInfo'];
+            print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
+            print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
+        } else if (!empty(@$details['userDetails'])) {
+            // Older versions of the api, as well as express checkout has "userDetails"
             $us = $details['userDetails'];
             print "<h3>" . __('User details', 'woo-vipps') . "</h3>";
             print __('User ID', 'woo-vipps') . ": " . htmlspecialchars(@$us['userId']) . "<br>";
@@ -1660,6 +1686,7 @@ else:
             return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
         }
 
+        add_filter('woo_vipps_is_vipps_checkout', '__return_true');
         $status = $this->get_vipps_checkout_status($current_vipps_session); 
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
@@ -1715,29 +1742,32 @@ else:
         }
         if ($complete) $change = true;
 
-        if ($ok && $change && isset($status['userDetails']))  {
-            $contact = $status['userDetails'];
+        // IOK FIXME this is the actual status of the order when this is called, which will
+        // include personalia only when continuing to payment
+
+        if ($ok && $change && isset($status['billingDetails']))  {
+            $contact = $status['billingDetails'];
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
+            $order->set_billing_address_1($contact['streetAddress']);
+            $order->set_billing_address_2("");
+            $order->set_billing_city($contact['city']);
+            $order->set_billing_postcode($contact['postalCode']);
+            $order->set_billing_country($countrycode);
         }
         if ($ok &&  $change && isset($status['shippingDetails']))  {
             $contact = $status['shippingDetails'];
-            $countrycode =  $this->country_to_code($contact['country']);
+            $countrycode =  $this->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
             $order->set_shipping_first_name($contact['firstName']);
             $order->set_shipping_last_name($contact['lastName']);
             $order->set_shipping_address_1($contact['streetAddress']);
             $order->set_shipping_address_2("");
-            $order->set_shipping_city($contact['region']);
+            $order->set_shipping_city($contact['city']);
             $order->set_shipping_postcode($contact['postalCode']);
             $order->set_shipping_country($countrycode);
 
-            $order->set_billing_address_1($contact['streetAddress']);
-            $order->set_billing_address_2("");
-            $order->set_billing_city($contact['region']);
-            $order->set_billing_postcode($contact['postalCode']);
-            $order->set_billing_country($countrycode);
         }
         if ($change) $order->save();
 
@@ -1815,6 +1845,7 @@ else:
         if (wp_doing_ajax()) return;
         if (defined('REST_REQUEST') && REST_REQUEST ) return;
         wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+        add_filter('woo_vipps_is_vipps_checkout', '__return_true');
 
         // Defer to the normal code for endpoints IOK 2022-12-09
         if (is_wc_endpoint_url( 'order-pay' ) || is_wc_endpoint_url( 'order-received' )) {
@@ -2073,8 +2104,21 @@ else:
         // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
-        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) { 
+        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
             add_filter('woocommerce_is_checkout', '__return_true');
+            add_filter('body_class', function ($classes) {
+                    $classes[] = 'vipps-checkout';
+                    $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+                    return apply_filters('woo_vipps_checkout_body_class', $classes);
+            });
+            /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
+            $post_to_hide_title_for = $post->ID;
+            add_filter('the_title', function ($title, $postid) use ($post_to_hide_title_for) {
+                if (!is_admin() && $postid ==  $post_to_hide_title_for && is_singular()  && in_the_loop()) {
+                    $title = "";
+                }
+                return $title;
+            }, 10, 2);
             wc_nocache_headers();
         }
 
@@ -2426,8 +2470,8 @@ EOF;
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         $ischeckout = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
-	    $parts = array_reverse(explode("/", $callback));
-        if (isset($parts[3]) && $parts[3] == 'checkout') {
+        // For Vipps Checkout v3 and onwards, we control the callback so the type is just this field
+        if ($callback == 'checkout') {
             $ischeckout = true;
         }
 
@@ -2487,10 +2531,7 @@ EOF;
              do_action('woo_vipps_callback', $result);
         }
 
-
-
         $gw = $this->gateway();
-
         $gw->handle_callback($result, $order, $ischeckout);
 
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
@@ -2698,9 +2739,14 @@ EOF;
    
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
 
-       // Get addressinfo from the callback, this is from Vipps. IOK 2018-05-24. 
-       // {"addressId":973,"addressLine1":"BOKS 6300, ETTERSTAD","addressLine2":null,"country":"Norway","city":"OSLO","postalCode":"0603","postCode":"0603","addressType":"H"}
-       // checkout: {"streetAddress":"Observatorie terrasse 4a","postalCode":"0254","region":"Oslo","country":"NO"}
+        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
+        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
+        // This needs to be done before "calculate totals"
+        $is_checkout = false;
+        if ($order->get_meta('_vipps_checkout')) {
+            $is_checkout = true;
+            add_filter('woo_vipps_is_vipps_checkout', '__return_true');
+        }
 
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
@@ -2749,7 +2795,6 @@ EOF;
             $this->log("No customer! when trying to calculate shipping");
         }
 
-
         // If you need to do something before the cart is manipulated, this is where it must be done.
         // It is possible for a plugin to require a session when manipulating the cart, which could 
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
@@ -2765,13 +2810,15 @@ EOF;
         $acart = WC()->cart;
 
         $shipping_methods = array();
+        $shipping_tax_rates = WC_Tax::get_shipping_tax_rates();
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
-            $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', WC_Tax::get_shipping_tax_rates());
+            $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', $shipping_tax_rates);
             $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,$no_shipping_taxes, 'none_required', 0);
         } else {
             $packages = apply_filters('woo_vipps_shipping_callback_packages', WC()->cart->get_shipping_packages());
             $shipping =  WC()->shipping->calculate_shipping($packages);
+
             $shipping_methods = WC()->shipping->packages[0]['rates']; // the 'rates' of the first package is what we want.
          }
 
@@ -2779,6 +2826,15 @@ EOF;
         if (empty($shipping_methods)) {
             $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
         }
+
+       
+        // Add shipping tax rates to the *order* so we can calculate this correctly when using Vipps Checkouts 
+        // 'dynamic pricing' 2023-01-26 
+        $taxrate = 0;
+        if (is_array($shipping_tax_rates) && !empty($shipping_tax_rates)) {
+          $taxrate = current($shipping_tax_rates)['rate'];
+        }
+        $order->update_meta_data('_vipps_shipping_tax_rates', $taxrate);
 
         $chosen = null;
         if (is_a(WC()->session, 'WC_Session_Handler')) {
@@ -2797,7 +2853,6 @@ EOF;
         // Vipps method list
         $methods = array();
         $i=-1;
-
 
         foreach ($shipping_methods as  $key=>$rate) {
             $i++;
@@ -2839,11 +2894,22 @@ EOF;
         $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
         if (!$storedmethods) $storedmethods= array();
 
-        // Just a utility from shippingMethodIds to the non-serialized rates
+        // Just a utility from shippingMethodIds to the non-serialized rates, and from the same to the non-serialized 
+        // shipping methods - the last stores settings, the first store metadata
         $ratemap = array();
+        $methodmap = array();
+
+        // We need access to the extended settings of the shipping methods.
+        $methods_classes = WC()->shipping->get_shipping_method_class_names();
 
         foreach($methods as $method) {
            $rate = $method['rate'];
+
+           // Extended settings are stored in these objects
+           $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
+           $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
+
+
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
            $label = $rate->get_label();
@@ -2855,6 +2921,7 @@ EOF;
                $this->log(sprintf(__("Cannot use shipping method %s in Vipps Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $label));
                continue;
            }
+
            // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
            $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
@@ -2867,7 +2934,10 @@ EOF;
            $vippsmethods[]=$vippsmethod;
            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
            $storedmethods[$key] = $serialized;
+
+           // Metadata and settings stored for later use for Vipps Checkout
            $ratemap[$key]=$rate;
+           $methodmap[$key]=$shipping_method;
         }
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save();
@@ -2876,10 +2946,11 @@ EOF;
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
-        if ($order->get_meta('_vipps_checkout')) {
+        if ($is_checkout) {
             $translated = array();
             $currency = get_woocommerce_currency();
             foreach ($return['shippingDetails']  as $m) {
+                  $m2 = array();
 
                   $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
                   $m2['priority'] = $m['priority'];
@@ -2887,20 +2958,42 @@ EOF;
                             'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
                             'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                           );
-                  $m2['product'] = $m['shippingMethod'];
+                  $m2['brand'] = "OTHER";
+                  $m2['title'] = $m['shippingMethod']; // Only for "other"
                   $m2['id'] = $m['shippingMethodId'];
-
-                  // Extra fields available for Checkout only, using the Rate as input   
+   
                   $rate = $ratemap[$m2['id']];
-                  // "Brand" not present in Woo but supply filters - must be 'posten', 'helthjem', 'postnord'
-                  $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', '',  $rate);
-                  // Not present in WordPress, so allow filters to add it
-                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', '', $rate);
-                  // Pickup points! But only if the shipping method supports it, which is currently for Bring and PostNord
-                  $m2['isPickupPoint'] = apply_filters('woo_vipps_shipping_method_pickup_point', false, $rate);
+                  $shipping_method = $methodmap[$m2['id']];
 
+                  // Some data must be visible in the Order screen, so add meta data
+                  $meta = $rate->get_meta_data();
+                  if (isset($meta['brand'])) {
+                     $m2['brand'] = $meta['brand'];
+                     unset($m2['title']);
+              
+                  } else {
+                      // specialcase some known methods so they get brands
+                      if (get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                         $m2['brand'] = "POSTEN";
+                      }
+                      $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
+                  }
+
+                  if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
+                     $m2['type'] = $meta['type'];
+                  }
+                  // But the description is stored only in the shipping method.
+                  if ($shipping_method) {
+                     $m2['description'] = $shipping_method->get_option('description', '');
+                  } else {
+                     $m2['description'] = "";
+                  }
+
+                  // Old filter kept for backwards compatibility
+                  $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2['description'], $rate, $shipping_method);
                   $translated[] = $m2;
             }
+
             $return['shippingDetails'] = $translated;
             unset($return['addressId']); // Not used it seems for checkout
             unset($return['orderId']);

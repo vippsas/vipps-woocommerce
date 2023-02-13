@@ -7,8 +7,8 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.13.5
-   Stable tag: 1.13.5
+   Version: 1.14.0
+   Stable tag: 1.14.0
    Requires at least: 4.7
    Tested up to: 6.1.1
    Requires PHP: 5.6
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.13.5');
+define('WOO_VIPPS_VERSION', '1.14.0');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -102,4 +102,10 @@ add_action( 'before_woocommerce_init', function() {
 	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 	}
+});
+
+// Load the extra Vipps Checkout Shipping classes only when neccessary
+add_action( 'woocommerce_shipping_init', function () {
+    if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false))
+    require_once(dirname(__FILE__) . "/VippsCheckoutShippingMethods.php");
 });

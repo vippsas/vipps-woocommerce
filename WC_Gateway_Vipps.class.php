@@ -73,6 +73,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         });
     }         
 
+    
+    // Generates html for the woo_vipps_image settings widget type
     public function generate_woo_vipps_image_html  ($key, $field) {
         $field_key = $this->get_field_key( $key );
         $defaults  = array(
@@ -539,6 +541,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'checkout_options' => array(
                     'title' => __('Vipps Checkout', 'woo-vipps'),
                     'type'  => 'title',
+                    'class' => 'tab',
                     'description' => __("Vipps checkout is a new service from Vipps which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with Vipps and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.", 'woo-vipps')
                     ),
 
@@ -574,7 +577,126 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no'
                     ),
 
+      
+                );
 
+        $vipps_checkout_shipping_fields = array(
+
+                'checkout_shipping' => array(
+                    'title' => __('Vipps Checkout Shipping Methods', 'woo-vipps'),
+                    'type'  => 'title',
+                    'description' => __("When using Vipps Checkout, you have the option to use Vipps Checkout specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the Vipps Checkout screen.", 'woo-vipps')
+                    ),
+
+                'vcs_posten' => array(
+                        'title'       => __( 'Posten Norge', 'woo-vipps' ),
+                        'class'       => 'vcs_posten vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posten'),
+                        'label'       => __( 'Support Posten Norge as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Posten Norge as a Vipps Checkout Shipping method.', 'woo-vipps'),
+                        'default'     => 'yes'
+                    ),
+
+                'vcs_postnord' => array(
+                        'title'       => __( 'PostNord', 'woo-vipps' ),
+                        'class'       => 'vcs_postnord vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_postnord'),
+                        'label'       => __( 'Support PostenNord as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for PostNord as a Vipps Checkout Shipping method.', 'woo-vipps'),
+                        'default'     => 'yes'
+                    ),
+
+                'vcs_porterbuddy' => array(
+                        'title'       => __( 'Porterbuddy', 'woo-vipps' ),
+                        'class'       => 'vcs_porterbuddy vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
+                        'label'       => __( 'Support Porterbuddy as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Porterbuddy as a Vipps Checkout Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.' ,'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+                'vcs_porterbuddy_publicToken' => array(
+                        'title' => __('Porterbuddy public token', 'woo-vipps'),
+                        'class' => 'vippspw vcs_porterbuddy vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('The public key provided to you by Porterbuddy','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_porterbuddy_apiKey' => array(
+                        'title' => __('Porterbuddy API key', 'woo-vipps'),
+                        'class' => 'vippspw vcs_porterbuddy vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('The API key provided to you by Porterbuddy','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_porterbuddy_phoneNumber' => array(
+                        'title' => __('Porterbuddy Phone Number', 'woo-vipps'),
+                        'class' => 'vcs_porterbuddy vcs_depend',
+                        'type'        => 'text',
+                        'description' => __('Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: "4791234567"','woo-vipps'),
+                        'default'     => '',
+                        ),
+
+                // Vipps checkout *shipping options* - extra shipping options that only work with Vipps Checkout
+                'vcs_instabox' => array(
+                        'title'       => __( 'Instabox', 'woo-vipps' ),
+                        'label'       => __( 'Support Instabox as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'class' => 'vcs_instabox vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_instabox'),
+                        'type'        => 'checkbox',
+                        'description' => __('Activate this for Instabox as a Vipps Checkout Shipping method.' ,'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+                'vcs_instabox_clientId' => array(
+                        'title' => __('Instabox Client Id', 'woo-vipps'),
+                        'class' => 'vippspw vcs_instabox vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('The client id provided to you by Instabox','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_instabox_clientSecret' => array(
+                        'title' => __('Instabox Client Secret', 'woo-vipps'),
+                        'class' => 'vippspw vcs_instabox vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('Client secret provided to you by Instabox','woo-vipps'),
+                        'default'     => '',
+                        ),
+
+                'vcs_helthjem' => array(
+                        'title'       => __( 'Helthjem', 'woo-vipps' ),
+                        'label'       => __( 'Support Helthjem as a shipping method in Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'class' => 'vcs_helthjem vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_helthjem'),
+                        'description' => __('Activate this for Helthjem as a Vipps Checkout Shipping method.' ,'woo-vipps'),
+                        'default'     => 'no'
+                    ),
+
+                'vcs_helthjem_shopId' => array(
+                        'title' => __('Helthjem Shop Id', 'woo-vipps'),
+                        'class' => 'vcs_helthjem vcs_depend',
+                        'type'        => 'number',
+                        'custom_attributes' => array('pattern'=>'[0-9]'),
+                        'description' => __('The ShopId provided to you by Helthjem','woo-vipps'),
+                        'default'     => '',
+                        ),
+
+                'vcs_helthjem_username' => array(
+                        'title' => __('Helthjem Username', 'woo-vipps'),
+                        'class' => 'vcs_helthjem vcs_depend',
+                        'type'        => 'text',
+                        'description' => __('The Username provided to you by Helthjem','woo-vipps'),
+                        'default'     => '',
+                        ),
+                'vcs_helthjem_password' => array(
+                        'title' => __('Helthjem Password', 'woo-vipps'),
+                        'class' => 'vippspw vcs_helthjem vcs_depend',
+                        'type'        => 'password',
+                        'description' => __('Password provided to you by Helthjem','woo-vipps'),
+                        'default'     => '',
+                        ),
 
                 );
      
@@ -583,6 +705,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'main_options'             => array(
                     'title' => __('Main options', 'woo-vipps'),
                     'type'  => 'title',
+                    'class' => 'tab',
                     ),
                 'enabled' => array(
                     'title'       => __( 'Enable/Disable', 'woocommerce' ),
@@ -669,6 +792,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'express_options' => array(
                         'title' => __('Vipps Express Checkout', 'woo-vipps'),
                         'type'  => 'title',
+                        'class' => 'tab',
                         'description' => __("Vipps Express Checkout allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps')
                         ),
 
@@ -779,6 +903,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'advanced_options' => array(
                    'title' => __('Advanced', 'woo-vipps'),
                    'type'  => 'title',
+                    'class' => 'tab',
                    'description' => __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps')
                    ),
 
@@ -838,6 +963,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'developertitle' => array(
                 'title' => __('Developer mode', 'woo-vipps'),
                 'type'  => 'title',
+                'class' => 'tab',
                 'description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
                 ),
 
@@ -891,6 +1017,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->form_fields[$key] = $field;
        }
        foreach($checkoutfields as $key=>$field) {
+               $this->form_fields[$key] = $field;
+       }
+       foreach($vipps_checkout_shipping_fields as $key=>$field) {
                $this->form_fields[$key] = $field;
        }
        foreach($advancedfields as $key=>$field) {
@@ -1060,9 +1189,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
            $order->add_order_note(__('Vipps payment restarted','woo-vipps'));
 
-           // FIXME for supporting retries of *failed Vipps orders*, we should inspect the payment status
-           // and if not active at Vipps, increment a retry suffix for the Vipps orderid - and then *do* another 
-           // initiate payment. But this should be correct in most circumstances. IOK 2022-11-02
            return array('result'=>'success','redirect'=>$oldurl);
         }
 
@@ -1640,7 +1766,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             } 
 
-
             # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
@@ -1653,15 +1778,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                 $order->update_meta_data('_vipps_amount',$vippsamount);
-            } else if ($paymentdetails and isset($paymentdetails['amount']))  {
+                $order->update_meta_data('_vipps_currency', 'NOK');
+            } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
                // IOK 2022-01-20 the epayment API does it differently
                $vippsstamp = time();
-               // IOK Check to see if this changes to aggregate or transactionAggregate's authorizedAmount
                $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
+               $vippscurrency = $paymentdetails['paymentDetails']['amount']['currency'];
                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                $order->update_meta_data('_vipps_amount',$vippsamount);
-
-
+               $order->update_meta_data('_vipps_currency',$vippscurrency);
             }
 
         } catch (Exception $e) {
@@ -1687,17 +1812,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
+                        $polldata = $this->ensure_userDetails($polldata, $order);
+
                         if (isset($polldata['userDetails'])) {
                             $paymentdetails['userDetails'] = $polldata['userDetails'];
-                        } else {
-                            // It is possible to not require user details in Checkout.
-                            $paymentdetails['userDetails'] = array(
-                                'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
-                                'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
-                                'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
-                                'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
-                            );
-                        }
+                        } 
                         if (isset($polldata['shippingDetails'])) {
                             $paymentdetails['shippingDetails'] = $polldata['shippingDetails'];
                         } else {
@@ -1734,7 +1853,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
-                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing);
+                $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
             } else {
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! 
@@ -1825,7 +1944,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $result['status'] = $details['state'];
 
                // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
-               if ($result['status'] == 'AUTHORISED' && isset($result['directCapture']) && $result['directCapture']) {
+               if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
                    $result['status'] = "SALE";
                }
 
@@ -1841,6 +1960,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $result['transactionSummary'] = $transactionSummary;
            }
 
+           // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+           $result = $this->ensure_userDetails($result, $order);
+          
            if (isset($result['shippingDetails'])) {
                 $addr  = $result['shippingDetails'];
                 unset($addr['shippingMethodId']);
@@ -1920,6 +2042,53 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         return $result;
+    }
+
+    // Vipps Checkout v3 does *not* provide userDetails. Vipps Checkout v2 and epayment *does*. But Checkout additionally allows
+    // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
+    // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
+    // if not, we use shippingDetails. IOK 2023-01-10
+    private function ensure_userDetails($vippsdata, $order) {
+        // If we have userDetails, return it
+        if (isset($vippsdata['userDetails'])) return $vippsdata;
+ 
+       
+        // Otherwise prefer to get it from billing
+        if (isset($vippsdata['billingDetails'])) {
+            $addr = $vippsdata['billingDetails'];
+            $phone = $addr['phoneNumber'] ? $addr['phoneNumber'] : ($addr['mobileNumber'] ? $addr['mobileNumber'] : "");
+            $vippsdata['userDetails'] = array(
+                    'firstName' => $addr['firstName'],
+                    'lastName' => $addr['lastName'],
+                    'email' => $addr['email'],
+                    'phoneNumber' => $phone,
+                    'mobileNumber' => $phone
+                    );
+
+        // But use shipping if there is no other
+        } else if (isset($vippsdata['shippingDetails'])) {
+            $addr = $vippsdata['shippingDetails'];
+            $phone = $addr['phoneNumber'] ? $addr['phoneNumber'] : ($addr['mobileNumber'] ? $addr['mobileNumber'] : "");
+            $vippsdata['userDetails'] = array(
+                    'firstName' => $addr['firstName'],
+                    'lastName' => $addr['lastName'],
+                    'email' => $addr['email'],
+                    'phoneNumber' => $phone,
+                    'mobileNumber' => $phone
+                    );
+
+        // And it is possible to not require user details in Checkout at all
+        } else {
+            $vippsdata['userDetails'] = array(
+                    
+                    'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
+                    'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
+                    'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
+                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
+                    );
+        }
+
+        return $vippsdata;
     }
 
     // Update the order with Vipps payment details, either passed or called using the API.
@@ -2079,7 +2248,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         if (!$statusdata) return null;
 
-        $vippsstatus = $statusdata['status'];
+        $vippsstatus = isset($statusdata['status']) ? $statusdata['status'] : "";
         if (!$vippsstatus) {
             $this->log("Unknown Vipps Status: " . print_r($statusdata, true), 'debug');
         }
@@ -2153,11 +2322,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $address;
     }
 
-    public function set_order_shipping_details($order,$shipping, $user, $billing=false) {
+    public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null) {
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
         $order->update_meta_data('_vipps_shipping_set', true);
+
+        // This is for handling a custom consent checkbox for mailing lists etc. IOK 2023-02-09
+        if ($alldata && isset($alldata['customConsentProvided'])) {
+           $order->update_meta_data('_vipps_custom_consent_provided', intval($alldata['customConsentProvided']));
+        }
+
         $order->save(); // Limit the window for double shipping as much as possible.
 
         // We get different values from the normal callback and the Checkout callback, so be prepared for several results. IOK 2021-09-02
@@ -2167,7 +2342,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This only happens with ecommerce though, so we need to check before canonicalizing. IOK 2022-03-21
         $shipping_empty = true;
         if ($billing && array_key_exists('streetAddress', $address)) {
-            $keys = ['firstName', 'lastName', 'email', 'phoneNumber', 'streetAddress', 'postalCode', 'region', 'country'];
+            $keys = ['firstName', 'lastName', 'email', 'phoneNumber', 'streetAddress', 'postalCode', 'city', 'country'];
             foreach ($keys as $key) {
                 if (isset($address[$key]) && $address[$key]) {
                     $shipping_empty = false; break;
@@ -2179,7 +2354,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if (!$billing) $billing = $address;
-
         $address = $this->canonicalize_vipps_address($address, $user);
         $billing = $this->canonicalize_vipps_address($billing, $user);
 
@@ -2244,6 +2418,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                 } 
             }
+
+
+            // Possible extra metadata from Vipps Checkout IOK 2023-01-17
+            // Store in the order, but also in the shipping rate so it will be visible in the order screen
+            // along with the shipping ragte
+            if (isset($shipping['pickupPoint'])) {
+                $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
+                if ($shipping_rate) {
+                    $pp = $shipping['pickupPoint'];
+                    $addr = [];
+                    foreach(['name', 'address', 'postalCode', 'city', 'country'] as $key) {
+                        $addr[] = $pp[$key];
+                    }
+                    $shipping_rate->add_meta_data('Pickup Point', $pp['id']);
+                    $shipping_rate->add_meta_data('Pickup Point Address', join(", ", $addr));
+                    if (isset($pp['instabox'])) {
+                       foreach(['serviceType', 'sortCode', 'availabilityToken'] as $key) {
+                           $shipping_rate->add_meta_data('Instabox ' . $key, $pp['instabox'][$key]);
+                       }
+                    }
+                }
+            }
+
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
             $it = null;       
 
@@ -2251,6 +2448,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $total_shipping_tax = 0;
 
             if ($shipping_rate) {
+                // We may need the order total early on, so start with that
+                $ordertotal = $order->get_total();
+
+                // Recover the Shipping Method class
+                $methods_classes = WC()->shipping->get_shipping_method_class_names();
+                $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
+                $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
+                $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
+
+                // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
+                if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
+                    $vippsamount = intval($order->get_meta('_vipps_amount'));
+                    $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
+                    $compareamount = $ordertotal * 100;
+                    $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
+                    $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
+                    $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
+                    $actual = $amountdiff/100 - $difftax;
+
+                    $shipping_rate->set_cost($actual); 
+                    $shipping_rate->set_taxes( [ 1 => $difftax] );
+                } else {
+                    // Noop
+                }
+
                 $it = new WC_Order_Item_Shipping();
                 $it->set_shipping_rate($shipping_rate);
                 $it->set_order_id( $order->get_id() );
@@ -2260,19 +2482,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $it->add_meta_data($key,$value,true);
                 }
                 $it->save();
+
                 $order->add_item($it);
 
                 $total_shipping = $it->get_total();
                 $total_shipping_tax = $it->get_total_tax();
-                $ordertotal = $order->get_total();
 
                 // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
                 // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
                 // value reserved at Vipps and the order total is the same. IOK 2022-10-03
                 $order->set_shipping_total($total_shipping);
                 $order->set_shipping_tax($total_shipping_tax);
+
                 $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
+                $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
             }
+
+            // Add an early hook for Vipps Checkout orders with special shipping methods
+            if ($shipping_rate) { 
+                $metadata = $shipping_rate->get_meta_data();
+                if (isset($metadata['type'])) {
+                    do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
+                }
+            }
+
             $order->save(); 
             // NB: WE DO NOT CALL CALCULATE TOTALS!
             // THIS WILL CALCULATE SHIPPING FOR TAX IF THERE IS A TAX RATE FOR THE GIVEN AREA WITH THE 'shipping' PROPERTY CHECKED - EVEN IF THE SHIPPING RATE IT SELF IS NOT THUS CONFIGURED.
@@ -2360,6 +2593,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             exit();
         }
 
+        $errorInfo = @$result['errorInfo'];
+        if ($errorInfo) {
+            $this->log(__("Message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
+            $order->add_order_note(sprintf(__("Message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
+        }
+
         $transaction = array();
         if (isset($result['transactionInfo'])) {
             $transaction = $result['transactionInfo'];
@@ -2380,6 +2619,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $order->add_order_note(__('Vipps callback received','woo-vipps'));
+        do_action('woo_vipps_callback_received', $order, $result, $transaction);
 
         $oldstatus = $order->get_status();
         if ($oldstatus != 'pending') {
@@ -2388,7 +2628,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return;
         }
 
-
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
         // when callbacks happen while we are polling for results. IOK 2018-05-30
@@ -2396,6 +2635,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return;
         }
+
+        // Set Vipps metadata as early as possible
+        $transactionid = @$transaction['transactionId'];
+        $vippsstamp = strtotime($transaction['timeStamp']);
+        $vippsamount = $transaction['amount'];
+        $vippscurrency= $transaction['currency'];
+        $vippsstatus = $transaction['status'];
+
+        $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+        $order->update_meta_data('_vipps_amount',$vippsamount);
+        $order->update_meta_data('_vipps_currency',$vippscurrency);
+        $order->update_meta_data('_vipps_status',$vippsstatus); 
 
         $this->log(__("Vipps callback: Handling order: ", 'woo-vipps') . " " .  $orderid, 'debug');
 
@@ -2411,16 +2662,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $express = $order->get_meta('_vipps_express_checkout');
+        // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
+        // including adding anonoymous users if there is no other data. IOK 2023-01-10
+        $result = $this->ensure_userDetails($result, $order);
+ 
         if ($express && $order->get_meta('_vipps_checkout')) {
-            // This can happen when using Vipps Checkout and the store has turned off the address/user fields
-            if (!isset($result['userDetails'])) {
-                $result['userDetails'] = array(
-                    'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
-                    'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
-                    'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
-                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
-                );
-            }
             if (!isset($result['shippingDetails'])) {
                 // It is possible to drop shipping details from Checkout!
                 // We'll fill out the minimum of info
@@ -2441,33 +2687,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($express && @$result['shippingDetails']) {
             $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing);
+            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
         }
 
-        $transactionid = @$transaction['transactionId'];
-        $vippsstamp = strtotime($transaction['timeStamp']);
-        $vippsamount = $transaction['amount'];
-        $vippscurrency= $transaction['currency'];
-        $vippsstatus = $transaction['status'];
+        if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'AUTHORIZED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09
 
-        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        try {
-            $Vipps->createCallbackSignal($order,'ok');
-        } catch (Exception $e) {
-                // Could not create a signal file, but that's ok.
-        }
-        $errorInfo = @$result['errorInfo'];
-        if ($errorInfo) {
-            $this->log(__("Error message in callback from Vipps for order",'woo-vipps') . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note(sprintf(__("Error message from Vipps: %s",'woo-vipps'), $errorInfo['errorMessage']));
-        }
-
-        $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
-        $order->update_meta_data('_vipps_amount',$vippsamount);
-        $order->update_meta_data('_vipps_currency',$vippscurrency);
-        $order->update_meta_data('_vipps_status',$vippsstatus);  // Still uses the old status values - could call update_vipps_payment_details instead at the cost of an extra callIOK 2021-01-21
-
-        if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
@@ -2480,6 +2704,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
         clean_post_cache($order->get_id());
         $Vipps->unlockOrder($order);
+
+        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
+        try {
+            $Vipps->createCallbackSignal($order,'ok');
+        } catch (Exception $e) {
+                // Could not create a signal file, but that's ok.
+        }
+
     }
 
     // Do the 'payment_complete' logic for non-SALE orders IOK 2020-09-22

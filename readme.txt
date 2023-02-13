@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.13.5
-Stable tag: 1.13.5
+Version: 1.14.0
+Stable tag: 1.14.0
 Requires at least: 4.7
 Tested up to: 6.1.1
 Requires PHP: 5.6
@@ -79,34 +79,13 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.14.0 =
+Now supports Vipps Checkout version 3 with extended shipping method support!
 = 1.13.5 =
 Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
-
 = 1.13.4 =
 Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
 
-= 1.13.3 =
-Workaround for WooCommerce Smart Coupons bug
-Let Vipps Checkout handle the WooCommerce endpoints for thankyou etc, for better Elementor compatibility
-Support for Pixel Your Site-like mechanisms for Vipps Checkout
-
-= 1.13.2 =
-Fix for a php8 issue with unset options for the badge feature
-
-= 1.13.1 =
-Changes required for newer version of epayment-api
-Changes in localization for blocks
-
-= 1.13.0 =
-Support new High Performance Order Storage (HPOS) feature - https://woocommerce.com/document/high-performance-order-storage/
-Add protection for race condition where Vipps ran without WooCommerce having loaded
-= 1.12.1 =
-Add specific support for Monster Insights for tracking GAv4 and AdWords conversions
-Add support for Pixel Your Site for Express Checkout
-= 1.12.0 =
-Add support for Vipps On-Site Messsaging Badges for products, with shortcodes and a Gutenberg Block
-= 1.11.7 =
-Fix problems where it would be possible to restart an order causing a 400 Duplicate Order ID at Vipps
 
 == Frequently Asked Questions ==
 
@@ -242,6 +221,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023.0x.xx version 1.14.0 =
+Support Vipps Checkout version 3 with extended support for shipping methods in Vipps Checkout, allowing for the selection of pickup points and more.
+Remove default title on Vipps Checkout page
+
 = 2023.02.06 version 1.13.5 =
 Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
 

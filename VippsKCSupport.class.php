@@ -43,6 +43,7 @@ class VippsKCSupport {
         add_action( 'init',                           array('VippsKCSupport','maybe_remove_other_gateway_button' ));
         add_action( 'kco_wc_before_submit',           array('VippsKCSupport','add_vipps_payment_method' ));
         add_action( 'woocommerce_checkout_order_processed', array('VippsKCSupport','reset_default_payment_method'), 10, 3);
+        add_action( 'woo_vipps_before_redirect_to_vipps', array('VippsKCSupport','reset_default_payment_method'), 10, 1);
     }
 
     public static function form_fields( $settings ) {
@@ -139,7 +140,7 @@ class VippsKCSupport {
     }
 
     // Ensure, after order is processed, that default payment method isn't set to Vipps
-    public static function reset_default_payment_method ($orderid, $post_data, $order) {  
+    public static function reset_default_payment_method ($orderid, $post_data=null, $order=null) {  
         // If payment method is Vipps because we did an external payment call from Klarna, ensure Klarna Checkout is default payment method (kco). 2020-05-18 IOK
         if (WC()->session->get('vipps_via_klarna')) {
             WC()->session->set('chosen_payment_method', 'kco');
