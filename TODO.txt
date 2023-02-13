@@ -1,10 +1,6 @@
-PICKUP POINT  => Pakke til hentested
-
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw
-
  $order_id = absint( get_query_var( 'order-pay' ) );
-
 https://vdev.digitalt.org/handlekurv/?cancel_order=true&order=wc_order_a8qIMx4figarw&order_id=3173&redirect=https%3A%2F%2Fvdev.digitalt.org%2Fmin-konto%2F&_wpnonce=1218cd637c
 
 så ha en hook på order-cancelled også plz
@@ -50,56 +46,11 @@ så jeg må lage en "ensureUserDetails"
 
 TODO: Forbedre integrajsonen med vipps login plz
 TODO: Hold session aktiv i Vipps checkout ved å endre addressen helt til den blir cancellet. Revive den ved retur.
-DONE : Hør med vipps og edisoft
+
 TODO: checkout direct:
 https://github.com/vippsas/vipps-checkout-api/blob/main/vipps-checkout-api.md#vipps-checkout-direct
 
-TODO: Legg til som order note også, og kjør hook på ordren ved pickup point/home delivery
-
-TODO: RENAME BRAND AND TYPE (ihverfall type!)
-
 TODO: Hvis bestilling er cancelled når man kommer tilbake til butikken - sjekk 1 gang hos Vipps likevel, kanskje den er i orden
-
-TODO: Porterbuddy krever 0 i pris - _dynamisk prising_ . IKKE FREE SHIPPING
-** pris kommer per *epost*, pris hadde vært .  testnøkler?
-
-TODO: Endre navn fra 'type' til noe annet
-
-https://vipps-checkout-dummymerchant-uat-app.azurewebsites.net/
-
-TODO: SJEKK AT POLL RETURNERER userinfo! Foreløpig bare i callback? v2 vs v3?
-
-TODO implementer ekstra consent avhuking
- => returns customConsentProvided boolean
- => ved siden av requireUserInfo:
-  customConsent:
-CustomConsent:
-      type: object
-      properties:
-        text:
-          type: string
-          description: 'Text displayed next to the checkbox. This text can contain up to one link in markdown format like this: [linkText](https://example.com)'
-        required:
-          type: boolean
-          description: Whether box has to be checked to complete the checkout.
-      additionalProperties: false
-      description: 'If used, displays a checkbox that can be used to ask for extra consent.'
-
-
-customConsent: { text: "Godtar du?", required: false } (kan ha markdown)
-
-
-CustomConsent:
-      type: object
-      properties:
-        text:
-          type: string
-          description: 'Text displayed next to the checkbox. This text can contain up to one link in markdown format like this: [linkText](https://example.com)'
-        required:
-          type: boolean
-          description: Whether box has to be checked to complete the checkout.
-      additionalProperties: false
-      description: 'If used, displays a checkbox that can be used to ask for extra consent.'
 
 
 /kunder/wp/m/moo/wp-utvikling/wp-content/plugins/mailchimp-for-wp (populær)
