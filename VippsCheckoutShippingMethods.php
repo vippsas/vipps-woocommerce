@@ -159,7 +159,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
 
         }
        $this->instance_form_fields['cost'] = array(
-                    'title' => __( 'Cost ', 'woo-vipps' ),
+                    'title' => __( 'Cost', 'woo-vipps' ),
                     'type' => 'price',
                     'class' => 'vipps_checkout_cost_field',
                     'description' => __( 'Cost of shipping', 'woo-vipps' ),
