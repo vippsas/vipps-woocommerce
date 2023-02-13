@@ -221,9 +221,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023.0x.xx version 1.14.0 =
+= 2023.03.14 version 1.14.0 =
 Support Vipps Checkout version 3 with extended support for shipping methods in Vipps Checkout, allowing for the selection of pickup points and more.
 Remove default title on Vipps Checkout page
+Added filter to support for extra consent checkbox in Vipps Checkout
 
 = 2023.02.06 version 1.13.5 =
 Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
