@@ -598,6 +598,7 @@ class VippsApi {
         $needs_shipping =  WC()->cart->needs_shipping();
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
         $shippingcallback .= "/v3/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
+        $gw = $this->gateway;
         if ($needs_shipping) {
             $logistics = array();
             if ($static_shipping) {
@@ -609,7 +610,6 @@ class VippsApi {
 
             // Add integration data if present
             $integrations = array();
-            $gw = $this->gateway;
             if ($gw->get_option('vcs_porterbuddy') == 'yes') {
                $porterbuddy = array();
                $porterbuddy['publicToken'] = $gw->get_option('vcs_porterbuddy_publicToken');
