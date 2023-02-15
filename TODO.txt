@@ -1,3 +1,6 @@
+TODO Gjør RequireUserInfo til valgrfitt?
+
+
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw
  $order_id = absint( get_query_var( 'order-pay' ) );
