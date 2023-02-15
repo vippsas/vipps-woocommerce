@@ -561,6 +561,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => $default_static_shipping_for_checkout
                         ),
 
+                'requireUserInfo_checkout' => array(
+                        'title'       => __( 'Ask the user to consent to share user information', 'woo-vipps' ),
+                        'label'       => __( 'Ask the user to consent to share user information', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If using Vipps, ask for the users consent to share user information with the store. This will allow better integration between Login With Vipps but will add another step to first-time buyers.', 'woo-vipps'),
+                        'default'     => 'no'
+                        ),
+
                 'noAddressFields' => array(
                         'title'       => __( 'Drop the address fields on the Checkout screen', 'woo-vipps' ),
                         'label'       => __( 'Don\'t require the address fields', 'woo-vipps' ),

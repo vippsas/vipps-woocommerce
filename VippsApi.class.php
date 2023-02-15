@@ -658,7 +658,7 @@ class VippsApi {
         $configuration['customerInteraction'] = apply_filters('woo_vipps_checkout_customerInteraction', 'CUSTOMER_NOT_PRESENT', $orderid);
         $configuration['userFlow'] = "WEB_REDIRECT"; // Change to NATIVE_REDIRECT for apps in below filter
         // Require consent of email and openid sub - really for login
-        $configuration['requireUserInfo'] = apply_filters('woo_vipps_checkout_requireUserInfo', true, $orderid);
+        $configuration['requireUserInfo'] = apply_filters('woo_vipps_checkout_requireUserInfo', $gw->get_option('requireUserInfo_checkout') == 'yes' , $orderid);
 
         // ISO-3166 Alpha 2 country list
         $countries = array_keys((new WC_Countries())->get_allowed_countries());
