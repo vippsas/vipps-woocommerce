@@ -69,3 +69,29 @@ class-woocommerce.php:		add_action( 'woocommerce_checkout_order_processed', arra
 https://wordpress.org/plugins/woocommerce-mailchimp/ ("premium"?)
 
 includes/class-mailchimp-woocommerce.php:                       $this->loader->add_action('woocommerce_checkout_order_processed', $service, 'processNewsletterField', 10, 2);
+
+
+
+*TODO FIKS BEDRE HPNDTERING AV FAKEPAGE
+** det som går an her er å modifisere the content og the filter til å kjøre de funksjonene vi vil generere
+** ELLER å simpelthen returnere en shortcode
+add_filter('pre_handle_404', function ($current, $query) {
+    if (!is_admin() && class_exists('Vipps')) {
+        $special = Vipps::instance()->is_special_page();
+        if ($special) {
+          add_filter('the_content', function ($foo)  {
+            return "<h1>YOLO</h1>$foo";
+          });
+          add_filter('the_title', function ($bar) {
+            return "foobar $bar";
+        });
+          add_filter('document_title_parts', function ($parts) {
+              $parts['title'] = "foobar {$parts['title']}";
+              return $parts;
+          });
+          return true; // We'll handle this thank you
+        }
+    }
+    return $current;
+}, 1, 2);
+
