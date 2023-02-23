@@ -525,7 +525,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderprefix = $Vipps->generate_order_prefix();
         $expresscreateuserdefault = "no";
         if (class_exists('VippsWooLogin')) {
-           $woodefault = apply_filters('woocommerce_checkout_registration_enabled', 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout'));
+           $woodefault = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout' );
            if ($woodefault) $expresscreateuserdefault = "yes";
         }
 
