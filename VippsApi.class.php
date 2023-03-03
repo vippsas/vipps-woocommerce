@@ -684,7 +684,7 @@ class VippsApi {
             $nocontacts = $this->gateway->get_option('noContactFields') == 'yes';
             $noaddress = $this->gateway->get_option('noAddressFields') == 'yes';
             if ($noaddress) {
-                $configuration['elements'] = false;
+                $configuration['elements'] = "PaymentAndContactInfo";
             }
 //          AddressFields cannot be enabled while ContactFields is disabled
             if ($noaddress && $nocontacts) {
