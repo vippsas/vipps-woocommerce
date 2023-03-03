@@ -2101,6 +2101,8 @@ else:
         if (!is_admin()) {
             $special = $this->is_special_page();
             if ($special) {
+                // Ensure very early on that Autooptimize does not try to optimize us (if installed) IOK 2023-03-04
+                add_filter( 'autoptimize_filter_noptimize', '__return_true');
                 return true;
             }
         }
