@@ -525,7 +525,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderprefix = $Vipps->generate_order_prefix();
         $expresscreateuserdefault = "no";
         if (class_exists('VippsWooLogin')) {
-           $woodefault = apply_filters('woocommerce_checkout_registration_enabled', 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout'));
+           $woodefault = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout' );
            if ($woodefault) $expresscreateuserdefault = "yes";
         }
 
@@ -1104,8 +1104,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Restrictions on cart are the same as for express checkout
         if (!$this->cart_supports_express_checkout()) return false;
 
-        // This checks currency and so forth
-        $ok = $this->standard_is_available();
         // Filter to false if you want to use the standard checkout for whatever reason
         return apply_filters('woo_vipps_checkout_available', $checkoutid, $this);
     }

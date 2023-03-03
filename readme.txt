@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.0
-Stable tag: 1.14.0
+Version: 1.14.1
+Stable tag: 1.14.1
 Requires at least: 4.7
 Tested up to: 6.1.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 7.3
+WC tested up to: 7.4.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,6 +79,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.14.1 =
+Bugfixes for co-existance with other plugins
 = 1.14.0 =
 Now supports Vipps Checkout version 3 with extended shipping method support!
 = 1.13.5 =
@@ -221,9 +223,14 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023.0x.xx version 1.14.0 =
+= 2023.03.06 version 1.14.1 =
+Set require_userInfo to false per default for Elemenor and other users of pre_handle_404
+Bugfixes
+
+= 2023.02.14 version 1.14.0 =
 Support Vipps Checkout version 3 with extended support for shipping methods in Vipps Checkout, allowing for the selection of pickup points and more.
 Remove default title on Vipps Checkout page
+Added filter to support for extra consent checkbox in Vipps Checkout
 
 = 2023.02.06 version 1.13.5 =
 Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout

@@ -2095,6 +2095,18 @@ else:
         return 0;
     }
 
+
+    // If this is a special page, return true very early because we are handling this. IOK 2023-02-22
+    public function pre_handle_404($current, $query) {
+        if (!is_admin()) {
+            $special = $this->is_special_page();
+            if ($special) {
+                return true;
+            }
+        }
+        return $current;
+    }
+
     // Special pages, and some callbacks. IOK 2018-05-18 
     public function template_redirect() {
         global $post;
@@ -2293,7 +2305,9 @@ EOF;
 
 
         // Special pages and callbacks handled by template_redirect
+        // We must also notify WP and other plugins that we are handling this 404-like situation. IOK 2023-02-22
         add_action('template_redirect', array($this,'template_redirect'),1);
+        add_action('pre_handle_404', array($this, 'pre_handle_404'), 1, 2);
 
         // Allow overriding their templates
         add_filter('template_include', array($this,'template_include'), 10, 1);
