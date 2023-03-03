@@ -1096,8 +1096,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Restrictions on cart are the same as for express checkout
         if (!$this->cart_supports_express_checkout()) return false;
 
-        // This checks currency and so forth
-        $ok = $this->standard_is_available();
         // Filter to false if you want to use the standard checkout for whatever reason
         return apply_filters('woo_vipps_checkout_available', $checkoutid, $this);
     }
