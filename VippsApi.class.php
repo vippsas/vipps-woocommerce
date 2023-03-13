@@ -509,7 +509,7 @@ class VippsApi {
             // possible values, name, address, email, phoneNumber, birthDate, nin and accountNumbers (last ones are of course restricted)
              $scope = array();
              if ($express) {
-                $scope = ["name", "email", "phoneNumber"];
+                $scope = ["name", "email", "phoneNumber"]; // And not 'address'
              }
              $scope = apply_filters('woo_vipps_express_checkout_scope', $scope, $order);
              if (!empty($scope)) {

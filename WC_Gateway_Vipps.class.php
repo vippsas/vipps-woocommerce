@@ -1839,6 +1839,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
             $address_set = $order->get_meta('_vipps_shipping_set');
+
             if ($address_set) {
                // Callback has handled the situation, do nothing
             } elseif (@$paymentdetails['shippingDetails']) {
@@ -2042,9 +2043,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             );
                  $billingDetails = $shippingDetails;
 
+                 if (isset($userinfo['address'])) {
+                    $shippingDetails['address'] = $userinfo['address'];
+                    foreach($userinfo['address'] as $key=>$value) {
+                        $billingDetails[$key] = $value;
+                    }
+                 }
                  $result['userDetails'] = $userDetails;
                  $result['shippingDetails'] = $shippingDetails;
-                 $result['billingDetails'] = $shippingDetails;
+                 $result['billingDetails'] = $billingDetails;
+
                }
             }
 
@@ -2314,6 +2322,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (isset($address['streetAddress'])) {
             $addressline1 = $address['streetAddress'];
         }
+        if (isset($address['street_address'])) { // From the userinfo api
+            $addressline1 = $address['street_address'];
+        }
         if ($addressline1 == $addressline2) $addressline2 = '';
         $address['addressLine1'] = $addressline1;
         $address['addressline2'] = $addressline2;
@@ -2335,18 +2346,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $postcode= $address['postCode'];
         } elseif (isset($address['postalCode'])){
             $postcode= $address['postalCode'];
+        } elseif (isset($address['postal_code'])) {
+            $postcode= $address['postal_code'];
         }
         $address['postCode'] = $postcode;
         $address['zipCode'] = $postcode;
         $address['postalCode'] = $postcode;
 
         // eCom returns "NORWAY", while Checkout returns "NO". Woo requires the two-letter country code.
-        $vippscountry = $address['country'];
-        if (strlen($vippscountry) == 2) {
-            $country = strtoupper($vippscountry);
-        } else {
-            global $Vipps;
-            $country = $Vipps->country_to_code($vippscountry);
+        $country = ""; 
+        if (isset($address['country'])) {
+            $vippscountry = $address['country'];
+            if (strlen($vippscountry) == 2) {
+                $country = strtoupper($vippscountry);
+            } else {
+                global $Vipps;
+                $country = $Vipps->country_to_code($vippscountry);
+            }
         }
         $address['country'] = $country;
 
@@ -2387,7 +2403,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$billing) $billing = $address;
         $address = $this->canonicalize_vipps_address($address, $user);
         $billing = $this->canonicalize_vipps_address($billing, $user);
-
 
         # Billing.
         $order->set_billing_email($billing['email']);
