@@ -2055,7 +2055,7 @@ else:
         // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
-        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
+        if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
             add_filter('woocommerce_is_checkout', '__return_true');
             add_filter('body_class', function ($classes) {
                     $classes[] = 'vipps-checkout';
