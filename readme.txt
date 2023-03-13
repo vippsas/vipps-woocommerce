@@ -227,7 +227,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2023.03.10 version  1.14.2 =
+= 2023.03.13 version  1.14.2 =
 Ensures that orders that don't need shipping do not ask for addresses from customers unless you explicitly want to.
 Small bugfixes too.
 
