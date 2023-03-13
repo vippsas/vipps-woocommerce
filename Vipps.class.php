@@ -4015,16 +4015,17 @@ EOF;
         wc_nocache_headers();
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
-        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
+        $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
 
-        add_filter('body_class', function ($classes) {
-            $classes[] = 'vipps-express-checkout';
-            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
-            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
-        });
 
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
+
+        if (!$ok) {
+            wc_add_notice(__('Link expired, please try again', 'woo-vipps'));
+            wp_redirect($backurl);
+            exit();
+        }
 
         if ( WC()->cart->get_cart_contents_count() == 0 ) {
             wc_add_notice(__('Your shopping cart is empty','woo-vipps'),'error');
@@ -4032,9 +4033,15 @@ EOF;
             exit();
         }
 
+        add_filter('body_class', function ($classes) {
+            $classes[] = 'vipps-express-checkout';
+            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
+        });
+
         do_action('woo_vipps_express_checkout_page');
 
-        $this->print_express_checkout_page($ok,'do_express_checkout');
+        $this->print_express_checkout_page(false, 'do_express_checkout');
     }
 
     // This method tries to ensure that a customer does not 'lose' the return page and
