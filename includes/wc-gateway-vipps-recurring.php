@@ -775,6 +775,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				 && in_array( $charge['status'], [ 'PROCESSING', 'DUE', 'PENDING' ] ) ) {
 				WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge['id'] );
 			}
+
+			$order->save();
 		}
 
 		/**
