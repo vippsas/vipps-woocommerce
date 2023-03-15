@@ -739,7 +739,7 @@ msgstr "Du bruker Vipps Checkout istedetfor den vanlige WooCommerce kassasiden."
 
 #: Vipps.class.php:708
 msgid "The plugin is currently <b>active</b> - Vipps is available as a payment method."
-msgstr "Utvidelsen er for tiden <b>aktiv</b> - Vipps er tilgjengelig som betalingsmetdoe."
+msgstr "Utvidelsen er for tiden <b>aktiv</b> - Vipps er tilgjengelig som betalingsmetode."
 
 #: Vipps.class.php:703
 msgid "Vipps configuration is not yet complete - you must get your keys from the Vipps portal and enter them on the <a href='%s'>settings page</a>"
