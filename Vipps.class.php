@@ -2926,7 +2926,7 @@ EOF;
               
                   } else {
                       // specialcase some known methods so they get brands
-                      if (get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                      if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
                          $m2['brand'] = "POSTEN";
                       }
                       $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
