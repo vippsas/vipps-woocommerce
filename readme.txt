@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.3
-Stable tag: 1.14.3
+Version: 1.14.4
+Stable tag: 1.14.4
 Requires at least: 4.7
 Tested up to: 6.2
 Requires PHP: 5.6
@@ -79,6 +79,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.14.4 =
+Fix crash for setups where woocommerce_init_shiping is called twice
 = 1.14.3 =
 Bugfix for some shipping methods in Vips Checkout
 = 1.14.2 =
@@ -228,8 +230,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023.03.16 version  1.14.4 =
+Apparently some setup got called woocommerce_init_shipping more than once, which crashed on the new Checkout shipping methods.
 
-= 2023.03.16 version  1.14.2 =
+= 2023.03.16 version  1.14.3 =
 Bugfix for some shipping methods in Vipps Checkout
 
 = 2023.03.13 version  1.14.2 =
