@@ -5,26 +5,28 @@ defined( 'ABSPATH' ) || exit;
 class WC_Vipps_Charge extends WC_Vipps_Model {
 	public const STATUS_PENDING = "PENDING";
 	public const STATUS_DUE = "DUE";
-	public const STATUS_RESERVED = "RESERVED";
-	public const STATUS_CHARGED = "CHARGED";
-	public const STATUS_PARTIALLY_CAPTURED = "PARTIALLY_CAPTURED";
-	public const STATUS_FAILED = "FAILED";
-	public const STATUS_CANCELLED = "CANCELLED";
-	public const STATUS_PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED";
-	public const STATUS_REFUNDED = "REFUNDED";
 	public const STATUS_PROCESSING = "PROCESSING";
+	public const STATUS_UNKNOWN = "UNKNOWN";
+	public const STATUS_CHARGED = "CHARGED";
+	public const STATUS_FAILED = "FAILED";
+	public const STATUS_REFUNDED = "REFUNDED";
+	public const STATUS_PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED";
+	public const STATUS_RESERVED = "RESERVED";
+	public const STATUS_PARTIALLY_CAPTURED = "PARTIALLY_CAPTURED";
+	public const STATUS_CANCELLED = "CANCELLED";
 
 	protected array $valid_statuses = [
 		self::STATUS_PENDING,
 		self::STATUS_DUE,
-		self::STATUS_RESERVED,
-		self::STATUS_CHARGED,
-		self::STATUS_PARTIALLY_CAPTURED,
-		self::STATUS_FAILED,
-		self::STATUS_CANCELLED,
-		self::STATUS_PARTIALLY_REFUNDED,
-		self::STATUS_REFUNDED,
 		self::STATUS_PROCESSING,
+		self::STATUS_UNKNOWN,
+		self::STATUS_CHARGED,
+		self::STATUS_FAILED,
+		self::STATUS_REFUNDED,
+		self::STATUS_PARTIALLY_REFUNDED,
+		self::STATUS_RESERVED,
+		self::STATUS_PARTIALLY_CAPTURED,
+		self::STATUS_CANCELLED,
 	];
 
 	public const TYPE_RECURRING = "RECURRING";
