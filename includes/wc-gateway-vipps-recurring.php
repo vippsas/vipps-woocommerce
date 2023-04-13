@@ -1592,6 +1592,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					);
 				}
 
+				$agreement = apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
+
 				$idempotency_key = $this->get_idempotency_key( $order );
 				$response        = $this->api->create_agreement( $agreement, $idempotency_key );
 

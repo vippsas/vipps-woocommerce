@@ -132,11 +132,35 @@ Available filters:
 
 `wc_vipps_recurring_merchant_agreement_url(string $url)`
 
+- Allows you to modify the merchant agreement url.
+
 `wc_vipps_recurring_merchant_redirect_url(string $url)`
+
+- Allows you to modify the merchant redirect url.
 
 `wc_vipps_recurring_transaction_id_for_order(string $transaction_id, WC_Order $order)`
 
 - Determines the return value of `WC_Vipps_Recurring_Helper::get_transaction_id_for_order`
+
+`wc_vipps_recurring_create_agreement_data(array $data)`
+
+- Allows you to alter the request body sent to the Vipps API when a new agreement is being created.
+
+`wc_vipps_recurring_update_agreement_data(array $data)`
+
+- Allows you to alter the request body sent to the Vipps API when an agreement is being updated.
+
+`wc_vipps_recurring_cancel_agreement_data(array $data)`
+
+- Allows you to alter the request body sent to the Vipps API when an agreement is cancelled.
+
+`wc_vipps_recurring_create_charge_data(array $data)`
+
+- Allows you to alter the request body sent to the Vipps API when a new charge is being created.
+
+`wc_vipps_recurring_process_payment_agreement(WC_Vipps_Agreement $agreement, WC_Subscription $subscription, WC_Order $order)`
+
+- Allows you to modify the Vipps agreement before we send the request to the Vipps API. Includes subscription and order in case you need to make some custom logic.
 
 # Frequently Asked Questions
 

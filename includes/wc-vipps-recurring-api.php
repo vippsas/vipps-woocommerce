@@ -78,7 +78,9 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		return $this->http_call( 'recurring/v3/agreements', 'POST', $agreement->to_array( true ), $headers );
+		$data = apply_filters( 'wc_vipps_recurring_create_agreement_data', $agreement->to_array( true ) );
+
+		return $this->http_call( 'recurring/v3/agreements', 'POST', $data, $headers );
 	}
 
 	/**
@@ -109,7 +111,9 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		$this->http_call( 'recurring/v3/agreements/' . $agreement_id, 'PATCH', $agreement->to_array(), $headers );
+		$data = apply_filters( 'wc_vipps_recurring_update_agreement_data', $agreement->to_array() );
+
+		$this->http_call( 'recurring/v3/agreements/' . $agreement_id, 'PATCH', $data, $headers );
 	}
 
 	/**
@@ -143,9 +147,9 @@ class WC_Vipps_Recurring_Api {
 			'Idempotency-Key' => $idempotency_key,
 		];
 
-		$data = [
+		$data = apply_filters( 'wc_vipps_recurring_cancel_agreement_data', [
 			'status' => WC_Vipps_Agreement::STATUS_STOPPED,
-		];
+		] );
 
 		$this->http_call( 'recurring/v3/agreements/' . $agreement_id, 'PATCH', $data, $headers );
 	}
@@ -194,7 +198,9 @@ class WC_Vipps_Recurring_Api {
 		                                   ->set_due( $due_at )
 		                                   ->set_retry_days( $this->retry_days );
 
-		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges', 'POST', $charge->to_array(), $headers );
+		$data = apply_filters( 'wc_vipps_recurring_create_charge_data', $charge->to_array() );
+
+		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges', 'POST', $data, $headers );
 	}
 
 	/**
@@ -255,6 +261,8 @@ class WC_Vipps_Recurring_Api {
 				'amount' => $amount,
 			] );
 		}
+
+		$data = apply_filters( 'wc_vipps_recurring_refund_charge_data', $data );
 
 		return $this->http_call( 'recurring/v3/agreements/' . $agreement_id . '/charges/' . $charge_id . '/refund', 'POST', $data, $headers );
 	}
