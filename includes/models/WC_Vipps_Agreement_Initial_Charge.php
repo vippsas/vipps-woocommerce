@@ -62,11 +62,13 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 			$this->check_required();
 		}
 
-		return [
-			"amount"          => $this->amount,
-			"description"     => $this->description,
-			"transactionType" => $this->transaction_type,
-			...$this->conditional( "orderId", $this->order_id )
-		];
+		return array_merge(
+			[
+				"amount"          => $this->amount,
+				"description"     => $this->description,
+				"transactionType" => $this->transaction_type,
+			],
+			$this->conditional( "orderId", $this->order_id )
+		);
 	}
 }

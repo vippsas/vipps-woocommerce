@@ -68,12 +68,14 @@ class WC_Vipps_Agreement_Pricing extends WC_Vipps_Model {
 			$this->check_required( $this->type );
 		}
 
-		return [
-			"type"     => $this->type,
-			"currency" => $this->currency,
-			...$this->conditional( "amount", $this->amount ),
-			...$this->conditional( "suggestedMaxAmount", $this->suggested_max_amount ),
-			...$this->conditional( "maxAmount", $this->max_amount ),
-		];
+		return array_merge(
+			[
+				"type"     => $this->type,
+				"currency" => $this->currency,
+			],
+			$this->conditional( "amount", $this->amount ),
+			$this->conditional( "suggestedMaxAmount", $this->suggested_max_amount ),
+			$this->conditional( "maxAmount", $this->max_amount )
+		);
 	}
 }

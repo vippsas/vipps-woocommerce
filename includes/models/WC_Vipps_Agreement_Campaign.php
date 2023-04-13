@@ -125,15 +125,17 @@ class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 			$this->check_required( $this->type );
 		}
 
-		return [
-			"type"  => $this->type,
-			"price" => $this->price,
-			...$this->conditional( "end", $this->end ),
-			...$this->conditional( "explanation", $this->explanation ),
-			...$this->conditional( "eventDate", $this->event_date ),
-			...$this->conditional( "eventText", $this->event_text ),
-			...$this->conditional( "period", $this->period ),
-			...$this->conditional( "interval", $this->interval ),
-		];
+		return array_merge(
+			[
+				"type"  => $this->type,
+				"price" => $this->price,
+			],
+			$this->conditional( "end", $this->end ),
+			$this->conditional( "explanation", $this->explanation ),
+			$this->conditional( "eventDate", $this->event_date ),
+			$this->conditional( "eventText", $this->event_text ),
+			$this->conditional( "period", $this->period ),
+			$this->conditional( "interval", $this->interval ),
+		);
 	}
 }

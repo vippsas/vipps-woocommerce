@@ -202,25 +202,27 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 			$this->check_required();
 		}
 
-		return [
-			"productName" => $this->product_name,
-			"pricing"     => $this->pricing ? $this->pricing->to_array( $check_required ) : null,
-			"interval"    => $this->interval ? $this->interval->to_array( $check_required ) : null,
-			...$this->conditional( "start", $this->start ),
-			...$this->conditional( "stop", $this->stop ),
-			...$this->conditional( "id", $this->id ),
-			...$this->conditional( "status", $this->status ),
-			...$this->conditional( "campaign", $this->campaign ),
-			...$this->conditional( "phoneNumber", $this->phone_number ),
-			...$this->conditional( "initialCharge", $this->initial_charge ),
-			...$this->conditional( "isApp", $this->is_app ),
-			...$this->conditional( "merchantAgreementUrl", $this->merchant_agreement_url ),
-			...$this->conditional( "merchantRedirectUrl", $this->merchant_redirect_url ),
-			...$this->conditional( "productDescription", $this->product_description ),
-			...$this->conditional( "scope", $this->scope ),
-			...$this->conditional( "skipLandingPage", $this->skip_landing_page ),
-			...$this->conditional( "sub", $this->sub ),
-			...$this->conditional( "userinfoUrl", $this->userinfo_url ),
-		];
+		return array_merge(
+			[
+				"productName" => $this->product_name,
+				"pricing"     => $this->pricing ? $this->pricing->to_array( $check_required ) : null,
+				"interval"    => $this->interval ? $this->interval->to_array( $check_required ) : null,
+			],
+			$this->conditional( "start", $this->start ),
+			$this->conditional( "stop", $this->stop ),
+			$this->conditional( "id", $this->id ),
+			$this->conditional( "status", $this->status ),
+			$this->conditional( "campaign", $this->campaign ),
+			$this->conditional( "phoneNumber", $this->phone_number ),
+			$this->conditional( "initialCharge", $this->initial_charge ),
+			$this->conditional( "isApp", $this->is_app ),
+			$this->conditional( "merchantAgreementUrl", $this->merchant_agreement_url ),
+			$this->conditional( "merchantRedirectUrl", $this->merchant_redirect_url ),
+			$this->conditional( "productDescription", $this->product_description ),
+			$this->conditional( "scope", $this->scope ),
+			$this->conditional( "skipLandingPage", $this->skip_landing_page ),
+			$this->conditional( "sub", $this->sub ),
+			$this->conditional( "userinfoUrl", $this->userinfo_url ),
+		);
 	}
 }

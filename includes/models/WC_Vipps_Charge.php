@@ -166,14 +166,16 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 			$this->check_required();
 		}
 
-		return [
-			"amount"      => $this->amount,
-			"description" => $this->description,
-			"due"         => $this->serialize_value($this->due, 'Y-m-d'),
-			"retryDays"   => $this->retry_days,
-			...$this->conditional( "type", $this->type ),
-			...$this->conditional( "transactionType", $this->transaction_type ),
-			...$this->conditional( "orderId", $this->order_id ),
-		];
+		return array_merge(
+			[
+				"amount"      => $this->amount,
+				"description" => $this->description,
+				"due"         => $this->serialize_value($this->due, 'Y-m-d'),
+				"retryDays"   => $this->retry_days
+			],
+			$this->conditional( "type", $this->type ),
+			$this->conditional( "transactionType", $this->transaction_type ),
+			$this->conditional( "orderId", $this->order_id )
+		);
 	}
 }
