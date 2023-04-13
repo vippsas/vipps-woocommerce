@@ -98,7 +98,7 @@ return apply_filters(
 			'label'       => __( 'Log debug messages', 'woo-vipps-recurring' ),
 			'type'        => 'checkbox',
 			'description' => __( 'Save debug messages to the WooCommerce System Status log.', 'woo-vipps-recurring' ),
-			'default'     => 'no',
+			'default'     => 'yes',
 		],
 	]
 );
