@@ -356,7 +356,7 @@ class WC_Vipps_Recurring_Api {
 		}
 
 		// As long as the status code is less than 300 and greater than 199 we can return the body
-		if ( $status < 300 ) {
+		if ( $status < 300 && $status > 199 ) {
 			return $body;
 		}
 
@@ -367,12 +367,41 @@ class WC_Vipps_Recurring_Api {
 		}
 
 		// error handling
-		$error_msg                     = $default_error;
+		$error_msg                     = $default_error ?? '';
 		$is_idempotent_error           = false;
 		$is_merchant_not_allowed_error = false;
 		$is_url_validation_error       = false;
 
 		if ( $body ) {
+			if ( isset( $body['title'] ) ) {
+				$error_msg = $body['title'];
+			}
+
+			if ( isset( $body['detail'] ) ) {
+				$error_msg .= ' ' . $body['detail'];
+			}
+
+			$error_msg = trim($error_msg);
+
+			/*
+			"type":"https://example.com/validation-error",
+			"title":"Your request parameters didn't validate.",
+			"detail":"The request body contains one or more errors",
+			"instance":"123e4567-e89b-12d3-a456-426655440000",
+			"status":"400",
+			"extraDetails":[
+			  {
+			     "name":"amount",
+			     "reason":"Must be a positive integer larger than 100"
+			  },
+			  {
+			     "name":"URL",
+			     "reason":"Must use HTTPS and validate according to the API specification"
+			  }
+			]
+			 */
+
+
 			// todo: implement new logic
 			/*
 				{
