@@ -168,6 +168,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Refactored: We no longer pass product descriptions to Vipps unless you choose to do so.
 * Refactored: We now use Vipps' new campaign system.
 * Refactored: We no longer need to store the agreement's confirmation url ourselves. Idempotency now works as expected.
+* Changed: We now use the `woocommerce_subscription_cancelled_vipps_recurring` hook instead of `woocommerce_subscription_status_cancelled` to cancel a subscription.
+* Added: A merchant serial number setting to help Vipps to identify who the merchant is.
 
 = 1.14.7 =
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.
