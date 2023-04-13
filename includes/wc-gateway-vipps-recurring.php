@@ -13,6 +13,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 	 */
 	class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		/**
+		 * Vipps merchant serial number
+		 */
+		public string $merchant_serial_number;
+
+		/**
 		 * API access secret key
 		 */
 		public string $secret_key;
@@ -132,6 +137,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->description                      = $this->get_option( 'description' );
 			$this->enabled                          = $this->get_option( 'enabled' );
 			$this->test_mode                        = WC_VIPPS_RECURRING_TEST_MODE;
+			$this->merchant_serial_number           = $this->get_option( 'merchant_serial_number' );
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
@@ -190,7 +196,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'scheduled_subscription_payment'
 			], 1, 2 );
 
-			add_action( 'woocommerce_subscription_status_cancelled', [
+			add_action( 'woocommerce_subscription_cancelled_' . $this->id, [
 				$this,
 				'cancel_subscription',
 			] );
@@ -403,8 +409,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
-			$order = wc_get_order($order_id);
-			if ($order->get_payment_method() !== $this->id) {
+			$order = wc_get_order( $order_id );
+			if ( $order->get_payment_method() !== $this->id ) {
 				return;
 			}
 
@@ -839,7 +845,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * Triggered when cancelled, failed or refunded order
+		 * Triggered when a subscription is cancelled
 		 *
 		 * @param $subscription
 		 *
@@ -1219,7 +1225,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Processing subscription gateway change with new agreement id: %s and old agreement id: %s', WC_Vipps_Recurring_Helper::get_id( $subscription ), $new_agreement_id, $old_agreement_id ) );
 					if ( ! empty( $old_agreement_id ) && $new_agreement_id !== $old_agreement_id ) {
 						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling old agreement id: %s in Vipps due to gateway change', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
-
 
 						$idempotency_key = $this->get_idempotency_key( $subscription );
 						$this->api->cancel_agreement( $old_agreement_id, $idempotency_key );
