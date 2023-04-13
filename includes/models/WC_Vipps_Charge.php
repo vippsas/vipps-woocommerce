@@ -124,7 +124,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_description( string $description ): self {
+	public function set_description( ?string $description ): self {
 		$this->description = $description;
 
 		return $this;
