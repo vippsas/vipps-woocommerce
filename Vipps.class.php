@@ -2918,6 +2918,13 @@ EOF;
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
 
+                  // The description is normally only stored only in the shipping method
+                  if ($shipping_method) {
+                     $m2['description'] = $shipping_method->get_option('description', '');
+                  } else {
+                     $m2['description'] = "";
+                  }
+
                   // Some data must be visible in the Order screen, so add meta data
                   $meta = $rate->get_meta_data();
                   if (isset($meta['brand'])) {
@@ -2925,21 +2932,16 @@ EOF;
                      unset($m2['title']);
               
                   } else {
-                      // specialcase some known methods so they get brands
+                      // specialcase some known methods so they get brands, and put the label into the description
                       if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
                          $m2['brand'] = "POSTEN";
+                         $m2['description'] = $rate->get_label();
                       }
                       $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
                   }
 
                   if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
-                  }
-                  // But the description is stored only in the shipping method.
-                  if ($shipping_method) {
-                     $m2['description'] = $shipping_method->get_option('description', '');
-                  } else {
-                     $m2['description'] = "";
                   }
 
                   // Old filter kept for backwards compatibility
