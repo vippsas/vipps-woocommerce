@@ -22,9 +22,10 @@ add_action( 'woocommerce_shipping_init', function () {
   foreach($extended_classes as $key) {
       add_filter('woocommerce_shipping_instance_form_fields_' . $key, array('VippsCheckout_Shipping_Method', 'add_description_field'));
   }
-      
+}, 20);
 
 
+/* This file is required_once'd early in woocommerce_shipping_init, only if the classes do not already exist. */
 
 /* Abstract class used just to mark the special Vipps Checkout shipping methods. Don't instantiate this */
 class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
@@ -556,4 +557,4 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
 
 
 
-}, 20);
+

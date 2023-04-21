@@ -534,8 +534,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
-        $current = get_option('woocommerce_vipps_setting');
-        $default_static_shipping_for_checkout = $current ? $current : 'no';
+        $current = get_option('woocommerce_vipps_settings');
+        // New defaults based on old defaults
+        $default_static_shipping_for_checkout = ($current && isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
+        $default_ask_address_for_express = ($current && isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
 
         $checkoutfields = array(
                 'checkout_options' => array(
@@ -813,21 +815,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes',
                         ),
 
-                'useExplicitCheckoutFlow' => array(
-                        'title'       => __( 'Use explicit flow for shipping in Express Checkout', 'woo-vipps' ),
-                        'label'       => __( 'Enable explicit checkout flow', 'woo-vipps' ),
-                        'type'        => 'select',
-                        'options' => array(
-                            'no' => __('Use the normal Express checkout flow', 'woo-vipps'),
-                            'yes' => __('Use a multi-step explicit flow for Express checkout', 'woo-vipps'),
-                            'shipping' => __('Use the explicit flow only if the order needs shipping', 'woo-vipps'),
-                            ),
-                        'description' => __('Enable this to use a more explicit checkout flow for shipping in Express Checkout. If enabled, checkout will proceed in several steps, where the customers address, shipping choice etc is requested one at a time', 'woo-vipps') . '.<br>' .
-                        __('Please note that this is not a good flow for situations like restaurants, digital downloads and other situations where shipping is not involved. In those cases, leading the user through an address selection is not useful.', 'woo-vipps'),
-                        'default'     => 'no',
-                        ),
-
-
                 'singleproductexpress' => array(
                         'title'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
                         'label'       => __( 'Enable Express Checkout for single products', 'woo-vipps' ),
@@ -854,6 +841,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'description' => __('When using Express Checkout, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
                         'default'     => 'no',
                         ),
+
+                'expresscheckout_always_address' => array(
+                        'title'       => __( 'Always ask for address, even if products don\'t need shipping', 'woo-vipps' ),
+                        'label'       => __( 'Always ask the user for their address, even if you don\'t need it for shipping', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('If the order contains only "virtual" products that do not need shipping, we do not normally ask the user for their address - but check this box to do so anyway.', 'woo-vipps'),
+                        'default'     => $default_ask_address_for_express,
+                ),
 
                 'enablestaticshipping' => array(
                         'title'       => __( 'Enable static shipping for Express Checkout', 'woo-vipps' ),
@@ -1852,6 +1847,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
             $address_set = $order->get_meta('_vipps_shipping_set');
+
             if ($address_set) {
                // Callback has handled the situation, do nothing
             } elseif (@$paymentdetails['shippingDetails']) {
@@ -2023,6 +2019,51 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Then the details, which include the transaction history
         try {
             $result = $this->api->payment_details($order);
+
+            // Express Checkout orders with no shipping, will now be done using normal, regular checkout and fetching the user
+            // data using the userInfo api instead IOK 2023-03-10
+            if (!isset($result['userDetails']) && $order->get_meta('_vipps_express_checkout') && isset($result['sub'])) {
+               $userinfo = array();
+               try {
+                   $userinfo = $this->api->get_userinfo($result['sub']);
+               } catch (Exception $e) {
+                $this->log(sprintf(__("Could not get user info for order %d using the userinfo API: %s. Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");
+               }
+               if ($userinfo) {
+                 $userDetails = array(
+                    'bankIdVerified' => $userinfo['email_verified'],
+                    'email' => $userinfo['email'],
+                    'firstName' => $userinfo['given_name'],
+                    'lastName' => $userinfo['family_name'],
+                    'mobileNumber' => $userinfo['phone_number'],
+                    'phoneNumber' => $userinfo['phone_number'],
+                    'userId' => $userinfo['phone_number'],
+                    'sub' => $userinfo['sub']
+                 );
+                 $countries=new WC_Countries();
+                 $shippingDetails = array(
+                                'firstName' => $userDetails['firstName'],
+                                'lastName' => $userDetails['lastName'],
+                                'email' => $userDetails['email'],
+                                'phoneNumber' => $userDetails['phoneNumber'],
+                                'address' => array(),
+                                'country' =>  $countries->get_base_country()
+                            );
+                 $billingDetails = $shippingDetails;
+
+                 if (isset($userinfo['address'])) {
+                    $shippingDetails['address'] = $userinfo['address'];
+                    foreach($userinfo['address'] as $key=>$value) {
+                        $billingDetails[$key] = $value;
+                    }
+                 }
+                 $result['userDetails'] = $userDetails;
+                 $result['shippingDetails'] = $shippingDetails;
+                 $result['billingDetails'] = $billingDetails;
+
+               }
+            }
+
         } catch (VippsAPIException $e) {
             $resp = intval($e->responsecode);
             if ($resp == 402 || $resp == 404) {
@@ -2289,6 +2330,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (isset($address['streetAddress'])) {
             $addressline1 = $address['streetAddress'];
         }
+        if (isset($address['street_address'])) { // From the userinfo api
+            $addressline1 = $address['street_address'];
+        }
         if ($addressline1 == $addressline2) $addressline2 = '';
         $address['addressLine1'] = $addressline1;
         $address['addressline2'] = $addressline2;
@@ -2310,18 +2354,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $postcode= $address['postCode'];
         } elseif (isset($address['postalCode'])){
             $postcode= $address['postalCode'];
+        } elseif (isset($address['postal_code'])) {
+            $postcode= $address['postal_code'];
         }
         $address['postCode'] = $postcode;
         $address['zipCode'] = $postcode;
         $address['postalCode'] = $postcode;
 
         // eCom returns "NORWAY", while Checkout returns "NO". Woo requires the two-letter country code.
-        $vippscountry = $address['country'];
-        if (strlen($vippscountry) == 2) {
-            $country = strtoupper($vippscountry);
-        } else {
-            global $Vipps;
-            $country = $Vipps->country_to_code($vippscountry);
+        $country = ""; 
+        if (isset($address['country'])) {
+            $vippscountry = $address['country'];
+            if (strlen($vippscountry) == 2) {
+                $country = strtoupper($vippscountry);
+            } else {
+                global $Vipps;
+                $country = $Vipps->country_to_code($vippscountry);
+            }
         }
         $address['country'] = $country;
 
@@ -2362,7 +2411,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$billing) $billing = $address;
         $address = $this->canonicalize_vipps_address($address, $user);
         $billing = $this->canonicalize_vipps_address($billing, $user);
-
 
         # Billing.
         $order->set_billing_email($billing['email']);
@@ -2668,6 +2716,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $express = $order->get_meta('_vipps_express_checkout');
+
+        // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
+        // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
+        // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+        if ($express && !isset($result['userDetails'])) {
+            $result = $this->get_payment_details($order);
+        }
+
         // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
         // including adding anonoymous users if there is no other data. IOK 2023-01-10
         $result = $this->ensure_userDetails($result, $order);
@@ -2861,6 +2917,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         WC()->cart->calculate_totals();
         do_action('woo_vipps_before_create_express_checkout_order', WC()->cart);
 
+        // We store this in the order so we don't have to access the cart when initiating payment. This allows us to restart orders etc.
+        $needs_shipping = WC()->cart->needs_shipping();
+
         $contents = WC()->cart->get_cart_contents();
         $contents = apply_filters('woo_vipps_create_express_checkout_cart_contents',$contents);
         try {
@@ -2882,6 +2941,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $dummy = __('Vipps Checkout', 'woo-vipps'); //  this is so gettext will find this string.
 
             $order->update_meta_data('_vipps_express_checkout',1);
+
+            # To help with address fields, scope etc in inititate payment
+            $order->update_meta_data('_vipps_needs_shipping', $needs_shipping);
 
             $order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
             $order->set_currency( get_woocommerce_currency() );

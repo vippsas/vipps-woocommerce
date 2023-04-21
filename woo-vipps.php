@@ -7,13 +7,13 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.14.1
-   Stable tag: 1.14.1
+   Version: 1.14.4
+   Stable tag: 1.14.4
    Requires at least: 4.7
-   Tested up to: 6.1.1
+   Tested up to: 6.2
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 7.4.1
+   WC tested up to: 7.5.1
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.14.1');
+define('WOO_VIPPS_VERSION', '1.14.4');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
@@ -106,6 +106,7 @@ add_action( 'before_woocommerce_init', function() {
 
 // Load the extra Vipps Checkout Shipping classes only when neccessary
 add_action( 'woocommerce_shipping_init', function () {
-    if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false))
-    require_once(dirname(__FILE__) . "/VippsCheckoutShippingMethods.php");
+    if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false)) {
+        require_once(dirname(__FILE__) . "/VippsCheckoutShippingMethods.php");
+    }
 });

@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.1
-Stable tag: 1.14.1
+Version: 1.14.4
+Stable tag: 1.14.4
 Requires at least: 4.7
-Tested up to: 6.1.1
+Tested up to: 6.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 7.4.1
+WC tested up to: 7.5.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,6 +79,13 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+= 1.14.4 =
+Fix crash for setups where woocommerce_init_shiping is called twice
+= 1.14.3 =
+Bugfix for some shipping methods in Vips Checkout
+= 1.14.2 =
+Ensures that orders that don't need shipping do not ask for addresses from customers unless you explicitly want to.
+Small bugfixes too.
 = 1.14.1 =
 Bugfixes for co-existance with other plugins
 = 1.14.0 =
@@ -223,6 +230,16 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023.03.16 version  1.14.4 =
+Apparently some setup got called woocommerce_init_shipping more than once, which crashed on the new Checkout shipping methods.
+
+= 2023.03.16 version  1.14.3 =
+Bugfix for some shipping methods in Vipps Checkout
+
+= 2023.03.13 version  1.14.2 =
+Ensures that orders that don't need shipping do not ask for addresses from customers unless you explicitly want to.
+Small bugfixes too.
+
 = 2023.03.06 version 1.14.1 =
 Set require_userInfo to false per default for Elemenor and other users of pre_handle_404
 Bugfixes

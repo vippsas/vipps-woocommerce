@@ -398,6 +398,7 @@ class VippsApi {
         $merch = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
+        $needs_shipping = $order->get_meta('_vipps_needs_shipping');
 
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
@@ -465,7 +466,25 @@ class VippsApi {
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
 
         $express = $this->gateway->express_checkout;
-        if ($express) {
+
+        // If we are not to ask for the address, we must change this to a normal "eComm Regular Payment" and add a scope,
+        // which will give us a sub from which we can get user data from the userInfo api. This is a temporary situation. IOK 2023-03-10
+        //
+        // The old "explicit shipping" option which is now the only option - if set to "yes", always ask for address
+        $explicit_option = ($this->gateway->get_option('useExplicitCheckoutFlow') == "yes");
+        // Merchant may always need it
+        $always_address = ($this->gateway->get_option('expresscheckout_always_address') == "yes");
+
+        $ask_for_address = apply_filters('woo_vipps_express_checkout_ask_for_address', ($needs_shipping || $always_address || $explicit_option), $order); 
+
+        if ($express && $ask_for_address) {
+
+            // Express Checkout! Except if this order doesn't need shipping, and the merchant doesn't care about the
+            // address. If so, we'll just add a scope to the initiate_payment branch which will allow us to fetch
+            // user data (except address then) from getDetails and then userInfo. This is then via the eCommerce api, and not the
+            // eCom api so that's interesting too.
+            
+
             $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
             if ($authtoken) {
                 $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
@@ -478,18 +497,24 @@ class VippsApi {
                 $data['merchantInfo']['staticShippingDetails'] = $static_shipping["shippingDetails"];
             }
 
-            // Support new, more explicit checkout flow IOK 2021-10-13
-            $explicit_option = $this->gateway->get_option('useExplicitCheckoutFlow');
-            $explicit_flow =  ($explicit_option == 'yes');
-            if ($explicit_option == 'shipping' && WC()->cart) {
-                $explicit_flow =  WC()->cart->needs_shipping();
-            }
-            $explicit_flow = apply_filters('woo_vipps_use_explicit_checkout_flow',  $explicit_flow, $order);
+        } else {
+             $data['merchantInfo']["paymentType"] = "eComm Regular Payment";
 
-            if ($explicit_flow) {
-               $transaction['useExplicitCheckoutFlow'] = true;
-            }
-
+             // We will not normally ask for user info, but if this is an express checkout order, where we don't 
+             // want the address, then we have to add "name", "email" and "phoneNumber" to the scope. A filter will allow
+             // advanced users to add scope for their own usage.
+             // When scope has been added, it is possible to get a 'sub' value from the payment details, which for several weeks
+             // can be used to retrieve user information from the user info API. IOK 2023-03-10
+            // IOK 2023-03-10 'scope' deterines for what data we ask the customer.
+            // possible values, name, address, email, phoneNumber, birthDate, nin and accountNumbers (last ones are of course restricted)
+             $scope = array();
+             if ($express) {
+                $scope = ["name", "email", "phoneNumber"]; // And not 'address'
+             }
+             $scope = apply_filters('woo_vipps_express_checkout_scope', $scope, $order);
+             if (!empty($scope)) {
+                $transaction['scope'] = join(" ", $scope);
+             }
         }
         $data['transaction'] = $transaction;
 
@@ -512,6 +537,7 @@ class VippsApi {
         $secret = $this->get_secret();
         $subkey = $this->get_key();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
+        $needs_shipping = $order->get_meta('_vipps_needs_shipping');
 
         $merch = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
@@ -595,7 +621,6 @@ class VippsApi {
         $data['transaction'] = $transaction;
 
         ## Vipps Checkout Shipping
-        $needs_shipping =  WC()->cart->needs_shipping();
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
         $shippingcallback .= "/v3/checkout/" . $vippsorderid . "/shippingDetails"; # because this is how eCom v2 does it.
         $gw = $this->gateway;
@@ -1111,6 +1136,38 @@ class VippsApi {
         return $res;
     }
 
+    // Implement part of the userInfo api, just to be able to get  user data from Express Orders that aren't express
+    // orders (because they didn't need shipping). In the future, will probably be used more + for integration with Login With Vipps
+    public function get_userinfo($sub) {
+        $command = "vipps-userinfo-api/userinfo" . "/" . $sub;
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        $headers = array();         
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        
+        $data = array();
+        
+        $res = $this->http_call($command,$data,'GET',$headers);
+        return $res;
+    }
+
+
     // the QR api 2022-04-13. PUT is update (on id), DELETE is deletion (of id), GET is get the .. thing. Arguments would be Accept for image/png or image/svg+xml
     public function get_merchant_redirect_qr_entry ($id,$accept="text/targetUrl") {
         return $this->call_qr_merchant_redirect("GET", $id, null, $accept);
@@ -1191,7 +1248,6 @@ class VippsApi {
         $res = $this->http_call($url,[],'GET',$headers);
         return $res;
     }
-
 
     // Conveniently call Vipps IOK 2018-04-18
     private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){

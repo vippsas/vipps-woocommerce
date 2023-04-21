@@ -91,72 +91,8 @@ class Vipps {
     // These are strings that should be available for translation possibly at some future point. Partly to be easier to work with translate.wordpress.org
     // Other usages are to translate any dynamic strings that may come from APIs etc. IOK 2021-03-18
     private function translatable_strings() {
-        __( "Activate this for Helthjem as a Vipps Checkout Shipping method.", 'woo-vipps');
-        __( "Activate this for Instabox as a Vipps Checkout Shipping method.", 'woo-vipps');
-        __( "Activate this for Porterbuddy as a Vipps Checkout Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.", 'woo-vipps');
-        __( "Activate this for Posten Norge as a Vipps Checkout Shipping method.", 'woo-vipps');
-        __( "Activate this for PostNord as a Vipps Checkout Shipping method.", 'woo-vipps');
-        __( "Allow user to choose pickup point", 'woo-vipps');
-        __( "Billing details", 'woo-vipps');
-        __( "Calculate cost in Checkout", 'woo-vipps');
-        __( "Calculate costs in the Checkout window", 'woo-vipps');
-        __( "Client secret provided to you by Instabox", 'woo-vipps');
-        __( "Cost", 'woo-vipps');
-        __( "Cost of shipping", 'woo-vipps');
-        __( "Deliver to customers' home address", 'woo-vipps');
-        __( "Deliver to customers' mailbox", 'woo-vipps');
-        __( "Error: Cannot instantiate payment gateway, because WooCommerce is not loaded! This can happen when WooCommerce updates itself; but if it didn't, please activate WooCommerce again", 'woo-vipps');
-        __( "Fraktmetode spesielt for Vipps Checkout: Helthjem", 'woo-vipps');
-        __( "Fraktmetode spesielt for Vipps Checkout: Instabox", 'woo-vipps');
-        __( "Fraktmetode spesielt for Vipps Checkout: Porterbuddy", 'woo-vipps');
-        __( "Fraktmetode spesielt for Vipps Checkout: Posten Norge", 'woo-vipps');
-        __( "Fraktmetode spesielt for Vipps Checkout: Postnord", 'woo-vipps');
-        __( "Helthjem", 'woo-vipps');
-        __( "Helthjem Password", 'woo-vipps');
-        __( "Helthjem Shop Id", 'woo-vipps');
-        __( "Helthjem Username", 'woo-vipps');
-        __( "If checked, cost of shipping will be calculated dynamically in the Vipps Checkout window", 'woo-vipps');
-        __( "If you are using Vipps Checkout, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.", 'woo-vipps');
-        __( "Instabox", 'woo-vipps');
-        __( "Instabox Client Id", 'woo-vipps');
-        __( "Instabox Client Secret", 'woo-vipps');
-        __( "No delivery method specified", 'woo-vipps');
-        __( "Password provided to you by Helthjem", 'woo-vipps');
-        __( "Payment method reset to Vipps - it had been set to KCO while completing the order for %d", 'woo-vipps');
-        __( "Pickup Point", 'woo-vipps');
-        __( "Porterbuddy", 'woo-vipps');
-        __( "Porterbuddy API key", 'woo-vipps');
-        __( "Porterbuddy Phone Number", 'woo-vipps');
-        __( "Porterbuddy public token", 'woo-vipps');
-        __( "Posten Norge", 'woo-vipps');
-        __( "PostNord", 'woo-vipps');
-        __( "Postnord", 'woo-vipps');
-        __( "Short description of shipping method", 'woo-vipps');
-        __( "Short description of shipping method used in Vipps Checkout", 'woo-vipps');
-        __( "Support Helthjem as a shipping method in Vipps Checkout", 'woo-vipps');
-        __( "Support Instabox as a shipping method in Vipps Checkout", 'woo-vipps');
-        __( "Support Porterbuddy as a shipping method in Vipps Checkout", 'woo-vipps');
-        __( "Support Posten Norge as a shipping method in Vipps Checkout", 'woo-vipps');
-        __( "Support PostenNord as a shipping method in Vipps Checkout", 'woo-vipps');
-        __( "The API key provided to you by Porterbuddy", 'woo-vipps');
-        __( "The client id provided to you by Instabox", 'woo-vipps');
-        __( "The public key provided to you by Porterbuddy", 'woo-vipps');
-        __( "The ShopId provided to you by Helthjem", 'woo-vipps');
-        __( "The Username provided to you by Helthjem", 'woo-vipps');
-        __( "Title to be display on site", 'woo-vipps');
-        __( "Vipps callback: Handling order: ", 'woo-vipps');
-        __( "Vipps Checkout Shipping Methods", 'woo-vipps');
-        __( "Vipps Checkout: Helthjem", 'woo-vipps');
-        __( "Vipps Checkout: Instabox", 'woo-vipps');
-        __( "Vipps Checkout: Porterbuddy", 'woo-vipps');
-        __( "Vipps Checkout: Posten", 'woo-vipps');
-        __( "Vipps Checkout: Postnord", 'woo-vipps');
-        __( "Vipps On-Site Messaging", 'woo-vipps');
-        __( "When using Vipps Checkout, you have the option to use Vipps Checkout specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the Vipps Checkout screen.", 'woo-vipps');
-        __( "Wrong Vipps Orderid - possibly an attempt to fake a callback ", 'woo-vipps');
-        __( "Wrong Vipps Orderid on shipping details callback", 'woo-vipps');
-        __( "You need a newer version of WooCommerce to use Vipps Checkout!", 'woo-vipps');
-        __( "Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: \"4791234567\"", 'woo-vipps');
+        // Nothing here right now
+        return false;
     }
 
     // True iff support for HPOS has been activated IOK 2022-12-07
@@ -1447,8 +1383,9 @@ else:
         }
         if (!empty(@$details['shippingDetails'])) {
             $ss = $details['shippingDetails'];
+            $addr = isset($ss['address']) ? $ss['address'] : array();
             print "<h3>" . __('Shipping details', 'woo-vipps') . "</h3>";
-            print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_values(@$ss['address']))) . "<br>";
+            print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_values($addr))) . "<br>";
             if (@$ss['shippingMethod']) print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
             if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
             print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";
@@ -2118,7 +2055,7 @@ else:
         // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
-        if (is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
+        if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
             add_filter('woocommerce_is_checkout', '__return_true');
             add_filter('body_class', function ($classes) {
                     $classes[] = 'vipps-checkout';
@@ -2981,6 +2918,13 @@ EOF;
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
 
+                  // The description is normally only stored only in the shipping method
+                  if ($shipping_method) {
+                     $m2['description'] = $shipping_method->get_option('description', '');
+                  } else {
+                     $m2['description'] = "";
+                  }
+
                   // Some data must be visible in the Order screen, so add meta data
                   $meta = $rate->get_meta_data();
                   if (isset($meta['brand'])) {
@@ -2988,21 +2932,16 @@ EOF;
                      unset($m2['title']);
               
                   } else {
-                      // specialcase some known methods so they get brands
-                      if (get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                      // specialcase some known methods so they get brands, and put the label into the description
+                      if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
                          $m2['brand'] = "POSTEN";
+                         $m2['description'] = $rate->get_label();
                       }
                       $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
                   }
 
                   if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
                      $m2['type'] = $meta['type'];
-                  }
-                  // But the description is stored only in the shipping method.
-                  if ($shipping_method) {
-                     $m2['description'] = $shipping_method->get_option('description', '');
-                  } else {
-                     $m2['description'] = "";
                   }
 
                   // Old filter kept for backwards compatibility
@@ -4078,16 +4017,17 @@ EOF;
         wc_nocache_headers();
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
-        $ok = wp_verify_nonce($_REQUEST['sec'],'express');
+        $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
 
-        add_filter('body_class', function ($classes) {
-            $classes[] = 'vipps-express-checkout';
-            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
-            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
-        });
 
         $backurl = wp_validate_redirect(@$_SERVER['HTTP_REFERER']);
         if (!$backurl) $backurl = home_url();
+
+        if (!$ok) {
+            wc_add_notice(__('Link expired, please try again', 'woo-vipps'));
+            wp_redirect($backurl);
+            exit();
+        }
 
         if ( WC()->cart->get_cart_contents_count() == 0 ) {
             wc_add_notice(__('Your shopping cart is empty','woo-vipps'),'error');
@@ -4095,9 +4035,15 @@ EOF;
             exit();
         }
 
+        add_filter('body_class', function ($classes) {
+            $classes[] = 'vipps-express-checkout';
+            $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+            return apply_filters('woo_vipps_express_checkout_body_class', $classes);
+        });
+
         do_action('woo_vipps_express_checkout_page');
 
-        $this->print_express_checkout_page($ok,'do_express_checkout');
+        $this->print_express_checkout_page(false, 'do_express_checkout');
     }
 
     // This method tries to ensure that a customer does not 'lose' the return page and
