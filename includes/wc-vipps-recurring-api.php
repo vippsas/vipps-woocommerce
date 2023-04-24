@@ -294,10 +294,10 @@ class WC_Vipps_Recurring_Api {
 	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [] ) {
 		$url = $this->gateway->api_url . '/' . $endpoint;
 
-		$client_id              = $this->gateway->settings["client_id"];
-		$secret_key             = $this->gateway->settings["secret_key"];
-		$subscription_key       = $this->gateway->settings["subscription_key"];
-		$merchant_serial_number = $this->gateway->settings["merchant_serial_number"];
+		$client_id              = $this->gateway->get_option("client_id");
+		$secret_key             = $this->gateway->get_option("secret_key");
+		$subscription_key       = $this->gateway->get_option("subscription_key");
+		$merchant_serial_number = $this->gateway->get_option("merchant_serial_number");
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
 			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps Recurring Payments gateway is not correctly configured.', 'woo-vipps-recurring' ) );
