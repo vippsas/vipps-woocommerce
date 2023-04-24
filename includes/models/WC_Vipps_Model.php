@@ -53,7 +53,7 @@ abstract class WC_Vipps_Model {
 		}
 	}
 
-	protected function serialize_value( $value, string $date_format = 'c' ) {
+	protected function serialize_value( $value, string $date_format = 'Y-m-d\TH:i:s\Z' ) {
 		if ( $value instanceof DateTime ) {
 			$value = $value->format( $date_format );
 		}

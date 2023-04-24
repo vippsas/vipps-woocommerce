@@ -1587,8 +1587,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 						( new WC_Vipps_Agreement_Campaign() )
 							->set_type( WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN )
 							->set_price( WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ) )
-//							->set_event_date(WC_Vipps_Recurring_Helper::get_rfc_3999_date( $start_date ))
-							->set_end( WC_Vipps_Recurring_Helper::get_rfc_3999_date( $campaign_end_date ) )
+//							->set_event_date( $start_date )
+							->set_end(  $campaign_end_date )
 					);
 				}
 
