@@ -858,6 +858,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
+			// Prevent temporary cancellations from reaching this code
+			$new_status = $subscription->get_status();
+			if ( $new_status !== 'cancelled' ) {
+				return;
+			}
+
 			$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
 			if ( get_transient( 'cancel_subscription_lock' . $subscription_id ) ) {
@@ -870,7 +876,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$agreement    = $this->api->get_agreement( $agreement_id );
 
 			if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
-				$this->maybe_handle_subscription_status_transitions( $subscription, 'cancelled', 'active' );
+				$this->maybe_handle_subscription_status_transitions( $subscription, $new_status, 'active' );
 				$this->maybe_update_subscription_details_in_app( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
 
 				$idempotency_key = $this->get_idempotency_key( $subscription );
