@@ -127,6 +127,10 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	}
 
 	public function set_description( ?string $description ): self {
+		if ( strlen( $description ) > 45 ) {
+			$description = mb_substr( $description, 0, 42 ) . '...';
+		}
+
 		$this->description = $description;
 
 		return $this;

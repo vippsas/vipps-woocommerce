@@ -1025,7 +1025,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			$idempotency_key = $this->get_idempotency_key( $renewal_order );
-
 			$charge = $this->api->create_charge( $agreement, $idempotency_key, $amount );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['chargeId'] );
@@ -1158,41 +1157,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				/* translators: %s order id */
 				$this->admin_error( sprintf( __( 'Could not capture Vipps payment for order id: %s', 'woo-vipps-recurring' ), WC_Vipps_Recurring_Helper::get_id( $order ) ) );
-
-				return false;
-			}
-		}
-
-		/**
-		 * Creates a charge on an agreement, order and idempotency_key
-		 *
-		 * @param WC_Vipps_Agreement $agreement
-		 * @param $order
-		 * @param string $idempotency_key
-		 *
-		 * @return bool|WC_Vipps_Charge
-		 */
-		public function create_charge( WC_Vipps_Agreement $agreement, $order, string $idempotency_key ) {
-			try {
-				$charge = $this->api->create_charge( $agreement, $idempotency_key );
-
-				// add due charge note
-				$charge = $this->api->get_charge( $agreement->id, $charge['chargeId'] );
-
-				$order->add_order_note( $this->get_due_charge_note( $charge ) );
-
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Created charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
-
-				return $charge;
-			} catch ( Exception $e ) {
-				// mark charge as failed
-				WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
-				$order->update_status( 'failed', __( 'Vipps failed to create charge', 'woo-vipps-recurring' ) );
-				$order->save();
-
-				/* translators: %s order id */
-				$this->admin_error( sprintf( __( 'Could not capture Vipps payment for order id: %s', 'woo-vipps-recurring' ), WC_Vipps_Recurring_Helper::get_id( $order ) ) );
-				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in capture_payment when creating charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
 
 				return false;
 			}
