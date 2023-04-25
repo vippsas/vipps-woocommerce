@@ -171,6 +171,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Changed: We now use the `woocommerce_subscription_cancelled_vipps_recurring` hook instead of `woocommerce_subscription_status_cancelled` to cancel a subscription.
 * Added: A merchant serial number setting to help Vipps to identify who the merchant is.
 * Added: New filters, `wc_vipps_recurring_create_agreement_data`, `wc_vipps_recurring_update_agreement_data`, `wc_vipps_recurring_cancel_agreement_data`, `wc_vipps_recurring_create_charge_data`, `wc_vipps_recurring_process_payment_agreement`
+* Fixed: A rare problem that could occur where subscriptions would not be set to "Active" when an order's status transitions to processing or completed.
 
 = 1.14.7 =
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.

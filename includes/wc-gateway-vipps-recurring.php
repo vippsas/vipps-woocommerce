@@ -661,12 +661,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Controlled by the `transition_renewals_to_completed` setting
 			// Only applicable to renewal orders
 			if ( $this->transition_renewals_to_completed === "yes" && wcs_order_contains_renewal( $order ) ) {
-				$order->update_status( 'wc-completed' );
+				$order->update_status( 'completed' );
 			}
 
 			// Unlock the order and make sure we tell our cronjob to stop periodically checking the status of this order
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 			$this->unlock_order( $order );
+
+			if ( is_callable( [ $order, 'save' ] ) ) {
+				$order->save();
+			}
 		}
 
 		/**
