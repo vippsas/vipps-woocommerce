@@ -4043,7 +4043,7 @@ EOF;
 
         do_action('woo_vipps_express_checkout_page');
 
-        $this->print_express_checkout_page(false, 'do_express_checkout');
+        $this->print_express_checkout_page(true, 'do_express_checkout');
     }
 
     // This method tries to ensure that a customer does not 'lose' the return page and

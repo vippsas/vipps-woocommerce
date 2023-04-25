@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.4
-Stable tag: 1.14.4
+Version: 1.14.5
+Stable tag: 1.14.5
 Requires at least: 4.7
 Tested up to: 6.2
 Requires PHP: 5.6
@@ -79,6 +79,9 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Changed descriptions on Bring shipping methods for Vipps Checkout
+= 1.14.5 =
+Fixed typo which made the "Confirm terms and conditions" screen always appear if started from the Cart
 = 1.14.4 =
 Fix crash for setups where woocommerce_init_shiping is called twice
 = 1.14.3 =
@@ -90,10 +93,6 @@ Small bugfixes too.
 Bugfixes for co-existance with other plugins
 = 1.14.0 =
 Now supports Vipps Checkout version 3 with extended shipping method support!
-= 1.13.5 =
-Add failsafe for rare bug affecting some external payment method purchases with Klarna Checkout
-= 1.13.4 =
-Remove lookup of orderid based on Vipps-orderid from database to improve speed and remove issues with transients etc.
 
 
 == Frequently Asked Questions ==
@@ -230,6 +229,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023.04.25 version  1.14.5 =
+Changed descriptions on Bring shipping methods for Vipps Checkout
+Fixed typo which made the "Confirm terms and conditions" screen always appear if started from the Cart
+
 = 2023.03.16 version  1.14.4 =
 Apparently some setup got called woocommerce_init_shipping more than once, which crashed on the new Checkout shipping methods.
 
