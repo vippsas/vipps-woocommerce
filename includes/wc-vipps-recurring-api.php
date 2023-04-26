@@ -381,16 +381,20 @@ class WC_Vipps_Recurring_Api {
 		$is_url_validation_error       = false;
 
 		if ( $body ) {
+			if ( isset( $body['message'] ) ) {
+				$error_msg = $body['message'];
+			}
+
 			if ( isset( $body['error_description'] ) ) {
 				$error_msg = $body['error_description'];
 			}
 
 			if ( isset( $body['title'] ) ) {
 				$error_msg = $body['title'];
-			}
 
-			if ( isset( $body['detail'] ) ) {
-				$error_msg .= ' ' . $body['detail'];
+				if ( isset( $body['detail'] ) ) {
+					$error_msg .= ' ' . $body['detail'];
+				}
 			}
 
 			$error_msg = trim($error_msg);
