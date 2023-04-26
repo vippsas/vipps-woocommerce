@@ -14,7 +14,7 @@ abstract class WC_Vipps_Model {
 			$snake_case_key = $this->camel_to_snake( $key );
 			$func_name      = "set_$snake_case_key";
 
-			if ( ! method_exists( get_class( $this ), $func_name ) || ! $value ) {
+			if ( ! method_exists( get_class( $this ), $func_name ) || $value === null ) {
 				continue;
 			}
 
@@ -47,7 +47,7 @@ abstract class WC_Vipps_Model {
 		$fields = ! $keyed_by ? $this->required_fields : $this->required_fields[ $keyed_by ];
 
 		foreach ( $fields as $value ) {
-			if ( ! $this->{$value} ) {
+			if ( $this->{$value} === null ) {
 				throw new WC_Vipps_Recurring_Missing_Value_Exception( "Incorrect usage. Required value $value is missing in $class." );
 			}
 		}
