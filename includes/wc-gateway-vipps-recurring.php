@@ -83,7 +83,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 */
 		private static ?WC_Gateway_Vipps_Recurring $instance = null;
 
-		private WC_Vipps_Recurring_Api $api;
+		public WC_Vipps_Recurring_Api $api;
 
 		/**
 		 * Returns the *Singleton* instance of this class.

@@ -172,6 +172,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Added: A merchant serial number setting to help Vipps to identify who the merchant is.
 * Added: New filters, `wc_vipps_recurring_create_agreement_data`, `wc_vipps_recurring_update_agreement_data`, `wc_vipps_recurring_cancel_agreement_data`, `wc_vipps_recurring_create_charge_data`, `wc_vipps_recurring_process_payment_agreement`
 * Fixed: A rare problem that could occur where subscriptions would not be set to "Active" when an order's status transitions to processing or completed.
+* Changed: Made the `api` attribute public in `WC_Gateway_Vipps_Recurring` as it may sometimes be beneficial to call the API directly from third party plugins and hand it off to Vipps Recurring later, especially in the charity sector.
 
 = 1.14.7 =
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.
