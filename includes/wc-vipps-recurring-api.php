@@ -286,6 +286,23 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function get_userinfo( WC_Vipps_Agreement $agreement ): array {
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		$endpoint = str_replace( $this->gateway->api_url, '', $agreement->userinfo_url );
+
+		return $this->http_call( $endpoint, 'GET', [], $headers );
+	}
+
+	/**
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
