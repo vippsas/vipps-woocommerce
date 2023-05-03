@@ -2,9 +2,9 @@
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 6.0
+Tested up to: 6.1
 Stable tag: trunk
-Requires PHP: 7.0
+Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
@@ -33,7 +33,7 @@ See [How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vi
 
 * WooCommerce 3.3.4 or newer
 * [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
-* PHP 7.0 or higher
+* PHP 7.4 or higher
 * An SSL certificate must be installed and configured
 * Port 443 must not be blocked for outgoing traffic
 
@@ -159,6 +159,20 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Synchronized products can not be paid via Vipps when using KCO if the price at this moment in time is 0.
 
 == Changelog ==
+
+= 1.15.0 =
+* Refactored: We are now using the Vipps Recurring API v3
+* Changed: We now require at least PHP 7.4. You should however already be on 8.0+ as PHP 7.4 is end of life.
+* Added: Much more type safety to the entire codebase.
+* Fixed: We now check the order status before showing the "thank you" page, instead of after. This should fix the order status sometimes being wrong when the user lands on this page.
+* Refactored: We no longer pass product descriptions to Vipps unless you choose to do so.
+* Refactored: We now use Vipps' new campaign system.
+* Refactored: We no longer need to store the agreement's confirmation url ourselves. Idempotency now works as expected.
+* Changed: We now use the `woocommerce_subscription_cancelled_vipps_recurring` hook instead of `woocommerce_subscription_status_cancelled` to cancel a subscription.
+* Added: A merchant serial number setting to help Vipps to identify who the merchant is.
+* Added: New filters, `wc_vipps_recurring_create_agreement_data`, `wc_vipps_recurring_update_agreement_data`, `wc_vipps_recurring_cancel_agreement_data`, `wc_vipps_recurring_create_charge_data`, `wc_vipps_recurring_process_payment_agreement`
+* Fixed: A rare problem that could occur where subscriptions would not be set to "Active" when an order's status transitions to processing or completed.
+* Changed: Made the `api` attribute public in `WC_Gateway_Vipps_Recurring` as it may sometimes be beneficial to call the API directly from third party plugins and hand it off to Vipps Recurring later, especially in the charity sector.
 
 = 1.14.7 =
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.

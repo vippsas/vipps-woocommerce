@@ -5,10 +5,10 @@
  * Description: Offer recurring payments with Vipps for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.14.7
+ * Version: 1.15.0
  * Requires at least: 4.4
- * Tested up to: 6.0
- * WC tested up to: 6.5
+ * Tested up to: 6.2
+ * WC tested up to: 7.2
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
  */
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.14.7' );
+define( 'WC_VIPPS_RECURRING_VERSION', '1.15.0' );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
@@ -71,7 +71,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		/*
 		 * Required minimums and constants
 		 */
-		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.0.0' );
+		define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.4.0' );
 		define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 		define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
 		define( 'WC_VIPPS_RECURRING_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
@@ -85,7 +85,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		}
 
 		/*
-		 * Whether or not to put the plugin into test mode. This is only useful for developers.
+		 * Whether to put the plugin into test mode. This is only useful for developers.
 		 */
 		if ( ! defined( 'WC_VIPPS_RECURRING_TEST_MODE' ) ) {
 			define( 'WC_VIPPS_RECURRING_TEST_MODE', false );
@@ -93,26 +93,20 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 		class WC_Vipps_Recurring {
 			/**
-			 * @var WC_Vipps_Recurring The reference the *Singleton* instance of this class
+			 * The reference the *Singleton* instance of this class
 			 */
-			private static $instance;
+			private static ?WC_Vipps_Recurring $instance = null;
 
-			/**
-			 * @var WC_Vipps_Recurring_Admin_Notices
-			 */
-			public $notices;
+			public WC_Vipps_Recurring_Admin_Notices $notices;
 
-			/**
-			 * @var WC_Gateway_Vipps_Recurring
-			 */
-			public $gateway;
+			public WC_Gateway_Vipps_Recurring $gateway;
 
 			/**
 			 * Returns the *Singleton* instance of this class.
 			 *
-			 * @return WC_Vipps_Recurring The *Singleton* instance.
+			 * @return WC_Vipps_Recurring
 			 */
-			public static function get_instance(): \WC_Vipps_Recurring {
+			public static function get_instance(): WC_Vipps_Recurring {
 				if ( null === self::$instance ) {
 					self::$instance = new self();
 				}
@@ -189,6 +183,37 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				// testing code
 //				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+//					$agreement = new WC_Vipps_Agreement( [
+//						"start"                => "2022-09-29T09:48:02Z",
+//						"stop"                 => null,
+//						"status"               => "ACTIVE",
+//						"pricing"              => [
+//							"type"     => "LEGACY",
+//							"currency" => "NOK",
+//							"amount"   => 14900
+//						],
+//						"productName"          => "This is a name of a really long product wh...",
+//						"productDescription"   => "[På vent] This is a name of a really long product which will be truncated",
+//						"interval"             => [
+//							"unit"  => "MONTH",
+//							"count" => 1,
+//							"text"  => "every month"
+//						],
+//						"campaign"             => [
+//							"price"       => 12665,
+//							"end"         => "2022-10-29T09:47:45Z",
+//							"explanation" => "Original price 149 kr
+//starts October 29",
+//							"type"        => "LEGACY_CAMPAIGN"
+//						],
+//						"sub"                  => null,
+//						"userinfoUrl"          => null,
+//						"merchantAgreementUrl" => "https://8e9f-141-0-97-106.eu.ngrok.io/my-account/",
+//						"id"                   => "agr_GqnvsHY"
+//					] );
+//
+//					die(var_dump($agreement->to_array()));
+
 //					add_action( 'wp_loaded', [
 //						$this,
 //						'check_order_statuses'
@@ -260,7 +285,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				add_action( 'save_post', [ $this, 'save_order' ], 10, 3 );
 
-				if ( $this->gateway->testmode ) {
+				if ( $this->gateway->test_mode ) {
 					$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
 					$this->notices->warning( $notice );
 				}
@@ -530,7 +555,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Force check status of all pending charges
 			 */
-			public function wp_ajax_vipps_recurring_force_check_charge_statuses() {
+			public function wp_ajax_vipps_recurring_force_check_charge_statuses(): void {
 				try {
 					/* translators: amount of orders checked */
 					echo sprintf( __( 'Done. Checked the status of %s orders', 'woo-vipps-recurring' ), count( $this->check_order_statuses( - 1 ) ) );
@@ -559,7 +584,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * Tab content
 			 */
-			public function woocommerce_product_data_panels() {
+			public function woocommerce_product_data_panels(): void {
 				echo '<div id="wc_vipps_recurring_product_data" class="panel woocommerce_options_panel hidden">';
 
 				woocommerce_wp_checkbox( [
@@ -577,7 +602,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps app.', 'woo-vipps-recurring' ),
 					'desc_tip'    => true,
 					'options'     => [
-						'title'             => __( 'Product title', 'woo-vipps-recurring' ),
+						'none'             => __( 'None', 'woo-vipps-recurring' ),
 						'short_description' => __( 'Product short description', 'woo-vipps-recurring' ),
 						'custom'            => __( 'Custom', 'woo-vipps-recurring' )
 					]
@@ -611,14 +636,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 			/**
 			 * @param $order
 			 */
-			public function order_item_add_action_buttons( $order ) {
+			public function order_item_add_action_buttons( $order ): void {
 				$this->order_item_add_capture_button( $order );
 			}
 
 			/**
 			 * @param $order
 			 */
-			public function order_item_add_capture_button( $order ) {
+			public function order_item_add_capture_button( $order ): void {
 				if ( $order->get_type() !== 'shop_order' ) {
 					return;
 				}
@@ -656,7 +681,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 *
 			 * @throws Exception
 			 */
-			public function save_order( $postid, $post ) {
+			public function save_order( $postid, $post ): void {
 				if ( $post->post_type !== 'shop_order' ) {
 					return;
 				}

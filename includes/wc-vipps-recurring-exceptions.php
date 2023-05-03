@@ -4,8 +4,8 @@ defined( 'ABSPATH' ) || exit;
 
 class WC_Vipps_Recurring_Exception extends Exception {
 
-	/** @var string sanitized/localized error message */
-	protected $localized_message;
+	/** sanitized/localized error message */
+	protected string $localized_message;
 
 	public $response_code;
 	public $is_idempotent_error = false;
@@ -41,5 +41,15 @@ class WC_Vipps_Recurring_Temporary_Exception extends WC_Vipps_Recurring_Exceptio
 
 // Misconfigurations
 class WC_Vipps_Recurring_Config_Exception extends WC_Vipps_Recurring_Exception {
+	//
+}
+
+// Missing required value
+class WC_Vipps_Recurring_Missing_Value_Exception extends WC_Vipps_Recurring_Exception {
+	//
+}
+
+// Invalid value value
+class WC_Vipps_Recurring_Invalid_Value_Exception extends WC_Vipps_Recurring_Exception {
 	//
 }

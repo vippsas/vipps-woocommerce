@@ -24,6 +24,13 @@ return apply_filters(
 			'description' => __( 'This controls the description which the user sees during checkout.', 'woo-vipps-recurring' ),
 			'default'     => __( 'Pay with Vipps.', 'woo-vipps-recurring' ),
 		],
+		'merchant_serial_number'                 => [
+			'title'       => __( 'Merchant Serial Number (MSN)', 'woo-vipps-recurring' ),
+			'type'        => 'text',
+			'description' => __( 'Get your Merchant Serial Number your Vipps developer portal.', 'woo-vipps-recurring' ),
+			'default'     => '',
+			'desc_tip'    => true,
+		],
 		'client_id'                        => [
 			'title'       => __( 'client_id', 'woo-vipps-recurring' ),
 			'type'        => 'text',
@@ -98,7 +105,7 @@ return apply_filters(
 			'label'       => __( 'Log debug messages', 'woo-vipps-recurring' ),
 			'type'        => 'checkbox',
 			'description' => __( 'Save debug messages to the WooCommerce System Status log.', 'woo-vipps-recurring' ),
-			'default'     => 'no',
+			'default'     => 'yes',
 		],
 	]
 );
