@@ -22,10 +22,8 @@ With Vipps Recurring Payments for WooCommerce you can:
 * Offer subscription services
 
 See
-[How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-howitworks.md)
+[How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/vipps-recurring-api-howitworks/)
 for an overview.
-
-![The Vipps Recurring process](https://github.com/vippsas/vipps-recurring-api/blob/master/images/vipps-recurring-process.svg)
 
 # Table of contents
 
@@ -66,7 +64,7 @@ for an overview.
 ## Retrieving Vipps API Keys
 
 The documentation for retrieving your Vipps API Keys can be found
-[here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
+[here](https://developer.vippsmobilepay.com/docs/vipps-developers/).
 
 ## Configuration of the plugin
 
@@ -89,11 +87,9 @@ In most cases your products should be virtual when using subscriptions, but it i
 possible to use the plugin with physical products if you need to do so.
 
 See the
-[Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md),
-and the
-[Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+[Vipps API FAQ](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/)
 for more details:
-[What is the difference between "Reserve Capture" and "Direct Capture"?](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md#what-is-the-difference-between-reserve-capture-and-direct-capture).
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/reserve-and-capture-faq/#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 # Extending the plugin
 
@@ -108,7 +104,7 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 
 `WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 4
 
-The amount of days Vipps will retry a charge for before it fails. Documentation can be found [here](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api.md#charge-retries).
+The amount of days Vipps will retry a charge for before it fails. Documentation can be found [here](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/vipps-recurring-api/#charge-retries).
 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
 
@@ -124,7 +120,7 @@ Available filters:
 
 `wc_vipps_recurring_payment_icons(array $icons)`
 
-- Takes an array of icons that a WooCommerce payment gateway can have. Currently it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
+- Takes an array of icons that a WooCommerce payment gateway can have. Currently, it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
 
 `wc_vipps_recurring_show_capture_button(bool $show_capture_button, WC_Order $order)`
 
@@ -170,13 +166,12 @@ If your question is not answered on this page:
 
 * For help with the plugin: Please use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
 * For help with Vipps: Please see the
-  [contact us](https://github.com/vippsas/vipps-developers/blob/master/contact.md)
+  [contact us](https://developer.vippsmobilepay.com/docs/vipps-developers/contact/)
   page, and also the main
-  [Vipps GitHub page](https://github.com/vippsas).
+  [Vipps page](https://developer.vippsmobilepay.com/).
   The
-  [Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md)
-  and the
-  [Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md) may also be useful.
+  [Vipps FAQ](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/)
+  may also be useful.
 
 ## Does this plugin work alongside the Vipps for WooCommerce plugin?
 
@@ -205,10 +200,10 @@ Vipps is only available in Norway at the moment and only users who have Vipps wi
 
 ## How can I test that the plugin works correctly?
 
-If you have access to the Vipps test environment you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
-See the [getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md) guide for details about how to get started using the test environment.
+If you have access to the Vipps test environment, you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
+See the [getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/) guide for details about how to get started using the test environment.
 
-Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
+Vipps does not offer test accounts for regular users of the plugin, but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
 You can then refund or cancel the purchase afterwards.
 
 ## Why do I have to capture payments for physical products manually?
@@ -221,8 +216,8 @@ If you have a valid reason to do so you can use the "Capture payment instantly" 
 
 ## When a renewal happens, why is the order on hold?
 
-This is because when an order is charged in Vipps it takes 2 days before the payment has been fully captured from the customer's bank account.
+This is because when an order is charged in Vipps, it takes 2 days before the payment has been fully captured from the customer's bank account.
 
-After 2 days it will move to the "Processing" status. You can however change the behaviour of this by using the "Default status to give pending renewals" option in the plugin settings.
+After 2 days, it will move to the "Processing" status. You can however change the behavior of this by using the "Default status to give pending renewals" option in the plugin settings.
 
-Alternatively you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
+Alternatively, you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of utmost importance.
