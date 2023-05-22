@@ -141,7 +141,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
-			$this->cancelled_order_page             = $this->get_option( 'cancelled_order_page' );
+			$this->cancelled_order_page             = (int) $this->get_option( 'cancelled_order_page' );
 			$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 			$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );

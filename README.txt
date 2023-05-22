@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.15.1 =
+* Fix: `cancelled_order_page` must be an int.
+
 = 1.15.0 =
 * Refactored: We are now using the Vipps Recurring API v3
 * Changed: We now require at least PHP 7.4. You should however already be on 8.0+ as PHP 7.4 is end of life.
