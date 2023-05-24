@@ -77,10 +77,17 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
     require_once(dirname(__FILE__) . "/VippsQRCodeController.class.php");
     VippsQRCodeController::register_hooks();
 
-    require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
+    /* If Vipps Checkout is activated, load its support. It can still be turned on and off. */
+    if (get_option('woo_vipps_checkout_activated', false)) {
+        require_once(dirname(__FILE__) . "/VippsCheckout.class.php");
+        VippsCheckout::register_hooks();
+    }
 
     // Gutenberg block for on-site messaging badges, if Gutenberg is installed. IOK 2022-11-16
     require_once(dirname(__FILE__) . '/Blocks/Badges/vipps-badge.php');
+
+    // Helper code for specific plugins, themes etc
+    require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
 }
 
 add_action ('before_woocommerce_init', function () {
@@ -104,7 +111,7 @@ add_action( 'before_woocommerce_init', function() {
 	}
 });
 
-// Load the extra Vipps Checkout Shipping classes only when neccessary
+// Load the extra Vipps Checkout Shipping classes only when necessary
 add_action( 'woocommerce_shipping_init', function () {
     if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false)) {
         require_once(dirname(__FILE__) . "/VippsCheckoutShippingMethods.php");

@@ -3149,26 +3149,11 @@ function activate_vipps_checkout(yesno) {
 
         // If enabling this, ensure the page in question exists
         if ($this->get_option('vipps_checkout_enabled') == 'yes') {
-            $this->maybe_create_vipps_pages();
+            update_option('woo_vipps_checkout_activated', true, true); // This must be true here, but still, make sure
+            Vipps::instance()->maybe_create_vipps_pages();
         }
 
         return $saved;
-    }
-
-    // This creates the Vipps Checkout page if neccessary. Called when user activates Vipps Checkout,
-    // or when it is enabled for the first time.
-    public function maybe_create_vipps_pages () {
-            // This always true if we get here at all
-            update_option('woo_vipps_checkout_activated', true, true);
-            $checkoutid = wc_get_page_id('vipps_checkout');
-
-            $makeit = !$checkoutid || ! get_post_status($checkoutid);
-            if ($makeit) {
-               delete_option('woocommerce_vipps_checkout_page_id');
-               WC_Install::create_pages();
-            } else {
-                 // Noop
-            }
     }
 
     public function check_connection () {

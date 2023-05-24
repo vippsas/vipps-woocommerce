@@ -61,6 +61,30 @@ class VippsCheckout {
         add_action('init',array($VippsCheckout,'init'));
         add_action( 'plugins_loaded', array($VippsCheckout,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($VippsCheckout,'woocommerce_loaded'));
+        add_action( 'template_redirect', array($VippsCheckout,'template_redirect'));
+    }
+
+    public function template_redirect () {
+        // This will normally be on the "checkout" page which shouldn't be cached, but just in case, add
+        // nocache headres to any page that uses this shortcode. IOK 2021-08-26
+        // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
+        if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
+            add_filter('woocommerce_is_checkout', '__return_true');
+            add_filter('body_class', function ($classes) {
+                    $classes[] = 'vipps-checkout';
+                    $classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site IOK 2022-11-24
+                    return apply_filters('woo_vipps_checkout_body_class', $classes);
+                    });
+            /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
+            $post_to_hide_title_for = $post->ID;
+            add_filter('the_title', function ($title, $postid) use ($post_to_hide_title_for) {
+                    if (!is_admin() && $postid ==  $post_to_hide_title_for && is_singular()  && in_the_loop()) {
+                    $title = "";
+                    }
+                    return $title;
+                    }, 10, 2);
+            wc_nocache_headers();
+        }
     }
 
     public function init () {
@@ -85,19 +109,7 @@ class VippsCheckout {
             WC()->session->set('vipps_address_hash', false);
         });
 
-        // Activate support for Vipps Checkout, including creating the special checkout page etc
-        add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
-          check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
-          $this->gateway()->maybe_create_vipps_pages();
-  
-          if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
-             $this->gateway()->update_option('vipps_checkout_enabled', 'yes');
-          } else {
-             $this->gateway()->update_option('vipps_checkout_enabled', 'no');
-          }
 
-
-        });
         // For Vipps Checkout - we need to know any time and as soon as the cart changes, so fold all the events into a single one. IOK 2021-08-24
         add_action( 'woocommerce_add_to_cart', function ($cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
             do_action('vipps_cart_changed');
@@ -604,22 +616,6 @@ class VippsCheckout {
     }
 
     public function plugins_loaded() {
-        // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
-        add_filter('woocommerce_create_pages', array($this, 'woocommerce_create_pages'), 50, 1);
-    }
-
-    // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
-    public function woocommerce_create_pages ($data) {
-        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-        if (!$vipps_checkout_activated) return $data;
-
-        $data['vipps_checkout'] = array(
-                'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
-                'title'   => _x( 'Vipps Checkout', 'Page title', 'woo-vipps' ),
-                'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
-                );
-
-        return $data;
     }
 
     public function woocommerce_settings_pages ($settings) {
@@ -656,6 +652,66 @@ class VippsCheckout {
         }
 
         return $settings;
+    }
+
+
+    // Translate from the Express Checkout shipping method format to the Vipps Checkout shipping
+    // format, which is slightly different. The ratemap maps from a method key to its WC_Shipping_Rate, and the method map does
+    // the same for WP_Shipping_Method.
+    public function format_shipping_methods ($return, $ratemap, $methodmap) {
+        $translated = array();
+        $currency = get_woocommerce_currency();
+        foreach ($return['shippingDetails']  as $m) {
+            $m2 = array();
+
+            $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
+            $m2['priority'] = $m['priority'];
+            $m2['amount'] = array(
+                'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+            );
+            $m2['brand'] = "OTHER";
+            $m2['title'] = $m['shippingMethod']; // Only for "other"
+            $m2['id'] = $m['shippingMethodId'];
+
+            $rate = $ratemap[$m2['id']];
+            $shipping_method = $methodmap[$m2['id']];
+
+            // The description is normally only stored only in the shipping method
+            if ($shipping_method) {
+                $m2['description'] = $shipping_method->get_option('description', '');
+            } else {
+                $m2['description'] = "";
+            }
+
+            // Some data must be visible in the Order screen, so add meta data
+            $meta = $rate->get_meta_data();
+            if (isset($meta['brand'])) {
+                $m2['brand'] = $meta['brand'];
+                unset($m2['title']);
+
+            } else {
+                // specialcase some known methods so they get brands, and put the label into the description
+                if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                    $m2['brand'] = "POSTEN";
+                    $m2['description'] = $rate->get_label();
+                }
+                $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
+            }
+
+            if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
+                $m2['type'] = $meta['type'];
+            }
+
+            // Old filter kept for backwards compatibility
+            $m2['description'] = apply_filters('woo_vipps_shipping_method_description', $m2['description'], $rate, $shipping_method);
+            $translated[] = $m2;
+        }
+
+        $return['shippingDetails'] = $translated;
+        unset($return['addressId']); // Not used it seems for checkout
+        unset($return['orderId']);
+        return $return;
     }
 
 
