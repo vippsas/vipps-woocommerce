@@ -4,9 +4,10 @@ This plugin provides support for Vipps recurring payments for WooCommerce.
 
 Document version: 2.0.2.
 
-**We encourage you to create an issue here if you require assistance or run in to a problem.**
+*We encourage you to create an issue [here](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.*
 
-# Description
+
+This plugin is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
 
 This is the official
 [Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
