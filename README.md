@@ -9,6 +9,8 @@ Document version: 2.0.2.
 
 This plugin is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
 
+## Description
+
 This is the official
 [Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
 plugin for
@@ -26,7 +28,7 @@ See
 [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/vipps-recurring-api-howitworks/)
 for an overview.
 
-# Table of contents
+## Table of contents
 
 * [ Requirements ](#requirements)
 * [ Getting started ](#getting-started)
@@ -39,7 +41,7 @@ for an overview.
   * [ Filters ](#filters)
 * [ Frequently Asked Questions ](#frequently-asked-questions)
 
-# Requirements
+## Requirements
 
 * WooCommerce 3.3.4 or newer
 * [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
@@ -47,13 +49,13 @@ for an overview.
 * An SSL certificate must be installed and configured
 * Port 443 must not be blocked for outgoing traffic
 
-# Getting started
+## Getting started
 
 * Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
 * Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
 * Proceed to "Installation" below
 
-## Installation
+### Installation
 
 1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
 2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce: `Settings` -> `Payments (Betalinger)`.
@@ -62,19 +64,19 @@ for an overview.
 
 ![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/wp-org-assets/screenshot-1.png)
 
-## Retrieving Vipps API Keys
+### Retrieving Vipps API Keys
 
 The documentation for retrieving your Vipps API Keys can be found
 [here](https://developer.vippsmobilepay.com/docs/vipps-developers/).
 
-## Configuration of the plugin
+### Configuration of the plugin
 
 1. Fill in the `client_id`, `client_secret` and `Vipps-Subscription-Key` found in the previous step.
 2. That's it! You can now move on to "Configuring products"
 
 ![Settings](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/wp-org-assets/screenshot-2.png)
 
-## Configuring products
+### Configuring products
 
 Configuring products for use with the Vipps Recurring Payments plugin is not any
 different from default WooCommerce, with one exception: The configuration for
@@ -92,14 +94,14 @@ See the
 for more details:
 [What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/reserve-and-capture-faq/#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
-# Extending the plugin
+## Extending the plugin
 
 WooCommerce and WooCommerce Subscriptions has a lot of [default actions](https://docs.woocommerce.com/document/subscriptions/develop/action-reference/) that interact with the payment flow so there should not be any need to extend this plugin directly,
 but if you need an action or filter added to the plugin don't hesitate to create an issue on GitHub, and we will look into this as soon as possible.
 
 The plugin is currently in a pre-release phase and will have more filters, actions and features further down the road.
 
-## Constants
+### Constants
 
 Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-config.php`.
 
@@ -111,7 +113,7 @@ The amount of days Vipps will retry a charge for before it fails. Documentation 
 
 Enables someone with access to Vipps developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
 
-## Filters
+### Filters
 
 Available filters:
 
@@ -159,14 +161,14 @@ Available filters:
 
 - Allows you to modify the Vipps agreement before we send the request to the Vipps API. Includes subscription and order in case you need to make some custom logic.
 
-# Frequently Asked Questions
+## Frequently Asked Questions
 
-## How can I get help?
+### How can I get help?
 
 If your question is not answered on this page:
 
 * For help with the plugin: Please use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
-* For help with Vipps: Please see the
+* For help with Vipps, please see the
   [contact us](https://developer.vippsmobilepay.com/docs/vipps-developers/contact/)
   page, and also the main
   [Vipps page](https://developer.vippsmobilepay.com/).
@@ -174,17 +176,17 @@ If your question is not answered on this page:
   [Vipps FAQ](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/)
   may also be useful.
 
-## Does this plugin work alongside the Vipps for WooCommerce plugin?
+### Does this plugin work alongside the Vipps for WooCommerce plugin?
 
 Yes! You can use this plugin at the same time as
 [Vipps for WooCommerce](https://github.com/vippsas/vipps-woocommerce).
 
-## Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
+### Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 
 Yes, you do. Get it
 [here](https://woocommerce.com/products/woocommerce-subscriptions/).
 
-## Does this plugin work with the WooCommerce Memberships-plugin?
+### Does this plugin work with the WooCommerce Memberships-plugin?
 
 [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
 and
@@ -195,11 +197,11 @@ are able to work together for access to recurring memberships that unlock conten
 
 You can read about how WooCommerce Subscriptions and WooCommerce Memberships work together [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
 
-## Where can I use Vipps?
+### Where can I use Vipps?
 
 Vipps is only available in Norway at the moment and only users who have Vipps will be able to pay with Vipps.
 
-## How can I test that the plugin works correctly?
+### How can I test that the plugin works correctly?
 
 If you have access to the Vipps test environment, you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
 See the [getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/) guide for details about how to get started using the test environment.
@@ -207,7 +209,7 @@ See the [getting started](https://developer.vippsmobilepay.com/docs/vipps-develo
 Vipps does not offer test accounts for regular users of the plugin, but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
 You can then refund or cancel the purchase afterwards.
 
-## Why do I have to capture payments for physical products manually?
+### Why do I have to capture payments for physical products manually?
 
 This is because of the Norwegian law. You are not allowed to charge for a physical product before you ship it, without a valid reason to do so.
 
@@ -215,7 +217,7 @@ You can read about it [here](https://www.forbrukertilsynet.no/english/guidelines
 
 If you have a valid reason to do so you can use the "Capture payment instantly" option from the "Vipps Recurring Payments" settings in your product's settings.
 
-## When a renewal happens, why is the order on hold?
+### When a renewal happens, why is the order on hold?
 
 This is because when an order is charged in Vipps, it takes 2 days before the payment has been fully captured from the customer's bank account.
 
