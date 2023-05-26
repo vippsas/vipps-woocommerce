@@ -29,24 +29,29 @@ Since Vipps knows who the customers are, they don't have to enter all their pers
 When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialogue. Then she confirms the payment in the Vipps app.
 
 # How to get started
+
 * Sign up to use Vipps på Nett ([vipps.no/woocommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
 
 # Installation
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
+
+1. Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 # How to get Vipps account keys from Vipps Developer Portal
+
 1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
-
-See: [Getting Started](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started) with the Vipps Portal, and the Vipps eCommerce [FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq).
+For more information, see:
+* [Getting Started](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started)
+* [API Keys](https://developer.vippsmobilepay.com/docs/vipps-developers/common-topics/api-keys)
+* [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 
 # Screenshots
 Enable Vipps as a payment method
