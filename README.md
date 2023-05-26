@@ -74,7 +74,7 @@ Vipps does not offer a test account for normal users of the plugin.
 You will need a "Vipps på nett" account for direct integration with the Vipps
 eCom API v2, which can be ordered
 [here](https://vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/).
-
+TestFlight
 If you already have a Vipps account for WooCommerce, and want to contribute to
 the development of the plugin, you can contact
 [customer service](https://www.vipps.no/kontakt-oss/bedrift/)
