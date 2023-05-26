@@ -1,10 +1,12 @@
 # Vipps for WooCommerce
 
-This repo contains "Checkout with Vipps for WooCommerce". For more information about this product, please see: https://wordpress.org/plugins/woo-vipps/
+This repo contains *Checkout with Vipps for WooCommerce*. For detailed information about this product, please see 
+[Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/).
 
-The Vipps product page is here: https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/
+The Vipps product page is [Vipps WoCommerce plugins](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/).
+To contact Vipps, see the [contact us](https://developer.vippsmobilepay.com/docs/vipps-developers/contact/) page.
 
-See the main GitHub page for Vipps contact information, etc: (https://developer.vippsmobilepay.com/)
+This plugin is also hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).
 
 # Description
 
