@@ -77,7 +77,7 @@ eCom API v2, which can be ordered
 TestFlight
 If you already have a Vipps account for WooCommerce, and want to contribute to
 the development of the plugin, you can contact
-[customer service](https://www.vipps.no/kontakt-oss/bedrift/)
+[customer service](https://www.vipps.no/kontakt-oss/)
 to "upgrade" your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
