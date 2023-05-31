@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.5
-Stable tag: 1.14.5
+Version: 1.14.6
+Stable tag: 1.14.6
 Requires at least: 4.7
-Tested up to: 6.2
+Tested up to: 6.2.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 7.5.1
+WC tested up to: 7.7.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -80,6 +80,8 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Changed descriptions on Bring shipping methods for Vipps Checkout
+= 1.14.6 =
+Ensured admin notices do not crash newer versions of WooCommerce when Vipps is triggered with no current screen
 = 1.14.5 =
 Fixed typo which made the "Confirm terms and conditions" screen always appear if started from the Cart
 = 1.14.4 =
@@ -229,6 +231,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023-05-31 version 1.14.6 =
+Ensured admin notices do not crash newer versions of WooCommerce when Vipps is triggered with no current screen
+
 = 2023.04.25 version  1.14.5 =
 Changed descriptions on Bring shipping methods for Vipps Checkout
 Fixed typo which made the "Confirm terms and conditions" screen always appear if started from the Cart
