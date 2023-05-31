@@ -1795,6 +1795,9 @@ EOF;
 
     // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
     public function store_admin_notices() {
+        // WooCommerce will (now) call this function in the inject_before_notices method. If it does not exist,
+        // we get a crash. If there is no "current screen", then we cannot provide these.
+        if (!function_exists('get_current_screen')) return false;
         ob_start();
         do_action('admin_notices');
         $notices = ob_get_clean();
