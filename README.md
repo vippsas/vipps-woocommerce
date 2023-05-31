@@ -1,5 +1,9 @@
 # Vipps Recurring Payments for WooCommerce
 
+<!-- START_COMMENT -->
+💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/vipps-plugins/). 💥
+<!-- END_COMMENT -->
+
 This plugin provides support for Vipps recurring payments for WooCommerce.
 
 Document version: 2.0.2.
