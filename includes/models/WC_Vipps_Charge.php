@@ -66,7 +66,6 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	 */
 	public $due;
 	public ?int $retry_days = null;
-	public ?string $order_id = null;
 	public ?string $failure_reason = null;
 	public ?string $failure_description = null;
 	public ?array $summary = null;
@@ -126,6 +125,12 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
+	public function set_transaction_id( string $transaction_id ): self {
+		$this->transaction_id = $transaction_id;
+
+		return $this;
+	}
+
 	public function set_description( ?string $description ): self {
 		if ( strlen( $description ) > 45 ) {
 			$description = mb_substr( $description, 0, 42 ) . '...';
@@ -158,12 +163,6 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_order_id( int $order_id ): self {
-		$this->order_id = $order_id;
-
-		return $this;
-	}
-
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
@@ -181,7 +180,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 			],
 			$this->conditional( "type", $this->type ),
 			$this->conditional( "transactionType", $this->transaction_type ),
-			$this->conditional( "orderId", $this->order_id )
+			$this->conditional( "transactionId", $this->order_id )
 		);
 	}
 }
