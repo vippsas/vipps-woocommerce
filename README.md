@@ -1,19 +1,19 @@
+<!-- START_METADATA
+---
+title: Vipps Recurring Payments for WooCommerce plugin
+sidebar_position: 1
+pagination_next: null
+pagination_prev: null
+---
+END_METADATA -->
+
 # Vipps Recurring Payments for WooCommerce
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/vipps-plugins/). 💥
 <!-- END_COMMENT -->
 
-This plugin provides support for Vipps recurring payments for WooCommerce.
-
-Document version: 2.0.2.
-
-*We encourage you to create an issue [here](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.*
-
-
-This plugin is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
-
-## Description
+This module is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
 
 This is the official
 [Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
@@ -32,18 +32,22 @@ See
 [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/vipps-recurring-api-howitworks/)
 for an overview.
 
+We encourage you to [create an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.
+
+<!-- START_COMMENT -->
 ## Table of contents
 
-* [ Requirements ](#requirements)
-* [ Getting started ](#getting-started)
-  * [ Installation ](#installation)
-  * [ Retrieving Vipps API keys ](#retrieving-vipps-api-keys)
-  * [ Configuration of the plugin ](#configuration-of-the-plugin)
-  * [ Configuring products ](#configuring-products)
-* [ Extending the plugin ](#extending-the-plugin)
-  * [ Constants ](#constants)
-  * [ Filters ](#filters)
-* [ Frequently Asked Questions ](#frequently-asked-questions)
+* [Requirements](#requirements)
+* [Getting started](#getting-started)
+  * [Installation](#installation)
+  * [Retrieving Vipps API keys](#retrieving-vipps-api-keys)
+  * [Configuration of the plugin](#configuration-of-the-plugin)
+  * [Configuring products](#configuring-products)
+* [Extending the plugin](#extending-the-plugin)
+  * [Constants](#constants)
+  * [Filters](#filters)
+* [Frequently Asked Questions](#frequently-asked-questions)
+<!-- END_COMMENT -->
 
 ## Requirements
 
@@ -57,14 +61,14 @@ for an overview.
 
 * Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
 * Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
-* Proceed to "Installation" below
+* Proceed to [Installation](#installation).
 
 ### Installation
 
 1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
-2. Enable the Vipps Recurring Payments ("Vipps faste betalinger") payment method in WooCommerce: `Settings` -> `Payments (Betalinger)`.
-3. Click "Manage" on the Vipps Recurring Payments payment method
-4. Proceed to "Retrieving Vipps API Keys" below
+2. Enable the *Vipps Recurring Payments* ("Vipps faste betalinger") payment method in WooCommerce: *Settings* > *Payments* ("Betalinger").
+3. Click *Manage* on the Vipps Recurring Payments payment method.
+4. Proceed to [Retrieving Vipps API Keys](#retrieving-vipps-api-keys).
 
 ![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-1.png)
 
@@ -123,47 +127,47 @@ Available filters:
 
 `wc_vipps_recurring_supported_currencies(array $currencies)`
 
-- Takes an array of supported currencies in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
+* Takes an array of supported currencies in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
 
 `wc_vipps_recurring_payment_icons(array $icons)`
 
-- Takes an array of icons that a WooCommerce payment gateway can have. Currently, it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
+* Takes an array of icons that a WooCommerce payment gateway can have. Currently, it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
 
 `wc_vipps_recurring_show_capture_button(bool $show_capture_button, WC_Order $order)`
 
-- Decides whether the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current decision on whether or not it shall be displayed. `$order` contains the current `WC_Order` being viewed.
+* Decides whether the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current decision on whether or not it shall be displayed. `$order` contains the current `WC_Order` being viewed.
 
 `wc_vipps_recurring_merchant_agreement_url(string $url)`
 
-- Allows you to modify the merchant agreement url.
+* Allows you to modify the merchant agreement url.
 
 `wc_vipps_recurring_merchant_redirect_url(string $url)`
 
-- Allows you to modify the merchant redirect url.
+* Allows you to modify the merchant redirect url.
 
 `wc_vipps_recurring_transaction_id_for_order(string $transaction_id, WC_Order $order)`
 
-- Determines the return value of `WC_Vipps_Recurring_Helper::get_transaction_id_for_order`
+* Determines the return value of `WC_Vipps_Recurring_Helper::get_transaction_id_for_order`
 
 `wc_vipps_recurring_create_agreement_data(array $data)`
 
-- Allows you to alter the request body sent to the Vipps API when a new agreement is being created.
+* Allows you to alter the request body sent to the Vipps API when a new agreement is being created.
 
 `wc_vipps_recurring_update_agreement_data(array $data)`
 
-- Allows you to alter the request body sent to the Vipps API when an agreement is being updated.
+* Allows you to alter the request body sent to the Vipps API when an agreement is being updated.
 
 `wc_vipps_recurring_cancel_agreement_data(array $data)`
 
-- Allows you to alter the request body sent to the Vipps API when an agreement is cancelled.
+* Allows you to alter the request body sent to the Vipps API when an agreement is cancelled.
 
 `wc_vipps_recurring_create_charge_data(array $data)`
 
-- Allows you to alter the request body sent to the Vipps API when a new charge is being created.
+* Allows you to alter the request body sent to the Vipps API when a new charge is being created.
 
 `wc_vipps_recurring_process_payment_agreement(WC_Vipps_Agreement $agreement, WC_Subscription $subscription, WC_Order $order)`
 
-- Allows you to modify the Vipps agreement before we send the request to the Vipps API. Includes subscription and order in case you need to make some custom logic.
+* Allows you to modify the Vipps agreement before we send the request to the Vipps API. Includes subscription and order in case you need to make some custom logic.
 
 ## Frequently Asked Questions
 
