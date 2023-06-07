@@ -140,6 +140,11 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function cancel_agreement( string $agreement_id, string $idempotency_key ): void {
+		$agreement = $this->get_agreement( $agreement_id );
+		if ( $agreement->status !== WC_Vipps_Agreement::STATUS_ACTIVE ) {
+			return;
+		}
+
 		$token = $this->get_access_token();
 
 		$headers = [
@@ -311,10 +316,10 @@ class WC_Vipps_Recurring_Api {
 	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [] ) {
 		$url = $this->gateway->api_url . '/' . $endpoint;
 
-		$client_id              = $this->gateway->get_option("client_id");
-		$secret_key             = $this->gateway->get_option("secret_key");
-		$subscription_key       = $this->gateway->get_option("subscription_key");
-		$merchant_serial_number = $this->gateway->get_option("merchant_serial_number");
+		$client_id              = $this->gateway->get_option( "client_id" );
+		$secret_key             = $this->gateway->get_option( "secret_key" );
+		$subscription_key       = $this->gateway->get_option( "subscription_key" );
+		$merchant_serial_number = $this->gateway->get_option( "merchant_serial_number" );
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
 			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps Recurring Payments gateway is not correctly configured.', 'woo-vipps-recurring' ) );
@@ -414,7 +419,7 @@ class WC_Vipps_Recurring_Api {
 				}
 			}
 
-			$error_msg = trim($error_msg);
+			$error_msg = trim( $error_msg );
 
 			/*
 			"type":"https://example.com/validation-error",
