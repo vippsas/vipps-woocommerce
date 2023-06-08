@@ -1,19 +1,17 @@
 <!-- START_METADATA
 ---
-title: Vipps Recurring Payments for WooCommerce plugin
+title: Recurring Payments for WooCommerce
 sidebar_position: 1
 pagination_next: null
 pagination_prev: null
 ---
 END_METADATA -->
 
-# Vipps Recurring Payments for WooCommerce
+# Recurring Payments for WooCommerce
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/vipps-plugins/). 💥
 <!-- END_COMMENT -->
-
-This module is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
 
 This is the official
 [Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
@@ -31,6 +29,8 @@ With Vipps Recurring Payments for WooCommerce you can:
 See
 [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/vipps-recurring-api-howitworks/)
 for an overview.
+
+This module is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
 
 We encourage you to [create an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.
 
