@@ -13,7 +13,6 @@ END_METADATA -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/vipps-plugins/). 💥
 <!-- END_COMMENT -->
 
-This module is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).
 
 *Official Vipps Express Checkout and Payment for WooCommerce. More than 3.9 million Norwegians use Vipps. Give them a fast and familiar shopping experience.*
 
@@ -26,6 +25,7 @@ For more information, see:
 * [Vipps.no: We have these WooCommerce plugins available](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/)
 * [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
+This module is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).
 
 ## Vipps Express Checkout
 
