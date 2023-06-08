@@ -74,7 +74,7 @@ We encourage you to [create an issue](https://github.com/vippsas/vipps-recurring
 
 ### Retrieving Vipps API Keys
 
-Log-in to [portal.vipps.no](portal.vipps.no) and get your test API keys, as described in
+Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/vipps-developers/common-topics/api-keys/).
 
 ### Configuration of the plugin
