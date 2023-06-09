@@ -1,13 +1,15 @@
 <!-- START_METADATA
 ---
-title: Recurring Payments for WooCommerce
+title: Vipps Recurring Payments for WooCommerce
 sidebar_position: 1
 pagination_next: null
 pagination_prev: null
 ---
 END_METADATA -->
 
-# Recurring Payments for WooCommerce
+# Vipps Recurring Payments for WooCommerce
+
+*This plugin is built and maintained by [Everyday AS](https://everyday.no) and is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/vipps-plugins/). 💥
@@ -29,10 +31,6 @@ With Vipps Recurring Payments for WooCommerce you can:
 See
 [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/vipps-recurring-api-howitworks/)
 for an overview.
-
-This module is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
-
-We encourage you to [create an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.
 
 <!-- START_COMMENT -->
 ## Table of contents
@@ -163,7 +161,7 @@ If your question is not answered on this page:
 ### Does this plugin work alongside the Vipps for WooCommerce plugin?
 
 Yes! You can use this plugin at the same time as
-[Vipps for WooCommerce](https://github.com/vippsas/vipps-woocommerce).
+[Vipps for WooCommerce](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
 
 ### Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 
@@ -176,7 +174,7 @@ and
 [WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
 are able to work together for access to recurring memberships that unlock content.
 
-**Please note:** *WooCommerce Subscriptions* is required in order to use *Vipps Recurring Payments for WooCommerce*, but *WooCommerce Memberships* is not.*
+**Please note:** *WooCommerce Subscriptions* is required in order to use *Vipps Recurring Payments for WooCommerce*, but *WooCommerce Memberships* is not.
 
 You can read about how *WooCommerce Subscriptions* and *WooCommerce Memberships* work together at
 [WooCommerce Memberships Subscriptions Integration](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
