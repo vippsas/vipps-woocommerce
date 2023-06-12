@@ -1201,7 +1201,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // or in another castle.
         // IOK 2023-01-23 store the limited session in the order instead and separeted it from the authtoken
         $limited_session = $this->generate_authtoken();
-        $returnurl = add_query_arg('s',$limited_session,$returnurl);
+        $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
 
 
