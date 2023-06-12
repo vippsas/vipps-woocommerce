@@ -1,10 +1,12 @@
 # Vipps for WooCommerce
 
-This repo contains "Checkout with Vipps for WooCommerce". For more information about this product, please see: https://wordpress.org/plugins/woo-vipps/
+This repo contains *Checkout with Vipps for WooCommerce*. For detailed information about this product, please see 
+[Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/).
 
-The Vipps product page is here: https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/
+The Vipps product page is [Vipps WoCommerce plugins](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/).
+To contact Vipps, see the [contact us](https://developer.vippsmobilepay.com/docs/vipps-developers/contact/) page.
 
-See the main GitHub page for Vipps contact information, etc: (https://vippsas.github.io/vipps-developer-docs/)
+This plugin is also hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).
 
 # Description
 
@@ -27,24 +29,29 @@ Since Vipps knows who the customers are, they don't have to enter all their pers
 When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialogue. Then she confirms the payment in the Vipps app.
 
 # How to get started
+
 * Sign up to use Vipps på Nett ([vipps.no/woocommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
 
 # Installation
-1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
+
+1. Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 # How to get Vipps account keys from Vipps Developer Portal
+
 1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
-
-See: [Getting Started](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-getting-started) with the Vipps Portal, and the Vipps eCommerce [FAQ](https://vippsas.github.io/vipps-developer-docs/docs/APIs/ecom-api/vipps-ecom-api-faq).
+For more information, see:
+* [Getting Started](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started)
+* [API Keys](https://developer.vippsmobilepay.com/docs/vipps-developers/common-topics/api-keys)
+* [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 
 # Screenshots
 Enable Vipps as a payment method
@@ -67,22 +74,22 @@ Vipps does not offer a test account for normal users of the plugin.
 You will need a "Vipps på nett" account for direct integration with the Vipps
 eCom API v2, which can be ordered
 [here](https://vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/).
-
+TestFlight
 If you already have a Vipps account for WooCommerce, and want to contribute to
 the development of the plugin, you can contact
-[customer service](https://www.vipps.no/kontakt-oss/bedrift/)
+[customer service](https://www.vipps.no/kontakt-oss/)
 to "upgrade" your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
-trough Testflight. See
-[Vipps test apps](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-test-environment#vipps-test-apps)
+through TestFlight. See
+[Vipps test apps](https://developer.vippsmobilepay.com/docs/vipps-developers/test-environment/#vipps-test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
-See [Getting the API keys](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-getting-started#getting-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started#getting-the-api-keys)
 in the
-[Getting started](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/vipps-getting-started)
+[Getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started)
 guide for more information.
 
 To use test mode in WooCommerce, switch "Developer mode" on. There you can input
@@ -95,12 +102,12 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ## How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://vippsas.github.io/vipps-developer-docs/docs/vipps-developers/contact).
+For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://developer.vippsmobilepay.com/docs/vipps-developers/contact).
 
 ## Vipps FAQ
 
 See the
-[Vipps eCom API FAQ](https://vippsas.github.io/vipps-developer-docs/docs/APIs/ecom-api/vipps-ecom-api-faq)
+[Vipps eCom API FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 for more help with Vipps eCommerce.
 
 # What are the requirements?

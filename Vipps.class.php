@@ -175,7 +175,6 @@ class Vipps {
             add_action('woo_vipps_unlock_order', array($this, 'flock_unlock_order'));
         }
 
-
     }
 
 
@@ -2825,9 +2824,11 @@ EOF;
         }
         $session->set('__vipps_buy_product', json_encode($_REQUEST));
 
-        // Is there any errros that could be catched here?
+        // Incredibly, some caches will cache this page even with cookies set and no-cache headers set. So we try to 
+        // add yet another way to inform caches that this is, in fact, not cacheable. IOK 2023-06-12
+        $url = add_query_arg('nc', sha1(uniqid(WC()->session->get_customer_id(),true)), $this->buy_product_url());
 
-        $result = array('ok'=>1, 'msg'=>__('Processing order... ','woo-vipps'), 'url'=>$this->buy_product_url());
+        $result = array('ok'=>1, 'msg'=>__('Processing order... ','woo-vipps'), 'url'=> $url);
         wp_send_json($result);
         exit();
     }
@@ -3381,9 +3382,6 @@ EOF;
             $args[sanitize_title(wp_unslash($key))] = sanitize_text_field(wp_unslash($value));
         }
 
-
-
-
         $this->print_express_checkout_page(true,'do_single_product_express_checkout',$args);
     }
 
@@ -3622,7 +3620,7 @@ EOF;
 
         // Failsafe for when the session disappears IOK 2018-11-19
         $no_session  = $orderid ? false : true;
-        $limited_session = sanitize_text_field(@$_GET['s']);
+        $limited_session = sanitize_text_field(@$_GET['ls']);
 
         // Now we *should* have a session at this point, but the session may have been deleted,
         // or the session may be in another browser, because we get here by the Vipps app opening the app.
