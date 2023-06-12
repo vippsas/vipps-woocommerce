@@ -1035,7 +1035,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			$idempotency_key = $this->get_idempotency_key( $renewal_order );
-			$charge = $this->api->create_charge( $agreement, $idempotency_key, $amount );
+			$charge          = $this->api->create_charge( $agreement, $idempotency_key, $amount );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['chargeId'] );
 			WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
@@ -1540,7 +1540,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$agreement = $agreement->set_initial_charge(
 						( new WC_Vipps_Agreement_Initial_Charge() )
 							->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
-							->set_description( $initial_charge_description ?? $item->get_name() )
+							->set_description( empty( $initial_charge_description ) ? $item->get_name() : $initial_charge_description )
 							->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 					);
 
@@ -1562,7 +1562,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 							->set_type( WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN )
 							->set_price( WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ) )
 //							->set_event_date( $start_date )
-							->set_end(  $campaign_end_date )
+							->set_end( $campaign_end_date )
 					);
 				}
 

@@ -162,7 +162,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 = 1.15.2 =
 * Fix: No longer attempt to cancel agreements that are already cancelled.
-* Fix: Removed `order_id` from WC_Vipps_Charge and added `transaction_id` as it should be correctly named.
+* Fix: Removed `order_id` from `WC_Vipps_Charge` and added `transaction_id` as it should be correctly named.
+* Fix: A case where `initialCharge.description` would be empty
 
 = 1.15.1 =
 * Fix: `cancelled_order_page` must be an int.
