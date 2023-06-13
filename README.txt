@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.16.0 =
+* Added: a `wc_vipps_recurring_after_payment_complete` action
+
 = 1.15.2 =
 * Fix: No longer attempt to cancel agreements that are already cancelled.
 * Fix: Removed `order_id` from `WC_Vipps_Charge` and added `transaction_id` as it should be correctly named.

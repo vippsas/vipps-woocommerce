@@ -120,6 +120,12 @@ See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-ap
 
 Enables someone with access to Vipps developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
 
+## Actions
+
+Available actions:
+
+`wc_vipps_recurring_after_payment_complete(WC_Order $order)`
+
 ### Filters
 
 Available filters:

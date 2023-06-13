@@ -671,6 +671,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( is_callable( [ $order, 'save' ] ) ) {
 				$order->save();
 			}
+
+			do_action( 'wc_vipps_recurring_after_payment_complete', $order );
 		}
 
 		/**
