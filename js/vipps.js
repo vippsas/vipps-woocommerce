@@ -184,7 +184,16 @@ jQuery( document ).ready( function() {
     "success": function (result, statustext, xhr) {
      if (result["ok"]) {
        console.log("We created the order!");
-       window.location.replace(result["url"]);
+       /* In case user presses the back button */
+       setTimeout(function () {
+          jQuery(element).removeClass('disabled');
+          jQuery(element).removeClass('loading');
+          jQuery(element).removeAttr('disabled');
+          jQuery(element).removeAttr('inactive');
+          jQuery('body').removeClass('processing');
+          }
+       , 1500);
+       window.location.assign(result["url"]);
      } else {
        console.log("Failure!");
        jQuery(element).removeClass('disabled');
@@ -199,6 +208,8 @@ jQuery( document ).ready( function() {
    });
 
   }
+
+
 
  // Remove old error messages
  function removeErrorMessages () {
@@ -237,3 +248,4 @@ jQuery( document ).ready( function() {
  vippsInit();
  
 });
+

@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.7
-Stable tag: 1.14.7
+Version: 1.14.8
+Stable tag: 1.14.8
 Requires at least: 4.7
 Tested up to: 6.2.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 7.7.2
+WC tested up to: 7.8.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -80,6 +80,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Robustness against certain caches added.
+Back-button fixes applied
 
 
 == Frequently Asked Questions ==
@@ -216,6 +217,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023-06-xx version 1.14.8 =
+Fix back button on express checkout
+
 = 2023-06-12 version 1.14.7 =
 Add protection against caches ignoring nocache-headers and rename the "limited session" parameter to something sane.
 
