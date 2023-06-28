@@ -60,7 +60,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 
 For more information, see:
 
-* [Getting Started](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started)
+* [Getting Started](https://developer.vippsmobilepay.com/docs/vipps-developers/getting-started)
 * [API Keys](https://developer.vippsmobilepay.com/docs/vipps-developers/common-topics/api-keys)
 * [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 
@@ -98,9 +98,9 @@ for more information.
 
 API keys for both the test and production environment are available on
 [portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
-See [Getting the API keys](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started#getting-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/vipps-developers/getting-started#getting-the-api-keys)
 in the
-[Getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/vipps-getting-started)
+[Getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/getting-started)
 guide for more information.
 
 To use test mode in WooCommerce, switch "Developer mode" on. There you can input
