@@ -355,6 +355,11 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         }
 
         $cost = $this->get_cost($package);
+        if ($cost == 0 && $this->free_shipping_ok($package)) {
+            $meta['free_shipping'] = true;
+        } else {
+            unset($meta['free_shipping']);
+        }
 
         $ratedata = array(
                     'id'      => $this->get_rate_id(),
@@ -509,8 +514,7 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
     public $id = 'vipps_checkout_porterbuddy';
     public $delivery_types = ['HOME_DELIVERY'];
     public $brand = "PORTERBUDDY";
-    // Cannot support free shipping, since cost == 0 means dynamic pricing
-    public $supports_free_shipping = false;
+    public $supports_free_shipping = true;
     public $supports_dynamic_cost = true;
     public $no_type_needed = false;
     public $default_delivery_method = 'HOME_DELIVERY';

@@ -2684,7 +2684,9 @@ EOF;
            $return = $return['shippingDetails'];
         }
 
+
         $json = json_encode($return);
+
         header("Content-type: application/json; charset=UTF-8");
         print $json;
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
@@ -2864,7 +2866,6 @@ EOF;
            $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
            $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
 
-
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();
            $label = $rate->get_label();
@@ -2909,6 +2910,7 @@ EOF;
 
                   $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); // type bool here, but not in the other api
                   $m2['priority'] = $m['priority'];
+
                   $m2['amount'] = array(
                             'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
                             'currency' => $currency // May want to use the orders' currency instead here, since it exists.
@@ -2919,16 +2921,27 @@ EOF;
    
                   $rate = $ratemap[$m2['id']];
                   $shipping_method = $methodmap[$m2['id']];
+                  // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
+                  $meta = $rate->get_meta_data();
+
 
                   // The description is normally only stored only in the shipping method
                   if ($shipping_method) {
                      $m2['description'] = $shipping_method->get_option('description', '');
+
+                     // Support dynamic pricing alongside 0 cost
+                     if  (isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes') {
+                         if (!isset($meta['free_shipping']) || !$meta['free_shipping']) {
+                             $m2['amount'] = null;
+                         }
+                     }
+
+
+
                   } else {
                      $m2['description'] = "";
                   }
 
-                  // Some data must be visible in the Order screen, so add meta data
-                  $meta = $rate->get_meta_data();
                   if (isset($meta['brand'])) {
                      $m2['brand'] = $meta['brand'];
                      unset($m2['title']);
@@ -2955,6 +2968,7 @@ EOF;
             unset($return['addressId']); // Not used it seems for checkout
             unset($return['orderId']);
         }
+
 
         return $return;
     }
