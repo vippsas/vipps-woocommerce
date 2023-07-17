@@ -217,6 +217,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023-07-xx version 1.14.9 =
+Support Free shipping for Porterbuddy in Vipps Checkout
+
 = 2023-06-22 version 1.14.8 =
 Fix back button on express checkout
 

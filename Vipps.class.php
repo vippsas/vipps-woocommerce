@@ -114,9 +114,6 @@ class Vipps {
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
-        // Cart restoration and other post-purchase actions, mostly for express checkout IOK 2020-10-09
-        add_action('woocommerce_thankyou_vipps', array($this, 'woocommerce_thankyou'), 10, 1); 
-
         // Remove the possibility of restarting failed orders etc. This will be fixed in the future. IOK 2023-05-26
         add_filter('woocommerce_my_account_my_orders_actions', array($this,'woocommerce_my_account_my_orders_actions'), 10, 2);
 
@@ -1586,25 +1583,27 @@ else:
 
     // On the thank you page, we have a completed order, so we need to restore any saved cart and possibly log in 
     // the user if using Express Checkout IOK 2020-10-09
-    public function woocommerce_thankyou ($orderid) {
+    public function woocommerce_before_thankyou ($orderid) {
         $this->maybe_restore_cart($orderid);
         $order = wc_get_order($orderid);
         if ($order) {
-            $sessionkey = WC()->session->get('_vipps_order_finalized');
-            $orderkey = $order->get_order_key();
-
-            if ($orderkey == $sessionkey) {
-                // If this is the case, this order belongs to this session and we can proceed to do 'sensitive' things. IOK 2020-10-09
-                // Given the settings, maybe log in the user on express checkout. If the below function exists however, don't: That means that
-                // NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
-                // Actual logging in is governed by a filter in "maybe_log_in" too.
-                if (!function_exists('create_assign_user_on_vipps_callback')) {
-                    $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
-                }
+            // Don't interfere with NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
+            // Actual logging in is governed by a filter in "maybe_log_in" too.
+            if (!function_exists('create_assign_user_on_vipps_callback')) {
+                $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
             }
             $order->delete_meta_data('_vipps_limited_session');
             $order->save();
+
+            // Now if this was express checkout and we are a guest, ensure we have the correct email in the session->customer array IOK 2023-07-17
+            if (! is_user_logged_in() ) {
+                $this->maybe_set_session_customer_email($order);
+            }
         }
+
+        WC()->session->set('current_vipps_session', false);
+        WC()->session->set('vipps_checkout_current_pending',false);
+        WC()->session->set('vipps_address_hash', false);
     }
 
     public function woocommerce_loaded () {
@@ -1936,8 +1935,12 @@ EOF;
         $gw = $this->gateway();
         $gw->handle_callback($result, $order, $ischeckout);
 
-        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
-        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
+        // Restoring the session again to avoid race conditions in updating the session - this means session updates in the callback handler will
+        // NOT be saved. Sorry. Store any data you need in the order metadata. IOK 2023-07-17
+        // But this is required also so.
+        $this->callback_restore_session($orderid);
+        WC()->session->set('_vipps_order_finalized', $order->get_order_key());
+
         exit();
     }
 
@@ -2142,7 +2145,6 @@ EOF;
     }
    
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
-
         // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
         // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
         // This needs to be done before "calculate totals"
@@ -2685,6 +2687,25 @@ EOF;
         do_action('woo_vipps_cart_restored');
     }
 
+    // Should only be run when this is an order in our own session,
+    // used in the ajax_check_order_status and vipps_payment methods, where we are 
+    // expecting a customer return that may be from Express Checkout. If it is, we may
+    // have no customer email in the current session, which in 7.8.2 will stop the user from 
+    // viewing his or her orders. IOK 2023-07-17
+    function maybe_set_session_customer_email($order) {
+        if ($order->get_meta('_vipps_express_checkout')) {
+            $email = $order->get_billing_email();
+            if ($email && WC()->customer) {
+                WC()->customer->set_email($email);
+                WC()->customer->set_billing_email($email);
+                WC()->customer->save();
+                WC()->session->set('tstamp', time()); // Just to ensure it is 'dirty'
+            }  else {
+                $this->log(__("Could not get user email from order before thankyou-page", 'woo-vipps'));
+            }
+        }
+    }
+
     // Maybe log in user
     // It is done on the thank-you page of the order, and only for express checkout.
     function maybe_log_in_user ($order) {
@@ -3103,6 +3124,7 @@ EOF;
             return false;
         }
 
+
         // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
         $order = wc_get_order($orderid); // Reload
         $gw = $this->gateway();
@@ -3111,11 +3133,17 @@ EOF;
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
         }
+
+
         if ($payment == 'authorized') {
+            // IOK Previously handled in the thankyou hook 2023-07-17
+            $this->woocommerce_before_thankyou($order->get_id());
             wp_send_json(array('status'=>'ok', 'msg'=>__('Payment authorized', 'woo-vipps')));
             return false;
         }
         if ($payment == 'complete') {
+            // IOK Previously handled in the thankyou hook 2023-07-17
+            $this->woocommerce_before_thankyou($order->get_id());
             wp_send_json(array('status'=>'ok', 'msg'=>__('Payment captured', 'woo-vipps')));
             return false;
         }
@@ -3650,6 +3678,7 @@ EOF;
             }
         }
 
+
         do_action('woo_vipps_wait_for_payment_page',$order);
 
         $deleted_order=0;
@@ -3681,6 +3710,9 @@ EOF;
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
+            // IOK 2023-07-17 this used to be called in the woocommerce_thankyou hook, now we do it here instead, since 
+            // we may need to be logged in to be able to get to that hook.
+            $this->woocommerce_before_thankyou($order->get_id());
             wp_redirect($gw->get_return_url($order));
             exit();
         }
