@@ -2427,16 +2427,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_shipping_postcode($address['postalCode']);
         $order->set_shipping_country($address['country']);
 
-        // Allow the bearer of the current session to login (if not yet logged in) on the thankyou-screen IOK 2020-10-09
-        if (WC()->session) {
-            WC()->session->set('_vipps_order_finalized', $order->get_order_key());
-        } else {
-            $this->log(__("Finalizing an Express Checkout order with no session - this should probably not happen except when no callback has arrived", 'woo-vipps'), 'error');
-        }
         $order->save();
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session, which we will have restored at this point.IOK 2019-10-25
         if (WC()->customer) {
+            WC()->customer->set_billing_email($billing['email']);
+            WC()->customer->set_email($billing['email']);
             WC()->customer->set_billing_location($billing['country'],'',$billing['postalCode'],$billing['region']);
             WC()->customer->set_shipping_location($address['country'],'',$address['postalCode'],$address['region']);
         }
@@ -2671,7 +2667,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($oldstatus != 'pending') {
             // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
             clean_post_cache($order->get_id());
-            return;
+            return false;
         }
 
         // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
@@ -2679,9 +2675,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // when callbacks happen while we are polling for results. IOK 2018-05-30
         if (!$Vipps->lockOrder($order)) {
             clean_post_cache($order->get_id());
-            return;
+            return false;
         }
-
         // Set Vipps metadata as early as possible
         $transactionid = @$transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);

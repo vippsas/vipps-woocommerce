@@ -2119,26 +2119,23 @@ else:
         $this->maybe_restore_cart($orderid);
         $order = wc_get_order($orderid);
         if ($order) {
-            $sessionkey = WC()->session->get('_vipps_order_finalized');
-            $orderkey = $order->get_order_key();
-
-            if ($orderkey == $sessionkey) {
-                // If this is the case, this order belongs to this session and we can proceed to do 'sensitive' things. IOK 2020-10-09
-                // Given the settings, maybe log in the user on express checkout. If the below function exists however, don't: That means that
-                // NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
-                // Actual logging in is governed by a filter in "maybe_log_in" too.
-                if (!function_exists('create_assign_user_on_vipps_callback')) {
-                    $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
-                }
+            // Don't interfere with NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
+            // Actual logging in is governed by a filter in "maybe_log_in" too.
+            if (!function_exists('create_assign_user_on_vipps_callback')) {
+                $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
             }
             $order->delete_meta_data('_vipps_limited_session');
             $order->save();
 
-
-            WC()->session->set('current_vipps_session', false);
-            WC()->session->set('vipps_checkout_current_pending',false);
-            WC()->session->set('vipps_address_hash', false);
+            // Now if this was express checkout and we are a guest, ensure we have the correct email in the session->customer array IOK 2023-07-17
+            if (! is_user_logged_in() ) {
+                $this->maybe_set_session_customer_email($order);
+            }
         }
+
+        WC()->session->set('current_vipps_session', false);
+        WC()->session->set('vipps_checkout_current_pending',false);
+        WC()->session->set('vipps_address_hash', false);
     }
 
     public function woocommerce_loaded () {
@@ -2486,8 +2483,12 @@ EOF;
         $gw = $this->gateway();
         $gw->handle_callback($result, $order, $ischeckout);
 
-        // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
-        if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
+        // Restoring the session again to avoid race conditions in updating the session - this means session updates in the callback handler will
+        // NOT be saved. Sorry. Store any data you need in the order metadata. IOK 2023-07-17
+        // But this is required also so.
+        $this->callback_restore_session($orderid);
+        WC()->session->set('_vipps_order_finalized', $order->get_order_key());
+
         exit();
     }
 
@@ -3306,14 +3307,13 @@ EOF;
     function maybe_set_session_customer_email($order) {
         if ($order->get_meta('_vipps_express_checkout')) {
             $email = $order->get_billing_email();
-            $session = WC()->session;
-            if ($email && is_a($session, 'WC_Session')) {
-                 $customer = $session->get( 'customer' );
-                 if (!is_array($customer)) {
-                     $customer = [];
-                 }
-                 $customer['email'] = $email;
-                 $session->set('customer', $customer);
+            if ($email && WC()->customer) {
+                WC()->customer->set_email($email);
+                WC()->customer->set_billing_email($email);
+                WC()->customer->save();
+                WC()->session->set('tstamp', time()); // Just to ensure it is 'dirty'
+            }  else {
+                $this->log(__("Could not get user email from order before thankyou-page", 'woo-vipps'));
             }
         }
     }
@@ -3736,8 +3736,6 @@ EOF;
             return false;
         }
 
-        // Now if this was express checkout, ensure we have the correct email in the session->customer array IOK 2023-07-17
-        $this->maybe_set_session_customer_email($order);
 
         // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
         $order = wc_get_order($orderid); // Reload
@@ -3747,6 +3745,8 @@ EOF;
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
         }
+
+
         if ($payment == 'authorized') {
             // IOK Previously handled in the thankyou hook 2023-07-17
             $this->woocommerce_before_thankyou($order->get_id());
@@ -4313,8 +4313,6 @@ EOF;
             }
         }
 
-        // Now if this was express checkout, ensure we have the correct email in the session->customer array IOK 2023-07-17
-        $this->maybe_set_session_customer_email($order);
 
         do_action('woo_vipps_wait_for_payment_page',$order);
 
