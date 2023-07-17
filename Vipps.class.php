@@ -2131,7 +2131,9 @@ EOF;
            $return = $return['shippingDetails'];
         }
 
+
         $json = json_encode($return);
+
         header("Content-type: application/json; charset=UTF-8");
         print $json;
         // Just to be sure, save any changes made to the session by plugins/hooks IOK 2019-10-22
@@ -2310,7 +2312,6 @@ EOF;
            // Extended settings are stored in these objects
            $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
            $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
-
 
            $tax  = $rate->get_shipping_tax();
            $cost = $rate->get_cost();

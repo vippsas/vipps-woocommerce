@@ -677,16 +677,25 @@ class VippsCheckout {
 
             $rate = $ratemap[$m2['id']];
             $shipping_method = $methodmap[$m2['id']];
+            // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
+            $meta = $rate->get_meta_data();
 
             // The description is normally only stored only in the shipping method
             if ($shipping_method) {
+               
+                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
+                if  (isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes') {
+                    if (!isset($meta['free_shipping']) || !$meta['free_shipping']) {
+                        $m2['amount'] = null;
+                    }
+                }
+
+
                 $m2['description'] = $shipping_method->get_option('description', '');
             } else {
                 $m2['description'] = "";
             }
 
-            // Some data must be visible in the Order screen, so add meta data
-            $meta = $rate->get_meta_data();
             if (isset($meta['brand'])) {
                 $m2['brand'] = $meta['brand'];
                 unset($m2['title']);
