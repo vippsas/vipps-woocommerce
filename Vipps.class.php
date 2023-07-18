@@ -2471,9 +2471,6 @@ EOF;
             exit();
         }
 
-        // Ensure we use the same session as for the original order IOK 2019-10-21
-        $this->callback_restore_session($orderid);
-
         if ($ischeckout) {
              do_action('woo_vipps_callback_checkout', $result);
         } else {
@@ -2481,13 +2478,14 @@ EOF;
         }
 
         $gw = $this->gateway();
-        $gw->handle_callback($result, $order, $ischeckout);
 
-        // Restoring the session again to avoid race conditions in updating the session - this means session updates in the callback handler will
-        // NOT be saved. Sorry. Store any data you need in the order metadata. IOK 2023-07-17
-        // But this is required also so.
-        $this->callback_restore_session($orderid);
-        WC()->session->set('_vipps_order_finalized', $order->get_order_key());
+        // If neccessary, the order session will be restored in this method, and if so it will be reset before the exit happens
+        // to reduce issues with users simultaneously returning to the store. IOK 2023-07-18
+        $ok = $gw->handle_callback($result, $order, $ischeckout);
+        if ($ok) {
+            // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
+            do_action('woo_vipps_callback_handled_order', $order);
+        }
 
         exit();
     }

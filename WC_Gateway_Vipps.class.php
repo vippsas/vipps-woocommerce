@@ -2559,7 +2559,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
-        // If possible and safe, user will be logged in on the thankyou screen if they still are in the same sesssion. (see above, _vipps_order_finalized). IOK 2020-10-09
+        // If possible and safe, user will be logged in on the thankyou screen.  IOK 2020-10-09
         // Do not call this if the function 'create_assign_user_on_vipps_callback' exists - this is the prior art for this created and used by Netthandelsgruppen, so ensure
         // that continues to work. IOK 2020-10-09
         $maybecreateuser = ($this->get_option('expresscreateuser') =='yes' && !function_exists('create_assign_user_on_vipps_callback')); 
@@ -2677,6 +2677,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             clean_post_cache($order->get_id());
             return false;
         }
+
+        // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
+        // IOK 2023-07-18 but because of the race condition issue, we cannot guarantee that any changes
+        // made to the session here will be saved. Sorry. 
+        $Vipps->callback_restore_session($orderid);
+
         // Set Vipps metadata as early as possible
         $transactionid = @$transaction['transactionId'];
         $vippsstamp = strtotime($transaction['timeStamp']);
@@ -2752,6 +2758,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->save();
         clean_post_cache($order->get_id());
+
+        // Restore the session again so that we aren't causing issues with the customer-return branch, which may have to update the session concurrently. IOK 2023-018
+        $Vipps->callback_restore_session($orderid);
         $Vipps->unlockOrder($order);
 
         // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
@@ -2760,6 +2769,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
                 // Could not create a signal file, but that's ok.
         }
+
+        // Signal that we in fact handled the order.
+        return true;
 
     }
 
