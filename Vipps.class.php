@@ -2529,7 +2529,7 @@ EOF;
     // When we get callbacks from Vipps, we want to restore the Woo session in place for the order.
     // For many plugins this is strictly neccessary because they don't check to see if there is a session
     // or not - and for many others, wrong results are produced without the (correct) session. IOK 2019-10-22
-    protected function callback_restore_session ($orderid) {
+   public function callback_restore_session ($orderid) {
         $this->callbackorder = $orderid;
         unset(WC()->session);
         require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
