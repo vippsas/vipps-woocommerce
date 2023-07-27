@@ -523,10 +523,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         foreach(get_pages() as $page) $page_list[$page->ID] = $page->post_title;
 
         $orderprefix = $Vipps->generate_order_prefix();
+
+        // Default handling based on other parameters and earlier values.
         $expresscreateuserdefault = "no";
+        $vippscreateuserdefault = "no";
+
+        // Express checkout uses verified email addresses,so we'll create users if the Login plugin is installed and WooCommerce is set to allow user registration.
         if (class_exists('VippsWooLogin')) {
            $woodefault = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout' );
-           if ($woodefault) $expresscreateuserdefault = "yes";
+           if ($woodefault) {
+               $expresscreateuserdefault = "yes";
+         //      $vippscreateuserdefault = "yes"; // However, for Vipps Checkout the email address is freetext so we'll treat the default a bit different.
+           }
         }
 
         // We will only show the Vipps Checkout options if the user has activated the feature (thus creating the pages involved etc). IOK 2021-10-01
@@ -536,8 +544,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
         $current = get_option('woocommerce_vipps_settings');
         // New defaults based on old defaults
-        $default_static_shipping_for_checkout = ($current && isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
-        $default_ask_address_for_express = ($current && isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
+        if ($current) {
+            $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
+            $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
+            // The old default used the same value as for Express Checkout. IOK 2023-07-27
+            $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
+        }
+
 
         $checkoutfields = array(
                 'checkout_options' => array(
@@ -554,6 +567,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => __('If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses.', 'woo-vipps'),
                     'default'     => 'no',
                     ),
+
+                'checkoutcreateuser' => array (
+                        'title'       => __( 'Create new customers on Vipps Checkout', 'woo-vipps' ),
+                        'label'       => __( 'Create new customers on Vipps Checkout', 'woo-vipps' ),
+                        'type'        => 'checkbox',
+                        'description' => __('Enable this to create and login customers when using Vipps Checkout. Otherwise these will all be guest checkouts. If using, you may want to install Login with Vipps too.', 'woo-vipps'),
+                        'default'     => $vippscreateuserdefault,
+                        ),
+
 
                 'enablestaticshipping_checkout' => array(
                         'title'       => __( 'Enable static shipping for Vipps Checkout', 'woo-vipps' ),
@@ -1813,7 +1835,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
+
                         $polldata = $this->ensure_userDetails($polldata, $order);
+
+
 
                         if (isset($polldata['userDetails'])) {
                             $paymentdetails['userDetails'] = $polldata['userDetails'];
