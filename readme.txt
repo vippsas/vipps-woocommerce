@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.9
-Stable tag: 1.14.9
+Version: 1.14.10
+Stable tag: 1.14.10
 Requires at least: 4.7
 Tested up to: 6.3
 Requires PHP: 5.6
@@ -81,6 +81,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 == Upgrade Notice ==
 Support Free shipping for Porterbuddy in Vipps Checkout
 Fix issue with Woo 5.8.x and above where Express Checkout required email confirmation before the thankyou page was shown.
+Add new setting to register/login users for Vipps Checkout or use guest accounts only.
 Improve callback handling
 
 == Frequently Asked Questions ==
@@ -217,6 +218,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023-07-xx version 1.14.10 =
+Handle the new Thankyou-page behavious in Vipps Checkout too, by adding a new option to register/log in users
+
 = 2023-07-19 version 1.14.9 =
 Support Free shipping for Porterbuddy in Vipps Checkout
 Fix issue with Woo 5.8.x and above where Express Checkout required email confirmation before the thankyou page was shown.

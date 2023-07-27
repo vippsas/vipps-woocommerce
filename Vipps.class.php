@@ -2116,7 +2116,6 @@ else:
     // On the thank you page, we have a completed order, so we need to restore any saved cart and possibly log in 
     // the user if using Express Checkout IOK 2020-10-09
     public function woocommerce_before_thankyou ($orderid) {
-        $this->maybe_restore_cart($orderid);
         $order = wc_get_order($orderid);
         if ($order) {
             // Don't interfere with NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
@@ -2132,6 +2131,7 @@ else:
                 $this->maybe_set_session_customer_email($order);
             }
         }
+        $this->maybe_restore_cart($orderid);
 
         WC()->session->set('current_vipps_session', false);
         WC()->session->set('vipps_checkout_current_pending',false);
@@ -3326,7 +3326,12 @@ EOF;
         // use the Vipps Checkout solution - those can change their emails in the
         // checkout screen. IOK 2021-09-03
         $do_login =  $order->get_meta('_vipps_express_checkout');
-        $do_login = $do_login && !$order->get_meta('_vipps_checkout');
+
+        // We will not log in Vipps Checkout users unless the option for that is true
+        if ($order->get_meta('_vipps_checkout') && 'yes' != $this->gateway()->get_option('checkoutcreateuser')) {
+            $do_login = false;
+        }
+
 
         // Make this filterable because you may want to only log on some users
         $do_login = apply_filters('woo_vipps_login_user_on_express_checkout', $do_login, $order);
@@ -3353,8 +3358,19 @@ EOF;
     // the settings allow it.
     function express_checkout_get_vipps_customer($order) {
         if (!$order || $order->get_payment_method() != 'vipps' ) return;
+
+        // Both Checkout and Express Checkout have the below value set to true
         if (!$order->get_meta('_vipps_express_checkout')) return;
-        if ($this->gateway()->get_option('expresscreateuser') != 'yes') return null;
+
+        // Creating/logging in users are handled separately for Vipps Checkout and Express Checkout, so check the correct setting
+        // IOK 2023-07-27
+        $ischeckout = $order->get_meta('_vipps_checkout');
+        if ($ischeckout) {
+            if ($this->gateway()->get_option('checkoutcreateuser') != 'yes') return null;
+        } else {
+            if ($this->gateway()->get_option('expresscreateuser') != 'yes') return null;
+        }
+
         if (is_user_logged_in()) return new WC_Customer(get_current_user_id());
         if ($order->get_user_id()) return new WC_Customer($order->get_user_id());
 
