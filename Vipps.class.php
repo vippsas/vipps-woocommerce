@@ -2728,9 +2728,9 @@ EOF;
         $postcode= $vippsdata['postCode'];
         $country = $this->country_to_code($vippscountry);
 
-        if ($is_checkout && preg_match("!Sofienberggata 12!", $addressline1)) {
+        if (false && $is_checkout && preg_match("!Sofienberggata 12!", $addressline1)) {
             // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
-            // This is subject to change so FIXME remove this later.
+            // This is subject to change and is currently inactive
         } else {
             $order->set_billing_address_1($addressline1);
             $order->set_billing_address_2($addressline2);
