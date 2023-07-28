@@ -1658,23 +1658,24 @@ else:
             exit();
         }
 
-        // This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
+
+        // This handles address information data from the poll if present.   2021-09-27 IOK
         $change = false;
         $vipps_address_hash =  WC()->session->get('vipps_address_hash');
-        if ($ok && (isset($status['orderContactInformation']) || isset($status['orderShippingAddress'])))  {
-            $serialized = sha1(json_encode(@$status['orderContactInformation']) . ':' . json_encode(@$status['orderShippingAddress']));
+
+        if ($ok && (isset($status['billingDetails']) || isset($status['shippingDetails'])))  {
+            $serialized = sha1(json_encode(@$status['billingDetails']) . ':' . json_encode(@$status['shippingDetails']));
             if ($serialized != $vipps_address_hash) {
                 $change = true;
                 WC()->session->set('vipps_address_hash', $serialized);
+                $vipps_address_hash = $serialized;
             } 
         }
         if ($complete) $change = true;
 
-        // IOK FIXME this is the actual status of the order when this is called, which will
-        // include personalia only when continuing to payment
-
         if ($ok && $change && isset($status['billingDetails']))  {
             $contact = $status['billingDetails'];
+            $countrycode =  $this->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
@@ -2727,17 +2728,22 @@ EOF;
         $postcode= $vippsdata['postCode'];
         $country = $this->country_to_code($vippscountry);
 
-        $order->set_billing_address_1($addressline1);
-        $order->set_billing_address_2($addressline2);
-        $order->set_billing_city($city);
-        $order->set_billing_postcode($postcode);
-        $order->set_billing_country($country);
-        $order->set_shipping_address_1($addressline1);
-        $order->set_shipping_address_2($addressline2);
-        $order->set_shipping_city($city);
-        $order->set_shipping_postcode($postcode);
-        $order->set_shipping_country($country);
-        $order->save();
+        if ($is_checkout && preg_match("!Sofienberggata 12!", $addressline1)) {
+            // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
+            // This is subject to change so FIXME remove this later.
+        } else {
+            $order->set_billing_address_1($addressline1);
+            $order->set_billing_address_2($addressline2);
+            $order->set_billing_city($city);
+            $order->set_billing_postcode($postcode);
+            $order->set_billing_country($country);
+            $order->set_shipping_address_1($addressline1);
+            $order->set_shipping_address_2($addressline2);
+            $order->set_shipping_city($city);
+            $order->set_shipping_postcode($postcode);
+            $order->set_shipping_country($country);
+            $order->save();
+        }
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
         if (WC()->customer) {  
