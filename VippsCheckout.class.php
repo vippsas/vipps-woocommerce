@@ -386,8 +386,8 @@ class VippsCheckout {
         // This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
         $change = false;
         $vipps_address_hash =  WC()->session->get('vipps_address_hash');
-        if ($ok && (isset($status['orderContactInformation']) || isset($status['orderShippingAddress'])))  {
-            $serialized = sha1(json_encode(@$status['orderContactInformation']) . ':' . json_encode(@$status['orderShippingAddress']));
+        if ($ok && (isset($status['billingDetails']) || isset($status['shippingDetails'])))  {
+            $serialized = sha1(json_encode(@$status['billingDetails']) . ':' . json_encode(@$status['shippingDetails']));
             if ($serialized != $vipps_address_hash) {
                 $change = true;
                 WC()->session->set('vipps_address_hash', $serialized);
@@ -395,8 +395,8 @@ class VippsCheckout {
         }
         if ($complete) $change = true;
 
-        // IOK FIXME this is the actual status of the order when this is called, which will
-        // include personalia only when continuing to payment
+        // IOK This is the actual status of the order when this is called, which will
+        // include personalia only when available
 
         if ($ok && $change && isset($status['billingDetails']))  {
             $contact = $status['billingDetails'];
