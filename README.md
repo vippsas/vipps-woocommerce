@@ -73,7 +73,7 @@ for an overview.
 ### Retrieving Vipps API Keys
 
 Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys, as described in
-[API keys](https://developer.vippsmobilepay.com/docs/vipps-developers/common-topics/api-keys/).
+[API keys](https://developer.vippsmobilepay.com/docs/common-topics/api-keys/).
 
 ### Configuration of the plugin
 
@@ -96,9 +96,9 @@ In most cases your products should be virtual when using subscriptions, but it i
 possible to use the plugin with physical products if you need to do so.
 
 See the
-[Vipps API FAQ](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/)
+[Vipps API FAQ](https://developer.vippsmobilepay.com/docs/faqs/)
 for more details:
-[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/reserve-and-capture-faq/#what-is-the-difference-between-reserve-capture-and-direct-capture).
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/faqs/reserve-and-capture-faq/#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 ## Extending the plugin
 
@@ -161,7 +161,7 @@ If your question is not answered on this page:
 * For help with the plugin, use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
 
 * The
-  [Vipps FAQ](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/)
+  [Vipps FAQ](https://developer.vippsmobilepay.com/docs/faqs/)
   may also be useful.
 
 ### Does this plugin work alongside the Vipps for WooCommerce plugin?
@@ -192,7 +192,7 @@ Vipps is only available in Norway at the moment and only users who have Vipps wi
 ### How can I test that the plugin works correctly?
 
 If you have access to the Vipps test environment, you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
-See the [getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/) guide for details about how to get started using the test environment.
+See the [getting started](https://developer.vippsmobilepay.com/docs/) guide for details about how to get started using the test environment.
 
 Vipps does not offer test accounts for regular users of the plugin, but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
 You can then refund or cancel the purchase afterwards.
