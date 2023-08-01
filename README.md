@@ -12,7 +12,7 @@ END_METADATA -->
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).*
 
 <!-- START_COMMENT -->
-💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/vipps-plugins/). 💥
+💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins/). 💥
 <!-- END_COMMENT -->
 
 *Official Vipps Express Checkout and Payment for WooCommerce. More than 3.9 million Norwegians use Vipps. Give them a fast and familiar shopping experience.*
@@ -60,8 +60,8 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 
 For more information, see:
 
-* [Getting Started](https://developer.vippsmobilepay.com/docs/vipps-developers/getting-started)
-* [API Keys](https://developer.vippsmobilepay.com/docs/vipps-developers/common-topics/api-keys)
+* [Getting Started](https://developer.vippsmobilepay.com/docs/getting-started)
+* [API Keys](https://developer.vippsmobilepay.com/docs/common-topics/api-keys)
 * [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 
 ## Screenshots
@@ -93,14 +93,14 @@ to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
 through TestFlight. See
-[Vipps test apps](https://developer.vippsmobilepay.com/docs/vipps-developers/test-environment/#vipps-test-apps)
+[Vipps test apps](https://developer.vippsmobilepay.com/docs/test-environment/#vipps-test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
-See [Getting the API keys](https://developer.vippsmobilepay.com/docs/vipps-developers/getting-started#getting-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/getting-started#getting-the-api-keys)
 in the
-[Getting started](https://developer.vippsmobilepay.com/docs/vipps-developers/getting-started)
+[Getting started](https://developer.vippsmobilepay.com/docs/getting-started)
 guide for more information.
 
 To use test mode in WooCommerce, switch "Developer mode" on. There you can input
@@ -113,12 +113,12 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ### How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://developer.vippsmobilepay.com/docs/vipps-developers/contact).
+For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://developer.vippsmobilepay.com/docs/contact).
 
 ### Vipps FAQ
 
 See the
-[Vipps FAQ](https://developer.vippsmobilepay.com/docs/vipps-developers/faqs/)
+[Vipps FAQ](https://developer.vippsmobilepay.com/docs/faqs/)
 for more help with Vipps eCommerce.
 
 ## Requirements
