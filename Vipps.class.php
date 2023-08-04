@@ -1675,16 +1675,24 @@ else:
 
         if ($ok && $change && isset($status['billingDetails']))  {
             $contact = $status['billingDetails'];
-            $countrycode =  $this->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
-            $order->set_billing_address_1($contact['streetAddress']);
+            if (isset($contact['streetAddress'])) {
+                $order->set_billing_address_1($contact['streetAddress']);
+            }
             $order->set_billing_address_2("");
-            $order->set_billing_city($contact['city']);
-            $order->set_billing_postcode($contact['postalCode']);
-            $order->set_billing_country($countrycode);
+            if (isset($contact['city'])) {
+                $order->set_billing_city($contact['city']);
+            }
+            if (isset($contact['postalCode'])) {
+                $order->set_billing_postcode($contact['postalCode']);
+            }
+            if (isset($contact['country'])) {
+                $countrycode =  $this->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
+                $order->set_billing_country($countrycode);
+            }
         }
         if ($ok &&  $change && isset($status['shippingDetails']))  {
             $contact = $status['shippingDetails'];
@@ -2119,11 +2127,9 @@ else:
     public function woocommerce_before_thankyou ($orderid) {
         $order = wc_get_order($orderid);
         if ($order) {
-            // Don't interfere with NHGs code for this runs and we should not interfere with that. IOK 2020-10-09
-            // Actual logging in is governed by a filter in "maybe_log_in" too.
-            if (!function_exists('create_assign_user_on_vipps_callback')) {
-                $this->maybe_log_in_user($order); // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
-            }
+            // Requires that this is express checkout and that 'create users on express checkout' is chosen. IOK 2020-10-09
+            // -- or the same thing for Vipps Checkout. Also, the NHG code should not be running, and there is a filter, too. IOK 2023-08-04
+            $this->maybe_log_in_user($order);
             $order->delete_meta_data('_vipps_limited_session');
             $order->save();
 
@@ -3363,7 +3369,9 @@ EOF;
     // Get the customer that corresponds to the current order, maybe creating the customer if it does not exist yet and
     // the settings allow it.
     function express_checkout_get_vipps_customer($order) {
-        if (!$order || $order->get_payment_method() != 'vipps' ) return;
+        if (!$order || $order->get_payment_method() != 'vipps' ) return null;
+        // specific code for this by netthandelsgruppen if the below function exists
+        if (function_exists('create_assign_user_on_vipps_callback')) return null;
 
         // Both Checkout and Express Checkout have the below value set to true
         if (!$order->get_meta('_vipps_express_checkout')) return;
@@ -3396,6 +3404,11 @@ EOF;
             $customer = new WC_Customer($customerid);
             return $customer;
         }
+
+        // Previously this got the user data from Vipps here as a third argument; this is no longer available after refactoring.
+        $user = [];
+        $maybecreateuser = apply_filters('woo_vipps_create_user_on_express_checkout', true, $order, $user);
+        if (! $maybecreateuser) return;
 
         // No customer yet. As we want to create users like this (set in the settings) let's do so.
         // Username will be created from email, but the settings may stop generating passwords, so we force that to be generated. IOK 2020-10-09
@@ -4348,8 +4361,11 @@ EOF;
         // If we are done, we are done, so go directly to the end. IOK 2018-05-16
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
+        // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
+        $do_poll = true;
+
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
-        if ($status == 'pending') {
+        if ($do_poll && $status == 'pending') {
             // Just in case the callback hasn't come yet, do a quick check of the order status at Vipps.
             $newstatus = $gw->callback_check_order_status($order);
             if ($status != $newstatus) {
@@ -4361,7 +4377,10 @@ EOF;
                 // No need to do anyting here. IOK 2020-01-26
         }
 
-        $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
+        $payment = 'notchecked';
+        if ($do_poll) {
+            $payment = $deleted_order ? 'cancelled' : $gw->check_payment_status($order);
+        }
 
         // All these payment statuses are successes so go to the thankyou page. 
         if ($payment == 'authorized' || $payment == 'complete') {
