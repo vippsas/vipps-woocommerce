@@ -2143,6 +2143,7 @@ else:
         WC()->session->set('current_vipps_session', false);
         WC()->session->set('vipps_checkout_current_pending',false);
         WC()->session->set('vipps_address_hash', false);
+        do_action('woo_vipps_before_thankyou', $orderid);
     }
 
     public function woocommerce_loaded () {
@@ -3416,9 +3417,11 @@ EOF;
         $lastname =  $order->get_billing_last_name();
         $name = $firstname;
         $userdata = array('user_nicename'=>$name, 'display_name'=>"$firstname $lastname", 'nickname'=>$firstname, 'first_name'=>$firstname, 'last_name'=>$lastname);
- 
 
-        $customerid = wc_create_new_customer( $email, '', wp_generate_password(), $userdata);
+        // Add filter to allow other ways of creating usernames.
+        $newusername = apply_filters('woo_vipps_express_checkout_new_username', '', $email, $userdata, $order);
+
+        $customerid = wc_create_new_customer($email, $newusername,  wp_generate_password(), $userdata);
         if ($customerid && !is_wp_error($customerid)) {
             $order->set_customer_id( $customerid );
             $order->save(); 
