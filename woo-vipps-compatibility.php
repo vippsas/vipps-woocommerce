@@ -95,7 +95,7 @@ add_action('plugins_loaded', function () {
                         $value['enabled'] = 'no';
                         $value['description'] = '#yolo';
                         $value['test_mode'] = 'no';
-                            return $value;
+                        return $value;
                     } else {
                     }
                     return $value;
@@ -108,13 +108,13 @@ add_action('plugins_loaded', function () {
     if (class_exists('MonsterInsights_eCommerce_WooCommerce_Integration')) {
         add_action('woo_vipps_express_checkout_order_created', function ($orderid) {
             $mi = MonsterInsights_eCommerce_WooCommerce_Integration::get_instance();
-	    $vipps = Vipps::instance();
+            $vipps = Vipps::instance();
             if (method_exists($mi, 'save_user_cid')) {
-		$vipps->log("Saving monster insights tracking info to order $orderid", 'debug');
+                $vipps->log("Saving monster insights tracking info to order $orderid", 'debug');
                 $mi->save_user_cid($orderid);
-	    } else {
-		$vipps->log("Tried adding monster insights session to order $orderid, but save_user_cid does not exist in object", 'debug');
-	    }
+            } else {
+                $vipps->log("Tried adding monster insights session to order $orderid, but save_user_cid does not exist in object", 'debug');
+            }
         });
     }
 
@@ -125,7 +125,7 @@ add_action('plugins_loaded', function () {
         function woo_vipps_pretend_not_doing_ajax ($doingit) {
             if ($doingit && isset($_REQUEST['action']) &&
                 ($_REQUEST['action'] == 'do_single_product_express_checkout' ||
-                 $_REQUEST['action'] == 'do_express_checkout')) {
+                $_REQUEST['action'] == 'do_express_checkout')) {
                 return false;
             }
             return $doingit;
@@ -141,6 +141,44 @@ add_action('plugins_loaded', function () {
             add_action('woocommerce_new_order_item', 'woo_vipps_remove_no_ajax' , 11);
         });
     }
+
+    // Support Woo-Mailerlite in Vipps Checkout
+    if (class_exists('MailerLite\Includes\Classes\Settings\MailerLiteSettings')) {
+        // If Mailerlite is active as well as Vipps Checkout, then add support for it
+        if (get_option('ml_account_authenticated') && (Vipps::instance()->gateway()->get_option('vipps_checkout_enabled') == 'yes')) {
+
+            // If checkout is active, don't support saving "lost carts"
+            add_filter('option_mailerlite_disable_checkout_sync', function ($value, $option) {
+                return 1;
+            }, 10, 2);
+
+            // Check if the checkout feature is enabled for MailerLite, and if so, add the feature for Vipps Checkout
+            $checkout = MailerLite\Includes\Classes\Settings\MailerLiteSettings::getInstance()->getMlOption('checkout', 'no');
+            if ($checkout == 'yes') {
+                add_filter('woo_vipps_checkout_consent_query', function ($text) {
+                    return MailerLite\Includes\Classes\Settings\MailerLiteSettings::getInstance()->getMlOption('checkout_label');
+                });
+                add_action('woo_vipps_set_order_shipping_details', function ($order) {
+                    if (class_exists('MailerLite\Includes\Classes\Process\OrderProcess')) {
+                        $consent = intval($order->get_meta('_vipps_custom_consent_provided'));
+                        if ($consent) {
+                            MailerLite\Includes\Classes\Process\OrderProcess::getInstance()->setOrderCustomerSubscribe($order->get_id());;
+                        } 
+                    }
+                });
+                // Finalize the job only right before the thankyou page
+                add_action('woo_vipps_before_thankyou', function ($orderid, $order) {
+                    if (class_exists('MailerLite\Includes\Classes\Process\OrderProcess')) {
+                        $consent = intval($order->get_meta('_vipps_custom_consent_provided'));
+                        if ($consent) {
+                            MailerLite\Includes\Classes\Process\OrderProcess::getInstance()->processOrderSubscription($orderid);
+                        }
+                    }
+                }, 10, 2);
+            }
+        }
+    }
+
 
 
 });

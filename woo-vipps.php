@@ -7,13 +7,13 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.14.10
-   Stable tag: 1.14.10
+   Version: 1.14.11
+   Stable tag: 1.14.11
    Requires at least: 4.7
    Tested up to: 6.3
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 7.9.0
+   WC tested up to: 8.0.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '1.14.10');
+define('WOO_VIPPS_VERSION', '1.14.11');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
