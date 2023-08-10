@@ -2143,7 +2143,7 @@ else:
         WC()->session->set('current_vipps_session', false);
         WC()->session->set('vipps_checkout_current_pending',false);
         WC()->session->set('vipps_address_hash', false);
-        do_action('woo_vipps_before_thankyou', $orderid);
+        do_action('woo_vipps_before_thankyou', $orderid, $order);
     }
 
     public function woocommerce_loaded () {
