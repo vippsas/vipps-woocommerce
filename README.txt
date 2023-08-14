@@ -162,6 +162,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 = 1.16.0 =
 * Added: a `wc_vipps_recurring_after_payment_complete` action
+* Added: Implementation of period campaigns. It will now properly inform your customers of a campaigns length in the app.
 
 = 1.15.2 =
 * Fix: No longer attempt to cancel agreements that are already cancelled.

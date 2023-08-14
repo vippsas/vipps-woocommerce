@@ -2,7 +2,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-class WC_Vipps_Agreement_Interval extends WC_Vipps_Model {
+class WC_Vipps_Agreement_Campaign_Period extends WC_Vipps_Model {
 	public const UNIT_YEAR = "YEAR";
 	public const UNIT_MONTH = "MONTH";
 	public const UNIT_WEEK = "WEEK";

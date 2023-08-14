@@ -40,7 +40,7 @@ class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 	 */
 	public $event_date;
 	public ?string $event_text = null;
-	public ?WC_Vipps_Agreement_Interval $period = null;
+	public ?WC_Vipps_Agreement_Campaign_Period $period = null;
 	public ?WC_Vipps_Agreement_Interval $interval = null;
 
 	/**
@@ -105,7 +105,7 @@ class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_period( WC_Vipps_Agreement_Interval $period ): self {
+	public function set_period( WC_Vipps_Agreement_Campaign_Period $period ): self {
 		$this->period = $period;
 
 		return $this;

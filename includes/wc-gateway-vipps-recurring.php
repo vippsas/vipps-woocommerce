@@ -1559,12 +1559,23 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$campaign_price    = $has_free_campaign ? 0 : $order->get_total();
 					$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
 
+					$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
+					$campaign_period = null;
+
+					if ( $has_trial ) {
+						$campaign_type = WC_Vipps_Agreement_Campaign::TYPE_PERIOD_CAMPAIGN;
+						$campaign_end_date = null;
+						$campaign_period = ( new WC_Vipps_Agreement_Campaign_Period() )
+							->set_count( WC_Subscriptions_Product::get_trial_length( $product ) )
+							->set_unit( strtoupper( WC_Subscriptions_Product::get_trial_period( $product ) ) );
+					}
+
 					$agreement = $agreement->set_campaign(
 						( new WC_Vipps_Agreement_Campaign() )
-							->set_type( WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN )
+							->set_type( $campaign_type )
 							->set_price( WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ) )
-//							->set_event_date( $start_date )
 							->set_end( $campaign_end_date )
+							->set_period( $campaign_period )
 					);
 				}
 
