@@ -2592,26 +2592,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
-        // If possible and safe, user will be logged in on the thankyou screen.  IOK 2020-10-09
-        // Do not call this if the function 'create_assign_user_on_vipps_callback' exists - this is the prior art for this created and used by Netthandelsgruppen, so ensure
-        // that continues to work. IOK 2020-10-09
-        $maybecreateuser = ($this->get_option('expresscreateuser') =='yes' && !function_exists('create_assign_user_on_vipps_callback')); 
-        $maybecreateuser = apply_filters('woo_vipps_create_user_on_express_checkout', $maybecreateuser, $order, $user);
-        if ($maybecreateuser) {
-            global $Vipps;
-            $customer = $Vipps->express_checkout_get_vipps_customer($order);
-            if ($customer) {
-                // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
-                // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
-                if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
-                    update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
-                    // update_user_meta($userid, '_vipps_id', $sub);
-                    // update_user_meta($userid, '_vipps_just_connected', 1);
-                }
-
-                // Ensure we get any changes made to the order, as it will be re-saved later
-                $order = wc_get_order($order->get_id());
+        // If possible and safe, user will be logged in before being sent to the thankyou screen.  IOK 2020-10-09
+        // Same thing for Vipps Checkout, mutatis mutandis. The function below returns false if no customer exists or gets created.
+        $customer = Vipps::instance()->express_checkout_get_vipps_customer($order);
+        if ($customer) {
+            // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
+            // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
+            if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
+                update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
+                // update_user_meta($userid, '_vipps_id', $sub);
+                // update_user_meta($userid, '_vipps_just_connected', 1);
             }
+
+            // Ensure we get any changes made to the order, as it will be re-saved later
+            $order = wc_get_order($order->get_id());
         }
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
