@@ -105,13 +105,27 @@ class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 		return $this;
 	}
 
-	public function set_period( WC_Vipps_Agreement_Campaign_Period $period ): self {
+	/**
+	 * @param array|WC_Vipps_Agreement_Campaign_Period $period
+	 */
+	public function set_period( $period ): self {
+		if ( is_array( $period ) ) {
+			$period = new WC_Vipps_Agreement_Campaign_Period( $period );
+		}
+
 		$this->period = $period;
 
 		return $this;
 	}
 
-	public function set_interval( WC_Vipps_Agreement_Interval $interval ): self {
+	/**
+	 * @param array|WC_Vipps_Agreement_Interval $interval
+	 */
+	public function set_interval( $interval ): self {
+		if ( is_array( $interval ) ) {
+			$interval = new WC_Vipps_Agreement_Interval( $interval );
+		}
+
 		$this->interval = $interval;
 
 		return $this;

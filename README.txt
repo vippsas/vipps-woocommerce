@@ -160,6 +160,12 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.16.2 =
+* Fixed: Updating a subscription. Campaign period was not being serialized properly when calling `->set_period(...)`
+
+= 1.16.1 =
+* Fixed: Added a missing file that was not uploaded due to a mistake when committing files to SVN.
+
 = 1.16.0 =
 * Added: a `wc_vipps_recurring_after_payment_complete` action
 * Added: Implementation of period campaigns. It will now properly inform your customers of a campaigns length in the app.
