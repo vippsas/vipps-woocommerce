@@ -1,5 +1,7 @@
 TODO Gjør RequireUserInfo til valgrfitt?
 
+OG fjern _vipps_pending_order  - den gjør ikke noe verdifullt mer.
+
 
 // Betale eksisterende ordre ser *slik* ut:
 https://vdev.digitalt.org/vipps_checkout/order-pay/3173/?pay_for_order=true&key=wc_order_a8qIMx4figarw

@@ -172,6 +172,7 @@ class VippsCheckout {
 
     // This is used by the Vipps Checkout page to start the Vipps checkout session, including 
     // creating the partial order IOK 2021-09-03
+    // IOK FIXME: Add support for starting payment *for a given order*. 2023-08-15
     public function vipps_ajax_checkout_start_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $url = ""; 
@@ -190,7 +191,8 @@ class VippsCheckout {
         }
         // And if we do, just return what we have. NB: This *should not happen*.
         if ($url || $redir) {
-            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token));
+            $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$current_pending));
         }
 
         // Otherwise, create an order and start a new session
@@ -223,7 +225,7 @@ class VippsCheckout {
                     throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
                 }
         } catch (Exception $e) {
-            return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
+            return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>'', 'orderid'=>0));
         }
 
         // Ensure we get the latest updates to the order too IOK 2021-10-22
@@ -305,12 +307,12 @@ class VippsCheckout {
             }
         } catch (Exception $e) {
                 $this->log(sprintf(__("Could not initiate Vipps Checkout session: %s", 'woo-vipps'), $e->getMessage()), 'ERROR');
-                return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>''));
+                return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>'', 'orderid'=>$order_id));
         }
         if ($url || $redir) {
-            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token));
+            return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$order_id));
         } else { 
-            return wp_send_json_success(array('ok'=>0, 'msg'=>__('Could not start Vipps Checkout session'),'src'=>$url, 'redirect'=>$redir));
+            return wp_send_json_success(array('ok'=>0, 'msg'=>__('Could not start Vipps Checkout session'),'src'=>$url, 'redirect'=>$redir, 'orderid'=>$order_id));
         }
     }
 
@@ -519,6 +521,9 @@ class VippsCheckout {
         $sessioninfo = $this->vipps_checkout_current_pending_session();
         $out = ""; // Start generating output already to make debugging easier
 
+        // This is the current pending order id, if it exists. Will be used to restart orders etc . IOK 2023-08-15 FIXME
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+
         if ($sessioninfo['redirect']) {
            // This is always either the thankyou page or home_url()  IOK 2021-09-03
            $redir = json_encode($sessioninfo['redirect']);
@@ -558,6 +563,7 @@ class VippsCheckout {
         // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
         $out .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
+        $out .= "<input type='hidded' name='_vippsorder' value='" . intval($current_pending) . "' />";
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "</form>";
 
