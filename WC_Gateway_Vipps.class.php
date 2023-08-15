@@ -1783,7 +1783,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Modify payment method name if neccessary
             if (isset($paymentdetails['paymentMethod']) && $paymentdetails['paymentMethod'] == 'Card') {
-                if ($order->get_meta('_vipps_checkout_poll')) {
+                if ($order->get_meta('_vipps_checkout')) {
                     $order->set_payment_method_title(__('Credit Card / Vipps Checkout', 'woo-vipps'));
                     $order->save();
                 }
@@ -1831,7 +1831,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
             // If we have been using Vipps Checkout, there is no Shipping Details in the normal "get order status" call, so we may need to poll
             if (!isset($paymentdetails['shippingDetails'])) {
-                $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
+                $session = $order->get_meta('_vipps_checkout_session');
+                $checkoutpoll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
+
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
@@ -1934,7 +1936,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2022-01-19 And now, with the epayment API in use by checkout, we also need to use the poll api because the epayment API does not return user- and shipping data. We do get an order status though.
     public function get_payment_details($order) {
         $result = array();
-        $poll = $order->get_meta('_vipps_checkout_poll');
+        $session = $order->get_meta('_vipps_checkout_session');
+        $poll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
+
         if ($poll) {
             try {
                 $result = $this->api->poll_checkout($poll);
@@ -2196,7 +2200,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            }
            // Modify payment method name if neccessary
            if (isset($details['paymentMethod']) && $details['paymentMethod'] == 'Card') {
-               if ($order->get_meta('_vipps_checkout_poll')) {
+               if ($order->get_meta('_vipps_checkout')) {
                     $order->set_payment_method_title(__('Credit Card / Vipps Checkout', 'woo-vipps'));
                }
            }
@@ -2729,7 +2733,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Modify payment method name if neccessary
         if (isset($result['paymentMethod']) && $result['paymentMethod'] == 'Card') {
-            if ($order->get_meta('_vipps_checkout_poll')) {
+            if ($order->get_meta('_vipps_checkout')) {
                 $order->set_payment_method_title(__('Credit Card / Vipps Checkout', 'woo-vipps'));
                 $order->save();
             }

@@ -105,7 +105,6 @@ class VippsCheckout {
 
         // Ensure we remove the current session on the thank you page (too).
         add_action('woocommerce_thankyou_vipps', function () {
-            WC()->session->set('current_vipps_session', false);
             WC()->session->set('vipps_checkout_current_pending',false);
             WC()->session->set('vipps_address_hash', false);
         });
@@ -195,19 +194,17 @@ class VippsCheckout {
         }
 
         // Otherwise, create an order and start a new session
-        $current_vipps_session = null;
+        $session = null;
         $current_pending = 0;
         $current_authtoken = "";
         $limited_session = "";
         try {
-                WC()->session->set('current_vipps_session', null);
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
                 if ($current_pending) {
                     $order = wc_get_order($current_pending);
                     $order->update_meta_data('_vipps_checkout', true);
                     $current_authtoken = $this->gateway()->generate_authtoken();
                     $limited_session = $this->gateway()->generate_authtoken();
-                    WC()->session->set('vipps_checkout_authtoken', $current_authtoken);
                     $order->update_meta_data('_vipps_authtoken',wp_hash_password($current_authtoken));
                     $order->update_meta_data('_vipps_limited_session',wp_hash_password($limited_session));
                     $order->save();
@@ -290,18 +287,18 @@ class VippsCheckout {
         $customerinfo = apply_filters('woo_vipps_customerinfo', $customerinfo, $order);
 
         try {
-            $current_vipps_session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken,$requestid); 
-            if ($current_vipps_session) {
+            $session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken,$requestid); 
+            if ($session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
                 $order->update_meta_data('_vipps_status','INITIATE');
-                $order->update_meta_data('_vipps_checkout_poll', $current_vipps_session['pollingUrl']);
+                $order->update_meta_data('_vipps_checkout_session', $session);
+
                 $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
                 $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
                 $order->save();
-                WC()->session->set('current_vipps_session', $current_vipps_session);
-                $token = $current_vipps_session['token'];
-                $src = $current_vipps_session['checkoutFrontendUrl'];
+                $token = $session['token'];
+                $src = $session['checkoutFrontendUrl'];
                 $url = $src;
             } else {
                     throw new Exception(__('Unknown error creating Vipps Checkout session', 'woo-vipps'));
@@ -332,15 +329,14 @@ class VippsCheckout {
             return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
         }
 
-        $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
-        if (!$current_vipps_session) {
-            WC()->session->set('current_vipps_session', false);
+        $session = $order ? $order->get_meta('_vipps_checkout_session') : false;
+        if (!$session) {
             WC()->session->set('vipps_address_hash', false);
             return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
         }
 
         add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-        $status = $this->get_vipps_checkout_status($current_vipps_session); 
+        $status = $this->get_vipps_checkout_status($session);
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
         $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
@@ -477,11 +473,12 @@ class VippsCheckout {
             $this->abandonVippsCheckoutOrder(false);
         } 
 
-        // Now check the current vipps session if it exist
-        $current_vipps_session = $order ? WC()->session->get('current_vipps_session') : false;
+        // Now check the orders vipps session if it exist 
+        $session = $order ? $order->get_meta('_vipps_checkout_session') : false;
+
         // A single word or array containing session data, containing token and frontendFrameUrl
         // ERROR EXPIRED FAILED
-        $session_status = $current_vipps_session ? $this->get_vipps_checkout_status($current_vipps_session) : null;
+        $session_status = $session ? $this->get_vipps_checkout_status($session) : null;
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
         if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
@@ -489,7 +486,7 @@ class VippsCheckout {
         }
 
         // This will return either a valid vipps session, nothing, or  redirect. 
-        return(array('order'=>$order ? $order->get_id() : false, 'session'=>$current_vipps_session,  'redirect'=>$redirect));
+        return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
     function vipps_checkout_shortcode ($atts, $content) {
@@ -578,14 +575,14 @@ class VippsCheckout {
     public function abandonVippsCheckoutOrder($order) {
         if (WC()->session) {
             WC()->session->set('vipps_checkout_current_pending',0);
-            WC()->session->set('current_vipps_session', null);
             WC()->session->set('vipps_address_hash', false);
         }
 
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
             // NB: This can *potentially* be revived by a callback!
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
-            // Also mark for deletion
+            // Also mark for deletion and remove stored session
+            $order->delete_meta_data('_vipps_checkout_session');
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
         }
