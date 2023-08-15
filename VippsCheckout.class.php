@@ -563,7 +563,7 @@ class VippsCheckout {
         // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
         $out .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
-        $out .= "<input type='hidded' name='_vippsorder' value='" . intval($current_pending) . "' />";
+        $out .= "<input type='hidden' id='vippsorderid' name='_vippsorder' value='" . intval($current_pending) . "' />";
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "</form>";
 

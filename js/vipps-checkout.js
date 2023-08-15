@@ -89,6 +89,7 @@ jQuery( document ).ready( function() {
           }
           data['action'] = 'vipps_checkout_start_session';
           data['vipps_checkout_sec'] = jQuery('#vipps_checkout_sec').val();
+          data['orderid'] = jQuery('#vippsorderid').val();
 
           jQuery.ajax(VippsConfig['vippsajaxurl'],
                     {   cache:false,
@@ -114,6 +115,11 @@ jQuery( document ).ready( function() {
                             jQuery("body").css("cursor", "default");
                             jQuery('.vipps_checkout_button.button').css("cursor", "default");
                             jQuery('.vipps_checkout_startdiv').hide();
+
+                            // Save order created or fetched
+                            if ( result['data']['orderid'] ) {
+                               jQuery('#vippsorderid').val(result['data']['orderid']);
+                            }
     
                             if (! result['data']['ok']) {
                                 console.log("Error starting Vipps Checkout %j", result);
@@ -167,7 +173,7 @@ jQuery( document ).ready( function() {
                 {cache:false,
                     timeout: 0,
                     dataType:'json',
-                    data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val() },
+                    data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
                         // This may happen as a result of a race condition where the user is sent to Vipps
                         //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
