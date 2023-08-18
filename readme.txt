@@ -217,7 +217,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023-08-xx version 1.14.11 =
+= 2023-08-22 version 1.14.11 =
 More filters/hooks: 
    `do_action('woo_vipps_before_thankyou', $orderid, $order);`
 Runs before the thankyou page is reached, and can be used to finalize orders created using Checkout or Express Checkout, plus
