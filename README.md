@@ -55,8 +55,8 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 ## How to get Vipps account keys from Vipps Developer Portal
 
 1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
-2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
-3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
+2. Select the *Utvikler* (*Developer*) tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
+3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret* and *Vipps Subscription Key*
 
 For more information, see:
 
@@ -83,7 +83,7 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 Yes, for developers that want to contribute to the development of the plugin.
 Vipps does not offer a test account for normal users of the plugin.
 
-You will need a *Vipps på Nett* account for direct integration with the Vipps eCom API, which can be ordered from
+You will need a *Vipps på Nett* account for direct integration with the eCom API, which can be ordered from
 [vipps.no](https://vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/).
 
 If you already have a Vipps account for WooCommerce and want to contribute to
@@ -103,17 +103,19 @@ in the
 [Getting started](https://developer.vippsmobilepay.com/docs/getting-started)
 guide for more information.
 
-To use test mode in WooCommerce, switch "Developer mode" on. There you can input
+To use test mode in WooCommerce, switch *Developer mode* on. There you can input
 the API keys for the test environment, and turn test mode on and off.
 
 If you have defined the constant `VIPPS_TEST_MODE` to true, test mode will be forced on.
 
-If this isn't practical for your usage, we recommend that you "test in production"
+If this isn't practical for your usage, we recommend that you *test in production*
 with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ### How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps). For other issues you should [contact Vipps](https://developer.vippsmobilepay.com/docs/contact).
+For issues with your WooCommerce installation you should use the
+[support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps).
+For other issues you should [contact Vipps](https://developer.vippsmobilepay.com/docs/contact).
 
 ### Vipps FAQ
 
