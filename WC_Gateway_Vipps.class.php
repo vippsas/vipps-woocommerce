@@ -55,6 +55,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
+    // Just to avoid calculating these alot
+    private $page_templates = null;
+    private $page_list = null;
+
+
+
     // This returns the singleton instance of this class
     public static function instance() {
             if (null === self::$instance) {
@@ -301,13 +307,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Allow user to select the template to be used for the special Vipps pages. IOK 2020-02-17
     public function get_theme_page_templates() {
-         $choices = array('' => __('Use default template', 'woo-vipps'));
-         foreach(wp_get_theme()->get_page_templates() as $filename=>$name) {
-             //$choices[$filename]=$name;
-             $choices[$filename]=$name;
-         }
-         return $choices;
+        if (!$this->page_templates) {
+            $choices = array('' => __('Use default template', 'woo-vipps'));
+            foreach(wp_get_theme()->get_page_templates() as $filename=>$name) {
+                $choices[$filename]=$name;
+            }
+            $this->page_templates = $choices;
+        }
+        return $this->page_templates;
      }
+
+    // We can't use get_pages to get a default list of pages for our settings, because it triggers
+    // actions that can be used by other plugins. Therefore we must use the database directly and cache the results. IOK 2023-08-22
+    public function get_pagelist () {
+        if (!$this->page_list) {
+            global $wpdb;
+            $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
+            foreach($wpdb->get_results("SELECT ID,post_title FROM {$wpdb->prefix}posts WHERE post_type='page' and post_status='publish'") as $page) {
+                $page_list[$page->ID] = $page->post_title;
+            }
+            $this->page_list = $page_list;
+        }
+        return $this->page_list;
+    }
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
@@ -518,9 +540,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function init_form_fields() { 
         global $Vipps;
+
+        // Used for defaults in the admin interface; however this functions is called a loot more often than that.
         $page_templates = $this->get_theme_page_templates();
-        $page_list = array(''=>__('Use a simulated page (default)', 'woo-vipps'));
-        foreach(get_pages() as $page) $page_list[$page->ID] = $page->post_title;
+        $page_list = $this->get_pagelist();
 
         $orderprefix = $Vipps->generate_order_prefix();
 

@@ -7,7 +7,7 @@ Requires at least: 4.7
 Tested up to: 6.3
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.0.0
+WC tested up to: 8.0.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -82,6 +82,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 Support 'MailerLite – WooCommerce integration' for Vipps Checkout
 Add new setting to register/login users for Vipps Checkout or use guest accounts only.
 Support Free shipping for Porterbuddy in Vipps Checkout
+Fix crash issue when using Checkout and the plugin Add-on WooCommerce – MailPoet
 
 == Frequently Asked Questions ==
 
@@ -217,13 +218,14 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023-08-xx version 1.14.11 =
+= 2023-08-22 version 1.14.11 =
 More filters/hooks: 
    `do_action('woo_vipps_before_thankyou', $orderid, $order);`
 Runs before the thankyou page is reached, and can be used to finalize orders created using Checkout or Express Checkout, plus
    `apply_filters('woo_vipps_express_checkout_new_username', '', $email, $userdata, $order);`
 Which can be used to customize the username for new users created using express checkout or Vipps Checkout.
 Supports MailerLite – WooCommerce integration (woo-mailerlite) in Vipps Checkout
+Fix crashing bug interaction with the Add-on WooCommerce – MailPoet plugin
 
 = 2023-07-31 version 1.14.10 =
 Handle the new Thankyou-page behavious in Vipps Checkout too, by adding a new option to register/log in users
