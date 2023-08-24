@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.16.3 =
+* Fixed: Listen for total recalculation instead of a change in orders items when making sure we update the subscription price in Vipps whenever a Vipps subscription's price changes.
+
 = 1.16.2 =
 * Fixed: Updating a subscription. Campaign period was not being serialized properly when calling `->set_period(...)`
 

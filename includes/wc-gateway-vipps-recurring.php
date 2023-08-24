@@ -218,12 +218,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				'indicate_async_payment_method_update'
 			], 10, 2 );
 
-			// Action for updating a subscription's order items
-			add_action( 'woocommerce_before_save_order_items', [
-				$this,
-				'save_subscription_order_items'
-			], 10, 1 );
-
 			// Tell WooCommerce about our custom payment meta fields
 			add_action( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 
@@ -265,6 +259,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$this,
 				'prevent_backwards_transition_on_completed_order'
 			], 100, 3 );
+
+			add_action( 'woocommerce_order_after_calculate_totals', [ $this, 'update_agreement_price_in_app' ], 10, 2 );
 		}
 
 		/**
@@ -1563,9 +1559,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$campaign_period = null;
 
 					if ( $has_trial ) {
-						$campaign_type = WC_Vipps_Agreement_Campaign::TYPE_PERIOD_CAMPAIGN;
+						$campaign_type     = WC_Vipps_Agreement_Campaign::TYPE_PERIOD_CAMPAIGN;
 						$campaign_end_date = null;
-						$campaign_period = ( new WC_Vipps_Agreement_Campaign_Period() )
+						$campaign_period   = ( new WC_Vipps_Agreement_Campaign_Period() )
 							->set_count( WC_Subscriptions_Product::get_trial_length( $product ) )
 							->set_unit( strtoupper( WC_Subscriptions_Product::get_trial_period( $product ) ) );
 					}
@@ -1769,19 +1765,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			add_action( 'admin_notices', static function () use ( $what ) {
 				echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
 			} );
-		}
-
-		/**
-		 * @param $subscription_id
-		 */
-		public function save_subscription_order_items( $subscription_id ): void {
-			$post = get_post( $subscription_id );
-
-			if ( 'shop_subscription' === get_post_type( $post ) ) {
-				$subscription = wcs_get_subscription( $subscription_id );
-				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
-				$subscription->save();
-			}
 		}
 
 		public function process_admin_options(): bool {
@@ -2048,6 +2031,19 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			return $status;
+		}
+
+		public function update_agreement_price_in_app( $and_taxes, $subscription ) {
+			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
+
+			if ( $this->id !== $payment_method
+				 || ! wcs_is_subscription( $subscription ) ) {
+				return;
+			}
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Totals were recalculated. Marking subscription for update in the Vipps app.', WC_Vipps_Recurring_Helper::get_id($subscription) ));
+			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+			$subscription->save();
 		}
 	}
 }
