@@ -1628,12 +1628,14 @@ else:
             try {
                 $timestamp = $created->getTimestamp();
             } catch (Exception $e) {
-                // PHP 8 gives ValueError for this, we'll use 0
+                // PHP 8 gives ValueError for certain older versions of WooCommerce here.
+                $timestamp = intval($created->format('U'));
             }
             $passed = $now - $timestamp;
             $minutes = ($passed / 60);
             // Expire after 50 minutes
             if ($minutes > 50) {
+                $this->log(sprintf(__("Vipps Checkout session %d expired after %d minutes (limit 50)", 'woo-vipps'), $order->get_id(), $minutes), 'debug');
                 $this->abandonVippsCheckoutOrder($order);
                 return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
             }
