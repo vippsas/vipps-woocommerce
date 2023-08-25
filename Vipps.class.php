@@ -1605,7 +1605,7 @@ else:
         }
 
         if ($payment_status == 'cancelled') {
-            $this->log(sprintf(__("Vipps Checkout session %d cancelled", 'woo-vipps'), $order->get_id()), 'debug');
+            $this->log(sprintf(__("Vipps Checkout session %d cancelled (payment status)", 'woo-vipps'), $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
         }
@@ -1758,7 +1758,7 @@ else:
             $this->abandonVippsCheckoutOrder(false);
             $redirect = $this->gateway()->get_return_url($order);
         } elseif ($payment_status == 'cancelled') {
-            $this->log("gs:" . sprintf(__("Vipps Checkout session %d cancelled", 'woo-vipps'), $order->get_id()), 'debug');
+            $this->log(sprintf(__("Vipps Checkout session %d cancelled (pending session)", 'woo-vipps'), $order->get_id()), 'debug');
             // This will mostly just wipe the session.
             $this->abandonVippsCheckoutOrder($order);
             $redirect = home_url();
