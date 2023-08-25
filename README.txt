@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.16.4 =
+* Fixed: Properly stop checking for a gateway change when a gateway change succeeded.
+
 = 1.16.3 =
 * Fixed: Listen for total recalculation instead of a change in orders items when making sure we update the subscription price in Vipps whenever a Vipps subscription's price changes.
 

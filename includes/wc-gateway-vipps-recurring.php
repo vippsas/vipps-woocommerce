@@ -1179,6 +1179,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			return WC_Vipps_Recurring_Helper::get_subscriptions_for_order( $order );
 		}
 
+		private function end_gateway_change_checking( $subscription ) {
+			$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
+			$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
+			$subscription->delete_meta_data( '_new_agreement_id' );
+			$subscription->delete_meta_data( '_old_agreement_id' );
+		}
+
 		/**
 		 * @param $subscription_id
 		 *
@@ -1206,6 +1213,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Subscription gateway change completed', WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
 					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $subscription, $this->id );
+					$this->end_gateway_change_checking( $subscription );
 				}
 
 				if ( in_array( $agreement->status, [ WC_Vipps_Agreement::STATUS_STOPPED, 'EXPIRED' ], true ) ) {
@@ -1216,10 +1224,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					WC_Vipps_Agreement::STATUS_STOPPED,
 					WC_Vipps_Agreement::STATUS_EXPIRED
 				], true ) ) {
-					$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
-					$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
-					$subscription->delete_meta_data( '_new_agreement_id' );
-					$subscription->delete_meta_data( '_old_agreement_id' );
+					$this->end_gateway_change_checking( $subscription );
 				}
 
 				$subscription->save();
@@ -2041,7 +2046,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				return;
 			}
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Totals were recalculated. Marking subscription for update in the Vipps app.', WC_Vipps_Recurring_Helper::get_id($subscription) ));
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Totals were recalculated. Marking subscription for update in the Vipps app.', WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
 			$subscription->save();
 		}
