@@ -1875,7 +1875,31 @@ else:
             WC()->session->set('vipps_address_hash', false);
         }
 
+        // We want to kill orders that have failed, or that the user has abandoned. To do this,
+        // we must ensure that no race or other mechanism kills the order while or after being paid.
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
+            // if order is in the process of being finalized, don't kill it
+            if ($this->isLocked($order)) {
+               return false;
+            }
+            // Get it again to ensure we have all the info, and check status again
+            $order = wc_get_order($order->get_id());
+            if ($order->get_status() != 'pending') return false;
+
+            // And to be extra sure, check status at vipps
+            $poll = $order->get_meta('_vipps_checkout_poll');
+            if ($poll) {
+               try {
+                    $polldata = $this->gateway()->api->poll_checkout($poll);
+                    $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                    if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
+                       // If we have started payment, we do not kill the order.
+                       return false;
+                    }
+               } catch (Exception $e) {
+                    // no data so..
+               }
+            }
             // NB: This can *potentially* be revived by a callback!
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
             // Also mark for deletion
@@ -1971,6 +1995,13 @@ else:
         }
         add_action('shutdown', function () use ($order) { global $Vipps; $Vipps->unlockOrder($order); });
         return true;
+    }
+    // If the order is locked, it means it is in the process of being finalized, so for instance, we do *not* want to abandon it
+    // in checkout.
+    public function isLocked ($order) {
+        $orderid = $order->get_id();
+        $locked = get_transient('order_lock_'.$orderid);
+        return apply_filters('woo_vipps_order_locked', $locked, $order);
     }
     public function unlockOrder($order) {
         $orderid = $order->get_id();
