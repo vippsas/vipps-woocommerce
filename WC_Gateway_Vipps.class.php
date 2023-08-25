@@ -2042,6 +2042,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
            # IOK 2022-02-20 Try to always return a status
            if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
+
                // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
                $result['status'] = "INITIATE";
                $created = $order->get_date_created();
@@ -2050,14 +2051,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                try {
                    $timestamp = $created->getTimestamp();
                } catch (Exception $e) {
-                   // PHP 8 gives ValueError for this, we'll use 0
+                   // PHP 8 gives ValueError for certain older versions of WooCommerce here. 
+                   $timestamp = intval($created->format('U'));
                }
                $passed = $now - $timestamp;
                $minutes = ($passed / 60);
+
                // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
                if ($minutes > 120) {
                    $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
-                   $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
+                   $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
                    $order->save();
                    $result['status'] = 'CANCEL';
                }

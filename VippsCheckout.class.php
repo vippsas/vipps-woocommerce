@@ -327,6 +327,7 @@ class VippsCheckout {
             return wp_send_json_success(array('msg'=>'completed', 'url' => $this->gateway()->get_return_url($order)));;
         }
         if ($payment_status == 'cancelled') {
+            $this->log(sprintf(__("Vipps Checkout session %d cancelled (payment status)", 'woo-vipps'), $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
         }
@@ -351,12 +352,15 @@ class VippsCheckout {
             try {
                 $timestamp = $created->getTimestamp();
             } catch (Exception $e) {
-                // PHP 8 gives ValueError for this, we'll use 0
+                // PHP 8 gives ValueError for certain older versions of WooCommerce here.
+                $timestamp = intval($created->format('U'));
+
             }
             $passed = $now - $timestamp;
             $minutes = ($passed / 60);
             // Expire after 50 minutes
             if ($minutes > 50) {
+                $this->log(sprintf(__("Vipps Checkout session %d expired after %d minutes (limit 50)", 'woo-vipps'), $order->get_id(), $minutes), 'debug');
                 $this->abandonVippsCheckoutOrder($order);
                 return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
             }
@@ -369,6 +373,7 @@ class VippsCheckout {
 
         if ($failed) { 
             $msg = $status;
+            $this->log(sprintf(__("Vipps Checkout session %d failed with message %s", 'woo-vipps'), $order->get_id(), $msg), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>$msg, 'url'=>home_url()));
             exit();
@@ -466,6 +471,7 @@ class VippsCheckout {
             $this->abandonVippsCheckoutOrder(false);
             $redirect = $this->gateway()->get_return_url($order);
         } elseif ($payment_status == 'cancelled') {
+            $this->log(sprintf(__("Vipps Checkout session %d cancelled (pending session)", 'woo-vipps'), $order->get_id()), 'debug');
             // This will mostly just wipe the session.
             $this->abandonVippsCheckoutOrder($order);
             $redirect = home_url();
@@ -484,6 +490,7 @@ class VippsCheckout {
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
         if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
+            $this->log(sprintf(__("Vipps Checkout session %d is gone", 'woo-vipps'), $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
         }
 
@@ -575,6 +582,7 @@ class VippsCheckout {
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return;
+        $this->log(sprintf(__("Vipps Checkout: cart changed while session %d in progress - now cancelled", 'woo-vipps'), $order->get_id()), 'debug');
         $this->abandonVippsCheckoutOrder($order);
     } 
     
@@ -585,6 +593,33 @@ class VippsCheckout {
         }
 
         if (is_a($order, 'WC_Order') && $order->get_status() == 'pending') {
+            // We want to kill orders that have failed, or that the user has abandoned. To do this,
+            // we must ensure that no race or other mechanism kills the order while or after being paid.
+            // if order is in the process of being finalized, don't kill it
+            if (Vipps::instance()->isLocked($order)) {
+               return false;
+            }
+            // Get it again to ensure we have all the info, and check status again
+            $order = wc_get_order($order->get_id());
+            if ($order->get_status() != 'pending') return false;
+
+            // And to be extra sure, check status at vipps
+            $session = $order->get_meta('_vipps_checkout_session');
+            $poll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
+            if ($poll) {
+               try {
+                    $polldata = $this->gateway()->api->poll_checkout($poll);
+                    $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                    if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
+                       // If we have started payment, we do not kill the order.
+                       return false;
+                    }
+               } catch (Exception $e) {
+                    // no data so..
+               }
+            }
+
+
             // NB: This can *potentially* be revived by a callback!
             $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
             // Also mark for deletion and remove stored session

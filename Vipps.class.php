@@ -1443,6 +1443,13 @@ else:
         add_action('shutdown', function () use ($order) { global $Vipps; $Vipps->unlockOrder($order); });
         return true;
     }
+    // If the order is locked, it means it is in the process of being finalized, so for instance, we do *not* want to abandon it
+    // in checkout.
+    public function isLocked ($order) {
+        $orderid = $order->get_id();
+        $locked = get_transient('order_lock_'.$orderid);
+        return apply_filters('woo_vipps_order_locked', $locked, $order);
+    }
     public function unlockOrder($order) {
         $orderid = $order->get_id();
         if (has_action('woo_vipps_unlock_order')) {
