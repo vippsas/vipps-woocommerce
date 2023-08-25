@@ -1598,11 +1598,14 @@ else:
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
+
         if (in_array($payment_status, ['authorized', 'complete'])) {
             $this->abandonVippsCheckoutOrder(false);
             return wp_send_json_success(array('msg'=>'completed', 'url' => $this->gateway()->get_return_url($order)));;
         }
+
         if ($payment_status == 'cancelled') {
+            $this->log(sprintf(__("Vipps Checkout session %d cancelled", 'woo-vipps'), $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
         }
@@ -1648,6 +1651,7 @@ else:
 
         if ($failed) { 
             $msg = $status;
+            $this->log(sprintf(__("Vipps Checkout session %d failed with message %s", 'woo-vipps'), $order->get_id(), $msg), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>$msg, 'url'=>home_url()));
             exit();
@@ -1754,6 +1758,7 @@ else:
             $this->abandonVippsCheckoutOrder(false);
             $redirect = $this->gateway()->get_return_url($order);
         } elseif ($payment_status == 'cancelled') {
+            $this->log("gs:" . sprintf(__("Vipps Checkout session %d cancelled", 'woo-vipps'), $order->get_id()), 'debug');
             // This will mostly just wipe the session.
             $this->abandonVippsCheckoutOrder($order);
             $redirect = home_url();
@@ -1771,6 +1776,7 @@ else:
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
         if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
+            $this->log("gs:" . sprintf(__("Vipps Checkout session %d is gone", 'woo-vipps'), $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
         }
 
@@ -1858,6 +1864,7 @@ else:
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return;
+        $this->log(sprintf(__("Vipps Checkout: cart changed while session %d in progress - now cancelled", 'woo-vipps'), $order->get_id()), 'debug');
         $this->abandonVippsCheckoutOrder($order);
     } 
     
