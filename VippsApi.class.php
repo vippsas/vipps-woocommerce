@@ -1339,9 +1339,12 @@ class VippsApi {
 
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
+            // can't happen, but be sure
+            if (is_string($content)) {
+                $msg .= " " . $content;
             // From initiate payment, at least some times. IOK 2018-06-18
-            if (isset($content['message'])) {
-                $msg = $content['message'];
+            } elseif (isset($content['message'])) {
+                $msg .= " " . $content['message'];
             // From the receipt api
             } elseif (isset($content['detail'])) {
                 $msg = "$response";
@@ -1367,7 +1370,14 @@ class VippsApi {
                 $msg = '';
                 if (is_array($content)) {
                     foreach($content as $entry) {
-                        $msg .= $response  . ' ' .   @$entry['errorMessage'] . "\n";
+                        if (is_string($entry)) {
+                            // This started happening august 2023. 
+                            $msg .= $entry . "\n";
+                        } elseif (is_array($entry)) {
+                            $msg .= $response  . ' ' .   @$entry['errorMessage'] . "\n";
+                        } else {
+                            $msg = $response . " " .  print_r($content, true);
+                        }
                     }
                 } else {
                     // At this point, we have no idea what we have got, so just stringify it IOK 2021-11-04
