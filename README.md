@@ -9,9 +9,9 @@ END_METADATA -->
 
 # Vipps for WooCommerce
 
-[![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)](https://www.wp-hosting.no/)
+![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
-*This plugin is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).*
+*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins/). 💥
