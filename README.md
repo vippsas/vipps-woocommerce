@@ -9,9 +9,9 @@ END_METADATA -->
 
 # Vipps Recurring Payments for WooCommerce
 
-[![Support and development by Everyday ](./docs/images/everyday.svg#gh-light-mode-only)![Support and development by Everyday](./docs/images/everyday_dark.svg#gh-dark-mode-only)](https://everyday.no)
+![Support and development by Everyday ](./docs/images/everyday.svg#gh-light-mode-only)![Support and development by Everyday](./docs/images/everyday_dark.svg#gh-dark-mode-only)
 
-*This plugin is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).*
+*This plugin is built and maintained by [Everyday AS](https://everyday.no) and is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins/). 💥
