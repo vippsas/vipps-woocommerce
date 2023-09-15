@@ -9,6 +9,8 @@ END_METADATA -->
 
 # Vipps for WooCommerce
 
+![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
+
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).*
 
 <!-- START_COMMENT -->

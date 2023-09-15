@@ -2930,9 +2930,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $filename = null;
         $imageid = 0;
         $imagefile = "";
+        $mime = "";
+        $accepted_types = ["image/jpeg", "image/png", "image/jpg"]; // Only accepted types at Vipps
         $vippsid = null;
         $uploads = wp_get_upload_dir();
+
         if (is_numeric($imagespec)) {
+
            // Don't send same image twice if we have an id
            $stored = get_post_meta($imagespec, '_vipps_imageid', true);
            if ($stored && !$this->is_test_mode()) {
@@ -2940,11 +2944,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            }
            $imageid = intval($imagespec);
            $imagefile = get_attached_file($imageid);
+           $mime = get_post_mime_type($imageid);
         }
-        if (!is_file($imagefile)) {
+
+        if (!is_file($imagefile) || !in_array($mime, $accepted_types)) {
            $this->log(sprintf(__('%s is not an image that can be uploaded to Vipps', 'woo-vipps'), $imagefile), 'error');
+           $this->log(sprintf(__('File type was %s; supported types are %s', 'woo-vipps'), $mime, join(", ", $accepted_types)), 'error');
            return null;
         }
+
         if ($imageid) {
             $intermediate = image_get_intermediate_size($imageid, $size);
             if ($intermediate && isset($intermediate['path'])) {
