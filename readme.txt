@@ -215,7 +215,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023-09-xx version 1.14.13 =
+= 2023-09-18 version 1.14.13 =
 Check that images uploaded to receipts are either jpeg or png
 
 = 2023-08-22 version 1.14.12 =
