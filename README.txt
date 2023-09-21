@@ -160,6 +160,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.16.5 =
+* Fixed: Refunds could not be processed properly because of a mistake when calling the `woocommerce_order_after_calculate_totals` action. We assume the object is always a subscription, when it is not.
+
 = 1.16.4 =
 * Fixed: Properly stop checking for a gateway change when a gateway change succeeded.
 

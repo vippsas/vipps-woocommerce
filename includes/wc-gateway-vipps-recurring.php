@@ -2039,10 +2039,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		public function update_agreement_price_in_app( $and_taxes, $subscription ) {
-			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
+			if ( ! wcs_is_subscription( $subscription ) ) {
+				return;
+			}
 
-			if ( $this->id !== $payment_method
-				 || ! wcs_is_subscription( $subscription ) ) {
+			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
+			if ( $this->id !== $payment_method ) {
 				return;
 			}
 
