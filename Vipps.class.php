@@ -723,7 +723,7 @@ class Vipps {
     public function generate_order_prefix() {
         $parts = parse_url(site_url());
         if (!$parts) return 'Woo';
-        $domain = explode(".", $parts['host']);
+        $domain = explode(".", $parts['host'] ?? '');
         if (empty($domain)) return 'Woo';
         $first = strtolower($domain[0]);
         $second = isset($domain[1]) ? $domain[1] : ''; 
