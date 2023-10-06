@@ -658,7 +658,7 @@ class Vipps {
     public function generate_order_prefix() {
         $parts = parse_url(site_url());
         if (!$parts) return 'Woo';
-        $domain = explode(".", $parts['host']);
+        $domain = explode(".", $parts['host'] ?? '');
         if (empty($domain)) return 'Woo';
         $first = strtolower($domain[0]);
         $second = isset($domain[1]) ? $domain[1] : ''; 
@@ -1081,8 +1081,9 @@ class Vipps {
         echo "<button id='vipps-share-link' disabled  class='button' onclick='return false;'>"; echo __("Create shareable link",'woo-vipps'); echo "</button>";
         echo "<select id='vipps_sharelink_variant'><option value=''>"; echo __("Select variant", 'woo-vipps'); echo "</option>";
         foreach($variations as $var) {
-            echo "<option value='{$var['variation_id']}'>{$var['variation_id']}"; 
-            echo sanitize_text_field($var['sku']);
+            $varid = esc_attr($var['variation_id']);
+            echo "<option value='$varid'>$varid"; 
+            echo esc_html($var['sku']);
             echo "</option>";
         }
         echo "</select>";
@@ -1120,8 +1121,8 @@ else:
            <tbody>
            <tr>
            <?php foreach ($shareables as $shareable): ?>
-           <?php if ($variable): ?><td><?php echo sanitize_text_field($shareable['variant']); ?></td><?php endif; ?>
-           <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo sanitize_text_field($shareable['key']); ?>'></td>
+           <?php if ($variable): ?><td><?php echo esc_html($shareable['variant']); ?></td><?php endif; ?>
+           <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo esc_attr($shareable['key']); ?>'></td>
            <td align=center>
            <a class="copyaction" title="<?php echo __('Click to copy','woo-vipps'); ?>" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
            <a class="deleteaction" title="<?php echo __('Mark this link for deletion', 'woo-vipps'); ?>" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
@@ -3252,15 +3253,20 @@ EOF;
     public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='') {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
+
+
         if ($sku) $data['product_sku'] = $sku;
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
 
+        error_log("data is " . print_r($data, true));
+
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {
-            $value = sanitize_text_field($value);
+            $value = esc_attr($value);
             $buttoncode .= " data-$key='$value' ";
         }
+
         $buynow = __('Buy now with', 'woo-vipps');
         $title = __('Buy now with Vipps', 'woo-vipps');
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
@@ -3620,7 +3626,7 @@ EOF;
         // The form data below is sent on order creation; the sec is also used to poll session status
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
         $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
-        $content .= "<input type='hidden' name='action' value='$action'>";
+        $content .= "<input type='hidden' name='action' value='" . esc_attr($action) ."'>";
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
         $termsHTML = '';
@@ -3635,8 +3641,8 @@ EOF;
 
         if ($productinfo) {
             foreach($productinfo as $key=>$value) {
-                $k = sanitize_text_field($key);
-                $v = sanitize_text_field($value);
+                $k = esc_attr($key);
+                $v = esc_attr($value);
                 $content .= "<input type='hidden' name='$k' value='$v' />";
             }
         }
