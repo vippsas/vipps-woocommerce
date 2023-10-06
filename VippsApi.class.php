@@ -124,7 +124,7 @@ class VippsApi {
        
 
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -181,7 +181,7 @@ class VippsApi {
 
         $command = 'order-management/v2/' . $paymenttype . '/receipts/' . $vippsid;
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -314,7 +314,7 @@ class VippsApi {
         }
 
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -356,7 +356,7 @@ class VippsApi {
            return false;
         }
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -392,7 +392,7 @@ class VippsApi {
     public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
         $command = 'Ecomm/v2/payments';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -532,7 +532,7 @@ class VippsApi {
     public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$requestid) {
         $command = 'checkout/v3/session';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $clientid = $this->get_clientid();
         $secret = $this->get_secret();
         $subkey = $this->get_key();
@@ -778,7 +778,7 @@ class VippsApi {
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -829,7 +829,7 @@ class VippsApi {
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -866,7 +866,7 @@ class VippsApi {
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/refund';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -911,7 +911,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'Ecomm/v2/payments/'.$orderid.'/details';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -944,7 +944,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid.'/cancel';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -985,7 +985,7 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid.'/capture';
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
@@ -1031,7 +1031,7 @@ class VippsApi {
         $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
 
         $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'];
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();

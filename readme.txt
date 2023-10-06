@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
 Tags: woocommerce, vipps
-Version: 1.14.13
-Stable tag: 1.14.13
+Version: 1.14.14
+Stable tag: 1.14.14
 Requires at least: 4.7
 Tested up to: 6.3.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.1.1
+WC tested up to: 8.2.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -79,7 +79,9 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Security fix in sanitizing the Buy Now button shortcode
 Check format of images used for receipts
+Improvements for IIS
 
 == Frequently Asked Questions ==
 
@@ -215,6 +217,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2023-10-06 version 1.14.14 =
+Fix sanitizion of output in Buy-Now button code; thanks to Darius Sveikauskas for reporting
+
 = 2023-09-18 version 1.14.13 =
 Check that images uploaded to receipts are either jpeg or png
 
