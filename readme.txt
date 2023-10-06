@@ -218,7 +218,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 = 2023-10-06 version 1.14.14 =
-Fix sanitizion of output in Buy-Now button code 
+Fix sanitizion of output in Buy-Now button code; thanks to Darius Sveikauskas for reporting
 
 = 2023-09-18 version 1.14.13 =
 Check that images uploaded to receipts are either jpeg or png
