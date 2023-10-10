@@ -3913,8 +3913,6 @@ EOF;
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
 
-        error_log("data is " . print_r($data, true));
-
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {
             $value = esc_attr($value);
