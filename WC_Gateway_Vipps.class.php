@@ -2455,15 +2455,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $address = $this->canonicalize_vipps_address($address, $user);
         $billing = $this->canonicalize_vipps_address($billing, $user);
 
-error_log("Got address " . print_r($address, true) . " and billing " . print_r($billing, true));
-
         # Billing.
         $order->set_billing_email($billing['email']);
         $order->set_billing_phone($billing['phoneNumber']);
         $order->set_billing_first_name($billing['firstName']);
         $order->set_billing_last_name($billing['lastName']);
         $order->set_billing_address_1($billing['streetAddress']);
-        $order->set_billing_address_2($billing['addressline2']);
+        if ($billing['addressline2']) $order->set_billing_address_2($billing['addressline2']);
         $order->set_billing_city($billing['region']);
         $order->set_billing_postcode($billing['postalCode']);
         $order->set_billing_country($billing['country']);
@@ -2475,7 +2473,7 @@ error_log("Got address " . print_r($address, true) . " and billing " . print_r($
             $order->set_shipping_phone($address['phoneNumber']);
         }
         $order->set_shipping_address_1($address['streetAddress']);
-        $order->set_shipping_address_2($address['addressline2']);
+        if ($address['addressline2']) $order->set_shipping_address_2($address['addressline2']);
         $order->set_shipping_city($address['region']);
         $order->set_shipping_postcode($address['postalCode']);
         $order->set_shipping_country($address['country']);
