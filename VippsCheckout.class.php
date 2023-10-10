@@ -408,7 +408,6 @@ class VippsCheckout {
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
             $order->set_billing_address_1($contact['streetAddress']);
-            $order->set_billing_address_2("");
             $order->set_billing_city($contact['city']);
             $order->set_billing_postcode($contact['postalCode']);
             $order->set_billing_country($countrycode);
@@ -419,7 +418,6 @@ class VippsCheckout {
             $order->set_shipping_first_name($contact['firstName']);
             $order->set_shipping_last_name($contact['lastName']);
             $order->set_shipping_address_1($contact['streetAddress']);
-            $order->set_shipping_address_2("");
             $order->set_shipping_city($contact['city']);
             $order->set_shipping_postcode($contact['postalCode']);
             $order->set_shipping_country($countrycode);
