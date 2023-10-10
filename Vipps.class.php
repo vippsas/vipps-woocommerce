@@ -1681,6 +1681,10 @@ else:
         if ($complete) $change = true;
 
         if ($ok && $change && isset($status['billingDetails']))  {
+
+
+            error_log("contact info " . print_r($contact, true));
+
             $contact = $status['billingDetails'];
             $order->set_billing_email($contact['email']);
             $order->set_billing_phone($contact['phoneNumber']);
@@ -1689,7 +1693,7 @@ else:
             if (isset($contact['streetAddress'])) {
                 $order->set_billing_address_1($contact['streetAddress']);
             }
-            $order->set_billing_address_2("");
+            $order->set_billing_address_2(""); // IOK HERE
             if (isset($contact['city'])) {
                 $order->set_billing_city($contact['city']);
             }
@@ -1702,12 +1706,15 @@ else:
             }
         }
         if ($ok &&  $change && isset($status['shippingDetails']))  {
+            error_log("contact info " . print_r($contact, true));
+
             $contact = $status['shippingDetails'];
             $countrycode =  $this->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
             $order->set_shipping_first_name($contact['firstName']);
             $order->set_shipping_last_name($contact['lastName']);
             $order->set_shipping_address_1($contact['streetAddress']);
-            $order->set_shipping_address_2("");
+
+            $order->set_shipping_address_2(""); // IOK HERE
             $order->set_shipping_city($contact['city']);
             $order->set_shipping_postcode($contact['postalCode']);
             $order->set_shipping_country($countrycode);
@@ -2669,8 +2676,8 @@ EOF;
              $defaultdata['postalCode'] = $countries->get_base_postcode();
              $defaultdata['postCode'] =   $countries->get_base_postcode();
              $defaultdata['addressLine1'] = $countries->get_base_address();
-             # Let addressLine2 be empty though, it's not needed for this.
-             $defaultdata['addressLine2'] = "";
+             // Not normally used, but certain stores may use it for whatever reason IOK 2023-10-10
+             $defaultdata['addressLine2'] = $countries->get_base_address_2();
              $addressok=true;
          }
          return $defaultdata;
@@ -3912,8 +3919,6 @@ EOF;
         if ($sku) $data['product_sku'] = $sku;
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
-
-        error_log("data is " . print_r($data, true));
 
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {

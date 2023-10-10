@@ -2455,6 +2455,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $address = $this->canonicalize_vipps_address($address, $user);
         $billing = $this->canonicalize_vipps_address($billing, $user);
 
+error_log("Got address " . print_r($address, true) . " and billing " . print_r($billing, true));
+
         # Billing.
         $order->set_billing_email($billing['email']);
         $order->set_billing_phone($billing['phoneNumber']);
