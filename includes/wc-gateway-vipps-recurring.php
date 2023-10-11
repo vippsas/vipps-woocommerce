@@ -1557,7 +1557,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 					$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
 
-					$campaign_price    = $has_free_campaign ? 0 : $order->get_total();
+					$campaign_price    = $has_free_campaign ? $sign_up_fee : $order->get_total();
 					$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
 
 					$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
