@@ -83,6 +83,7 @@ Stop zeroing out addressline_2 in checkout
 Security fix in sanitizing the Buy Now button shortcode
 Check format of images used for receipts
 Improvements for IIS
+Fixes for 8.2 and for certain implausible configurations
 
 == Frequently Asked Questions ==
 
@@ -218,8 +219,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2023-10-xx version 1.14.15 =
+= 2023-10-16 version 1.14.15 =
 Stop zeroing out addressline 2 in checkout
+Fix polling when sessions are very long-lived in woo
 
 = 2023-10-06 version 1.14.14 =
 Fix sanitizion of output in Buy-Now button code; thanks to Darius Sveikauskas for reporting
