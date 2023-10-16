@@ -748,6 +748,11 @@ class VippsApi {
 
         try {
             $res = $this->http_call($command,$data,'GET',$headers,'json'); 
+            // This is not a 404, but the session is still expired. IOK 2023-10-16
+            if (($res['sessionState'] ?? "") == 'SessionExpired') {
+                return 'EXPIRED';  
+            }
+
         } catch (VippsAPIException $e) {
             if ($e->responsecode == 400) {
                 // No information yet.

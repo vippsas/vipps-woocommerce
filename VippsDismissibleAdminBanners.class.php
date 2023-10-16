@@ -37,6 +37,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class VippsDismissibleAdminBanners {
     private static $instance = null;
     private $dismissed =  null;
+    public $configured = false;
+    public $vipps_checkout_enabled = false;
     public static function instance()  {
         if (!static::$instance) static::$instance = new VippsDismissibleAdminBanners();
         return static::$instance;
