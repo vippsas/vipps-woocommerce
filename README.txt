@@ -2,7 +2,7 @@
 Contributors: Vipps, EverydayAS
 Tags: vipps, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 6.2
+Tested up to: 6.3
 Stable tag: trunk
 Requires PHP: 7.4
 License: AGPLv3.0 or later
@@ -162,6 +162,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 = Next release =
 * Fixed: Period campaigns now show correctly in the app when there's both a free trial and a sign-up fee.
+* Added: Support for WooCommerce High Performance Order Storage (HPOS)
 
 = 1.16.5 =
 * Fixed: Refunds could not be processed properly because of a mistake when calling the `woocommerce_order_after_calculate_totals` action. We assume the object is always a subscription, when it is not.
