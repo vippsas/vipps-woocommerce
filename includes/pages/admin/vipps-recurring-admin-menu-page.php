@@ -52,7 +52,7 @@ defined( 'ABSPATH' ) || exit;
 		echo sprintf(
 		/* translators: %s: link to possible failure reasons */
 			__( 'A list of possible failure reasons and what they mean can be found %s', 'woo-vipps-recurring' ),
-			'<a href="https://www.vipps.no/developers-documentation/recurring/documentation/#charge-failure-reasons" target="_blank" rel="noreferrer">' . __( 'here', 'woo-vipps-recurring' ) . '</a>'
+			'<a href="https://developer.vippsmobilepay.com/docs/APIs/recurring-api/vipps-recurring-api/#charge-failure-reasons" target="_blank" rel="noreferrer">' . __( 'here', 'woo-vipps-recurring' ) . '</a>'
 		);
 
 		?>
