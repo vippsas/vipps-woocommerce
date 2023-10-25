@@ -13,13 +13,19 @@
  * Domain Path: /languages
  */
 
-use Automattic\WooCommerce\Utilities\FeaturesUtil;
-
 defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
 define( 'WC_VIPPS_RECURRING_VERSION', '1.16.5' );
+
+
+// declare compatibility with WooCommerce HPOS
+add_action( 'before_woocommerce_init', function () {
+	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil\FeaturesUtil' ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
+	}
+} );
 
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
@@ -163,13 +169,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
 
 				add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
-
-				// declare compatibility with WooCommerce HPOS
-				add_action( 'before_woocommerce_init', function () {
-					if ( class_exists( FeaturesUtil::class ) ) {
-						FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
-					}
-				} );
 
 				if ( is_admin() ) {
 					add_action( 'admin_init', [ $this, 'admin_init' ] );
