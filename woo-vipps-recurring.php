@@ -22,7 +22,7 @@ define( 'WC_VIPPS_RECURRING_VERSION', '1.16.5' );
 
 // declare compatibility with WooCommerce HPOS
 add_action( 'before_woocommerce_init', function () {
-	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil\FeaturesUtil' ) ) {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
 	}
 } );
