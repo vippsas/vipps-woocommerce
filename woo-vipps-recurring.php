@@ -299,8 +299,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'order_item_add_action_buttons'
 				] );
 
-				add_action( 'save_post', [ $this, 'save_order' ], 10, 3 );
-
 				if ( $this->gateway->test_mode ) {
 					$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
 					$this->notices->warning( $notice );
@@ -709,29 +707,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				print "1";
-			}
-
-			/**
-			 * @param $postid
-			 * @param $post
-			 *
-			 * @throws Exception
-			 */
-			public function save_order( $postid, $post ): void {
-				if ( $post->post_type !== 'shop_order' ) {
-					return;
-				}
-
-				$order          = wc_get_order( $postid );
-				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
-				if ( $payment_method !== $this->gateway->id ) {
-					// If this is not the payment method, an agreement would not be available.
-					return;
-				}
-
-				if ( isset( $_POST['do_capture_vipps_recurring'] ) && $_POST['do_capture_vipps_recurring'] ) {
-					$this->gateway->capture_payment( $order );
-				}
 			}
 
 			/**
