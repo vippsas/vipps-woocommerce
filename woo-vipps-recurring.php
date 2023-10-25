@@ -109,8 +109,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 			public WC_Gateway_Vipps_Recurring $gateway;
 
-			public ?bool $useHighPerformanceOrderStorage = null;
-
 			public array $ajaxConfig = [];
 
 			/**
@@ -440,19 +438,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 					}
 				</style>
 				<?php
-			}
-
-			// Check if we are using the new HPOS feature from WooCommerce
-			// This function is used for backwards compatibility in certain places
-			public function useHighPerformanceOrderStorage(): bool {
-				if ( $this->useHighPerformanceOrderStorage === null ) {
-					$this->useHighPerformanceOrderStorage = function_exists( 'wc_get_container' ) &&  // 4.4.0
-															function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
-															class_exists( "Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController" ) &&
-															wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
-				}
-
-				return $this->useHighPerformanceOrderStorage;
 			}
 
 			public function gateway_should_be_active() {

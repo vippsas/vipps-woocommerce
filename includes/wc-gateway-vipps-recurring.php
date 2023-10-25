@@ -85,6 +85,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		public WC_Vipps_Recurring_Api $api;
 
+		public ?bool $useHighPerformanceOrderStorage = null;
+
 		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
@@ -102,10 +104,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Constructor
 		 */
 		public function __construct() {
-			$this->id                 = 'vipps_recurring';
-			$this->method_title       = __( 'Vipps Recurring Payments', 'woo-vipps-recurring' );
-			$this->method_description = __( 'Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
-			$this->has_fields         = true;
+			$this->id                             = 'vipps_recurring';
+			$this->method_title                   = __( 'Vipps Recurring Payments', 'woo-vipps-recurring' );
+			$this->method_description             = __( 'Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
+			$this->has_fields                     = true;
 
 			/*
 			 * Do not add 'multiple_subscriptions' to $supports.
@@ -240,8 +242,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			], 10, 3 );
 
 			// Delete idempotency key when renewal/resubscribe happens
-			add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10 );
-			add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ], 10 );
+			add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ] );
+			add_action( 'wcs_renewal_order_created', [ $this, 'delete_renewal_meta' ] );
 
 			// Cancel DUE charge if order transitions to 'cancelled' or 'failed'
 			$cancel_due_charge_statuses = apply_filters( 'wc_vipps_recurring_cancel_due_charge_statuses', [
@@ -414,6 +416,21 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
+		 * Check if we are using the new HPOS feature from WooCommerce
+		 * This function is used for backwards compatibility in certain places
+		 */
+		public function useHighPerformanceOrderStorage(): bool {
+			if ( $this->useHighPerformanceOrderStorage === null ) {
+				$this->useHighPerformanceOrderStorage = function_exists( 'wc_get_container' ) &&  // 4.4.0
+														function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
+														class_exists( "Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController" ) &&
+														wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+			}
+
+			return $this->useHighPerformanceOrderStorage;
+		}
+
+		/**
 		 * Retrieves the latest charge for an order if any. False if none or invalid agreement id
 		 *
 		 * @param $order
@@ -528,7 +545,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// check if order is temporarily locked
-			clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+			if ( ! $this->useHighPerformanceOrderStorage() ) {
+				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+			}
 
 			// hold on to the lock for 30 seconds
 			$lock = (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_locked_for_update_time' );
@@ -604,7 +623,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->unlock_order( $order );
 
 			$order->save();
-			clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+
+			if ( ! $this->useHighPerformanceOrderStorage() ) {
+				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+			}
 
 			$this->process_order_charge( $order, $charge );
 
@@ -1029,7 +1051,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$this->generate_idempotency_key( $renewal_order );
 
 				// clean the post cache for the renewal order to force Woo to fetch meta again.
-				clean_post_cache( $renewal_order_id );
+				if ( ! $this->useHighPerformanceOrderStorage() ) {
+					clean_post_cache( $renewal_order_id );
+				}
 			}
 
 			$idempotency_key = $this->get_idempotency_key( $renewal_order );
@@ -1116,7 +1140,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$order->save();
 
 				$this->process_order_charge( $order, $charge );
-				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+
+				if ( ! $this->useHighPerformanceOrderStorage() ) {
+					clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
+				}
 
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Finished running capture_payment successfully', WC_Vipps_Recurring_Helper::get_id( $order ) ) );
 
@@ -1816,7 +1843,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$payment_meta[ $this->id ] = [
 				'post_meta' => [
 					'_agreement_id' => [
-						'value' => get_post_meta( $subscription->get_id(), '_agreement_id', true ),
+						'value' => WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID ),
 						'label' => __( 'Vipps Agreement ID', 'woo-vipps-recurring' ),
 					]
 				],
@@ -1920,10 +1947,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param mixed $resubscribe_order The order created for the customer to resubscribe to the old expired/cancelled subscription
 		 */
 		public function delete_resubscribe_meta( $resubscribe_order ): void {
-			$resubscribe_order_id = WC_Vipps_Recurring_Helper::get_id( $resubscribe_order );
-
-			delete_post_meta( $resubscribe_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
-			delete_post_meta( $resubscribe_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
 
 			$this->delete_renewal_meta( $resubscribe_order );
 		}
@@ -1934,15 +1959,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param mixed $renewal_order The renewal order
 		 */
 		public function delete_renewal_meta( $renewal_order ) {
-			$renewal_order_id = WC_Vipps_Recurring_Helper::get_id( $renewal_order );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_REASON );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_REASON );
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
-			delete_post_meta( $renewal_order_id, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
+			$renewal_order->save();
 
 			return $renewal_order;
 		}
