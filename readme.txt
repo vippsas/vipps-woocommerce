@@ -1,5 +1,5 @@
 === Pay with Vipps for WooCommerce ===
-Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
+Contributors: wphostingdev, iverok, perwilhelmsen
 Tags: woocommerce, vipps
 Version: 1.14.15
 Stable tag: 1.14.15
