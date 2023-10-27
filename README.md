@@ -126,7 +126,7 @@ For other issues you should [contact Vipps](https://developer.vippsmobilepay.com
 ### Vipps FAQ
 
 See the
-[Vipps FAQ](https://developer.vippsmobilepay.com/docs/faqs/)
+[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/common-topics/)
 for more help with Vipps eCommerce.
 
 ## Requirements
