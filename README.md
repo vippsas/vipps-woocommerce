@@ -79,7 +79,7 @@ for an overview.
 ### Retrieving Vipps API Keys
 
 Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys, as described in
-[API keys](https://developer.vippsmobilepay.com/docs/common-topics/api-keys/).
+[API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
 
 ### Configuration of the plugin
 
@@ -102,9 +102,9 @@ In most cases your products should be virtual when using subscriptions, but it i
 possible to use the plugin with physical products if you need to do so.
 
 See the
-[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/common-topics/)
+[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
 for more details:
-[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/common-topics/reserve-and-capture//#what-is-the-difference-between-reserve-capture-and-direct-capture).
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 ## Extending the plugin
 
@@ -167,7 +167,7 @@ If your question is not answered on this page:
 * For help with the plugin, use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
 
 * The
-  [Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/common-topics/)
+  [Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
   may also be useful.
 
 ### Does this plugin work alongside the Vipps for WooCommerce plugin?
