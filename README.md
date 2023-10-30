@@ -67,7 +67,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 For more information, see:
 
 * [Getting Started](https://developer.vippsmobilepay.com/docs/getting-started)
-* [API Keys](https://developer.vippsmobilepay.com/docs/common-topics/api-keys)
+* [API Keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys)
 * [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 
 ## Screenshots
@@ -126,7 +126,7 @@ For other issues you should [contact Vipps](https://developer.vippsmobilepay.com
 ### Vipps FAQ
 
 See the
-[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/common-topics/)
+[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
 for more help with Vipps eCommerce.
 
 ## Requirements
