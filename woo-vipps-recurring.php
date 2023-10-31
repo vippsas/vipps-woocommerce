@@ -655,12 +655,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 					return;
 				}
 
-				$order_status        = $order->get_status();
-				$show_capture_button = ( ! in_array( $order_status, $this->gateway->statuses_to_attempt_capture, true ) )
-									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order )
-									   && ! (int) WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
-									   && ! wcs_order_contains_renewal( $order )
-									   && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
+				$show_capture_button = WC_Vipps_Recurring_Helper::can_capture_charge_for_order($order);
 
 				if ( ! apply_filters( 'wc_vipps_recurring_show_capture_button', $show_capture_button, $order ) ) {
 					return;

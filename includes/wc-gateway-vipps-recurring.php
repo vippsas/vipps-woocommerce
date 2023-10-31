@@ -104,10 +104,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Constructor
 		 */
 		public function __construct() {
-			$this->id                             = 'vipps_recurring';
-			$this->method_title                   = __( 'Vipps Recurring Payments', 'woo-vipps-recurring' );
-			$this->method_description             = __( 'Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
-			$this->has_fields                     = true;
+			$this->id                 = 'vipps_recurring';
+			$this->method_title       = __( 'Vipps Recurring Payments', 'woo-vipps-recurring' );
+			$this->method_description = __( 'Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
+			$this->has_fields         = true;
 
 			/*
 			 * Do not add 'multiple_subscriptions' to $supports.
@@ -1094,10 +1094,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function maybe_capture_payment( $order_id ): void {
 			$order = wc_get_order( $order_id );
 
-			if ( wcs_order_contains_renewal( $order )
-				 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING ) !== 1
-				 || (int) WC_Vipps_Recurring_Helper::is_charge_captured_for_order( $order ) === 1
-				 || (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) ) {
+			if ( ! WC_Vipps_Recurring_Helper::can_capture_charge_for_order( $order ) ) {
 				return;
 			}
 
@@ -1114,32 +1111,36 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 */
 		public function capture_payment( $order ): bool {
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+			$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
 
 			try {
 				$agreement = $this->api->get_agreement( $agreement_id );
+				$charge    = $this->api->get_charge( $agreement_id, $charge_id );
 
 				$idempotency_key = $this->get_idempotency_key( $order );
 
-				$charges = $this->api->get_charges_for( $agreement->id );
+				if ( $charge->status ) {
+					if ( ! in_array( $charge->status, [
+						WC_Vipps_Charge::STATUS_RESERVED,
+						WC_Vipps_Charge::STATUS_PARTIALLY_CAPTURED
+					] ) ) {
+						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge does not have the status RESERVED or PARTIALLY_CAPTURED for agreement: %s in capture_payment. Found status: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement_id, $charge->status ) );
+						WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
-				// if a charge exists and the status is RESERVED we need to simply capture it
-				$charges = array_filter( $charges, static function ( $charge ) {
-					return $charge->status === WC_Vipps_Charge::STATUS_RESERVED;
-				} );
+						/* translators: %s: The charge's status */
+						$order->add_order_note( sprintf( __( 'Could not capture charge because the status is not RESERVED or PARTIALLY_CAPTURED. Found status: %s', 'woo-vipps-recurring' ), $charge->status ) );
+						$order->save();
 
-				if ( count( $charges ) === 0 ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] No RESERVED charges found in capture_payment for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $agreement->id ) );
-
-					return false;
+						return false;
+					}
 				}
 
-				$latest_charge = $charges[ array_key_last( $charges ) ];
-				$charge        = $this->capture_reserved_charge( $latest_charge, $agreement, $order, $idempotency_key );
+				$captured_charge = $this->capture_reserved_charge( $charge, $agreement, $order, $idempotency_key );
 
-				WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $charge->id );
+				WC_Vipps_Recurring_Helper::set_order_as_pending( $order, $captured_charge->id );
 				$order->save();
 
-				$this->process_order_charge( $order, $charge );
+				$this->process_order_charge( $order, $captured_charge );
 
 				if ( ! $this->useHighPerformanceOrderStorage() ) {
 					clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
