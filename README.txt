@@ -166,6 +166,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: Changed the logic for how we determine whether to show our gateway, because certain plugins add their own subscription types. Now we only disable our gateway if Vipps Checkout is being shown as well.
 * Fixed: We no longer care about an order's status when it comes to displaying the "Capture" button. If there are funds to capture, we show it.
 * Fixed: Better error logging for when we try to capture a charge that can no longer be captured. Rewrote the capture payment handler.
+* Fixed: Changing gateway was no longer possible in one of the later Woo Subscription versions, due to the use of `wp_safe_redirect`. We now whitelist Vipps' domains.
 
 = 1.16.5 =
 * Fixed: Refunds could not be processed properly because of a mistake when calling the `woocommerce_order_after_calculate_totals` action. We assume the object is always a subscription, when it is not.

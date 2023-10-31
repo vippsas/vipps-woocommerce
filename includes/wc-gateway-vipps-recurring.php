@@ -263,6 +263,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			], 100, 3 );
 
 			add_action( 'woocommerce_order_after_calculate_totals', [ $this, 'update_agreement_price_in_app' ], 10, 2 );
+
+			// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps API
+			// Unless we whitelist the domains specifically
+			add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
+				$hosts[] = 'api.vipps.no';
+				$hosts[] = 'apitest.vipps.no';
+
+				return $hosts;
+			} );
 		}
 
 		/**
@@ -283,7 +292,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @return bool Whether the subscription's payment method should be updated on checkout or async when a response is returned.
 		 */
 		public function indicate_async_payment_method_update( bool $should_update, string $new_payment_method ): bool {
-			if ( 'vipps_recurring' === $new_payment_method ) {
+			if ( $this->id === $new_payment_method ) {
 				$should_update = false;
 			}
 
@@ -979,13 +988,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @return mixed|string
 		 */
 		public function get_idempotency_key( $order ) {
-			$idempotence_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
+			$idempotency_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
 
-			if ( ! $idempotence_key ) {
-				$idempotence_key = $this->generate_idempotency_key( $order );
+			if ( ! $idempotency_key ) {
+				$idempotency_key = $this->generate_idempotency_key( $order );
 			}
 
-			return $idempotence_key;
+			return $idempotency_key;
 		}
 
 		/**
@@ -1606,12 +1615,16 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 							->set_end( $campaign_end_date )
 							->set_period( $campaign_period )
 					);
-				}
+				};
 
 				$agreement = apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
 
 				$idempotency_key = $this->get_idempotency_key( $order );
-				$response        = $this->api->create_agreement( $agreement, $idempotency_key );
+				if ( $is_gateway_change ) {
+					$idempotency_key = $this->api->generate_idempotency_key();
+				}
+
+				$response = $this->api->create_agreement( $agreement, $idempotency_key );
 
 				// mark the old agreement for cancellation to leave no dangling agreements in Vipps
 				$should_cancel_old = $is_gateway_change || $is_subscription_switch || $is_failed_renewal_order;
