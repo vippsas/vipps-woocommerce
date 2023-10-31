@@ -160,8 +160,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-= Next release =
+= 1.17.0 =
+* Added: Support for WooCommerce High Performance Order Storage (HPOS)
 * Fixed: Period campaigns now show correctly in the app when there's both a free trial and a sign-up fee.
+* Fixed: Changed the logic for how we determine whether to show our gateway, because certain plugins add their own subscription types. Now we only disable our gateway if Vipps Checkout is being shown as well.
 
 = 1.16.5 =
 * Fixed: Refunds could not be processed properly because of a mistake when calling the `woocommerce_order_after_calculate_totals` action. We assume the object is always a subscription, when it is not.
