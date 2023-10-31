@@ -484,7 +484,7 @@ class WC_Vipps_Recurring_Api {
 		$localized_msg = $error_msg;
 		if ( $is_merchant_not_allowed_error ) {
 			/* translators: Link to a GitHub readme about the error */
-			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
+			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-faq/#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
 		}
 
 		if ( $is_url_validation_error ) {

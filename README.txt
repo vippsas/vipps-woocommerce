@@ -25,9 +25,11 @@ With Vipps Recurring Payments for WooCommerce you can:
 * Sell recurring products (virtual and physical)
 * Offer subscription services
 
-See [How it works](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-howitworks.md) for an overview.
+See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/) for an overview.
 
-<img src="https://raw.githubusercontent.com/vippsas/vipps-recurring-api/master/images/vipps-recurring-process.svg?sanitize=true" alt="Vipps Recurring Process" />
+
+![Recurring Process](./docs/images/recurring-process.svg) 
+
 
 == Requirements ==
 
@@ -54,7 +56,7 @@ To use the plugin you need to do the following:
 
 = Retrieving Vipps API Keys =
 
-The documentation for retrieving your Vipps API Keys can be found [here](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md#getting-the-api-keys).
+The documentation for retrieving your Vipps API Keys can be found [here](https://developer.vippsmobilepay.com/docs/getting-started/#get-your-credentials).
 
 = Configuration of the plugin =
 
@@ -75,11 +77,11 @@ In most cases your products should be virtual when using subscriptions, but it i
 possible to use the plugin with physical products if you need to do so.
 
 See the
-[Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md),
+[Vipps Recurring FAQ](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-faq),
 and the
-[Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md)
+[Vipps eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq/)
 for more details:
-[What is the difference between "Reserve Capture" and "Direct Capture"?](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md#what-is-the-difference-between-reserve-capture-and-direct-capture).
+[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq/#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
 == Screenshots ==
 
@@ -94,13 +96,13 @@ If your question is not answered on this page:
 
 * For help with the plugin: Please use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
 * For help with Vipps: Please see the
-  [contact us](https://github.com/vippsas/vipps-developers/blob/master/contact.md)
+  [contact us](https://developer.vippsmobilepay.com/docs/contact/)
   page, and also the main
   [Vipps GitHub page](https://github.com/vippsas).
   The
-  [Vipps Recurring FAQ](https://github.com/vippsas/vipps-recurring-api/blob/master/vipps-recurring-api-faq.md)
+  [Vipps Recurring FAQ](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-faq)
   and the
-  [Vipps eCom FAQ](https://github.com/vippsas/vipps-ecom-api/blob/master/vipps-ecom-api-faq.md) may also be useful.
+  [Vipps eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq/) may also be useful.
 
 = Does this plugin work alongside the Vipps for WooCommerce plugin? =
 
@@ -124,7 +126,7 @@ You can read about how WooCommerce Subscriptions and WooCommerce Memberships wor
 
 = How can I get help if I have any issues? =
 
-For issues with the plugin you can submit an issue on GitHub or ask on the support forum on wordpress.org. For other unrelated issues you should [contact Vipps](https://github.com/vippsas/vipps-developers/blob/master/contact.md).
+For issues with the plugin you can submit an issue on GitHub or ask on the support forum on wordpress.org. For other unrelated issues, you should [contact Vipps](https://developer.vippsmobilepay.com/docs/contact/).
 
 = Where can I use Vipps? =
 
@@ -133,7 +135,7 @@ Vipps is only available in Norway at the moment and only users who have Vipps wi
 = How can I test that the plugin works correctly? =
 
 If you have access to the Vipps test environment you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
-See the [getting started](https://github.com/vippsas/vipps-developers/blob/master/vipps-getting-started.md) guide for details about how to get started using the test environment.
+See the [getting started](https://developer.vippsmobilepay.com/docs/getting-started/) guide for details about how to get started using the test environment.
 
 Vipps does not offer test accounts for regular users of the plugin but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
 You can then refund or cancel the purchase afterwards.
