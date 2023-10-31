@@ -19,6 +19,14 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'WC_VIPPS_RECURRING_VERSION', '1.17.0' );
 
+
+// declare compatibility with WooCommerce HPOS
+add_action( 'before_woocommerce_init', function () {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
+	}
+} );
+
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
 /**
@@ -100,6 +108,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public WC_Vipps_Recurring_Admin_Notices $notices;
 
 			public WC_Gateway_Vipps_Recurring $gateway;
+
+			public array $ajaxConfig = [];
 
 			/**
 			 * Returns the *Singleton* instance of this class.
@@ -258,6 +268,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				// Disable this gateway unless we're purchasing at least one subscription product.
 				add_filter( 'woocommerce_available_payment_gateways', [ $this, 'maybe_disable_gateway' ] );
+
+				// Add our own ajax actions
+				add_action( 'wp_ajax_woo_vipps_recurring_order_action', [
+					$this,
+					'order_handle_vipps_recurring_action'
+				] );
 			}
 
 			/**
@@ -282,8 +298,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$this,
 					'order_item_add_action_buttons'
 				] );
-
-				add_action( 'save_post', [ $this, 'save_order' ], 10, 3 );
 
 				if ( $this->gateway->test_mode ) {
 					$notice = __( 'Vipps Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
@@ -657,32 +671,29 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( $show_capture_button && ! $is_captured ) {
 					$logo = plugins_url( 'assets/images/vipps-logo-negative-rgb-transparent.png', __FILE__ );
 
-					print '<button type="button" onclick="document.getElementById(\'docapture\').value=1;document.post.submit();" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button vipps-button generate-items"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'woo-vipps-recurring' ) . '</button>';
-					print '<input id="docapture" type="hidden" name="do_capture_vipps_recurring" value="0">';
+					print '<button type="button" data-order-id="' . $order->get_id() . '" data-action="capture_payment" style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" class="button generate-items"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'woo-vipps-recurring' ) . '</button>';
 				}
 			}
 
-			/**
-			 * @param $postid
-			 * @param $post
-			 *
-			 * @throws Exception
-			 */
-			public function save_order( $postid, $post ): void {
-				if ( $post->post_type !== 'shop_order' ) {
+			public function order_handle_vipps_recurring_action() {
+				check_ajax_referer( 'vipps_recurring_ajax_nonce', 'nonce' );
+
+				$order = wc_get_order( intval( $_REQUEST['orderId'] ) );
+				if ( ! is_a( $order, 'WC_Order' ) ) {
 					return;
 				}
 
-				$order          = wc_get_order( $postid );
-				$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
-				if ( $payment_method !== $this->gateway->id ) {
-					// If this is not the payment method, an agreement would not be available.
+				if ( $order->get_payment_method() != $this->gateway->id ) {
 					return;
 				}
 
-				if ( isset( $_POST['do_capture_vipps_recurring'] ) && $_POST['do_capture_vipps_recurring'] ) {
-					$this->gateway->capture_payment( $order );
+				$action = isset( $_REQUEST['do'] ) ? sanitize_title( $_REQUEST['do'] ) : 'none';
+
+				if ( $action == 'capture_payment' ) {
+					$this->gateway->maybe_capture_payment( $order->get_id() );
 				}
+
+				print "1";
 			}
 
 			/**
@@ -821,8 +832,11 @@ function woocommerce_gateway_vipps_recurring_init() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring-admin.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring-admin.css' ) );
 
-				wp_enqueue_script( 'woo-vipps-recurring', plugins_url( 'assets/js/vipps-recurring-admin.js', __FILE__ ), [],
-					filemtime( __DIR__ . '/assets/js/vipps-recurring-admin.js' ) );
+				$this->ajaxConfig['nonce'] = wp_create_nonce( 'vipps_recurring_ajax_nonce' );
+
+				wp_register_script( 'woo-vipps-recurring-admin', plugins_url( 'assets/js/vipps-recurring-admin.js', __FILE__ ), [], filemtime( dirname( __FILE__ ) . "/assets/js/vipps-recurring-admin.js" ), true );
+				wp_localize_script( 'woo-vipps-recurring-admin', 'VippsRecurringConfig', $this->ajaxConfig );
+				wp_enqueue_script( 'woo-vipps-recurring-admin' );
 			}
 
 			/**

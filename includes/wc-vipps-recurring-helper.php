@@ -148,7 +148,7 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_meta( $resource, $meta_key ) {
-		return self::is_wc_lt( '3.0' )
+		return self::is_wc_lt( '2.6.0' )
 			? get_post_meta( self::get_id( $resource ), $meta_key, true )
 			: $resource->get_meta( $meta_key );
 	}
@@ -161,9 +161,21 @@ class WC_Vipps_Recurring_Helper {
 	 * @param $meta_value
 	 */
 	public static function update_meta_data( $resource, $meta_key, $meta_value ): void {
-		self::is_wc_lt( '3.0' )
+		self::is_wc_lt( '2.6.0' )
 			? update_post_meta( self::get_id( $resource ), $meta_key, $meta_value )
 			: $resource->update_meta_data( $meta_key, $meta_value );
+	}
+
+	/**
+	 * Deletes meta data on a resource
+	 *
+	 * @param $resource
+	 * @param $meta_key
+	 */
+	public static function delete_meta_data( $resource, $meta_key ): void {
+		self::is_wc_lt( '2.6.0' )
+			? delete_post_meta( self::get_id( $resource ), $meta_key )
+			: $resource->delete_meta_data( $meta_key );
 	}
 
 	/**
