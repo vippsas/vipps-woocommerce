@@ -1067,16 +1067,16 @@ msgid "Vipps Payment Refunded:"
 msgstr "Vipps-betaling refundert:"
 
 #: WC_Gateway_Vipps.class.php:549
-msgid "If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using Vipps or credit card, with no need to type in addresses."
-msgstr "Hvis du aktiverer, vil dette <strong>erstatte</strong> den vanlige Woo-kassasiden med Vipps Checkout, og tilby en enkel kassaside med Vipps og kredittkort, og uten behov for å skrive inn addresser."
+msgid "With Vipps Checkout you'll get: Vipps, VISA and MasterCard payments, your customers' name and contact info in a simple manner and shipping selection in Checkout."
+msgstr "Med Vipps Checkout får du: Vipps, VISA og MasterCard-betaling, navn og kontaktinfo til dine kunder og fraktvelger i Checkoutvinduet."
 
 #: WC_Gateway_Vipps.class.php:547
-msgid "Enable Alternative Vipps Checkout screen, replacing the standard checkout page"
-msgstr "Skru på alternativ Vipps Checkout kassaskjerm, erstatt standard kassaside."
+msgid "YES, use Vipps Checkout in stead of WooCommerce Checkout!"
+msgstr "JA, bruk Vipps Checkout i stedet for WooCommerce Checkout"
 
 #: WC_Gateway_Vipps.class.php:546
-msgid "Activate Alternative Vipps Checkout"
-msgstr "Aktiver alternativ Vipps Checkout kassa-skjerm"
+msgid "Do you want to use Vipps Checkout?"
+msgstr "Vil du bruke Vipps Checkout?"
 
 #: WC_Gateway_Vipps.class.php:373
 msgid "Error getting payment details before doing cancel: "
