@@ -35,7 +35,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 * Offer subscription services
 
 See
-[How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/vipps-recurring-api-howitworks/)
+[How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/)
 for an overview.
 
 <!-- START_COMMENT -->
@@ -120,7 +120,7 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 `WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 4
 
 The amount of days Vipps will retry a charge for before it fails.
-See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/vipps-recurring-api/#charge-retries) for more information.
+See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-guide/#charge-retries) for more information.
 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
 
