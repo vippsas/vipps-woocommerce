@@ -1857,13 +1857,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $session = $order->get_meta('_vipps_checkout_session');
                 $checkoutpoll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
 
+                // This is for compatibility reasons: Earlier versions stored this URL otherwise. This will be removed in a version or two.
+                // IOK 2023-11-10
+                if (!$checkoutpoll) $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
+             
+
                 if ($checkoutpoll) {
                     try {
                         $polldata =  $this->api->poll_checkout($checkoutpoll);
-
                         $polldata = $this->ensure_userDetails($polldata, $order);
-
-
 
                         if (isset($polldata['userDetails'])) {
                             $paymentdetails['userDetails'] = $polldata['userDetails'];
