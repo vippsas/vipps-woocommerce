@@ -164,9 +164,17 @@ jQuery( document ).ready( function() {
     // Earlier versions, no variation:
     if (prodid.length == 0) {
       prodid = jQuery(form).find('button[name="add-to-cart"]');  
-      data['product_id'] =  (prodid.length>0) ? prodid.val() : 0;
+      if (prodid.length > 0) {
+         data['product_id'] =  prodid.val();
+      } else {
+         // Some weird themes are even more incompatible
+         prodid = jQuery(form).find('button[data-product_id]');
+         data['product_id'] = prodid.length > 0 ? prodid.data('product_id') : 0;
+     }
     }
    }
+   // Finally, create a hook for even weirder themes.
+   data = wp.hooks.applyFilters('vippsBuySingleProductData', data,  element, event);
    data['action'] = 'vipps_buy_single_product';
 
    jQuery.ajax(VippsConfig['vippsajaxurl'], {
