@@ -1962,11 +1962,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_payment_details($order) {
         $result = array();
         $session = $order->get_meta('_vipps_checkout_session');
-        $poll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
+        $checkoutpoll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
+        if (!$checkoutpoll) $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
 
-        if ($poll) {
+        if ($checkoutpoll) {
             try {
-                $result = $this->api->poll_checkout($poll);
+                $result = $this->api->poll_checkout($checkoutpoll);
 
                 if ($result == 'EXPIRED') {
                     $result = array('status'=>'CANCEL'); 
