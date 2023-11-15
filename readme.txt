@@ -1,5 +1,5 @@
 === Pay with Vipps for WooCommerce ===
-Contributors: wphostingdev, iverok, pmbakken, perwilhelmsen
+Contributors: wphostingdev, iverok, perwilhelmsen
 Tags: woocommerce, vipps
 Version: 1.14.15
 Stable tag: 1.14.15
@@ -7,7 +7,7 @@ Requires at least: 4.7
 Tested up to: 6.3.1
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.2.0
+WC tested up to: 8.3
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
