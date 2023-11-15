@@ -411,7 +411,7 @@ class Vipps {
            <p><?php _e('If you use Gutenberg, you should be able to add a Vipps Badge block wherever you need it. It is called Vipps On-Site Messaging Badge Block.', 'woo-vipps'); ?>
 
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
-           <p><?php echo sprintf(__('If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href="%s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), "https://vippsas.github.io/vipps-developer-docs/docs/APIs/checkout-api/vipps-checkout-on-site-messaging"); ?></p>
+           <p><?php echo sprintf(__('If you need to add a Vipps-badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the Vipps Badge manually (as <a href="%s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), "https://developer.vippsmobilepay.com/docs/design-guidelines/checkout-on-site-messaging/"); ?></p>
            <p><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
               <pre>[vipps-badge variant={white|orange|light-orange|grey|purple}<br>             language={en|no}<br>             amount={amount in minor units}<br>             vipps-senere={false|true}]</pre><br>
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?>

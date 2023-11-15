@@ -29,7 +29,7 @@ You can also do important back office tasks such as capture and refund directly 
 
 For more information, see:
 
-* [How Checkout works for WooCommerce](https://developer.vippsmobilepay.com/docs/APIs/checkout-api/vipps-checkout-how-it-works-woocommerce/)
+* [How Checkout works for WooCommerce](https://developer.vippsmobilepay.com/docs/APIs/checkout-api/checkout-how-it-works-woocommerce/)
 * [Vipps.no: We have these WooCommerce plugins available](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/)
 * [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
@@ -67,7 +67,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 For more information, see:
 
 * [Getting Started](https://developer.vippsmobilepay.com/docs/getting-started)
-* [API Keys](https://developer.vippsmobilepay.com/docs/common-topics/api-keys)
+* [API Keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys)
 * [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
 
 ## Screenshots
@@ -126,7 +126,7 @@ For other issues you should [contact Vipps](https://developer.vippsmobilepay.com
 ### Vipps FAQ
 
 See the
-[Vipps FAQ](https://developer.vippsmobilepay.com/docs/faqs/)
+[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
 for more help with Vipps eCommerce.
 
 ## Requirements
