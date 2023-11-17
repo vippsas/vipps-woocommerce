@@ -567,6 +567,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // This is used for new options,to set reasonable defaults based on older settings. We can't use WC_Settings->get_option for this unfortunately.
         $current = get_option('woocommerce_vipps_settings');
         // New defaults based on old defaults
+        $default_static_shipping_for_checkout = 'no';
+        $default_ask_address_for_express = 'no';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
