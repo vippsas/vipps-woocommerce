@@ -2814,11 +2814,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
-          $order->add_order_note(__('Payment captured directly at Vipps', 'woo-vipps'));
+          $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->payment_method_name));
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', __('Payment cancelled at Vipps', 'woo-vipps'));
+            $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s', 'woo-vipps'), $this->payment_method_name));
         }
         $order->save();
         clean_post_cache($order->get_id());
@@ -2848,7 +2848,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     function ($status, $orderid, $order) {
                        return $this->after_vipps_order_status($order);
                     }, 99, 3);
-               $order->add_order_note(__('Payment authorized at Vipps', 'woo-vipps'));
+               $order->add_order_note(sprintf(__('Payment authorized at %1$s', 'woo-vipps'), $this->payment_method_name));
             }
             $order->payment_complete();
     }
