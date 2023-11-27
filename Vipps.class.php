@@ -591,24 +591,24 @@ class Vipps {
             </div>
 
             <div class="pluginsection vipps-recurring">
-               <h2><?php echo sprintf(__( '%1$s Recurring Payments', 'woo-vipps' ), $this->company_name);?></h2>
+               <h2><?php echo sprintf(__( '%1$s Recurring Payments', 'woo-vipps' ), "Vipps");?></h2>
                <p>
-                  <?php echo sprintf(__("<a href='%1\$s' target='_blank'>%2\$s Recurring Payments for WooCommerce</a> by <a href='%3\$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', $this->company_name, 'https://everyday.no/'); ?>
+                  <?php echo sprintf(__("<a href='%1\$s' target='_blank'>%2\$s Recurring Payments for WooCommerce</a> by <a href='%3\$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', "Vipps", 'https://everyday.no/'); ?>
 
                   <?php echo sprintf(__("Vipps Recurring Payments requires the <a href='%1\$s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
                <?php do_action('vipps_page_vipps_recurring_payments_section'); ?>
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($recurringactive): ?>
                      <p>
-                       <?php echo sprintf(__("%1\$s Recurring Payments is <b>installed and active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'), $this->company_name, $recurringsettings); ?>
+                       <?php echo sprintf(__("%1\$s Recurring Payments is <b>installed and active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'), "Vipps", $recurringsettings); ?>
                     </p>
                <?php elseif ($recurringinstalled): ?>
                      <p>
-                     <?php echo sprintf(__("%1\$s Recurring Payments is installed, but <em>not active</em>. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), $this->company_name, admin_url("/plugins.php")); ?>
+                     <?php echo sprintf(__("%1\$s Recurring Payments is installed, but <em>not active</em>. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), "Vipps", admin_url("/plugins.php")); ?>
                      </p>
                <?php else: ?>
                      <p>
-                     <?php echo sprintf(__("%1\$s Recurring Payments is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), $this->company_name, $recurringinstall); ?>
+                     <?php echo sprintf(__("%1\$s Recurring Payments is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), "Vipps", $recurringinstall); ?>
                      </p>
                <?php endif; ?> 
                </div>
@@ -616,25 +616,25 @@ class Vipps {
             </div>
 
             <div class="pluginsection login-with-vipps">
-               <h2><?php echo sprintf(__( 'Login with %1$s', 'woo-vipps' ), $this->company_name);?></h2>
-               <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with %2\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', $this->company_name); ?></p>
+               <h2><?php echo sprintf(__( 'Login with %1$s', 'woo-vipps' ), "Vipps");?></h2>
+               <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with %2\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', "Vipps"); ?></p>
                <p> <?php echo sprintf(__("If you use %1\$s Checkout or Express Checkout in WooCommerce, this allows your %1\$s customers to safely log in without ever using a password.", 'woo-vipps'), $this->company_name); ?>
                <p>
-                       <?php echo sprintf(__("Remember, you need to set up Login with %1\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),$this->company_name,$portalurl); ?>
+                       <?php echo sprintf(__("Remember, you need to set up Login with %1\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),"Vipps",$portalurl); ?>
                </p>
 
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($loginactive): ?>
                      <p>
-                       <?php echo sprintf(__("Login with %1\$s is installed and active. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'),$this->company_name, $loginsettings); ?>
+                       <?php echo sprintf(__("Login with %1\$s is installed and active. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'),"Vipps", $loginsettings); ?>
                     </p>
                <?php elseif ($logininstalled): ?>
                      <p>
-                     <?php echo sprintf(__("Login with %1\$s is installed, but not active. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), $this->company_name, admin_url("/plugins.php")); ?>
+                     <?php echo sprintf(__("Login with %1\$s is installed, but not active. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), "Vipps", admin_url("/plugins.php")); ?>
                      </p>
                <?php else: ?>
                      <p>
-                     <?php echo sprintf(__("Login with %1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), $this->company_name, $logininstall); ?>
+                     <?php echo sprintf(__("Login with %1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), "Vipps", $logininstall); ?>
                      </p>
                <?php endif; ?>
                </div>

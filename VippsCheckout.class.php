@@ -669,8 +669,8 @@ class VippsCheckout {
 
             $vippspagesettings = array(
                     array(
-                        'title'    => __( 'Vipps Checkout Page', 'woo-vipps' ),
-                        'desc'     => __('This page is used for the alternative Vipps Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps') .  sprintf( __( 'Page contents: [%s]', 'woocommerce' ), 'vipps_checkout') ,
+                        'title'    => __( 'Vipps MobilePay Checkout Page', 'woo-vipps' ),
+                        'desc'     => __('This page is used for the alternative Vipps MobilePay Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps') .  sprintf( __( 'Page contents: [%s]', 'woocommerce' ), 'vipps_checkout') ,
                         'id'       => 'woocommerce_vipps_checkout_page_id',
                         'type'     => 'single_select_page_with_search',
                         'default'  => '',

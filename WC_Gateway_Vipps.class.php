@@ -130,7 +130,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->testapiurl = 'https://apitest.vipps.no';
         $this->apiurl = 'https://api.vipps.no';
 
-        $this->method_description = __('Offer Vipps as a payment method', 'woo-vipps');
+        $this->method_description = __('Offer Vipps or MobilePay as a payment method', 'woo-vipps');
         $this->company_name = 'Vipps MobilePay';
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
@@ -3110,7 +3110,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->update_option( 'enabled', 'no' );
         }
         ?>
-            <h2 id='vipps-settings-page'><?php _e('Vipps','woo-vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
+            <h2 id='vipps-settings-page'><?php _e($this->company_name,'woo-vipps'); ?> <img style="float:right;max-height:40px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
 
             <?php 
