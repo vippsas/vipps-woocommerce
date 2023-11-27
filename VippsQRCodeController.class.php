@@ -94,7 +94,7 @@ class VippsQRCodeController {
                    if (!isset($all[$vid])) {
                           delete_post_meta($post->ID, '_vipps_qr_img');
                           add_action('admin_notices', function () use ($err) {
-                              printf( '<div class="notice notice-error"><p>%s</p></div>',  __("Somehow, this QR code has disappeard at Vipps. Save it to make it work again!", 'woo-vipps'));
+                              printf( '<div class="notice notice-error"><p>%s</p></div>',  sprintf(__("Somehow, this QR code has disappeard at %1\$s. Save it to make it work again!", 'woo-vipps'), "Vipps"));
                           });
                    }
                   }
@@ -121,7 +121,7 @@ class VippsQRCodeController {
         try {
             $all = $api->get_all_merchant_redirect_qr();
         }   catch (Exception $e) {
-            Vipps::instance()->log(sprintf(__("Error getting list of QR codes from Vipps: %s", 'woo-vipps'), $e->getMessage()), 'error');
+            Vipps::instance()->log(sprintf(__("Error getting list of QR codes from %1\$s: %2\$s", 'woo-vipps'), "Vipps", $e->getMessage()), 'error');
             delete_transient('_woo_vipps_qr_codes');
             delete_transient('_woo_vipps_unsynched_qr_codes'); 
             return $all;
@@ -602,7 +602,7 @@ img.onload = function () {
                 'name'                  => _x( 'Vipps QR Codes', 'Post Type General Name', 'woo-vipps' ),
                 'singular_name'         => _x( 'Vipps QR Code', 'Post Type Singular Name', 'woo-vipps' ),
                 'menu_name'             => __( 'QR Codes', 'woo-vipps' ),
-                'name_admin_bar'        => __( 'Vipps QR Codes', 'woo-vipps' ),
+                'name_admin_bar'        => sprintf(__( '%1$s QR Codes', 'woo-vipps' ), "Vipps"),
                 'archives'              => __( 'Item Archives', 'woo-vipps' ),
                 'attributes'            => __( 'Item Attributes', 'woo-vipps' ),
                 'parent_item_colon'     => __( 'Parent Item:', 'woo-vipps' ),
@@ -637,8 +637,8 @@ img.onload = function () {
                 'read_private_posts'    => 'manage_woocommerce',
                 );
         $args = array(
-                'label'                 => __( 'Vipps QR Code', 'woo-vipps' ),
-                'description'           => __( 'Vipps QR Codes', 'woo-vipps' ),
+                'label'                 => sprintf(__( '%1$s QR Code', 'woo-vipps' ), "Vipps"),
+                'description'           => sprintf(__( '%1$s QR Codes', 'woo-vipps' ), "Vipps"),
                 'labels'                => $labels,
                 'supports'              => array( 'title',  'custom-fields' ),
                 'taxonomies'            => array( 'post', 'tag' ),

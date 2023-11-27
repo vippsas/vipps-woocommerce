@@ -58,13 +58,13 @@ function vipps_badge_init() {
         $localizations['variants'] = $variants;
         $localizations['defaultvariant'] = 'white';
 
-        $localizations['BlockTitle'] = __('Vipps On-Site Messaging Badge', 'woo-vipps'); 
+        $localizations['BlockTitle'] = sprintf(__('%1$s On-Site Messaging Badge', 'woo-vipps'), "Vipps"); 
 
         $localizations['Variant'] = __('Variant', 'woo-vipps');
         $localizations['VariantText'] = __('Choose the badge variant with the perfect colors for your site', 'woo-vipps');
 
-        $localizations['VippsLater'] = __('Vipps senere', 'woo-vipps');
-        $localizations['VippsLaterText'] = __('Add support for Vipps Senere, if your store provides it', 'woo-vipps');
+        $localizations['VippsLater'] = sprintf(__('%1$s senere', 'woo-vipps'), "Vipps");
+        $localizations['VippsLaterText'] = sprintf(__('Add support for %1$s Senere, if your store provides it', 'woo-vipps'), "Vipps");
 
         $localizations['Language'] = __('Language', 'woo-vipps');
         $localizations['LanguageText'] = __('Choose language, or use the default', 'woo-vipps');
