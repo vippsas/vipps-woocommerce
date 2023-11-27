@@ -40,6 +40,8 @@ class VippsCheckout {
     private static $instance = null;
     private $gw = null;
     function __construct() {
+        $this->company_name = 'Vipps MobilePay';
+        $this->payment_method_name = 'Vipps'; // Admin toggle: Payment Method
     }
 
     public static function instance()  {
@@ -216,13 +218,13 @@ class VippsCheckout {
                         Vipps::instance()->maybe_add_static_shipping($this->gateway(),$order->get_id(), 'vippscheckout');
                     } catch (Exception $e) {
                         // In this case, we just have to continue.
-                        $this->log(sprintf(__("Error calculating static shipping for order %s", 'woo-vipps'), $order->get_id()), 'error');
+                        $this->log(sprintf(__("Error calculating static shipping for order %1\$s", 'woo-vipps'), $order->get_id()), 'error');
                         $this->log($e->getMessage(),'error');
                     }
                     $this->gateway()->save_session_in_order($order);
                     do_action('woo_vipps_checkout_order_created', $order);
                 } else {
-                    throw new Exception(__('Unknown error creating Vipps Checkout partial order', 'woo-vipps'));
+                    throw new Exception(sprintf(__('Unknown error creating %1$s Checkout partial order', 'woo-vipps'), $this->payment_method_name));
                 }
         } catch (Exception $e) {
             return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>'', 'orderid'=>0));
@@ -296,17 +298,17 @@ class VippsCheckout {
                 $order->update_meta_data('_vipps_status','INITIATE');
                 $order->update_meta_data('_vipps_checkout_session', $session);
 
-                $order->add_order_note(__('Vipps Checkout payment initiated','woo-vipps'));
-                $order->add_order_note(__('Customer passed to Vipps Checkout','woo-vipps'));
+                $order->add_order_note(sprintf(__('%1$s Checkout payment initiated','woo-vipps'), $this->payment_method_name));
+                $order->add_order_note(sprintf(__('Customer passed to %1$s Checkout','woo-vipps'), $this->payment_method_name));
                 $order->save();
                 $token = $session['token'];
                 $src = $session['checkoutFrontendUrl'];
                 $url = $src;
             } else {
-                    throw new Exception(__('Unknown error creating Vipps Checkout session', 'woo-vipps'));
+                    throw new Exception(sprintf(__('Unknown error creating %1$s Checkout session', 'woo-vipps'), $this->payment_method_name));
             }
         } catch (Exception $e) {
-                $this->log(sprintf(__("Could not initiate Vipps Checkout session: %s", 'woo-vipps'), $e->getMessage()), 'ERROR');
+                $this->log(sprintf(__("Could not initiate %1\$s Checkout session: %2\$s", 'woo-vipps'), $this->payment_method_name, $e->getMessage()), 'ERROR');
                 return wp_send_json_success(array('ok'=>0, 'msg'=>$e->getMessage(), 'src'=>'', 'redirect'=>'', 'orderid'=>$order_id));
         }
         if ($url || $redir) {
@@ -327,7 +329,7 @@ class VippsCheckout {
             return wp_send_json_success(array('msg'=>'completed', 'url' => $this->gateway()->get_return_url($order)));;
         }
         if ($payment_status == 'cancelled') {
-            $this->log(sprintf(__("Vipps Checkout session %d cancelled (payment status)", 'woo-vipps'), $order->get_id()), 'debug');
+            $this->log(sprintf(__("Vipps Checkout session %1\$d cancelled (payment status)", 'woo-vipps'), $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>'FAILED', 'url'=>home_url()));
         }
@@ -360,7 +362,7 @@ class VippsCheckout {
             $minutes = ($passed / 60);
             // Expire after 50 minutes
             if ($minutes > 50) {
-                $this->log(sprintf(__("Vipps Checkout session %d expired after %d minutes (limit 50)", 'woo-vipps'), $order->get_id(), $minutes), 'debug');
+                $this->log(sprintf(__("Vipps Checkout session %1\$d expired after %2\$d minutes (limit 50)", 'woo-vipps'), $order->get_id(), $minutes), 'debug');
                 $this->abandonVippsCheckoutOrder($order);
                 return wp_send_json_success(array('msg'=>'EXPIRED', 'url'=>false));
             }
@@ -373,7 +375,7 @@ class VippsCheckout {
 
         if ($failed) { 
             $msg = $status;
-            $this->log(sprintf(__("Vipps Checkout session %d failed with message %s", 'woo-vipps'), $order->get_id(), $msg), 'debug');
+            $this->log(sprintf(__("%1\$s Checkout session %2\$d failed with message %3\$s", 'woo-vipps'), $this->payment_method_name, $order->get_id(), $msg), 'debug');
             $this->abandonVippsCheckoutOrder($order);
             return wp_send_json_error(array('msg'=>$msg, 'url'=>home_url()));
             exit();
@@ -469,7 +471,7 @@ class VippsCheckout {
             $this->abandonVippsCheckoutOrder(false);
             $redirect = $this->gateway()->get_return_url($order);
         } elseif ($payment_status == 'cancelled') {
-            $this->log(sprintf(__("Vipps Checkout session %d cancelled (pending session)", 'woo-vipps'), $order->get_id()), 'debug');
+            $this->log(sprintf(__("Vipps Checkout session %1\$d cancelled (pending session)", 'woo-vipps'), $order->get_id()), 'debug');
             // This will mostly just wipe the session.
             $this->abandonVippsCheckoutOrder($order);
             $redirect = home_url();
@@ -488,7 +490,7 @@ class VippsCheckout {
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
         if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
-            $this->log(sprintf(__("Vipps Checkout session %d is gone", 'woo-vipps'), $order->get_id()), 'debug');
+            $this->log(sprintf(__("%1\$s Checkout session %2\$d is gone", 'woo-vipps'), $this->payment_method_name, $order->get_id()), 'debug');
             $this->abandonVippsCheckoutOrder($order);
         }
 
@@ -544,8 +546,8 @@ class VippsCheckout {
 
         if (!$sessioninfo['session']) {
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
-           $out .= "<h2>" . __('Press the button to complete your order with Vipps!', 'woo-vipps') . "</h2>";
-           $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . __('Vipps Checkout', 'woo-vipps') . '</button></div>';
+           $out .= "<h2>" . sprintf(__('Press the button to complete your order with %1$s!', 'woo-vipps'), $this->payment_method_name) . "</h2>";
+           $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . sprintf(__('%1$s Checkout', 'woo-vipps'), $this->payment_method_name) . '</button></div>';
            $out .= "</div>";
         }
 
@@ -580,7 +582,7 @@ class VippsCheckout {
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return;
-        $this->log(sprintf(__("Vipps Checkout: cart changed while session %d in progress - now cancelled", 'woo-vipps'), $order->get_id()), 'debug');
+        $this->log(sprintf(__("%1\$s Checkout: cart changed while session %2\$d in progress - now cancelled", 'woo-vipps'), $this->payment_method_name, $order->get_id()), 'debug');
         $this->abandonVippsCheckoutOrder($order);
     } 
     
@@ -670,7 +672,7 @@ class VippsCheckout {
             $vippspagesettings = array(
                     array(
                         'title'    => __( 'Vipps MobilePay Checkout Page', 'woo-vipps' ),
-                        'desc'     => __('This page is used for the alternative Vipps MobilePay Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps') .  sprintf( __( 'Page contents: [%s]', 'woocommerce' ), 'vipps_checkout') ,
+                        'desc'     => sprintf(__('This page is used for the alternative %1$s Checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps'), $this->company_name) .  sprintf( __( 'Page contents: [%1$s]', 'woocommerce' ), 'vipps_checkout') ,
                         'id'       => 'woocommerce_vipps_checkout_page_id',
                         'type'     => 'single_select_page_with_search',
                         'default'  => '',
