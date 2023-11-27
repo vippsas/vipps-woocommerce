@@ -532,7 +532,7 @@ img.onload = function () {
           try {
               $stored = $notnew ? $api-> get_merchant_redirect_qr_entry($vid) : null;
           } catch (Exception $e) {
-              Vipps::instance()->log(sprintf(__("QR image with id %s that was supposed to be stored at Vipps, isnt. Recreating it. Error was:. : %s", 'woo-vipps'), $e->getMessage()), 'debug');
+              Vipps::instance()->log(sprintf(__("QR image with id %2\$s that was supposed to be stored at %1\$s, isnt. Recreating it. Error was:. : %3\$s", 'woo-vipps'), "Vipps", $vid, $e->getMessage()), 'debug');
           }
 
           // Assume these have or will change. This way these can be updated by saving any QR code. 
