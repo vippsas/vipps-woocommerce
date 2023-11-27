@@ -805,8 +805,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => '',
                         ),
                 'Ocp_Apim_Key_eCommerce' => array(
-                        'title' => sprintf(__('%1$s Subscription Key', 'woo-vipps'), $this->company_name),
-                        'label'       => sprintf(__('%1$s Subscription Key', 'woo-vipps'), $this->company_name),
+                        'title' => __('Subscription Key', 'woo-vipps'),
+                        'label'       => __('Subscription Key', 'woo-vipps'),
                         'class' => 'vippspw',
                         'type'        => 'password',
                         'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
@@ -1052,8 +1052,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
             'Ocp_Apim_Key_eCommerce_test' => array(
-                    'title' => sprintf(__('%1$s Subscription Key', 'woo-vipps'), $this->company_name),
-                    'label'       => __('Vipps Subscription Key', 'woo-vipps'),
+                    'title' => __('Subscription Key', 'woo-vipps'),
+                    'label'       => __('Subscription Key', 'woo-vipps'),
                     'type'        => 'password',
                     'class' => 'vippspw',
                     'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
