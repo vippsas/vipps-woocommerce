@@ -133,7 +133,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->method_description = __('Offer Vipps or MobilePay as a payment method', 'woo-vipps');
         $this->company_name = 'Vipps MobilePay';
         $this->payment_method_name = 'Vipps'; // Admin toggle: Payment Method
-        $this->brand_name = 'Vipps'; // Reflect Payment Method for now
+        // $this->brand_name = 'Vipps'; // Payment Method for now
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
         $this->icon = plugins_url('img/vipps-mark.svg',__FILE__);
