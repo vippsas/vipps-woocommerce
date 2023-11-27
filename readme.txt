@@ -216,7 +216,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2023-11-xx version 1.14.16 =
+= 2023-11-27 version 1.14.16 =
 Minor fixes, refactoring Checkout support for further features
 
 = 2023-10-16 version 1.14.15 =
