@@ -115,7 +115,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
             $description = array('description' =>  array( 
                         'title' => __( 'Description', 'woo-vipps' ),
                         'type' => 'text',
-                        'description' => __( 'Short description of shipping method used in Vipps Checkout', 'woo-vipps' ),
+                        'description' => sprintf(__( 'Short description of shipping method used in %1$s Checkout', 'woo-vipps' ), "Vipps"),
                         'default' => "",
                         ));
             $index = array_search('title', array_keys($form_fields));
@@ -153,7 +153,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'label'       => __( 'Calculate costs in the Checkout window', 'woo-vipps' ),
                     'type'        => 'checkbox',
                     'class'       => 'vipps_checkout_dynamic_cost_field',
-                    'description' => __( 'If checked, cost of shipping will be calculated dynamically in the Vipps Checkout window', 'woo-vipps' ),
+                    'description' => sprintf(__( 'If checked, cost of shipping will be calculated dynamically in the %1$s Checkout window', 'woo-vipps' ), "Vipps"),
                     'default'     => 'no',
                     'desc_tip'    => true,
                     );
@@ -192,7 +192,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'title'       => __( 'Delivery method', 'woocommerce' ),
                     'type'        => 'select',
                     'class'       => 'wc-enhanced-select',
-                    'description' => __( 'If you are using Vipps Checkout, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ),
+                    'description' => sprintf(__( 'If you are using %1$s Checkout, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ), "Vipps"),
                     'default'     => $this->default_delivery_method,
                     'options'     => $options,
                     'desc_tip'    => true,

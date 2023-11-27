@@ -48,31 +48,31 @@ class VippsKCSupport {
 
     public static function form_fields( $settings ) {
         $settings['epm_vipps_settings_title'] = array(
-                'title' => __( 'External Payment Method - Vipps', 'woo-vipps' ),
+                'title' => sprintf(__( 'External Payment Method - %1$s', 'woo-vipps' ), "Vipps"),
                 'type'  => 'title',
                 );
         $settings['epm_vipps_activate']           = array(
                 'title'       => __( 'Activate', 'woo-vipps' ),
                 'type'        => 'checkbox',
-                'description' => __( 'Activate Vipps as an external payment method for Klarna Checkout', 'woo-vipps' ),
+                'description' => sprintf(__( 'Activate %1$s as an external payment method for Klarna Checkout', 'woo-vipps' ), "Vipps"),
                 'default'     => 'yes',
                 );
         $settings['epm_vipps_name']           = array(
                 'title'       => __( 'Name', 'woo-vipps' ),
                 'type'        => 'text',
-                'description' => __( 'Title for Vipps payment method. This controls the title which the user sees in the checkout form.', 'woo-vipps' ),
-                'default'     => __( 'Vipps', 'woo-vipps' ),
+                'description' => sprintf(__( 'Title for %1$s payment method. This controls the title which the user sees in the checkout form.', 'woo-vipps' ), "Vipps"),
+                'default'     => sprintf(__( '%1$s', 'woo-vipps' ), "Vipps"),
                 );
         $settings['epm_vipps_description']    = array(
                 'title'       => __( 'Description', 'woo-vipps' ),
                 'type'        => 'textarea',
-                'description' => __( 'Description for Vipps payment method. This controls the description which the user sees in the checkout form.', 'woo-vipps' ),
+                'description' => sprintf(__( 'Description for %1$s payment method. This controls the description which the user sees in the checkout form.', 'woo-vipps' ), "Vipps"),
                 'default'     => '',
                 );
         $settings['epm_vipps_img_url']        = array(
                 'title'       => __( 'Image url', 'woo-vipps' ),
                 'type'        => 'text',
-                'description' => __( 'URL to the Vipps logo', 'woo-vipps' ),
+                'description' => sprintf(__( 'URL to the %1$s logo', 'woo-vipps' ), "Vipps"),
                 'default'     => plugins_url('img/vipps-rgb-sort.png',__FILE__)
                 );
         $settings['epm_vipps_disable_button'] = array(

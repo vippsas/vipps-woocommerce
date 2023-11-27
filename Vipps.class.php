@@ -1051,7 +1051,7 @@ class Vipps {
         woocommerce_wp_select( 
                 array( 
                     'id'      => 'woo_vipps_badge_pay_later', 
-                    'label'   => __( 'Override Vipps Later', 'woo-vipps' ),
+                    'label'   => sprintf(__( 'Override %1$s Later', 'woo-vipps' ), $this->payment_method_name),
                     'options' => array(
                         '' => __('Default setting', 'woo-vipps'),
                         'later' => sprintf(__('Use %1$s Later', 'woo-vipps'), $this->payment_method_name),
@@ -1750,7 +1750,7 @@ EOF;
         $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->payment_method_name);
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
-        $this->vippsJSConfig['vippsbuynowbutton'] = __( 'Vipps Buy Now button', 'woo-vipps' );
+        $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), $this->payment_method_name);
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->payment_method_name);
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = plugins_url('img/pay-with-vipps.svg', __FILE__);
@@ -1861,7 +1861,7 @@ EOF;
             return;
         }
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        print "<div><strong>" . __('More funds than the order total has been captured at Vipps. Press this button to refund this amount at Vipps without editing this order', 'woo_vipps') . "</strong></div>";
+        print "<div><strong>" . sprintf(__('More funds than the order total has been captured at %1$s. Press this button to refund this amount at %1$s without editing this order', 'woo_vipps'), $this->payment_method_name) . "</strong></div>";
         print '<button type="button" class="button vippsbutton generate-items vipps-action" 
                  data-orderid="' . $order->get_id() . '" data-action="refund_superfluous"
                  style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" >
@@ -2243,7 +2243,7 @@ EOF;
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
-            $this->log(__('Could not find any applicable shipping methods for Vipps Express Checkout - order will fail', 'woo-vipps', 'warning'));
+            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s Express Checkout - order will fail', 'woo-vipps', 'warning'), $this->payment_method_name));
         }
 
        
@@ -2284,7 +2284,7 @@ EOF;
         $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order);
         if ($chosen && !isset($methods[$chosen]))  {
             $chosen = null; // Actually that isn't available
-            $this->log(__("Unavailable shipping method set as default in the Vipps Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'));
+            $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->payment_method_name));
         }
 
         if (!$chosen) {
@@ -2455,7 +2455,7 @@ EOF;
             $this->log("Consent removal is non-functional pending API changes as of 2020-10-14"); print "1"; exit();
 	    //DELETE:[consetRemovalPrefix]/v2/consents/{userId}
         // Unreachable code below here
-        
+
 	    // $parts = array_reverse(explode("/", $callback));
 	    // if (empty($parts)) return 0;
 

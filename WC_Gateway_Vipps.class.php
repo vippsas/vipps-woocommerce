@@ -483,9 +483,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ok = 0;
         try {
             $ok = $this->capture_payment($order);
-            $order->add_order_note(__('Payment automatically captured at Vipps for order not needing processing','woo_vipps'));
+            $order->add_order_note(sprintf(__('Payment automatically captured at %1$s for order not needing processing','woo_vipps'), $this->payment_method_name));
         } catch (Exception $e) {
-            $order->add_order_note(__('Order does not need processing, but payment could not be captured at Vipps:','woo_vipps') . ' ' . $e->getMessage());
+            $order->add_order_note(sprintf(__('Order does not need processing, but payment could not be captured at %1$s:','woo_vipps'), $this->payment_method_name) . ' ' . $e->getMessage());
         }
         if (!$ok) return false;
         $order->save();
