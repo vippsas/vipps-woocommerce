@@ -2676,7 +2676,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $me = $this->get_merchant_serial();
 
         if ($me != $merchant) {
-            $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->payment_method_name) . " " .  $orderid, 'warning');
+            $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->payment_method_name) . " " .  $order->get_id(), 'warning');
             return false;
         }
 
