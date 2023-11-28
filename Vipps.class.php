@@ -60,6 +60,20 @@ class Vipps {
         return static::$instance;
     }
 
+    // To simplify development, we load translations from the plugins' own .mos on development branches. IOK 2023-11-28
+    public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
+        $development = apply_filters('woo_vipps_use_plugin_translations', true);
+        if (!$development) {
+           return load_plugin_textdomain($domain, $deprecated, $plugin_rel_path);
+        }
+        global $wp_textdomain_registry;
+        $locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
+        $mofile = $domain . '-' . $locale . '.mo';
+        $path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
+        $wp_textdomain_registry->set_custom_path( $domain, $path );
+        return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+    }
+
     public static function register_hooks() {
         $Vipps = static::instance();
         register_activation_hook(__FILE__,array($Vipps,'activate'));
@@ -1670,7 +1684,8 @@ EOF;
     }
 
     public function plugins_loaded() {
-        $ok = load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+        // To facilitate development, allow loading the plugin-supplied translations
+        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
 
         // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
         // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
