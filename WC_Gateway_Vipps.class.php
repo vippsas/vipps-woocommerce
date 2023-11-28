@@ -584,7 +584,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $checkoutfields = array(
                 'checkout_options' => array(
-                    'title' => sprintf(__('%1$s Checkout', 'woo-vipps'), $this->company_name),
+                    'title' => sprintf(__('Checkout', 'woo-vipps'), $this->company_name),
                     'type'  => 'title',
                     'class' => 'tab',
                     'description' => sprintf(__("%1\$s checkout is a new service from %1\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %1\$s and credit card. Additionally, your customers will get the option of providing their address information using their %1\$s app directly.", 'woo-vipps'), $this->company_name)
@@ -852,7 +852,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
          $expressfields = array(  
                 'express_options' => array(
-                        'title' => sprintf(__('%1$s Express Checkout', 'woo-vipps'), $this->company_name),
+                        'title' => sprintf(__('Express Checkout', 'woo-vipps'), $this->company_name),
                         'type'  => 'title',
                         'class' => 'tab',
                         'description' => sprintf(__("%1\$s Express Checkout allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately.", 'woo-vipps'), $this->company_name)
