@@ -605,8 +605,9 @@ class VippsApi {
 
         # This have to exist, but we'll not check it now.
         if (! function_exists("wc_terms_and_conditions_page_id")) {
-            $this->log(__("You need a newer version of WooCommerce to use Vipps Checkout!", 'woo-vipps'), 'error');;
-            throw new Exception(__("You need a newer version of WooCommerce to use Vipps Checkout!", 'woo-vipps'));
+            $msg = sprintf(__('You need a newer version of WooCommerce to use %1$s!', 'woo-vipps'), Vipps::CheckoutName());
+            $this->log($msg, 'error');;
+            throw new Exception($msg);
         }
         $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
         $data = array();
@@ -616,7 +617,7 @@ class VippsApi {
         if (!empty($termsAndConditionsUrl)) {
             $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
         } else {
-            $this->log(__("Your site does not have a Terms and Conditions page defined - starting Vipps Checkout anyway, but this should be defined", 'woo-vipps'));
+            $this->log(sprintf(__('Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined', 'woo-vipps'), Vipps::CheckoutName()));
         }
         $data['transaction'] = $transaction;
 

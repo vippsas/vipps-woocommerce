@@ -122,7 +122,7 @@ jQuery( document ).ready( function() {
                             }
     
                             if (! result['data']['ok']) {
-                                console.log("Error starting Vipps Checkout %j", result);
+                                console.log("Error starting Vipps MobilePay Checkout %j", result);
                                 jQuery('#vippscheckouterror').show();
                                 jQuery("body").removeClass('processing');
                                 return;
@@ -225,11 +225,11 @@ jQuery( document ).ready( function() {
          jQuery("body").addClass('processing');
          initVippsCheckout();
       } else {
-         console.log("Not visible - not starting Vipps Checkout");
+         console.log("Not visible - not starting Vipps MobilePay Checkout");
       }
     }
 
-    console.log("Vipps Checkout Initialized version 111");
+    console.log("Vipps MobilePay Checkout Initialized version 111");
     
     listenToFrame(); // Start now if we have an iframe. This will also start the polling.
     initWhenVisible(); // Or start the session maybe

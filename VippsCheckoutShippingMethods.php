@@ -115,7 +115,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
             $description = array('description' =>  array( 
                         'title' => __( 'Description', 'woo-vipps' ),
                         'type' => 'text',
-                        'description' => sprintf(__( 'Short description of shipping method used in %1$s Checkout', 'woo-vipps' ), "Vipps"),
+                        'description' => sprintf(__( 'Short description of shipping method used in %1$s', 'woo-vipps' ), Vipps::CheckoutName()),
                         'default' => "",
                         ));
             $index = array_search('title', array_keys($form_fields));
@@ -153,7 +153,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'label'       => __( 'Calculate costs in the Checkout window', 'woo-vipps' ),
                     'type'        => 'checkbox',
                     'class'       => 'vipps_checkout_dynamic_cost_field',
-                    'description' => sprintf(__( 'If checked, cost of shipping will be calculated dynamically in the %1$s Checkout window', 'woo-vipps' ), "Vipps"),
+                    'description' => sprintf(__( 'If checked, cost of shipping will be calculated dynamically in the %1$s window', 'woo-vipps' ), Vipps::CheckoutName()),
                     'default'     => 'no',
                     'desc_tip'    => true,
                     );
@@ -192,7 +192,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
                     'title'       => __( 'Delivery method', 'woocommerce' ),
                     'type'        => 'select',
                     'class'       => 'wc-enhanced-select',
-                    'description' => sprintf(__( 'If you are using %1$s Checkout, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ), "Vipps"),
+                    'description' => sprintf(__( 'If you are using %1$s, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page.', 'woo-vipps' ), Vipps::CheckoutName()),
                     'default'     => $this->default_delivery_method,
                     'options'     => $options,
                     'desc_tip'    => true,
@@ -468,8 +468,8 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
     // Called by the parent constructor before loading settings
     function preinit() {
         $this->defaulttitle = __( 'Posten Norge', 'woo-vipps' );
-        $this->method_title = __( 'Vipps Checkout: Posten', 'woo-vipps' );
-        $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Posten Norge', 'woo-vipps' );
+        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
+        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
     }
 
 }
@@ -489,8 +489,8 @@ class VippsCheckout_Shipping_Method_Helthjem extends VippsCheckout_Shipping_Meth
     // Called by the parent constructor before loading settings
     function preinit() {
         $this->defaulttitle = __( 'Helthjem', 'woo-vipps' );
-        $this->method_title = __( 'Vipps Checkout: Helthjem', 'woo-vipps' );
-        $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Helthjem', 'woo-vipps' );
+        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
+        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
     }
 }
 
@@ -505,8 +505,8 @@ class VippsCheckout_Shipping_Method_Postnord extends VippsCheckout_Shipping_Meth
     // Called by the parent constructor before loading settings
     function preinit() {
         $this->defaulttitle = __( 'Postnord', 'woo-vipps' );
-        $this->method_title = __( 'Vipps Checkout: Postnord', 'woo-vipps' );
-        $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Postnord', 'woo-vipps' );
+        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
+        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
     }
 }
 
@@ -527,8 +527,8 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
     // Called by the parent constructor before loading settings
     function preinit() {
         $this->defaulttitle = __( 'Porterbuddy', 'woo-vipps' );
-        $this->method_title = __( 'Vipps Checkout: Porterbuddy', 'woo-vipps' );
-        $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Porterbuddy', 'woo-vipps' );
+        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
+        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
     }
 
 
@@ -552,8 +552,8 @@ class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Meth
     // Called by the parent constructor before loading settings
     function preinit() {
         $this->defaulttitle = __( 'Instabox', 'woo-vipps' );
-        $this->method_title = __( 'Vipps Checkout: Instabox', 'woo-vipps' );
-        $this->method_description = __( 'Fraktmetode spesielt for Vipps Checkout: Instabox', 'woo-vipps' );
+        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
+        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
     }
 
 

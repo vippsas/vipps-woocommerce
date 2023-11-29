@@ -605,7 +605,7 @@ class Vipps {
                  <p> 
                    <?php echo sprintf(__("The plugin is currently <b>active</b> - %1\$s is available as a payment method.", 'woo-vipps'), Vipps::CompanyName()); ?>
                    <?php if ($ischeckout): ?>
-                      <?php echo sprintf(__("You are using %1\$s Checkout instead of the standard WooCommerce Checkout page.", 'woo-vipps'), Vipps::CompanyName()); ?>     
+                      <?php echo sprintf(__("You are using %1\$s instead of the standard WooCommerce Checkout page.", 'woo-vipps'), Vipps::CheckoutName()); ?>     
                    <?php endif; ?>
                  </p>
                <?php else:; ?>
@@ -642,7 +642,7 @@ class Vipps {
             <div class="pluginsection login-with-vipps">
                <h2><?php echo sprintf(__( 'Login with %1$s', 'woo-vipps' ), "Vipps");?></h2>
                <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with %2\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', "Vipps"); ?></p>
-               <p> <?php echo sprintf(__("If you use %1\$s Checkout or Express Checkout in WooCommerce, this allows your %1\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CompanyName()); ?>
+               <p> <?php echo sprintf(__("If you use %1\$s or %2\$s in WooCommerce, this allows your %3\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::ExpressCheckoutName(), Vipps::CompanyName()); ?>
                <p>
                        <?php echo sprintf(__("Remember, you need to set up Login with %1\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),"Vipps",$portalurl); ?>
                </p>
@@ -3342,7 +3342,7 @@ EOF;
 
         $data['vipps_checkout'] = array(
                 'name'    => _x( 'vipps_checkout', 'Page slug', 'woo-vipps' ),
-                'title'   => _x( 'Vipps Checkout', 'Page title', 'woo-vipps' ),
+                'title'   => _x( 'Vipps MobilePay Checkout', 'Page title', 'woo-vipps' ),
                 'content' => '<!-- wp:shortcode -->[' . 'vipps_checkout' . ']<!-- /wp:shortcode -->',
                 );
 

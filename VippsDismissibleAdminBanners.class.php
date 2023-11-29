@@ -109,9 +109,9 @@ class VippsDismissibleAdminBanners {
             <img src="<?php echo $logo; ?>" style="float:right; height: 3rem; margin-top: 0.2rem" alt="Vipps-logo">
              <div>
                  <p style="font-size:1rem">
-                     <?php  _e("You can get Vipps Checkout now!", 'woo-vipps'); ?>
+                     <?php  printf(__('You can get %1$s now!', 'woo-vipps'), Vipps::CheckoutName()); ?>
                     <ul style='margin-left: 1rem; list-style-type: "✓  ";'>
-                     <li><?php _e("Your customers can pay with Vipps, Visa or Mastercard", 'woo-vipps'); ?></li>
+                     <li><?php printf(__('Your customers can pay with %1$s , Visa or Mastercard', 'woo-vipps'), Vipps::CompanyName()); ?></li>
                      <li><?php _e("Shipping information is autofilled with Vipps", 'woo-vipps'); ?></li>
                      <li><?php _e("You get settlement in three days", 'woo-vipps'); ?>.</li>
                     </ul>
