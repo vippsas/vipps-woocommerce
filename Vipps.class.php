@@ -54,17 +54,23 @@ class Vipps {
 
     // IOK 2023-11-29 Vipps merging with MobilePay causes some challenges which we solve by abstraction
     public static function CompanyName() { 
-        return "Vipps MobilePay";
+        return __("Vipps MobilePay", 'woo-vipps');
     }
     public static function PaymentMethodName($order=null) {
-        return "Vipps";
+        return __("Vipps", 'woo-vipps');
     }
     public static function CheckoutName($order=null) {
-        return "Vipps Checkout";
+        return __("Vipps Checkout", 'woo-vipps');
     }
     public static function ExpressCheckoutName($order=null) {
-        return "Vipps Express Checkout";
+        return __("Vipps Express Checkout", 'woo-vipps');
     }
+    public static function LoginName() {
+        return __("Login with Vipps", 'woo-vipps');
+   }
+    public static function RecurringName() {
+        return __('Vipps Recurring Payments', 'woo-vipps');
+   }
 
     public static function instance()  {
         if (!static::$instance) static::$instance = new Vipps();
@@ -615,24 +621,24 @@ class Vipps {
             </div>
 
             <div class="pluginsection vipps-recurring">
-               <h2><?php echo sprintf(__( '%1$s Recurring Payments', 'woo-vipps' ), "Vipps");?></h2>
+               <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::RecurringName());?></h2>
                <p>
-                  <?php echo sprintf(__("<a href='%1\$s' target='_blank'>%2\$s Recurring Payments for WooCommerce</a> by <a href='%3\$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', "Vipps", 'https://everyday.no/'); ?>
+                  <?php echo sprintf(__("<a href='%1\$s' target='_blank'>%2\$s for WooCommerce</a> by <a href='%3\$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', Vipps::RecurringName(), 'https://everyday.no/'); ?>
 
-                  <?php echo sprintf(__("%1\$s Recurring Payments requires the <a href='%2\$s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'), "Vipps", 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
+                  <?php echo sprintf(__("%1\$s requires the <a href='%2\$s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'), Vipps::RecurringName(), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
                <?php do_action('vipps_page_vipps_recurring_payments_section'); ?>
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($recurringactive): ?>
                      <p>
-                       <?php echo sprintf(__("%1\$s Recurring Payments is <b>installed and active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'), "Vipps", $recurringsettings); ?>
+                       <?php echo sprintf(__("%1\$s is <b>installed and active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'), Vipps::RecurringName(), $recurringsettings); ?>
                     </p>
                <?php elseif ($recurringinstalled): ?>
                      <p>
-                     <?php echo sprintf(__("%1\$s Recurring Payments is installed, but <em>not active</em>. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), "Vipps", admin_url("/plugins.php")); ?>
+                     <?php echo sprintf(__("%1\$s installed, but <em>not active</em>. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), Vipps::RecurringName(), admin_url("/plugins.php")); ?>
                      </p>
                <?php else: ?>
                      <p>
-                     <?php echo sprintf(__("%1\$s Recurring Payments is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), "Vipps", $recurringinstall); ?>
+                     <?php echo sprintf(__("%1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), Vipps::RecurringName(), $recurringinstall); ?>
                      </p>
                <?php endif; ?> 
                </div>
@@ -640,25 +646,25 @@ class Vipps {
             </div>
 
             <div class="pluginsection login-with-vipps">
-               <h2><?php echo sprintf(__( 'Login with Vipps', 'woo-vipps' ), "Vipps");?></h2>
-               <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with Vipps</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', "Vipps"); ?></p>
+               <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::LoginName());?></h2>
+               <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>%3\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/',Vipps::CompanyName(), Vipps::LoginName()); ?></p>
                <p> <?php echo sprintf(__("If you use %1\$s or %2\$s in WooCommerce, this allows your %3\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::ExpressCheckoutName(), Vipps::CompanyName()); ?>
                <p>
-                       <?php echo sprintf(__("Remember, you need to set up Login with Vipps at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),Vipps::CompanyName(),$portalurl); ?>
+                       <?php echo sprintf(__("Remember, you need to set up %3\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),Vipps::CompanyName(),$portalurl, Vipps::LoginName()); ?>
                </p>
 
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($loginactive): ?>
                      <p>
-                       <?php echo sprintf(__("Login with Vipps is installed and active. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'),Vipps::CompanyName(), $loginsettings); ?>
+                       <?php echo sprintf(__("%1\$s is installed and active. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'),Vipps::LoginName(), $loginsettings); ?>
                     </p>
                <?php elseif ($logininstalled): ?>
                      <p>
-                     <?php echo sprintf(__("Login with Vipps is installed, but not active. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), Vipps::CompanyName(), admin_url("/plugins.php")); ?>
+                     <?php echo sprintf(__("%1\$s is installed, but not active. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), Vipps::LoginName(), admin_url("/plugins.php")); ?>
                      </p>
                <?php else: ?>
                      <p>
-                     <?php echo sprintf(__("Login with Vipps is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), Vipps::CompanyName(), $logininstall); ?>
+                     <?php echo sprintf(__("%1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), Vipps::LoginName(), $logininstall); ?>
                      </p>
                <?php endif; ?>
                </div>

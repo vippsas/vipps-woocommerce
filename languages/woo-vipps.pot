@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-29 10:21+0000\n"
+"POT-Creation-Date: 2023-11-29 10:33+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -33,9 +33,9 @@ msgid "\"Buy now\" compatibility mode"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:830 WC_Gateway_Vipps.class.php:3255
-#: VippsCheckout.class.php:546 VippsKCSupport.class.php:64 Vipps.class.php:811
-#: Vipps.class.php:811 Vipps.class.php:841 Vipps.class.php:854
-#: Vipps.class.php:994
+#: VippsCheckout.class.php:546 VippsKCSupport.class.php:64 Vipps.class.php:624
+#: Vipps.class.php:649 Vipps.class.php:817 Vipps.class.php:817
+#: Vipps.class.php:847 Vipps.class.php:860 Vipps.class.php:1000
 #, php-format
 msgid "%1$s"
 msgstr ""
@@ -48,7 +48,7 @@ msgid ""
 "which will start the purchase process immediately."
 msgstr ""
 
-#: Vipps.class.php:1777
+#: Vipps.class.php:1783
 #, php-format
 msgid "%1$s Buy Now button"
 msgstr ""
@@ -73,21 +73,35 @@ msgstr ""
 msgid "%1$s callback: Handling order: "
 msgstr ""
 
-#: Vipps.class.php:601
+#: Vipps.class.php:607
 #, php-format
 msgid ""
 "%1$s configuration is not yet complete - you must get your keys from the "
 "%1$s portal and enter them on the <a href='%2$s'>settings page</a>"
 msgstr ""
 
-#: Vipps.class.php:3648
+#: Vipps.class.php:3654
 #, php-format
 msgid "%1$s Express Checkout"
 msgstr ""
 
-#: Vipps.class.php:580
+#: Vipps.class.php:586
 #, php-format
 msgid "%1$s for WordPress and WooCommerce"
+msgstr ""
+
+#: Vipps.class.php:637
+#, php-format
+msgid ""
+"%1$s installed, but <em>not active</em>. Activate it on the <a href='%2$s'>"
+"plugins page</a>"
+msgstr ""
+
+#: Vipps.class.php:633
+#, php-format
+msgid ""
+"%1$s is <b>installed and active</b>. You can configure the plugin at its <a "
+"href='%2$s'>settings page</a>"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:585 WC_Gateway_Vipps.class.php:3141
@@ -100,7 +114,7 @@ msgid ""
 "their %2$s app directly."
 msgstr ""
 
-#: Vipps.class.php:264 Vipps.class.php:594
+#: Vipps.class.php:270 Vipps.class.php:600
 #, php-format
 msgid "%1$s is currently in test mode - no real transactions will occur"
 msgstr ""
@@ -110,24 +124,43 @@ msgstr ""
 msgid "%1$s is default payment method"
 msgstr ""
 
+#: Vipps.class.php:659
+#, php-format
+msgid ""
+"%1$s is installed and active. You can configure the plugin at its <a "
+"href='%2$s'>settings page</a>"
+msgstr ""
+
+#: Vipps.class.php:663
+#, php-format
+msgid ""
+"%1$s is installed, but not active. Activate it on the <a href='%2$s'>plugins "
+"page</a>"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:2956
 #, php-format
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr ""
 
-#: Vipps.class.php:2875 Vipps.class.php:2945 Vipps.class.php:3008
+#: Vipps.class.php:2881 Vipps.class.php:2951 Vipps.class.php:3014
 #, php-format
 msgid "%1$s is not available for this order"
 msgstr ""
 
+#: Vipps.class.php:641 Vipps.class.php:667
+#, php-format
+msgid "%1$s is not installed. You can install it <a href='%2$s'>here!</a>"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:526 WC_Gateway_Vipps.class.php:1436
 #: WC_Gateway_Vipps.class.php:1522 WC_Gateway_Vipps.class.php:1565
-#: Vipps.class.php:2932 Vipps.class.php:3078 Vipps.class.php:3565
+#: Vipps.class.php:2938 Vipps.class.php:3084 Vipps.class.php:3571
 #, php-format
 msgid "%1$s is temporarily unavailable."
 msgstr ""
 
-#: Vipps.class.php:581
+#: Vipps.class.php:587
 #, php-format
 msgid ""
 "%1$s officially supports WordPress and WooCommerce with a family of plugins "
@@ -137,7 +170,7 @@ msgid ""
 "plugin for recurring payments, and a system for passwordless logins"
 msgstr ""
 
-#: Vipps.class.php:373
+#: Vipps.class.php:379
 #, php-format
 msgid "%1$s On-Site Messaging"
 msgstr ""
@@ -147,7 +180,7 @@ msgstr ""
 msgid "%1$s On-Site Messaging Badge"
 msgstr ""
 
-#: Vipps.class.php:375
+#: Vipps.class.php:381
 #, php-format
 msgid ""
 "%1$s On-Site Messaging contains <em>badges</em> in different variants that "
@@ -206,37 +239,11 @@ msgstr ""
 msgid "%1$s QR Codes"
 msgstr ""
 
-#: Vipps.class.php:618
-#, php-format
-msgid "%1$s Recurring Payments"
-msgstr ""
-
-#: Vipps.class.php:627
+#: Vipps.class.php:628
 #, php-format
 msgid ""
-"%1$s Recurring Payments is <b>installed and active</b>. You can configure "
-"the plugin at its <a href='%2$s'>settings page</a>"
-msgstr ""
-
-#: Vipps.class.php:631
-#, php-format
-msgid ""
-"%1$s Recurring Payments is installed, but <em>not active</em>. Activate it "
-"on the <a href='%2$s'>plugins page</a>"
-msgstr ""
-
-#: Vipps.class.php:635
-#, php-format
-msgid ""
-"%1$s Recurring Payments is not installed. You can install it <a href='%2$s'>"
-"here!</a>"
-msgstr ""
-
-#: Vipps.class.php:622
-#, php-format
-msgid ""
-"%1$s Recurring Payments requires the <a href='%2$s' target='_blank'>"
-"WooCommerce Subscriptions plugin</a>."
+"%1$s requires the <a href='%2$s' target='_blank'>WooCommerce Subscriptions "
+"plugin</a>."
 msgstr ""
 
 #: Blocks/Badges/vipps-badge.php:66
@@ -292,42 +299,41 @@ msgid ""
 "%1$s: Could not deserialize the chosen shipping method %2$s for order %3$d"
 msgstr ""
 
-#: Vipps.class.php:559
+#: Vipps.class.php:565
 msgid "- very, very simple"
 msgstr ""
 
-#: Vipps.class.php:620
+#: Vipps.class.php:626
 #, php-format
 msgid ""
-"<a href='%1$s' target='_blank'>%2$s Recurring Payments for WooCommerce</a> "
-"by <a href='%3$s' target='_blank'>Everyday</a>  is perfect for you if you "
-"run a web shop with subscription based services or other products that would "
-"benefit from subscriptions."
+"<a href='%1$s' target='_blank'>%2$s for WooCommerce</a> by <a href='%3$s' "
+"target='_blank'>Everyday</a>  is perfect for you if you run a web shop with "
+"subscription based services or other products that would benefit from "
+"subscriptions."
 msgstr ""
 
-#: Vipps.class.php:644
+#: Vipps.class.php:650
 #, php-format
 msgid ""
-"<a href='%1$s' target='_blank'>Login with Vipps</a> is a password-less "
-"solution that lets you or your customers to securely log into your site "
-"without having to remember passwords - you only need the %2$s app. The "
-"plugin does not require WooCommerce, and it can be customized for many "
-"different usecases."
+"<a href='%1$s' target='_blank'>%3$s</a> is a password-less solution that "
+"lets you or your customers to securely log into your site without having to "
+"remember passwords - you only need the %2$s app. The plugin does not require "
+"WooCommerce, and it can be customized for many different usecases."
 msgstr ""
 
-#: Vipps.class.php:599
+#: Vipps.class.php:605
 #, php-format
 msgid "<a href='%1$s'>%2$s configuration</a> is complete."
 msgstr ""
 
-#: Vipps.class.php:289
+#: Vipps.class.php:295
 #, php-format
 msgid ""
 "<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s "
 "settings</a> to complete your setup!</p>"
 msgstr ""
 
-#: Vipps.class.php:287
+#: Vipps.class.php:293
 #, php-format
 msgid ""
 "<p>%1$s not yet correctly configured:  please go to <a href='%2$s'>the %1$s "
@@ -338,7 +344,7 @@ msgstr ""
 msgid "Abandonded by customer"
 msgstr ""
 
-#: Vipps.class.php:1145
+#: Vipps.class.php:1151
 msgid "Action"
 msgstr ""
 
@@ -383,7 +389,7 @@ msgstr ""
 msgid "Activate this for PostNord as a %1$s Shipping method."
 msgstr ""
 
-#: Vipps.class.php:1019
+#: Vipps.class.php:1025
 #, php-format
 msgid "Add  'Buy now with %1$s' button"
 msgstr ""
@@ -392,17 +398,17 @@ msgstr ""
 msgid "Add 'Buy now' button on catalog pages too"
 msgstr ""
 
-#: Vipps.class.php:1778
+#: Vipps.class.php:1784
 #, php-format
 msgid "Add a %1$s Buy Now-button to the product block"
 msgstr ""
 
-#: Vipps.class.php:1021
+#: Vipps.class.php:1027
 #, php-format
 msgid "Add a 'Buy now with %1$s'-button to this product"
 msgstr ""
 
-#: Vipps.class.php:392
+#: Vipps.class.php:398
 msgid "Add badge to all products by default"
 msgstr ""
 
@@ -428,7 +434,7 @@ msgstr ""
 msgid "Add the button for all relevant products on catalog pages"
 msgstr ""
 
-#: Vipps.class.php:1323
+#: Vipps.class.php:1329
 msgid "Address"
 msgstr ""
 
@@ -440,7 +446,7 @@ msgstr ""
 msgid "All products"
 msgstr ""
 
-#: Vipps.class.php:1304
+#: Vipps.class.php:1310
 msgid "All values in ører (1/100 NOK)"
 msgstr ""
 
@@ -468,7 +474,7 @@ msgid ""
 "Always ask the user for their address, even if you don't need it for shipping"
 msgstr ""
 
-#: Vipps.class.php:1366 Vipps.class.php:1384
+#: Vipps.class.php:1372 Vipps.class.php:1390
 msgid "Amount"
 msgstr ""
 
@@ -488,13 +494,13 @@ msgid ""
 "or return to the shop"
 msgstr ""
 
-#: Vipps.class.php:3789
+#: Vipps.class.php:3795
 msgid ""
 "An error occured during order confirmation. The error has been logged. "
 "Please contact us to determine the status of your order"
 msgstr ""
 
-#: Vipps.class.php:1135
+#: Vipps.class.php:1141
 msgid "An error occured while creating a shareable link"
 msgstr ""
 
@@ -507,11 +513,11 @@ msgstr ""
 msgid "Anonymous customer"
 msgstr ""
 
-#: Vipps.class.php:1303
+#: Vipps.class.php:1309
 msgid "API"
 msgstr ""
 
-#: VippsQRCodeController.class.php:235 Vipps.class.php:3589
+#: VippsQRCodeController.class.php:235 Vipps.class.php:3595
 msgid "Are you sure?"
 msgstr ""
 
@@ -532,29 +538,29 @@ msgstr ""
 msgid "Awaiting %1$s payment confirmation"
 msgstr ""
 
-#: Vipps.class.php:812
+#: Vipps.class.php:818
 msgid "Badges"
 msgstr ""
 
-#: Vipps.class.php:1339
+#: Vipps.class.php:1345
 msgid "Billing details"
 msgstr ""
 
-#: Vipps.class.php:1685 Vipps.class.php:1773 Vipps.class.php:3244
+#: Vipps.class.php:1691 Vipps.class.php:1779 Vipps.class.php:3250
 msgid "Buy now with"
 msgstr ""
 
-#: Vipps.class.php:1684 Vipps.class.php:1774 Vipps.class.php:3245
+#: Vipps.class.php:1690 Vipps.class.php:1780 Vipps.class.php:3251
 #, php-format
 msgid "Buy now with %1$s"
 msgstr ""
 
-#: Vipps.class.php:930 Vipps.class.php:3645
+#: Vipps.class.php:936 Vipps.class.php:3651
 #, php-format
 msgid "Buy now with %1$s!"
 msgstr ""
 
-#: Vipps.class.php:1011
+#: Vipps.class.php:1017
 msgid "Buy-now button"
 msgstr ""
 
@@ -578,18 +584,18 @@ msgstr ""
 msgid "Calculate costs in the Checkout window"
 msgstr ""
 
-#: Vipps.class.php:2553
+#: Vipps.class.php:2559
 #, php-format
 msgid ""
 "Callback from %1$s delayed or never happened; order status checked by "
 "periodic job"
 msgstr ""
 
-#: Vipps.class.php:2136
+#: Vipps.class.php:2142
 msgid "Callback was:"
 msgstr ""
 
-#: Vipps.class.php:1315
+#: Vipps.class.php:1321
 msgid "Cancelled amount"
 msgstr ""
 
@@ -656,30 +662,30 @@ msgid ""
 "on this status. See the woo_vipps_captured_statuses-filter."
 msgstr ""
 
-#: Vipps.class.php:1505
+#: Vipps.class.php:1511
 msgid "Cannot use flock() to lock orders: cannot create lockfiles "
 msgstr ""
 
-#: Vipps.class.php:1498
+#: Vipps.class.php:1504
 msgid "Cannot use flock() to lock orders: cannot create or write to directory"
 msgstr ""
 
-#: Vipps.class.php:2363
+#: Vipps.class.php:2369
 #, php-format
 msgid ""
 "Cannot use shipping method %2$s in %1$s Express checkout: the shipping "
 "method isn't serializable."
 msgstr ""
 
-#: Vipps.class.php:1867
+#: Vipps.class.php:1873
 msgid "Capture payment"
 msgstr ""
 
-#: Vipps.class.php:1310
+#: Vipps.class.php:1316
 msgid "Capured amount"
 msgstr ""
 
-#: Vipps.class.php:420
+#: Vipps.class.php:426
 #, php-format
 msgid ""
 "Check this if your store supports %1$s Senere and you want the specialized "
@@ -694,7 +700,7 @@ msgstr ""
 msgid "Checkout with Vipps for WooCommerce"
 msgstr ""
 
-#: Vipps.class.php:409
+#: Vipps.class.php:415
 msgid "Choose color variant:"
 msgstr ""
 
@@ -726,7 +732,7 @@ msgid ""
 "more configuration than simple or standard variable products"
 msgstr ""
 
-#: Vipps.class.php:1122 Vipps.class.php:1151 Vipps.class.php:1153
+#: Vipps.class.php:1128 Vipps.class.php:1157 Vipps.class.php:1159
 msgid "Click to copy"
 msgstr ""
 
@@ -744,7 +750,7 @@ msgstr ""
 msgid "Client secret provided to you by Instabox"
 msgstr ""
 
-#: Vipps.class.php:588
+#: Vipps.class.php:594
 #, php-format
 msgid ""
 "Configure the plugin on its <a href='%1$s'>settings page</a> and  get your "
@@ -764,20 +770,20 @@ msgstr ""
 msgid "Connection to %1$s is OK"
 msgstr ""
 
-#: Vipps.class.php:3794
+#: Vipps.class.php:3800
 msgid "Continue"
 msgstr ""
 
-#: Vipps.class.php:3751 Vipps.class.php:3790 Vipps.class.php:3798
+#: Vipps.class.php:3757 Vipps.class.php:3796 Vipps.class.php:3804
 msgid "Continue shopping"
 msgstr ""
 
-#: Vipps.class.php:854
+#: Vipps.class.php:860
 #, php-format
 msgid "Continue with %1$s"
 msgstr ""
 
-#: Vipps.class.php:1125 Vipps.class.php:1153
+#: Vipps.class.php:1131 Vipps.class.php:1159
 msgid "Copy"
 msgstr ""
 
@@ -834,8 +840,8 @@ msgstr ""
 msgid "Could not connect to %1$s"
 msgstr ""
 
-#: Vipps.class.php:2905 Vipps.class.php:2910 Vipps.class.php:2920
-#: Vipps.class.php:3043 Vipps.class.php:3049 Vipps.class.php:3059
+#: Vipps.class.php:2911 Vipps.class.php:2916 Vipps.class.php:2926
+#: Vipps.class.php:3049 Vipps.class.php:3055 Vipps.class.php:3065
 msgid "Could not create order"
 msgstr ""
 
@@ -844,18 +850,18 @@ msgstr ""
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
 msgstr ""
 
-#: Vipps.class.php:2136
+#: Vipps.class.php:2142
 #, php-format
 msgid "Could not find %1$s order with id:"
 msgstr ""
 
-#: Vipps.class.php:2270
+#: Vipps.class.php:2276
 #, php-format
 msgid ""
 "Could not find any applicable shipping methods for %1$s - order will fail"
 msgstr ""
 
-#: Vipps.class.php:2144
+#: Vipps.class.php:2150
 msgid "Could not find Woo order with id:"
 msgstr ""
 
@@ -894,7 +900,7 @@ msgstr ""
 msgid "Could not get receipt data for order %s from Vipps: "
 msgstr ""
 
-#: Vipps.class.php:2690
+#: Vipps.class.php:2696
 msgid "Could not get user email from order before thankyou-page"
 msgstr ""
 
@@ -973,7 +979,7 @@ msgstr ""
 msgid "Create new customers on Express Checkout"
 msgstr ""
 
-#: Vipps.class.php:1107 Vipps.class.php:1117
+#: Vipps.class.php:1113 Vipps.class.php:1123
 msgid "Create shareable link"
 msgstr ""
 
@@ -992,11 +998,11 @@ msgstr ""
 msgid "Default"
 msgstr ""
 
-#: Vipps.class.php:1063 Vipps.class.php:1079
+#: Vipps.class.php:1069 Vipps.class.php:1085
 msgid "Default setting"
 msgstr ""
 
-#: Vipps.class.php:1126 Vipps.class.php:1154
+#: Vipps.class.php:1132 Vipps.class.php:1160
 msgid "Delete"
 msgstr ""
 
@@ -1032,7 +1038,7 @@ msgstr ""
 msgid "Developer mode"
 msgstr ""
 
-#: Vipps.class.php:1925
+#: Vipps.class.php:1931
 #, php-format
 msgid "Did not understand callback from %1$s:"
 msgstr ""
@@ -1050,7 +1056,7 @@ msgstr ""
 msgid "Dismissed message "
 msgstr ""
 
-#: Vipps.class.php:1081
+#: Vipps.class.php:1087
 #, php-format
 msgid "Do not use %1$s Later"
 msgstr ""
@@ -1083,7 +1089,7 @@ msgstr ""
 msgid "Edit QR Code"
 msgstr ""
 
-#: Vipps.class.php:1343 Vipps.class.php:1349 Vipps.class.php:1358
+#: Vipps.class.php:1349 Vipps.class.php:1355 Vipps.class.php:1364
 msgid "Email"
 msgstr ""
 
@@ -1174,7 +1180,7 @@ msgstr ""
 msgid "English"
 msgstr ""
 
-#: Vipps.class.php:2918 Vipps.class.php:3057
+#: Vipps.class.php:2924 Vipps.class.php:3063
 msgid "Error calculating static shipping"
 msgstr ""
 
@@ -1188,7 +1194,7 @@ msgstr ""
 msgid "Error calling the Order Management API: %1$s "
 msgstr ""
 
-#: Vipps.class.php:2826
+#: Vipps.class.php:2832
 msgid "Error creating customer in express checkout: "
 msgstr ""
 
@@ -1212,15 +1218,15 @@ msgstr ""
 msgid "Error downloading QR code image: %s"
 msgstr ""
 
-#: Vipps.class.php:3788
+#: Vipps.class.php:3794
 msgid "Error during order confirmation"
 msgstr ""
 
-#: Vipps.class.php:2986
+#: Vipps.class.php:2992
 msgid "Error finding product - cannot create order"
 msgstr ""
 
-#: Vipps.class.php:2125
+#: Vipps.class.php:2131
 #, php-format
 msgid "Error getting customer data in the %1$s shipping details callback: %2$s"
 msgstr ""
@@ -1230,7 +1236,7 @@ msgstr ""
 msgid "Error getting list of QR codes from %1$s: %2$s"
 msgstr ""
 
-#: Vipps.class.php:2558
+#: Vipps.class.php:2564
 #, php-format
 msgid "Error getting order status at %1$s for order %2$d"
 msgstr ""
@@ -1263,7 +1269,7 @@ msgstr ""
 msgid "Error polling status - error message %s"
 msgstr ""
 
-#: Vipps.class.php:1926
+#: Vipps.class.php:1932
 #, php-format
 msgid "Error was: %1$s"
 msgstr ""
@@ -1273,7 +1279,7 @@ msgstr ""
 msgid "Error when refunding payment through %1$s:"
 msgstr ""
 
-#: Vipps.class.php:110
+#: Vipps.class.php:116
 msgid ""
 "Error: Cannot instantiate payment gateway, because WooCommerce is not loaded!"
 " This can happen when WooCommerce updates itself; but if it didn't, please "
@@ -1284,7 +1290,7 @@ msgstr ""
 msgid "Express Checkout"
 msgstr ""
 
-#: Vipps.class.php:907
+#: Vipps.class.php:913
 msgid "express checkout"
 msgstr ""
 
@@ -1349,16 +1355,16 @@ msgid ""
 "no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
 msgstr ""
 
-#: Vipps.class.php:1340 Vipps.class.php:1355
+#: Vipps.class.php:1346 Vipps.class.php:1361
 msgid "First Name"
 msgstr ""
 
-#: Vipps.class.php:2556
+#: Vipps.class.php:2562
 #, php-format
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr ""
 
-#: Vipps.class.php:365 Vipps.class.php:1066 Blocks/Badges/vipps-badge.php:53
+#: Vipps.class.php:371 Vipps.class.php:1072 Blocks/Badges/vipps-badge.php:53
 msgid "Grey"
 msgstr ""
 
@@ -1412,7 +1418,7 @@ msgid ""
 "window"
 msgstr ""
 
-#: Vipps.class.php:395
+#: Vipps.class.php:401
 #, php-format
 msgid ""
 "If selected, all products will get a badge, but you can override this on the "
@@ -1471,7 +1477,7 @@ msgid ""
 "value. "
 msgstr ""
 
-#: Vipps.class.php:589
+#: Vipps.class.php:595
 #, php-format
 msgid ""
 "If you experience problems or unexpected results, please check the 'fatal-"
@@ -1484,7 +1490,7 @@ msgid ""
 "help. Normally you do not need to change these."
 msgstr ""
 
-#: Vipps.class.php:590
+#: Vipps.class.php:596
 #, php-format
 msgid ""
 "If you need support, please use the <a href='%1$s'>forum page</a> for the "
@@ -1492,7 +1498,7 @@ msgid ""
 "directly at support@wp-hosting.no."
 msgstr ""
 
-#: Vipps.class.php:439
+#: Vipps.class.php:445
 #, php-format
 msgid ""
 "If you need to add a %1$s badge on a specific page, footer, header and so on,"
@@ -1501,14 +1507,14 @@ msgid ""
 "target=_blank>documented here</a>) or you can use the shortcode."
 msgstr ""
 
-#: Vipps.class.php:645
+#: Vipps.class.php:651
 #, php-format
 msgid ""
 "If you use %1$s or %2$s in WooCommerce, this allows your %3$s customers to "
 "safely log in without ever using a password."
 msgstr ""
 
-#: Vipps.class.php:436
+#: Vipps.class.php:442
 #, php-format
 msgid ""
 "If you use Gutenberg, you should be able to add a %1$s Badge block wherever "
@@ -1590,7 +1596,7 @@ msgstr ""
 msgid "Instabox Client Secret"
 msgstr ""
 
-#: Vipps.class.php:2148
+#: Vipps.class.php:2154
 msgid "Invalid order for shipping callback:"
 msgstr ""
 
@@ -1598,7 +1604,7 @@ msgstr ""
 msgid "Invalid request"
 msgstr ""
 
-#: Vipps.class.php:3513
+#: Vipps.class.php:3519
 msgid ""
 "It seems a customer is trying to re-order product(s) recently bought in the "
 "same session, asking user for confirmation"
@@ -1640,27 +1646,27 @@ msgstr ""
 msgid "Language"
 msgstr ""
 
-#: Vipps.class.php:1341 Vipps.class.php:1356
+#: Vipps.class.php:1347 Vipps.class.php:1362
 msgid "Last Name"
 msgstr ""
 
-#: Vipps.class.php:366 Vipps.class.php:1068 Blocks/Badges/vipps-badge.php:55
+#: Vipps.class.php:372 Vipps.class.php:1074 Blocks/Badges/vipps-badge.php:55
 msgid "Light Orange"
 msgstr ""
 
-#: Vipps.class.php:1144
+#: Vipps.class.php:1150
 msgid "Link"
 msgstr ""
 
-#: Vipps.class.php:3444
+#: Vipps.class.php:3450
 msgid "Link expired, please try again"
 msgstr ""
 
-#: Vipps.class.php:1138
+#: Vipps.class.php:1144
 msgid "Link(s) will be deleted when you save the product"
 msgstr ""
 
-#: Vipps.class.php:643
+#: Vipps.class.php:69
 msgid "Login with Vipps"
 msgstr ""
 
@@ -1670,32 +1676,11 @@ msgid ""
 "registration and login - No more usernames and passwords. Get started here"
 msgstr ""
 
-#: Vipps.class.php:653
-#, php-format
-msgid ""
-"Login with Vipps is installed and active. You can configure the plugin at "
-"its <a href='%2$s'>settings page</a>"
-msgstr ""
-
-#: Vipps.class.php:657
-#, php-format
-msgid ""
-"Login with Vipps is installed, but not active. Activate it on the <a "
-"href='%2$s'>plugins page</a>"
-msgstr ""
-
-#: Vipps.class.php:661
-#, php-format
-msgid ""
-"Login with Vipps is not installed. You can install it <a href='%2$s'>here!"
-"</a>"
-msgstr ""
-
 #: WC_Gateway_Vipps.class.php:763
 msgid "Main options"
 msgstr ""
 
-#: Vipps.class.php:1154
+#: Vipps.class.php:1160
 msgid "Mark this link for deletion"
 msgstr ""
 
@@ -1714,12 +1699,12 @@ msgstr ""
 msgid "Message in callback from %1$s for order"
 msgstr ""
 
-#: Vipps.class.php:423
+#: Vipps.class.php:429
 #, php-format
 msgid "Minimum price for \"%1$s Later\"\""
 msgstr ""
 
-#: Vipps.class.php:1342 Vipps.class.php:1357
+#: Vipps.class.php:1348 Vipps.class.php:1363
 msgid "Mobile Number"
 msgstr ""
 
@@ -1738,7 +1723,7 @@ msgid ""
 "%1$s session for it, so do not cancel it."
 msgstr ""
 
-#: Vipps.class.php:1064
+#: Vipps.class.php:1070
 msgid "No badge"
 msgstr ""
 
@@ -1759,7 +1744,7 @@ msgstr ""
 msgid "No shipping details from %1$s for express checkout for order id:"
 msgstr ""
 
-#: Vipps.class.php:2260 Vipps.class.php:2409
+#: Vipps.class.php:2266 Vipps.class.php:2415
 msgid "No shipping required"
 msgstr ""
 
@@ -1775,7 +1760,7 @@ msgstr ""
 msgid "Norwegian"
 msgstr ""
 
-#: Vipps.class.php:3119 Vipps.class.php:3124
+#: Vipps.class.php:3125 Vipps.class.php:3130
 msgid "Not an order"
 msgstr ""
 
@@ -1799,15 +1784,15 @@ msgstr ""
 msgid "On hold"
 msgstr ""
 
-#: Vipps.class.php:1054
+#: Vipps.class.php:1060
 msgid "On-site messaging badge"
 msgstr ""
 
-#: Vipps.class.php:1365 Vipps.class.php:1380
+#: Vipps.class.php:1371 Vipps.class.php:1386
 msgid "Operation"
 msgstr ""
 
-#: Vipps.class.php:366 Vipps.class.php:1067 Blocks/Badges/vipps-badge.php:54
+#: Vipps.class.php:372 Vipps.class.php:1073 Blocks/Badges/vipps-badge.php:54
 msgid "Orange"
 msgstr ""
 
@@ -1828,7 +1813,7 @@ msgstr ""
 msgid "Order cancel for order"
 msgstr ""
 
-#: Vipps.class.php:3750 Vipps.class.php:3753 Vipps.class.php:3797
+#: Vipps.class.php:3756 Vipps.class.php:3759 Vipps.class.php:3803
 msgid "Order cancelled"
 msgstr ""
 
@@ -1836,7 +1821,7 @@ msgstr ""
 msgid "Order capture for order"
 msgstr ""
 
-#: Vipps.class.php:3793
+#: Vipps.class.php:3799
 msgid "Order confirmed"
 msgstr ""
 
@@ -1845,7 +1830,7 @@ msgstr ""
 msgid "Order does not exist at %1$s - cancelling"
 msgstr ""
 
-#: Vipps.class.php:3134 Vipps.class.php:3163
+#: Vipps.class.php:3140 Vipps.class.php:3169
 msgid "Order failed"
 msgstr ""
 
@@ -1854,11 +1839,11 @@ msgstr ""
 msgid "Order failed or rejected at %1$s"
 msgstr ""
 
-#: Vipps.class.php:1296
+#: Vipps.class.php:1302
 msgid "Order id"
 msgstr ""
 
-#: Vipps.class.php:3637
+#: Vipps.class.php:3643
 msgid "Order in progress"
 msgstr ""
 
@@ -1871,7 +1856,7 @@ msgstr ""
 msgid "Order session expired at %1$s, please try again!"
 msgstr ""
 
-#: Vipps.class.php:1297
+#: Vipps.class.php:1303
 msgid "Order status"
 msgstr ""
 
@@ -1884,12 +1869,12 @@ msgstr ""
 msgid "Order-id Prefix"
 msgstr ""
 
-#: Vipps.class.php:1077
+#: Vipps.class.php:1083
 #, php-format
 msgid "Override %1$s Later"
 msgstr ""
 
-#: Vipps.class.php:1061
+#: Vipps.class.php:1067
 msgid "Override default settings"
 msgstr ""
 
@@ -1902,12 +1887,12 @@ msgstr ""
 msgid "Page"
 msgstr ""
 
-#: Vipps.class.php:3344
+#: Vipps.class.php:3350
 msgctxt "Page slug"
 msgid "vipps_checkout"
 msgstr ""
 
-#: Vipps.class.php:3345
+#: Vipps.class.php:3351
 msgctxt "Page title"
 msgid "Vipps MobilePay Checkout"
 msgstr ""
@@ -1920,7 +1905,7 @@ msgstr ""
 msgid "Password provided to you by Helthjem"
 msgstr ""
 
-#: Vipps.class.php:586
+#: Vipps.class.php:592
 #, php-format
 msgid "Pay with %1$s for WooCommerce"
 msgstr ""
@@ -1929,7 +1914,7 @@ msgstr ""
 msgid "Payment already captured"
 msgstr ""
 
-#: Vipps.class.php:3152
+#: Vipps.class.php:3158
 msgid "Payment authorized"
 msgstr ""
 
@@ -1943,7 +1928,7 @@ msgstr ""
 msgid "Payment cancelled at %1$s"
 msgstr ""
 
-#: Vipps.class.php:3158
+#: Vipps.class.php:3164
 msgid "Payment captured"
 msgstr ""
 
@@ -1959,7 +1944,7 @@ msgid ""
 "automatically"
 msgstr ""
 
-#: Vipps.class.php:1299 Vipps.class.php:1301
+#: Vipps.class.php:1305 Vipps.class.php:1307
 msgid "Payment method"
 msgstr ""
 
@@ -1970,7 +1955,7 @@ msgid ""
 "order for %2$d"
 msgstr ""
 
-#: Vipps.class.php:1329
+#: Vipps.class.php:1335
 msgid "Pickup Point"
 msgstr ""
 
@@ -1984,11 +1969,11 @@ msgid ""
 "this feature."
 msgstr ""
 
-#: Vipps.class.php:442
+#: Vipps.class.php:448
 msgid "Please refer to the documentation for the meaning of the parameters."
 msgstr ""
 
-#: Vipps.class.php:3635
+#: Vipps.class.php:3641
 msgid "Please wait while we are preparing your order"
 msgstr ""
 
@@ -2039,7 +2024,7 @@ msgstr ""
 msgid "Processing"
 msgstr ""
 
-#: Vipps.class.php:2864
+#: Vipps.class.php:2870
 msgid "Processing order... "
 msgstr ""
 
@@ -2047,7 +2032,7 @@ msgstr ""
 msgid "Product"
 msgstr ""
 
-#: Vipps.class.php:3407
+#: Vipps.class.php:3413
 msgid "Product is no longer available"
 msgstr ""
 
@@ -2056,7 +2041,7 @@ msgstr ""
 msgid "Profile image used in the %1$s App"
 msgstr ""
 
-#: Vipps.class.php:367 Vipps.class.php:1069 Blocks/Badges/vipps-badge.php:56
+#: Vipps.class.php:373 Vipps.class.php:1075 Blocks/Badges/vipps-badge.php:56
 msgid "Purple"
 msgstr ""
 
@@ -2076,11 +2061,11 @@ msgstr ""
 msgid "QR-id"
 msgstr ""
 
-#: Vipps.class.php:2126
+#: Vipps.class.php:2132
 msgid "Raw input was "
 msgstr ""
 
-#: Vipps.class.php:3631
+#: Vipps.class.php:3637
 #, php-format
 msgid "Ready for %1$s - press the button"
 msgstr ""
@@ -2089,7 +2074,7 @@ msgstr ""
 msgid "Receipt for order %d sent to Vipps "
 msgstr ""
 
-#: Vipps.class.php:1932
+#: Vipps.class.php:1938
 msgid "Received a test callback, exiting"
 msgstr ""
 
@@ -2097,33 +2082,32 @@ msgstr ""
 msgid "Refund for order"
 msgstr ""
 
-#: Vipps.class.php:1892
+#: Vipps.class.php:1898
 msgid "Refund superfluous payment"
 msgstr ""
 
-#: Vipps.class.php:1312
+#: Vipps.class.php:1318
 msgid "Refunded amount"
 msgstr ""
 
-#: Vipps.class.php:1316
+#: Vipps.class.php:1322
 msgid "Remaining amount to cancel"
 msgstr ""
 
-#: Vipps.class.php:1311
+#: Vipps.class.php:1317
 msgid "Remaining amount to capture"
 msgstr ""
 
-#: Vipps.class.php:1313
+#: Vipps.class.php:1319
 msgid "Remaining amount to refund"
 msgstr ""
 
-#: Vipps.class.php:647
+#: Vipps.class.php:653
 #, php-format
 msgid ""
-"Remember, you need to set up Login with Vipps at the <a target='_blank' "
-"href='%2$s'>%1$s Portal</a>, where you will find the keys you need and where "
-"you will have to register the <em>return url</em> you will find on the "
-"settings page."
+"Remember, you need to set up %3$s at the <a target='_blank' href='%2$s'>%1$s "
+"Portal</a>, where you will find the keys you need and where you will have to "
+"register the <em>return url</em> you will find on the settings page."
 msgstr ""
 
 #: VippsQRCodeController.class.php:622
@@ -2134,11 +2118,11 @@ msgstr ""
 msgid "Remove image"
 msgstr ""
 
-#: Vipps.class.php:1371
+#: Vipps.class.php:1377
 msgid "Request ID"
 msgstr ""
 
-#: Vipps.class.php:2547
+#: Vipps.class.php:2553
 #, php-format
 msgid "Restoring session of order %1$d"
 msgstr ""
@@ -2151,15 +2135,15 @@ msgstr ""
 msgid "Select one"
 msgstr ""
 
-#: Vipps.class.php:1108
+#: Vipps.class.php:1114
 msgid "Select variant"
 msgstr ""
 
-#: Vipps.class.php:3003
+#: Vipps.class.php:3009
 msgid "Selected product variant is not available"
 msgstr ""
 
-#: Vipps.class.php:3015
+#: Vipps.class.php:3021
 msgid "Selected product variant is not available for purchase"
 msgstr ""
 
@@ -2186,15 +2170,15 @@ msgstr ""
 msgid "Setting order status to pending to start payment"
 msgstr ""
 
-#: Vipps.class.php:381 Vipps.class.php:674
+#: Vipps.class.php:387 Vipps.class.php:680
 msgid "Settings"
 msgstr ""
 
-#: Vipps.class.php:1099
+#: Vipps.class.php:1105
 msgid "Shareable links"
 msgstr ""
 
-#: Vipps.class.php:1100
+#: Vipps.class.php:1106
 #, php-format
 msgid ""
 "Shareable links are links you can share externally on banners or other "
@@ -2202,11 +2186,11 @@ msgid ""
 "Maintain these links here for this product."
 msgstr ""
 
-#: Vipps.class.php:1325
+#: Vipps.class.php:1331
 msgid "Shipping cost"
 msgstr ""
 
-#: Vipps.class.php:1322
+#: Vipps.class.php:1328
 msgid "Shipping details"
 msgstr ""
 
@@ -2214,7 +2198,7 @@ msgstr ""
 msgid "Shipping information is autofilled with Vipps"
 msgstr ""
 
-#: Vipps.class.php:1324
+#: Vipps.class.php:1330
 msgid "Shipping method"
 msgstr ""
 
@@ -2225,7 +2209,7 @@ msgstr ""
 msgid "Shipping method for %1$s only: %2$s"
 msgstr ""
 
-#: Vipps.class.php:1326
+#: Vipps.class.php:1332
 msgid "Shipping method ID"
 msgstr ""
 
@@ -2238,11 +2222,11 @@ msgstr ""
 msgid "Short description of shipping method used in %1$s"
 msgstr ""
 
-#: Vipps.class.php:438
+#: Vipps.class.php:444
 msgid "Shortcodes"
 msgstr ""
 
-#: Vipps.class.php:1256
+#: Vipps.class.php:1262
 msgid "Show complete transaction details"
 msgstr ""
 
@@ -2263,11 +2247,11 @@ msgid ""
 "new method, you can choose this here. "
 msgstr ""
 
-#: Vipps.class.php:906
+#: Vipps.class.php:912
 msgid "Skip entering your address and just checkout using"
 msgstr ""
 
-#: Vipps.class.php:2895
+#: Vipps.class.php:2901
 #, php-format
 msgid ""
 "Some of the products in your cart are no longer available in the quantities "
@@ -2300,11 +2284,11 @@ msgstr ""
 msgid "Subscription Key"
 msgstr ""
 
-#: Vipps.class.php:1367 Vipps.class.php:1385
+#: Vipps.class.php:1373 Vipps.class.php:1391
 msgid "Success"
 msgstr ""
 
-#: Vipps.class.php:418
+#: Vipps.class.php:424
 #, php-format
 msgid "Support \"%1$s Later\""
 msgstr ""
@@ -2345,19 +2329,19 @@ msgstr ""
 msgid "Test mode"
 msgstr ""
 
-#: Vipps.class.php:584
+#: Vipps.class.php:590
 #, php-format
 msgid "The %1$s plugins"
 msgstr ""
 
-#: Vipps.class.php:1043
+#: Vipps.class.php:1049
 #, php-format
 msgid ""
 "The <a href='%1$s'>%2$s settings</a> are configured so that no products will "
 "have a Buy Now button - including this."
 msgstr ""
 
-#: Vipps.class.php:1032
+#: Vipps.class.php:1038
 #, php-format
 msgid ""
 "The <a href='%1$s'>%2$s settings</a> are currently set up so all products "
@@ -2372,34 +2356,34 @@ msgstr ""
 msgid "The client id provided to you by Instabox"
 msgstr ""
 
-#: Vipps.class.php:1858
+#: Vipps.class.php:1864
 #, php-format
 msgid "The entire amount has been captured at %1$s"
 msgstr ""
 
-#: Vipps.class.php:435
+#: Vipps.class.php:441
 msgid "The Gutenberg Block"
 msgstr ""
 
-#: Vipps.class.php:3408
+#: Vipps.class.php:3414
 msgid ""
 "The link you have followed is for a product that is no longer available at "
 "this location. Please return to the store and try again"
 msgstr ""
 
-#: Vipps.class.php:1271
+#: Vipps.class.php:1277
 #, php-format
 msgid "The order is not a %1$s order"
 msgstr ""
 
-#: Vipps.class.php:606
+#: Vipps.class.php:612
 #, php-format
 msgid ""
 "The plugin is currently <b>active</b> - %1$s is available as a payment "
 "method."
 msgstr ""
 
-#: Vipps.class.php:1193
+#: Vipps.class.php:1199
 msgid "The product doesn't exist"
 msgstr ""
 
@@ -2411,7 +2395,7 @@ msgstr ""
 msgid "The ShopId provided to you by Helthjem"
 msgstr ""
 
-#: Vipps.class.php:440
+#: Vipps.class.php:446
 msgid "The shortcode looks like this:"
 msgstr ""
 
@@ -2462,12 +2446,12 @@ msgid ""
 "these into your current site and manage them from here"
 msgstr ""
 
-#: Vipps.class.php:1940
+#: Vipps.class.php:1946
 #, php-format
 msgid "There is no order with this %1$s orderid, callback fails:"
 msgstr ""
 
-#: Vipps.class.php:1946
+#: Vipps.class.php:1952
 msgid "There is no order with this order id, callback fails:"
 msgstr ""
 
@@ -2491,7 +2475,7 @@ msgid ""
 "instead of the normal WooCommerce checkout page. "
 msgstr ""
 
-#: Vipps.class.php:587
+#: Vipps.class.php:593
 #, php-format
 msgid ""
 "This plugin, currently active at your site, implements a %1$s checkout "
@@ -2501,18 +2485,18 @@ msgid ""
 "to your landing pages or products"
 msgstr ""
 
-#: Vipps.class.php:1037
+#: Vipps.class.php:1043
 msgid ""
 "This product does <b>not</b> support express checkout, and so will <b>not</b>"
 " have a Buy Now button."
 msgstr ""
 
-#: Vipps.class.php:1035
+#: Vipps.class.php:1041
 msgid ""
 "This product supports express checkout, and so will have a Buy Now button."
 msgstr ""
 
-#: Vipps.class.php:1368 Vipps.class.php:1386
+#: Vipps.class.php:1374 Vipps.class.php:1392
 msgid "Timestamp"
 msgstr ""
 
@@ -2539,14 +2523,14 @@ msgid ""
 "%3$s from both the product pages and the shopping cart if you wish."
 msgstr ""
 
-#: Vipps.class.php:1101
+#: Vipps.class.php:1107
 #, php-format
 msgid ""
 "To create a QR code for your shareable link, we recommend copying the URL "
 "and then using the <a href='%2$s'>%1$s QR Api</a>"
 msgstr ""
 
-#: Vipps.class.php:582
+#: Vipps.class.php:588
 #, php-format
 msgid ""
 "To order or configure your %1$s account that powers these plugins, log onto "
@@ -2554,32 +2538,32 @@ msgid ""
 "data from that to set up your plugins as needed."
 msgstr ""
 
-#: Vipps.class.php:3566
+#: Vipps.class.php:3572
 #, php-format
 msgid "To the %1$s app!"
 msgstr ""
 
-#: Vipps.class.php:1294
+#: Vipps.class.php:1300
 msgid "Transaction details"
 msgstr ""
 
-#: Vipps.class.php:1289
+#: Vipps.class.php:1295
 msgid "Transaction details not retrievable: "
 msgstr ""
 
-#: Vipps.class.php:1370 Vipps.class.php:1387
+#: Vipps.class.php:1376 Vipps.class.php:1393
 msgid "Transaction ID"
 msgstr ""
 
-#: Vipps.class.php:1361 Vipps.class.php:1375
+#: Vipps.class.php:1367 Vipps.class.php:1381
 msgid "Transaction Log"
 msgstr ""
 
-#: Vipps.class.php:1309
+#: Vipps.class.php:1315
 msgid "Transaction summary"
 msgstr ""
 
-#: Vipps.class.php:1369
+#: Vipps.class.php:1375
 msgid "Transaction text"
 msgstr ""
 
@@ -2610,7 +2594,7 @@ msgid ""
 "are allowed, so this will fail"
 msgstr ""
 
-#: Vipps.class.php:386
+#: Vipps.class.php:392
 #, php-format
 msgid "Turn on support for %1$s On-site Messaging badges"
 msgstr ""
@@ -2639,7 +2623,7 @@ msgstr ""
 msgid "Unknown error creating %1$s session"
 msgstr ""
 
-#: Vipps.class.php:2828
+#: Vipps.class.php:2834
 msgid "Unknown error customer in express checkout."
 msgstr ""
 
@@ -2647,15 +2631,15 @@ msgstr ""
 msgid "Unknown operation"
 msgstr ""
 
-#: Vipps.class.php:1266 Vipps.class.php:3705
+#: Vipps.class.php:1272 Vipps.class.php:3711
 msgid "Unknown order"
 msgstr ""
 
-#: Vipps.class.php:3166
+#: Vipps.class.php:3172
 msgid "Unknown payment status"
 msgstr ""
 
-#: Vipps.class.php:2993
+#: Vipps.class.php:2999
 msgid "Unknown product, cannot create order"
 msgstr ""
 
@@ -2667,7 +2651,7 @@ msgstr ""
 msgid "Update QR Code"
 msgstr ""
 
-#: Vipps.class.php:430
+#: Vipps.class.php:436
 msgid "Update settings"
 msgstr ""
 
@@ -2699,7 +2683,7 @@ msgstr ""
 msgid "Use %1$s for all purchases"
 msgstr ""
 
-#: Vipps.class.php:1080
+#: Vipps.class.php:1086
 #, php-format
 msgid "Use %1$s Later"
 msgstr ""
@@ -2771,15 +2755,15 @@ msgstr ""
 msgid "Use your current shipping filters"
 msgstr ""
 
-#: Vipps.class.php:1348 Vipps.class.php:1353
+#: Vipps.class.php:1354 Vipps.class.php:1359
 msgid "User details"
 msgstr ""
 
-#: Vipps.class.php:1354
+#: Vipps.class.php:1360
 msgid "User ID"
 msgstr ""
 
-#: Vipps.class.php:406 Vipps.class.php:1143 Blocks/Badges/vipps-badge.php:63
+#: Vipps.class.php:412 Vipps.class.php:1149 Blocks/Badges/vipps-badge.php:63
 msgid "Variant"
 msgstr ""
 
@@ -2791,7 +2775,11 @@ msgstr ""
 msgid "View QR Codes"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:3010
+#: Vipps.class.php:60
+msgid "Vipps"
+msgstr ""
+
+#: WC_Gateway_Vipps.class.php:3010 Vipps.class.php:63
 msgid "Vipps Checkout"
 msgstr ""
 
@@ -2799,16 +2787,21 @@ msgstr ""
 msgid "Vipps does not support your currency."
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:3009
+#: WC_Gateway_Vipps.class.php:3009 Vipps.class.php:66
 msgid "Vipps Express Checkout"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:135 WC_Gateway_Vipps.class.php:136
+#: Vipps.class.php:57
 msgid "Vipps MobilePay"
 msgstr ""
 
 #: VippsQRCodeController.class.php:231
 msgid "Vipps QR-codes not present on this site"
+msgstr ""
+
+#: Vipps.class.php:72
+msgid "Vipps Recurring Payments"
 msgstr ""
 
 #: VippsDismissibleAdminBanners.class.php:188
@@ -2836,16 +2829,16 @@ msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
 msgstr ""
 
-#: Vipps.class.php:3771
+#: Vipps.class.php:3777
 #, php-format
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr ""
 
-#: Vipps.class.php:3803
+#: Vipps.class.php:3809
 msgid "Waiting for your order confirmation"
 msgstr ""
 
-#: Vipps.class.php:3129 Vipps.class.php:3144
+#: Vipps.class.php:3135 Vipps.class.php:3150
 msgid "Waiting on order"
 msgstr ""
 
@@ -2867,7 +2860,7 @@ msgid ""
 "they will only appear in the %1$s screen."
 msgstr ""
 
-#: Vipps.class.php:365 Vipps.class.php:1065 Blocks/Badges/vipps-badge.php:52
+#: Vipps.class.php:371 Vipps.class.php:1071 Blocks/Badges/vipps-badge.php:52
 msgid "White"
 msgstr ""
 
@@ -2875,12 +2868,12 @@ msgstr ""
 msgid "WP Hosting"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:2695 Vipps.class.php:1956
+#: WC_Gateway_Vipps.class.php:2695 Vipps.class.php:1962
 #, php-format
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
 msgstr ""
 
-#: Vipps.class.php:2157
+#: Vipps.class.php:2163
 #, php-format
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr ""
@@ -2897,7 +2890,7 @@ msgstr ""
 msgid "Yes, activate %1$s!"
 msgstr ""
 
-#: Vipps.class.php:608
+#: Vipps.class.php:614
 #, php-format
 msgid "You are using %1$s instead of the standard WooCommerce Checkout page."
 msgstr ""
@@ -2908,7 +2901,7 @@ msgid ""
 "(e.g. for NOK, in øre)"
 msgstr ""
 
-#: Vipps.class.php:378
+#: Vipps.class.php:384
 msgid ""
 "You can configure these badges on this page, turning them on in all or some "
 "products and configure their default setup. You can also add a badge using a "
@@ -2920,11 +2913,11 @@ msgstr ""
 msgid "You can get %1$s now!"
 msgstr ""
 
-#: VippsQRCodeController.class.php:165 Vipps.class.php:362 Vipps.class.php:537
+#: VippsQRCodeController.class.php:165 Vipps.class.php:368 Vipps.class.php:543
 msgid "You don't have sufficient rights to access this page"
 msgstr ""
 
-#: Vipps.class.php:483 Vipps.class.php:484 Vipps.class.php:1172
+#: Vipps.class.php:489 Vipps.class.php:490 Vipps.class.php:1178
 msgid "You don't have sufficient rights to edit this product"
 msgstr ""
 
@@ -2942,7 +2935,7 @@ msgstr ""
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr ""
 
-#: Vipps.class.php:3590
+#: Vipps.class.php:3596
 msgid ""
 "You recently completed an order with exactly the same products as you are "
 "buying now. There should be an email in your inbox from the previous "
@@ -2970,7 +2963,7 @@ msgid ""
 "must be MSISDN (including country code). Example: \"4791234567\""
 msgstr ""
 
-#: Vipps.class.php:3021
+#: Vipps.class.php:3027
 msgid "Your product is temporarily no longer available for purchase"
 msgstr ""
 
@@ -2980,7 +2973,7 @@ msgid ""
 "the shop"
 msgstr ""
 
-#: Vipps.class.php:3450
+#: Vipps.class.php:3456
 msgid "Your shopping cart is empty"
 msgstr ""
 
@@ -2997,7 +2990,7 @@ msgid ""
 "//portal.vipps.no"
 msgstr ""
 
-#: Vipps.class.php:273
+#: Vipps.class.php:279
 #, php-format
 msgid ""
 "Your theme or a plugin is currently overriding the <code>"
