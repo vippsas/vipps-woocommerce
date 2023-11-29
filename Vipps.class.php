@@ -261,7 +261,7 @@ class Vipps {
         add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
 
         if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
-            $what = sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), $this->company_name);
+            $what = sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), Vipps::CompanyName());
             $this->add_vipps_admin_notice($what,'info', '', 'test-mode');
         }
 
@@ -284,9 +284,9 @@ class Vipps {
                 list($ok, $msg) = $gw->check_connection();
                 if (!$ok){ 
                     if ($msg) {
-                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet correctly configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup:<br> %3\$s</p>", 'woo-vipps'), $this->company_name, admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'), $msg));
+                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet correctly configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup:<br> %3\$s</p>", 'woo-vipps'), Vipps::CompanyName(), admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'), $msg));
                     } else {
-                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup!</p>", 'woo-vipps'), $this->company_name, admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')));
+                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup!</p>", 'woo-vipps'), Vipps::CompanyName(), admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')));
                     }
                 } 
 
@@ -370,9 +370,9 @@ class Vipps {
         <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script>
         <div class='wrap vipps-badge-settings'>
 
-          <h1><?php echo sprintf(__('%1$s On-Site Messaging', 'woo-vipps'), $this->company_name); ?></h1>
+          <h1><?php echo sprintf(__('%1$s On-Site Messaging', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
 
-           <h3><?php echo sprintf(__('%1$s On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that %1$s payment is accepted.', 'woo-vipps'), $this->company_name); ?></h3>
+           <h3><?php echo sprintf(__('%1$s On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that %1$s payment is accepted.', 'woo-vipps'), Vipps::CompanyName()); ?></h3>
 
            <p>
             <?php _e('You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block', 'woo-vipps'); ?>
@@ -383,7 +383,7 @@ class Vipps {
             <input type="hidden" name="action" value="update_vipps_badge_settings" />
             <?php wp_nonce_field( 'badgeaction', 'badgenonce'); ?>
             <div>
-             <label for="badgeon"><?php echo sprintf(__('Turn on support for %1$s On-site Messaging badges', 'woo-vipps'), $this->company_name); ?></label>
+             <label for="badgeon"><?php echo sprintf(__('Turn on support for %1$s On-site Messaging badges', 'woo-vipps'), Vipps::CompanyName()); ?></label>
              <input type="hidden" name="badgeon" value="0" />
              <input <?php if (@$badge_options['badgeon']) echo " checked "; ?> value="1" type="checkbox" id="badgeon" name="badgeon" />
             </div>
@@ -392,7 +392,7 @@ class Vipps {
              <label for="defaultall"><?php _e('Add badge to all products by default', 'woo-vipps'); ?></label>
              <input type="hidden" name="defaultall" value="0" />
              <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
-             <p><?php echo sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), $this->company_name); ?></p>
+             <p><?php echo sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()); ?></p>
             </div>
 
            <p id=badgeholder style="font-size:1.5rem">
@@ -415,12 +415,12 @@ class Vipps {
               </select>
 
             <div>
-             <label for="vippsLater"><?php echo sprintf(__('Support "%1$s Later"', 'woo-vipps'), $this->company_name); ?></label>
+             <label for="vippsLater"><?php echo sprintf(__('Support "%1$s Later"', 'woo-vipps'), Vipps::CompanyName()); ?></label>
              <input type="hidden" name="later" value="0" />
-             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" /><div style="display:inline-block"><?php echo sprintf(__("Check this if your store supports %1\$s Senere and you want the specialized badge for that", 'woo-vipps'), $this->company_name); ?>
+             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" /><div style="display:inline-block"><?php echo sprintf(__("Check this if your store supports %1\$s Senere and you want the specialized badge for that", 'woo-vipps'), Vipps::CompanyName()); ?>
             </div>
             <div>
-             <label for="vippsLater"><?php echo sprintf(__('Minimum price for "%1$s Later""', 'woo-vipps'), $this->company_name); ?></label>
+             <label for="vippsLater"><?php echo sprintf(__('Minimum price for "%1$s Later""', 'woo-vipps'), Vipps::CompanyName()); ?></label>
              <input style="text-align:right; width: 8rem" type="text" pattern="[0-9]+" name="minLater" 
                  <?php if (@$badge_options['minLater']) echo 'value="' . intval($badge_options['minLater']) . '"'; ?>
               />
@@ -433,10 +433,10 @@ class Vipps {
            </form>
 
            <h2><?php _e('The Gutenberg Block', 'woo-vipps'); ?></h2>
-           <p><?php echo sprintf(__('If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block.', 'woo-vipps'), $this->company_name); ?>
+           <p><?php echo sprintf(__('If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block.', 'woo-vipps'), Vipps::CompanyName()); ?>
 
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
-           <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), $this->company_name, "https://developer.vippsmobilepay.com/docs/design-guidelines/checkout-on-site-messaging/"); ?></p>
+           <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/design-guidelines/checkout-on-site-messaging/"); ?></p>
            <p><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
               <pre>[vipps-badge variant={white|orange|light-orange|grey|purple}<br>             language={en|no}<br>             amount={amount in minor units}<br>             vipps-senere={false|true}]</pre><br>
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?>
@@ -577,35 +577,35 @@ class Vipps {
     </header>
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
-            <h1><?php echo sprintf(__("%1\$s for WordPress and WooCommerce", 'woo-vipps'), $this->company_name); ?></h1>
-            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an Express Checkout for WooCommerce, an optional complete checkout solution powered by %1\$s, a system for managing QR-codes that link to your products or landing pages,  a plugin for recurring payments, and a system for passwordless logins", 'woo-vipps'), $this->company_name);?></p>
-            <p><?php echo sprintf(__("To order or configure your %1\$s account that powers these plugins, log onto <a target='_blank'  href='%2\$s'>the %1\$s portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), $this->company_name, $portalurl); ?></p>
+            <h1><?php echo sprintf(__("%1\$s for WordPress and WooCommerce", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
+            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an Express Checkout for WooCommerce, an optional complete checkout solution powered by %1\$s, a system for managing QR-codes that link to your products or landing pages,  a plugin for recurring payments, and a system for passwordless logins", 'woo-vipps'), Vipps::CompanyName());?></p>
+            <p><?php echo sprintf(__("To order or configure your %1\$s account that powers these plugins, log onto <a target='_blank'  href='%2\$s'>the %1\$s portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), Vipps::CompanyName(), $portalurl); ?></p>
 
-            <h1><?php echo sprintf(__("The %1\$s plugins", 'woo-vipps'), $this->company_name); ?></h1>
+            <h1><?php echo sprintf(__("The %1\$s plugins", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
             <div class="pluginsection woo-vipps">
-               <h2><?php echo sprintf(__('Pay with %1$s for WooCommerce', 'woo-vipps' ), $this->company_name);?></h2>
-               <p><?php echo sprintf(__("This plugin, currently active at your site, implements a %1\$s checkout solution in WooCommerce, and Express Checkout solution for instant buys using the %1\$s app, and an alternate %1\$s-hosted checkout supporting both %1\$s and credit cards. It also supports %1\$s's QR-api for creating QR-codes to your landing pages or products", 'woo-vipps'), $this->company_name); ?></p>
-               <p><?php echo sprintf(__("Configure the plugin on its <a href='%1\$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2\$s'>%3\$s portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl, $this->company_name);?></p>
+               <h2><?php echo sprintf(__('Pay with %1$s for WooCommerce', 'woo-vipps' ), Vipps::CompanyName());?></h2>
+               <p><?php echo sprintf(__("This plugin, currently active at your site, implements a %1\$s checkout solution in WooCommerce, and Express Checkout solution for instant buys using the %1\$s app, and an alternate %1\$s-hosted checkout supporting both %1\$s and credit cards. It also supports %1\$s's QR-api for creating QR-codes to your landing pages or products", 'woo-vipps'), Vipps::CompanyName()); ?></p>
+               <p><?php echo sprintf(__("Configure the plugin on its <a href='%1\$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2\$s'>%3\$s portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl, Vipps::CompanyName());?></p>
                <p><?php echo sprintf(__("If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1\$s'>WooCommerce logs page</a>.", 'woo-vipps'), $logspage); ?></p>
                <p><?php echo sprintf(__("If you need support, please use the <a href='%1\$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no.", 'woo-vipps'), $forumpage); ?></p>
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($istestmode): ?>
                   <p><b>
-                   <?php echo sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), $this->company_name); ?>
+                   <?php echo sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), Vipps::CompanyName()); ?>
                   </b></p>
                <?php endif; ?>
                <p>
                   <?php if ($configured): ?>
-                    <?php echo sprintf(__("<a href='%1\$s'>%2\$s configuration</a> is complete.", 'woo-vipps'), $checkoutsettings, $this->company_name); ?> 
+                    <?php echo sprintf(__("<a href='%1\$s'>%2\$s configuration</a> is complete.", 'woo-vipps'), $checkoutsettings, Vipps::CompanyName()); ?> 
                   <?php else: ?>
-                    <?php echo sprintf(__("%1\$s configuration is not yet complete - you must get your keys from the %1\$s portal and enter them on the <a href='%2\$s'>settings page</a>", 'woo-vipps'), $this->company_name, $checkoutsettings); ?> 
+                    <?php echo sprintf(__("%1\$s configuration is not yet complete - you must get your keys from the %1\$s portal and enter them on the <a href='%2\$s'>settings page</a>", 'woo-vipps'), Vipps::CompanyName(), $checkoutsettings); ?> 
                   <?php endif; ?>
                </p>
                <?php if ($isactive): ?>
                  <p> 
-                   <?php echo sprintf(__("The plugin is currently <b>active</b> - %1\$s is available as a payment method.", 'woo-vipps'), $this->company_name); ?>
+                   <?php echo sprintf(__("The plugin is currently <b>active</b> - %1\$s is available as a payment method.", 'woo-vipps'), Vipps::CompanyName()); ?>
                    <?php if ($ischeckout): ?>
-                      <?php echo sprintf(__("You are using %1\$s Checkout instead of the standard WooCommerce Checkout page.", 'woo-vipps'), $this->company_name); ?>     
+                      <?php echo sprintf(__("You are using %1\$s Checkout instead of the standard WooCommerce Checkout page.", 'woo-vipps'), Vipps::CompanyName()); ?>     
                    <?php endif; ?>
                  </p>
                <?php else:; ?>
@@ -642,7 +642,7 @@ class Vipps {
             <div class="pluginsection login-with-vipps">
                <h2><?php echo sprintf(__( 'Login with %1$s', 'woo-vipps' ), "Vipps");?></h2>
                <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with %2\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', "Vipps"); ?></p>
-               <p> <?php echo sprintf(__("If you use %1\$s Checkout or Express Checkout in WooCommerce, this allows your %1\$s customers to safely log in without ever using a password.", 'woo-vipps'), $this->company_name); ?>
+               <p> <?php echo sprintf(__("If you use %1\$s Checkout or Express Checkout in WooCommerce, this allows your %1\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CompanyName()); ?>
                <p>
                        <?php echo sprintf(__("Remember, you need to set up Login with %1\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),"Vipps",$portalurl); ?>
                </p>
@@ -808,7 +808,7 @@ class Vipps {
 
     public function admin_menu () {
         $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
-        add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), $this->company_name), sprintf(__("%1\$s", 'woo-vipps'), $this->company_name), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+        add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
     }
 
@@ -838,7 +838,7 @@ class Vipps {
         }
 
         if ($vippsorder) {
-           add_meta_box( 'vippsdata', sprintf(__('%1$s','woo-vipps'), $this->payment_method_name), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
+           add_meta_box( 'vippsdata', sprintf(__('%1$s','woo-vipps'), Vipps::PaymentMethodName()), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
         }
     }
 
@@ -851,7 +851,7 @@ class Vipps {
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
-        $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->payment_method_name),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->payment_method_name));
+        $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), Vipps::PaymentMethodName()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), Vipps::PaymentMethodName()));
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
     }
 
@@ -927,7 +927,7 @@ class Vipps {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
         $imgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
-        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->payment_method_name);
+        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), Vipps::PaymentMethodName());
         $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
         $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
         echo $button;
@@ -991,7 +991,7 @@ class Vipps {
     // An extra product meta tab for Vipps 
     public function woocommerce_product_data_tabs ($tabs) {
         $img =  plugins_url('img/vipps_logo.png',__FILE__);
-        $tabs['vipps'] = array( 'label' =>  sprintf(__('%1$s', 'woo-vipps'), $this->payment_method_name), 'priority'=>100, 'target'=>'woo-vipps', 'class'=>array());
+        $tabs['vipps'] = array( 'label' =>  sprintf(__('%1$s', 'woo-vipps'), Vipps::PaymentMethodName()), 'priority'=>100, 'target'=>'woo-vipps', 'class'=>array());
         return $tabs;
     }
     public function woocommerce_product_data_panels() {
@@ -1016,9 +1016,9 @@ class Vipps {
             woocommerce_wp_checkbox( array(
                         'id'      => 'woo_vipps_add_buy_now_button',
                         'value'   => $button,
-                        'label'   => sprintf(__('Add  \'Buy now with %1$s\' button', 'woo-vipps'), $this->payment_method_name),
+                        'label'   => sprintf(__('Add  \'Buy now with %1$s\' button', 'woo-vipps'), Vipps::PaymentMethodName()),
                         'desc_tip' => true,
-                        'description' => sprintf(__('Add a \'Buy now with %1$s\'-button to this product','woo-vipps'), $this->payment_method_name)
+                        'description' => sprintf(__('Add a \'Buy now with %1$s\'-button to this product','woo-vipps'), Vipps::PaymentMethodName())
                         ) ); 
         } else if ($choice == "all") {
           $prod = wc_get_product(get_the_ID());
@@ -1029,7 +1029,7 @@ class Vipps {
 
           echo "<p>";
           $settings = esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
-          echo sprintf(__("The <a href='%1\$s'>%2\$s settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $settings, $this->company_name); 
+          echo sprintf(__("The <a href='%1\$s'>%2\$s settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $settings, Vipps::CompanyName()); 
           echo " ";
           if ($canbebought) {
             echo __("This product supports express checkout, and so will have a Buy Now button." , 'woo-vipps');
@@ -1040,7 +1040,7 @@ class Vipps {
         } else {
          $settings = esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
           echo "<p>";
-          echo sprintf(__("The <a href='%1\$s'>%2\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $settings, $this->company_name);
+          echo sprintf(__("The <a href='%1\$s'>%2\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $settings, Vipps::CompanyName());
           echo "</p>";
         }
         echo '</div>';
@@ -1074,11 +1074,11 @@ class Vipps {
         woocommerce_wp_select( 
                 array( 
                     'id'      => 'woo_vipps_badge_pay_later', 
-                    'label'   => sprintf(__( 'Override %1$s Later', 'woo-vipps' ), $this->payment_method_name),
+                    'label'   => sprintf(__( 'Override %1$s Later', 'woo-vipps' ), Vipps::PaymentMethodName()),
                     'options' => array(
                         '' => __('Default setting', 'woo-vipps'),
-                        'later' => sprintf(__('Use %1$s Later', 'woo-vipps'), $this->payment_method_name),
-                        'no' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), $this->payment_method_name),
+                        'later' => sprintf(__('Use %1$s Later', 'woo-vipps'), Vipps::PaymentMethodName()),
+                        'no' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), Vipps::PaymentMethodName()),
                         ),
                     'value' => $later
                     )
@@ -1268,7 +1268,7 @@ else:
         }
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            print "<p>" . sprintf(__("The order is not a %1\$s order", 'woo-vipps'), $this->payment_method_name) . "</p>";
+            print "<p>" . sprintf(__("The order is not a %1\$s order", 'woo-vipps'), Vipps::PaymentMethodName()) . "</p>";
             exit();
         }
 
@@ -1681,7 +1681,7 @@ else:
            if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
            $stripped = preg_replace("!</li>$!", "", $html);
            $pid = $product->get_id();
-           $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->payment_method_name);
+           $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), Vipps::PaymentMethodName());
            $text = __('Buy now with', 'woo-vipps');
            $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
            $a=1;
@@ -1771,11 +1771,11 @@ EOF;
         $this->vippsJSConfig = array();
         $this->vippsJSConfig['vippsajaxurl'] =  admin_url('admin-ajax.php');
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
-        $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->payment_method_name);
+        $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), Vipps::PaymentMethodName());
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-smile-orange.png',__FILE__);
-        $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), $this->payment_method_name);
-        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->payment_method_name);
+        $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), Vipps::PaymentMethodName());
+        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), Vipps::PaymentMethodName());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = plugins_url('img/pay-with-vipps.svg', __FILE__);
        
@@ -1855,7 +1855,7 @@ EOF;
         $captured = intval($order->get_meta('_vipps_captured'));
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         if ($captured && !$capremain) { 
-            print "<div><strong>" . sprintf(__("The entire amount has been captured at %1\$s", 'woo-vipps'), $this->payment_method_name) . "</strong></div>";
+            print "<div><strong>" . sprintf(__("The entire amount has been captured at %1\$s", 'woo-vipps'), Vipps::PaymentMethodName()) . "</strong></div>";
             return;
         }
 
@@ -1885,7 +1885,7 @@ EOF;
             return;
         }
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        print "<div><strong>" . sprintf(__('More funds than the order total has been captured at %1$s. Press this button to refund this amount at %1$s without editing this order', 'woo_vipps'), $this->payment_method_name) . "</strong></div>";
+        print "<div><strong>" . sprintf(__('More funds than the order total has been captured at %1$s. Press this button to refund this amount at %1$s without editing this order', 'woo_vipps'), Vipps::PaymentMethodName()) . "</strong></div>";
         print '<button type="button" class="button vippsbutton generate-items vipps-action" 
                  data-orderid="' . $order->get_id() . '" data-action="refund_superfluous"
                  style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" >
@@ -1922,7 +1922,7 @@ EOF;
 
         if (!$result) {
             $error = json_last_error_msg();
-            $this->log(sprintf(__("Did not understand callback from %1\$s:",'woo-vipps'), $this->payment_method_name) . " " .  $raw_post, 'error');
+            $this->log(sprintf(__("Did not understand callback from %1\$s:",'woo-vipps'), Vipps::PaymentMethodName()) . " " .  $raw_post, 'error');
             $this->log(sprintf(__("Error was: %1\$s",'woo-vipps'), $error));
             return false;
         }
@@ -1937,7 +1937,7 @@ EOF;
         $orderid = intval(@$_REQUEST['id']);
 
         if (!$orderid) {
-            $this->log(sprintf(__("There is no order with this %1\$s orderid, callback fails:",'woo-vipps'), $this->payment_method_name) . " " . $vippsorderid,  'error');
+            $this->log(sprintf(__("There is no order with this %1\$s orderid, callback fails:",'woo-vipps'), Vipps::PaymentMethodName()) . " " . $vippsorderid,  'error');
             return false;
         }
 
@@ -1953,7 +1953,7 @@ EOF;
             exit();
         }
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
-            $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), $this->payment_method_name), 'warning');
+            $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), Vipps::PaymentMethodName()), 'warning');
             exit();
         }
 
@@ -2122,7 +2122,7 @@ EOF;
 
         if (!$result) {
            $error = json_last_error_msg();
-           $this->log(sprintf(__("Error getting customer data in the %1\$s shipping details callback: %2\$s",'woo-vipps'), $this->payment_method_name, $error));
+           $this->log(sprintf(__("Error getting customer data in the %1\$s shipping details callback: %2\$s",'woo-vipps'), Vipps::PaymentMethodName(), $error));
            $this->log(__("Raw input was ", 'woo-vipps'));
            $this->log($raw_post);
         }
@@ -2133,7 +2133,7 @@ EOF;
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = intval(@$_REQUEST['id']);
         if (!$orderid) {
-            $this->log(sprintf(__('Could not find %1$s order with id:', 'woo-vipps'), $this->payment_method_name) . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
+            $this->log(sprintf(__('Could not find %1$s order with id:', 'woo-vipps'), Vipps::PaymentMethodName()) . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
             exit();
         }
 
@@ -2154,7 +2154,7 @@ EOF;
             exit();
         }
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
-            $this->log(sprintf(__("Wrong %1\$s Orderid on shipping details callback", 'woo-vipps'), $this->payment_method_name), 'warning');
+            $this->log(sprintf(__("Wrong %1\$s Orderid on shipping details callback", 'woo-vipps'), Vipps::PaymentMethodName()), 'warning');
             exit();
         }
 
@@ -2267,7 +2267,7 @@ EOF;
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
-            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s Express Checkout - order will fail', 'woo-vipps', 'warning'), $this->payment_method_name));
+            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s Express Checkout - order will fail', 'woo-vipps', 'warning'), Vipps::PaymentMethodName()));
         }
 
        
@@ -2308,7 +2308,7 @@ EOF;
         $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order);
         if ($chosen && !isset($methods[$chosen]))  {
             $chosen = null; // Actually that isn't available
-            $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->payment_method_name));
+            $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), Vipps::PaymentMethodName()));
         }
 
         if (!$chosen) {
@@ -2360,7 +2360,7 @@ EOF;
            try {
                $serialized = serialize($rate);
            } catch (Exception $e) {
-               $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->payment_method_name, $label));
+               $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), Vipps::PaymentMethodName(), $label));
                continue;
            }
 
@@ -2550,12 +2550,12 @@ EOF;
         $gw = $this->gateway();
         $order_status = null;
         try {
-            $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->payment_method_name));
+            $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), Vipps::PaymentMethodName()));
             $order_status = $gw->callback_check_order_status($order);
             $order->save();
-            $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->payment_method_name, $order->get_id(), $order_status), 'debug');
+            $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), Vipps::PaymentMethodName(), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {
-            $this->log(sprintf(__("Error getting order status at %1\$s for order %2\$d", 'woo-vipps'), $this->payment_method_name, $order->get_id()), 'error'); 
+            $this->log(sprintf(__("Error getting order status at %1\$s for order %2\$d", 'woo-vipps'), Vipps::PaymentMethodName(), $order->get_id()), 'error'); 
             $this->log($e->getMessage() . "\n" . $order->get_id(), 'error');
         }
         // Ensure we don't keep using an old session for more than one order here.
@@ -2929,7 +2929,7 @@ EOF;
             wp_send_json($result);
             exit();
         }
-        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->payment_method_name), 'url'=>'');
+        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::PaymentMethodName()), 'url'=>'');
         wp_send_json($result);
         exit();
     }
@@ -3075,7 +3075,7 @@ EOF;
             wp_send_json($result);
             exit();
         }
-        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->payment_method_name), 'url'=>'');
+        $result = array('ok'=>0, 'msg'=> sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::PaymentMethodName()), 'url'=>'');
         wp_send_json($result);
         exit();
     }
@@ -3242,7 +3242,7 @@ EOF;
         }
 
         $buynow = __('Buy now with', 'woo-vipps');
-        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->payment_method_name);
+        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), Vipps::PaymentMethodName());
         $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $message = "<span class='vippsbuynow'>" . $buynow . "</span>" . " <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/>";
 
@@ -3562,8 +3562,8 @@ EOF;
 
         $expressCheckoutMessages = array();
         $expressCheckoutMessages['termsAndConditionsError'] = __( 'Please read and accept the terms and conditions to proceed with your order.', 'woocommerce' );
-        $expressCheckoutMessages['temporaryError'] = sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->payment_method_name);
-        $expressCheckoutMessages['successMessage'] = sprintf(__('To the %1$s app!','woo-vipps'), $this->payment_method_name);
+        $expressCheckoutMessages['temporaryError'] = sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::PaymentMethodName());
+        $expressCheckoutMessages['successMessage'] = sprintf(__('To the %1$s app!','woo-vipps'), Vipps::PaymentMethodName());
 
         wp_register_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
         wp_localize_script('vipps-express-checkout', 'VippsCheckoutMessages', $expressCheckoutMessages);
@@ -3642,10 +3642,10 @@ EOF;
             $content .= $termsHTML;
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
             $imgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
-            $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->payment_method_name);
+            $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), Vipps::PaymentMethodName());
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
             $content .= "<div id='vipps-status-message'></div>";
-            $this->fakepage(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->payment_method_name), $content);
+            $this->fakepage(sprintf(__('%1$s Express Checkout','woo-vipps'), Vipps::PaymentMethodName()), $content);
             return;
         }
     }
@@ -3768,7 +3768,7 @@ EOF;
 
         $signal = $this->callbackSignal($order);
         $content = "";
-        $content .= "<div id='waiting'><p>" . sprintf(__('Waiting for confirmation of purchase from %1$s','woo-vipps'), $this->payment_method_name);
+        $content .= "<div id='waiting'><p>" . sprintf(__('Waiting for confirmation of purchase from %1$s','woo-vipps'), Vipps::PaymentMethodName());
 
         if ($signal && !is_file($signal)) $signal = '';
         $signalurl = $this->callbackSignalURL($signal);
