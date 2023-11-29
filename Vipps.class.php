@@ -43,8 +43,6 @@ class Vipps {
     private $countrymap = null;
     // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
     public $callbackorder = 0;
-    public $company_name = "Vipps MobilePay";
-    public $payment_method_name ="Vipps";
 
     // True if HPOS is being used
     public $HPOSActive = null;
@@ -54,6 +52,19 @@ class Vipps {
 
     public $vippsJSConfig = array();
 
+    // IOK 2023-11-29 Vipps merging with MobilePay causes some challenges which we solve by abstraction
+    public static function CompanyName() { 
+        return "Vipps MobilePay";
+    }
+    public static function PaymentMethodName($order=null) {
+        return "Vipps";
+    }
+    public static function CheckoutName($order=null) {
+        return "Vipps Checkout";
+    }
+    public static function ExpressCheckoutName($order=null) {
+        return "Vipps Express Checkout";
+    }
 
     public static function instance()  {
         if (!static::$instance) static::$instance = new Vipps();

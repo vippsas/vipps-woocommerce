@@ -39,8 +39,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class VippsCheckout {
     private static $instance = null;
     private $gw = null;
-    public $company_name;
-    public $payment_method_name;
 
     public static function instance()  {
         if (!static::$instance) static::$instance = new VippsCheckout();
@@ -89,11 +87,6 @@ class VippsCheckout {
     }
 
     public function init () {
-
-        // IOK store this in 'this' for brevity
-        $this->company_name = Vipps::instance()->company_name;
-        $this->payment_method_name = Vipps::instance()->payment_method_name;
-
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
