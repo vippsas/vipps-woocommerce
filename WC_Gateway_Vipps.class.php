@@ -582,7 +582,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'title' => sprintf(__('Checkout', 'woo-vipps'), Vipps::CompanyName()),
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s checkout is a new service from %1\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %1\$s and credit card. Additionally, your customers will get the option of providing their address information using their %1\$s app directly.", 'woo-vipps'), Vipps::CompanyName())
+                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName())
                     ),
 
                 'vipps_checkout_enabled' => array(
@@ -597,7 +597,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'label'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to create and login customers when using %1$s. Otherwise these will all be guest checkouts. If using, you may want to install Login with %1$s too.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'description' => sprintf(__('Enable this to create and login customers when using %1$s. Otherwise these will all be guest checkouts. If using, you may want to install Login with Vipps too.', 'woo-vipps'), Vipps::CheckoutName()),
                         'default'     => $vippscreateuserdefault,
                         ),
 
@@ -871,21 +871,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'some' => __('Some products', 'woo-vipps'),
                             'all' => __('All products','woo-vipps')
                             ), 
-                        'description' => __('Enable this to allow customers to buy a product using Express Checkout directly from the product page. If you choose \'some\', you must enable this on the relevant products', 'woo-vipps'),
+                        'description' => sprintf(__('Enable this to allow customers to buy a product using %1$s directly from the product page. If you choose \'some\', you must enable this on the relevant products', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'none',
                         ),
                 'singleproductexpressarchives' => array(
                         'title'       => __('Add \'Buy now\' button on catalog pages too', 'woo-vipps'),
                         'label'       => __('Add the button for all relevant products on catalog pages', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => __('If Express Checkout is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'),
+                        'description' => sprintf(__('If %1$s is enabled for a product, add the \'Buy now\' button to catalog pages too', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
                 'expresscheckout_termscheckbox' => array(
-                        'title'       => __('Add terms and conditions checkbox on Express Checkout', 'woo-vipps'),
-                        'label'       => __('Always ask for confirmation on Express Checkout', 'woo-vipps'),
+                        'title'       => sprintf(__('Add terms and conditions checkbox on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                        'label'       => sprintf(__('Always ask for confirmation on %1$s', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'type'        => 'checkbox',
-                        'description' => __('When using Express Checkout, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'),
+                        'description' => sprintf(__('When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding', 'woo-vipps'), Vipps::ExpressCheckoutName()),
                         'default'     => 'no',
                         ),
 
@@ -910,7 +910,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title'       => __('Create new customers on Express Checkout', 'woo-vipps'),
                         'label'       => __('Create new customers on Express Checkout', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with %1$s" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'), Vipps::CompanyName()),
+                        'description' => sprintf(__('Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have "Login with Vipps" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)', 'woo-vipps'), Vipps::CompanyName()),
                         'default'     => $expresscreateuserdefault,
                         ),
                 'singleproductbuynowcompatmode' => array(
@@ -3138,8 +3138,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$vipps_checkout_activated): ?>
         <div id="activate_vipps_checkout"  style="width:95%; background-color: white; border:2px solid #fe5b24; min-height:3rem; padding: 1rem 1rem 1rem 1rem; margin-top:2rem; margin-bottom: 1rem;font-weight:800">
                  <h2><?php printf(__('Use %1$s for all purchases', 'woo-vipps'), Vipps::CheckoutName()) ;?></h2>
-          <p><?php sprintf(_e("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %1\$s and credit card. Additionally, your customers will get the option of providing their address information using their Vipps app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()); ?></p>
-          <p><?php sprintf(_e("To activate %1\$s, just press the button below. Otherwise, %2\$s will of course be available in the regular checkout screen; and you can also offer %3\$s from both the product pages and the shopping cart if you wish.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName(), Vipps::ExpressCheckoutName()); ?></p>
+          <p><?php printf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()); ?></p>
+          <p><?php printf(__("To activate %1\$s, just press the button below. Otherwise, %2\$s will of course be available in the regular checkout screen; and you can also offer %3\$s from both the product pages and the shopping cart if you wish.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName(), Vipps::ExpressCheckoutName()); ?></p>
 
           <div style="text-align:center">
                  <a class="button vipps-button vipps-orange" style="background-color: #fe5b24;color:white;border-color:#fe5b24" href="javascript:void(0)" onclick="javascript:activate_vipps_checkout(1)"><?php printf(__('Yes, activate %1$s!','woo-vipps'), Vipps::CheckoutName()); ?></a>

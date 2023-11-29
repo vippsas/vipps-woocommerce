@@ -640,25 +640,25 @@ class Vipps {
             </div>
 
             <div class="pluginsection login-with-vipps">
-               <h2><?php echo sprintf(__( 'Login with %1$s', 'woo-vipps' ), "Vipps");?></h2>
-               <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with %2\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', "Vipps"); ?></p>
+               <h2><?php echo sprintf(__( 'Login with Vipps', 'woo-vipps' ), "Vipps");?></h2>
+               <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>Login with Vipps</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/', "Vipps"); ?></p>
                <p> <?php echo sprintf(__("If you use %1\$s or %2\$s in WooCommerce, this allows your %3\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::ExpressCheckoutName(), Vipps::CompanyName()); ?>
                <p>
-                       <?php echo sprintf(__("Remember, you need to set up Login with %1\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),"Vipps",$portalurl); ?>
+                       <?php echo sprintf(__("Remember, you need to set up Login with Vipps at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),Vipps::CompanyName(),$portalurl); ?>
                </p>
 
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($loginactive): ?>
                      <p>
-                       <?php echo sprintf(__("Login with %1\$s is installed and active. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'),"Vipps", $loginsettings); ?>
+                       <?php echo sprintf(__("Login with Vipps is installed and active. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'),Vipps::CompanyName(), $loginsettings); ?>
                     </p>
                <?php elseif ($logininstalled): ?>
                      <p>
-                     <?php echo sprintf(__("Login with %1\$s is installed, but not active. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), "Vipps", admin_url("/plugins.php")); ?>
+                     <?php echo sprintf(__("Login with Vipps is installed, but not active. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), Vipps::CompanyName(), admin_url("/plugins.php")); ?>
                      </p>
                <?php else: ?>
                      <p>
-                     <?php echo sprintf(__("Login with %1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), "Vipps", $logininstall); ?>
+                     <?php echo sprintf(__("Login with Vipps is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), Vipps::CompanyName(), $logininstall); ?>
                      </p>
                <?php endif; ?>
                </div>
@@ -1097,7 +1097,7 @@ class Vipps {
             <div class="options_group">
             <div class='blurb' style='margin-left:13px'>
             <h4><?php echo __("Shareable links", 'woo-vipps') ?></h4>
-            <p><?php echo __("Shareable links are links you can share externally on banners or other places that when followed will start Express Checkout of this product immediately. Maintain these links here for this product.", 'woo-vipps'); ?>   </p>
+            <p><?php echo sprintf(__('Shareable links are links you can share externally on banners or other places that when followed will start %1$s of this product immediately. Maintain these links here for this product.', 'woo-vipps'), Vipps::ExpressCheckoutName()); ?>   </p>
             <p><?php echo sprintf(__("To create a QR code for your shareable link, we recommend copying the URL and then using the <a href='%2\$s'>%1\$s QR Api</a>", 'woo-vipps'), "Vipps", $qradmin); ?> </p>
             <input type=hidden id=vipps_sharelink_id value='<?php echo $product->get_id(); ?>'>
             <?php 
@@ -2267,7 +2267,7 @@ EOF;
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
-            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s Express Checkout - order will fail', 'woo-vipps', 'warning'), Vipps::PaymentMethodName()));
+            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order will fail', 'woo-vipps', 'warning'), Vipps::ExpressCheckoutName()));
         }
 
        
@@ -2872,7 +2872,7 @@ EOF;
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
-            $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
             wp_send_json($result);
             exit();
         }
@@ -2942,7 +2942,7 @@ EOF;
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available()) {
-            $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
             wp_send_json($result);
             exit();
         }
@@ -3005,7 +3005,7 @@ EOF;
             exit();
         }
         if (!$gw->product_supports_express_checkout($product)) {
-            $result = array('ok'=>0, 'msg'=>__('Express checkout is not available for this order','woo-vipps'), 'url'=>false);
+            $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
             wp_send_json($result);
             exit();
         }
@@ -3628,7 +3628,7 @@ EOF;
         $extraHTML = apply_filters('woo_vipps_express_checkout_final_html', '', $termsHTML,$askForConfirmationHTML);
         $pressTheButtonHTML =  "";
         if (empty($termsHTML) && empty($askForConfirmationHTML) && empty($extraHTML)) {
-            $pressTheButtonHTML =  "<p id=waiting>" . __("Ready for express checkout - press the button", 'woo-vipps') . "</p>";
+            $pressTheButtonHTML =  "<p id=waiting>" . sprintf(__('Ready for %1$s - press the button', 'woo-vipps'), Vipps::ExpressCheckoutName()) . "</p>";
         }
 
         if ($execute) {
