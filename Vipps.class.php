@@ -56,9 +56,6 @@ class Vipps {
     public static function CompanyName() { 
         return __("Vipps MobilePay", 'woo-vipps');
     }
-    public static function PaymentMethodName($order=null) {
-        return __("Vipps", 'woo-vipps');
-    }
     public static function CheckoutName($order=null) {
         return __("Vipps Checkout", 'woo-vipps');
     }
@@ -932,7 +929,7 @@ class Vipps {
     public function cart_express_checkout_button_html() {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $imgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
+        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
         $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
         $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
@@ -3630,7 +3627,7 @@ EOF;
         wp_enqueue_script('vipps-express-checkout');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
-        $buttonimgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
+        $buttonimgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
 
 
         $orderspec = $this->get_orderspec_from_arguments($productinfo);
@@ -3701,7 +3698,7 @@ EOF;
             $content .= $extraHTML;
             $content .= $termsHTML;
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
-            $imgurl= apply_filters('woo_vipps_express_checkout_button', plugins_url('img/pay-with-vipps.svg',__FILE__));
+            $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
             $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
             $content .= "<div id='vipps-status-message'></div>";
