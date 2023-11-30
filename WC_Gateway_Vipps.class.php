@@ -125,13 +125,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return ob_get_clean();
     }
 
-
     public function __construct() {
         $this->testapiurl = 'https://apitest.vipps.no';
         $this->apiurl = 'https://api.vipps.no';
-
+        
         $this->method_description = __('Offer Vipps or MobilePay as a payment method', 'woo-vipps');
-
+        
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
         $this->icon = plugins_url('img/vipps-mark.svg',__FILE__);
@@ -409,7 +408,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } 
         if (!$ok) {
             // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
-            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), Vipps::PaymentMethodName());
+            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
             $this->adminerr($msg);
             $order->save();
             global $Vipps;
@@ -444,18 +443,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $ok = $this->refund_payment($order,$to_refund,'exact');
         } catch (TemporaryVippsAPIException $e) {
-            $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), Vipps::PaymentMethodName()));
+            $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
             $this->adminerr($e->getMessage());
             global $Vipps;
             $Vipps->store_admin_notices();
             return false;
         } catch (Exception $e) {
-            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage());
+            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
             $order->save();
             $this->adminerr($e->getMessage());
         }
         if (!$ok) {
-            $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), Vipps::PaymentMethodName());
+            $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
             $this->adminerr($msg);
             $order->add_order_note($msg);
             // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
@@ -481,9 +480,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ok = 0;
         try {
             $ok = $this->capture_payment($order);
-            $order->add_order_note(sprintf(__('Payment automatically captured at %1$s for order not needing processing','woo_vipps'), Vipps::PaymentMethodName()));
+            $order->add_order_note(sprintf(__('Payment automatically captured at %1$s for order not needing processing','woo_vipps'), $this->get_payment_method_name()));
         } catch (Exception $e) {
-            $order->add_order_note(sprintf(__('Order does not need processing, but payment could not be captured at %1$s:','woo_vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage());
+            $order->add_order_note(sprintf(__('Order does not need processing, but payment could not be captured at %1$s:','woo_vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
         }
         if (!$ok) return false;
         $order->save();
@@ -506,10 +505,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
         if (!$captured) {
-            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), Vipps::PaymentMethodName()));
+            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
         }
         if ($amount*100 > $to_refund) {
-            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), Vipps::PaymentMethodName()));
+            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
         $ok = 0;
 
@@ -522,7 +521,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $ok = $this->refund_payment($order,$amount);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $orderid . "\n" .$e->getMessage(),'error');
+            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . "\n" .$e->getMessage(),'error');
             return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::CompanyName()) . ' ' . $e->getMessage());
         } catch (Exception $e) {
             $msg = sprintf(__('Could not refund %1$s payment','woo-vipps'), Vipps::CompanyName()) . ' ' . $e->getMessage();
@@ -827,7 +826,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'title' => __('Title', 'woocommerce'),
                         'type' => 'text',
                         'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
-                        'default' => sprintf(__('%1$s','woo-vipps'), Vipps::PaymentMethodName())
+                        'default' => sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name())
                         ),
                 'description' => array(
                         'title' => __('Description', 'woocommerce'),
@@ -837,10 +836,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 'vippsdefault' => array(
-                        'title'       => sprintf(__('Use %1$s as default payment method on checkout page', 'woo-vipps'), Vipps::PaymentMethodName()),
-                        'label'       => sprintf(__('%1$s is default payment method', 'woo-vipps'), Vipps::PaymentMethodName()),
+                        'title'       => sprintf(__('Use %1$s as default payment method on checkout page', 'woo-vipps'), $this->get_payment_method_name()),
+                        'label'       => sprintf(__('%1$s is default payment method', 'woo-vipps'), $this->get_payment_method_name()),
                         'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), Vipps::PaymentMethodName()),
+                        'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $this->get_payment_method_name()),
                         'default'     => 'yes',
                         )
                     );
@@ -1181,8 +1180,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $at = $this->api->get_access_token();
         } catch (Exception $e) {
-            $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), Vipps::PaymentMethodName()) . $order_id .":\n" . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), Vipps::PaymentMethodName()),'error');
+            $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order_id .":\n" . $e->getMessage(), 'error');
+            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return false;
         }
 
@@ -1204,7 +1203,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // No longer the case for V2 of the API
         if (false && !$phone) {
-            wc_add_notice(sprintf(__('You need to enter your phone number to pay with %1$s','woo-vipps'), Vipps::PaymentMethodName()) ,'error');
+            wc_add_notice(sprintf(__('You need to enter your phone number to pay with %1$s','woo-vipps'), $this->get_payment_method_name()) ,'error');
             return false;
         }
 
@@ -1214,7 +1213,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Should be impossible, but there we go IOK 2022-04-21
         if (! $order->has_status('pending', 'failed')) {
              $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
-             wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), Vipps::PaymentMethodName()), 'error');
+             wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
              return false;
         }
 
@@ -1235,7 +1234,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
               return false;
            }
 
-           $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), Vipps::PaymentMethodName()));
+           $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
 
            return array('result'=>'success','redirect'=>$oldurl);
         }
@@ -1270,8 +1269,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $order->get_order_key();
             $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
         } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), Vipps::PaymentMethodName()),'error');
+            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return false;
         } catch (Exception $e) {
 
@@ -1283,8 +1282,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $order->update_status('cancelled', __('Cannot restart order with same order ID: Must cancel', 'woo-vipps'));
             }
 
-            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage(), 'error');
-            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), Vipps::PaymentMethodName()),'error');
+            $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
+            wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return false;
         }
 
@@ -1309,8 +1308,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_orderurl', $url);
  
         $order->update_meta_data('_vipps_status','INITIATE'); // INITIATE right now
-        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), Vipps::PaymentMethodName()));
-        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'), Vipps::PaymentMethodName()));
+        $order->add_order_note(sprintf(__('%1$s payment initiated','woo-vipps'), $this->get_payment_method_name()));
+        $order->add_order_note(sprintf(__('Awaiting %1$s payment confirmation','woo-vipps'), $this->get_payment_method_name()));
         $order->save();
 
         // Create a signal file that we can check without calling wordpress to see if our result is in IOK 2018-05-04
@@ -1369,11 +1368,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
         if (!$ok) {
-            $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), Vipps::PaymentMethodName());
+            $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), $this->get_payment_method_name());
             $order->add_order_note($msg);
             $order->save();
             if (apply_filters('woo_vipps_on_hold_on_failed_capture', true, $order)) {
-                $msg = sprintf(__("Could not capture %1\$s payment - status set to", 'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . __('on-hold','woocommerce');
+                $msg = sprintf(__("Could not capture %1\$s payment - status set to", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . __('on-hold','woocommerce');
                 $order->set_status('on-hold',$msg);
                 $order->save();
                 global $Vipps;
@@ -1389,8 +1388,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function capture_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(sprintf(__('Trying to capture payment on order not made by %1$s:','woo-vipps'), Vipps::PaymentMethodName()). ' ' . $order->get_id(), 'error');
-            $this->adminerr(sprintf(__('Cannot capture payment on orders not made by %1$s','woo-vipps'), Vipps::PaymentMethodName()));
+            $this->log(sprintf(__('Trying to capture payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
+            $this->adminerr(sprintf(__('Cannot capture payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
         }
 
@@ -1432,11 +1431,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $content =  $this->api->capture_payment($order,$amount,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not capture %1$s payment for order id:', 'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::PaymentMethodName()) . "\n" . $e->getMessage());
+            $this->log(sprintf(__('Could not capture %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
+            $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . "\n" . $e->getMessage());
             return false;
         } catch (Exception $e) {
-            $msg = sprintf(__('Could not capture %1$s payment for order_id:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id() . "\n" . $e->getMessage();
+            $msg = sprintf(__('Could not capture %1$s payment for order_id:','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
             return false;
@@ -1452,7 +1451,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
            $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
            $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
+           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
         } else {
            //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
            // the fact. 
@@ -1464,7 +1463,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $order->update_meta_data('_vipps_capture_remaining', $remaining);
            $order->update_meta_data('_vipps_refund_remaining', $refundable);
            $order->update_meta_data('_vipps_capture_timestamp', time());
-           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' .  sprintf("%0.2f",$captured/100) . ' ' . 'NOK');
+           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$captured/100) . ' ' . 'NOK');
         }
 
         // Since we succeeded, the next time we'll start a new transaction.
@@ -1484,8 +1483,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), Vipps::PaymentMethodName()). ' ' . $order->get_id(), 'error');
-            $this->adminerr(sprintf(__('Cannot refund payment on orders not made by %1$s','woo-vipps'), Vipps::PaymentMethodName()));
+            $this->log(sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
+            $this->adminerr(sprintf(__('Cannot refund payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
         }
 
@@ -1518,17 +1517,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $ok = $this->refund_payment($order,$refundvalue,'cents');
         } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage());
+            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
+            return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
         } catch (Exception $e) {
-            $msg = sprintf(__('Could not refund %1$s payment','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage();
+            $msg = sprintf(__('Could not refund %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage();
             $order->add_order_note($msg);
             $this->log($msg,'error');
             return new WP_Error('Vipps',$msg);
         }
 
         if ($ok) {
-            $order->add_order_note($refundvalue/100 . ' ' . 'NOK' . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $reason);
+            $order->add_order_note($refundvalue/100 . ' ' . 'NOK' . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $reason);
         } 
         return $ok;
     }
@@ -1537,14 +1536,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function cancel_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $this->log(sprintf(__('Trying to cancel payment on order not made by %1$s:','woo-vipps'), Vipps::PaymentMethodName()). ' ' .$order->get_id(), 'error');
-            $this->adminerr(sprintf(__('Cannot cancel payment on orders not made by %1$s','woo-vipps'), Vipps::PaymentMethodName()));
+            $this->log(sprintf(__('Trying to cancel payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' .$order->get_id(), 'error');
+            $this->adminerr(sprintf(__('Cannot cancel payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
         }
         // If we have captured the order, we can't cancel it. IOK 2018-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
         if ($captured) {
-            $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), Vipps::PaymentMethodName());
+            $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), $this->get_payment_method_name());
             $this->adminerr($msg);
             return false;
         }
@@ -1561,11 +1560,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $content =  $this->api->cancel_payment($order,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not cancel %1$s payment for order_id:', 'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage());
+            $this->log(sprintf(__('Could not cancel %1$s payment for order_id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
+            $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
             return false;
         } catch (Exception $e) {
-            $msg = sprintf(__('Could not cancel %1$s payment for order id:','woo-vipps'), Vipps::PaymentMethodName()) . $order->get_id() . "\n" . $e->getMessage();
+            $msg = sprintf(__('Could not cancel %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order->get_id() . "\n" . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
             return false;
@@ -1599,7 +1598,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $status = $this->get_vipps_order_status($order);
             if ($status) $order->update_meta_data('_vipps_status',$status);
-            $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), Vipps::PaymentMethodName()));
+            $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), $this->get_payment_method_name()));
             $order->save();
         } catch (Exception $e)  {
         }
@@ -1612,7 +1611,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
-            $msg = sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id();
+            $msg = sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id();
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
         }
@@ -1621,7 +1620,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If we haven't captured anything, we can't refund IOK 2017-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
         if (!$captured) {
-            $msg = sprintf(__('Trying to refund payment on %1$s payment not captured:','woo-vipps'), Vipps::PaymentMethodName()). ' ' .$order->get_id();
+            $msg = sprintf(__('Trying to refund payment on %1$s payment not captured:','woo-vipps'), $this->get_payment_method_name()). ' ' .$order->get_id();
             $this->log($msg,'error');
             throw new VippsAPIException($msg);
         }
@@ -1647,7 +1646,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
             $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
             $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-            $order->add_order_note(sprintf(__('%1$s payment refunded:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
+            $order->add_order_note(sprintf(__('%1$s payment refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
         } else {
            //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
            // the fact. 
@@ -1668,7 +1667,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $order->update_meta_data('_vipps_refunded', $refunded);
            $order->update_meta_data('_vipps_refund_remaining', $remaining);
            $order->update_meta_data('_vipps_refund_timestamp', time());
-           $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . 'NOK');
+           $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . 'NOK');
         }
             // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
@@ -1761,7 +1760,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($checkout) $order->set_payment_method_title('Vipps Checkout');
             $order->save();
 
-            $msg = sprintf(__("Payment method reset to %1\$s - it had been set to KCO while completing the order for %2\$d", 'woo-vipps'), Vipps::PaymentMethodName(), $order->get_id());
+            $msg = sprintf(__("Payment method reset to %1\$s - it had been set to KCO while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
             $this->log($msg, 'debug');
             $order->add_order_note($msg);
         }
@@ -1838,7 +1837,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
         } catch (Exception $e) {
-            $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), Vipps::PaymentMethodName()) . $orderid . "\n" . $e->getMessage(), 'error');
+            $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
             return $oldstatus;
         }
@@ -1915,7 +1914,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 //  But first check to see if it has customer info! 
                 // Cancel any orders where the Checkout session is dead and there is no address info available
                 if (!$order->has_shipping_address() && !$order->has_billing_address()) {
-                    $this->log(sprintf(__("No shipping details from %1\$s for express checkout for order id:",'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $orderid, 'error');
+                    $this->log(sprintf(__("No shipping details from %1\$s for express checkout for order id:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid, 'error');
                     $sessiontimeout = time() - (60*90);
                     $then = intval($order->get_meta('_vipps_init_timestamp'));
                     if ($then < $sessiontimeout)  {
@@ -1938,7 +1937,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $this->payment_complete($order);
                     break;
                 case 'complete':
-                    $msg = sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), Vipps::PaymentMethodName());
+                    $msg = sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name());
                     $msg = $msg . __(" - order does not need processing", 'woo-vipps');
                     $order->add_order_note($msg);
                     $order = $this->update_vipps_payment_details($order, $paymentdetails); 
@@ -2330,7 +2329,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_vipps_order_status($order, $statusdata=null) {
         $vippsorderid = $order->get_meta('_vipps_orderid');
         if (!$vippsorderid) {
-                $msg = sprintf(__('Could not get %1$s order status - it has no %1$s Order Id. Must cancel.','woo-vipps'), Vipps::PaymentMethodName());
+                $msg = sprintf(__('Could not get %1$s order status - it has no %1$s Order Id. Must cancel.','woo-vipps'), $this->get_payment_method_name());
                 $this->log($msg,'error');
                 return 'CANCEL'; 
         }
@@ -2341,14 +2340,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(sprintf(__('Could not get %1$s order status for order id:', 'woo-vipps'), Vipps::CompanyName()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
                 return null;
             } catch (VippsAPIException $e) {
-                $msg = sprintf(__('Could not get %1$s order status','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $e->getMessage();
+                $msg = sprintf(__('Could not get %1$s order status','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage();
                 $this->log($msg,'error');
                 if (intval($e->responsecode) == 402 || intval($e->responsecode) == 404) {
-                    $this->log(sprintf(__('Order does not exist at %1$s - cancelling','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id(), 'warning');
+                    $this->log(sprintf(__('Order does not exist at %1$s - cancelling','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id(), 'warning');
                     return 'CANCEL'; 
                 }
             } catch (Exception $e) {
-                $msg = sprintf(__('Could not get %1$s order status for order id:','woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $order->get_id() . "\n" . $e->getMessage();
+                $msg = sprintf(__('Could not get %1$s order status for order id:','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" . $e->getMessage();
                 $this->log($msg,'error');
                 return null;
             }
@@ -2674,12 +2673,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $me = $this->get_merchant_serial();
 
         if ($me != $merchant) {
-            $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), Vipps::PaymentMethodName()) . " " .  $order->get_id(), 'warning');
+            $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
 
         if (!$order) {
-            $this->log(sprintf(__("%1\$s callback for unknown order",'woo-vipps'), Vipps::PaymentMethodName()) . " " .  $order->get_id(), 'warning');
+            $this->log(sprintf(__("%1\$s callback for unknown order",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
         $orderid = $order->get_id();
@@ -2699,8 +2698,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $errorInfo = @$result['errorInfo'];
         if ($errorInfo) {
-            $this->log(sprintf(__("Message in callback from %1\$s for order",'woo-vipps'), Vipps::PaymentMethodName()) . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
-            $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), Vipps::PaymentMethodName(), $errorInfo['errorMessage']));
+            $this->log(sprintf(__("Message in callback from %1\$s for order",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
+            $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
         }
 
         $transaction = array();
@@ -2717,12 +2716,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if (!$transaction) {
-            $this->log(sprintf(__("Anomalous callback from %1\$s, handle errors and clean up",'woo-vipps'), Vipps::PaymentMethodName()),'warning');
+            $this->log(sprintf(__("Anomalous callback from %1\$s, handle errors and clean up",'woo-vipps'), $this->get_payment_method_name()),'warning');
             clean_post_cache($order->get_id());
             return false;
         }
 
-        $order->add_order_note(sprintf(__('%1$s callback received','woo-vipps'), Vipps::PaymentMethodName()));
+        $order->add_order_note(sprintf(__('%1$s callback received','woo-vipps'), $this->get_payment_method_name()));
         do_action('woo_vipps_callback_received', $order, $result, $transaction);
 
         $oldstatus = $order->get_status();
@@ -2812,11 +2811,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
-          $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), Vipps::PaymentMethodName()));
+          $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s', 'woo-vipps'), Vipps::PaymentMethodName()));
+            $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
         }
         $order->save();
         clean_post_cache($order->get_id());
@@ -2846,7 +2845,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     function ($status, $orderid, $order) {
                        return $this->after_vipps_order_status($order);
                     }, 99, 3);
-               $order->add_order_note(sprintf(__('Payment authorized at %1$s', 'woo-vipps'), Vipps::PaymentMethodName()));
+               $order->add_order_note(sprintf(__('Payment authorized at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
             }
             $order->payment_complete();
     }
@@ -3252,8 +3251,12 @@ function activate_vipps_checkout(yesno) {
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12
     public function get_title() {
      $title = trim($this->get_option('title'));
-     if (!$title) $title = sprintf(__('%1$s','woo-vipps'), Vipps::PaymentMethodName());
+     if (!$title) $title = sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name());
      return $title;
+    }
+
+    public function get_payment_method_name() {
+        return $this->get_option('payment_method_name');
     }
 
     public function payment_fields() {
