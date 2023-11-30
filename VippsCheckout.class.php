@@ -542,7 +542,7 @@ class VippsCheckout {
 
         if (!$sessioninfo['session']) {
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
-           $out .= "<h2>" . sprintf(__('Press the button to complete your order with %1$s!', 'woo-vipps'), Vipps::PaymentMethodName()) . "</h2>";
+           $out .= "<h2>" . sprintf(__('Press the button to complete your order with %1$s!', 'woo-vipps'), Vipps::instance()->get_payment_method_name()) . "</h2>";
            $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . sprintf(__('%1$s', 'woo-vipps'), Vipps::CheckoutName()) . '</button></div>';
            $out .= "</div>";
         }
