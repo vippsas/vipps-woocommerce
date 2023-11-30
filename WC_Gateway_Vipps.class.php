@@ -771,6 +771,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => 'no',
                     ),
 
+                'payment_method_name' => array(
+                        'title'       => __('Payment method', 'woo-vipps'),
+                        'label'       => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                        'type'        => 'select',
+                        'options' => array(
+                            'Vipps' => __('Vipps','woo-vipps'),
+                            'MobilePay' => __('MobilePay', 'woo-vipps'),
+                            ), 
+                        'description' => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                        'default'     => 'Vipps',
+                        ),
+
                 'orderprefix' => array(
                     'title' => __('Order-id Prefix', 'woo-vipps'),
                     'label'       => __('Order-id Prefix', 'woo-vipps'),

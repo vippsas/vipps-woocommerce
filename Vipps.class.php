@@ -2596,7 +2596,9 @@ EOF;
        if ($gw->get_option('orderprefix') == 'Woo') {
          $gw->update_option('orderprefix', $this->generate_order_prefix()); 
        }
-    }
+       $this->payment_method_name = $gw->get_option('payment_method_name');
+
+    }   
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
     public static function deactivate() {
