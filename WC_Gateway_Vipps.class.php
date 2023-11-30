@@ -536,6 +536,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $ok;
     }
 
+    // Detect default payment method based on store location, user locale, currency NT 2023-11-30
+    private function detect_default_payment_method_name() {
+        $default_payment_method_name = $this->get_payment_method_name();
+        if(!$default_payment_method_name) {
+            $user = wp_get_current_user();
+            $user_locale = get_user_meta($user->ID, 'locale', true);
+            $store_location = get_option('woocommerce_default_country');
+
+            // If store location, user locale, or currency is Norwegian, use Vipps
+            if ($store_location == "NO" || preg_match("/.*_NO/", $user_locale) || get_woocommerce_currency() == "NOK") {
+                $default_payment_method_name = "Vipps";
+            } 
+            // else, use MobilePay
+            else {
+                $default_payment_method_name = "MobilePay";
+            }
+        }
+        return $default_payment_method_name;
+    }
 
     public function init_form_fields() { 
         global $Vipps;
@@ -780,7 +799,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'MobilePay' => __('MobilePay', 'woo-vipps'),
                             ), 
                         'description' => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
-                        'default'     => 'Vipps',
+                        'default'     => $this->detect_default_payment_method_name(),
                         ),
 
                 'orderprefix' => array(
