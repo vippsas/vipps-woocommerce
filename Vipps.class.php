@@ -1800,15 +1800,18 @@ EOF;
 
     // IOK 2021-12-09 try to get the current language in the format Vipps wants, one of 'en' and 'no'
     public function get_customer_language() {
-        $language = ""; 
+        $user = wp_get_current_user();
+        $user_locale = get_user_meta($user->ID, 'locale', true);
+        $language = substr($user_locale, 0, 2); 
         if (function_exists('pll_current_language')) {
            $language = pll_current_language('slug');
         } elseif (has_filter('wpml_current_language')){
-           $language=apply_filters('wpml_current_language',null);
+            $language=apply_filters('wpml_current_language',null);
         } 
         if (! $language) $language = substr(get_bloginfo('language'),0,2);
         if ($language == 'nb' || $language == 'nn') $language = 'no';
-        if (! in_array($language, ['en', 'no'])) $language = 'en';
+        if ($language == 'da') $language = 'dk';
+        if (! in_array($language, ['en', 'no', 'dk', 'fi'])) $language = 'en';
         return $language;
     }
 
