@@ -576,7 +576,7 @@ class Vipps {
     ?>
     <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
     <header class="vipps-admin-page-header">
-            <h1><span><img src="<?php echo plugins_url('/img/vipps-rgb-orange-pos.svg', __FILE__);?>" alt="Vipps"></span><span class="slogan"><?php echo esc_html($slogan); ?></span></h1>
+            <h1><span><img src="<?php echo plugins_url('/img/vipps-mobilepay-banner.png', __FILE__);?>" alt="Vipps"></span><span class="slogan"><?php echo esc_html($slogan); ?></span></h1>
     </header>
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
@@ -715,7 +715,7 @@ class Vipps {
                     if (isset($dismissed[$key])) return;
                 }
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
-                        $logo = plugins_url('img/vipps_logo_rgb.png',__FILE__);
+                        $logo = plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
                         $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
@@ -772,7 +772,7 @@ class Vipps {
 
     public function admin_head() {
         // Add some styling to the Vipps product-meta box
-        $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
+        $smile= plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
         ?>
             <style>
             @media only screen and (max-width: 900px) {

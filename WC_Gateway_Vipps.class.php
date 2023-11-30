@@ -133,7 +133,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
-        $this->icon = plugins_url('img/vipps-mark.svg',__FILE__);
+        $this->icon = plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
         $this->init_form_fields();
         $this->init_settings();
         $this->api = new VippsApi($this);

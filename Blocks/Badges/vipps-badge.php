@@ -77,7 +77,7 @@ function vipps_badge_init() {
         $localizations['AmountText'] = __('You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)', 'woo-vipps');
  
 
-        $localizations['vippssmileurl'] = plugins_url('../../img/vipps-smile-orange.png',__FILE__);
+        $localizations['vippssmileurl'] = plugins_url('../../img/vipps-mobilepay-logo-only.png',__FILE__);
 
 	$index_js = 'vipps-badge/index.js';
 	wp_register_script(
