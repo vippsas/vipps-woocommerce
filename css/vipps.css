@@ -38,7 +38,12 @@ SOFTWARE.
 .wc-block-grid__product .single-product.button.vipps-buy-now .inline.vipps-logo.negative {
     display: inline-block;
     margin: 0 .2em;
+    height: 2ex;
+    max-width: 100%;
+    width: auto;
+    vertical-align: text-bottom;
 }
+
 .wc-block-grid__product .single-product.button.vipps-buy-now {
  min-width:15em;
 }
