@@ -28,7 +28,7 @@ With Vipps Recurring Payments for WooCommerce you can:
 See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/) for an overview.
 
 
-![Recurring Process](./docs/images/recurring-process.svg) 
+![Recurring Process](./docs/images/recurring-process.svg)
 
 
 == Requirements ==
@@ -161,6 +161,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Synchronized products can not be paid via Vipps when using KCO if the price at this moment in time is 0.
 
 == Changelog ==
+
+= 1.17.1 =
+* Fixed: Added the new version of an admin JS file that controls the logic for capturing a payment. This fixes payment captures.
 
 = 1.17.0 =
 * Added: Support for WooCommerce High Performance Order Storage (HPOS)
