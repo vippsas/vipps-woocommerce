@@ -810,8 +810,11 @@ class Vipps {
 
 
     public function admin_menu () {
-        $smile= plugins_url('img/vipps-smile-orange.png',__FILE__);
-        add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $smile, 58);
+        // IOK 2023-12-01 replace old Vipps smile in larger contexts
+        // $logo= plugins_url('img/vipps-smile-orange.png',__FILE__);
+        $logo = plugins_url('img/vipps-mobilepay-logo-only.png', __FILE__);
+
+        add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
     }
 
