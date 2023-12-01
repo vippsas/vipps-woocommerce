@@ -7,7 +7,7 @@
  * Author URI: https://everyday.no
  * Version: 1.17.1
  * Requires at least: 4.4
- * Tested up to: 6.3
+ * Tested up to: 6.4
  * WC tested up to: 8.2
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
