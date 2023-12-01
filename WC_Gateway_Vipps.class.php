@@ -537,21 +537,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Detect default payment method based on store location, user locale, currency NT 2023-11-30
-    private function detect_default_payment_method_name() {
-        $default_payment_method_name = $this->get_payment_method_name();
-        if(!$default_payment_method_name) {
-            $user = wp_get_current_user();
-            $user_locale = get_user_meta($user->ID, 'locale', true);
-            $store_location = get_option('woocommerce_default_country');
+    public function detect_default_payment_method_name() {
+        // IOK 2023-12-01 use the main locale instead of the user locale
+        $locale = get_locale();
+        // Countries object not yet available at this point IOK 2023-12-01
+        // $store_location = WC()->countries->get_base_country();
+        $store_location=  wc_get_base_location();
+        $store_country = $store_location['country'] ?? '';
+        $currency = get_woocommerce_currency();
 
-            // If store location, user locale, or currency is Norwegian, use Vipps
-            if ($store_location == "NO" || preg_match("/.*_NO/", $user_locale) || get_woocommerce_currency() == "NOK") {
-                $default_payment_method_name = "Vipps";
-            } 
-            // else, use MobilePay
-            else {
-                $default_payment_method_name = "MobilePay";
-            }
+        $default_payment_method_name = "MobilePay";
+
+        // If store location, locale, or currency is Norwegian, use Vipps
+        if ($store_country== "NO" || preg_match("/.*_NO/", $locale) || $currency == "NOK") {
+            $default_payment_method_name = "Vipps";
         }
         return $default_payment_method_name;
     }
@@ -594,6 +593,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
         }
 
+        // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
+//        $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
+        $payment_method_name = "Vipps";
 
         $checkoutfields = array(
                 'checkout_options' => array(
@@ -777,103 +779,105 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
      
 
         $mainfields = array(
-                'main_options'             => array(
-                    'title' => __('Main options', 'woo-vipps'),
-                    'type'  => 'title',
-                    'class' => 'tab',
-                    ),
-                'enabled' => array(
-                    'title'       => __('Enable/Disable', 'woocommerce'),
-                    'label'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
-                    'type'        => 'checkbox',
-                    'description' => '',
-                    'default'     => 'no',
-                    ),
+            'main_options'             => array(
+                'title' => __('Main options', 'woo-vipps'),
+                'type'  => 'title',
+                'class' => 'tab',
+            ),
+            'enabled' => array(
+                'title'       => __('Enable/Disable', 'woocommerce'),
+                'label'       => sprintf(__('Enable %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'type'        => 'checkbox',
+                'description' => '',
+                'default'     => 'no',
+            ),
 
-                'payment_method_name' => array(
-                        'title'       => __('Payment method', 'woo-vipps'),
-                        'label'       => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
-                        'type'        => 'select',
-                        'options' => array(
-                            'Vipps' => __('Vipps','woo-vipps'),
-                            'MobilePay' => __('MobilePay', 'woo-vipps'),
-                            ), 
-                        'description' => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
-                        'default'     => $this->detect_default_payment_method_name(),
-                        ),
+            'payment_method_name' => array(
+                'title'       => __('Payment method', 'woo-vipps'),
+                'label'       => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                'type'        => 'select',
+                'options' => array(
+                    'Vipps' => __('Vipps','woo-vipps'),
+                    'MobilePay' => __('MobilePay', 'woo-vipps'),
+                ), 
+                'description' => __('Choose which payment method should be displayed to users at checkout', 'woo-vipps'),
+                'default'     => $payment_method_name,
+            ),
 
-                'orderprefix' => array(
-                    'title' => __('Order-id Prefix', 'woo-vipps'),
-                    'label'       => __('Order-id Prefix', 'woo-vipps'),
-                    'type'        => 'string',
-                    'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woo-vipps'),
-                    'default'     => $orderprefix
-                    ),
-                'merchantSerialNumber' => array(
-                    'title' => __('Merchant Serial Number', 'woo-vipps'),
-                    'label'       => __('Merchant Serial Number', 'woo-vipps'),
-                    'type'        => 'number',
-                    'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
-                    'default'     => '',
-                    ),
-                'clientId' => array(
-                        'title' => __('Client Id', 'woo-vipps'),
-                        'class' => 'vippspw',
-                        'label'       => __('Client Id', 'woo-vipps'),
-                        'type'        => 'password',
-                        'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
-                        'default'     => '',
-                        ),
-                'secret' => array(
-                        'title' => __('Client Secret', 'woo-vipps'),
-                        'label'       => __('Client Secret', 'woo-vipps'),
-                        'class' => 'vippspw',
-                        'type'        => 'password',
-                        'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
-                        'default'     => '',
-                        ),
-                'Ocp_Apim_Key_eCommerce' => array(
-                        'title' => __('Subscription Key', 'woo-vipps'),
-                        'label'       => __('Subscription Key', 'woo-vipps'),
-                        'class' => 'vippspw',
-                        'type'        => 'password',
-                        'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
-                        'default'     => '',
-                        ),
+            'orderprefix' => array(
+                'title' => __('Order-id Prefix', 'woo-vipps'),
+                'label'       => __('Order-id Prefix', 'woo-vipps'),
+                'type'        => 'string',
+                'description' => __('An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids','woo-vipps'),
+                'default'     => $orderprefix
+            ),
+            'merchantSerialNumber' => array(
+                'title' => __('Merchant Serial Number', 'woo-vipps'),
+                'label'       => __('Merchant Serial Number', 'woo-vipps'),
+                'type'        => 'number',
+                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
+                'default'     => '',
+            ),
+            'clientId' => array(
+                'title' => __('Client Id', 'woo-vipps'),
+                'class' => 'vippspw',
+                'label'       => __('Client Id', 'woo-vipps'),
+                'type'        => 'password',
+                'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                'default'     => '',
+            ),
+            'secret' => array(
+                'title' => __('Client Secret', 'woo-vipps'),
+                'label'       => __('Client Secret', 'woo-vipps'),
+                'class' => 'vippspw',
+                'type'        => 'password',
+                'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                'default'     => '',
+            ),
+            'Ocp_Apim_Key_eCommerce' => array(
+                'title' => __('Subscription Key', 'woo-vipps'),
+                'label'       => __('Subscription Key', 'woo-vipps'),
+                'class' => 'vippspw',
+                'type'        => 'password',
+                'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+                'default'     => '',
+            ),
 
-                'result_status' => array(
-                        'title'       => sprintf(__('Order status on return from %1$s', 'woo-vipps'), Vipps::CompanyName()),
-                        'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
-                        'type'        => 'select',
-                        'options' => array(
-                            'on-hold' => __('On hold','woo-vipps'),
-                            'processing' => __('Processing', 'woo-vipps'),
-                            ), 
-                        'description' => __('By default, orders that are <b>reserved</b> but not <b>captured</b> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\')<br> Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. <br>If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
-                        'default'     => 'on-hold',
-                        ),
+            'result_status' => array(
+                'title'       => sprintf(__('Order status on return from %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
+                'type'        => 'select',
+                'options' => array(
+                    'on-hold' => __('On hold','woo-vipps'),
+                    'processing' => __('Processing', 'woo-vipps'),
+                ), 
+                'description' => __('By default, orders that are <b>reserved</b> but not <b>captured</b> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\')<br> Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. <br>If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
+                'default'     => 'on-hold',
+            ),
 
-                'title' => array(
-                        'title' => __('Title', 'woocommerce'),
-                        'type' => 'text',
-                        'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
-                        'default' => sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name())
-                        ),
-                'description' => array(
-                        'title' => __('Description', 'woocommerce'),
-                        'type' => 'textarea',
-                        'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
-                        'default' => sprintf(__("Almost done! Remember, there are no fees using %1\$s when shopping online.", 'woo-vipps'), Vipps::CompanyName())
-                        ),
+            'title' => array(
+                'title' => __('Title', 'woocommerce'),
+                'type' => 'text',
+                'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
+                'default' => sprintf(__('%1$s','woo-vipps'), $payment_method_name),
+            ),
 
-                'vippsdefault' => array(
-                        'title'       => sprintf(__('Use %1$s as default payment method on checkout page', 'woo-vipps'), $this->get_payment_method_name()),
-                        'label'       => sprintf(__('%1$s is default payment method', 'woo-vipps'), $this->get_payment_method_name()),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $this->get_payment_method_name()),
-                        'default'     => 'yes',
-                        )
-                    );
+            'description' => array(
+                'title' => __('Description', 'woocommerce'),
+                'type' => 'textarea',
+                'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
+                'default' => sprintf(__("Almost done! Remember, there are no fees using %1\$s when shopping online.", 'woo-vipps'), Vipps::CompanyName())
+            ),
+
+            'vippsdefault' => array(
+                'title'       => sprintf(__('Use %1$s as default payment method on checkout page', 'woo-vipps'), $payment_method_name),
+                'label'       => sprintf(__('%1$s is default payment method', 'woo-vipps'), $payment_method_name),
+                'type'        => 'checkbox',
+                'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $payment_method_name),
+                'default'     => 'yes',
+            ),
+
+        );
 
          $expressfields = array(  
                 'express_options' => array(
