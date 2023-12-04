@@ -1,6 +1,6 @@
-=== Pay with Vipps for WooCommerce ===
+=== Pay with Vipps and MobilePay for WooCommerce ===
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
-Tags: woocommerce, vipps
+Tags: woocommerce, vipps, mobilepay
 Version: 1.14.16
 Stable tag: 1.14.16
 Requires at least: 4.7
@@ -14,19 +14,27 @@ License URI: https://choosealicense.com/licenses/mit/
 
 == Description ==
 
-*Official Vipps payment plugin for WooCommerce. More than 4 million Norwegians use Vipps, more than 400 000 use Vipps on a daily basis. Give them an easy, fast and familiar shopping experience.*
+*Official Vipps MobilePay payment plugin for WooCommerce. Let your Norwegian, Danish, and Finnish customers pay with Vipps and MobilePay for an easy, fast, and familiar shopping experience* 
 
-This is the official Vipps plugin for Vipps Checkout, Vipps ePayments (*Vipps Nettbetaling*) and Vipps Express Checkout (*Vipps Hurtigkasse*). Increase your conversion rate by  letting your customers choose Vipps directly in the checkout or even do an Express Checkout from the cart.
+Vipps is used by more than 77 % of Norway's population (4.2 million users).
+
+MobilePay is used by more than 75 % of Denmark's population (4.4 million users), and more than 36 % of Finland's population (2 million users).
+
+Vipps and MobilePay are payment methods offered by Vipps MobilePay. 
+
+When you enable this plugin, you will choose between offering either Vipps or MobilePay as a payment method for your customers - hence "Vipps/MobilePay" going forward.
+
+This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), and Vipps Express Checkout (*Vipps Hurtigkasse*). Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
 Read [information from Vipps](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/) about the plugin.
 
-=== Vipps Checkout ===
-With Vipps Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps. It contains regular Vipps payments, a card payment option for those that can't or won't use Vipps as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps Checkout here](https://vipps.no/checkout)
+=== Vipps/MobilePay Checkout ===
+With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps Checkout here](https://vipps.no/checkout)
 
-=== Vipps ePayment ===
-When you enable this plugin, your customers will be able to choose Vipps as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialogue. Then she confirms the payment in the Vipps app. Customer info like name and address is sent to the store from Vipps.
+=== Vipps/MobilePay ePayment ===
+When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
 
 === Vipps Express Checkout ===
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
@@ -46,7 +54,7 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
 === How to get started ===
-* Sign up to use Vipps, adn choose your product on [Vipps Portal](https://portal.vipps.no)
+* Sign up in the [Vipps MobilePay portal](https://portal.vipps.no) and choose your product.
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
@@ -83,11 +91,12 @@ Minor fixes
 
 == Frequently Asked Questions ==
 
-= In which countries can I use Vipps? =
-You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
+= In which countries can I use Vipps/MobilePay? =
+Vipps is currently only available in Norway (77 % user adoption in 2022)
+MobilePay is currently only available in Denmark and Finland (75 % and 36 % user adoption in 2022, respectively).
 
 = How can I get help if I have any issues? =
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps.
+For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
 
 = Why are orders put on-hold and not reserved or completed? =
 When the order is on-hold the payment is reserved, but not yet transferred to the merchant. The money must be 'captured' before they are actually transferred to the merchant. You are normally only allowed to do this at the same time as the order is shipped. You can 'capture' the money explicitly on the order screen; but the money will be captured automatically when the order is set to "Processing" or "Complete".
@@ -96,7 +105,7 @@ There is an exception for orders where all items are both virtual and downloadab
 
 From version 1.1.11 on, you can choose "Processing" as the end state instead of "On Hold", but be aware that these orders will only have been reserved, not captured; so you should always then capture before shipping.
 
-= Can I refund orders or part of orders using Vipps =
+= Can I refund orders or part of orders using Vipps/MobilePay =
 Yes, you can do refunds, including partial refunds, using the standard WooCommerce mechanism (https://docs.woocommerce.com/document/woocommerce-refunds/). Additionally, if you cancel an order that was already captured, the money will be refunded for the whole order. If automatic refund through the Vipps API should fail, you will need to refund manually; in this case an error message to this effect will be displayed and the order annotated.
 
 = What is 'compatibility mode' in the settings? =
