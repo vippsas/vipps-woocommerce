@@ -600,11 +600,11 @@ msgid "Cancelled amount"
 msgstr ""
 
 #: VippsApi.class.php:312 VippsApi.class.php:355
-msgid "Cannot add category for order %d: No vipps id present"
+msgid "Cannot add category for order %1\$d: No vipps id present"
 msgstr ""
 
 #: VippsApi.class.php:176
-msgid "Cannot add receipt for order %d: No vipps id present"
+msgid "Cannot add receipt for order %1\$d: No vipps id present"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1581
@@ -801,7 +801,7 @@ msgstr ""
 
 #: VippsApi.class.php:347
 #, php-format
-msgid "Could not add category %s to Vipps: "
+msgid "Could not add category %1\$s to Vipps: "
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:411
@@ -901,7 +901,7 @@ msgstr ""
 
 #: VippsApi.class.php:383
 #, php-format
-msgid "Could not get receipt data for order %s from Vipps: "
+msgid "Could not get receipt data for order %1\$s from Vipps: "
 msgstr ""
 
 #: Vipps.class.php:2708
@@ -966,12 +966,12 @@ msgstr ""
 
 #: VippsQRCodeController.class.php:582
 #, php-format
-msgid "Couldn't create or update QR image: %s"
+msgid "Couldn't create or update QR image: %1\$s"
 msgstr ""
 
 #: VippsQRCodeController.class.php:572
 #, php-format
-msgid "Couldn't download QR image: try saving post again! Error was: %s"
+msgid "Couldn't download QR image: try saving post again! Error was: %1\$s"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:617 WC_Gateway_Vipps.class.php:618
@@ -1204,22 +1204,22 @@ msgstr ""
 
 #: VippsQRCodeController.class.php:579
 #, php-format
-msgid "Error creating or updating QR code: %s"
+msgid "Error creating or updating QR code: %1\$s"
 msgstr ""
 
 #: VippsQRCodeController.class.php:494
 #, php-format
-msgid "Error deleting QR code: %s"
+msgid "Error deleting QR code: %1\$s"
 msgstr ""
 
 #: VippsQRCodeController.class.php:187
 #, php-format
-msgid "Error deleting unsynched QR code with id %s: %s"
+msgid "Error deleting unsynched QR code with id %1\$s: %2\$s"
 msgstr ""
 
 #: VippsQRCodeController.class.php:570
 #, php-format
-msgid "Error downloading QR code image: %s"
+msgid "Error downloading QR code image: %1\$s"
 msgstr ""
 
 #: Vipps.class.php:3853
@@ -1265,12 +1265,12 @@ msgstr ""
 
 #: VippsQRCodeController.class.php:212 VippsQRCodeController.class.php:215
 #, php-format
-msgid "Error importing unsynched QR code with id %s: %s"
+msgid "Error importing unsynched QR code with id %1\$s: %2\$s"
 msgstr ""
 
 #: VippsApi.class.php:764 VippsApi.class.php:770
 #, php-format
-msgid "Error polling status - error message %s"
+msgid "Error polling status - error message %1\$s"
 msgstr ""
 
 #: Vipps.class.php:1942
@@ -1617,7 +1617,7 @@ msgstr ""
 #: VippsQRCodeController.class.php:587
 #, php-format
 msgid ""
-"It seems a QR code with this ID (%s) already exists at Vipps.  If you have "
+"It seems a QR code with this ID (%1\$s) already exists at Vipps.  If you have "
 "recently done a database restore, try to instead import the QR code from the "
 "Unsynchronized codes, deleting this. If you have several Wordpress instances "
 "using the same Vipps account, make sure you use different prefixes (in the "
@@ -2079,7 +2079,7 @@ msgid "Ready for %1$s - press the button"
 msgstr ""
 
 #: VippsApi.class.php:302
-msgid "Receipt for order %d sent to Vipps "
+msgid "Receipt for order %1\$d sent to Vipps "
 msgstr ""
 
 #: Vipps.class.php:1948

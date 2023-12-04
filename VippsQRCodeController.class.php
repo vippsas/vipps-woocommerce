@@ -184,7 +184,7 @@ class VippsQRCodeController {
                 try {
                     $api->delete_merchant_redirect_qr($vid);
                 } catch (Exception $e) {
-                    Vipps::instance()->log(sprintf(__("Error deleting unsynched QR code with id %s: %s", 'woo-vipps'),$vid, $e->getMessage()), 'error');
+                    Vipps::instance()->log(sprintf(__("Error deleting unsynched QR code with id %1\$s: %2\$s", 'woo-vipps'),$vid, $e->getMessage()), 'error');
                 }
              }
         } else if ($operation == 'import')  {
@@ -209,10 +209,10 @@ class VippsQRCodeController {
                          update_post_meta($ok, '_vipps_qr_url', sanitize_url($url));
                      }
                      if (is_wp_error($ok)) {
-                        Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %s: %s", 'woo-vipps'),$vid, $e->get_error_message()), 'error');
+                        Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %1\$s: %2\$s", 'woo-vipps'),$vid, $e->get_error_message()), 'error');
                      }
                  } catch (Exception $e) {
-                     Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %s: %s", 'woo-vipps'),$vid, $e->getMessage()), 'error');
+                     Vipps::instance()->log(sprintf(__("Error importing unsynched QR code with id %1\$s: %2\$s", 'woo-vipps'),$vid, $e->getMessage()), 'error');
                  }
              }
 
@@ -491,7 +491,7 @@ img.onload = function () {
             try {
                 $api->delete_merchant_redirect_qr($vid);
              } catch (Exception $e) {
-                 Vipps::instance()->log(sprintf(__("Error deleting QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
+                 Vipps::instance()->log(sprintf(__("Error deleting QR code: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
              }
              // Delete data from Vipps, including the ID which should now be free again
              delete_post_meta($pid, '_vipps_qr_img');
@@ -567,24 +567,24 @@ img.onload = function () {
                       $img = $data['message']; // Could also be png if we allow that, currenlty svg
                       update_post_meta($pid, '_vipps_qr_img', $img);
                   } catch (Exception $e) {
-                    Vipps::instance()->log(sprintf(__("Error downloading QR code image: %s", 'woo-vipps'), $e->getMessage()), 'error');
+                    Vipps::instance()->log(sprintf(__("Error downloading QR code image: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
                     if (is_admin() && ! wp_doing_ajax()) {
-                      update_post_meta($pid, '_vipps_qr_errors', array(sprintf(__("Couldn't download QR image: try saving post again! Error was: %s", 'woo-vipps'), $e->getMessage())));
+                      update_post_meta($pid, '_vipps_qr_errors', array(sprintf(__("Couldn't download QR image: try saving post again! Error was: %1\$s", 'woo-vipps'), $e->getMessage())));
                     }
                     return false; // Means *do not* store value.
                   }
               }
           }  catch (Exception $e) {
               // IOK here *in particular* catch the 409 thing for previously used ID and retry (If not handled in api).
-              Vipps::instance()->log(sprintf(__("Error creating or updating QR code: %s", 'woo-vipps'), $e->getMessage()), 'error');
+              Vipps::instance()->log(sprintf(__("Error creating or updating QR code: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
               if (is_admin() && ! wp_doing_ajax()) {
                       $errors = array();
-                      $errors[]=sprintf(__("Couldn't create or update QR image: %s", 'woo-vipps'),$e->getMessage());
+                      $errors[]=sprintf(__("Couldn't create or update QR image: %1\$s", 'woo-vipps'),$e->getMessage());
                       if ($e->responsecode == 409) {
                           delete_post_meta($pid, '_vipps_qr_id');
                           delete_post_meta($pid, '_vipps_qr_stored');
                           delete_post_meta($pid, '_vipps_qr_img');
-                          $errors[] = sprintf(__("It seems a QR code with this ID (%s) already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings). You can try to change the slug of this entry (you may need to enable this in the page settings) and save again if you don't care about the duplicate. ", 'woo-vipps'), sanitize_title($vid));
+                          $errors[] = sprintf(__("It seems a QR code with this ID (%1\$s) already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings). You can try to change the slug of this entry (you may need to enable this in the page settings) and save again if you don't care about the duplicate. ", 'woo-vipps'), sanitize_title($vid));
                       }
                  
                       update_post_meta($pid, '_vipps_qr_errors', $errors);

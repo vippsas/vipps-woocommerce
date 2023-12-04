@@ -173,7 +173,7 @@ class VippsApi {
         }
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
-           $this->log(sprintf(__("Cannot add receipt for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           $this->log(sprintf(__("Cannot add receipt for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
            return false;
         }
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
@@ -299,7 +299,7 @@ class VippsApi {
             $res = $this->http_call($command,$receiptdata,'POST',$headers,'json'); 
             $order->update_meta_data('_vipps_receipt_sent', true);
             $order->save();
-            $this->log(sprintf(__("Receipt for order %d sent to Vipps ", 'woo-vipps'), $order->get_id()), 'info');
+            $this->log(sprintf(__("Receipt for order %1\$d sent to Vipps ", 'woo-vipps'), $order->get_id()), 'info');
             return true;
         } catch (Exception $e) {
             $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
@@ -309,7 +309,7 @@ class VippsApi {
     public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
-           $this->log(sprintf(__("Cannot add category for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           $this->log(sprintf(__("Cannot add category for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
            return false;
         }
 
@@ -344,7 +344,7 @@ class VippsApi {
             $res = $this->http_call($command,$args,'PUT',$headers,'json'); 
             return true;
         } catch (Exception $e) {
-            $this->log(sprintf(__("Could not add category %s to Vipps: ", 'woo-vipps'), $categorytype) . $e->getMessage(), 'error');
+            $this->log(sprintf(__("Could not add category %1\$s to Vipps: ", 'woo-vipps'), $categorytype) . $e->getMessage(), 'error');
             return false;
         }
     }
@@ -352,7 +352,7 @@ class VippsApi {
     public function get_receipt($order, $paymenttype = "ecom") {
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
-           $this->log(sprintf(__("Cannot add category for order %d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           $this->log(sprintf(__("Cannot add category for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
            return false;
         }
         $date = gmdate('c');
@@ -380,7 +380,7 @@ class VippsApi {
             $res = $this->http_call($command,[],'GET',$headers);
             return $res;
         } catch (Exception $e) {
-            $this->log(sprintf(__("Could not get receipt data for order %s from Vipps: ", 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
+            $this->log(sprintf(__("Could not get receipt data for order %1\$s from Vipps: ", 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
             return false;
         }
 
@@ -761,13 +761,13 @@ class VippsApi {
             } else if ($e->responsecode == 404) {
                 return 'EXPIRED';
             } else {
-                $this->log(sprintf(__("Error polling status - error message %s", 'woo-vipps'), $e->getMessage()));
+                $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
                 // We can't dom uch more than this so just return ERROR
                 return 'ERROR';
 
             } 
         } catch (Exception $e) {
-            $this->log(sprintf(__("Error polling status - error message %s", 'woo-vipps'), $e->getMessage()));
+            $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
             // We can't dom uch more than this so just return ERROR
             return 'ERROR';
         }
