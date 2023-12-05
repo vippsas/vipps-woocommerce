@@ -2244,8 +2244,8 @@ msgid "Vipps Checkout"
 msgstr "Vipps Checkout"
 
 #: WC_Gateway_Vipps.class.php:3155
-msgid "Vipps does not support your currency."
-msgstr "Vipps understøtter ikke din valuta."
+msgid "%1$s does not support your currency."
+msgstr "%1$s understøtter ikke din valuta."
 
 #: WC_Gateway_Vipps.class.php:3043 Vipps.class.php:63
 msgid "Vipps Express Checkout"
@@ -2269,12 +2269,12 @@ msgid "Vipps Recurring Payments for WooCommerce is perfect if you sell subscript
 msgstr "Vipps Recurring Payments for WooCommerce er perfekt, hvis du sælger abonnementer eller medlemskaber. Pluginet er tilgængeligt til Wordpress og WooCommerce - kom i gang her!"
 
 #: WC_Gateway_Vipps.class.php:3164
-msgid "Vipps requires that your site uses HTTPS."
-msgstr "Vipps kræver, at din hjemmeside bruger HTTPS."
+msgid "%1$s requires that your site uses HTTPS."
+msgstr "%1$s kræver, at din hjemmeside bruger HTTPS."
 
 #: WC_Gateway_Vipps.class.php:3156
-msgid "Vipps will only be available as a payment option when currency is NOK"
-msgstr "Vipps vil kun være tilgængelig som betalingsmulighed, når valutaen er NOK"
+msgid "%1$s supported currencies: %2$s"
+msgstr "%1$s understøttede valutaer: %2$s"
 
 #: WC_Gateway_Vipps.class.php:1119
 msgid "VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"

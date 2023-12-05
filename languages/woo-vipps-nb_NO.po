@@ -3543,8 +3543,8 @@ msgid "Vipps Checkout"
 msgstr "Vipps Checkout"
 
 #: WC_Gateway_Vipps.class.php:3155
-msgid "Vipps does not support your currency."
-msgstr "Vipps støtter ikke din valuta"
+msgid "%1$s does not support your currency."
+msgstr "%1$s støtter ikke din valuta"
 
 #: WC_Gateway_Vipps.class.php:3043 Vipps.class.php:63
 msgid "Vipps Express Checkout"
@@ -3575,12 +3575,12 @@ msgstr ""
 "her!"
 
 #: WC_Gateway_Vipps.class.php:3164
-msgid "Vipps requires that your site uses HTTPS."
-msgstr "Vipps krever at ditt nettsted støtter HTTPS."
+msgid "%1$s requires that your site uses HTTPS."
+msgstr "%1$s krever at nettstedet ditt bruker HTTPS."
 
 #: WC_Gateway_Vipps.class.php:3156
-msgid "Vipps will only be available as a payment option when currency is NOK"
-msgstr "Vipps er bare tilgjengelig som betalingsmulighet når valutaen er NOK"
+msgid "%1$s supported currencies: %2$s"
+msgstr "%1$s støttede valutaer: %2$s"
 
 #: WC_Gateway_Vipps.class.php:1119
 msgid ""
