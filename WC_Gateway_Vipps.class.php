@@ -1155,6 +1155,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Only be available if current currency is NOK IOK 2018-09-19
+    // Only be available if current currency is supported NT 2023-12-04
     public function is_available() {
         // This is split into two functions to avoid triggering infinite recursion in filters that override this value below. IOK 2021-10-30
         $ok = $this->standard_is_available();
@@ -1184,19 +1185,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return apply_filters('woo_vipps_checkout_available', $checkoutid, $this);
     }
 
+    // Get supported currencies for payment method NT 2023-12-04
+    public function get_supported_currencies($payment_method) {
+        switch ($payment_method) {
+            case 'Vipps': return array('NOK');
+            case 'MobilePay': return array('DKK', 'EUR', 'NOK', 'SEK', 'USD', 'GBP');
+            default: return array();
+        }
+    }
+    
+    // Check if payment method supports currency. NT 2023-12-04
+    public function payment_method_supports_currency($payment_method, $currency) {
+        return in_array($currency, $this->get_supported_currencies($payment_method));
+    }
+
     //  Basic unfiltered version of "can I use vipps" ? IOK 2021-10-01
     protected function standard_is_available () {
         if (!$this->can_be_activated()) return false;
         if (!parent::is_available()) return false;
-        $ok = true;
-        $currency = get_woocommerce_currency(); 
-        if ($currency != 'NOK') {
-            $ok = false;
-        }
-        return $ok;
+        if (!$this->payment_method_supports_currency($this->get_payment_method_name(), get_woocommerce_currency())) return false;
+        return true;
     }
 
-    // True iff the express checkout feature  should be available 
+    // True if the express checkout feature should be available 
     public function express_checkout_available() {
        if (! $this->is_available()) return false;
        $ok = true;
@@ -3139,21 +3150,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     public function admin_options() {
+        $currency = get_woocommerce_currency(); 
+        $payment_method = $this->get_payment_method_name();
+        
         if (!$this->can_be_activated()) {
             $this->update_option('enabled', 'no');
         }
         ?>
-            <h2 id='vipps-settings-page'><?php _e(Vipps::CompanyName(),'woo-vipps'); ?> <img style="float:right;max-height:40px;margin-top:-15px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
+            <h2 id='vipps-settings-page'><?php echo __(Vipps::CompanyName(),'woo-vipps'); ?> <img style="float:right;max-height:40px;margin-top:-15px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
 
             <?php 
 
-            $currency = get_woocommerce_currency(); 
-        if ($currency != 'NOK'): 
+            
+        if (!$this->payment_method_supports_currency($payment_method, $currency)):
             ?> 
                 <div class="inline error">
-                <p><strong><?php _e('Vipps does not support your currency.', 'woo-vipps'); ?></strong>
-                <?php _e('Vipps will only be available as a payment option when currency is NOK', 'woo-vipps'); ?>                
+                <p><strong><?php echo sprintf(__('%1$s does not support your currency.', 'woo-vipps'), $payment_method); ?></strong>
+                <br>
+                <?php echo sprintf(__('%1$s supported currencies: %2$s', 'woo-vipps'), $payment_method, implode(", ", $this->get_supported_currencies($payment_method))); ?>                
                 </p>
                 </div>
         <?php endif; ?>
@@ -3161,7 +3176,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         <?php if (!is_ssl() &&  !preg_match("!^https!i",home_url())): ?>
                 <div class="inline error">
                 <p><strong><?php _e('Gateway disabled', 'woocommerce'); ?></strong>:
-                <?php _e('Vipps requires that your site uses HTTPS.', 'woo-vipps'); ?>
+                <?php echo sprintf(__('%1$s requires that your site uses HTTPS.', 'woo-vipps'), $payment_method); ?>
                 </p>
                 </div>
         <?php endif; ?>
