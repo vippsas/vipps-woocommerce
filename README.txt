@@ -162,6 +162,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.17.2 =
+* Fixed: Hide this gateway if there are no subscription products in the cart.
+
 = 1.17.1 =
 * Fixed: Added the new version of an admin JS file that controls the logic for capturing a payment. This fixes payment captures.
 
