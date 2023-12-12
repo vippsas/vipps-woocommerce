@@ -523,6 +523,8 @@ class VippsApi {
 
         $data = apply_filters('woo_vipps_initiate_payment_data', $data);
 
+        error_log("Data is " . print_r($data, true));
+
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
     }

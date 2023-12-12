@@ -332,6 +332,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
+        // IOK 2023-12-12 Can only support express checkout for Vipps
+        if ($this->get_payment_method_name() != 'Vipps') return false;
         $type = $product->get_type();
         $ok = in_array($type, $this->express_checkout_supported_product_types);
         $ok = apply_filters('woo_vipps_product_supports_express_checkout',$ok,$product);
@@ -343,9 +345,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$cart) $cart = WC()->cart;
         $supports  = true;
         if (!$cart) return $supports;
-
-            # Not supported by Vipps MobilePay
-            if ($cart->cart_contents_total <= 0) return false;
+        # Not supported by Vipps MobilePay
+        if ($cart->cart_contents_total <= 0) return false;
 
         foreach($cart->get_cart() as $key=>$val) {
             $prod = $val['data'];
@@ -594,8 +595,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
-//        $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
-        $payment_method_name = "Vipps";
+        $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
 
         $checkoutfields = array(
                 'checkout_options' => array(
@@ -1189,14 +1189,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_supported_currencies($payment_method) {
         switch ($payment_method) {
             case 'Vipps': return array('NOK');
-            case 'MobilePay': return array('DKK', 'EUR', 'NOK', 'SEK', 'USD', 'GBP');
+            case 'MobilePay': return array('DKK', 'EUR');
             default: return array();
         }
     }
     
     // Check if payment method supports currency. NT 2023-12-04
     public function payment_method_supports_currency($payment_method, $currency) {
-        return in_array($currency, $this->get_supported_currencies($payment_method));
+        $ok = in_array($currency, $this->get_supported_currencies($payment_method));
+        return $ok;
     }
 
     //  Basic unfiltered version of "can I use vipps" ? IOK 2021-10-01
