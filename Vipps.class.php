@@ -2940,7 +2940,6 @@ EOF;
                 exit();
         }
         
-        $gw->express_checkout = 1;
         $ok = $gw->process_payment($orderid);
         if ($ok && $ok['result'] == 'success') {
             $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);
@@ -3086,7 +3085,6 @@ EOF;
         $order->save();
         $this->save_cart($order,$current_cart);
 
-        $gw->express_checkout = 1;
         $ok = $gw->process_payment($orderid);
         if ($ok && $ok['result'] == 'success') {
             $result = array('ok'=>1, 'msg'=>'', 'url'=>$ok['redirect']);

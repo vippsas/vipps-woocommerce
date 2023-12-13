@@ -50,9 +50,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public $captured_statuses;
 
-    // Used to signal state to process_payment
-    public $express_checkout = 0;
-
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
     // Just to avoid calculating these alot
@@ -1314,7 +1311,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();
-            $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+
+            // We need to dispatch on the type of checkout, express checkout uses eCom v2, all others use ePayment
+            $express = $order->get_meta('_vipps_express_checkout');
+            $content;
+            if ($express) {
+                $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+            } else {
+                $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+            }
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');

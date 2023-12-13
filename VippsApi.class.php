@@ -167,39 +167,12 @@ class VippsApi {
             return false;
         }
     }
-    public function add_receipt ($order) {
-        if ($order->get_meta('_vipps_receipt_sent')) {
-            return true;
-        }
-        $vippsid = $order->get_meta('_vipps_orderid');
-        if (!$vippsid) {
-           $this->log(sprintf(__("Cannot add receipt for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
-           return false;
-        }
-        // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
-        $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
 
-        $command = 'order-management/v2/' . $paymenttype . '/receipts/' . $vippsid;
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
-
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
+    // Used by the add_receipt API call as well as epayment_initiate_payment. The latter will use this
+    // if we have the shipping information - that is, we are using the normal woo checkout flow. IOK 2023-12-13
+    public function get_receipt_data($order) {
+        $receiptdata =  [];
         try {
-            $receiptdata =  [];
             $orderlines = [];
             $bottomline = ['currency'=>'NOK',  'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
 
@@ -259,7 +232,7 @@ class VippsApi {
                 $orderline['name'] = $order_item->get_name();
                 $orderline['id'] = $order_item->get_method_id();
                 if (method_exists($order_item, 'get_instance_id')) {
-                   $orderline['id'] .= ":" . $order_item->get_instance_id();
+                    $orderline['id'] .= ":" . $order_item->get_instance_id();
                 }
 
                 $totalNoTax = $order_item->get_total();
@@ -292,20 +265,56 @@ class VippsApi {
                 $orderline['isShipping'] = true;
                 $orderlines[] = $orderline;
             }
-            
+
             $receiptdata['orderLines'] = $orderlines;
             $receiptdata['bottomLine'] = $bottomline;
 
-            $res = $this->http_call($command,$receiptdata,'POST',$headers,'json'); 
-            $order->update_meta_data('_vipps_receipt_sent', true);
-            $order->save();
-            $this->log(sprintf(__("Receipt for order %1\$d sent to Vipps ", 'woo-vipps'), $order->get_id()), 'info');
-            return true;
         } catch (Exception $e) {
-            $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
+            $this->log(sprintf(__('Cannot create receipt for order %1$d: %2$s', 'woo-vipps'), $order->get_id(), $e->getMessage()), 'error');
+        }
+        return $receiptdata;
+    }
+
+    public function add_receipt ($order) {
+        if ($order->get_meta('_vipps_receipt_sent')) {
+            return true;
+        }
+        $vippsid = $order->get_meta('_vipps_orderid');
+        if (!$vippsid) {
+           $this->log(sprintf(__("Cannot add receipt for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+           return false;
+        }
+        // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
+        // please note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
+        $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
+
+        $command = 'order-management/v2/' . $paymenttype . '/receipts/' . $vippsid;
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        $receiptdata = $this->get_receipt_data($order);
+        if (empty($receiptdata)) {
+            $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $order->getId(), 'error');
             return false;
         }
     }
+
+    // Note that paymenttype 'ecom' applies to both ecom and epayment. IOK 2023-12-13
     public function add_category($order, $link, $imageid, $categorytype="GENERAL", $paymenttype="ecom") {
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
@@ -333,6 +342,7 @@ class VippsApi {
 
 
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
+        // Note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
         $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
         $command = "order-management/v2/$paymenttype/categories/$vippsid";
 
@@ -349,6 +359,7 @@ class VippsApi {
         }
     }
 
+    // Note that paymenttype 'ecom' applies to both ecom and epayment. IOK 2023-12-13
     public function get_receipt($order, $paymenttype = "ecom") {
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
@@ -374,6 +385,7 @@ class VippsApi {
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
+        // Note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
         $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
         $command = "order-management/v2/$paymenttype/$vippsid";
        try {
@@ -385,9 +397,174 @@ class VippsApi {
         }
 
     }
-
-
     # End Order Management API functions
+
+    // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
+    public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
+        $command = 'epayment/v1/payments';
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
+        $at = $this->get_access_token();
+        $subkey = $this->get_key();
+        $merch = $this->get_merchant_serial();
+        if (!$subkey) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        if (!$merch) {
+            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
+            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
+        }
+        $clientid = $this->get_clientid();
+        $secret = $this->get_secret();
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Idempotency-Key'] = $requestid;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+
+        // IOK 2023-12-13 This is currently always false for epayment_initiate_payment but let's think ahead
+        // Code for static shipping, shipping callback etc would need to be added. 
+        $express = $order->get_meta('_vipps_express_checkout');
+
+        // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
+        // This is really for the new epayment api only, but we do this to ensure we use the same logic. For short prefixes and order numbers.
+        // Pad orderid with 0 to the left so the entire vipps-orderid/reference is at least 8 chars long. IOK 2022-04-06
+        $orderid = $order->get_id();
+        $woovippsid = $prefix . $orderid;
+        $len = strlen($woovippsid);
+        if ($len < 8) { # max is 50 so that would probably not be an issue
+            $padwith =  8  - strlen($prefix);
+            $paddedid = str_pad("".$orderid, $padwith, "0", STR_PAD_LEFT);
+            $woovippsid = $prefix . $paddedid;
+        }
+        $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
+
+        $order->update_meta_data('_vipps_prefix',$prefix);
+        $order->update_meta_data('_vipps_orderid', $vippsorderid);
+        $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
+        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
+        $order->save();
+
+        $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
+        $fallback = $returnurl;
+
+
+        $data = [];
+        $data['reference'] = $vippsorderid;
+        $data['paymentMethod'] = 'WALLET'; // This is the Vipps MobilePay app. CARD is credit card, must then use userFlow WEB_REDIRECT
+        $data['amount'] = ['currency' => $order->get_currency(), 'value' => round(wc_format_decimal($order->get_total(),'') * 100)]; 
+        $data['returnUrl'] = $fallback;
+
+        $data['customer'] = [];
+        // Allow filters to use CUSTOMER_PRESENT if using in store situation with the user physically present IOK 2023-12-13
+        $data['customer']['customerInteraction'] = apply_filters('woo_vipps_customerInteraction', 'CUSTOMER_NOT_PRESENT', $orderid);
+        if ($phone) {
+            $data['customer']['phoneNumber']  = $phone;
+        }
+        // User information data to ask for. During normal checkout, we won't ask at all, but for Express Checkout we would do name, email, phoneNumber.
+        // Currently, use a filter to allow merchants to do this. Can also add 'Address', which would give all data but not the shipment flow.
+        // Values are name, address, email, phoneNumber, birthData and nin, if the company provides this to the merchant. 
+        // IOK 2023-12-13
+        $scope = array();
+        $scope = apply_filters('woo_vipps_payment_scope', $scope, $orderid);
+        if (!empty($scope)) {
+                $data['profile'] = [];
+                $data['profile']['scope'] = join(" ", $scope);
+        }
+        // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
+        // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
+        // QR returns a QR code that can be scanned to complete the payment. IOK 2023-12-13
+        $data['userFlow'] = apply_filters('woo_vipps_payment_user_flow', 'WEB_REDIRECT', $orderid);
+
+        // Some control over the QR
+        if ($data['userFlow'] == 'QR') {
+            // Formats are IMAGE/SVG+XML, TEXT/TARGETURL, IMAGE/PNG
+            $data['qrFormat'] = ['format' => apply_filters('woo_vipps_payment_qr_format', 'IMAGE/SVG+XML', $orderid),
+                                 'size' => apply_filters('woo_vipps_payment_qr_size', 1024, $orderid)];
+        }
+
+
+        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
+        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
+        $data['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
+        // The limit for the transaction text is 100. Ensure we don't go over. Thanks to Marco1970 on wp.org for reporting this. IOK 2019-10-17
+        $length = strlen($data['paymentDescription']);
+        if ($length>99) {
+          $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
+          $data['paymentDescription'] =  __('Confirm your order','woo-vipps');
+          $data['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
+        }
+
+        // Epayment can send the receipt already in the initiate call, so lets do it. IOK 2023-12-23
+        if (!$express) {
+            $receiptdata = $this->get_receipt_data($order);
+            if (!empty($receiptdata)) {
+               $data['receipt'] = $receiptdata;
+               $order->update_meta_data('_vipps_receipt_sent', true);
+               $order->save();
+            }
+        }
+
+        if ($data['receipt'] ?? false) {
+            // Please note: If expiresAt is added, a receipt must also be added.
+            // expiresAt -- control expiry of payment., must be more than 10 minutes, less than 28 days.
+            // format is RFC 3339 so yyyy-mm-ddTH:i:sZ gmt. 
+            // These are for payments that can wait for fullfillment for quite a while, not very well suited for normal Woo stores where stock is
+            // an issue. IOK 2023-12-13
+            $expiresAt = apply_filters('woo_vipps_payment_expires_at', false, $orderid);
+            if ($expiresAt !== false) {
+                if (is_string($expiresAt)) {
+                    $expiresAt = gmdate('Y-m-d\TH:i:s\Z', strtotime($expiresAt));
+                } elseif (is_int($expiresAt) && $expiresAt > time()) {
+                    $expiresAt = gmdate('Y-m-d\TH:i:s\Z', $expiresAt);
+                } else {
+                    $expiresAt = false;
+                }
+            }
+            if ($expiresAt) $data['expiresAt'] = $expiresAt;
+        }
+
+        // Arbitrary metadata that will be retrieved in payment responses. Please note, key length is <= 100, value <= 500, max elements is 5
+        $metadata_raw = [];
+        $metadata_filtered = apply_filters('woo_vipps_payment_metadata', $metadata_raw, $orderid);
+        $metadata = [];
+        $i = 0;
+        foreach($metadata_filtered as $key => $value) {
+            if (strlen($key)>100 || strlen($value) > 500) {
+               $this->log(sprintf(__('Could not add key %1$s to payment metadata of order %2$s - key or value is too long (100, 500 respectively)', 'woo-vipps'), $key, $orderid));
+               continue;
+            }
+            $i++;
+            if ($i > 5) {
+               $this->log(sprintf(__('Could not add all keys to the payment metadata of order %1$s - only 5 items are allowed', 'woo-vipps'), $orderid));
+               break;
+            }
+            $metadata[$key] = $value;
+        }
+        if (!empty($metadata)) {
+           $data['metadata'] = $metadata;
+        }
+       
+        $this->log("Initiating Vipps MobilePay epayment session for $vippsorderid", 'debug');
+        $data = apply_filters('woo_vipps_epayment_initiate_payment_data', $data);
+error_log("Command is $command Data is " . print_r($data, true));
+
+        // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
+        $res = $this->http_call($command,$data,'POST',$headers,'json');
+
+        // Backwards compatibility: Previous API returned this as an URL. We also get a 'reference' back, the Vipps Order Id
+        $res['url'] = $res['redirectUrl'] ?? false;
+error_log("res is " . print_r($res, true));
+        return $res;
+    }
+
+
 
     public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
         $command = 'Ecomm/v2/payments';
@@ -425,7 +602,6 @@ class VippsApi {
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
-        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
         $order->save();
 
         $headers = array();
@@ -465,7 +641,7 @@ class VippsApi {
         $data['customerInfo'] = array('mobileNumber' => $phone); 
         $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
 
-        $express = $this->gateway->express_checkout;
+        $express = $order->get_meta('_vipps_express_checkout');
 
         // If we are not to ask for the address, we must change this to a normal "eComm Regular Payment" and add a scope,
         // which will give us a sub from which we can get user data from the userInfo api. This is a temporary situation. IOK 2023-03-10
@@ -523,7 +699,7 @@ class VippsApi {
 
         $data = apply_filters('woo_vipps_initiate_payment_data', $data);
 
-        error_log("Data is " . print_r($data, true));
+error_log("Command is $command Data is " . print_r($data, true));
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
