@@ -216,6 +216,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2023-12-13 version 1.14.17 =
+Fix for issues with stored admin notices in newer woos, small css fix
+
 = 2023-11-27 version 1.14.16 =
 Minor fixes, refactoring Checkout support for further features
 
