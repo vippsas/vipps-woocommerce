@@ -69,6 +69,10 @@ class VippsApi {
         return $this->gateway->log($what,$type);
     }
 
+    // IOK FIXME THE WEBHOOK API
+    public function register_webhooks() {
+    }
+
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
     public function get_access_token($force=0) {
         // First, get a stored token if it exists
