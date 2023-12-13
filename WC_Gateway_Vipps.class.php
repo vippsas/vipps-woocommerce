@@ -1086,36 +1086,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
            }
        }
-
-
-
-        
-
-
-
-
-
-   
     }
-
-
-
-
 
 
     // IOK 2018-04-18 utilities for the 'admin notices' interface.
     private function adminwarn($what) {
-        add_action('admin_notices',function() use ($what) {
+        add_action('vipps_admin_notices',function() use ($what) {
                 echo "<div class='notice notice-warning is-dismissible'><p>$what</p></div>";
                 });
     }
     private function adminerr($what) {
-        add_action('admin_notices',function() use ($what) {
+        add_action('vipps_admin_notices',function() use ($what) {
                 echo "<div class='notice notice-error is-dismissible'><p>$what</p></div>";
                 });
     }
     private function adminnotify($what) {
-        add_action('admin_notices',function() use ($what) {
+        add_action('vipps_admin_notices',function() use ($what) {
                 echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
                 });
     }
@@ -1609,7 +1595,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Refund (possibly partially) the captured order. IOK 2018-05-07
     // The caller must handle the errors.
     public function refund_payment($order,$amount=0,$cents=false) {
-
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $msg = __('Trying to refund payment on order not made by Vipps:','woo-vipps') . ' ' . $order->get_id();
