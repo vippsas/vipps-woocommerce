@@ -1262,6 +1262,25 @@ else:
         print "<a href='javascript:VippsGetPaymentDetails($orderid,\"$paymentdetailsnonce\");' class='button'>" . __('Show complete transaction details','woo-vipps') . "</a>";
     }
 
+
+    // Vipps' requirement for phone numbers is very strict, and payments initiated with
+    // numbers in any other format will fail. Therefore we must try to convert to MSISDN before that.
+    public static function normalizePhoneNumber($phone, $country='') {
+        $phonenr = preg_replace("![^0-9]!", "",  strval($phone));
+        $phonenr = preg_replace("!^0+!", "", $phonenr);
+
+        // Try to reconstruct phone numbers from information provided
+        if (strlen($phonenr) == 8 && $country == 'NO') { 
+            $phonenr = '47' . $phonenr;
+        }
+
+        if (!preg_match("/^\d{10,15}$/", $phonenr)) {
+            $phonenr = false;
+        }
+        return $phonenr;
+    }
+
+
     // This is for debugging and ensuring we have excact details correct for a transaction.
     public function ajax_vipps_payment_details() {
         check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');

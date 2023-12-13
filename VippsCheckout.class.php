@@ -265,17 +265,10 @@ class VippsCheckout {
 
             // Currently Vipps requires all phone numbers to have area codes and NO  +. We can't guaratee that at all, but try for Norway
             $phone = ""; 
-            $phonenr = $customer->get_billing_phone();
-            $phonenr = preg_replace("![^0-9]!", "",  $phonenr);
-            $phonenr = preg_replace("!^0+!", "", $phonenr);
-            if (strlen($phonenr) == 8 && $customerinfo['country'] == 'NO') {
-                $phonenr = '47' + $phonenr;
+            $phonenr = Vipps::normalizePhoneNumber($customer->get_billing_phone(), $customerinfo['country']);
+            if ($phonenr) {
+                $customerinfo['phoneNumber'] = $phone;
             }
-            if (preg_match("/47\d{8}/", $phonenr) && $customerinfo['country'] == 'NO') {
-              $phone = $phonenr;
-            }
-
-            $customerinfo['phoneNumber'] = $phone;
         }
 
         $keys = ['firstName', 'lastName', 'streetAddress', 'postalCode', 'country', 'phoneNumber'];

@@ -407,6 +407,10 @@ class VippsApi {
         $at = $this->get_access_token();
         $subkey = $this->get_key();
         $merch = $this->get_merchant_serial();
+        $prefix = $this->get_orderprefix();
+        $static_shipping = $order->get_meta('_vipps_static_shipping');
+        $needs_shipping = $order->get_meta('_vipps_needs_shipping');
+
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -445,6 +449,7 @@ class VippsApi {
         }
         $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
 
+        $order->update_meta_data('_vipps_api', 'epayment');
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
@@ -457,7 +462,7 @@ class VippsApi {
 
         $data = [];
         $data['reference'] = $vippsorderid;
-        $data['paymentMethod'] = 'WALLET'; // This is the Vipps MobilePay app. CARD is credit card, must then use userFlow WEB_REDIRECT
+        $data['paymentMethod'] = ['type' => 'WALLET']; // This is the Vipps MobilePay app. CARD is credit card, must then use userFlow WEB_REDIRECT
         $data['amount'] = ['currency' => $order->get_currency(), 'value' => round(wc_format_decimal($order->get_total(),'') * 100)]; 
         $data['returnUrl'] = $fallback;
 
@@ -465,8 +470,13 @@ class VippsApi {
         // Allow filters to use CUSTOMER_PRESENT if using in store situation with the user physically present IOK 2023-12-13
         $data['customer']['customerInteraction'] = apply_filters('woo_vipps_customerInteraction', 'CUSTOMER_NOT_PRESENT', $orderid);
         if ($phone) {
-            $data['customer']['phoneNumber']  = $phone;
+            $phonenr = Vipps::normalizePhoneNumber($phone, $order->get_billing_country());
+            if ($phonenr) {
+                $data['customer']['phoneNumber']  = $phonenr;
+            }
+            $data['customer'] = apply_filters('woo_vipps_payment_customer_data',$data['customer'],$orderid);
         }
+
         // User information data to ask for. During normal checkout, we won't ask at all, but for Express Checkout we would do name, email, phoneNumber.
         // Currently, use a filter to allow merchants to do this. Can also add 'Address', which would give all data but not the shipment flow.
         // Values are name, address, email, phoneNumber, birthData and nin, if the company provides this to the merchant. 
@@ -553,14 +563,12 @@ class VippsApi {
        
         $this->log("Initiating Vipps MobilePay epayment session for $vippsorderid", 'debug');
         $data = apply_filters('woo_vipps_epayment_initiate_payment_data', $data);
-error_log("Command is $command Data is " . print_r($data, true));
 
         // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
         $res = $this->http_call($command,$data,'POST',$headers,'json');
 
         // Backwards compatibility: Previous API returned this as an URL. We also get a 'reference' back, the Vipps Order Id
         $res['url'] = $res['redirectUrl'] ?? false;
-error_log("res is " . print_r($res, true));
         return $res;
     }
 
@@ -695,11 +703,9 @@ error_log("res is " . print_r($res, true));
         $data['transaction'] = $transaction;
 
 
-        $this->log("Initiating Vipps session for $vippsorderid", 'debug');
+        $this->log("Initiating Vipps MobilePay ecomm session for $vippsorderid", 'debug');
 
         $data = apply_filters('woo_vipps_initiate_payment_data', $data);
-
-error_log("Command is $command Data is " . print_r($data, true));
 
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
         return $res;
@@ -1534,6 +1540,9 @@ error_log("Command is $command Data is " . print_r($data, true));
                 $msg = "$response";
                 $msg .= (isset($content['title'])) ?  (" " . $content['title']) : "";
                 $msg .= ": " .  $content['detail'];
+                if (isset($content['extraDetails'])) {
+                  $msg = "Extra details: " . print_r($content['extraDetails'], true);
+                }
             } elseif (isset($content['errors'])) {
                 $msg = print_r($content['errors'], true);
             } elseif (isset($content['error'])) {
@@ -1549,6 +1558,7 @@ error_log("Command is $command Data is " . print_r($data, true));
                 $msg = "$response ";
                 $msg .= $content['title'];
                 if (isset($content['detail'])) $msg .= " - " . $content['detail'];
+                if (isset($content['extraDetails'])) $msg .= " - " . print_r($content['extraDetails'], true);
             } else {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
                 $msg = '';

@@ -2029,7 +2029,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             } catch (VippsAPIException $e) {
                 $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
-                    $result['status'] = 'CANCEL';
+                    $result = array('status'=>'CANCEL'); 
                     return $result;
                 } else {
                     throw $e;
@@ -2038,92 +2038,112 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } elseif ($order->get_meta('_vipps_api') == 'epayment') {
             try {
                 $result = $this->api->epayment_get_payment($order);
+            } catch (VippsAPIException $e) {
+                $resp = intval($e->responsecode);
+                if ($resp == 402 || $resp == 404) {
+                    $result = array('status'=>'CANCEL');
+                    return $result;
+                } else {
+                    $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
+                    throw $e;
+                }
             } catch (Exception $e) {
                 $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
+                $result = array('status'=>'CANCEL'); 
+                return $result;
             }
         }
 
-       # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
-       if (!empty($result)) {
-           $result['orderId']  = $result['reference']; 
-           if (isset($result['paymentDetails'])) {
-               $details = $result['paymentDetails'];
+        # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
+        if (!empty($result)) {
+            $result['orderId']  = $result['reference']; 
 
-               # IOK 2022-01-19 for this, the docs and experience does not agree, so check both
-               $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
-               $result['status'] = $details['state'];
+            // Now, if we got this via Vipps Checkout, the paymentDetails field will contain our data *including the status/state*. 
+            // If we didn't, what we got here is actually the payment details, so map it in. IOK 2023-12-23
+            if (isset($result['state']) && !isset($result['paymentDetails'])) {
+                $result = ['orderId' => $result['reference'], 'reference' => $result['reference'], 'status' => $result['state'], 'paymentDetails' => $result];
+            }
 
-               // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
-               if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
-                   $result['status'] = "SALE";
-               }
+            // Now, if we don't have payment details, we should have a dead session or something like it. If we do, we can cretae
+            // a normalized result. IOK 2023-12-13
+            if (isset($result['paymentDetails'])) {
+                $details = $result['paymentDetails'];
 
-               $transactionSummary = array();
-               // Always NOK at this point, but we also don't care because the order has the currency
-               $transactionSummary['capturedAmount'] = isset($aggregate['capturedAmount']) ?   $aggregate['capturedAmount']['value'] : 0;
-               $transactionSummary['refundedAmount'] = isset($aggregate['refundedAmount']) ? $aggregate['refundedAmount']['value'] : 0; 
-               $transactionSummary['cancelledAmount'] =isset($aggregate['cancelledAmount']) ? $aggregate['cancelledAmount']['value'] : 0; 
-               $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0; 
-               $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
-               $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
-               $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'];
-               $result['transactionSummary'] = $transactionSummary;
-           }
+# IOK 2022-01-19 for this, the docs and experience does not agree, so check both
+                $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
+                $result['status'] = $details['state'];
 
-           // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-           $result = $this->ensure_userDetails($result, $order);
-          
-           if (isset($result['shippingDetails'])) {
+                // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
+                if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
+                    $result['status'] = "SALE";
+                }
+
+                $transactionSummary = array();
+                // Always NOK at this point, but we also don't care because the order has the currency
+                $transactionSummary['capturedAmount'] = isset($aggregate['capturedAmount']) ?   $aggregate['capturedAmount']['value'] : 0;
+                $transactionSummary['refundedAmount'] = isset($aggregate['refundedAmount']) ? $aggregate['refundedAmount']['value'] : 0; 
+                $transactionSummary['cancelledAmount'] =isset($aggregate['cancelledAmount']) ? $aggregate['cancelledAmount']['value'] : 0; 
+                $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0; 
+                $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
+                $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
+                $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'];
+                $result['transactionSummary'] = $transactionSummary;
+            }
+
+            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+            $result = $this->ensure_userDetails($result, $order);
+
+            if (isset($result['shippingDetails'])) {
                 $addr  = $result['shippingDetails'];
                 unset($addr['shippingMethodId']);
                 $result['shippingDetails']['address'] = $addr;
-           }
-           if (isset($result['userDetails'])) {
+            }
+            if (isset($result['userDetails'])) {
                 $result['userDetails']['mobileNumber'] = $result['userDetails']['phoneNumber'];
                 $result['userDetails']['userId'] = $result['userDetails']['phoneNumber'];
-           }
+            }
 
-           # IOK 2022-06-16 Not user for epayment; a separate call is available and used for debugging in Vipps.class.php
-           $result['transactionLogHistory'] = array();
-           # IOK 2022-06-16 And this is called on-demand, if "is-array" then we're good.
-           $result['epaymentLog'] = null;
+# IOK 2022-06-16 Not user for epayment; a separate call is available and used for debugging in Vipps.class.php
+            $result['transactionLogHistory'] = array();
+# IOK 2022-06-16 And this is called on-demand, if "is-array" then we're good.
+            $result['epaymentLog'] = null;
 
-           # IOK 2022-02-20 Try to always return a status
-           if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionTerminated') {
-               $result['status'] = 'CANCEL';
-               $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
-               $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
-               $order->save();
-           }
+# IOK 2022-02-20 Try to always return a status
+            if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionTerminated') {
+                $result['status'] = 'CANCEL';
+                $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
+                $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+                $order->save();
+            }
 
-           # IOK 2022-02-20 Try to always return a status
-           if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
+# IOK 2022-02-20 Try to always return a status
+            if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
 
-               // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
-               $result['status'] = "INITIATE";
-               $created = $order->get_date_created();
-               $timestamp = 0;
-               $now = time();
-               try {
-                   $timestamp = $created->getTimestamp();
-               } catch (Exception $e) {
-                   // PHP 8 gives ValueError for certain older versions of WooCommerce here. 
-                   $timestamp = intval($created->format('U'));
-               }
-               $passed = $now - $timestamp;
-               $minutes = ($passed / 60);
+                // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
+                $result['status'] = "INITIATE";
+                $created = $order->get_date_created();
+                $timestamp = 0;
+                $now = time();
+                try {
+                    $timestamp = $created->getTimestamp();
+                } catch (Exception $e) {
+                    // PHP 8 gives ValueError for certain older versions of WooCommerce here. 
+                    $timestamp = intval($created->format('U'));
+                }
+                $passed = $now - $timestamp;
+                $minutes = ($passed / 60);
 
-               // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
-               if ($minutes > 120) {
-                   $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
-                   $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
-                   $order->save();
-                   $result['status'] = 'CANCEL';
-               }
-           }
+                // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
+                if ($minutes > 120) {
+                    $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
+                    $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
+                    $order->save();
+                    $result['status'] = 'CANCEL';
+                }
+            }
 
-           return $result;
-       }
+            return $result;
+        }
 
         // If we get here, this is an ECOM order, which uses the older API IOK 2022-02-21
 
@@ -2407,6 +2427,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$statusdata) return null;
 
         $vippsstatus = isset($statusdata['status']) ? $statusdata['status'] : "";
+
         if (!$vippsstatus) {
             $this->log("Unknown Vipps Status: " . print_r($statusdata, true), 'debug');
         }
