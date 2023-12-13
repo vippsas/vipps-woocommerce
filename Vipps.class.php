@@ -892,6 +892,7 @@ class Vipps {
             delete_transient('_vipps_save_admin_notices');
             print $stored;
         }
+        do_action('vipps_admin_notices');
     }
 
     // Show express option on checkout form too
@@ -1866,7 +1867,7 @@ EOF;
         // we get a crash. If there is no "current screen", then we cannot provide these.
         if (!function_exists('get_current_screen')) return false;
         ob_start();
-        do_action('admin_notices');
+        do_action('vipps_admin_notices');
         $notices = ob_get_clean();
         set_transient('_vipps_save_admin_notices',$notices, 5*60);
     }
