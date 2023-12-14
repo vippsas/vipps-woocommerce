@@ -59,10 +59,6 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       }}
     >
       {children}
-      <div style={{ border: '1px solid red', padding: 4 }}>
-        <span style={{ textAlign: 'center', marginBottom: 8 }}>DEBUG</span>
-        <pre>{JSON.stringify(values, null, 2)}</pre>
-      </div>
     </WPContext.Provider>
   );
 }
