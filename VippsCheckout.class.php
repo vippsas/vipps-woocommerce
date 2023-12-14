@@ -588,6 +588,7 @@ class VippsCheckout {
                return false;
             }
             // Get it again to ensure we have all the info, and check status again
+            clean_post_cache($order->get_id());
             $order = wc_get_order($order->get_id());
             if ($order->get_status() != 'pending') return false;
 
