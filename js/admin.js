@@ -29,7 +29,6 @@ SOFTWARE.
 // This file contains various javascript code for Vipps-specific functionality in the backend. 
 //
 (function () {
-
     console.log("Pagenow: " + pagenow);
 
 
@@ -101,6 +100,7 @@ SOFTWARE.
 
     /* Tab-ify the settings page */
     if (pagenow == 'woocommerce_page_wc-settings') {
+        return;
         if (jQuery('#vipps-settings-page').length > 0) {
             let toptitle = jQuery('h3.wc-settings-sub-title').parent().find('h2').first();
             let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
