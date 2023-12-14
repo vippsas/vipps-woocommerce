@@ -2051,6 +2051,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
                if ($minutes > 120) {
+                   $this->log(sprintf(__('Checkout order older than 120 minutes with no order status - cancelled as abandoned: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
                    $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
                    $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
                    $order->save();

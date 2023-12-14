@@ -1295,7 +1295,8 @@ else:
             $ss = $details['shippingDetails'];
             $addr = isset($ss['address']) ? $ss['address'] : array();
             print "<h3>" . __('Shipping details', 'woo-vipps') . "</h3>";
-            print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_values($addr))) . "<br>";
+            print "<pre>"; print_r($addr) . "</pre>";
+            print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_filter(array_values($addr), 'is_scalar'))) . "<br>";
             if (@$ss['shippingMethod']) print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
             if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
             print __('Shipping method ID', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethodId']) . "<br>";

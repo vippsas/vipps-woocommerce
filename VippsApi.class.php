@@ -719,8 +719,8 @@ class VippsApi {
 
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
+        $this->log("Initiating Checkout session for $vippsorderid", 'debug');
         $res = $this->http_call($command,$data,'POST',$headers,'json'); 
-
         return $res;
     }
 
