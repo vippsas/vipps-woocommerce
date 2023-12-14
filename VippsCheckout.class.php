@@ -391,7 +391,6 @@ class VippsCheckout {
 
         // IOK This is the actual status of the order when this is called, which will
         // include personalia only when available
-
         if ($ok && $change && isset($status['billingDetails']))  {
             $contact = $status['billingDetails'];
             $order->set_billing_email($contact['email']);
@@ -401,7 +400,7 @@ class VippsCheckout {
             $order->set_billing_address_1($contact['streetAddress']);
             $order->set_billing_city($contact['city']);
             $order->set_billing_postcode($contact['postalCode']);
-            $order->set_billing_country($countrycode);
+            $order->set_billing_country($contact['country']);
         }
         if ($ok &&  $change && isset($status['shippingDetails']))  {
             $contact = $status['shippingDetails'];
@@ -411,7 +410,7 @@ class VippsCheckout {
             $order->set_shipping_address_1($contact['streetAddress']);
             $order->set_shipping_city($contact['city']);
             $order->set_shipping_postcode($contact['postalCode']);
-            $order->set_shipping_country($countrycode);
+            $order->set_shipping_country($contact['country']);
 
         }
         if ($change) $order->save();
@@ -599,18 +598,20 @@ class VippsCheckout {
                try {
                     $polldata = $this->gateway()->api->poll_checkout($poll);
                     $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                    $this->log("Checking Checkout status on cart/order change for " . $order->get_id() . " $sessionState ", 'debug');
                     if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
                        // If we have started payment, we do not kill the order.
+                       $this->log("Checkout payment started - cannot cancel for " . $order->get_id(), 'debug');
                        return false;
                     }
                } catch (Exception $e) {
-                    // no data so..
+                   $this->log(sprintf(__('Could not get Checkout status for order %1$s in progress while cancelling', 'woo-vipps'), $order->get_id()), 'debug');
                }
             }
 
-
             // NB: This can *potentially* be revived by a callback!
-            $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps'), false);
+            $this->log(sprintf(__('Cancelling Checkout order because order changed: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
+            $order->set_status('cancelled', __("Order specification changed - this order abandoned by customer in Checkout  ", 'woo-vipps'), false);
             // Also mark for deletion and remove stored session
             $order->delete_meta_data('_vipps_checkout_session');
             $order->update_meta_data('_vipps_delendum',1);
