@@ -2023,7 +2023,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $result['epaymentLog'] = null;
 
            # IOK 2022-02-20 Try to always return a status
-           if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionTerminated') {
+           if (!isset($result['status']) && isset($result['sessionState']) && ($result['sessionState'] == 'SessionTerminated' || $result['sessionState'] == 'SessionExpired')) {
                $result['status'] = 'CANCEL';
                $order->add_order_note(__( 'Vipps Checkout Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps' ));
                $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
@@ -2031,7 +2031,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            }
 
            # IOK 2022-02-20 Try to always return a status
-           if (!isset($result['status']) && isset($result['sessionState']) && $result['sessionState'] == 'SessionStarted') {
+           # IOK 2023-12-14 at some point, apparently SessionStarted became SessionCreated
+           # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
+           if (!isset($result['status']) && isset($result['sessionState']) && ($result['sessionState'] == 'SessionStarted' || $result['sessionState'] == 'SessionCreated')) {
 
                // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
                $result['status'] = "INITIATE";
