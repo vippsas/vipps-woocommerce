@@ -126,6 +126,18 @@ class Vipps {
     // True iff support for HPOS has been activated IOK 2022-12-07
     public function useHPOS() {
         if ($this->HPOSActive == null) {
+
+            // Current way of checking IOK 2023-12-19
+            if (class_exists('Automattic\WooCommerce\Utilities\OrderUtil')) {
+                if (Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+                    $this->HPOSActive = true;
+                } else {
+                    $this->HPOSActive = false;
+                }
+                return $this->HPOSActive;
+            }
+
+            // This works in the backend, so ensures we are good with the meta fields etc.
             if (function_exists('wc_get_container') &&  // 4.4.0
                 function_exists('wc_get_page_screen_id') && // Part of HPOS, not yet released
                 class_exists("Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController") &&
@@ -1572,6 +1584,30 @@ else:
         return 0;
     }
 
+    // This is like getOrderByVipsOrderId, but only fetches pending orders.
+    // This is used for the webhooks, where there is no way to add our own order info. IOK 2023-12-19
+    private function get_pending_vipps_order($vippsorderid) {
+        if ($this->useHPOS()) {
+            $result = wc_get_orders( array(
+                        'limit' => 1,
+                        'status' => 'wc-pending',
+                        'type' => 'shop_order',
+                        'return' => 'objects',
+                        'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
+                        ));
+            if (!empty($result) && is_a($result[0], 'WC_Order')) return $result[0];
+            return null;
+        } else {
+            global $wpdb;
+            $q = $wpdb->prepare("SELECT p.ID from `{$wpdb->posts}` p JOIN `{$wpdb->postmeta}` m ON (m.post_id = p.ID and m.meta_key = '_vipps_orderid') WHERE p.post_type = 'shop_order' &&  p.post_status = 'wc-pending' AND m.meta_value = %s LIMIT 1", $vippsorderid);
+            $res = $wpdb->get_results($q, ARRAY_A);
+            if (empty($res)) false;
+            $o = wc_get_order($res[0]['ID']);
+            if (is_a($o, 'WC_Order')) return $o;
+            return null;
+        }
+    }
+
 
     // If this is a special page, return true very early because we are handling this. IOK 2023-02-22
     public function pre_handle_404($current, $query) {
@@ -1932,18 +1968,27 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
+        wc_nocache_headers();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
+        error_log("Received " . print_r($result, true));
+
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
+        // .. and the epayment webhooks 2023-12-19
         $ischeckout = false;
+        $iswebhook = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
         // For Vipps Checkout v3 and onwards, we control the callback so the type is just this field
         if ($callback == 'checkout') {
             $ischeckout = true;
+        } 
+        // For the webhooks, we will add 'webhook' to the result, but we also know that 'pspReference' will be present. IOK 2023-12-19
+        if ($callback == 'webhook' || (!$ischeckout && ($result['pspReference'] ?? false))) {
+            $iswebhook = true;
         }
 
         $vippsorderid = ($result && isset($result['orderId'])) ? $result['orderId'] : "";
@@ -1967,6 +2012,44 @@ EOF;
         if (isset($result['testing_callback'])) {
             $this->log(__("Received a test callback, exiting" , 'woo-vipps'), 'debug');
             print '{"status": 1, "msg": "Test ok"}';
+            exit();
+        }
+
+        if ($iswebhook) {
+            $pending = $this->get_pending_vipps_order($vippsorderid);
+            // We are not interested in Checkout or Express orders - they have their own callback systems
+            if ($pending->get_meta('_vipps_checkout') or $pending->get_meta('_vipps_express_checkout')) {
+                $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $pending->get_id()), 'debug');
+                return;
+            }
+            $msn = $result['msn'];
+            $hookdata = $this->gateway()->get_local_webhook($msn);
+            $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
+            if (!$secret) {
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks.', 'woo-vipps'), $pending->get_id()), 'debug');
+                return;
+            }
+            // Verify the callback.
+            $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
+            $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
+
+            // Check date here with some leeway, using strtotime. FIXME
+
+            $hashed_payload = base64_encode(hash('sha256', $raw_post, true));
+            $path_and_query = $_SERVER['REQUEST_URI'];
+            $host = $_SERVER['HTTP_HOST'];
+            $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
+            $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
+            $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+
+            if ($auth == $expected_auth) {
+                error_log("Signature is good");
+                // Now do the callback with "webhook true" so we know it has been verified. FIXME
+                do_action('woo_vipps_callback_webhook', $result);
+            } else {
+                error_log("No good");
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks.', 'woo-vipps'), $pending->get_id()), 'debug');
+            }
             exit();
         }
 

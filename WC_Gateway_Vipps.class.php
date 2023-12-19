@@ -351,7 +351,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Webhook callbacks do not pass GET arguments at all, but do provide an X-Vipps-Authorization header for verification. IOK 2023-12-19
     public function webhook_callback_url () {
         $url = home_url("/", 'https');
-        $queryargs = [];
+        $queryargs = ['callback'=>'webhook'];
         $forwhat = 'wc_gateway_vipps'; // Same callback as for ecom, checkout, express checkout
         // HTTPS required. IOK 2018-05-18
         // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
@@ -3387,12 +3387,41 @@ function activate_vipps_checkout(yesno) {
         return $saved;
     }
 
+    // Returns the local webhooks for the given msn. If the url has changed, it will return nothing. IOK 2023-12-19
+    public function get_local_webhook($msn) {
+        $local_hooks = get_option('_woo_vipps_webhooks');
+        $hooks = $local_hooks[$msn] ?? [];
+        $callback = $this->webhook_callback_url();
+        $callback_compare = strtok($callback, '?');
+
+        error_log("Locals "  . print_r($local_hooks, true));
+        error_log("Returns $callback " . print_r($hooks, true));
+
+        foreach ($hooks as $id=>$hook) {
+            error_log("Check {$hook['url']} vs $callback");
+            $noargs = strtok($hook['url'], '?');
+            if ($noargs == $callback_compare) {
+                error_log("That is a match");
+                return $hook;
+            } else {
+                error_log("Princess in another castle");
+            }
+        }
+        return null;
+    }
+
     // This will fetch *our own* webhooks that is the ones pointing to us that we know the secret for.
     // Hooks that point to us that we *do not* know the secret for, have to be deleted.
     public function get_webhooks() {
         $local_hooks = get_option('_woo_vipps_webhooks');
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
+
+        error_log("All hooks: " . print_r($all_hooks, true));
+
+        // Ignore any extra arguments
+        $comparandum = strtok($ourselves, '?');
+
         $change = false;
 
         // We may need to delete webhooks that have been orphaned. There should be exactly one
@@ -3406,7 +3435,8 @@ function activate_vipps_checkout(yesno) {
             foreach ($hooks as $hook) {
                 $id = $hook['id'];
                 $url = $hook['url'];
-                if ($url != $ourselves) continue; // Some other shops hook, we will ignore it
+                $noargs = strtok($url, '?');
+                if ($noargs != $comparandum) continue; // Some other shops hook, we will ignore it
                 $local = $locals[$id] ?? false;
                 // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
                 if (!$gotit && $local && isset($local['secret']))  {
@@ -3426,7 +3456,7 @@ function activate_vipps_checkout(yesno) {
 
             if ($gotit) {
                 // Now if we got a hook, then we should *just* remember that for this msn. 
-                $local_hooks[$msn] = [$local['id'] => $local];
+                $local_hooks[$msn] = array($local['id'] => $local);
             } else {
                 // If not, we don't have a hook for this msn and site, so we need to (try to) create one
                 $change = true;
