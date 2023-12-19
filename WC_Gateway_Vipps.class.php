@@ -181,10 +181,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        return false;
     }
     // These abstraction gets the correct client id and so forth based on whether or not test mode is on
-    public function apiurl () {
-       if ($this->is_test_mode()) return $this->testapiurl;
+    // "test mode" is now per MSN, so we accept that as an argument IOK 2023-12-19
+    public function apiurl ($msn="") {
+       $msn = $msn ?? $this->get_merchant_serial();
+       $keyset = $this->get_keyset();
+       $entry  = $keyset ? ($keyset[$msn] ?? null) : null;
+       if (!$entry) {
+           $testmode = $this->is_test_mode();
+       } else {
+           $testmode = $entry['testmode'];
+       }
+       if ($testmode) return $this->testapiurl;
        return $this->apiurl;
     }
+
     // This returns the *current* merchant serial number. There may be more than one, for instance if the test mode is on.
     // IOK 2023-12-19
     public function get_merchant_serial() {
@@ -197,45 +207,65 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Returns a table of all the keydata of this instance, keyed on MSN. IOK 2023-12-19
     protected function get_keyset() {
         if ($this->keyset) return $this->keyset;
+        $stored = get_transient('_vipps_keyset');
+
+        if ($stored) return $stored;
         $keyset = [];
         $main = $this->get_option('merchantSerialNumber');
         if ($main) {
-              $data = ['client_id'=>$clientid=$this->get_option('clientId'), 
-                       'client_secret' => $this->get_option('secret'), 
-                       'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
+            $data = ['testmode'=>0,
+                     'client_id'=>$clientid=$this->get_option('clientId'), 
+                     'client_secret' => $this->get_option('secret'), 
+                     'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
               if (! in_array(false, array_map('boolval', array_values($data)))) {
                  $keyset[$main] = $data;
               }
         }
         $test = @$this->get_option('merchantSerialNumber_test');
         if ($test) {
-              $data = ['client_id'=>$clientid=$this->get_option('clientId_test'),
-                       'client_secret' => $this->get_option('secret_test'), 
-                       'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test')]; 
+            $data = [
+                'testmode'=>1,
+                'client_id'=>$clientid=$this->get_option('clientId_test'),
+                'client_secret' => $this->get_option('secret_test'), 
+                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test')]; 
               if (! in_array(false, array_map('boolval', array_values($data)))) {
                  $keyset[$test] = $data;
               }
         }
         $this->keyset = $keyset;
+        set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
         return $keyset;
+    }
+
+    // Return all webhooks for our MSNs
+    public function get_webhooks () {
+         $keys = $this->get_keyset();
+         $hooks = [];
+         foreach($keys as $msn=>$data) {
+            $hooks[$msn] = $this->api->get_webhooks($msn);
+         }
+         return $hooks;
     }
 
 
     // The rest of the settings gets the correct client id, secret, sub key and order prefix based on the MSN.
     public function get_clientid($msn="") {
         if (!$msn) $msn = $this->get_merchant_serial();
-        if (!isset($this->keyset[$msn])) return false;
-        return $this->keyset[$msn]['client_id'];
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['client_id'];
     }
     public function get_secret($msn="") {
         if (!$msn) $msn = $this->get_merchant_serial();
-        if (!isset($this->keyset[$msn])) return false;
-        return $this->keyset[$msn]['client_secret'];
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['client_secret'];
     }
     public function get_key($msn="") {
         if (!$msn) $msn = $this->get_merchant_serial();
-        if (!isset($this->keyset[$msn])) return false;
-        return $this->keyset[$msn]['sub_key'];
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['sub_key'];
     }
 
     public function get_orderprefix() {
@@ -3307,6 +3337,7 @@ function activate_vipps_checkout(yesno) {
 
         // Reinitialize keysets in case user added/changed these
         $this->keyset = null;
+        delete_transient('_vipps_keyset');
         $this->get_keyset();
 
         list($ok,$msg)  = $this->check_connection();
@@ -3332,6 +3363,11 @@ function activate_vipps_checkout(yesno) {
         $s = $this->get_secret($msn);
         $c = $this->get_clientid($msn);
         if ($at && $s && $c) {
+
+            $hooks = $this->get_webhooks();
+            error_log("Hooks: " . print_r($hooks, true));
+
+
             try {
                 $token = $this->api->get_access_token($msn,'force');
                 update_option('woo-vipps-configured', 1, true);

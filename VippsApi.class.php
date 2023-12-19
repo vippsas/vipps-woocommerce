@@ -48,10 +48,10 @@ class VippsApi {
         return $this->gateway->get_merchant_serial();
     }
     public function get_clientid($msn="") {
-        return $this->gateway->get_clientid($msn="");
+        return $this->gateway->get_clientid($msn);
     }
-    public function get_secret() {
-        return $this->gateway->get_secret($msn="");
+    public function get_secret($msn="") {
+        return $this->gateway->get_secret($msn);
     }
     public function get_key($msn="") {
         return $this->gateway->get_key($msn); 
@@ -68,9 +68,48 @@ class VippsApi {
         return $this->gateway->log($what,$type);
     }
 
-    // IOK FIXME THE WEBHOOK API
-    public function register_webhooks() {
+    // All methods get these headers, adding meta info, access token etc
+    public function get_headers($msn="") {
+        if (!$msn) $msn =$this->get_merchant_serial();
+        $date = gmdate('c');
+        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
+        $at = $this->get_access_token($msn);
+        $subkey = $this->get_key($msn);
+
+        if (!$msn || !$at || !$subkey) {
+           return null;
+        }
+
+        $headers = array();
+        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers['X-TimeStamp'] = $date;
+        $headers['X-Source-Address'] = $ip;
+        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
+        $headers['Merchant-Serial-Number'] = $msn;
+
+        $headers['Vipps-System-Name'] = 'woocommerce';
+        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
+        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
+        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        return $headers;
     }
+
+    // IOK FIXME THE WEBHOOK API
+    // List all webhooks registered for the given MSN IOK 2023-12-19
+    public function get_webhooks($msn="") {
+        $command = "/webhooks/v1/webhooks";
+        if (!$msn) $msn = $this->get_merchant_serial(); 
+        $headers = $this->get_headers($msn);
+        $args = [];
+        try {
+            $res = $this->http_call($msn,$command,$args,'GET',$headers,'json');
+            return $res;
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Could not get webhooks for merchant serial number %1\$s: ", 'woo-vipps'), $msn) . $e->getMessage(), 'error');
+            return false;
+        }
+    }
+    // IOK FIXME END WEBHOOKS
 
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
     // IOK 2023-12-19 changed this so the system could use several MSNs in the future.
@@ -96,10 +135,12 @@ class VippsApi {
     private function get_access_token_from_vipps($msn="") { 
         $clientid=$this->get_clientid($msn);
         $secret=$this->get_secret($msn);
-        $at = $this->get_key($msn);
+        $subkey  = $this->get_key($msn);
+
         $command = 'accessToken/get';
         try {
-            $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
+            $args = array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$subkey);
+            $result = $this->http_call($msn,$command,array(),'POST',$args,'url');
             return $result;
         } catch (TemporaryVippsAPIException $e) {
             $this->log(__("Could not get Vipps access token",'woo-vipps') .' '. $e->getMessage(), 'error');
@@ -133,13 +174,13 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn= $this->get_merchant_serial();
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['X-TimeStamp'] = $date;
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -152,7 +193,7 @@ class VippsApi {
         $args = ['imageId'=>$imageid,'src'=>$base64,'type'=>'base64'];
 
         try {
-            $res = $this->http_call($command,$args,'POST',$headers,'json'); 
+            $res = $this->http_call($msn,$command,$args,'POST',$headers,'json'); 
             return $res['imageId'];
         } catch (Exception $e) {
             // Previous versions of the API returned 400 for duplicate images, future will use 409;
@@ -299,14 +340,14 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
 
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['X-TimeStamp'] = $date;
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -332,14 +373,14 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn= $this->get_merchant_serial();
 
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['X-TimeStamp'] = $date;
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -357,7 +398,7 @@ class VippsApi {
            $args['imageId'] = $imageid;
        }
        try {
-            $res = $this->http_call($command,$args,'PUT',$headers,'json'); 
+            $res = $this->http_call($msn,$command,$args,'PUT',$headers,'json'); 
             return true;
         } catch (Exception $e) {
             $this->log(sprintf(__("Could not add category %1\$s to Vipps: ", 'woo-vipps'), $categorytype) . $e->getMessage(), 'error');
@@ -376,14 +417,14 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
 
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['X-TimeStamp'] = $date;
         $headers['X-Source-Address'] = $ip;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -395,7 +436,7 @@ class VippsApi {
         $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
         $command = "order-management/v2/$paymenttype/$vippsid";
        try {
-            $res = $this->http_call($command,[],'GET',$headers);
+            $res = $this->http_call($msn,$command,[],'GET',$headers);
             return $res;
         } catch (Exception $e) {
             $this->log(sprintf(__("Could not get receipt data for order %1\$s from Vipps: ", 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
@@ -412,7 +453,7 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
@@ -421,7 +462,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -430,7 +471,7 @@ class VippsApi {
         $headers = array();
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         $headers['Idempotency-Key'] = $requestid;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
@@ -571,7 +612,7 @@ class VippsApi {
         $data = apply_filters('woo_vipps_epayment_initiate_payment_data', $data);
 
         // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
-        $res = $this->http_call($command,$data,'POST',$headers,'json');
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json');
 
         // Backwards compatibility: Previous API returned this as an URL. We also get a 'reference' back, the Vipps Order Id
         $res['url'] = $res['redirectUrl'] ?? false;
@@ -586,7 +627,7 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
@@ -596,7 +637,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -653,7 +694,7 @@ class VippsApi {
 
         $data = array();
         $data['customerInfo'] = array('mobileNumber' => $phone); 
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
+        $data['merchantInfo'] = array('merchantSerialNumber' => $msn, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
 
         $express = $order->get_meta('_vipps_express_checkout');
 
@@ -713,7 +754,7 @@ class VippsApi {
 
         $data = apply_filters('woo_vipps_initiate_payment_data', $data);
 
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
 
@@ -729,14 +770,14 @@ class VippsApi {
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
 
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         $prefix = $this->get_orderprefix();
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -769,7 +810,7 @@ class VippsApi {
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['merchant-Serial-Number'] = $merch;
+        $headers['merchant-Serial-Number'] = $msn;
 
         // The string returned is a prefix ending with callback=, for v3 we need to send a complete URL
         // so we just add the callback type here.
@@ -911,7 +952,7 @@ class VippsApi {
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
         $this->log("Initiating Checkout session for $vippsorderid", 'debug');
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
 
@@ -924,12 +965,12 @@ class VippsApi {
         $clientid = $this->get_clientid();
         $secret = $this->get_secret();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
 
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['merchant-Serial-Number'] = $merch;
+        $headers['merchant-Serial-Number'] = $msn;
 
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -938,7 +979,7 @@ class VippsApi {
 
 
         try {
-            $res = $this->http_call($command,$data,'GET',$headers,'json'); 
+            $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
             // This is not a 404, but the session is still expired. IOK 2023-10-16
             if (($res['sessionState'] ?? "") == 'SessionExpired') {
                 return 'EXPIRED';  
@@ -976,12 +1017,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1011,10 +1052,10 @@ class VippsApi {
 
 
         $data = array();
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch);
+        $data['merchantInfo'] = array('merchantSerialNumber' => $msn);
         $data['transaction'] = $transaction;
 
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
 
@@ -1027,12 +1068,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1047,10 +1088,10 @@ class VippsApi {
         $transaction['transactionText'] = __('Order cancel for order','woo-vipps') . ' ' . $orderid . ' ';
 
         $data = array();
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch);
+        $data['merchantInfo'] = array('merchantSerialNumber' => $msn);
         $data['transaction'] = $transaction;
 
-        $res = $this->http_call($command,$data,'PUT',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'PUT',$headers,'json'); 
         return $res;
     }
 
@@ -1064,12 +1105,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1093,10 +1134,10 @@ class VippsApi {
 
 
         $data = array();
-        $data['merchantInfo'] = array('merchantSerialNumber' => $merch);
+        $data['merchantInfo'] = array('merchantSerialNumber' => $msn);
         $data['transaction'] = $transaction;
 
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
 
@@ -1109,12 +1150,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1128,7 +1169,7 @@ class VippsApi {
 
         $data = array();
 
-        $res = $this->http_call($command,$data,'GET',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
         return $res;
     }
 
@@ -1142,12 +1183,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1157,7 +1198,7 @@ class VippsApi {
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         $headers['Idempotency-Key'] = $requestid;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
@@ -1171,7 +1212,7 @@ class VippsApi {
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
     // Support for then new epayment API, which is also used by Checkout
@@ -1183,12 +1224,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1198,7 +1239,7 @@ class VippsApi {
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         $headers['Idempotency-Key'] = $requestid;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
@@ -1212,7 +1253,7 @@ class VippsApi {
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
 
@@ -1229,12 +1270,12 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
@@ -1244,7 +1285,7 @@ class VippsApi {
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         $headers['Idempotency-Key'] = $requestid;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
@@ -1264,7 +1305,7 @@ class VippsApi {
         $data = array();
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
-        $res = $this->http_call($command,$data,'POST',$headers,'json'); 
+        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
 
@@ -1275,19 +1316,19 @@ class VippsApi {
 
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -1296,7 +1337,7 @@ class VippsApi {
 
         $data = array();
 
-        $res = $this->http_call($command,$data,'GET',$headers);
+        $res = $this->http_call($msn,$command,$data,'GET',$headers);
         return $res;
     }
     // For the new epayment API, also used by checkout, return payment log (as for old payment_details. Will be used for debugging.
@@ -1307,19 +1348,19 @@ class VippsApi {
 
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -1328,7 +1369,7 @@ class VippsApi {
 
         $data = array();
 
-        $res = $this->http_call($command,$data,'GET',$headers);
+        $res = $this->http_call($msn,$command,$data,'GET',$headers);
         return $res;
     }
 
@@ -1338,19 +1379,19 @@ class VippsApi {
         $command = "vipps-userinfo-api/userinfo" . "/" . $sub;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         $headers = array();         
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
@@ -1359,7 +1400,7 @@ class VippsApi {
         
         $data = array();
         
-        $res = $this->http_call($command,$data,'GET',$headers);
+        $res = $this->http_call($msn,$command,$data,'GET',$headers);
         return $res;
     }
 
@@ -1388,19 +1429,19 @@ class VippsApi {
         if ($action != "POST") $command .= $id;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn = $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
@@ -1412,7 +1453,7 @@ class VippsApi {
         if ($id)  $data['id']  = $id;
         if ($url) $data['redirectUrl'] = $url;
 
-        $res = $this->http_call($command,$data,$action,$headers, 'json');
+        $res = $this->http_call($msn,$command,$data,$action,$headers, 'json');
 
         return $res;
     }
@@ -1422,36 +1463,36 @@ class VippsApi {
     public function get_merchant_redirect_qr ($url, $accept = "image/svg+xml") {
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $merch = $this->get_merchant_serial();
+        $msn= $this->get_merchant_serial();
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        if (!$merch) {
+        if (!$msn) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
         $headers = array();        
         $headers['Authorization'] = 'Bearer ' . $at;
         $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $merch;
+        $headers['Merchant-Serial-Number'] = $msn;
         $headers['Vipps-System-Name'] = 'woocommerce';
         $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
         $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
         $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
         $headers['Accept'] = $accept;
 
-        $res = $this->http_call($url,[],'GET',$headers);
+        $res = $this->http_call($msn, $url,[],'GET',$headers);
         return $res;
     }
 
     // Conveniently call Vipps IOK 2018-04-18
-    private function http_call($command,$data,$verb='GET',$headers=null,$encoding='url'){
+    private function http_call($msn,$command,$data,$verb='GET',$headers=null,$encoding='url'){
         $url = "";
         if (preg_match("/^http/i", $command)) {
             $url = $command;
         } else {
-            $server=$this->gateway->apiurl();
+            $server=$this->gateway->apiurl($msn);
             $url = $server . "/" . $command; 
         }
 
