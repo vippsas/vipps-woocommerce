@@ -168,24 +168,8 @@ class VippsApi {
             }
         }
 
-       
-
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
-        $msn= $this->get_merchant_serial();
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $msn = $this->get_merchant_serial(); 
+        $headers = $this->get_headers($msn);
 
         // imageid =  ^[0-9A-Za-z-_\.] - 128 chars
         $imageid = hash('sha512',$bytes); // Yields 128 hex chars
@@ -334,25 +318,9 @@ class VippsApi {
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
         // please note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
         $paymenttype = apply_filters('woo_vipps_receipt_type', 'ecom', $order);
-
         $command = 'order-management/v2/' . $paymenttype . '/receipts/' . $vippsid;
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
-
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
 
         $receiptdata = $this->get_receipt_data($order);
         if (empty($receiptdata)) {
@@ -373,20 +341,8 @@ class VippsApi {
         $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
         $at = $this->get_access_token();
         $subkey = $this->get_key();
-        $msn= $this->get_merchant_serial();
-
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
+        $msn = $this->get_merchant_serial();
+        $headers = $this->get_headers($msn);
 
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
         // Note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
@@ -413,23 +369,8 @@ class VippsApi {
            $this->log(sprintf(__("Cannot add category for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
            return false;
         }
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
-
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
 
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
         // Note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
@@ -449,11 +390,8 @@ class VippsApi {
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
     public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
         $command = 'epayment/v1/payments';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
@@ -466,18 +404,9 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $clientid = $this->get_clientid();
-        $secret = $this->get_secret();
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-        $headers['Idempotency-Key'] = $requestid;
 
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
+        $headers['Idempotency-Key'] = $requestid;
 
         // IOK 2023-12-13 This is currently always false for epayment_initiate_payment but let's think ahead
         // Code for static shipping, shipping callback etc would need to be added. 
@@ -623,11 +552,8 @@ class VippsApi {
 
     public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
         $command = 'Ecomm/v2/payments';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
@@ -659,17 +585,8 @@ class VippsApi {
         $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
         $order->save();
 
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers = $this->get_headers($msn);
         $headers['X-Request-Id'] = $requestid;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
         $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
         $fallback = $returnurl;
@@ -762,15 +679,13 @@ class VippsApi {
     // Updated for V3 2023-01-09
     public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$requestid) {
         $command = 'checkout/v3/session';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $clientid = $this->get_clientid();
-        $secret = $this->get_secret();
-        $subkey = $this->get_key();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
 
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
+        $clientid = $this->get_clientid($msn);
+        $clientsecret = $this->get_secret($msn);
         $prefix = $this->get_orderprefix();
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
@@ -800,17 +715,10 @@ class VippsApi {
 #        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
         $order->save();
 
-        $headers = array();
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vippscheckout';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
+        $headers = $this->get_headers($msn);
+        // Required for Checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['merchant-Serial-Number'] = $msn;
 
         // The string returned is a prefix ending with callback=, for v3 we need to send a complete URL
         // so we just add the callback type here.
@@ -962,20 +870,14 @@ class VippsApi {
 
         $data = array();
         $headers = array();
-        $clientid = $this->get_clientid();
-        $secret = $this->get_secret();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $clientid = $this->get_clientid($msn);
+        $secret = $this->get_secret($msn);
 
+        $headers = $this->get_headers($msn);
+        // Required for checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['merchant-Serial-Number'] = $msn;
-
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
 
 
         try {
@@ -1013,11 +915,8 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/capture';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1026,12 +925,8 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers = $this->get_headers($msn);
         $headers['X-Request-Id'] = $requestid;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
         $transaction = array();
         // Ignore refOrderId - for child-transactions 
@@ -1064,11 +959,8 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/cancel';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1077,12 +969,8 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers = $this->get_headers($msn);
         $headers['X-Request-Id'] = $requestid;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
 
         $transaction = array();
         $transaction['transactionText'] = __('Order cancel for order','woo-vipps') . ' ' . $orderid . ' ';
@@ -1101,11 +989,8 @@ class VippsApi {
         $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
 
         $command = 'Ecomm/v2/payments/'.$orderid.'/refund';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1114,13 +999,8 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers = $this->get_headers($msn);
         $headers['X-Request-Id'] = $requestid;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-
 
         // Ignore refOrderId - for child-transactions 
         $transaction = array();
@@ -1146,11 +1026,8 @@ class VippsApi {
 	$requestid=0;
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'Ecomm/v2/payments/'.$orderid.'/details';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1159,13 +1036,8 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();
-        $headers['Authorization'] = 'Bearer ' . $at;
+        $headers = $this->get_headers($msn);
         $headers['X-Request-Id'] = $requestid;
-        $headers['X-TimeStamp'] = $date;
-        $headers['X-Source-Address'] = $ip;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-
 
         $data = array();
 
@@ -1179,11 +1051,8 @@ class VippsApi {
     public function epayment_cancel_payment($order,$requestid=1) {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid.'/cancel';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1193,19 +1062,9 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
 
-        $clientid = $this->get_clientid();
-        $secret = $this->get_secret();
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
+        $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
         
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
         $modificationAmount = $order->get_meta('_vipps_amount');
         $modificationCurrency = $order->get_currency();
 
@@ -1220,11 +1079,8 @@ class VippsApi {
     public function epayment_capture_payment($order, $amount, $requestid=1) {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid.'/capture';
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1236,17 +1092,9 @@ class VippsApi {
 
         $clientid = $this->get_clientid();
         $secret = $this->get_secret();
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
+        $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
         
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
         $modificationAmount = round($amount);
         $modificationCurrency = $order->get_currency();
 
@@ -1266,11 +1114,8 @@ class VippsApi {
         # null amount means the entire thing
         $amount = $amount ? $amount : wc_format_decimal($order->get_total(),'');
 
-        $date = gmdate('c');
-        $ip = $_SERVER['SERVER_ADDR'] ?? $_SERVER['LOCAL_ADDR'] ?? '127.0.0.1' ;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1280,19 +1125,9 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
 
-        $clientid = $this->get_clientid();
-        $secret = $this->get_secret();
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
+        $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
         
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
         // If we have passed the value as 'øre' we don't need to calculate any more, but woo is weird so we might need to
         $modificationAmount = round($amount);
         if ($cents) {
@@ -1314,9 +1149,8 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid;
 
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1325,15 +1159,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-        
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
 
         $data = array();
 
@@ -1346,9 +1172,8 @@ class VippsApi {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid . "/events";
 
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1357,15 +1182,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-        
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
 
         $data = array();
 
@@ -1377,9 +1194,8 @@ class VippsApi {
     // orders (because they didn't need shipping). In the future, will probably be used more + for integration with Login With Vipps
     public function get_userinfo($sub) {
         $command = "vipps-userinfo-api/userinfo" . "/" . $sub;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1388,15 +1204,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();         
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-        
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
         
         $data = array();
         
@@ -1427,9 +1235,8 @@ class VippsApi {
     private function call_qr_merchant_redirect($action, $id, $url=null, $accept='image/svg+xml') {
         $command = 'qr/v1/merchant-redirect/';
         if ($action != "POST") $command .= $id;
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1438,15 +1245,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
-
+        $headers = $this->get_headers($msn);
         $headers['Accept'] = $accept;
 
         $data = array();
@@ -1461,9 +1260,8 @@ class VippsApi {
     // This isn't really neccessary since we can do this using just the fetch apis, but we'll do it anyway. 
     // The URLs here are valid for just one hour, so this should be called right after an update.
     public function get_merchant_redirect_qr ($url, $accept = "image/svg+xml") {
-        $at = $this->get_access_token();
-        $subkey = $this->get_key();
         $msn= $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
@@ -1472,14 +1270,7 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
-        $headers = array();        
-        $headers['Authorization'] = 'Bearer ' . $at;
-        $headers['Ocp-Apim-Subscription-Key'] = $subkey;
-        $headers['Merchant-Serial-Number'] = $msn;
-        $headers['Vipps-System-Name'] = 'woocommerce';
-        $headers['Vipps-System-Version'] = get_bloginfo( 'version' ) . "/" . WC_VERSION;
-        $headers['Vipps-System-Plugin-Name'] = 'woo-vipps';
-        $headers['Vipps-System-Plugin-Version'] = WOO_VIPPS_VERSION;
+        $headers = $this->get_headers($msn);
         $headers['Accept'] = $accept;
 
         $res = $this->http_call($msn, $url,[],'GET',$headers);
