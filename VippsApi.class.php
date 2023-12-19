@@ -605,7 +605,7 @@ class VippsApi {
           $this->log(__('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps'));
           $transaction['transactionText'] = substr($transaction['transactionText'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
-
+        $date = gmdate('c');
         $transaction['timeStamp'] = $date;
 
 
@@ -685,7 +685,7 @@ class VippsApi {
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
         $clientid = $this->get_clientid($msn);
-        $clientsecret = $this->get_secret($msn);
+        $secret = $this->get_secret($msn);
         $prefix = $this->get_orderprefix();
         // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
         if (!$subkey) {
