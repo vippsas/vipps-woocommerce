@@ -109,6 +109,36 @@ class VippsApi {
             return false;
         }
     }
+    // Try to register a webhook for the site and the MSN passed
+    public function register_webhook($msn, $callback) {
+        $command = "/webhooks/v1/webhooks";
+        if (!$msn) $msn = $this->get_merchant_serial();
+        $headers = $this->get_headers($msn);
+        // We want the authorized event, and all the "no longer relevant" events. IOK 2023-12-19
+        $events = ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'];
+        $args = ['url'=>$callback, 'events'=>$events];
+        try {
+            $res = $this->http_call($msn,$command,$args,'POST',$headers,'json');
+            return $res;
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Could not register webhooks for merchant serial number %1\$s callback %2\$s: ", 'woo-vipps'), $msn, $callback) . $e->getMessage(), 'error');
+            return false;
+        }
+    }
+    // Delete a webhook with the given id
+    public function delete_webhook($msn, $id) {
+        $command = "/webhooks/v1/webhooks/" . $id;
+        if (!$msn) $msn = $this->get_merchant_serial();
+        $headers = $this->get_headers($msn);
+        $args = [];
+        try {
+            $res = $this->http_call($msn,$command,$args,'DELETE',$headers,'json');
+            return $res;
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Could not delete webhook for merchant serial number %1\$s id %2\$s: ", 'woo-vipps'), $msn, $id) . $e->getMessage(), 'error');
+            return false;
+        }
+    }
     // IOK FIXME END WEBHOOKS
 
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
