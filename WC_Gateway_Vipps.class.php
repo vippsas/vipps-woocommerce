@@ -223,17 +223,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // The rest of the settings gets the correct client id, secret, sub key and order prefix based on the MSN.
     public function get_clientid($msn="") {
-        if (!$msn) $msn = get_merchant_serial();
+        if (!$msn) $msn = $this->get_merchant_serial();
         if (!isset($this->keyset[$msn])) return false;
         return $this->keyset[$msn]['client_id'];
     }
     public function get_secret($msn="") {
-        if (!$msn) $msn = get_merchant_serial();
+        if (!$msn) $msn = $this->get_merchant_serial();
         if (!isset($this->keyset[$msn])) return false;
         return $this->keyset[$msn]['client_secret'];
     }
     public function get_key($msn="") {
-        if (!$msn) $msn = get_merchant_serial();
+        if (!$msn) $msn = $this->get_merchant_serial();
         if (!isset($this->keyset[$msn])) return false;
         return $this->keyset[$msn]['sub_key'];
     }
