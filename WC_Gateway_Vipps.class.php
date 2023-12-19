@@ -52,6 +52,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
+    protected $keyset = null; // This will contain all api keys etc for  the gateway, keyed on the merchant serial number.
+
     // Just to avoid calculating these alot
     private $page_templates = null;
     private $page_list = null;
@@ -183,30 +185,59 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        if ($this->is_test_mode()) return $this->testapiurl;
        return $this->apiurl;
     }
+    // This returns the *current* merchant serial number. There may be more than one, for instance if the test mode is on.
+    // IOK 2023-12-19
     public function get_merchant_serial() {
         $merch = $this->get_option('merchantSerialNumber');
         $testmerch = @$this->get_option('merchantSerialNumber_test');
         if (!empty($testmerch) && $this->is_test_mode()) return $testmerch;
         return $merch;
     }
-    public function get_clientid() {
-        $clientid=$this->get_option('clientId');
-        $testclientid=$this->get_option('clientId_test');
-        if (!empty($testclientid) && $this->is_test_mode()) return $testclientid;
-        return $clientid;
+
+    // Returns a table of all the keydata of this instance, keyed on MSN. IOK 2023-12-19
+    protected function get_keyset() {
+        if ($this->keyset) return $this->keyset;
+        $keyset = [];
+        $main = $this->get_option('merchantSerialNumber');
+        if ($main) {
+              $data = ['client_id'=>$clientid=$this->get_option('clientId'), 
+                       'client_secret' => $this->get_option('secret'), 
+                       'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
+              if (! in_array(false, array_map('boolval', array_values($data)))) {
+                 $keyset[$main] = $data;
+              }
+        }
+        $test = @$this->get_option('merchantSerialNumber_test');
+        if ($test) {
+              $data = ['client_id'=>$clientid=$this->get_option('clientId_test'),
+                       'client_secret' => $this->get_option('secret_test'), 
+                       'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test')]; 
+              if (! in_array(false, array_map('boolval', array_values($data)))) {
+                 $keyset[$test] = $data;
+              }
+        }
+        $this->keyset = $keyset;
+        return $keyset;
     }
-    public function get_secret() {
-        $secret=$this->get_option('secret');
-        $testsecret=$this->get_option('secret_test');
-        if (!empty($testsecret) && $this->is_test_mode()) return $testsecret;
-        return $secret;
+
+
+    // The rest of the settings gets the correct client id, secret, sub key and order prefix based on the MSN.
+    public function get_clientid($msn="") {
+        if (!$msn) $msn = get_merchant_serial();
+        if (!isset($this->keyset[$msn])) return false;
+        return $this->keyset[$msn]['client_id'];
     }
-    public function get_key() {
-        $key = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $testkey = $this->get_option('Ocp_Apim_Key_eCommerce_test');
-        if (!empty($testkey) && $this->is_test_mode()) return $testkey;
-        return $key;
+    public function get_secret($msn="") {
+        if (!$msn) $msn = get_merchant_serial();
+        if (!isset($this->keyset[$msn])) return false;
+        return $this->keyset[$msn]['client_secret'];
     }
+    public function get_key($msn="") {
+        if (!$msn) $msn = get_merchant_serial();
+        if (!isset($this->keyset[$msn])) return false;
+        return $this->keyset[$msn]['sub_key'];
+    }
+
     public function get_orderprefix() {
         $prefix = $this->get_option('orderprefix');
         return $prefix;
@@ -1206,9 +1237,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         do_action('woo_vipps_before_process_payment',$order_id);
 
+        // Get current merchant serial
+        $msn = $this->get_merchant_serial();
+
         // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
         try {
-            $at = $this->api->get_access_token();
+            $at = $this->api->get_access_token($msn);
         } catch (Exception $e) {
             $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order_id .":\n" . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
@@ -3271,6 +3305,10 @@ function activate_vipps_checkout(yesno) {
         // from off to on,so re-initialize the form fields here. IOK 2019-09-03
         $this->init_form_fields();
 
+        // Reinitialize keysets in case user added/changed these
+        $this->keyset = null;
+        $this->get_keyset();
+
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {
                 $this->adminnotify(sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName()));
@@ -3287,13 +3325,15 @@ function activate_vipps_checkout(yesno) {
         return $saved;
     }
 
+    // Checks connection of the 'main' MSN IOK 2023-12-19
     public function check_connection () {
-        $at = $this->get_key();
-        $s = $this->get_secret();
-        $c = $this->get_clientid();
+        $msn = $this->get_merchant_serial();
+        $at = $this->get_key($msn);
+        $s = $this->get_secret($msn);
+        $c = $this->get_clientid($msn);
         if ($at && $s && $c) {
             try {
-                $token = $this->api->get_access_token('force');
+                $token = $this->api->get_access_token($msn,'force');
                 update_option('woo-vipps-configured', 1, true);
                 return array(true,'');
 

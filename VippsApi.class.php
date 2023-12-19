@@ -47,20 +47,19 @@ class VippsApi {
     public function get_merchant_serial() {
         return $this->gateway->get_merchant_serial();
     }
-    public function get_clientid() {
-        return $this->gateway->get_clientid();
+    public function get_clientid($msn="") {
+        return $this->gateway->get_clientid($msn="");
     }
     public function get_secret() {
-        return $this->gateway->get_secret();
+        return $this->gateway->get_secret($msn="");
     }
-    public function get_key() {
-        $key = $this->gateway->get_key(); 
-        return $key;
+    public function get_key($msn="") {
+        return $this->gateway->get_key($msn); 
     }
+    // Orderprefix is the same for all MSN (currently)
     public function get_orderprefix() {
         return $this->gateway->get_orderprefix();
     }
-
 
     public function get_option($optionname) {
         return $this->gateway->get_option($optionname);
@@ -74,27 +73,30 @@ class VippsApi {
     }
 
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
-    public function get_access_token($force=0) {
+    // IOK 2023-12-19 changed this so the system could use several MSNs in the future.
+    public function get_access_token($msn="",$force=0) {
+        $msn = $msn ?? $this->get_merchant_serial();
+        $transientname = '_vipps_app_token' . '_' . sanitize_title($msn);
         // First, get a stored token if it exists
-        $stored = get_transient('_vipps_app_token');
+        $stored = get_transient($transientname);
         if (!$force && $stored && $stored['expires_on'] > time()) {
             return $stored['access_token'];
         }
         // Otherwise, get it from vipps - this might throw errors 
-        $fresh = $this->get_access_token_from_vipps();
+        $fresh = $this->get_access_token_from_vipps($msn);
         if (!$fresh) return null;
 
         $at = $fresh['access_token'];
         $expire = $fresh['expires_in']/2;
-        set_transient('_vipps_app_token',$fresh,$expire);
+        set_transient($transientname,$fresh,$expire);
         return $at;
     }
 
     // Fetch an access token if possible from the Vipps Api IOK 2018-04-18
-    private function get_access_token_from_vipps() { 
-        $clientid=$this->get_clientid();
-        $secret=$this->get_secret();
-        $at = $this->get_key();
+    private function get_access_token_from_vipps($msn="") { 
+        $clientid=$this->get_clientid($msn);
+        $secret=$this->get_secret($msn);
+        $at = $this->get_key($msn);
         $command = 'accessToken/get';
         try {
             $result = $this->http_call($command,array(),'POST',array('client_id'=>$clientid,'client_secret'=>$secret,'Ocp-Apim-Subscription-Key'=>$at),'url');
