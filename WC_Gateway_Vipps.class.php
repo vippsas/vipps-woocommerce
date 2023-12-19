@@ -238,13 +238,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Return all webhooks for our MSNs
-    public function get_webhooks () {
-         $keys = $this->get_keyset();
-         $hooks = [];
-         foreach($keys as $msn=>$data) {
-            $hooks[$msn] = $this->api->get_webhooks($msn);
-         }
-         return $hooks;
+    public function get_webhooks_from_vipps () {
+        $keys = $this->get_keyset();
+        $hooks = [];
+        foreach($keys as $msn=>$data) {
+            try {
+                $hooks[$msn] = $this->api->get_webhooks($msn);
+            } catch (Exception $e) {
+                $this->log(sprintf(__('Could not get webhooks for Merchant Serial Number  %1$s: %2$s', 'woo-vipps'), $msn, $e->getMessage()), 'error');
+                $hooks[$msn]=[];
+            }
+        }
+        return $hooks;
     }
 
 
@@ -323,6 +328,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Create callback urls' using WC's callback API in a way that works with Vipps MobilePay callbacks and both pretty and not so pretty urls.
     private function make_callback_urls($forwhat,$token='', $reference=0) {
         // Passing the token as GET arguments, as the Authorize header is stripped. IOK 2018-06-13
+        // This applies to Ecom, Checkout and Express Checkout callbacks.  For epayment, we instead need to use 
+        // the webhook api, which is altogether different. IOK 2023-12-19
         $url = home_url("/", 'https');
         $queryargs = [];
         if ($token) $queryargs['tk']=$token;
@@ -340,6 +347,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $callbackurl = add_query_arg($queryargs, $url) . "&callback=";
         return  $callbackurl;
     }
+
+    // Webhook callbacks do not pass GET arguments at all, but do provide an X-Vipps-Authorization header for verification. IOK 2023-12-19
+    public function webhook_callback_url () {
+        $url = home_url("/", 'https');
+        $queryargs = [];
+        $forwhat = 'wc_gateway_vipps'; // Same callback as for ecom, checkout, express checkout
+        // HTTPS required. IOK 2018-05-18
+        // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
+        if ( !get_option('permalink_structure')) {
+            $queryargs['wc-api'] = $forwhat;
+        } else {
+            $url = trailingslashit(home_url("wc-api/$forwhat", 'https'));
+        }
+        $callbackurl = add_query_arg($queryargs, $url);
+        return  $callbackurl;
+    }
+
+
     // The main payment callback
     public function payment_callback_url ($token='', $reference=0) {
         return $this->make_callback_urls('wc_gateway_vipps',$token, $reference);
@@ -3338,13 +3363,19 @@ function activate_vipps_checkout(yesno) {
         // Reinitialize keysets in case user added/changed these
         $this->keyset = null;
         delete_transient('_vipps_keyset');
-        $this->get_keyset();
+        $keyset = $this->get_keyset();
 
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {
                 $this->adminnotify(sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName()));
         } else {
                 $this->adminerr(sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $msg");
+        }
+
+        if ($ok) {
+            // Try to ensure we have webhooks defined for the epayment-api IOK 2023-12-19
+            $hooks = $this->get_webhooks();
+            error_log("Hooks now " . print_r($hooks, true));
         }
 
         // If enabling this, ensure the page in question exists
@@ -3356,6 +3387,61 @@ function activate_vipps_checkout(yesno) {
         return $saved;
     }
 
+    // This will fetch *our own* webhooks that is the ones pointing to us that we know the secret for.
+    // Hooks that point to us that we *do not* know the secret for, have to be deleted.
+    public function get_webhooks() {
+        $local_hooks = get_option('_woo_vipps_webhooks');
+        $all_hooks = $this->get_webhooks_from_vipps();
+        $ourselves = $this->webhook_callback_url();
+        $change = false;
+
+        // We may need to delete webhooks that have been orphaned. There should be exactly one
+        // for this sites' callback, and we need to know its secret. All others should be deleted.
+        $delenda = [];
+
+        foreach($all_hooks as $msn => $data) {
+            $hooks = $data['webhooks'] ?? [];
+            $gotit = false;
+            $locals = $local_hooks[$msn] ?? [];
+            foreach ($hooks as $hook) {
+                $id = $hook['id'];
+                $url = $hook['url'];
+                if ($url != $ourselves) continue; // Some other shops hook, we will ignore it
+                $local = $locals[$id] ?? false;
+                // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
+                if (!$gotit && $local && isset($local['secret']))  {
+                    $gotit = $local;
+                    continue;
+                }
+                // Now we have a hook for our own msn and url, but either we don't know the secret or it is a duplicate. It should be deleted.
+                $delenda[] = $id;
+            }
+
+            error_log("Delenda for $msn is is " . print_r($delenda, true));
+            // Delete all the webhooks for this msn that we don't want
+            foreach ($delenda as $wrong) {
+                $change = true;
+                $this->api->delete_webhook($msn,$wrong);
+            }
+
+            if ($gotit) {
+                // Now if we got a hook, then we should *just* remember that for this msn. 
+                $local_hooks[$msn] = [$local['id'] => $local];
+            } else {
+                // If not, we don't have a hook for this msn and site, so we need to (try to) create one
+                $change = true;
+                $result = $this->api->register_webhook($msn, $ourselves);
+                if ($result) {
+                    $local_hooks[$msn] = [$result['id'] => ['id'=>$result['id'], 'url' => $ourselves, 'secret' => $result['secret']]];
+                }
+            }
+        }
+        update_option('_woo_vipps_webhooks', $local_hooks);
+        if ($change) return $this->get_webhooks_from_vipps();
+        return $all_hooks;
+    }
+
+
     // Checks connection of the 'main' MSN IOK 2023-12-19
     public function check_connection () {
         $msn = $this->get_merchant_serial();
@@ -3364,8 +3450,6 @@ function activate_vipps_checkout(yesno) {
         $c = $this->get_clientid($msn);
         if ($at && $s && $c) {
 
-            $hooks = $this->get_webhooks();
-            error_log("Hooks: " . print_r($hooks, true));
 
 
             try {
