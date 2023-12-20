@@ -312,7 +312,8 @@ class Vipps {
                 if (empty(get_option('_woo_vipps_webhooks'))) {
                     $gw->initialize_webhooks();
                 } else {
-                    $gw->check_webhooks();
+                    $ok =  $gw->check_webhooks();
+                    if (!$ok) $gw->initialize_webhooks();
                 }
             }
         }

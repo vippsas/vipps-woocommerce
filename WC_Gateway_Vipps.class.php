@@ -3392,6 +3392,7 @@ function activate_vipps_checkout(yesno) {
         }
 
         if ($ok) {
+            $this->check_webhooks();
             // Try to ensure we have webhooks defined for the epayment-api IOK 2023-12-19
             $hooks = $this->initialize_webhooks();
         }
@@ -3406,7 +3407,7 @@ function activate_vipps_checkout(yesno) {
     }
 
     // Check our stored webhooks for consistency, which means the callback URLs should point to *this* site. If they don't,
-    // delete all the ones pointing wrong and then reinitialize.
+    // delete all the ones pointing wrong. If this returns false, you should reinitialize the webhooks. IOK 2023-12-20
     public function check_webhooks () {
         $local_hooks = get_option('_woo_vipps_webhooks');
         $callback = $this->webhook_callback_url();
@@ -3420,9 +3421,8 @@ function activate_vipps_checkout(yesno) {
                $problems = true;
            }
         }
-        if ($problems) {
-            $this->initialize_webhooks();
-        }
+        if ($problems) return false;
+        return true;
     }
 
     // Returns the local webhooks for the given msn. If the url has changed, it will return nothing. IOK 2023-12-19
