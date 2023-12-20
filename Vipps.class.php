@@ -398,7 +398,9 @@ class Vipps {
         echo "<p>"; printf(__('Whenever an event like a payment or a cancellation occurs on a %1$s account, you can be notified of this using a <i>webhook</i>. This is used by this plugin to get noticed of payments by users even when they do not return to your store.', 'woo-vipps'), Vipps::CompanyName()); echo "</p>";
         echo "<p>"; __('To do this, the plugin will automatically add webhooks for the MSN - Merchant Serial Numbers - configured on this site', 'woo-vipps'); echo "</p>";
         echo "<p>"; __('If your MSN has registered other callbacks, for instance for another website, you can manage these here - and you can also add your own hooks that will be notified of payment events to any other URL you enter.', 'woo-vipps'); echo "</p>";
-        echo "<p>"; printf(__('Implementing a webhook is not trivial, so you will probably need a developer for this.  You can read more about what is required <a href="%1$s">here</a>', 'woo-vipps'), $webhookapi); echo "</p>";
+        echo "<p>"; printf(__('Implementing a webhook is not trivial, so you will probably need a developer for this.  You can read more about what is required <a href="%1$s">here</a>. ', 'woo-vipps'), $webhookapi); 
+        printf(__('Please note that there is normally a limit of <em><strong>5</strong> webhooks per MSN</em> - contact %1$s if you need more', 'woo-vipps'), Vipps::CompanyName());
+        echo "</p>";
         echo "<p>"; print __('The following is a listing of your webhooks. If you have changed your website name, you may see some hooks that you do not recognize - these should be deleted', 'woo-vipps'); echo "</p>";
 
         $keyset = $this->gateway()->get_keyset();
@@ -408,23 +410,25 @@ class Vipps {
         echo "<form method='post' action='" . admin_url("admin-post.php") . "' autocomplete='off' id=webhook_action_form>";
         echo "<input type='hidden' id='webhook_id' name='webhook_id' value='' autocomplete='false'>";
         echo "<input type='hidden' id='webhook_msn' name='webhook_msn' value='' autocomplete='false'>";
-        echo "<input type='hidden' id='url' name='webhook_url' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_url' name='webhook_url' value='' autocomplete='false'>";
         echo "<input type='hidden' id='webhook_post_action' name='action' value='' autocomplete='false'>";
         wp_nonce_field('webhook_nonce', 'webhook_nonce');
         echo "</form>";
 
         foreach ($keyset as $msn => $data) {
             $testmode = $data['testmode'] ?? false;
+            echo "<div style='margin-top: 2rem; margin-bottom: 2rem'>";
             echo "<h2>";
             echo  sprintf(__('Merchant Serial Number %1$s', 'woo-vipps'), $msn);
             if ($testmode) echo " (" . __('Test mode', 'woo-vipps') . ")";
+            echo "<a style='float:right; font-size:smaller' class='webhook-adder'  href='javascript:void(0)' data-msn='" . esc_attr($msn) . "'>[" . __('Add a webhook to this MSN', 'woo-vipps') . "]</a>";
             echo "</h2>";
 
             $all = $allhooks[$msn] ?? [];
             $thehooks = $all['webhooks'] ?? [];
             $locals = $localhooks[$msn] ?? [];
 
-            echo "<table class='table webhook-table'><thead><tr><th>"  . __('Url', 'woo-vipps') . "</th><th>" . __('Action', 'woo-vipps') . "</th>" . "</tr></thead>";
+            echo "<table class='table webhook-table'><thead><tr><th style='text-align: left'>"  . __('Webhook', 'woo-vipps') . "</th><th>" . __('Action', 'woo-vipps') . "</th>" . "</tr></thead>";
             echo "<tbody>";
             foreach($thehooks as $hook) {
                 $id = $hook['id'];
@@ -446,12 +450,51 @@ class Vipps {
             }
             echo "</tbody>";
             echo "</table>";
-
- 
-
+            echo "</div>";
+            echo "<hr>";
         }
         ?>
-        <script>
+<dialog id='webhook_add_dialog' style='width: 70%'>
+  <form method="dialog">
+    <h3><?php _e('Add a webhook', 'woo-vipps'); ?></h3>
+    <label for='dialog_webhook_msn'>MSN</label><input style='width: 50%' id='dialog_webhook_msn' required readonly type="text" name="webhook_msn" placeholder="">
+    <label for='dialog_webhook_url'>URL</label><input style='width: 50%' id='dialog_webhook_url' autofocus required type="url" name="webhook_url" placeholder="https://...">
+    <div class='buttonholder'>
+       <button class="button btn button-primary" type="submit" value="OK"><?php _e('Add this URL as a webhook'); ?></button>
+       <button class="button btn" type="submit" formnovalidate value="NO"><?php _e('No, forget it', 'woo-vipps'); ?></button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+ dialog#webhook_add_dialog::backdrop {
+   background-color: rgba(0.9,0.9,0.9,0.7);
+ }
+</style>
+
+<script>
+let dialog = document.getElementById('webhook_add_dialog');
+dialog.addEventListener('close', function () {
+    console.log(dialog.returnValue);
+    if (dialog.returnValue =='OK') {
+      let msn = dialog.querySelector('input[name="webhook_msn"]').value;
+      let url = dialog.querySelector('input[name="webhook_url"]').value;
+      dialog.querySelector('input[name="webhook_url"]').value = "";
+      dialog.querySelector('input[name="webhook_msn"]').value = "";
+
+      if (msn && url) {
+       jQuery('#webhook_msn').val(msn);
+       jQuery('#webhook_post_action').val('vipps_add_webhook');
+       jQuery('#webhook_url').val(url);
+       let f = jQuery('#webhook_action_form');
+       f.submit();
+      }
+    }
+    dialog.querySelector('input[name="webhook_url"]').value = "";
+    dialog.querySelector('input[name="webhook_msn"]').value = "";
+});
+
+
 jQuery('a.webhook-deleter').click(function (e) {
        e.preventDefault();
        let row = jQuery(this).closest('tr');
@@ -464,6 +507,13 @@ jQuery('a.webhook-deleter').click(function (e) {
        f.submit();
 });
 
+jQuery('a.webhook-adder').click(function (e) {
+            e.preventDefault();
+            let msn = jQuery(this).data('msn');
+            dialog.querySelector('input[name="webhook_url"]').value = "";
+            dialog.querySelector('input[name="webhook_msn"]').value = msn;
+            dialog.showModal();
+});
 
         </script>
 
@@ -494,6 +544,26 @@ jQuery('a.webhook-deleter').click(function (e) {
         exit();
     }
 
+    // To be called in admin-post.php
+    public function vipps_add_webhook() {
+        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
+        }
+
+        $msn = sanitize_title($_REQUEST['webhook_msn']);
+        $url = sanitize_url($_REQUEST['webhook_url']);
+
+        if ($msn && $url) {
+            $this->gateway()->api->register_webhook($msn, $url);
+        }
+
+        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
+        exit();
+    }
 
     public function badge_menu_page () {
         if (!current_user_can('manage_woocommerce')) {
