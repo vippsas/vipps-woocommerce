@@ -208,29 +208,32 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     protected function get_keyset() {
         if ($this->keyset) return $this->keyset;
         $stored = get_transient('_vipps_keyset');
+        if ($stored) {
+            return $stored;
+        }
 
-        if ($stored) return $stored;
         $keyset = [];
         $main = $this->get_option('merchantSerialNumber');
         if ($main) {
-            $data = ['testmode'=>0,
-                     'client_id'=>$clientid=$this->get_option('clientId'), 
-                     'client_secret' => $this->get_option('secret'), 
-                     'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
-              if (! in_array(false, array_map('boolval', array_values($data)))) {
-                 $keyset[$main] = $data;
-              }
+            $data = ['client_id'=>$clientid=$this->get_option('clientId'), 
+                'client_secret' => $this->get_option('secret'), 
+                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
+            if (! in_array(false, array_map('boolval', array_values($data)))) {
+                $data['testmode'] = 0; // Must add after 
+                $keyset[$main] = $data;
+            }
         }
         $test = @$this->get_option('merchantSerialNumber_test');
         if ($test) {
             $data = [
-                'testmode'=>1,
                 'client_id'=>$clientid=$this->get_option('clientId_test'),
                 'client_secret' => $this->get_option('secret_test'), 
                 'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test')]; 
-              if (! in_array(false, array_map('boolval', array_values($data)))) {
-                 $keyset[$test] = $data;
-              }
+
+            if (! in_array(false, array_map('boolval', array_values($data)))) {
+                $data['testmode'] = 1;
+                $keyset[$test] = $data;
+            }
         }
         $this->keyset = $keyset;
         set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
@@ -3365,6 +3368,7 @@ function activate_vipps_checkout(yesno) {
         delete_transient('_vipps_keyset');
         $keyset = $this->get_keyset();
 
+
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {
                 $this->adminnotify(sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName()));
@@ -3375,7 +3379,6 @@ function activate_vipps_checkout(yesno) {
         if ($ok) {
             // Try to ensure we have webhooks defined for the epayment-api IOK 2023-12-19
             $hooks = $this->get_webhooks();
-            error_log("Hooks now " . print_r($hooks, true));
         }
 
         // If enabling this, ensure the page in question exists
@@ -3417,8 +3420,6 @@ function activate_vipps_checkout(yesno) {
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
 
-        error_log("All hooks: " . print_r($all_hooks, true));
-
         // Ignore any extra arguments
         $comparandum = strtok($ourselves, '?');
 
@@ -3447,7 +3448,6 @@ function activate_vipps_checkout(yesno) {
                 $delenda[] = $id;
             }
 
-            error_log("Delenda for $msn is is " . print_r($delenda, true));
             // Delete all the webhooks for this msn that we don't want
             foreach ($delenda as $wrong) {
                 $change = true;
