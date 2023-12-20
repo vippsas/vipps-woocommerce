@@ -104,6 +104,7 @@ class Vipps {
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
     }
 
+
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
         if (class_exists('WC_Payment_Gateway')) {
