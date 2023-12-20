@@ -3393,7 +3393,7 @@ function activate_vipps_checkout(yesno) {
 
         if ($ok) {
             // Try to ensure we have webhooks defined for the epayment-api IOK 2023-12-19
-            $hooks = $this->get_webhooks();
+            $hooks = $this->initialize_webhooks();
         }
 
         // If enabling this, ensure the page in question exists
@@ -3403,6 +3403,26 @@ function activate_vipps_checkout(yesno) {
         }
 
         return $saved;
+    }
+
+    // Check our stored webhooks for consistency, which means the callback URLs should point to *this* site. If they don't,
+    // delete all the ones pointing wrong and then reinitialize.
+    public function check_webhooks () {
+        $local_hooks = get_option('_woo_vipps_webhooks');
+        $callback = $this->webhook_callback_url();
+        $callback_compare = strtok($callback, '?');
+        $problems = false;
+        foreach($local_hooks as $msn => $hooks) {
+           foreach ($hooks as $id => $hook) {
+               $noargs = strtok($hook['url'], '?');
+               if ($noargs == $callback_compare) continue; // This hook is good, probably, unless somebody has deleted it
+               $this->api->delete_webhook($msn, $hook['id']); // This isn't - it's pointed the wrong way, which means we have changed name of the site or something
+               $problems = true;
+           }
+        }
+        if ($problems) {
+            $this->initialize_webhooks();
+        }
     }
 
     // Returns the local webhooks for the given msn. If the url has changed, it will return nothing. IOK 2023-12-19
@@ -3417,15 +3437,35 @@ function activate_vipps_checkout(yesno) {
             if ($noargs == $callback_compare) {
                 return $hook;
             } else {
-                // This branch used for debugging IOK 2023-12-20
+                // May want to log this somehow
             }
         }
         return null;
     }
 
-    // This will fetch *our own* webhooks that is the ones pointing to us that we know the secret for.
+
+    //  This is to be used in deactivate/uninstall - it deletes all webhooks for all MSNs for this instance
+    // Unfortunatetly, we can't delete other msn's webhooks or webhooks pointing to other URLs. IOK 2023-12-20
+    public function delete_all_webhooks() {
+        delete_option('_woo_vipps_webhooks');
+        $callback = $this->webhook_callback_url();
+        $comparandum = strtok($callback, '?');
+        $all_hooks = $this->get_webhooks_from_vipps();
+        foreach($all_hooks as $msn => $data) {
+            $hooks = $data['webhooks'] ?? [];
+            foreach ($hooks as $hook) {
+                $id = $hook['id'];
+                $url = $hook['url'];
+                $noargs = strtok($url, '?');
+                if ($noargs != $comparandum) continue; // Some other shops hook, we will ignore it
+                $ok = $this->api->delete_webhook($msn,$id);
+            }
+        }
+    }
+
+    // This will initalize the webhooks for this instance, for all MSNs that are configured.
     // Hooks that point to us that we *do not* know the secret for, have to be deleted.
-    public function get_webhooks() {
+    public function initialize_webhooks() {
         $local_hooks = get_option('_woo_vipps_webhooks');
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
@@ -3476,10 +3516,11 @@ function activate_vipps_checkout(yesno) {
                 }
             }
         }
-        update_option('_woo_vipps_webhooks', $local_hooks);
+        update_option('_woo_vipps_webhooks', $local_hooks, true);
 
 
         if ($change) $all_hooks = $this->get_webhooks_from_vipps();
+
         return $all_hooks;
     }
 

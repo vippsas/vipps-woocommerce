@@ -90,9 +90,9 @@ class Vipps {
 
     public static function register_hooks() {
         $Vipps = static::instance();
-        register_activation_hook(__FILE__,array($Vipps,'activate'));
-        register_deactivation_hook(__FILE__,array('Vipps','deactivate'));
-        register_uninstall_hook(__FILE__, 'Vipps::uninstall');
+        register_activation_hook(dirname(__FILE__) . "/woo-vipps.php",array($Vipps,'activate'));
+        register_deactivation_hook(dirname(__FILE__) . "/woo-vipps.php",array('Vipps','deactivate'));
+        register_uninstall_hook(dirname(__FILE__) . "/woo-vipps.php", 'Vipps::uninstall');
         if (is_admin()) {
             add_action('admin_init',array($Vipps,'admin_init'));
             add_action('admin_menu',array($Vipps,'admin_menu'));
@@ -285,8 +285,8 @@ class Vipps {
         if (has_action('woo_vipps_shipping_methods')) {
             $option = $gw->get_option('newshippingcallback');
             if ($option != 'old' && $option != 'new') {
-                        $what = __('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%1$s">settings page</a>', 'woo-vipps');
-                        $this->add_vipps_admin_notice($what,'info');
+                $what = __('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%1$s">settings page</a>', 'woo-vipps');
+                $this->add_vipps_admin_notice($what,'info');
             }
         }
 
@@ -306,9 +306,18 @@ class Vipps {
                 } 
 
             }
+            // If we are configured, but we don't have any webhooks yet, initialize them for the epayment api. IOK 2023-12-20
+            // if we do have them, check them for consistency
+            if (get_option('woo-vipps-configured')) {
+                if (empty(get_option('_woo_vipps_webhooks'))) {
+                    $gw->initialize_webhooks();
+                } else {
+                    $gw->check_webhooks();
+                }
+            }
         }
-
     }
+
 
     // Runs on init, adds the Vipps badge feature if activated
     public function maybe_add_vipps_badge_feature () {
@@ -2709,6 +2718,8 @@ EOF;
        if ($gw->get_option('orderprefix') == 'Woo') {
          $gw->update_option('orderprefix', $this->generate_order_prefix()); 
        }
+       // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
+       $gw->initialize_webhooks();
        $this->payment_method_name = $gw->get_option('payment_method_name');
 
     }   
@@ -2717,9 +2728,15 @@ EOF;
     public static function deactivate() {
        $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
        wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
+        $timestamp = wp_next_scheduled('vipps_cron_missing_callback_hook');
+       wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
+       // IOK 2023-12-20 Delete all webhooks for this instance
+       WC_Gateway_Vipps::instance()->delete_all_webhooks();
     }
 
     public static function uninstall() {
+       // IOK 2023-12-20 Delete all webhooks for this instance on uninstall too
+       $this->gateway()->delete_all_webhooks();
        // Nothing yet
     }
     public function footer() {
