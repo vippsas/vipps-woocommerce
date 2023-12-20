@@ -205,7 +205,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Returns a table of all the keydata of this instance, keyed on MSN. IOK 2023-12-19
-    protected function get_keyset() {
+    public function get_keyset() {
         if ($this->keyset) return $this->keyset;
         $stored = get_transient('_vipps_keyset');
         if ($stored) {

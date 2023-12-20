@@ -383,6 +383,69 @@ class Vipps {
 
     }
 
+    // A small interface for editing and managing the webhooks for the MSNs for this site IOK 2023-12-20
+    public function webhook_menu_page () {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
+        $portalurl = 'https://portal.vipps.no';
+        $webhookapi = 'https://developer.vippsmobilepay.com/docs/APIs/webhooks-api/';
+
+        echo "<div class='wrap vipps-badge-settings'>\n";
+        echo "<h1>" . __('Webhooks', 'woo-vipps') . "</h1>\n";
+        echo "<p>"; printf(__('Whenever an event like a payment or a cancellation occurs on a %1$s account, you can be notified of this using a <i>webhook</i>. This is used by this plugin to get noticed of payments by users even when they do not return to your store.', 'woo-vipps'), Vipps::CompanyName()); echo "</p>";
+        echo "<p>"; __('To do this, the plugin will automatically add webhooks for the MSN - Merchant Serial Numbers - configured on this site', 'woo-vipps'); echo "</p>";
+        echo "<p>"; __('If your MSN has registered other callbacks, for instance for another website, you can manage these here - and you can also add your own hooks that will be notified of payment events to any other URL you enter.', 'woo-vipps'); echo "</p>";
+        echo "<p>"; printf(__('Implementing a webhook is not trivial, so you will probably need a developer for this.  You can read more about what is required <a href="%1$s">here</a>', 'woo-vipps'), $webhookapi); echo "</p>";
+        echo "<p>"; print __('The following is a listing of your webhooks. If you have changed your website name, you may see some hooks that you do not recognize - these should be deleted', 'woo-vipps'); echo "</p>";
+
+        $keyset = $this->gateway()->get_keyset();
+        $allhooks = $this->gateway()->initialize_webhooks();
+        $localhooks = get_option('_woo_vipps_webhooks');
+
+        foreach ($keyset as $msn => $data) {
+            $testmode = $data['testmode'] ?? false;
+            echo "<h2>";
+            echo  sprintf(__('Merchant Serial Number %1$s', 'woo-vipps'), $msn);
+            if ($testmode) echo " (" . __('Test mode', 'woo-vipps') . ")";
+            echo "</h2>";
+
+            $all = $allhooks[$msn] ?? [];
+            $thehooks = $all['webhooks'] ?? [];
+            $locals = $localhooks[$msn] ?? [];
+
+            echo "<table class='table webhook-table'><thead><tr><th>"  . __('Url', 'woo-vipps') . "</th><th>" . __('Action', 'woo-vipps') . "</th>" . "</tr></thead>";
+            echo "<tbody>";
+            foreach($thehooks as $hook) {
+                $id = $hook['id'];
+                $url = $hook['url'];
+                $events = $hook['events'];
+                $local = $locals[$id] ?? false;
+
+
+                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) . "'>";
+                echo "<td>" .  esc_html($url) .  "</td>";
+                echo "<td class='actions'>";
+                if (true or !$local) {
+                    echo "[" . __('Delete', 'woo-vipps') . "]";
+                } else {
+                    echo "<em>". __('Created for this site', 'woo-vipps') . "</em>";
+                }
+                echo "</td>";
+                echo "</tr>";
+            }
+            echo "</tbody>";
+            echo "</table>";
+
+ 
+
+        }
+
+
+        echo "</div>";
+    }
+
+
     public function badge_menu_page () {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
@@ -839,6 +902,7 @@ class Vipps {
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
+        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
 
     public function add_meta_boxes () {
