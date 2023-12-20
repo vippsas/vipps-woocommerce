@@ -1975,8 +1975,6 @@ EOF;
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-        error_log("Received " . print_r($result, true));
-
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         // .. and the epayment webhooks 2023-12-19
         $ischeckout = false;
@@ -2016,17 +2014,22 @@ EOF;
         }
 
         if ($iswebhook) {
-            $pending = $this->get_pending_vipps_order($vippsorderid);
+            $order = $this->get_pending_vipps_order($vippsorderid);
+            if (!$order) {
+                // If the order is no longer pending, then we can safely ignore it. (IOK FIXME VERIFY)
+                $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $order->get_id()), 'debug');
+                return; 
+            }
             // We are not interested in Checkout or Express orders - they have their own callback systems
-            if ($pending->get_meta('_vipps_checkout') or $pending->get_meta('_vipps_express_checkout')) {
-                $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $pending->get_id()), 'debug');
+            if ($order->get_meta('_vipps_checkout') or $order->get_meta('_vipps_express_checkout')) {
+                $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
             }
             $msn = $result['msn'];
             $hookdata = $this->gateway()->get_local_webhook($msn);
             $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
             if (!$secret) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks.', 'woo-vipps'), $pending->get_id()), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks.', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
             }
             // Verify the callback.
@@ -2034,7 +2037,6 @@ EOF;
             $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
 
             // Check date here with some leeway, using strtotime. FIXME
-
             $hashed_payload = base64_encode(hash('sha256', $raw_post, true));
             $path_and_query = $_SERVER['REQUEST_URI'];
             $host = $_SERVER['HTTP_HOST'];
@@ -2043,12 +2045,17 @@ EOF;
             $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
 
             if ($auth == $expected_auth) {
-                error_log("Signature is good");
-                // Now do the callback with "webhook true" so we know it has been verified. FIXME
                 do_action('woo_vipps_callback_webhook', $result);
+                // Map the fields of the result to the other callback formats. IOK 2023-12-19 
+                $result['merchantSerialNumber'] = $msn;
+                $result['orderId'] = $result['reference'];
+                $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
+                if ($ok) {
+                    // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
+                    do_action('woo_vipps_callback_handled_order', $order);
+                }
             } else {
-                error_log("No good");
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks.', 'woo-vipps'), $pending->get_id()), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks.', 'woo-vipps'), $order->get_id()), 'debug');
             }
             exit();
         }
@@ -3875,6 +3882,7 @@ EOF;
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
         $do_poll = true;
+$do_poll = false; // IOK TESTING FIXME
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {

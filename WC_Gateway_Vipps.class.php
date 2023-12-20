@@ -2815,15 +2815,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Handle the callback from Vipps eCom.
-    public function handle_callback($result, $order, $ischeckout=false) {
+    public function handle_callback($result, $order, $ischeckout=false, $iswebhook=false) {
         global $Vipps;
 
         $vippsorderid = $result['orderId'];
         $merchant= $result['merchantSerialNumber'];
-       
-        $me = $this->get_merchant_serial();
+      
+        $keyset = $this->get_keyset(); 
+        $me = array_keys($keyset);
 
-        if ($me != $merchant) {
+        if (!in_array($merchant, $me)) {
             $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
@@ -2835,19 +2836,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderid = $order->get_id();
 
         // This is for express checkout - some added protection
-        $authtoken = $order->get_meta('_vipps_authtoken');
-        if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
-            $this->log(sprintf(__("Wrong auth token in callback from %1\$s - possibly an attempt to fake a callback", 'woo-vipps'), Vipps::CompanyName()), 'warning');
-            clean_post_cache($order->get_id());
-            exit();
+        // Webhooks are already authenticated IOK 2023-12-20
+        if (!$iswebhook) {
+            $authtoken = $order->get_meta('_vipps_authtoken');
+            if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
+                $this->log(sprintf(__("Wrong auth token in callback from %1\$s - possibly an attempt to fake a callback", 'woo-vipps'), Vipps::CompanyName()), 'warning');
+                clean_post_cache($order->get_id());
+                exit();
+            }
         }
+
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
             $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), Vipps::CompanyName()), 'warning');
             clean_post_cache($order->get_id());
             exit();
         }
 
-        $errorInfo = @$result['errorInfo'];
+        $errorInfo = $result['errorInfo'] ?? '';
         if ($errorInfo) {
             $this->log(sprintf(__("Message in callback from %1\$s for order",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
             $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
@@ -2864,6 +2869,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $transaction['amount'] = $details['amount']['value'];
             $transaction['currency'] = $details['amount']['currency'];
             $transaction['status'] = $details['state'];
+        } else if ($iswebhook) {
+            $transaction['transactionId'] = 'epayment_' . $vippsorderid;
+            $transaction['timeStamp'] = date('Y-m-d H:i:s', strtotime($result['timestamp']));
+            if (isset($result['amount'])) {
+                $transaction['amount'] = $result['amount']['value'];
+                $transaction['currency'] = $result['amount']['currency'];
+            }
+            $transaction['status'] = $result['name']; // Name of the event! IOK 2023-12-19 But this is actually the state, such as AUTHORIZED, TERMINATED etc
         }
 
         if (!$transaction) {
@@ -2896,10 +2909,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $Vipps->callback_restore_session($orderid);
 
         // Set Vipps metadata as early as possible
-        $transactionid = @$transaction['transactionId'];
+        $transactionid = $transaction['transactionId'] ?? '';
         $vippsstamp = strtotime($transaction['timeStamp']);
-        $vippsamount = $transaction['amount'];
-        $vippscurrency= $transaction['currency'];
+        $vippsamount = $transaction['amount'] ?? '';
+        $vippscurrency= $transaction['currency'] ?? '';
         $vippsstatus = $transaction['status'];
 
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
@@ -2920,41 +2933,43 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
+        // For express or checkout, we want to set shipping details IOK 2023-12-19
         $express = $order->get_meta('_vipps_express_checkout');
+        if ($express || $ischeckout) {
+            // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
+            // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
+            // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+            if ($express && !isset($result['userDetails'])) {
+                $result = $this->get_payment_details($order);
+            }
 
-        // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
-        // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
-        // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
-        if ($express && !isset($result['userDetails'])) {
-            $result = $this->get_payment_details($order);
-        }
+            // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
+            // including adding anonoymous users if there is no other data. IOK 2023-01-10
+            $result = $this->ensure_userDetails($result, $order);
 
-        // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
-        // including adding anonoymous users if there is no other data. IOK 2023-01-10
-        $result = $this->ensure_userDetails($result, $order);
- 
-        if ($express && $order->get_meta('_vipps_checkout')) {
-            if (!isset($result['shippingDetails'])) {
-                // It is possible to drop shipping details from Checkout!
-                // We'll fill out the minimum of info
-                $countries=new WC_Countries();
-                $result['shippingDetails'] = array(
-                                'firstName' => $result['userDetails']['firstName'],
-                                'lastName' => $result['userDetails']['lastName'],
-                                'email' => $result['userDetails']['email'],
-                                'phoneNumber' => $result['userDetails']['phoneNumber'],
-                                'country' =>  $countries->get_base_country()
+            if ($express && $order->get_meta('_vipps_checkout')) {
+                if (!isset($result['shippingDetails'])) {
+                    // It is possible to drop shipping details from Checkout!
+                    // We'll fill out the minimum of info
+                    $countries=new WC_Countries();
+                    $result['shippingDetails'] = array(
+                            'firstName' => $result['userDetails']['firstName'],
+                            'lastName' => $result['userDetails']['lastName'],
+                            'email' => $result['userDetails']['email'],
+                            'phoneNumber' => $result['userDetails']['phoneNumber'],
+                            'country' =>  $countries->get_base_country()
                             );
 
+                }
+                if (isset($result['billingDetails']) && !isset($result['billingDetails']['country'])) {
+                    $result['billingDetails']['country'] = $result['shippingDetails']['country'];
+                }
             }
-            if (isset($result['billingDetails']) && !isset($result['billingDetails']['country'])) {
-                $result['billingDetails']['country'] = $result['shippingDetails']['country'];
-            }
-        }
 
-        if ($express && @$result['shippingDetails']) {
-            $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
+            if ($express && @$result['shippingDetails']) {
+                $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
+                $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
+            }
         }
 
         if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'AUTHORIZED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09
@@ -2966,7 +2981,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+            $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
         }
         $order->save();
         clean_post_cache($order->get_id());
@@ -3397,17 +3412,12 @@ function activate_vipps_checkout(yesno) {
         $callback = $this->webhook_callback_url();
         $callback_compare = strtok($callback, '?');
 
-        error_log("Locals "  . print_r($local_hooks, true));
-        error_log("Returns $callback " . print_r($hooks, true));
-
         foreach ($hooks as $id=>$hook) {
-            error_log("Check {$hook['url']} vs $callback");
             $noargs = strtok($hook['url'], '?');
             if ($noargs == $callback_compare) {
-                error_log("That is a match");
                 return $hook;
             } else {
-                error_log("Princess in another castle");
+                // This branch used for debugging IOK 2023-12-20
             }
         }
         return null;
@@ -3467,7 +3477,9 @@ function activate_vipps_checkout(yesno) {
             }
         }
         update_option('_woo_vipps_webhooks', $local_hooks);
-        if ($change) return $this->get_webhooks_from_vipps();
+
+
+        if ($change) $all_hooks = $this->get_webhooks_from_vipps();
         return $all_hooks;
     }
 
