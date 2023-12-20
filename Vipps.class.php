@@ -438,13 +438,15 @@ class Vipps {
                 $local = $locals[$id] ?? false;
 
 
-                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) .  "' data-msn='" . esc_attr($msn) . "'>";
+                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) .  "' data-msn='" . esc_attr($msn) . "'";
+                echo " data-hookdata='" . json_encode($hook) . "'>"; 
                 echo "<td>" .  esc_html($url) .  "</td>";
                 echo "<td class='actions'>";
+                    echo "<a href='javascript:void(0)' class='webhook-viewer'>[" . __('View', 'woo-vipps') . "]</a> ";
                 if (!$local) {
-                    echo "<a href='javascript:void(0)' class='webhook-deleter'>[" . __('Delete', 'woo-vipps') . "]</a>";
+                    echo " <a href='javascript:void(0)' class='webhook-deleter'>[" . __('Delete', 'woo-vipps') . "]</a>";
                 } else {
-                    echo "<em>". __('Created for this site', 'woo-vipps') . "</em>";
+                    echo " <em>". __('Created for this site', 'woo-vipps') . "</em>";
                 }
                 echo "</td>";
                 echo "</tr>";
@@ -480,6 +482,19 @@ class Vipps {
 
 
         ?>
+
+<dialog id='webhook_view_dialog' style='width:70%'>
+  <form method="dialog">
+       <div class='viewdata' style='margin-bottom: 3rem'>
+         <label>ID</label><span class='webhook_id'></span>
+         <label>URL</label><span class='webhook_url'></span>
+         <label>Events</label><div style='width:80%' class='webhook_events'></div>
+       </div>
+       <button class="button btn button-primary" type="submit" value="OK"><?php _e('OK'); ?></button>
+  </form>
+</dialog>
+
+
 <dialog id='webhook_add_dialog' style='width: 70%'>
   <form method="dialog">
     <h3><?php _e('Add a webhook', 'woo-vipps'); ?></h3>
@@ -510,7 +525,7 @@ class Vipps {
 
     </div>
     <div class='buttonholder'>
-       <button class="button btn button-primary" type="submit" value="OK"><?php _e('Add this URL as a webhook'); ?></button>
+       <button class="button btn button-primary" type="submit" value="OK"><?php _e('Add this URL as a webhook', 'woo-vipps'); ?></button>
        <button class="button btn" type="submit" formnovalidate value="NO"><?php _e('No, forget it', 'woo-vipps'); ?></button>
     </div>
   </form>
@@ -524,6 +539,7 @@ class Vipps {
 
 <script>
 let dialog = document.getElementById('webhook_add_dialog');
+let viewdialog = document.getElementById('webhook_view_dialog');
 dialog.addEventListener('close', function () {
     if (dialog.returnValue =='OK') {
       let msn = dialog.querySelector('input[name="webhook_msn"]').value;
@@ -551,6 +567,17 @@ dialog.addEventListener('close', function () {
     }
     dialog.querySelector('input[name="webhook_url"]').value = "";
     dialog.querySelector('input[name="webhook_msn"]').value = "";
+});
+
+let data = "";
+jQuery('a.webhook-viewer').click(function (e) {
+       e.preventDefault();
+       let row= jQuery(this).closest('tr');
+       data = row.data('hookdata');
+       viewdialog.querySelector('.viewdata').querySelector('.webhook_id').innerHTML= data['id'];
+       viewdialog.querySelector('.viewdata').querySelector('.webhook_url').innerHTML= data['url'];
+       viewdialog.querySelector('.viewdata').querySelector('.webhook_events').innerHTML= data['events'].join(" ");
+       viewdialog.showModal();
 });
 
 
