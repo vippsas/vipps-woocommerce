@@ -110,12 +110,14 @@ class VippsApi {
         }
     }
     // Try to register a webhook for the site and the MSN passed
-    public function register_webhook($msn, $callback) {
+    public function register_webhook($msn, $callback, $events=null) {
         $command = "/webhooks/v1/webhooks";
         if (!$msn) $msn = $this->get_merchant_serial();
         $headers = $this->get_headers($msn);
         // We want the authorized event, and all the "no longer relevant" events. IOK 2023-12-19
-        $events = ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'];
+        if (!$events) {
+             $events = ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'];
+        }
         $args = ['url'=>$callback, 'events'=>$events];
         try {
             $res = $this->http_call($msn,$command,$args,'POST',$headers,'json');

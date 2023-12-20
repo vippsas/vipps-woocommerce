@@ -411,6 +411,7 @@ class Vipps {
         echo "<input type='hidden' id='webhook_id' name='webhook_id' value='' autocomplete='false'>";
         echo "<input type='hidden' id='webhook_msn' name='webhook_msn' value='' autocomplete='false'>";
         echo "<input type='hidden' id='webhook_url' name='webhook_url' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_events' name='webhook_events' value='' autocomplete='false'>";
         echo "<input type='hidden' id='webhook_post_action' name='action' value='' autocomplete='false'>";
         wp_nonce_field('webhook_nonce', 'webhook_nonce');
         echo "</form>";
@@ -453,12 +454,61 @@ class Vipps {
             echo "</div>";
             echo "<hr>";
         }
+
+        $epayment_events = [__('Created', 'woo-vipps') => 'epayments.payment.created.v1',
+                            __('Aborted', 'woo-vipps') => 'epayments.payment.aborted.v1',
+                            __('Expired', 'woo-vipps') => 'epayments.payment.expired.v1',
+                            __('Cancelled', 'woo-vipps') => 'epayments.payment.cancelled.v1',
+                            __('Captured', 'woo-vipps') => 'epayments.payment.captured.v1',
+                            __('Refunded', 'woo-vipps') => 'epayments.payment.refunded.v1',
+                            __('Authorized', 'woo-vipps') => 'epayments.payment.authorized.v1',
+                            __('Terminated', 'woo-vipps') => 'epayments.payment.terminated.v1'];
+
+        $recurring_events = [ __('Agreement accepted', 'woo-vipps') =>'recurring.agreement-activated.v1',
+            __('Agreement rejected', 'woo-vipps') =>'recurring.agreement-rejected.v1',
+            __('Agreement stopped', 'woo-vipps') =>'recurring.agreement-stopped.v1',
+            __('Agreement expired', 'woo-vipps') =>'recurring.agreement-expired.v1',
+            __('Charge reserved', 'woo-vipps') =>'recurring.charge-reserved.v1',
+            __('Charge captured', 'woo-vipps') =>'recurring.charge-captured.v1',
+            __('Charge cancelled', 'woo-vipps') =>'recurring.charge-canceled.v1',
+            __('Charge failed', 'woo-vipps') =>'recurring.charge-failed.v1'];
+
+        $qr_events = [__('User Checked in', 'woo-vipps')=> 'user.checked-in.v1'];
+
+
+        $defaultevents = ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'];
+
+
         ?>
 <dialog id='webhook_add_dialog' style='width: 70%'>
   <form method="dialog">
     <h3><?php _e('Add a webhook', 'woo-vipps'); ?></h3>
     <label for='dialog_webhook_msn'>MSN</label><input style='width: 50%' id='dialog_webhook_msn' required readonly type="text" name="webhook_msn" placeholder="">
     <label for='dialog_webhook_url'>URL</label><input style='width: 50%' id='dialog_webhook_url' autofocus required type="url" name="webhook_url" placeholder="https://...">
+    <div class="events" style="margin-bottom: 2rem">
+     <h3>Epayment</h3>
+     <?php foreach($epayment_events as $label=>$event): ?> 
+       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
+          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
+                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
+       </label>
+     <?php endforeach; ?>
+     <h3>Recurring</h3>
+     <?php foreach($recurring_events as $label=>$event): ?> 
+       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
+          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
+                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
+       </label>
+     <?php endforeach; ?>
+     <h3>QR</h3>
+     <?php foreach($qr_events as $label=>$event): ?> 
+       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
+          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
+                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
+       </label>
+     <?php endforeach; ?>
+
+    </div>
     <div class='buttonholder'>
        <button class="button btn button-primary" type="submit" value="OK"><?php _e('Add this URL as a webhook'); ?></button>
        <button class="button btn" type="submit" formnovalidate value="NO"><?php _e('No, forget it', 'woo-vipps'); ?></button>
@@ -475,17 +525,26 @@ class Vipps {
 <script>
 let dialog = document.getElementById('webhook_add_dialog');
 dialog.addEventListener('close', function () {
-    console.log(dialog.returnValue);
     if (dialog.returnValue =='OK') {
       let msn = dialog.querySelector('input[name="webhook_msn"]').value;
       let url = dialog.querySelector('input[name="webhook_url"]').value;
       dialog.querySelector('input[name="webhook_url"]').value = "";
       dialog.querySelector('input[name="webhook_msn"]').value = "";
 
-      if (msn && url) {
+      let events = dialog.querySelectorAll('input[name="webhook_event"]:checked');
+      let eventlist = [];
+      let eventstring = '';
+       for (const ev of events.values()) {
+          eventlist.push(ev.value);
+      }
+      eventstring = eventlist.join(',');
+     
+
+      if (msn && url && eventstring) {
        jQuery('#webhook_msn').val(msn);
        jQuery('#webhook_post_action').val('vipps_add_webhook');
        jQuery('#webhook_url').val(url);
+       jQuery('#webhook_events').val(eventstring);
        let f = jQuery('#webhook_action_form');
        f.submit();
       }
@@ -556,9 +615,12 @@ jQuery('a.webhook-adder').click(function (e) {
 
         $msn = sanitize_title($_REQUEST['webhook_msn']);
         $url = sanitize_url($_REQUEST['webhook_url']);
-
-        if ($msn && $url) {
-            $this->gateway()->api->register_webhook($msn, $url);
+        $events = [];
+        foreach(explode(",", $_REQUEST['webhook_events']) as $event) {
+            $events[] = $event; 
+        }
+        if (!empty($events) && $msn && $url) {
+            $this->gateway()->api->register_webhook($msn, $url, $events);
         }
 
         wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
