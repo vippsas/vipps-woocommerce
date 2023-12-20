@@ -62,9 +62,9 @@ class Vipps {
 
     public static function register_hooks() {
         $Vipps = static::instance();
-        register_activation_hook(__FILE__,array($Vipps,'activate'));
-        register_deactivation_hook(__FILE__,array('Vipps','deactivate'));
-        register_uninstall_hook(__FILE__, 'Vipps::uninstall');
+        register_activation_hook(dirname(__FILE__) . "/woo-vipps.php",array($Vipps,'activate'));
+        register_deactivation_hook(dirname(__FILE__) . "/woo-vipps.php",array('Vipps','deactivate'));
+        register_uninstall_hook(dirname(__FILE__) . "/woo-vipps.php", 'Vipps::uninstall');
         if (is_admin()) {
             add_action('admin_init',array($Vipps,'admin_init'));
             add_action('admin_menu',array($Vipps,'admin_menu'));
@@ -75,6 +75,7 @@ class Vipps {
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
     }
+
 
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
@@ -2615,6 +2616,8 @@ EOF;
     public static function deactivate() {
        $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
        wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
+       $timestamp = wp_next_scheduled('vipps_cron_missing_callback_hook');
+       wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
     }
 
     public static function uninstall() {
