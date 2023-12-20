@@ -272,6 +272,8 @@ class Vipps {
 
         // POST actions for the backend
         add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
+        add_action('admin_post_vipps_delete_webhook', array($this, 'vipps_delete_webhook'));
+        add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
@@ -403,6 +405,14 @@ class Vipps {
         $allhooks = $this->gateway()->initialize_webhooks();
         $localhooks = get_option('_woo_vipps_webhooks');
 
+        echo "<form method='post' action='" . admin_url("admin-post.php") . "' autocomplete='off' id=webhook_action_form>";
+        echo "<input type='hidden' id='webhook_id' name='webhook_id' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_msn' name='webhook_msn' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='url' name='webhook_url' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_post_action' name='action' value='' autocomplete='false'>";
+        wp_nonce_field('webhook_nonce', 'webhook_nonce');
+        echo "</form>";
+
         foreach ($keyset as $msn => $data) {
             $testmode = $data['testmode'] ?? false;
             echo "<h2>";
@@ -423,11 +433,11 @@ class Vipps {
                 $local = $locals[$id] ?? false;
 
 
-                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) . "'>";
+                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) .  "' data-msn='" . esc_attr($msn) . "'>";
                 echo "<td>" .  esc_html($url) .  "</td>";
                 echo "<td class='actions'>";
-                if (true or !$local) {
-                    echo "[" . __('Delete', 'woo-vipps') . "]";
+                if (!$local) {
+                    echo "<a href='javascript:void(0)' class='webhook-deleter'>[" . __('Delete', 'woo-vipps') . "]</a>";
                 } else {
                     echo "<em>". __('Created for this site', 'woo-vipps') . "</em>";
                 }
@@ -440,9 +450,48 @@ class Vipps {
  
 
         }
+        ?>
+        <script>
+jQuery('a.webhook-deleter').click(function (e) {
+       e.preventDefault();
+       let row = jQuery(this).closest('tr');
+       let wh  = row.data('webhook-id');
+       let msn = row.data('msn');
+       let f = jQuery('#webhook_action_form');
+       jQuery('#webhook_id').val(wh);
+       jQuery('#webhook_msn').val(msn);
+       jQuery('#webhook_post_action').val('vipps_delete_webhook');
+       f.submit();
+});
+
+
+        </script>
+
+        <?php
 
 
         echo "</div>";
+    }
+
+    // To be called in admin-post.php
+    public function vipps_delete_webhook() {
+        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
+        }
+
+        $msn = sanitize_title($_REQUEST['webhook_msn']);
+        $id = sanitize_title($_REQUEST['webhook_id']);
+
+        if ($msn && $id) {
+            $this->gateway()->api->delete_webhook($msn, $id);
+        }
+
+        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
+        exit();
     }
 
 
