@@ -4009,6 +4009,24 @@ EOF;
         update_option('woocommerce_vipps_settings', $new_settings, array());
         exit();
     }
+
+    // Attempt to detect the default payment method name based on the store location, locale, and currency
+    public function detect_default_payment_method_name() {
+        // use the main site locale
+        $locale = get_locale();
+        $store_location=  wc_get_base_location();
+        $store_country = $store_location['country'] ?? '';
+        $currency = get_woocommerce_currency();
+
+        $default_payment_method_name = "MobilePay";
+
+        // If store location, locale, or currency is Norwegian, default to Vipps
+        if ($store_country== "NO" || preg_match("/.*_NO/", $locale) || $currency == "NOK") {
+            $default_payment_method_name = "Vipps";
+        }
+        return $default_payment_method_name;
+    }
+
     // Handle VippsMobilePay admin settings
     function admin_settings_page() {
         // We must first generate the root element for the React UI before we load the React app itself, otherwise React will fail to load.
@@ -4281,18 +4299,19 @@ EOF;
         );
 
 
-
+        // Attempt to read the set payment method name, otherwise try to detect a default one from the settings
+        $payment_method_name = $this->get_payment_method_name() ? $this->get_payment_method_name() : $this->detect_default_payment_method_name();
         $options = array(
                 // Main options tab data
                 'enabled' => $gw->get_option('enabled', 'no') ,
-                'payment_method_name' => $this->get_payment_method_name() ? $this->get_payment_method_name() : 'Vipps',
+                'payment_method_name' => $payment_method_name,
                 'orderprefix' => $gw->get_option('orderprefix', $this->generate_order_prefix()),
                 'merchantSerialNumber' => $gw->get_option('merchantSerialNumber'),
                 'clientId' => $gw->get_option('clientId'),
                 'secret' => $gw->get_option('secret'),
                 'Ocp_Apim_Key_eCommerce' => $gw->get_option('Ocp_Apim_Key_eCommerce'),
                 'result_status' => $gw->get_option('result_status', 'on-hold'), 
-                'title' => $gw->get_option('title', sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name())) ,
+                'title' => $gw->get_option('title', sprintf(__('%1$s','woo-vipps'), $payment_method_name)),
                 'description' => $gw->get_option('description', sprintf(__("Almost done! Remember, there are no fees using %1\$s when shopping online.", 'woo-vipps'), Vipps::CompanyName())),
                 'vippsdefault' => $gw->get_option('vippsdefault', 'yes'),
     
