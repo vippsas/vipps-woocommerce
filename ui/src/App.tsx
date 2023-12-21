@@ -1,5 +1,6 @@
 import './App.css';
 import { AdminSettings } from './components/admin-settings/admin-settings';
+import { getMetadata } from './lib/wp-data';
 import { WPOptionsProvider } from './wp-options-provider';
 
 /**
@@ -8,10 +9,15 @@ import { WPOptionsProvider } from './wp-options-provider';
  * @returns The rendered application component.
  */
 function App(): JSX.Element {
+  const isAdminSettingsPage = getMetadata('page') === 'admin_settings_page';
   return (
-    <WPOptionsProvider>
-      <AdminSettings />
-    </WPOptionsProvider>
+    <>
+      {isAdminSettingsPage && (
+        <WPOptionsProvider>
+          <AdminSettings />
+        </WPOptionsProvider>
+      )}
+    </>
   );
 }
 
