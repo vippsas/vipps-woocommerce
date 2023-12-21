@@ -64,12 +64,14 @@ export function AdminSettings(): JSX.Element {
   const [showWizardScreen] = useState(() => {
     // This must be a useState hook because we only want to run this check on the first render.
     // Otherwise, the wizard screen would be shown every time the user changes a setting.
-    return (
-      (!getOption('merchantSerialNumber') && !getOption('merchantSerialNumber_test')) ||
-      (!getOption('clientId') && !getOption('clientId_test')) ||
-      (!getOption('secret') && !getOption('secret_test')) ||
-      (!getOption('Ocp_Apim_Key_eCommerce') && !getOption('Ocp_Apim_Key_eCommerce_test'))
-    );
+    const hasImportantSettings =
+      getOption('merchantSerialNumber') && getOption('clientId') && getOption('secret') && getOption('Ocp_Apim_Key_eCommerce');
+    const hasImportantSettingsTest =
+      getOption('merchantSerialNumber_test') &&
+      getOption('clientId_test') &&
+      getOption('secret_test') &&
+      getOption('Ocp_Apim_Key_eCommerce_test');
+    return !hasImportantSettings && !hasImportantSettingsTest;
   });
 
   // Only show the wizard screen if the important settings are not set.
