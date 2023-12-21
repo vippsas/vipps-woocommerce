@@ -39,17 +39,12 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey }: 
 
   return (
     <WPFormField>
-      <WPLabel htmlFor={`woocommerce_vipps_${name}`}>{gettext(titleKey)}</WPLabel>
+      <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
         <div className="vipps-mobilepay-react-row-center">
-          <WPCheckbox
-            id={`woocommerce_vipps_${name}`}
-            name={`woocommerce_vipps_${name}`}
-            checked={getOption(name)}
-            onChange={(value) => setOption(name, value)}
-          />
+          <WPCheckbox id={name} name={name} checked={getOption(name)} onChange={(value) => setOption(name, value)} />
           {labelKey && (
-            <label htmlFor={`woocommerce_vipps_${name}`}>
+            <label htmlFor={name}>
               <UnsafeHtmlText htmlString={gettext(labelKey)} />
             </label>
           )}
@@ -96,15 +91,9 @@ export function SelectFormField({ name, titleKey, descriptionKey, options }: Sel
 
   return (
     <WPFormField>
-      <WPLabel htmlFor={`woocommerce_vipps_${name}`}>{gettext(titleKey)}</WPLabel>
+      <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
-        <WPSelect
-          id={`woocommerce_vipps_${name}`}
-          name={`woocommerce_vipps_${name}`}
-          onChange={(e) => setOption(name, e.target.value)}
-          value={getOption(name)}
-          required
-        >
+        <WPSelect id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} required>
           {options.map((option) => (
             <WPOption key={option} value={option}>
               {option}
@@ -177,11 +166,11 @@ export function InputFormField({
 
   return (
     <WPFormField>
-      <WPLabel htmlFor={`woocommerce_vipps_${name}`}>{gettext(titleKey)}</WPLabel>
+      <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
         <WPInput
-          id={`woocommerce_vipps_${name}`}
-          name={`woocommerce_vipps_${name}`}
+          id={name}
+          name={name}
           onChange={(e) => setOption(name, e.target.value)}
           value={getOption(name)}
           pattern={pattern}
@@ -237,15 +226,9 @@ export function TextareaFormField({ name, titleKey, labelKey, descriptionKey, ro
   const { getOption, setOption } = useWP();
   return (
     <WPFormField>
-      <WPLabel htmlFor={`woocommerce_vipps_${name}`}>{gettext(titleKey)}</WPLabel>
+      <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
-        <WPTextarea
-          id={`woocommerce_vipps_${name}`}
-          name={`woocommerce_vipps_${name}`}
-          onChange={(e) => setOption(name, e.target.value)}
-          value={getOption(name)}
-          rows={rows}
-        />
+        <WPTextarea id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} rows={rows} />
         <div>{labelKey && <UnsafeHtmlText htmlString={gettext(labelKey)} />}</div>
         {descriptionKey && <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={gettext(descriptionKey)} />}
       </div>
