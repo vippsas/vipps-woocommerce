@@ -10,6 +10,7 @@ import { WPButton, WPForm } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { useState } from 'react';
 import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
+import { NotificationBanner } from '../notification-banner';
 
 // The tabs to render on the admin settings page.
 const TAB_IDS = [
@@ -27,6 +28,7 @@ const TAB_IDS = [
  */
 export function AdminSettings(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
   const { submitChanges, getOption } = useWP();
   // Get the active tab from the URL hash.
   const [activeTab, setActiveTab] = useHash(TAB_IDS[0]);
@@ -43,13 +45,16 @@ export function AdminSettings(): JSX.Element {
     setIsLoading(true);
 
     try {
-      await submitChanges();
-      window.location.reload();
-    } catch (error) {
-      console.error(error);
+      const data = await submitChanges({ forceEnable: true });
+      if (!data.ok) {
+        setError(data.msg);
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
-      window.location.reload();
     }
   }
 
@@ -75,6 +80,8 @@ export function AdminSettings(): JSX.Element {
   // If the important settings are set, show the normal settings screen.
   return (
     <>
+      {error && <NotificationBanner variant="error">{error}</NotificationBanner>}
+
       <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} />
       <WPForm onSubmit={handleSaveSettings}>
         {/* Renders the main options form fields  */}

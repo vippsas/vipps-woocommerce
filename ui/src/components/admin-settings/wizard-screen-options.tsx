@@ -3,6 +3,7 @@ import { gettext } from '../../lib/wp-data';
 import { WPButton, WPForm } from '../form-elements';
 import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { useWP } from '../../wp-options-provider';
+import { NotificationBanner } from '../notification-banner';
 
 /**
  * A React component that renders the wizard screen options for the admin settings page.
@@ -12,7 +13,8 @@ import { useWP } from '../../wp-options-provider';
 export function AdminSettingsWizardScreenOptions(): JSX.Element {
   const { submitChanges } = useWP();
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [error, setError] = useState<string>('');
+
   // Function to handle the save settings event.
   // This calls the submitChanges function from the WPOptionsProvider, which sends a request to the WordPress REST API to save the settings.
   async function handleSaveSettings(event: React.FormEvent<HTMLFormElement>) {
@@ -20,17 +22,22 @@ export function AdminSettingsWizardScreenOptions(): JSX.Element {
     setIsLoading(true);
 
     try {
-      await submitChanges({ forceEnable: true });
-      window.location.reload();
-    } catch (error) {
-      console.error(error);
+      const data = await submitChanges({ forceEnable: true });
+      if (!data.ok) {
+        setError(data.msg);
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
-      window.location.reload();
     }
   }
   return (
     <div>
+      {error && <NotificationBanner variant="error">{error}</NotificationBanner>}
+
       <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
       <WPForm onSubmit={handleSaveSettings}>
         {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
