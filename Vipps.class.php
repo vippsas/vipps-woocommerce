@@ -2296,7 +2296,33 @@ EOF;
             exit();
         }
 
+        // If this is a webhook call, we need to verify it, check that it is one of the 'callback' webhooks, check that we still have a pending
+        // order for it, normalize the callback data and then handle the callback. IOK 2023-12-21
         if ($iswebhook) {
+            $msn = $result['msn'];
+            $hookdata = $this->gateway()->get_local_webhook($msn);
+            $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
+            if (!$secret) {
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks.', 'woo-vipps'), $order->get_id()), 'debug');
+                return false;
+            }
+            $verified = $this->verify_webhook($raw_post, $secret);
+            if (!$verified) {
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks.', 'woo-vipps'), $order->get_id()), 'debug');
+                return;
+            }
+
+            // This will run for all events, not just the one this handler handles IOK 2023-12-21
+            do_action('woo_vipps_webhook_event', $result);
+
+            // We have to check that the event here is one that we actually can understand IOK 2023-12-21
+            $event = $result['name'] ?? '';
+            // These are the only events we handle as payment callbacks; but we can get all kinds of callbacks. We'll handle this
+            // by just calling an action which will then have to retrieve the order etc. IOK 2023-12-21
+            if (!in_array($event, ["ABORTED","EXPIRED", "AUTHORIZED",  "TERMINATED"])) {
+                return;
+            }
+
             $order = $this->get_pending_vipps_order($vippsorderid);
             if (!$order) {
                 // If the order is no longer pending, then we can safely ignore it. (IOK FIXME VERIFY)
@@ -2308,40 +2334,21 @@ EOF;
                 $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
             }
-            $msn = $result['msn'];
-            $hookdata = $this->gateway()->get_local_webhook($msn);
-            $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
-            if (!$secret) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks.', 'woo-vipps'), $order->get_id()), 'debug');
-                return;
-            }
-            // Verify the callback.
-            $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
-            $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
 
-            // Check date here with some leeway, using strtotime. FIXME
-            $hashed_payload = base64_encode(hash('sha256', $raw_post, true));
-            $path_and_query = $_SERVER['REQUEST_URI'];
-            $host = $_SERVER['HTTP_HOST'];
-            $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
-            $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
-            $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
-
-            if ($auth == $expected_auth) {
-                do_action('woo_vipps_callback_webhook', $result);
-                // Map the fields of the result to the other callback formats. IOK 2023-12-19 
-                $result['merchantSerialNumber'] = $msn;
-                $result['orderId'] = $result['reference'];
-                $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
-                if ($ok) {
-                    // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
-                    do_action('woo_vipps_callback_handled_order', $order);
-                }
-            } else {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks.', 'woo-vipps'), $order->get_id()), 'debug');
+            do_action('woo_vipps_callback_webhook', $result);
+            // Map the fields of the result to the other callback formats. IOK 2023-12-19 
+            $result['merchantSerialNumber'] = $msn;
+            $result['orderId'] = $result['reference'];
+            $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
+            if ($ok) {
+                // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
+                do_action('woo_vipps_callback_handled_order', $order);
             }
+
             exit();
         }
+
+        // Non-webhook path follows IOK 2023-12-20
 
         $orderid = intval(@$_REQUEST['id']);
 
@@ -2383,6 +2390,23 @@ EOF;
         }
 
         exit();
+    }
+
+    // Returns true iff we can verify that the webhook we just got is valid and that we know its secret IOK 2023-12-21
+    public function verify_webhook($serialized,$secret) {
+            // Verify the callback.
+            $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
+            $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
+
+            // Check date here with some leeway, using strtotime. FIXME
+            $hashed_payload = base64_encode(hash('sha256', $serialized, true));
+            $path_and_query = $_SERVER['REQUEST_URI'];
+            $host = $_SERVER['HTTP_HOST'];
+            $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
+            $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
+            $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+
+            return ($auth == $expected_auth) ;
     }
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
