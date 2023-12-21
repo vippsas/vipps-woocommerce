@@ -35,7 +35,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
       <InputFormField asterisk name="secret" titleKey="secret_title" labelKey="secret_label" />
 
       {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
-      <InputFormField name="Ocp_Apim_Key_eCommerce" titleKey="Ocp_Apim_Key_eCommerce_title" labelKey="Ocp_Apim_Key_eCommerce_label" />
+      <InputFormField asterisk name="Ocp_Apim_Key_eCommerce" titleKey="Ocp_Apim_Key_eCommerce_title" labelKey="Ocp_Apim_Key_eCommerce_label" />
 
       {/* Renders a select field for the result status (On-Hold or Processing) */}
       <SelectFormField
