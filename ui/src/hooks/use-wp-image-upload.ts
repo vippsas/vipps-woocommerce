@@ -33,6 +33,12 @@ declare const wp: {
 interface UseWPImageUpload {
   onUpload: (id: string, url: string) => void;
 }
+
+/**
+ * Custom hook for uploading images using WordPress media library.
+ * @param options.onUpload - The callback function to be called when an image is uploaded.
+ * @returns - An object containing the handleImageUpload function.
+ */
 export function useWPImageUpload({ onUpload }: UseWPImageUpload) {
   const handleImageUpload = () => {
     const mediaUploader = wp.media({

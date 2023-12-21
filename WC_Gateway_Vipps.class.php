@@ -173,6 +173,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->init_react_admin_ui();
     }
 
+    // Initializes the React application for the admin settings interface
     function init_react_admin_ui() {
         global $Vipps;
         $page_templates = $this->get_theme_page_templates();
@@ -407,7 +408,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'developermode_title' => __('Enable developer mode', 'woo-vipps'),
             'developermode_label' => __('Enable developer mode', 'woo-vipps'),
             'developermode_description' => __('Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption', 'woo-vipps'),
-        
+            
+            // Developer options
             'developer_options_title' => __('Developer mode', 'woo-vipps'),
             'developer_options_description' => __('These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime', 'woo-vipps'),
 
@@ -433,7 +435,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         );
 
 
-
+        // Collects all the data for the React UI
         $options = array(
             // Main options tab data
             'enabled' => $this->get_option('enabled', 'no'),
@@ -500,13 +502,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'Ocp_Apim_Key_eCommerce_test' => $this->get_option('Ocp_Apim_Key_eCommerce_test'),
         );
 
+        // Provide some general data to the React UI
         $metadata = array(
             'admin_url' => admin_url('admin-ajax.php'),
         );
         
+        // Provide translations to the React UI
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', $translations);
+        // Provide options to the React UI
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $options);
+        // Provide metadata to the React UI
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', $metadata);
+        // Enqueue the React UI css file
         wp_enqueue_style('vipps-mobilepay-react-ui', plugins_url('ui/dist/plugin.css',__FILE__), array(), 0 );
     }
 
@@ -3608,6 +3615,9 @@ function activate_vipps_checkout(yesno) {
         // We may have changed the number of form fields at this point if dev mode was changed 
         // from off to on,so re-initialize the form fields here. IOK 2019-09-03
         $this->init_form_fields();
+
+        // This is necessary because the form fields are not re-initialized when the form is submitted.
+        // Without this, the data in the form fields will be stale until a page reload.
         $this->init_react_admin_ui();
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {

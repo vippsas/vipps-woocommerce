@@ -8,7 +8,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         dir: 'dist',
+        // Necessary to have a consistent output path, so it's easy to reference it when we call wp_enqueue_script().
         entryFileNames: 'plugin.js',
+        // Necessary to have a consistent output path, so it's easy to reference it when we call wp_enqueue_style().
         assetFileNames: 'plugin.css',
         chunkFileNames: 'chunk.js',
         manualChunks: undefined

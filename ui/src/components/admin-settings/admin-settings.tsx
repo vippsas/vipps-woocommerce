@@ -7,6 +7,7 @@ import { AdminSettingsAdvancedOptionsTab } from './advanced-options-tab';
 import { useHash } from '../../hooks/use-hash';
 import { AdminSettingsDeveloperOptionsTab } from './developer-options-tab';
 
+// The tabs to render on the admin settings page.
 const TAB_IDS = [
   gettext('main_options_title'),
   gettext('express_options_title'),
@@ -15,9 +16,16 @@ const TAB_IDS = [
   gettext('developer_options_title')
 ];
 
+/**
+ * A React component that renders the admin settings page.
+ *
+ * @returns The rendered admin settings page.
+ */
 export function AdminSettings(): JSX.Element {
+  // Get the active tab from the URL hash.
   const [activeTab, setActiveTab] = useHash(TAB_IDS[0]);
 
+  // Function to determine if a tab is visible.
   function isVisible(tab: string): boolean {
     return tab !== activeTab;
   }

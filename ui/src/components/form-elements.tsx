@@ -1,6 +1,11 @@
 import { ComponentProps, PropsWithChildren } from 'react';
 
-export function WPInput(props: ComponentProps<'input'>) {
+/**
+ * Renders an input element with custom styling.
+ *
+ * @returns The rendered input element.
+ */
+export function WPInput(props: ComponentProps<'input'>): JSX.Element {
   return (
     <input {...props} className={['input-text regular-input', props.className ?? ''].join(' ')} style={{ height: 30 }}>
       {props.children}
@@ -8,7 +13,12 @@ export function WPInput(props: ComponentProps<'input'>) {
   );
 }
 
-export function WPForm(props: ComponentProps<'form'>) {
+/**
+ * Renders a form element with the provided props.
+ *
+ * @returns The rendered form element.
+ */
+export function WPForm(props: ComponentProps<'form'>): JSX.Element {
   return (
     <form {...props} className={['', props.className ?? ''].join(' ')}>
       {props.children}
@@ -16,7 +26,12 @@ export function WPForm(props: ComponentProps<'form'>) {
   );
 }
 
-export function WPLabel(props: ComponentProps<'label'>) {
+/**
+ * Renders a label element with custom styling.
+ *
+ * @returns The rendered label element.
+ */
+export function WPLabel(props: ComponentProps<'label'>): JSX.Element {
   return (
     <label {...props} className={['vipps-mobilepay-react-label', props.className ?? ''].join(' ')}>
       {props.children}
@@ -24,10 +39,21 @@ export function WPLabel(props: ComponentProps<'label'>) {
   );
 }
 
+/**
+ * Represents a button component with additional properties.
+ * @returns The rendered button element.
+ */
 interface WPButton extends ComponentProps<'button'> {
+  /**
+   * The variant of the button, these follow WordPress's default styles.
+   */
   variant?: 'primary' | 'secondary' | 'link';
 }
-export function WPButton({ variant, ...restProps }: WPButton) {
+/**
+ * Renders a custom button component for the WPButton.
+ * @returns The rendered button component.
+ */
+export function WPButton({ variant, ...restProps }: WPButton): JSX.Element {
   return (
     <button {...restProps} className={[`button-${variant}`, restProps.className ?? ''].join(' ')}>
       {restProps.children}
@@ -35,14 +61,38 @@ export function WPButton({ variant, ...restProps }: WPButton) {
   );
 }
 
+/**
+ * Represents the props for a WPCheckbox component.
+ */
 interface WPCheckboxProps {
+  /**
+   * The name of the checkbox.
+   */
   name?: string;
+  /**
+   * The ID of the checkbox.
+   */
   id?: string;
+  /**
+   * The checked state of the checkbox.
+   */
   checked: string | undefined;
+  /**
+   * The callback function to be called when the checkbox value changes.
+   * @param value - The new value of the checkbox.
+   */
   onChange: (value: string) => void;
+  /**
+   * The CSS class name for the checkbox.
+   */
   className?: string;
 }
-export function WPCheckbox({ id, name, onChange, checked, children, className }: PropsWithChildren<WPCheckboxProps>) {
+
+/**
+ * Renders a checkbox input component.
+ * @returns The rendered checkbox element.
+ */
+export function WPCheckbox({ id, name, onChange, checked, children, className }: PropsWithChildren<WPCheckboxProps>): JSX.Element {
   return (
     <input
       id={id}
@@ -57,7 +107,11 @@ export function WPCheckbox({ id, name, onChange, checked, children, className }:
   );
 }
 
-export function WPSelect(props: ComponentProps<'select'>) {
+/**
+ * Represents the props for a WPSelect component.
+ * @returns The rendered select element.
+ */
+export function WPSelect(props: ComponentProps<'select'>): JSX.Element {
   return (
     <select {...props} className={[props.className ?? ''].join(' ')}>
       {props.children}
@@ -65,6 +119,10 @@ export function WPSelect(props: ComponentProps<'select'>) {
   );
 }
 
+/**
+ * Represents the props for a WPCheckbox component.
+ * @returns The rendered option element.
+ */
 export function WPOption(props: ComponentProps<'option'>) {
   return (
     <option {...props} className={[props.className ?? ''].join(' ')}>
@@ -73,6 +131,10 @@ export function WPOption(props: ComponentProps<'option'>) {
   );
 }
 
+/**
+ * Represents the props for a WPTextarea component.
+ * @returns The rendered textarea element.
+ */
 export function WPTextarea(props: ComponentProps<'textarea'>) {
   return (
     <textarea {...props} className={[props.className ?? ''].join(' ')}>
@@ -81,6 +143,10 @@ export function WPTextarea(props: ComponentProps<'textarea'>) {
   );
 }
 
+/**
+ * Represents the props for a WPFormField component.
+ * @returns The rendered form field container.
+ */
 export function WPFormField(props: ComponentProps<'div'>) {
   return (
     <div {...props} className={['vipps-mobilepay-react-form-field', props.className ?? ''].join(' ')}>
@@ -89,9 +155,20 @@ export function WPFormField(props: ComponentProps<'div'>) {
   );
 }
 
+/**
+ * Converts a string value to a boolean value based on the WordPress expectation of 'yes' or 'no'.
+ * @param value - The string value to convert.
+ * @returns The boolean representation of the value.
+ */
 function truthToBool(value: string | null) {
   return value === 'yes';
 }
+
+/**
+ * Converts a boolean value to a string value based on the WordPress expectation of 'yes' or 'no'.
+ * @param value - The boolean value to convert.
+ * @returns The string representation of the value.
+ */
 function boolToTruth(value: boolean) {
   return value ? 'yes' : 'no';
 }
