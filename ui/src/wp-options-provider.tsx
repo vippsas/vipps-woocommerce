@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
-import { VippsMobilePayReactOptions } from './lib/wp-data';
+import { VippsMobilePayReactOptions, getMetadata } from './lib/wp-data';
 
 /**
  * Represents the context for WordPress options.
@@ -22,10 +22,9 @@ interface WPContext {
 
   /**
    * Submits changes made to WordPress options.
-   * @param event - The form event triggering the submission.
    * @returns A promise that resolves when the changes are submitted.
    */
-  submitChanges: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  submitChanges: () => Promise<void>;
 }
 const WPContext = createContext<WPContext>(null!);
 
@@ -51,31 +50,22 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
   }
 
   // Submits the options changed to the WordPress backend.
-  async function submitChanges(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submitChanges() {
+    const params = new URLSearchParams({
+      action: 'vipps_update_admin_settings',
+      value: JSON.stringify(values)
+    });
 
-    const changedOptions = Object.entries(values).filter(([key, value]) => VippsMobilePayReactOptions[key] !== value);
-
-    for (const [key, value] of changedOptions) {
-      try {
-        const response = await fetch('/wp-admin/admin-ajax.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            action: 'set_option',
-            key,
-            value
-          })
-        });
-        if (!response.ok) {
-          throw new Error(response.statusText);
-        }
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
+    const response = await fetch(getMetadata('admin_url')!, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+      },
+      credentials: 'include',
+      body: params.toString()
+    });
+    if (!response.ok) {
+      throw new Error(response.statusText);
     }
   }
 
