@@ -4005,8 +4005,26 @@ EOF;
             echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit these settings', 'woo-vipps')));
             wp_die(__('You don\'t have sufficient rights to edit these settings', 'woo-vipps'));
         }
+
+        // Decode the settings from the JSON string, then save them to "woocommerce_vipps_settings"
         $new_settings = json_decode(stripslashes($_POST['value']), true);
         update_option('woocommerce_vipps_settings', $new_settings, array());
+        
+        
+        // Make sure the vipps checkout page is created when the Alternate Vipps Checkout is enabled 
+        if ($new_settings['vipps_checkout_enabled'] == 'yes') {
+            $this->maybe_create_vipps_pages();
+        }
+
+        // Verify the connection to Vipps
+        list($ok,$error_message) = $this->gateway()->check_connection();
+        $msg = "";
+        if ($ok) {
+            $msg = sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName());
+        } else {
+            $msg = sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
+        }
+        echo json_encode(array("ok" => $ok, "msg" => $msg));
         exit();
     }
 
@@ -4302,6 +4320,7 @@ EOF;
         // Attempt to read the set payment method name, otherwise try to detect a default one from the settings
         $payment_method_name = $this->get_payment_method_name() ? $this->get_payment_method_name() : $this->detect_default_payment_method_name();
         $options = array(
+                'configured' => $gw->get_option('configured', 'no'),
                 // Main options tab data
                 'enabled' => $gw->get_option('enabled', 'no') ,
                 'payment_method_name' => $payment_method_name,
