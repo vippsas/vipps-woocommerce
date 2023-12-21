@@ -1871,10 +1871,13 @@ else:
     // This is used for the webhooks, where there is no way to add our own order info. IOK 2023-12-19
     private function get_pending_vipps_order($vippsorderid) {
         if ($this->useHPOS()) {
+            $sevendaysago = time() - (60*60*24*7);
             $result = wc_get_orders( array(
                         'limit' => 1,
                         'status' => 'wc-pending',
                         'type' => 'shop_order',
+                        'payment_method' => 'vipps',
+                        'date_created' => '>' . $sevendaysago,
                         'return' => 'objects',
                         'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
                         ));
@@ -2299,33 +2302,71 @@ EOF;
         // If this is a webhook call, we need to verify it, check that it is one of the 'callback' webhooks, check that we still have a pending
         // order for it, normalize the callback data and then handle the callback. IOK 2023-12-21
         if ($iswebhook) {
-            $msn = $result['msn'];
+            // The webhook payloads spell the msn differently. IOK 2023-12-21
+            $msn = $result['msn'] ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
+            if ($msn) {
+                $result['msn'] = $msn;
+                $result['merchantSerialNumber'] = $msn;
+            }
             $hookdata = $this->gateway()->get_local_webhook($msn);
             $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
             if (!$secret) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks.', 'woo-vipps'), $order->get_id()), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.', 'woo-vipps'), $order->get_id()), 'debug');
                 return false;
             }
             $verified = $this->verify_webhook($raw_post, $secret);
             if (!$verified) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks.', 'woo-vipps'), $order->get_id()), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
+            }
+
+            // We need to check if this is a payment event, or if not, and if it is, if it is one of the ones we are prepared to handle. IOK 2023-12-21
+            $event = $result['name'] ?? '';
+            $payment_events = ["CREATED", "ABORTED", "EXPIRED", "CANCELLED", "CAPTURED", "REFUNDED", "AUTHORIZED", "TERMINATED"];
+            $callback_events = ["ABORTED","EXPIRED", "AUTHORIZED",  "TERMINATED"];
+
+            // If this is a payment event, we should have an order too so try to retrieve it. IOK 2023-12-21
+            $order = null;
+            $pending = false;
+            if ($vippsorderid && $msn && in_array($event, $payment_events)) {
+                // Then check if the reference/vippsorderid is a pending order
+                $order =  $this->get_pending_vipps_order($vippsorderid);
+                if ($order) {
+                    $pending = true;
+                } else {
+                    // If it isn't, but it is a payment event, get the order id from the epayment metadata. IOK 2023-12-21
+                    try {
+                        $polldata = $this->gateway()->api->epayment_get_payment($vippsorderid, $msn);
+                        if ($polldata && isset($polldata['metadata'])) {
+                            $orderid = $polldata['metadata']['orderid'];
+                            if ($orderid) {
+                                $order = wc_get_order($orderid);
+                                if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+                                    $this->log(
+                                        sprintf(__('The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order.', 'woo-vipps'),
+                                        $vippsorderid, $orderid, $event), 'debug');
+                                    $order = null;
+                                    return;
+                                    $order = null;
+                                }
+                            }
+                        }
+                    } catch (Exception $e) {
+                      $this->log(sprintf(__("Could not get orderid of reference %2\$s from %1\$s: ", 'woo-vipps'), Vipps::CompanyName(), $vippsorderid) . $e->getMessage(), 'debug');
+                    }
+                }
             }
 
             // This will run for all events, not just the one this handler handles IOK 2023-12-21
-            do_action('woo_vipps_webhook_event', $result);
+            do_action('woo_vipps_webhook_event', $result, $order);
 
-            // We have to check that the event here is one that we actually can understand IOK 2023-12-21
-            $event = $result['name'] ?? '';
-            // These are the only events we handle as payment callbacks; but we can get all kinds of callbacks. We'll handle this
-            // by just calling an action which will then have to retrieve the order etc. IOK 2023-12-21
-            if (!in_array($event, ["ABORTED","EXPIRED", "AUTHORIZED",  "TERMINATED"])) {
+            // Now we will handle everything that is a callback event. IOK 2023-12-21
+            if (!in_array($event, $callback_events)) {
                 return;
             }
 
-            $order = $this->get_pending_vipps_order($vippsorderid);
-            if (!$order) {
-                // If the order is no longer pending, then we can safely ignore it. (IOK FIXME VERIFY)
+            if (!$pending) {
+                // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
                 $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $order->get_id()), 'debug');
                 return; 
             }
@@ -2336,9 +2377,6 @@ EOF;
             }
 
             do_action('woo_vipps_callback_webhook', $result);
-            // Map the fields of the result to the other callback formats. IOK 2023-12-19 
-            $result['merchantSerialNumber'] = $msn;
-            $result['orderId'] = $result['reference'];
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
             if ($ok) {
                 // This runs only if the callback actually handled the order, if not, then the order was handled by poll.

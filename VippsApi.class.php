@@ -485,6 +485,12 @@ class VippsApi {
             $data['customer'] = apply_filters('woo_vipps_payment_customer_data',$data['customer'],$orderid);
         }
 
+        // Store the original orderid as metadata, so we can retrieve it if neccessary IOK 2023-12-21
+        $metadata = [];
+        $metadata['orderid'] = $orderid;
+        $metadata = apply_filters('woo_vipps_payment_metadata', $metadata, $orderid);
+        $data['metadata'] = $metadata;
+
         // User information data to ask for. During normal checkout, we won't ask at all, but for Express Checkout we would do name, email, phoneNumber.
         // Currently, use a filter to allow merchants to do this. Can also add 'Address', which would give all data but not the shipment flow.
         // Values are name, address, email, phoneNumber, birthData and nin, if the company provides this to the merchant. 
@@ -1177,11 +1183,19 @@ class VippsApi {
     }
 
     // For the new epayment API, also used by checkout, return payment details (but not the payment log). Equivalent to the old get-status + metainfo.
-    public function epayment_get_payment ($order) {
-        $orderid = $order->get_meta('_vipps_orderid');
+    // Takes either an order object or the Vipps orderid as argument.
+    public function epayment_get_payment ($order, $msn='') {
+        if (is_a($order, 'WC_Order')) {
+            $orderid = $order->get_meta('_vipps_orderid');
+        } else {
+            $orderid = $order;
+        }
         $command = 'epayment/v1/payments/'.$orderid;
 
-        $msn = $this->get_merchant_serial();
+        if (!$msn) {
+            $msn = $this->get_merchant_serial();
+        }
+
         $subkey = $this->get_key($msn);
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
@@ -1198,6 +1212,7 @@ class VippsApi {
         $res = $this->http_call($msn,$command,$data,'GET',$headers);
         return $res;
     }
+
     // For the new epayment API, also used by checkout, return payment log (as for old payment_details. Will be used for debugging.
     // epayment api.
     public function epayment_get_payment_log ($order) {
