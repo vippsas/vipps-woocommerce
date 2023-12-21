@@ -11,13 +11,13 @@ import { WPOptionsProvider } from './wp-options-provider';
 function App(): JSX.Element {
   const isAdminSettingsPage = getMetadata('page') === 'admin_settings_page';
   return (
-    <>
+    <div className='vipps-mobilepay-react-admin-page'>
       {isAdminSettingsPage && (
         <WPOptionsProvider>
           <AdminSettings />
         </WPOptionsProvider>
       )}
-    </>
+    </div>
   );
 }
 
