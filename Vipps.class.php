@@ -4050,6 +4050,7 @@ EOF;
         $translations = array(
                 // Common translations
                 'save_changes' => __('Save changes', 'woo-vipps'),
+                'initial_settings' => __('Initial settings', 'woo-vipps'),
 
                 // Main options
                 'main_options_title' => __('Main options', 'woo-vipps'),
