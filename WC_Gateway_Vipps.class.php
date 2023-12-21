@@ -761,6 +761,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes'
                     ),
 
+                'vcs_posti' => array(
+                        'title'       => __('Posti', 'woo-vipps'),
+                        'class'       => 'vcs_posti vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posti'),
+                        'label'       => sprintf(__('Support Posti as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Activate this for Posti as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'default'     => 'yes'
+                    ),
+
                 'vcs_postnord' => array(
                         'title'       => __('PostNord', 'woo-vipps'),
                         'class'       => 'vcs_postnord vcs_main',
@@ -2242,11 +2252,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                  $userDetails = array(
                     'bankIdVerified' => $userinfo['email_verified'],
                     'email' => $userinfo['email'],
-                    'firstName' => $userinfo['given_name'],
-                    'lastName' => $userinfo['family_name'],
-                    'mobileNumber' => $userinfo['phone_number'],
-                    'phoneNumber' => $userinfo['phone_number'],
-                    'userId' => $userinfo['phone_number'],
+                    'firstName' => $userinfo['given_name'] ?? '',
+                    'lastName' => $userinfo['family_name'] ?? '',
+                    'mobileNumber' => $userinfo['phone_number'] ?? '',
+                    'phoneNumber' => $userinfo['phone_number'] ?? '',
+                    'userId' => $userinfo['phone_number'] ?? '',
                     'sub' => $userinfo['sub']
                  );
                  $countries=new WC_Countries();
