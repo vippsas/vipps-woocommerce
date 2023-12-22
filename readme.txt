@@ -89,6 +89,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Minor fixes
+Fix for regression in activate/deactivate actions
 
 == Frequently Asked Questions ==
 
@@ -228,6 +229,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2023-12-14 version 1.14.18 =
 Debugging information added for situations where an order may be spuriously cancelled
+Fix regression error in activate/deactivate actions
 
 = 2023-12-13 version 1.14.17 =
 Fix for issues with stored admin notices in newer woos, small css fix

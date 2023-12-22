@@ -94,9 +94,9 @@ class Vipps {
 
     public static function register_hooks() {
         $Vipps = static::instance();
-        register_activation_hook(__FILE__,array($Vipps,'activate'));
-        register_deactivation_hook(__FILE__,array('Vipps','deactivate'));
-        register_uninstall_hook(__FILE__, 'Vipps::uninstall');
+        register_activation_hook(dirname(__FILE__) . "/woo-vipps.php",array($Vipps,'activate'));
+        register_deactivation_hook(dirname(__FILE__) . "/woo-vipps.php",array('Vipps','deactivate'));
+        register_uninstall_hook(dirname(__FILE__) . "/woo-vipps.php", 'Vipps::uninstall');
         if (is_admin()) {
             add_action('admin_init',array($Vipps,'admin_init'));
             add_action('admin_menu',array($Vipps,'admin_menu'));
@@ -107,6 +107,7 @@ class Vipps {
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
     }
+
 
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
@@ -130,6 +131,18 @@ class Vipps {
     // True iff support for HPOS has been activated IOK 2022-12-07
     public function useHPOS() {
         if ($this->HPOSActive == null) {
+
+            // Current way of checking IOK 2023-12-19
+            if (class_exists('Automattic\WooCommerce\Utilities\OrderUtil')) {
+                if (Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+                    $this->HPOSActive = true;
+                } else {
+                    $this->HPOSActive = false;
+                }
+                return $this->HPOSActive;
+            }
+
+            // This works in the backend, so ensures we are good with the meta fields etc.
             if (function_exists('wc_get_container') &&  // 4.4.0
                 function_exists('wc_get_page_screen_id') && // Part of HPOS, not yet released
                 class_exists("Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController") &&
@@ -264,6 +277,8 @@ class Vipps {
 
         // POST actions for the backend
         add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
+        add_action('admin_post_vipps_delete_webhook', array($this, 'vipps_delete_webhook'));
+        add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
 
         // Link to the settings page from the plugin list
         add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
@@ -278,8 +293,8 @@ class Vipps {
         if (has_action('woo_vipps_shipping_methods')) {
             $option = $gw->get_option('newshippingcallback');
             if ($option != 'old' && $option != 'new') {
-                        $what = __('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%1$s">settings page</a>', 'woo-vipps');
-                        $this->add_vipps_admin_notice($what,'info');
+                $what = __('Your theme or a plugin is currently overriding the <code>\'woo_vipps_shipping_methods\'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href="%1$s">settings page</a>', 'woo-vipps');
+                $this->add_vipps_admin_notice($what,'info');
             }
         }
 
@@ -299,9 +314,19 @@ class Vipps {
                 } 
 
             }
+            // If we are configured, but we don't have any webhooks yet, initialize them for the epayment api. IOK 2023-12-20
+            // if we do have them, check them for consistency
+            if (get_option('woo-vipps-configured')) {
+                if (empty(get_option('_woo_vipps_webhooks'))) {
+                    $gw->initialize_webhooks();
+                } else {
+                    $ok =  $gw->check_webhooks();
+                    if (!$ok) $gw->initialize_webhooks();
+                }
+            }
         }
-
     }
+
 
     // Runs on init, adds the Vipps badge feature if activated
     public function maybe_add_vipps_badge_feature () {
@@ -363,6 +388,275 @@ class Vipps {
             echo apply_filters('woo_vipps_product_badge_html', $badge); 
         });
 
+    }
+
+    // A small interface for editing and managing the webhooks for the MSNs for this site IOK 2023-12-20
+    public function webhook_menu_page () {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
+        $portalurl = 'https://portal.vipps.no';
+        $webhookapi = 'https://developer.vippsmobilepay.com/docs/APIs/webhooks-api/';
+
+        echo "<div class='wrap vipps-badge-settings'>\n";
+        echo "<h1>" . __('Webhooks', 'woo-vipps') . "</h1>\n";
+        echo "<p>"; printf(__('Whenever an event like a payment or a cancellation occurs on a %1$s account, you can be notified of this using a <i>webhook</i>. This is used by this plugin to get noticed of payments by users even when they do not return to your store.', 'woo-vipps'), Vipps::CompanyName()); echo "</p>";
+        echo "<p>"; __('To do this, the plugin will automatically add webhooks for the MSN - Merchant Serial Numbers - configured on this site', 'woo-vipps'); echo "</p>";
+        echo "<p>"; __('If your MSN has registered other callbacks, for instance for another website, you can manage these here - and you can also add your own hooks that will be notified of payment events to any other URL you enter.', 'woo-vipps'); echo "</p>";
+        echo "<p>"; printf(__('Implementing a webhook is not trivial, so you will probably need a developer for this.  You can read more about what is required <a href="%1$s">here</a>. ', 'woo-vipps'), $webhookapi); 
+        printf(__('Please note that there is normally a limit of <em><strong>5</strong> webhooks per MSN</em> - contact %1$s if you need more', 'woo-vipps'), Vipps::CompanyName());
+        echo "</p>";
+        echo "<p>"; print __('The following is a listing of your webhooks. If you have changed your website name, you may see some hooks that you do not recognize - these should be deleted', 'woo-vipps'); echo "</p>";
+
+        $keyset = $this->gateway()->get_keyset();
+        $allhooks = $this->gateway()->initialize_webhooks();
+        $localhooks = get_option('_woo_vipps_webhooks');
+
+        echo "<form method='post' action='" . admin_url("admin-post.php") . "' autocomplete='off' id=webhook_action_form>";
+        echo "<input type='hidden' id='webhook_id' name='webhook_id' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_msn' name='webhook_msn' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_url' name='webhook_url' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_events' name='webhook_events' value='' autocomplete='false'>";
+        echo "<input type='hidden' id='webhook_post_action' name='action' value='' autocomplete='false'>";
+        wp_nonce_field('webhook_nonce', 'webhook_nonce');
+        echo "</form>";
+
+        foreach ($keyset as $msn => $data) {
+            $testmode = $data['testmode'] ?? false;
+            echo "<div style='margin-top: 2rem; margin-bottom: 2rem'>";
+            echo "<h2>";
+            echo  sprintf(__('Merchant Serial Number %1$s', 'woo-vipps'), $msn);
+            if ($testmode) echo " (" . __('Test mode', 'woo-vipps') . ")";
+            echo "<a style='float:right; font-size:smaller' class='webhook-adder'  href='javascript:void(0)' data-msn='" . esc_attr($msn) . "'>[" . __('Add a webhook to this MSN', 'woo-vipps') . "]</a>";
+            echo "</h2>";
+
+            $all = $allhooks[$msn] ?? [];
+            $thehooks = $all['webhooks'] ?? [];
+            $locals = $localhooks[$msn] ?? [];
+
+            echo "<table class='table webhook-table'><thead><tr><th style='text-align: left'>"  . __('Webhook', 'woo-vipps') . "</th><th>" . __('Action', 'woo-vipps') . "</th>" . "</tr></thead>";
+            echo "<tbody>";
+            foreach($thehooks as $hook) {
+                $id = $hook['id'];
+                $url = $hook['url'];
+                $events = $hook['events'];
+                $local = $locals[$id] ?? false;
+
+
+                echo "<tr" . ($local ? " class='local' " : '') . "  data-webhook-id='" . esc_attr($id) .  "' data-msn='" . esc_attr($msn) . "'";
+                echo " data-hookdata='" . json_encode($hook) . "'>"; 
+                echo "<td>" .  esc_html($url) .  "</td>";
+                echo "<td class='actions'>";
+                    echo "<a href='javascript:void(0)' class='webhook-viewer'>[" . __('View', 'woo-vipps') . "]</a> ";
+                if (!$local) {
+                    echo " <a href='javascript:void(0)' class='webhook-deleter'>[" . __('Delete', 'woo-vipps') . "]</a>";
+                } else {
+                    echo " <em>". __('Created for this site', 'woo-vipps') . "</em>";
+                }
+                echo "</td>";
+                echo "</tr>";
+            }
+            echo "</tbody>";
+            echo "</table>";
+            echo "</div>";
+            echo "<hr>";
+        }
+
+        $epayment_events = [__('Created', 'woo-vipps') => 'epayments.payment.created.v1',
+                            __('Aborted', 'woo-vipps') => 'epayments.payment.aborted.v1',
+                            __('Expired', 'woo-vipps') => 'epayments.payment.expired.v1',
+                            __('Cancelled', 'woo-vipps') => 'epayments.payment.cancelled.v1',
+                            __('Captured', 'woo-vipps') => 'epayments.payment.captured.v1',
+                            __('Refunded', 'woo-vipps') => 'epayments.payment.refunded.v1',
+                            __('Authorized', 'woo-vipps') => 'epayments.payment.authorized.v1',
+                            __('Terminated', 'woo-vipps') => 'epayments.payment.terminated.v1'];
+
+        $recurring_events = [ __('Agreement accepted', 'woo-vipps') =>'recurring.agreement-activated.v1',
+            __('Agreement rejected', 'woo-vipps') =>'recurring.agreement-rejected.v1',
+            __('Agreement stopped', 'woo-vipps') =>'recurring.agreement-stopped.v1',
+            __('Agreement expired', 'woo-vipps') =>'recurring.agreement-expired.v1',
+            __('Charge reserved', 'woo-vipps') =>'recurring.charge-reserved.v1',
+            __('Charge captured', 'woo-vipps') =>'recurring.charge-captured.v1',
+            __('Charge cancelled', 'woo-vipps') =>'recurring.charge-canceled.v1',
+            __('Charge failed', 'woo-vipps') =>'recurring.charge-failed.v1'];
+
+        $qr_events = [__('User Checked in', 'woo-vipps')=> 'user.checked-in.v1'];
+
+
+        $defaultevents = ['epayments.payment.authorized.v1', 'epayments.payment.aborted.v1', 'epayments.payment.expired.v1', 'epayments.payment.terminated.v1'];
+
+
+        ?>
+
+<dialog id='webhook_view_dialog' style='width:70%'>
+  <form method="dialog">
+       <div class='viewdata' style='margin-bottom: 3rem'>
+         <label>ID</label><span class='webhook_id'></span>
+         <label>URL</label><span class='webhook_url'></span>
+         <label>Events</label><div style='width:80%' class='webhook_events'></div>
+       </div>
+       <button class="button btn button-primary" type="submit" value="OK"><?php _e('OK'); ?></button>
+  </form>
+</dialog>
+
+
+<dialog id='webhook_add_dialog' style='width: 70%'>
+  <form method="dialog">
+    <h3><?php _e('Add a webhook', 'woo-vipps'); ?></h3>
+    <label for='dialog_webhook_msn'>MSN</label><input style='width: 50%' id='dialog_webhook_msn' required readonly type="text" name="webhook_msn" placeholder="">
+    <label for='dialog_webhook_url'>URL</label><input style='width: 50%' id='dialog_webhook_url' autofocus required type="url" name="webhook_url" placeholder="https://...">
+    <div class="events" style="margin-bottom: 2rem">
+     <h3>Epayment</h3>
+     <?php foreach($epayment_events as $label=>$event): ?> 
+       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
+          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
+                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
+       </label>
+     <?php endforeach; ?>
+     <h3>Recurring</h3>
+     <?php foreach($recurring_events as $label=>$event): ?> 
+       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
+          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
+                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
+       </label>
+     <?php endforeach; ?>
+     <h3>QR</h3>
+     <?php foreach($qr_events as $label=>$event): ?> 
+       <label for='<?php echo  esc_attr($event); ?>'><?php echo esc_html($label);?>
+          <input <?php if (in_array($event, $defaultevents)) echo " checked " ?>
+                  type='checkbox' name='webhook_event' value='<?php echo esc_attr($event); ?>'>
+       </label>
+     <?php endforeach; ?>
+
+    </div>
+    <div class='buttonholder'>
+       <button class="button btn button-primary" type="submit" value="OK"><?php _e('Add this URL as a webhook', 'woo-vipps'); ?></button>
+       <button class="button btn" type="submit" formnovalidate value="NO"><?php _e('No, forget it', 'woo-vipps'); ?></button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+ dialog#webhook_add_dialog::backdrop {
+   background-color: rgba(0.9,0.9,0.9,0.7);
+ }
+</style>
+
+<script>
+let dialog = document.getElementById('webhook_add_dialog');
+let viewdialog = document.getElementById('webhook_view_dialog');
+dialog.addEventListener('close', function () {
+    if (dialog.returnValue =='OK') {
+      let msn = dialog.querySelector('input[name="webhook_msn"]').value;
+      let url = dialog.querySelector('input[name="webhook_url"]').value;
+      dialog.querySelector('input[name="webhook_url"]').value = "";
+      dialog.querySelector('input[name="webhook_msn"]').value = "";
+
+      let events = dialog.querySelectorAll('input[name="webhook_event"]:checked');
+      let eventlist = [];
+      let eventstring = '';
+       for (const ev of events.values()) {
+          eventlist.push(ev.value);
+      }
+      eventstring = eventlist.join(',');
+     
+
+      if (msn && url && eventstring) {
+       jQuery('#webhook_msn').val(msn);
+       jQuery('#webhook_post_action').val('vipps_add_webhook');
+       jQuery('#webhook_url').val(url);
+       jQuery('#webhook_events').val(eventstring);
+       let f = jQuery('#webhook_action_form');
+       f.submit();
+      }
+    }
+    dialog.querySelector('input[name="webhook_url"]').value = "";
+    dialog.querySelector('input[name="webhook_msn"]').value = "";
+});
+
+let data = "";
+jQuery('a.webhook-viewer').click(function (e) {
+       e.preventDefault();
+       let row= jQuery(this).closest('tr');
+       data = row.data('hookdata');
+       viewdialog.querySelector('.viewdata').querySelector('.webhook_id').innerHTML= data['id'];
+       viewdialog.querySelector('.viewdata').querySelector('.webhook_url').innerHTML= data['url'];
+       viewdialog.querySelector('.viewdata').querySelector('.webhook_events').innerHTML= data['events'].join(" ");
+       viewdialog.showModal();
+});
+
+
+jQuery('a.webhook-deleter').click(function (e) {
+       e.preventDefault();
+       let row = jQuery(this).closest('tr');
+       let wh  = row.data('webhook-id');
+       let msn = row.data('msn');
+       let f = jQuery('#webhook_action_form');
+       jQuery('#webhook_id').val(wh);
+       jQuery('#webhook_msn').val(msn);
+       jQuery('#webhook_post_action').val('vipps_delete_webhook');
+       f.submit();
+});
+
+jQuery('a.webhook-adder').click(function (e) {
+            e.preventDefault();
+            let msn = jQuery(this).data('msn');
+            dialog.querySelector('input[name="webhook_url"]').value = "";
+            dialog.querySelector('input[name="webhook_msn"]').value = msn;
+            dialog.showModal();
+});
+
+        </script>
+
+        <?php
+
+
+        echo "</div>";
+    }
+
+    // To be called in admin-post.php
+    public function vipps_delete_webhook() {
+        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
+        }
+
+        $msn = sanitize_title($_REQUEST['webhook_msn']);
+        $id = sanitize_title($_REQUEST['webhook_id']);
+
+        if ($msn && $id) {
+            $this->gateway()->api->delete_webhook($msn, $id);
+        }
+
+        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
+        exit();
+    }
+
+    // To be called in admin-post.php
+    public function vipps_add_webhook() {
+        $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights', 'woo-vipps'));
+        }
+
+        $msn = sanitize_title($_REQUEST['webhook_msn']);
+        $url = sanitize_url($_REQUEST['webhook_url']);
+        $events = [];
+        foreach(explode(",", $_REQUEST['webhook_events']) as $event) {
+            $events[] = $event; 
+        }
+        if (!empty($events) && $msn && $url) {
+            $this->gateway()->api->register_webhook($msn, $url, $events);
+        }
+
+        wp_safe_redirect(admin_url("admin.php?page=vipps_webhook_menu"));
+        exit();
     }
 
     public function badge_menu_page () {
@@ -822,6 +1116,7 @@ class Vipps {
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
         add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($this, 'admin_settings_page'), 90);
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
+        add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
 
     public function add_meta_boxes () {
@@ -1352,7 +1647,6 @@ else:
             $ss = $details['shippingDetails'];
             $addr = isset($ss['address']) ? $ss['address'] : array();
             print "<h3>" . __('Shipping details', 'woo-vipps') . "</h3>";
-            print "<pre>"; print_r($addr) . "</pre>";
             print __('Address', 'woo-vipps') . ": " . htmlspecialchars(join(', ', array_filter(array_values($addr), 'is_scalar'))) . "<br>";
             if (@$ss['shippingMethod']) print __('Shipping method', 'woo-vipps') . ": " . htmlspecialchars(@$ss['shippingMethod']) . "<br>"; 
             if (@$ss['shippingCost']) print __('Shipping cost', 'woo-vipps') . ": " . @$ss['shippingCost'] . "<br>";
@@ -1577,6 +1871,33 @@ else:
         if ($result && is_array($result)) return $result[0];
 
         return 0;
+    }
+
+    // This is like getOrderByVipsOrderId, but only fetches pending orders.
+    // This is used for the webhooks, where there is no way to add our own order info. IOK 2023-12-19
+    private function get_pending_vipps_order($vippsorderid) {
+        if ($this->useHPOS()) {
+            $sevendaysago = time() - (60*60*24*7);
+            $result = wc_get_orders( array(
+                        'limit' => 1,
+                        'status' => 'wc-pending',
+                        'type' => 'shop_order',
+                        'payment_method' => 'vipps',
+                        'date_created' => '>' . $sevendaysago,
+                        'return' => 'objects',
+                        'meta_query' =>  [[ 'key'   => '_vipps_orderid', 'value' => $vippsorderid ]]
+                        ));
+            if (!empty($result) && is_a($result[0], 'WC_Order')) return $result[0];
+            return null;
+        } else {
+            global $wpdb;
+            $q = $wpdb->prepare("SELECT p.ID from `{$wpdb->posts}` p JOIN `{$wpdb->postmeta}` m ON (m.post_id = p.ID and m.meta_key = '_vipps_orderid') WHERE p.post_type = 'shop_order' &&  p.post_status = 'wc-pending' AND m.meta_value = %s LIMIT 1", $vippsorderid);
+            $res = $wpdb->get_results($q, ARRAY_A);
+            if (empty($res)) false;
+            $o = wc_get_order($res[0]['ID']);
+            if (is_a($o, 'WC_Order')) return $o;
+            return null;
+        }
     }
 
 
@@ -1939,6 +2260,7 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
+        wc_nocache_headers();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
@@ -1946,11 +2268,17 @@ EOF;
         $result = @json_decode($raw_post,true);
 
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
+        // .. and the epayment webhooks 2023-12-19
         $ischeckout = false;
+        $iswebhook = false;
         $callback = isset($_REQUEST['callback']) ?  $_REQUEST['callback'] : "";
         // For Vipps Checkout v3 and onwards, we control the callback so the type is just this field
         if ($callback == 'checkout') {
             $ischeckout = true;
+        } 
+        // For the webhooks, we will add 'webhook' to the result, but we also know that 'pspReference' will be present. IOK 2023-12-19
+        if ($callback == 'webhook' || (!$ischeckout && ($result['pspReference'] ?? false))) {
+            $iswebhook = true;
         }
 
         $vippsorderid = ($result && isset($result['orderId'])) ? $result['orderId'] : "";
@@ -1976,6 +2304,95 @@ EOF;
             print '{"status": 1, "msg": "Test ok"}';
             exit();
         }
+
+        // If this is a webhook call, we need to verify it, check that it is one of the 'callback' webhooks, check that we still have a pending
+        // order for it, normalize the callback data and then handle the callback. IOK 2023-12-21
+        if ($iswebhook) {
+            // The webhook payloads spell the msn differently. IOK 2023-12-21
+            $msn = $result['msn'] ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
+            if ($msn) {
+                $result['msn'] = $msn;
+                $result['merchantSerialNumber'] = $msn;
+            }
+            $hookdata = $this->gateway()->get_local_webhook($msn);
+            $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
+            if (!$secret) {
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.', 'woo-vipps'), $order->get_id()), 'debug');
+                return false;
+            }
+            $verified = $this->verify_webhook($raw_post, $secret);
+            if (!$verified) {
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks', 'woo-vipps'), $order->get_id()), 'debug');
+                return;
+            }
+
+            // We need to check if this is a payment event, or if not, and if it is, if it is one of the ones we are prepared to handle. IOK 2023-12-21
+            $event = $result['name'] ?? '';
+            $payment_events = ["CREATED", "ABORTED", "EXPIRED", "CANCELLED", "CAPTURED", "REFUNDED", "AUTHORIZED", "TERMINATED"];
+            $callback_events = ["ABORTED","EXPIRED", "AUTHORIZED",  "TERMINATED"];
+
+            // If this is a payment event, we should have an order too so try to retrieve it. IOK 2023-12-21
+            $order = null;
+            $pending = false;
+            if ($vippsorderid && $msn && in_array($event, $payment_events)) {
+                // Then check if the reference/vippsorderid is a pending order
+                $order =  $this->get_pending_vipps_order($vippsorderid);
+                if ($order) {
+                    $pending = true;
+                } else {
+                    // If it isn't, but it is a payment event, get the order id from the epayment metadata. IOK 2023-12-21
+                    try {
+                        $polldata = $this->gateway()->api->epayment_get_payment($vippsorderid, $msn);
+                        if ($polldata && isset($polldata['metadata'])) {
+                            $orderid = $polldata['metadata']['orderid'];
+                            if ($orderid) {
+                                $order = wc_get_order($orderid);
+                                if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+                                    $this->log(
+                                        sprintf(__('The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order.', 'woo-vipps'),
+                                        $vippsorderid, $orderid, $event), 'debug');
+                                    $order = null;
+                                    return;
+                                    $order = null;
+                                }
+                            }
+                        }
+                    } catch (Exception $e) {
+                      $this->log(sprintf(__("Could not get orderid of reference %2\$s from %1\$s: ", 'woo-vipps'), Vipps::CompanyName(), $vippsorderid) . $e->getMessage(), 'debug');
+                    }
+                }
+            }
+
+            // This will run for all events, not just the one this handler handles IOK 2023-12-21
+            do_action('woo_vipps_webhook_event', $result, $order);
+
+            // Now we will handle everything that is a callback event. IOK 2023-12-21
+            if (!in_array($event, $callback_events)) {
+                return;
+            }
+
+            if (!$pending) {
+                // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
+                $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $order->get_id()), 'debug');
+                return; 
+            }
+            // We are not interested in Checkout or Express orders - they have their own callback systems
+            if ($order->get_meta('_vipps_checkout') or $order->get_meta('_vipps_express_checkout')) {
+                $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
+                return;
+            }
+
+            do_action('woo_vipps_callback_webhook', $result);
+            $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
+            if ($ok) {
+                // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
+                do_action('woo_vipps_callback_handled_order', $order);
+            }
+
+            exit();
+        }
+
+        // Non-webhook path follows IOK 2023-12-20
 
         $orderid = intval(@$_REQUEST['id']);
 
@@ -2017,6 +2434,23 @@ EOF;
         }
 
         exit();
+    }
+
+    // Returns true iff we can verify that the webhook we just got is valid and that we know its secret IOK 2023-12-21
+    public function verify_webhook($serialized,$secret) {
+            // Verify the callback.
+            $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
+            $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
+
+            // Check date here with some leeway, using strtotime. FIXME
+            $hashed_payload = base64_encode(hash('sha256', $serialized, true));
+            $path_and_query = $_SERVER['REQUEST_URI'];
+            $host = $_SERVER['HTTP_HOST'];
+            $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
+            $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
+            $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+
+            return ($auth == $expected_auth) ;
     }
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
@@ -2626,6 +3060,8 @@ EOF;
        if ($gw->get_option('orderprefix') == 'Woo') {
          $gw->update_option('orderprefix', $this->generate_order_prefix()); 
        }
+       // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
+       $gw->initialize_webhooks();
        $this->payment_method_name = $gw->get_option('payment_method_name');
 
     }   
@@ -2634,9 +3070,15 @@ EOF;
     public static function deactivate() {
        $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
        wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
+        $timestamp = wp_next_scheduled('vipps_cron_missing_callback_hook');
+       wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
+       // IOK 2023-12-20 Delete all webhooks for this instance
+       WC_Gateway_Vipps::instance()->delete_all_webhooks();
     }
 
     public static function uninstall() {
+       // IOK 2023-12-20 Delete all webhooks for this instance on uninstall too
+       $WC_Gateway_Vipps::instance()->delete_all_webhooks();
        // Nothing yet
     }
     public function footer() {

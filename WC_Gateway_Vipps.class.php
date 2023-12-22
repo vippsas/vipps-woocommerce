@@ -52,6 +52,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     private static $instance = null;  // This class uses the singleton pattern to make actions easier to handle
 
+    protected $keyset = null; // This will contain all api keys etc for  the gateway, keyed on the merchant serial number.
+
     // Just to avoid calculating these alot
     private $page_templates = null;
     private $page_list = null;
@@ -179,34 +181,101 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        return false;
     }
     // These abstraction gets the correct client id and so forth based on whether or not test mode is on
-    public function apiurl () {
-       if ($this->is_test_mode()) return $this->testapiurl;
+    // "test mode" is now per MSN, so we accept that as an argument IOK 2023-12-19
+    public function apiurl ($msn="") {
+       $msn = $msn ?? $this->get_merchant_serial();
+       $keyset = $this->get_keyset();
+       $entry  = $keyset ? ($keyset[$msn] ?? null) : null;
+       if (!$entry) {
+           $testmode = $this->is_test_mode();
+       } else {
+           $testmode = $entry['testmode'];
+       }
+       if ($testmode) return $this->testapiurl;
        return $this->apiurl;
     }
+
+    // This returns the *current* merchant serial number. There may be more than one, for instance if the test mode is on.
+    // IOK 2023-12-19
     public function get_merchant_serial() {
         $merch = $this->get_option('merchantSerialNumber');
         $testmerch = @$this->get_option('merchantSerialNumber_test');
         if (!empty($testmerch) && $this->is_test_mode()) return $testmerch;
         return $merch;
     }
-    public function get_clientid() {
-        $clientid=$this->get_option('clientId');
-        $testclientid=$this->get_option('clientId_test');
-        if (!empty($testclientid) && $this->is_test_mode()) return $testclientid;
-        return $clientid;
+
+    // Returns a table of all the keydata of this instance, keyed on MSN. IOK 2023-12-19
+    public function get_keyset() {
+        if ($this->keyset) return $this->keyset;
+        $stored = get_transient('_vipps_keyset');
+        if ($stored) {
+            return $stored;
+        }
+
+        $keyset = [];
+        $main = $this->get_option('merchantSerialNumber');
+        if ($main) {
+            $data = ['client_id'=>$clientid=$this->get_option('clientId'), 
+                'client_secret' => $this->get_option('secret'), 
+                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
+            if (! in_array(false, array_map('boolval', array_values($data)))) {
+                $data['testmode'] = 0; // Must add after 
+                $keyset[$main] = $data;
+            }
+        }
+        $test = @$this->get_option('merchantSerialNumber_test');
+        if ($test) {
+            $data = [
+                'client_id'=>$clientid=$this->get_option('clientId_test'),
+                'client_secret' => $this->get_option('secret_test'), 
+                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test')]; 
+
+            if (! in_array(false, array_map('boolval', array_values($data)))) {
+                $data['testmode'] = 1;
+                $keyset[$test] = $data;
+            }
+        }
+        $this->keyset = $keyset;
+        set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
+        return $keyset;
     }
-    public function get_secret() {
-        $secret=$this->get_option('secret');
-        $testsecret=$this->get_option('secret_test');
-        if (!empty($testsecret) && $this->is_test_mode()) return $testsecret;
-        return $secret;
+
+    // Return all webhooks for our MSNs
+    public function get_webhooks_from_vipps () {
+        $keys = $this->get_keyset();
+        $hooks = [];
+        foreach($keys as $msn=>$data) {
+            try {
+                $hooks[$msn] = $this->api->get_webhooks($msn);
+            } catch (Exception $e) {
+                $this->log(sprintf(__('Could not get webhooks for Merchant Serial Number  %1$s: %2$s', 'woo-vipps'), $msn, $e->getMessage()), 'error');
+                $hooks[$msn]=[];
+            }
+        }
+        return $hooks;
     }
-    public function get_key() {
-        $key = $this->get_option('Ocp_Apim_Key_eCommerce');
-        $testkey = $this->get_option('Ocp_Apim_Key_eCommerce_test');
-        if (!empty($testkey) && $this->is_test_mode()) return $testkey;
-        return $key;
+
+
+    // The rest of the settings gets the correct client id, secret, sub key and order prefix based on the MSN.
+    public function get_clientid($msn="") {
+        if (!$msn) $msn = $this->get_merchant_serial();
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['client_id'];
     }
+    public function get_secret($msn="") {
+        if (!$msn) $msn = $this->get_merchant_serial();
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['client_secret'];
+    }
+    public function get_key($msn="") {
+        if (!$msn) $msn = $this->get_merchant_serial();
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['sub_key'];
+    }
+
     public function get_orderprefix() {
         $prefix = $this->get_option('orderprefix');
         return $prefix;
@@ -262,6 +331,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Create callback urls' using WC's callback API in a way that works with Vipps MobilePay callbacks and both pretty and not so pretty urls.
     private function make_callback_urls($forwhat,$token='', $reference=0) {
         // Passing the token as GET arguments, as the Authorize header is stripped. IOK 2018-06-13
+        // This applies to Ecom, Checkout and Express Checkout callbacks.  For epayment, we instead need to use 
+        // the webhook api, which is altogether different. IOK 2023-12-19
         $url = home_url("/", 'https');
         $queryargs = [];
         if ($token) $queryargs['tk']=$token;
@@ -279,6 +350,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $callbackurl = add_query_arg($queryargs, $url) . "&callback=";
         return  $callbackurl;
     }
+
+    // Webhook callbacks do not pass GET arguments at all, but do provide an X-Vipps-Authorization header for verification. IOK 2023-12-19
+    public function webhook_callback_url () {
+        $url = home_url("/", 'https');
+        $queryargs = ['callback'=>'webhook'];
+        $forwhat = 'wc_gateway_vipps'; // Same callback as for ecom, checkout, express checkout
+        // HTTPS required. IOK 2018-05-18
+        // If the user for some reason hasn't enabled pretty links, fall back to ancient version. IOK 2018-04-24
+        if ( !get_option('permalink_structure')) {
+            $queryargs['wc-api'] = $forwhat;
+        } else {
+            $url = trailingslashit(home_url("wc-api/$forwhat", 'https'));
+        }
+        $callbackurl = add_query_arg($queryargs, $url);
+        return  $callbackurl;
+    }
+
+
     // The main payment callback
     public function payment_callback_url ($token='', $reference=0) {
         return $this->make_callback_urls('wc_gateway_vipps',$token, $reference);
@@ -669,6 +758,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'label'       => sprintf(__('Support Posten Norge as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'type'        => 'checkbox',
                         'description' => sprintf(__('Activate this for Posten Norge as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
+                        'default'     => 'yes'
+                    ),
+
+                'vcs_posti' => array(
+                        'title'       => __('Posti', 'woo-vipps'),
+                        'class'       => 'vcs_posti vcs_main',
+                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posti'),
+                        'label'       => sprintf(__('Support Posti as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                        'type'        => 'checkbox',
+                        'description' => sprintf(__('Activate this for Posti as a %1$s Shipping method.', 'woo-vipps'), Vipps::CheckoutName()),
                         'default'     => 'yes'
                     ),
 
@@ -1206,9 +1305,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         do_action('woo_vipps_before_process_payment',$order_id);
 
+        // Get current merchant serial
+        $msn = $this->get_merchant_serial();
+
         // Do a quick check for correct setup first - this is the most critical point IOK 2018-05-11 
         try {
-            $at = $this->api->get_access_token();
+            $at = $this->api->get_access_token($msn);
         } catch (Exception $e) {
             $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order_id .":\n" . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
@@ -2150,11 +2252,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                  $userDetails = array(
                     'bankIdVerified' => $userinfo['email_verified'],
                     'email' => $userinfo['email'],
-                    'firstName' => $userinfo['given_name'],
-                    'lastName' => $userinfo['family_name'],
-                    'mobileNumber' => $userinfo['phone_number'],
-                    'phoneNumber' => $userinfo['phone_number'],
-                    'userId' => $userinfo['phone_number'],
+                    'firstName' => $userinfo['given_name'] ?? '',
+                    'lastName' => $userinfo['family_name'] ?? '',
+                    'mobileNumber' => $userinfo['phone_number'] ?? '',
+                    'phoneNumber' => $userinfo['phone_number'] ?? '',
+                    'userId' => $userinfo['phone_number'] ?? '',
                     'sub' => $userinfo['sub']
                  );
                  $countries=new WC_Countries();
@@ -2723,15 +2825,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Handle the callback from Vipps eCom.
-    public function handle_callback($result, $order, $ischeckout=false) {
+    public function handle_callback($result, $order, $ischeckout=false, $iswebhook=false) {
         global $Vipps;
 
         $vippsorderid = $result['orderId'];
         $merchant= $result['merchantSerialNumber'];
-       
-        $me = $this->get_merchant_serial();
+      
+        $keyset = $this->get_keyset(); 
+        $me = array_keys($keyset);
 
-        if ($me != $merchant) {
+        if (!in_array($merchant, $me)) {
             $this->log(sprintf(__("%1\$s callback with wrong merchantSerialNumber - might be forged",'woo-vipps'), $this->get_payment_method_name()) . " " .  $order->get_id(), 'warning');
             return false;
         }
@@ -2743,19 +2846,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $orderid = $order->get_id();
 
         // This is for express checkout - some added protection
-        $authtoken = $order->get_meta('_vipps_authtoken');
-        if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
-            $this->log(sprintf(__("Wrong auth token in callback from %1\$s - possibly an attempt to fake a callback", 'woo-vipps'), Vipps::CompanyName()), 'warning');
-            clean_post_cache($order->get_id());
-            exit();
+        // Webhooks are already authenticated IOK 2023-12-20
+        if (!$iswebhook) {
+            $authtoken = $order->get_meta('_vipps_authtoken');
+            if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
+                $this->log(sprintf(__("Wrong auth token in callback from %1\$s - possibly an attempt to fake a callback", 'woo-vipps'), Vipps::CompanyName()), 'warning');
+                clean_post_cache($order->get_id());
+                exit();
+            }
         }
+
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
             $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), Vipps::CompanyName()), 'warning');
             clean_post_cache($order->get_id());
             exit();
         }
 
-        $errorInfo = @$result['errorInfo'];
+        $errorInfo = $result['errorInfo'] ?? '';
         if ($errorInfo) {
             $this->log(sprintf(__("Message in callback from %1\$s for order",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . ' ' . $errorInfo['errorMessage'],'error');
             $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
@@ -2772,6 +2879,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $transaction['amount'] = $details['amount']['value'];
             $transaction['currency'] = $details['amount']['currency'];
             $transaction['status'] = $details['state'];
+        } else if ($iswebhook) {
+            $transaction['transactionId'] = 'epayment_' . $vippsorderid;
+            $transaction['timeStamp'] = date('Y-m-d H:i:s', strtotime($result['timestamp']));
+            if (isset($result['amount'])) {
+                $transaction['amount'] = $result['amount']['value'];
+                $transaction['currency'] = $result['amount']['currency'];
+            }
+            $transaction['status'] = $result['name']; // Name of the event! IOK 2023-12-19 But this is actually the state, such as AUTHORIZED, TERMINATED etc
         }
 
         if (!$transaction) {
@@ -2804,10 +2919,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $Vipps->callback_restore_session($orderid);
 
         // Set Vipps metadata as early as possible
-        $transactionid = @$transaction['transactionId'];
+        $transactionid = $transaction['transactionId'] ?? '';
         $vippsstamp = strtotime($transaction['timeStamp']);
-        $vippsamount = $transaction['amount'];
-        $vippscurrency= $transaction['currency'];
+        $vippsamount = $transaction['amount'] ?? '';
+        $vippscurrency= $transaction['currency'] ?? '';
         $vippsstatus = $transaction['status'];
 
         $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
@@ -2828,41 +2943,43 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
+        // For express or checkout, we want to set shipping details IOK 2023-12-19
         $express = $order->get_meta('_vipps_express_checkout');
+        if ($express || $ischeckout) {
+            // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
+            // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
+            // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+            if ($express && !isset($result['userDetails'])) {
+                $result = $this->get_payment_details($order);
+            }
 
-        // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
-        // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
-        // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
-        if ($express && !isset($result['userDetails'])) {
-            $result = $this->get_payment_details($order);
-        }
+            // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
+            // including adding anonoymous users if there is no other data. IOK 2023-01-10
+            $result = $this->ensure_userDetails($result, $order);
 
-        // We can no longer assume that user Details are sent, because of Vipps Checkout v3. So we add it,
-        // including adding anonoymous users if there is no other data. IOK 2023-01-10
-        $result = $this->ensure_userDetails($result, $order);
- 
-        if ($express && $order->get_meta('_vipps_checkout')) {
-            if (!isset($result['shippingDetails'])) {
-                // It is possible to drop shipping details from Checkout!
-                // We'll fill out the minimum of info
-                $countries=new WC_Countries();
-                $result['shippingDetails'] = array(
-                                'firstName' => $result['userDetails']['firstName'],
-                                'lastName' => $result['userDetails']['lastName'],
-                                'email' => $result['userDetails']['email'],
-                                'phoneNumber' => $result['userDetails']['phoneNumber'],
-                                'country' =>  $countries->get_base_country()
+            if ($express && $order->get_meta('_vipps_checkout')) {
+                if (!isset($result['shippingDetails'])) {
+                    // It is possible to drop shipping details from Checkout!
+                    // We'll fill out the minimum of info
+                    $countries=new WC_Countries();
+                    $result['shippingDetails'] = array(
+                            'firstName' => $result['userDetails']['firstName'],
+                            'lastName' => $result['userDetails']['lastName'],
+                            'email' => $result['userDetails']['email'],
+                            'phoneNumber' => $result['userDetails']['phoneNumber'],
+                            'country' =>  $countries->get_base_country()
                             );
 
+                }
+                if (isset($result['billingDetails']) && !isset($result['billingDetails']['country'])) {
+                    $result['billingDetails']['country'] = $result['shippingDetails']['country'];
+                }
             }
-            if (isset($result['billingDetails']) && !isset($result['billingDetails']['country'])) {
-                $result['billingDetails']['country'] = $result['shippingDetails']['country'];
-            }
-        }
 
-        if ($express && @$result['shippingDetails']) {
-            $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-            $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
+            if ($express && @$result['shippingDetails']) {
+                $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
+                $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
+            }
         }
 
         if ($vippsstatus == 'AUTHORISED' || $vippsstatus == 'AUTHORIZED' || $vippsstatus == 'RESERVED' || $vippsstatus == 'RESERVE') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09
@@ -2874,7 +2991,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', sprintf(__('Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+            $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
         }
         $order->save();
         clean_post_cache($order->get_id());
@@ -3271,11 +3388,23 @@ function activate_vipps_checkout(yesno) {
         // from off to on,so re-initialize the form fields here. IOK 2019-09-03
         $this->init_form_fields();
 
+        // Reinitialize keysets in case user added/changed these
+        $this->keyset = null;
+        delete_transient('_vipps_keyset');
+        $keyset = $this->get_keyset();
+
+
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {
                 $this->adminnotify(sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName()));
         } else {
                 $this->adminerr(sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $msg");
+        }
+
+        if ($ok) {
+            $this->check_webhooks();
+            // Try to ensure we have webhooks defined for the epayment-api IOK 2023-12-19
+            $hooks = $this->initialize_webhooks();
         }
 
         // If enabling this, ensure the page in question exists
@@ -3287,13 +3416,137 @@ function activate_vipps_checkout(yesno) {
         return $saved;
     }
 
+    // Check our stored webhooks for consistency, which means the callback URLs should point to *this* site. If they don't,
+    // delete all the ones pointing wrong. If this returns false, you should reinitialize the webhooks. IOK 2023-12-20
+    public function check_webhooks () {
+        $local_hooks = get_option('_woo_vipps_webhooks');
+        $callback = $this->webhook_callback_url();
+        $callback_compare = strtok($callback, '?');
+        $problems = false;
+        foreach($local_hooks as $msn => $hooks) {
+           foreach ($hooks as $id => $hook) {
+               $noargs = strtok($hook['url'], '?');
+               if ($noargs == $callback_compare) continue; // This hook is good, probably, unless somebody has deleted it
+               $this->api->delete_webhook($msn, $hook['id']); // This isn't - it's pointed the wrong way, which means we have changed name of the site or something
+               $problems = true;
+           }
+        }
+        if ($problems) return false;
+        return true;
+    }
+
+    // Returns the local webhooks for the given msn. If the url has changed, it will return nothing. IOK 2023-12-19
+    public function get_local_webhook($msn) {
+        $local_hooks = get_option('_woo_vipps_webhooks');
+        $hooks = $local_hooks[$msn] ?? [];
+        $callback = $this->webhook_callback_url();
+        $callback_compare = strtok($callback, '?');
+
+        foreach ($hooks as $id=>$hook) {
+            $noargs = strtok($hook['url'], '?');
+            if ($noargs == $callback_compare) {
+                return $hook;
+            } else {
+                // May want to log this somehow
+            }
+        }
+        return null;
+    }
+
+
+    //  This is to be used in deactivate/uninstall - it deletes all webhooks for all MSNs for this instance
+    // Unfortunatetly, we can't delete other msn's webhooks or webhooks pointing to other URLs. IOK 2023-12-20
+    public function delete_all_webhooks() {
+        delete_option('_woo_vipps_webhooks');
+        $callback = $this->webhook_callback_url();
+        $comparandum = strtok($callback, '?');
+        $all_hooks = $this->get_webhooks_from_vipps();
+        foreach($all_hooks as $msn => $data) {
+            $hooks = $data['webhooks'] ?? [];
+            foreach ($hooks as $hook) {
+                $id = $hook['id'];
+                $url = $hook['url'];
+                $noargs = strtok($url, '?');
+                if ($noargs != $comparandum) continue; // Some other shops hook, we will ignore it
+                $ok = $this->api->delete_webhook($msn,$id);
+            }
+        }
+    }
+
+    // This will initalize the webhooks for this instance, for all MSNs that are configured.
+    // Hooks that point to us that we *do not* know the secret for, have to be deleted.
+    public function initialize_webhooks() {
+        $local_hooks = get_option('_woo_vipps_webhooks');
+        $all_hooks = $this->get_webhooks_from_vipps();
+        $ourselves = $this->webhook_callback_url();
+
+        // Ignore any extra arguments
+        $comparandum = strtok($ourselves, '?');
+
+        $change = false;
+
+        // We may need to delete webhooks that have been orphaned. There should be exactly one
+        // for this sites' callback, and we need to know its secret. All others should be deleted.
+        $delenda = [];
+
+        foreach($all_hooks as $msn => $data) {
+            $hooks = $data['webhooks'] ?? [];
+            $gotit = false;
+            $locals = $local_hooks[$msn] ?? [];
+            foreach ($hooks as $hook) {
+                $id = $hook['id'];
+                $url = $hook['url'];
+                $noargs = strtok($url, '?');
+                if ($noargs != $comparandum) continue; // Some other shops hook, we will ignore it
+                $local = $locals[$id] ?? false;
+                // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
+                if (!$gotit && $local && isset($local['secret']))  {
+                    $gotit = $local;
+                    continue;
+                }
+                // Now we have a hook for our own msn and url, but either we don't know the secret or it is a duplicate. It should be deleted.
+                $delenda[] = $id;
+            }
+
+            // Delete all the webhooks for this msn that we don't want
+            foreach ($delenda as $wrong) {
+                $change = true;
+                $this->api->delete_webhook($msn,$wrong);
+            }
+
+            if ($gotit) {
+                // Now if we got a hook, then we should *just* remember that for this msn. 
+                $local_hooks[$msn] = array($local['id'] => $local);
+            } else {
+                // If not, we don't have a hook for this msn and site, so we need to (try to) create one
+                $change = true;
+                $result = $this->api->register_webhook($msn, $ourselves);
+                if ($result) {
+                    $local_hooks[$msn] = [$result['id'] => ['id'=>$result['id'], 'url' => $ourselves, 'secret' => $result['secret']]];
+                }
+            }
+        }
+        update_option('_woo_vipps_webhooks', $local_hooks, true);
+
+
+        if ($change) $all_hooks = $this->get_webhooks_from_vipps();
+
+        return $all_hooks;
+    }
+
+
+    // Checks connection of the 'main' MSN IOK 2023-12-19
     public function check_connection () {
-        $at = $this->get_key();
-        $s = $this->get_secret();
-        $c = $this->get_clientid();
+        $msn = $this->get_merchant_serial();
+        $at = $this->get_key($msn);
+        $s = $this->get_secret($msn);
+        $c = $this->get_clientid($msn);
         if ($at && $s && $c) {
+
+
+
             try {
-                $token = $this->api->get_access_token('force');
+                $token = $this->api->get_access_token($msn,'force');
                 update_option('woo-vipps-configured', 1, true);
                 return array(true,'');
 

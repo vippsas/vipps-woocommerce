@@ -1,3 +1,12 @@
+table.webhook-table tr.local {
+    font-weight: bold;
+}
+table.webhook-table {
+    width: 80%;
+}
+table.webhook-table td.actions {
+    text-align: center;
+}
 
 .notice.notice-vipps.notice-info {
     border-left-color: #fe5b24;
