@@ -2381,7 +2381,6 @@ EOF;
                 $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
             }
-
             do_action('woo_vipps_callback_webhook', $result);
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
             if ($ok) {

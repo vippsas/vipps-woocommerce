@@ -2145,6 +2145,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
+        if ($result == "ERROR") {
+            $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+            wp_die(sprintf(__("Could not get payment results for order %1\$s - you may have the wrong MSN for the order. Please check logs for more information", 'woo-vipps'), $order->get_id()));
+        } 
+
         if (!empty($result)) {
             $result['orderId']  = $result['reference']; 
 
