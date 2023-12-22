@@ -51,7 +51,7 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
 
   // Submits the options changed to the WordPress backend.
   async function submitChanges(args?: { forceEnable: boolean }): Promise<{ ok: boolean; msg: string }> {
-    // In some cases, such as when the wizard screen is shown, we want to force enable the VippsMobilePay checkout, because we cannot display the `enabled` checkout.
+    // In some cases, we want to force-enable the "Enable Vipps MobilePay" option, such as when the user sets up the plugin for the first time in the wizard screen.
     if (args?.forceEnable) {
       setOption('enabled', 'yes');
       values.enabled = 'yes';

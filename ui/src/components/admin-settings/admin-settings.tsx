@@ -45,7 +45,7 @@ export function AdminSettings(): JSX.Element {
     setIsLoading(true);
 
     try {
-      const data = await submitChanges({ forceEnable: true });
+      const data = await submitChanges();
       if (!data.ok) {
         setError(data.msg);
       } else {
