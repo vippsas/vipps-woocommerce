@@ -4028,23 +4028,6 @@ EOF;
         exit();
     }
 
-    // Attempt to detect the default payment method name based on the store location, locale, and currency
-    public function detect_default_payment_method_name() {
-        // use the main site locale
-        $locale = get_locale();
-        $store_location=  wc_get_base_location();
-        $store_country = $store_location['country'] ?? '';
-        $currency = get_woocommerce_currency();
-
-        $default_payment_method_name = "MobilePay";
-
-        // If store location, locale, or currency is Norwegian, default to Vipps
-        if ($store_country== "NO" || preg_match("/.*_NO/", $locale) || $currency == "NOK") {
-            $default_payment_method_name = "Vipps";
-        }
-        return $default_payment_method_name;
-    }
-
     // Handle VippsMobilePay admin settings
     function admin_settings_page() {
         // We must first generate the root element for the React UI before we load the React app itself, otherwise React will fail to load.
@@ -4318,7 +4301,7 @@ EOF;
 
 
         // Attempt to read the set payment method name, otherwise try to detect a default one from the settings
-        $payment_method_name = $this->get_payment_method_name() ? $this->get_payment_method_name() : $this->detect_default_payment_method_name();
+        $payment_method_name = $this->get_payment_method_name() ? $this->get_payment_method_name() : $gw->detect_default_payment_method_name();
         $options = array(
                 'configured' => $gw->get_option('configured', 'no'),
                 // Main options tab data
