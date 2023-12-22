@@ -100,12 +100,14 @@ MobilePay is currently only available in Denmark and Finland (75 % and 36 % user
 = How can I get help if I have any issues? =
 For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
 
-= Why are orders put on-hold and not reserved or completed? =
-When the order is on-hold the payment is reserved, but not yet transferred to the merchant. The money must be 'captured' before they are actually transferred to the merchant. You are normally only allowed to do this at the same time as the order is shipped. You can 'capture' the money explicitly on the order screen; but the money will be captured automatically when the order is set to "Processing" or "Complete".
+= Why are orders put on-hold and not processing or completed? =
+This was the old default of this plugin until version 2.0. The newer default is now 'processing', but this also means that orders that are 'processing' will have their payment reserved, but not transferred to the merchant. You can still choose the status on-hold in the options screen.
+
+If you choose on-hold, orders with this status will have the payment reserved, but not yet transferred to the merchant. The money must be 'captured' before they are actually transferred to the merchant. You are normally only allowed to do this at the same time as the order is shipped. You can 'capture' the money explicitly on the order screen; but the money will be captured automatically when the order is set to "Processing" or "Complete".
+
+If you use the default or choose "processing", the same applies to this status: The order will be reserved, but not captured. You can do the capture manually, or it will automatically happen when the order is set to "Complete". Please note that you should ensure that your workflow is then so that the order is captured just before the package is shipped.
 
 There is an exception for orders where all items are both virtual and downloadable: These are not considered to need processing and will be captured automatically (and go directly to the 'Complete' status). It is possible to customize this property for your needs using the woocommerce_order_item_needs_processing filter.
-
-From version 1.1.11 on, you can choose "Processing" as the end state instead of "On Hold", but be aware that these orders will only have been reserved, not captured; so you should always then capture before shipping.
 
 = Can I refund orders or part of orders using Vipps/MobilePay =
 Yes, you can do refunds, including partial refunds, using the standard WooCommerce mechanism (https://docs.woocommerce.com/document/woocommerce-refunds/). Additionally, if you cancel an order that was already captured, the money will be refunded for the whole order. If automatic refund through the Vipps API should fail, you will need to refund manually; in this case an error message to this effect will be displayed and the order annotated.

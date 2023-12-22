@@ -314,10 +314,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // you can instead use 'processing' here - which is much nicer. 
     // If you do so, remember to capture *before* shipping is done on the order - if you send the package and then do 'complete', 
     // the capture may fail. IOK 2018-12-05
-    // The intention is to provide this behaviour as a selectable checkbox in the backend in the future; it has to be
-    // explicitly chosen so merchants can be aware of the possible isssues. IOK 2018-12-05
+    //
+    // IOK As of 2023-12-22, the default is now 'processing', since this is more in line with what other gateways are using,
+    // what other integrations and plugins expect, the most popular choice by users; and because of the fact that "on-hold" is
+    // normally used to indicate "a problem with the order". Not being able to capture a reserved order has to my knowledge at this
+    // point only happened once, in 2018, with a completely different api and backend.
     public function after_vipps_order_status($order=null) {
-      $defaultstatus = 'on-hold';
+      $defaultstatus = 'processing';
       $chosen = $this->get_option('result_status');
       if ($chosen == 'processing') $defaultstatus = $chosen;
       $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $defaultstatus, $order);
@@ -944,11 +947,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'label'       => __('Choose default order status for reserved (not captured) orders', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
-                    'on-hold' => __('On hold','woo-vipps'),
                     'processing' => __('Processing', 'woo-vipps'),
+                    'on-hold' => __('On hold','woo-vipps'),
                 ), 
-                'description' => __('By default, orders that are <b>reserved</b> but not <b>captured</b> will have the order status \'On hold\' until you capture the sum (by changing the status to \'Processing\' or \'Complete\')<br> Some stores prefer to use \'On hold\' only for orders where there are issues with the payment. In this case you can choose  \'Processing\' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the \'capture\' step may in rare cases fail. <br>If you choose this setting, capture will still automatically happen on the status change to \'Complete\' ', 'woo-vipps'),
-                'default'     => 'on-hold',
+                'description' => __('By default, orders that are <b>reserved</b> but not <b>yet captured</b> will now have the order status \'Processing\'. You can capture the sum manually, or by changing the status to \'Complete\'. You should ensure that your workflow is such that the order is not shipped until after this capture.<br><br> The status \'On hold\' can be chosen instead for stores using a workflow where orders are shipped when the status is \'Processing\'. In this case, \'On hold\' will mean "order is reserved but not yet captured".  This is a slightly safer solution, and ensures that the order status will reflect the payment status. <br><br>However, in many stores \'On hold\' has the additional meaning "there is a problem with the order"; and an email is often sent to the customer about this problem. The default is \'Processing\' because of this, and because many plugins and integrations expect orders to be \'Processing\' when the customer has completed payment.', 'woo-vipps'),
+                'default'     => 'processing',
             ),
 
             'title' => array(
