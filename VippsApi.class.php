@@ -94,7 +94,6 @@ class VippsApi {
         return $headers;
     }
 
-    // IOK FIXME THE WEBHOOK API
     // List all webhooks registered for the given MSN IOK 2023-12-19
     public function get_webhooks($msn="") {
         $command = "/webhooks/v1/webhooks";
@@ -141,7 +140,6 @@ class VippsApi {
             return false;
         }
     }
-    // IOK FIXME END WEBHOOKS
 
     // Get an App access token if neccesary. Returns this or throws an error. IOK 2018-04-18
     // IOK 2023-12-19 changed this so the system could use several MSNs in the future.
@@ -245,6 +243,7 @@ class VippsApi {
             $bottomline['tipAmount'] = round($tipamount*100);
             $bottomline['giftCardAmount'] = round($giftcardamount*100);
             $bottomline['terminalId'] = apply_filters('woo_vipps_order_terminalid', 'woocommerce', $order);
+            $bottomline['receiptNumber'] = strval($order->get_id());
 
             foreach ($order->get_items() as $key => $order_item) {
                 $orderline = [];
@@ -273,14 +272,14 @@ class VippsApi {
                 $taxpercentage = round($taxpercentage);
                 $unitInfo = [];
                 $orderline['name'] = $order_item->get_name();
-                $orderline['id'] = $prodid;
+                $orderline['id'] = strval($prodid);
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
                 $orderline['totalTaxAmount'] = round($tax*100);
 
                 $orderline['taxPercentage'] = $taxpercentage;
                 $unitinfo['unitPrice'] = round($unitprice*100);
-                $unitinfo['quantity'] = $quantity;
+                $unitinfo['quantity'] = strval($quantity);
                 $unitinfo['quantityUnit'] = 'PCS';
                 $orderline['unitInfo'] = $unitinfo;
                 $orderline['discount'] = $discount;
@@ -293,9 +292,9 @@ class VippsApi {
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                 $shippingline =  [];
                 $orderline['name'] = $order_item->get_name();
-                $orderline['id'] = $order_item->get_method_id();
+                $orderline['id'] = strval($order_item->get_method_id());
                 if (method_exists($order_item, 'get_instance_id')) {
-                    $orderline['id'] .= ":" . $order_item->get_instance_id();
+                    $orderline['id'] .= ":" . strval($order_item->get_instance_id());
                 }
 
                 $totalNoTax = $order_item->get_total();
@@ -320,7 +319,7 @@ class VippsApi {
                 $unitinfo  = [];
 
                 $unitinfo['unitPrice'] = round($total*100);
-                $unitinfo['quantity'] = 1;
+                $unitinfo['quantity'] = strval(1);
                 $unitinfo['quantityUnit'] = 'PCS';
                 $orderline['unitInfo'] = $unitinfo;
                 $discount = 0;
@@ -780,6 +779,7 @@ class VippsApi {
           $transaction['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
+
         # This have to exist, but we'll not check it now.
         if (! function_exists("wc_terms_and_conditions_page_id")) {
             $msg = sprintf(__('You need a newer version of WooCommerce to use %1$s!', 'woo-vipps'), Vipps::CheckoutName());
@@ -796,7 +796,6 @@ class VippsApi {
         } else {
             $this->log(sprintf(__('Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined', 'woo-vipps'), Vipps::CheckoutName()));
         }
-        $data['transaction'] = $transaction;
 
         ## Vipps Checkout Shipping
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
@@ -863,6 +862,23 @@ class VippsApi {
         // Require consent of email and openid sub - really for login
         $configuration['requireUserInfo'] = apply_filters('woo_vipps_checkout_requireUserInfo', $gw->get_option('requireUserInfo_checkout') == 'yes' , $orderid);
 
+
+        // IOK 2023-12-22 and we can add an order summary, so do so by default
+        $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
+        if ($summarize) {
+            $ordersummary = $this->get_receipt_data($order);
+            // This is different in the receipt api, the epayment api and in checkout.
+            $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
+            unset($ordersummary['bottomLine']);
+
+            // Don't finalize the receipt number - we just want to show this rn.
+            unset($ordersummary['orderBottomLine']['receiptNumber']);
+            if (!empty($ordersummary)) {
+                $transaction['orderSummary'] = $ordersummary;
+                $configuration['showOrderSummary'] = true;
+            }
+        }
+
         // ISO-3166 Alpha 2 country list
         $countries = array_keys((new WC_Countries())->get_allowed_countries());
         $allowed_countries = apply_filters('woo_vipps_checkout_countries', $countries, $orderid);
@@ -894,6 +910,7 @@ class VippsApi {
             }
         }
         $data['configuration'] = $configuration;
+        $data['transaction'] = $transaction;
 
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
 
