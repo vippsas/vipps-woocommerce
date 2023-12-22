@@ -11,7 +11,7 @@ import { NotificationBanner } from '../notification-banner';
  * @returns The rendered wizard form fields.
  */
 export function AdminSettingsWizardScreenOptions(): JSX.Element {
-  const { submitChanges } = useWP();
+  const { submitChanges, getOption } = useWP();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
@@ -23,6 +23,10 @@ export function AdminSettingsWizardScreenOptions(): JSX.Element {
 
     try {
       const data = await submitChanges({ forceEnable: true });
+      const hasImportantSettings = getOption('merchantSerialNumber') && getOption('clientId') && getOption('secret') && getOption('Ocp_Apim_Key_eCommerce');
+      if (hasImportantSettings) {
+        window.location.reload();
+      }
       if (!data.ok) {
         setError(data.msg);
       } else {

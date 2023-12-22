@@ -46,6 +46,7 @@ export function AdminSettings(): JSX.Element {
 
     try {
       const data = await submitChanges();
+      window.location.reload();
       if (!data.ok) {
         setError(data.msg);
       } else {
