@@ -179,6 +179,29 @@ add_action('plugins_loaded', function () {
         }
     }
 
+    // Support Mailchimp for WooCommerce in Vipps Checkout
+    if (function_exists('mailchimp_is_configured') && class_exists('MailChimp_Service')) {
+        // If mailchimp is configured and Checkout is on, add actions
+        if (mailchimp_is_configured() && (Vipps::instance()->gateway()->get_option('vipps_checkout_enabled') == 'yes')) {
+
+            add_filter('woo_vipps_checkout_consent_query', function ($text) {
+                $opts = get_option('mailchimp-woocommerce');
+                $text = ($opts['newsletter_label'] ?? false) ? $opts['newsletter_label']  : $text;
+                return $text;
+            });
+            // This should annotate the order correctly, straight before the order changes status to 'processing'.
+            add_action('woo_vipps_set_order_shipping_details', function ($order) {
+                if (class_exists('MailChimp_Service')) {
+                    $consent = intval($order->get_meta('_vipps_custom_consent_provided'));
+                    if ($consent) {
+                        $order->update_meta_data('mailchimp_woocommerce_is_subscribed', true);
+                        $order->save();
+                    } 
+                }
+            });
+        } 
+
+    }
 
 
 });
