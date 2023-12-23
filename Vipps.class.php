@@ -2435,22 +2435,56 @@ EOF;
         exit();
     }
 
-    // Returns true iff we can verify that the webhook we just got is valid and that we know its secret IOK 2023-12-21
-    public function verify_webhook($serialized,$secret) {
-            // Verify the callback.
-            $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
-            $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
+    // Returns true iff we can verify that the webhook we just received is valid and that we know its secret IOK 2023-12-21
+    public function verify_webhook($serialized, $secret) {
+        // Extract the necessary headers.
+        $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
+        $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
 
-            // Check date here with some leeway, using strtotime. FIXME
-            $hashed_payload = base64_encode(hash('sha256', $serialized, true));
-            $path_and_query = $_SERVER['REQUEST_URI'];
-            $host = $_SERVER['HTTP_HOST'];
-            $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
-            $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
-            $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+        // Check if the date header is present and within an acceptable range (e.g., +/- 5 minutes) NT 2023-12-22
+        if (!$this->isDateValid($expected_date)) {
+            return false; // Date is not valid or not within the acceptable range
+        }
 
-            return ($auth == $expected_auth) ;
+        // Prepare the data for signing.
+        $hashed_payload = base64_encode(hash('sha256', $serialized, true));
+        $path_and_query = $_SERVER['REQUEST_URI'];
+        $host = $_SERVER['HTTP_HOST'];
+
+        // Construct the string to sign.
+        $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
+
+        // Generate the HMAC signature.
+        $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
+
+        // Construct the authorization string.
+        $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+
+        // Compare the generated auth string with the expected one. 
+        // Hash_equals is used to mitigate timing attacks NT 2023-12-22
+        return hash_equals($auth, $expected_auth);
     }
+
+    // Helper function to validate the date NT 2023-12-22
+    private function isDateValid($dateHeader) {
+        // Define the acceptable time leeway (e.g., 5 minutes)
+        $leewayInSeconds = 300;
+
+        // Convert the header date to a Unix timestamp
+        $headerTime = strtotime($dateHeader);
+
+        // Check if the date is valid
+        if ($headerTime === false) {
+            return false; // Invalid date
+        }
+
+        // Get the current time
+        $currentTime = time();
+
+        // Check if the date is within the acceptable range
+        return abs($currentTime - $headerTime) <= $leewayInSeconds;
+    }
+
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
     // IOK 2021-11-22 Seems as if Vipps is now sending two-letter country codes at least some times
