@@ -71,7 +71,7 @@ export function AdminSettingsWizardScreenOptions(): JSX.Element {
 
         {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
         <InputFormField asterisk name="Ocp_Apim_Key_eCommerce" titleKey="Ocp_Apim_Key_eCommerce_title" labelKey="Ocp_Apim_Key_eCommerce_label" />
-        <WPButton variant="primary" isLoading={isLoading}>
+        <WPButton variant="primary" disabled={isLoading}>
           {gettext('save_changes')}
         </WPButton>
       </WPForm>

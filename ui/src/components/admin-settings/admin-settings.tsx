@@ -102,7 +102,7 @@ export function AdminSettings(): JSX.Element {
         {/* Renders the developer options form fields */}
         {isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
 
-        <WPButton variant="primary" isLoading={isLoading}>
+        <WPButton variant="primary" disabled={isLoading}>
           {gettext('save_changes')}
         </WPButton>
       </WPForm>
