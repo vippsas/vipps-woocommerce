@@ -162,6 +162,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.17.3 =
+* Fixed: No longer use the `wp_safe_remote_post` function and instead use `wp_remote_post` because it causes problems on some hosts, and our calls are to endpoints returned by Vipps either way.
+
 = 1.17.2 =
 * Fixed: Hide this gateway if there are no subscription products in the cart.
 

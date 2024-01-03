@@ -346,7 +346,7 @@ class WC_Vipps_Recurring_Api {
 			'body'    => $body,
 		];
 
-		$response = wp_safe_remote_post( $url, $args );
+		$response = wp_remote_post( $url, $args );
 
 		// throw WP error as a WC_Vipps_Recurring_Exception if response is not valid
 		$default_error = '';
