@@ -4520,6 +4520,7 @@ EOF;
 
     // Handle VippsMobilePay admin settings
     function admin_settings_page() {
+        echo "<div class='wrap vipps-admin-settings-page'>";
         // Add nonce first.
         wp_nonce_field('vippsadmin_nonce', 'vippsadmin_nonce');
 
@@ -4871,5 +4872,7 @@ EOF;
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', $translations);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $options);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', $metadata);
+
+        echo "</div>";
     }
 }
