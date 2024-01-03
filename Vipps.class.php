@@ -4490,32 +4490,31 @@ EOF;
         // Decode the settings from the values sents, then save them to "woocommerce_vipps_settings"
         $new_settings = $_POST['values'];
 
-        // IOK FIXME THIS WILL ENSURE sanitization etc works as it is supposed to using the 
+        // IOK FIXME This will ensure sanitization etc works as it is supposed to using the 
         // admin settings api of WooCommerce. We will however want to run this code independently, so we'll handle this 
-        // by ourselves at a later point.
-        // update_option('woocommerce_vipps_settings', $new_settings, array());  // After sanitation etc
-
-        // This is the only way to feed arguments to process_admin_options :( IOK 2024-01-03
+        // by ourselves at a later point, ending it like so:
+        // update_option('woocommerce_vipps_settings', $new_settings); // After sanitation etc
         $admin_options = [];
         foreach($new_settings as $key => $value) {
            $admin_options['woocommerce_vipps_' . $key]  = $value;
         }
         $this->gateway()->set_post_data($admin_options);
         $this->gateway()->process_admin_options();
-        $this->gateway()->add_error("Jaboloko!");
+//        $this->gateway()->add_error("Jaboloko!");  // Also add_warning, add_notice plz
         $errorlist = $this->gateway()->get_errors();
         $msg .= join("<br>", $errorlist);
         // end use of process_admin_options IOK 2024-01-03
 
         // Verify the connection to Vipps
         list($ok,$error_message) = $this->gateway()->check_connection();
-        $msg = "";
         if ($ok) {
             $msg .= sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName());
         } else {
             $msg .= sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
         }
-        echo json_encode(array("ok" => $ok, "msg" => $msg, 'options' => get_options('woocommerce_vipps_settings')));
+        // OK is still true here, because we will only say ok is false for *errors*, not *wrong input*. But we may want to
+        // add another value to signify that as well. IOK 2023-01-03
+        echo json_encode(array("ok" => true, "msg" => $msg, 'options' => get_option('woocommerce_vipps_settings')));
         exit();
     }
 

@@ -29,7 +29,7 @@ const TAB_IDS = [
 export function AdminSettings(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  const { submitChanges, getOption } = useWP();
+  const { submitChanges, getOption, setOptions } = useWP();
   // Get the active tab from the URL hash.
   const [activeTab, setActiveTab] = useHash(TAB_IDS[0]);
 
@@ -49,12 +49,17 @@ export function AdminSettings(): JSX.Element {
 
     try {
       const data = await submitChanges({forceEnable: forceEnable});
-      console.log("data %j", data);
+      // IOK FIXME Must separate notices and errors here 2024-01-03
+      if (data.msg) {
+          setError(data.msg);
+      } 
       if (!data.ok) {
-        setError(data.msg);
+        setError(data.msg + "<br>Unsuccessful"); // IOK FIXME
       } else {
-        setShowWizardScreen(showWizardp());
-//        window.location.reload();
+        // Ensure we have the new options, then reload the screens using the new values
+        setOptions(data.options).then( () => 
+            setShowWizardScreen(showWizardp())
+        );
       }
     } catch (err) {
       console.log("An error happened");

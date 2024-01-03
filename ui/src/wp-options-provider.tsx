@@ -21,10 +21,17 @@ interface WPContext {
   getOption: (option: string) => string;
 
   /**
+   * Sets the values of all options
+   * @param options - The options
+   * @returns void
+   */
+  setOptions: (options: Record<string, string | null>) => Promise<void>;
+
+  /**
    * Submits changes made to WordPress options.
    * @returns A promise that resolves when the changes are submitted.
    */
-  submitChanges: (args?: { forceEnable: boolean }) => Promise<{ ok: boolean; msg: string }>;
+  submitChanges: (args?: { forceEnable: boolean }) => Promise<{ ok: boolean; msg: string, options: Record<string, string | null>}>;
 }
 const WPContext = createContext<WPContext>(null!);
 
@@ -49,8 +56,12 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
     }));
   }
 
+  async function setOptions(options : Record<string, string | null>) {
+      setValues(options);
+  }
+
   // Submits the options changed to the WordPress backend.
-  async function submitChanges(args?: { forceEnable: boolean }): Promise<{ ok: boolean; msg: string }> {
+  async function submitChanges(args?: { forceEnable: boolean }): Promise<{ ok: boolean; msg: string, options: Record<string, string | null> }> {
     // In some cases, we want to force-enable the "Enable Vipps MobilePay" option, such as when the user sets up the plugin for the first time in the wizard screen.
     if (args?.forceEnable) {
       setOption('enabled', 'yes');
@@ -83,6 +94,9 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       credentials: 'include',
       body: params.toString()
     });
+    if (response.ok) {
+        console.log("Response is %j", response);
+    }
     return response.json();
   }
 
@@ -91,6 +105,7 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       value={{
         setOption,
         getOption,
+        setOptions,
         submitChanges
       }}
     >
