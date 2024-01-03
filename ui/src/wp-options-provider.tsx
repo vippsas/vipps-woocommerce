@@ -57,10 +57,23 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       values.enabled = 'yes';
     }
 
+    // Grab the nonce to avoid csrf IOK 2024-01-03
+    let nonce : string = (document.getElementById('vippsadmin_nonce') as HTMLInputElement).value;
+
+    // IOK 2024-01-03 curiously, using JSON.stringify on the values here ends up with extra slashes in the
+    // strings after stringifying the URLSearchParams, which are not handled properly by the php backend...
     const params = new URLSearchParams({
       action: 'vipps_update_admin_settings',
-      value: JSON.stringify(values)
+      vippsadmin_nonce: nonce,
     });
+
+    // Therefore we will use the PHP query args convention of passing hashes by using the names 'value[key]' 
+    //  as query args. IOK 2024-01-03
+    for (const [key, value] of Object.entries(values)) {
+      let phpkey : string = "values[" + key + "]";
+      if (value) params.append(phpkey, value);
+      else params.append(phpkey, '');
+    }
 
     const response = await fetch(getMetadata('admin_url')!, {
       method: 'POST',

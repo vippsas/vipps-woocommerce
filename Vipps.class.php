@@ -4476,15 +4476,21 @@ EOF;
     
     // Handle the submission of the admin settings page
     public function ajax_vipps_update_admin_settings() {        
+         $ok = wp_verify_nonce($_REQUEST['vippsadmin_nonce'],'vippsadmin_nonce');
+         if (!$ok) {
+            echo json_encode(array('ok'=>0, 'options' => [], 'msg'=>__('You don\'t have sufficient rights to edit these settings', 'woo-vipps')));
+            exit();
+         }
         if (!current_user_can('manage_woocommerce')) {
-            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit these settings', 'woo-vipps')));
-            wp_die(__('You don\'t have sufficient rights to edit these settings', 'woo-vipps'));
+            echo json_encode(array('ok'=>0, 'options' => [], 'msg'=>__('You don\'t have sufficient rights to edit these settings', 'woo-vipps')));
+            exit();
         }
-
         // Decode the settings from the JSON string, then save them to "woocommerce_vipps_settings"
-        $new_settings = json_decode(stripslashes($_POST['value']), true);
-        update_option('woocommerce_vipps_settings', $new_settings, array());
-        
+        $new_settings = $_POST['values'];
+
+        // IOK FIXME FIRST SANITIZE 
+        error_log("Data " . print_r($new_settings,true));
+        // update_option('woocommerce_vipps_settings', $new_settings, array());
         
         // Make sure the vipps checkout page is created when the Alternate Vipps Checkout is enabled 
         if ($new_settings['vipps_checkout_enabled'] == 'yes') {
@@ -4499,14 +4505,18 @@ EOF;
         } else {
             $msg = sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
         }
-        echo json_encode(array("ok" => $ok, "msg" => $msg));
+        echo json_encode(array("ok" => $ok, "msg" => $msg, 'options' => get_options('woocommerce_vipps_settings')));
         exit();
     }
 
     // Handle VippsMobilePay admin settings
     function admin_settings_page() {
+        // Add nonce first.
+        wp_nonce_field('vippsadmin_nonce', 'vippsadmin_nonce');
+
         // We must first generate the root element for the React UI before we load the React app itself, otherwise React will fail to load.
-        ?><div id="vipps-mobilepay-react-ui"></div><?php
+        ?>
+            <div id="vipps-mobilepay-react-ui"></div><?php
 
         // Initializing the wordpress media plugin, so we can upload images
         wp_enqueue_media();
