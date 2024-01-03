@@ -4485,25 +4485,35 @@ EOF;
             echo json_encode(array('ok'=>0, 'options' => [], 'msg'=>__('You don\'t have sufficient rights to edit these settings', 'woo-vipps')));
             exit();
         }
-        // Decode the settings from the JSON string, then save them to "woocommerce_vipps_settings"
+        $msg = ""; // Message for the user.
+
+        // Decode the settings from the values sents, then save them to "woocommerce_vipps_settings"
         $new_settings = $_POST['values'];
 
-        // IOK FIXME FIRST SANITIZE 
-        error_log("Data " . print_r($new_settings,true));
-        // update_option('woocommerce_vipps_settings', $new_settings, array());
-        
-        // Make sure the vipps checkout page is created when the Alternate Vipps Checkout is enabled 
-        if ($new_settings['vipps_checkout_enabled'] == 'yes') {
-            $this->maybe_create_vipps_pages();
+        // IOK FIXME THIS WILL ENSURE sanitization etc works as it is supposed to using the 
+        // admin settings api of WooCommerce. We will however want to run this code independently, so we'll handle this 
+        // by ourselves at a later point.
+        // update_option('woocommerce_vipps_settings', $new_settings, array());  // After sanitation etc
+
+        // This is the only way to feed arguments to process_admin_options :( IOK 2024-01-03
+        $admin_options = [];
+        foreach($new_settings as $key => $value) {
+           $admin_options['woocommerce_vipps_' . $key]  = $value;
         }
+        $this->gateway()->set_post_data($admin_options);
+        $this->gateway()->process_admin_options();
+        $this->gateway()->add_error("Jaboloko!");
+        $errorlist = $this->gateway()->get_errors();
+        $msg .= join("<br>", $errorlist);
+        // end use of process_admin_options IOK 2024-01-03
 
         // Verify the connection to Vipps
         list($ok,$error_message) = $this->gateway()->check_connection();
         $msg = "";
         if ($ok) {
-            $msg = sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName());
+            $msg .= sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName());
         } else {
-            $msg = sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
+            $msg .= sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
         }
         echo json_encode(array("ok" => $ok, "msg" => $msg, 'options' => get_options('woocommerce_vipps_settings')));
         exit();

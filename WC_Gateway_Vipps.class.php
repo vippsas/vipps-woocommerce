@@ -3401,6 +3401,8 @@ function activate_vipps_checkout(yesno) {
         delete_transient('_vipps_keyset');
         $keyset = $this->get_keyset();
 
+        // IOK FIXME check if we are called using ajax for this; and if so add the notifications to a list of notifications 
+        // instead of doing the adminerr/adminnotify thing. IOK 2024-01-03
 
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {
