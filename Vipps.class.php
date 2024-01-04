@@ -973,7 +973,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // Add a link to the settings page from the plugin list
     public function plugin_action_links ($links) {
-        $link = '<a href="'.esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')). '">'.__('Settings', 'woo-vipps').'</a>';
+        $link = '<a href="'.esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')). '">'.__('Settings', 'woo-vipps').'</a>';
         array_unshift( $links, $link);
         return $links;
     }
@@ -1336,8 +1336,8 @@ jQuery('a.webhook-adder').click(function (e) {
           }
 
           echo "<p>";
-          $settings = esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
-          echo sprintf(__("The <a href='%1\$s'>%2\$s settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $settings, Vipps::CompanyName()); 
+          $settings = esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
+          echo sprintf(__("The <a href=\"%1\$s\">%2\$s settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $settings, Vipps::CompanyName()); 
           echo " ";
           if ($canbebought) {
             echo __("This product supports express checkout, and so will have a Buy Now button." , 'woo-vipps');
@@ -1346,9 +1346,9 @@ jQuery('a.webhook-adder').click(function (e) {
           } 
           echo "</p>";
         } else {
-         $settings = esc_url(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
+         $settings = esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
           echo "<p>";
-          echo sprintf(__("The <a href='%1\$s'>%2\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $settings, Vipps::CompanyName());
+          echo sprintf(__("The <a href=\"%1\$s\">%2\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $settings, Vipps::CompanyName());
           echo "</p>";
         }
         echo '</div>';
@@ -1456,7 +1456,7 @@ else:
            <tr>
            <?php foreach ($shareables as $shareable): ?>
            <?php if ($variable): ?><td><?php echo esc_html($shareable['variant']); ?></td><?php endif; ?>
-           <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_url($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo esc_attr($shareable['key']); ?>'></td>
+           <td><a class='shareable' title="<?php echo __('Click to copy','woo-vipps'); ?>" href="javascrip:void(0)"><?php echo esc_html($shareable['url']); ?></a><input class="deletemarker" type=hidden value='<?php echo esc_attr($shareable['key']); ?>'></td>
            <td align=center>
            <a class="copyaction" title="<?php echo __('Click to copy','woo-vipps'); ?>" href='javascript:void(0)'>[<?php echo __("Copy", 'woo-vipps'); ?>]</a>
            <a class="deleteaction" title="<?php echo __('Mark this link for deletion', 'woo-vipps'); ?>" style="margin-left:13px;" class="deleteaction" href="javascript:void(0)">[<?php echo __('Delete', 'woo-vipps'); ?>]</a>
