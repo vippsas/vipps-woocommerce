@@ -83,7 +83,7 @@ Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys
 
 ### Configuration of the plugin
 
-1. Fill in the `client_id`, `client_secret` and `Vipps-Subscription-Key` found in the previous step.
+1. Fill in the `client_id`, `client_secret` and `Ocp-Apim-Subscription-Key` found in the previous step.
 2. That's it! You can now move on to [Configuring products](#configuring-products).
 
 ![Settings](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-2.png)
