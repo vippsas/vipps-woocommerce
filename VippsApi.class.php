@@ -236,8 +236,7 @@ class VippsApi {
         try {
             $orderlines = [];
             $bottomline = ['currency'=>'NOK',  'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
-
-            $bottomline['currency'] == $order->get_currency();
+            $bottomline['currency'] = $order->get_currency();
             $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
             $tipamount = apply_filters('woo_vipps_order_tip_amount', 0, $order);
             $bottomline['tipAmount'] = round($tipamount*100);
@@ -913,6 +912,8 @@ class VippsApi {
         $data['transaction'] = $transaction;
 
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
+
+error_log("checkout data is " . print_r($data, true));
 
         $this->log("Initiating Checkout session for $vippsorderid", 'debug');
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
