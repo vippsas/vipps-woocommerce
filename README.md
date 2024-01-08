@@ -15,7 +15,7 @@ END_METADATA -->
 
 ![MobilePay](./docs/images/mp.png) *Available for MobilePay in Finland and Denmark in Q1 2024.*
 
-*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and is hosted on [GitHub](https://github.com/vippsas/vipps-woocommerce).*
+*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [Wordpress plugin site](https://wordpress.org/plugins/woo-vipps/) .*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/). 💥
