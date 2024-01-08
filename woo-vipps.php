@@ -10,10 +10,10 @@
    Version: 2.0.0
    Stable tag: 2.0.0
    Requires at least: 4.7
-   Tested up to: 6.4.1
+   Tested up to: 6.4.2
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 8.4.0
+   WC tested up to: 8.5.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
