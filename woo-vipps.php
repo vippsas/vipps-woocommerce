@@ -7,13 +7,13 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 1.14.18
-   Stable tag: 1.14.18
+   Version: 1.14.19
+   Stable tag: 1.14.19
    Requires at least: 4.7
-   Tested up to: 6.4.1
+   Tested up to: 6.4.2
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 8.4.0
+   WC tested up to: 8.5.0
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
