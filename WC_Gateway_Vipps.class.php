@@ -1958,8 +1958,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return $oldstatus;
         }
 
-         // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
-        $this->reset_erroneous_payment_method($order);
 
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
@@ -1973,6 +1971,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (!$newvippsstatus) {
                 throw new Exception(sprintf(__("Could not interpret %1\$s order status", 'woo-vipps'), Vipps::CompanyName()));
             }
+
+            // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+            // IOK 2024-01-09 ensure this is called only when order is complete/authorized
+            if (in_array($this->interpret_vipps_order_status($newvippsstatus), ['authorized', 'complete'])) {
+                $this->reset_erroneous_payment_method($order);
+            }
+
             $order->update_meta_data('_vipps_status',$newvippsstatus);
             $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
 
@@ -1990,7 +1995,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             }
 
-            # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
+# IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
@@ -2004,13 +2009,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_meta_data('_vipps_amount',$vippsamount);
                 $order->update_meta_data('_vipps_currency', 'NOK');
             } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
-               // IOK 2022-01-20 the epayment API does it differently
-               $vippsstamp = time();
-               $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
-               $vippscurrency = $paymentdetails['paymentDetails']['amount']['currency'];
-               $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
-               $order->update_meta_data('_vipps_amount',$vippsamount);
-               $order->update_meta_data('_vipps_currency',$vippscurrency);
+                // IOK 2022-01-20 the epayment API does it differently
+                $vippsstamp = time();
+                $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
+                $vippscurrency = $paymentdetails['paymentDetails']['amount']['currency'];
+                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
+                $order->update_meta_data('_vipps_amount',$vippsamount);
+                $order->update_meta_data('_vipps_currency',$vippscurrency);
             }
 
         } catch (Exception $e) {
