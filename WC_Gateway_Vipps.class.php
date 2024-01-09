@@ -506,6 +506,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
+    // IOK 2024-09-01 In general, we can refund most Vipps Mobilepay orders through the api,
+    // however, this is not the case for the Bank Transfer method available through Vipps Checkout. 
+    public function can_refund_order( $order ) {
+        $method = $order->get_meta('_vipps_api');
+        switch ($method) {
+            case 'banktransfer':
+                return false;
+                break;
+            case 'epayment':
+                return true;
+                break;
+                // Default is old-style ecom v2.
+            default:
+                return true;
+                break;
+        }
+    }
+
     // Handle the transition from anything to "refund"
     public function maybe_refund_payment($orderid) {
         $order = wc_get_order($orderid);
@@ -2435,6 +2453,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            if (isset($details['paymentMethod']) && $details['paymentMethod'] == 'BankTransfer') {
                if ($order->get_meta('_vipps_checkout')) {
                     $order->set_payment_method_title(sprintf(__('Bank Transfer/ %1$s', 'woo-vipps'), Vipps::CheckoutName()));
+                    $order->update_meta_data('_vipps_api', 'banktransfer');
                }
            }
            $order->save();
@@ -2925,6 +2944,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $transaction['amount'] = $details['amount']['value'];
             $transaction['currency'] = $details['amount']['currency'];
             $transaction['status'] = $details['state'];
+            if (isset($details['paymentMethod']) && $details['paymentMethod'] == 'BankTransfer') {
+                $order->update_meta_data('_vipps_api', 'banktransfer');
+            }
         } else if ($iswebhook) {
             $transaction['transactionId'] = 'epayment_' . $vippsorderid;
             $transaction['timeStamp'] = date('Y-m-d H:i:s', strtotime($result['timestamp']));
@@ -2979,7 +3001,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->log(sprintf(__("%1\$s callback: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
         // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
-        $this->reset_erroneous_payment_method($order);
+        // IOK 2024-01-09 ensure this is called only when order is complete/authorized
+        if (in_array($this->interpret_vipps_order_status($vippsstatus), ['authorized', 'complete'])) {
+            $this->reset_erroneous_payment_method($order);
+        }
 
         // Modify payment method name if neccessary
         if (isset($result['paymentMethod']) && $result['paymentMethod'] == 'Card') {
