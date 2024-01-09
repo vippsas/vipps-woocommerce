@@ -1954,6 +1954,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $order->save();
                 }
             } 
+            if (isset($paymentdetails['paymentMethod']) && $paymentdetails['paymentMethod'] == 'Card') {
+                if ($order->get_meta('_vipps_checkout')) {
+                    $order->set_payment_method_title(sprintf(__('Bank Transfer/ %1$s', 'woo-vipps'), Vipps::CheckoutName()));
+                    $order->save();
+                }
+            }
 
             # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
             $transaction = @$paymentdetails['transactionInfo'];
@@ -2154,6 +2160,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $result['orderId']  = $result['reference']; 
 
             // Now, if we got this via Vipps Checkout, the paymentDetails field will contain our data *including the status/state*. 
+            // IOK 2024-01-09 - no longer true, because we *do not get state* from some payment methods in Checkout. This is fixed below,
+            // in the 'normalizePaymentDetails' call.
             // If we didn't, what we got here is actually the payment details, so map it in. IOK 2023-12-23
             if (isset($result['state']) && !isset($result['paymentDetails'])) {
                 $result = ['orderId' => $result['reference'], 'reference' => $result['reference'], 'status' => $result['state'], 'paymentDetails' => $result];
@@ -2162,6 +2170,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Now, if we don't have payment details, we should have a dead session or something like it. If we do, we can cretae
             // a normalized result. IOK 2023-12-13
             if (isset($result['paymentDetails'])) {
+
+                // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer IOK 2024-01-09
+                $result = $this->normalizePaymentDetails($result);
                 $details = $result['paymentDetails'];
 
 # IOK 2022-01-19 for this, the docs and experience does not agree, so check both
@@ -2318,6 +2329,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $result;
     }
 
+
+    // IOK 2024-01-09 If using Vipps Checkout with the BankTransfer method, which is eg. used in Finland,
+    //  we are (currently) not receiving any  'state' or 'aggregate', so add this iff the payment is successful.
+    // The reason for this is that this payment type does not actually use the epayment API at all (!)
+    private function normalizePaymentDetails($result) {
+            if (isset($result['sessionState']) && $result['sessionState'] == 'PaymentSuccessful' && $result['paymentMethod'] == 'BankTransfer') {
+                $details = $result['paymentDetails'];
+                $details['state'] = 'SALE'; // Payment is actually complete at this point
+                $aggregate=[];
+                $aggregate['capturedAmount'] = $details['amount'];
+                $aggregate['authorizedAmount'] = $details['amount'];
+                $aggregate['refundedAmount'] = ['value'=>0, 'currency'=>$details['amount']['currency']];
+                $aggregate['cancelledAmount'] = ['value'=>0, 'currency'=>$details['amount']['currency']];
+                $details['aggregate'] = $aggregate;
+                $result['paymentDetails'] = $details;
+            }
+            return $result;
+    }
+
     // Vipps Checkout v3 does *not* provide userDetails. Vipps Checkout v2 and epayment *does*. But Checkout additionally allows
     // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
@@ -2400,6 +2430,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            if (isset($details['paymentMethod']) && $details['paymentMethod'] == 'Card') {
                if ($order->get_meta('_vipps_checkout')) {
                     $order->set_payment_method_title(sprintf(__('Credit Card / %1$s', 'woo-vipps'), Vipps::CheckoutName()));
+               }
+           }
+           if (isset($details['paymentMethod']) && $details['paymentMethod'] == 'BankTransfer') {
+               if ($order->get_meta('_vipps_checkout')) {
+                    $order->set_payment_method_title(sprintf(__('Bank Transfer/ %1$s', 'woo-vipps'), Vipps::CheckoutName()));
                }
            }
            $order->save();
@@ -2881,6 +2916,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $transaction = $result['transactionInfo'];
             $transaction['currency'] = 'NOK';
         } else if (isset($result['paymentDetails'])) {
+            // This is a Vipps Checkout callback. We must first normalize the result
+            // so that we always get a state/status and aggregate values - which we do not get if for instance Bank Transfer is used. IOK 2024-01-09
+            $result = $this->normalizePaymentDetails($result);
             $details = $result['paymentDetails'];
             $transaction['transactionId'] = 'checkout_' . $vippsorderid;
             $transaction['timeStamp'] = date('Y-m-d H:i:s', time());
@@ -3236,6 +3274,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $orderid;
     }
 
+    // The order attribution subsystem of Woo requires extra work for our partial orders. IOK 2024-01-09
+    // The attribution data is added to the order forms with prefixes (after 'order note') and we need to strip the prefix.
+    public function get_order_attribution_data($input_data) {
+        $prefix = (string) apply_filters( 'wc_order_attribution_tracking_field_prefix', 'wc_order_attribution_');
+        $prefix = trim( $prefix, '_' ) . "_";
+        $len = strlen($prefix);
+        $params = [];
+        foreach($input_data as $key=>$val) {
+            $found = strpos($key, $prefix);
+            if ($found === 0) {
+                $paramkey = substr($key, $len);
+                $params[$paramkey] = $val;
+            }
+        }
+        return $params;
+    }
+             
     public function save_session_in_order($order) {
         // The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
         // The Vipps class will restore the session from this on callbacks.
