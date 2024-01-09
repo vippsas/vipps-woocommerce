@@ -80,6 +80,7 @@ jQuery( document ).ready( function() {
       if (!doVippsCheckout()) {
           let data  = {};
           let formdata = jQuery("#vippsdata").serializeArray();
+          console.log("Formdata %j", formdata);
           for(i=0;i<formdata.length;i++) {
               let entry = formdata[i];
               data[entry.name] = entry.value;
@@ -223,7 +224,8 @@ jQuery( document ).ready( function() {
       if (listening) return;
       if (document.visibilityState == 'visible') {
          jQuery("body").addClass('processing');
-         initVippsCheckout();
+          // Give other scripts a chance to run first
+         setTimeout(initVippsCheckout, 100);
       } else {
          console.log("Not visible - not starting Vipps MobilePay Checkout");
       }

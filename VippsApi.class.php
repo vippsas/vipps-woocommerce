@@ -864,7 +864,8 @@ class VippsApi {
 
         // IOK 2023-12-22 and we can add an order summary, so do so by default
         $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
-        if ($summarize) {
+        // IOK 2024-01-09 Fix this as soon as the EUR bug is fixed!
+        if (false && $summarize) {
             $ordersummary = $this->get_receipt_data($order);
             // This is different in the receipt api, the epayment api and in checkout.
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
@@ -912,8 +913,6 @@ class VippsApi {
         $data['transaction'] = $transaction;
 
         $data = apply_filters('woo_vipps_initiate_checkout_data', $data);
-
-error_log("checkout data is " . print_r($data, true));
 
         $this->log("Initiating Checkout session for $vippsorderid", 'debug');
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
