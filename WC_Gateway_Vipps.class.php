@@ -1586,7 +1586,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $api = $order->get_meta('_vipps_api');
-            if ($api == 'epayment') {
+            if ($api == 'banktransfer') {
+                // This is an error - we should not ever get to the 'capture' branch if we are a banktransfer payment.
+                // IOK 2024-01-09
+                $content = [];
+            } elseif ($api == 'epayment') {
                 $content =  $this->api->epayment_capture_payment($order,$amount,$requestid);
             } else {
                 $content =  $this->api->capture_payment($order,$amount,$requestid);
@@ -1714,7 +1718,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         try {
             $requestid = "";
             $api = $order->get_meta('_vipps_api');
-            if ($api == 'epayment') {
+            if ($api == 'banktransfer') {
+                // If we are here, and the order is somehow not captured, just do nothing. IOK 2024-01-09
+                $content = [];
+            } elseif ($api == 'epayment') {
                 $requestid = 1;
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
             } else {
@@ -1791,7 +1798,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $requestid = $requestidnr . ":" . $order->get_order_key();
 
         $api = $order->get_meta('_vipps_api');
-        if ($api == 'epayment') {
+        if ($api == 'banktransfer') {
+            $msg = sprintf(__("Cannot refund bank transfer order %1\$d", 'woo-vipps'), $order->get_id());
+            $this->log($msg, 'error');
+            throw new Exception($msg);
+        } elseif ($api == 'epayment') {
             $content =  $this->api->epayment_refund_payment($order,$requestid,$amount,$cents);
         } else {
             $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
