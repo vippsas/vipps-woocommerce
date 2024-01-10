@@ -865,7 +865,7 @@ class VippsApi {
         // IOK 2023-12-22 and we can add an order summary, so do so by default
         $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
         // IOK 2024-01-09 Fix this as soon as the EUR bug is fixed!
-        if (false && $summarize) {
+        if ($summarize) {
             $ordersummary = $this->get_receipt_data($order);
             // This is different in the receipt api, the epayment api and in checkout.
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
