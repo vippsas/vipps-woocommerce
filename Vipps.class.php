@@ -1887,7 +1887,7 @@ else:
             global $wpdb;
             $q = $wpdb->prepare("SELECT p.ID from `{$wpdb->posts}` p JOIN `{$wpdb->postmeta}` m ON (m.post_id = p.ID and m.meta_key = '_vipps_orderid') WHERE p.post_type = 'shop_order' &&  p.post_status = 'wc-pending' AND m.meta_value = %s LIMIT 1", $vippsorderid);
             $res = $wpdb->get_results($q, ARRAY_A);
-            if (empty($res)) false;
+            if (empty($res)) return null;
             $o = wc_get_order($res[0]['ID']);
             if (is_a($o, 'WC_Order')) return $o;
             return null;
