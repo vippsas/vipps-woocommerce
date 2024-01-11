@@ -421,12 +421,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
-        // IOK 2023-12-12 Can only support express checkout for Vipps
+        // IOK 2023-12-12 Can only support express checkout for Vipps - not MobilePay (yet!)
         if ($this->get_payment_method_name() != 'Vipps') return false;
+        return apply_filters('woo_vipps_product_supports_express_checkout', $this->product_supports_checkout($product), $product);
+    }
+
+    // Checkout and Express Checkout are very similarily restricted because they both replace the standard
+    // Woo Checkout page, but express checkout is even more restricted, so we need to separate out the commonalities. IOK 2024-01-11
+    public function product_supports_checkout($product) {
         $type = $product->get_type();
         $ok = in_array($type, $this->express_checkout_supported_product_types);
-        $ok = apply_filters('woo_vipps_product_supports_express_checkout',$ok,$product);
+        $ok = apply_filters('woo_vipps_product_supports_checkout',$ok,$product);
         return $ok;
+    }
+
+    // Almost the same as express checkout - unfortunately not *entirely* the same. IOK 2024-01-11
+    public function cart_supports_checkout($cart=null) {
+        if (!$cart) $cart = WC()->cart;
+        $supports  = true;
+        if (!$cart) return $supports;
+        # Not supported by Vipps MobilePay
+        if ($cart->cart_contents_total <= 0) return false;
+
+        foreach($cart->get_cart() as $key=>$val) {
+            $prod = $val['data'];
+            if (!is_a($prod, 'WC_Product')) continue;
+            $product_supported = $this->product_supports_checkout($prod);
+            if (!$product_supported) {
+                $supports = false;
+                break;
+            }
+        }
+        $supports = apply_filters('woo_vipps_cart_supports_checkout', $supports, $cart);
+        return $supports;
     }
 
     // Check to see if the cart passed (or the global one) can be bought with express checkout IOK 2018-12-04
@@ -1269,6 +1296,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // True if the alternative Vipps Checkout screen is both available and activated. Returns the page id of the checkout
     // page for convenience. IOK 2021-10-01
     public function vipps_checkout_available () {
+
         if ($this->get_option('vipps_checkout_enabled') != 'yes') return false;
         if (!$this->standard_is_available()) return false;
 
@@ -1281,8 +1309,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
              return false;
         }
 
-        // Restrictions on cart are the same as for express checkout
-        if (!$this->cart_supports_express_checkout()) return false;
+        // Restrictions on cart are similar to express checkout, but not exactly the same. IOK 2024-01-11
+        if (!$this->cart_supports_checkout()) return false;
 
         // Filter to false if you want to use the standard checkout for whatever reason
         return apply_filters('woo_vipps_checkout_available', $checkoutid, $this);
