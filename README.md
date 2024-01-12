@@ -58,7 +58,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 3. Go to the *WooCommerce Settings* page, choose *Payment Gateways* (*Betalinger*), and enable Vipps.
 4. Go the *Settings* page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal. For information, see [How to get Vipps account keys from Vipps Developer Portal](#how-to-get-vipps-account-keys-from-vipps-developer-portal).
 
-## How to get Vipps account keys from Vipps Developer Portal
+## How to get Vipps account keys from Merchant Portal
 
 1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
 2. Select the *Utvikler* (*Developer*) tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
@@ -105,7 +105,7 @@ for more information.
 API keys for both the test and production environment are available on
 [portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
 See [Getting the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal/#how-to-find-the-api-keys)
-in the
+and the
 [Getting started](https://developer.vippsmobilepay.com/docs/getting-started)
 guide for more information.
 
