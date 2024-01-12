@@ -99,12 +99,12 @@ to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
 through TestFlight. See
-[Vipps test apps](https://developer.vippsmobilepay.com/docs/test-environment/#vipps-test-apps)
+[Test apps](https://developer.vippsmobilepay.com/docs/test-environment/#test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vipps.no](https://portal.vipps.no), where you log in with BankID.
-See [Getting the API keys](https://developer.vippsmobilepay.com/docs/getting-started#getting-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal/#how-to-find-the-api-keys)
 in the
 [Getting started](https://developer.vippsmobilepay.com/docs/getting-started)
 guide for more information.
