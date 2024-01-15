@@ -1356,7 +1356,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     public function product_options_vipps_badges() {
         $current = get_option('vipps_badge_options');
-        if (!@$current['badgeon']) return;
+        if (!$current || !($current['badgeon'] ?? false)) return;
         echo '<div class="options_group">';
         echo "<div class='blurb' style='margin-left:13px'><h4>";
         echo __("On-site messaging badge", 'woo-vipps') ;

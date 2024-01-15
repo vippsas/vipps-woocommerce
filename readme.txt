@@ -230,7 +230,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2023-01-xx version 1.14.20 =
+= 2023-01-15 version 1.14.20 =
 Support Order Attribution in Vipps Checkout and Express Checkout
 
 = 2023-12-14 version 1.14.19 =
