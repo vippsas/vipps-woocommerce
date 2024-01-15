@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps
-Version: 1.14.19
-Stable tag: 1.14.19
+Version: 1.14.20
+Stable tag: 1.14.20
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
@@ -217,7 +217,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2023-01-xx version 1.14.20 =
+= 2023-01-15 version 1.14.20 =
 Support Order Attribution in Vipps Checkout and Express Checkout
 
 = 2023-12-14 version 1.14.19 =
