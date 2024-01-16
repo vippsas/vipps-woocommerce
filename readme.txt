@@ -1,13 +1,13 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps
-Version: 1.14.20
-Stable tag: 1.14.20
+Version: 1.14.21
+Stable tag: 1.14.21
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.5.0
+WC tested up to: 8.5.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -217,6 +217,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2023-01-16 version 1.14.21 =
+Minor fix for 8.5.1 and express checkout
 
 = 2023-01-15 version 1.14.20 =
 Support Order Attribution in Vipps Checkout and Express Checkout

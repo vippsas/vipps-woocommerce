@@ -134,6 +134,10 @@ jQuery(document).ready(function () {
     validating=false;
     return false;
    }
+
+   // Required for the order attribution thing IOK 2024-01-16
+   jQuery(document.body).trigger( 'init_checkout' );
+
    jQuery('#do-express-checkout').prop('disabled',true);
    jQuery('#do-express-checkout').prop('inactive',true);
    jQuery('body').addClass('processing');
