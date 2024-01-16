@@ -136,7 +136,11 @@ jQuery(document).ready(function () {
    }
 
    // Required for the order attribution thing IOK 2024-01-16
-   jQuery(document.body).trigger( 'init_checkout' );
+   try {
+       jQuery(document.body).trigger( 'init_checkout' );
+   } catch (error) {
+       console.log("Could not trigger init-checkout: %j", error);
+   }
 
    jQuery('#do-express-checkout').prop('disabled',true);
    jQuery('#do-express-checkout').prop('inactive',true);
