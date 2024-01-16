@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Pay with Vipps for WooCommerce - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2023-12-01 17:39+0000\n"
+"PO-Revision-Date: 2024-01-16 13:10+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -11,36 +11,40 @@ msgstr ""
 "Language: nb_NO\n"
 "Project-Id-Version: Plugins - Pay with Vipps for WooCommerce - Stable "
 "(latest release)\n"
-"Language-Team: Norsk bokmål"
+"Language-Team: Norsk bokmål\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-16 12:36+0000\n"
+"Last-Translator: \n"
+"X-Loco-Version: 2.6.6; wp-6.4.2"
 
-#: WC_Gateway_Vipps.class.php:2102
+#: WC_Gateway_Vipps.class.php:2309
 msgid " - no status retrievable"
 msgstr " - kunne ikke finne noen status"
 
-#: WC_Gateway_Vipps.class.php:1976
+#: WC_Gateway_Vipps.class.php:2151
 msgid " - order does not need processing"
 msgstr " - bestillingen trenger ingen behandling"
 
-#: WC_Gateway_Vipps.class.php:517 WC_Gateway_Vipps.class.php:534
-#: WC_Gateway_Vipps.class.php:1565
+#: WC_Gateway_Vipps.class.php:652 WC_Gateway_Vipps.class.php:669
+#: WC_Gateway_Vipps.class.php:1723
 #, php-format
 #| msgid " refunded through Vipps:"
 msgid " refunded through %1$s:"
 msgstr "Refundert gjennom  %1$s:"
 
-#: WC_Gateway_Vipps.class.php:951
+#: WC_Gateway_Vipps.class.php:1095
 msgid "\"Buy now\" compatibility mode"
 msgstr "Kompatibilitetsmodus for \"Kjøp nå\""
 
-#: WC_Gateway_Vipps.class.php:862 WC_Gateway_Vipps.class.php:3289
-#: VippsCheckout.class.php:546 VippsKCSupport.class.php:64 Vipps.class.php:621
-#: Vipps.class.php:646 Vipps.class.php:817 Vipps.class.php:817
-#: Vipps.class.php:847 Vipps.class.php:860 Vipps.class.php:1000
+#: WC_Gateway_Vipps.class.php:1006 WC_Gateway_Vipps.class.php:3703
+#: VippsCheckout.class.php:538 VippsKCSupport.class.php:64 Vipps.class.php:915
+#: Vipps.class.php:940 Vipps.class.php:1111 Vipps.class.php:1111
+#: Vipps.class.php:1142 Vipps.class.php:1155 Vipps.class.php:1296
 #, php-format
 msgid "%1$s"
 msgstr "%1$s"
 
-#: WC_Gateway_Vipps.class.php:887
+#: WC_Gateway_Vipps.class.php:1031
 #, php-format
 #| msgid ""
 #| "%1$s Express Checkout allows you to buy products by a single click from "
@@ -55,37 +59,37 @@ msgstr ""
 "direkte fra produkt- eller katalogsider. Produktene vil da få en \"Kjøp nå\"-"
 "knapp som starter handelen direkte."
 
-#: Vipps.class.php:1790
+#: Vipps.class.php:2132
 #, php-format
 #| msgid "Vipps Buy Now button"
 msgid "%1$s Buy Now button"
 msgstr "Kjøp nå med %1$s-knapp"
 
-#: WC_Gateway_Vipps.class.php:2716
+#: WC_Gateway_Vipps.class.php:2949
 #, php-format
 #| msgid "Vipps callback for unknown order"
 msgid "%1$s callback for unknown order"
 msgstr "%1$s-callback for ukjent bestilling"
 
-#: WC_Gateway_Vipps.class.php:2759
+#: WC_Gateway_Vipps.class.php:3010
 #, php-format
 #| msgid "Vipps callback received"
 msgid "%1$s callback received"
 msgstr "%1$s-callback mottatt."
 
-#: WC_Gateway_Vipps.class.php:2711
+#: WC_Gateway_Vipps.class.php:2944
 #, php-format
 #| msgid "Vipps callback with wrong merchantSerialNumber - might be forged"
 msgid "%1$s callback with wrong merchantSerialNumber - might be forged"
 msgstr "%1$s-callback med feil merchantSerialNumber - kan være forfalsket"
 
-#: WC_Gateway_Vipps.class.php:2794
+#: WC_Gateway_Vipps.class.php:3045
 #, php-format
 #| msgid "Vipps callback: Handling order: "
 msgid "%1$s callback: Handling order: "
 msgstr "%1$s  callback: Håndterer ordre: "
 
-#: Vipps.class.php:604
+#: Vipps.class.php:898
 #, php-format
 #| msgid ""
 #| "Vipps configuration is not yet complete - you must get your keys from the "
@@ -97,19 +101,24 @@ msgstr ""
 "%1$s-oppsettet er ennå ikke ferdig - du må hente nøklene dine fra %1$s "
 "portalen og legge dem inn på<a href='%2$s'>instillinger-siden</a>"
 
-#: Vipps.class.php:3713
+#: WC_Gateway_Vipps.class.php:3431
+#, php-format
+msgid "%1$s does not support your currency."
+msgstr "%1$s støtter ikke din valuta"
+
+#: Vipps.class.php:4177
 #, php-format
 #| msgid "Vipps Express Checkout"
 msgid "%1$s Express Checkout"
 msgstr "%1$s Hurtigkasse"
 
-#: Vipps.class.php:583
+#: Vipps.class.php:877
 #, php-format
 #| msgid "Vipps for WordPress and WooCommerce"
 msgid "%1$s for WordPress and WooCommerce"
 msgstr "%1$s for WordPress og WooCommerce"
 
-#: Vipps.class.php:634
+#: Vipps.class.php:928
 #, php-format
 #| msgid ""
 #| "%1$s Recurring Payments is installed, but <em>not active</em>. Activate "
@@ -121,7 +130,7 @@ msgstr ""
 "%1$s er installert, men ikke <em>aktiv</em>. Aktiver den på <a href='%2$s'>"
 "utvidelsessiden</a>"
 
-#: Vipps.class.php:630
+#: Vipps.class.php:924
 #, php-format
 #| msgid ""
 #| "%1$s Recurring Payments is <b>installed and active</b>. You can configure "
@@ -133,7 +142,7 @@ msgstr ""
 "%1$s er <b>installert og aktiv</b>. Du kan konfigurere utvidelsen på <a "
 "href='%2$s'>instillinger-siden dens.</a>"
 
-#: WC_Gateway_Vipps.class.php:605 WC_Gateway_Vipps.class.php:3175
+#: WC_Gateway_Vipps.class.php:739 WC_Gateway_Vipps.class.php:3452
 #, php-format
 msgid ""
 "%1$s is a new service from %2$s which replaces the usual WooCommerce "
@@ -147,19 +156,19 @@ msgstr ""
 "betaling både med %2$s og kredittkort. I tillegg vil kundene dine få "
 "muligheten til å oppgi addresseinformasjonen sin fra %2$s-appen direkte."
 
-#: Vipps.class.php:267 Vipps.class.php:597
+#: Vipps.class.php:282 Vipps.class.php:891
 #, php-format
 #| msgid "Vipps is currently in test mode - no real transactions will occur"
 msgid "%1$s is currently in test mode - no real transactions will occur"
 msgstr "%1$s kjører i testmodus - ingen ekte transaksjoner vil bli utført"
 
-#: WC_Gateway_Vipps.class.php:874
+#: WC_Gateway_Vipps.class.php:1018
 #, php-format
 #| msgid "Vipps is default payment method"
 msgid "%1$s is default payment method"
 msgstr "%1$s er standard betalingsmetode"
 
-#: Vipps.class.php:656
+#: Vipps.class.php:950
 #, php-format
 #| msgid ""
 #| "Login with Vipps is installed and active. You can configure the plugin at "
@@ -171,7 +180,7 @@ msgstr ""
 "%1$s er installert og aktiv. Du kan konfigurere utvidelsen på <a href='%2$s'>"
 "instillinger-siden dens.</a>"
 
-#: Vipps.class.php:660
+#: Vipps.class.php:954
 #, php-format
 #| msgid ""
 #| "Login with Vipps is installed, but not active. Activate it on the <a "
@@ -183,18 +192,18 @@ msgstr ""
 "%1$s er installert, men ikke aktiv. Aktiver den på <a href='%2$s'>"
 "utvidelsessiden</a>"
 
-#: WC_Gateway_Vipps.class.php:2990
+#: WC_Gateway_Vipps.class.php:3246
 #, php-format
 #| msgid "%s is not an image that can be uploaded to Vipps"
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr "%1$s er ikke et bilde som kan bli lastet opp til %2$s"
 
-#: Vipps.class.php:2893 Vipps.class.php:2963 Vipps.class.php:3026
+#: Vipps.class.php:3355 Vipps.class.php:3424 Vipps.class.php:3487
 #, php-format
 msgid "%1$s is not available for this order"
 msgstr "%1$s er ikke tilgjengelig for denne bestillingen"
 
-#: Vipps.class.php:638 Vipps.class.php:664
+#: Vipps.class.php:932 Vipps.class.php:958
 #, php-format
 #| msgid ""
 #| "Login with Vipps is not installed. You can install it <a href='%2$s'>here!"
@@ -202,15 +211,15 @@ msgstr "%1$s er ikke tilgjengelig for denne bestillingen"
 msgid "%1$s is not installed. You can install it <a href='%2$s'>here!</a>"
 msgstr "%1$s er ikke installert. Du kan installere den <a href='%2$s'>her!</a>"
 
-#: WC_Gateway_Vipps.class.php:525 WC_Gateway_Vipps.class.php:1470
-#: WC_Gateway_Vipps.class.php:1556 WC_Gateway_Vipps.class.php:1599
-#: Vipps.class.php:2950 Vipps.class.php:3096 Vipps.class.php:3630
+#: WC_Gateway_Vipps.class.php:660 WC_Gateway_Vipps.class.php:1628
+#: WC_Gateway_Vipps.class.php:1714 WC_Gateway_Vipps.class.php:1760
+#: Vipps.class.php:3411 Vipps.class.php:3556 Vipps.class.php:4090
 #, php-format
 #| msgid "Vipps is temporarily unavailable."
 msgid "%1$s is temporarily unavailable."
 msgstr "%1$s er midlertidig utilgjengelig"
 
-#: Vipps.class.php:584
+#: Vipps.class.php:878
 #, php-format
 #| msgid ""
 #| "Vipps officially supports WordPress and WooCommerce with a family of "
@@ -233,7 +242,7 @@ msgstr ""
 "eller landingssider, en utvidelse for gjentatte betalinger/abonnement, og et "
 "system for passordløs innlogging."
 
-#: Vipps.class.php:376
+#: Vipps.class.php:670
 #, php-format
 #| msgid "Vipps On-Site Messaging"
 msgid "%1$s On-Site Messaging"
@@ -245,7 +254,7 @@ msgstr "%1$s On-Site Messaging"
 msgid "%1$s On-Site Messaging Badge"
 msgstr "%1$s On-Site Messaging Badge"
 
-#: Vipps.class.php:378
+#: Vipps.class.php:672
 #, php-format
 #| msgid ""
 #| "Vipps On-Site Messaging contains <em>badges</em> in different variants "
@@ -259,7 +268,7 @@ msgstr ""
 "varianter som kan brukes til å la kundene dine vite at du godtar Vipps-"
 "betaling."
 
-#: WC_Gateway_Vipps.class.php:2077 WC_Gateway_Vipps.class.php:2101
+#: WC_Gateway_Vipps.class.php:2282 WC_Gateway_Vipps.class.php:2308
 #, php-format
 #| msgid ""
 #| "%1$s Checkout Order with no order status, so session was never completed; "
@@ -271,42 +280,42 @@ msgstr ""
 "%1$s-ordre uten ordrestatus, så økten ble aldri fullført. Setter status til "
 "avbrutt."
 
-#: VippsCheckout.class.php:670
+#: VippsCheckout.class.php:669
 #, php-format
 msgid "%1$s Page"
 msgstr "%1$s Side"
 
-#: WC_Gateway_Vipps.class.php:1636
+#: WC_Gateway_Vipps.class.php:1797
 #, php-format
 #| msgid "Vipps Payment cancelled:"
 msgid "%1$s Payment cancelled:"
 msgstr "%1$s-betaling kansellert:"
 
-#: WC_Gateway_Vipps.class.php:1489 WC_Gateway_Vipps.class.php:1501
+#: WC_Gateway_Vipps.class.php:1647 WC_Gateway_Vipps.class.php:1659
 #, php-format
 #| msgid "Vipps Payment captured:"
 msgid "%1$s Payment captured:"
 msgstr "%1$s -betaling belastet:"
 
-#: WC_Gateway_Vipps.class.php:1346 VippsCheckout.class.php:297
+#: WC_Gateway_Vipps.class.php:1500 VippsCheckout.class.php:290
 #, php-format
 #| msgid "Vipps payment initiated"
 msgid "%1$s payment initiated"
 msgstr "%1$s betaling startet"
 
-#: WC_Gateway_Vipps.class.php:1705
+#: WC_Gateway_Vipps.class.php:1869
 #, php-format
 #| msgid "Vipps Payment Refunded:"
 msgid "%1$s Payment Refunded:"
 msgstr "%1$s-betaling refundert:"
 
-#: WC_Gateway_Vipps.class.php:1684
+#: WC_Gateway_Vipps.class.php:1848
 #, php-format
 #| msgid "Vipps payment refunded:"
 msgid "%1$s payment refunded:"
 msgstr "%1$s-betaling tilbakebetalt:"
 
-#: WC_Gateway_Vipps.class.php:1272
+#: WC_Gateway_Vipps.class.php:1418
 #, php-format
 #| msgid "Vipps payment restarted"
 msgid "%1$s payment restarted"
@@ -322,7 +331,12 @@ msgstr "%1$s QR-Kode"
 msgid "%1$s QR Codes"
 msgstr "%1$s QR-Koder"
 
-#: Vipps.class.php:625
+#: WC_Gateway_Vipps.class.php:3441
+#, php-format
+msgid "%1$s requires that your site uses HTTPS."
+msgstr "%1$s krever at nettstedet ditt bruker HTTPS."
+
+#: Vipps.class.php:919
 #, php-format
 #| msgid ""
 #| "%1$s Recurring Payments requires the <a href='%2$s' target='_blank'>"
@@ -339,55 +353,60 @@ msgstr ""
 msgid "%1$s senere"
 msgstr "%1$s senere"
 
-#: VippsCheckout.class.php:328
+#: VippsCheckout.class.php:321
 #, php-format
 #| msgid "%1$s Checkout session %2$d cancelled (payment status)"
 msgid "%1$s session %2$d cancelled (payment status)"
 msgstr "%1$s session %2$d er avbrutt (betalingsstatus)"
 
-#: VippsCheckout.class.php:470
+#: VippsCheckout.class.php:462
 #, php-format
 #| msgid "%1$s Checkout session %2$d cancelled (pending session)"
 msgid "%1$s session %2$d cancelled (pending session)"
 msgstr "%1$s session %2$d avbrutt (pending session)"
 
-#: VippsCheckout.class.php:361
+#: VippsCheckout.class.php:354
 #, php-format
 #| msgid "%1$s Checkout session %2$d expired after %3$d minutes (limit 50)"
 msgid "%1$s session %2$d expired after %3$d minutes (limit 50)"
 msgstr "%1$s session %2$d utløpt etter %3$d minuttter (grense 50)"
 
-#: VippsCheckout.class.php:374
+#: VippsCheckout.class.php:367
 #, php-format
 #| msgid "%1$s Checkout session %2$d failed with message %3$s"
 msgid "%1$s session %2$d failed with message %3$s"
 msgstr "%1$s session %2$d mislyktes med melding %3$s"
 
-#: VippsCheckout.class.php:489
+#: VippsCheckout.class.php:481
 #, php-format
 msgid "%1$s session %2$d is gone"
 msgstr "%1$s session %2$d er forsvunnet"
 
-#: WC_Gateway_Vipps.class.php:663
+#: WC_Gateway_Vipps.class.php:797
 #, php-format
 msgid "%1$s Shipping Methods"
 msgstr "%1$s Fraktmetoder"
 
-#: VippsCheckoutShippingMethods.php:471 VippsCheckoutShippingMethods.php:492
-#: VippsCheckoutShippingMethods.php:508 VippsCheckoutShippingMethods.php:530
-#: VippsCheckoutShippingMethods.php:555
+#: WC_Gateway_Vipps.class.php:3433
+#, php-format
+msgid "%1$s supported currencies: %2$s"
+msgstr "%1$s støttede valutaer: %2$s"
+
+#: VippsCheckoutShippingMethods.php:472 VippsCheckoutShippingMethods.php:488
+#: VippsCheckoutShippingMethods.php:508 VippsCheckoutShippingMethods.php:524
+#: VippsCheckoutShippingMethods.php:546 VippsCheckoutShippingMethods.php:571
 #, php-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
-#: VippsCheckout.class.php:581
+#: VippsCheckout.class.php:577
 #, php-format
 #| msgid ""
 #| "%1$s Checkout: cart changed while session %2$d in progress - now cancelled"
 msgid "%1$s: cart changed while session %2$d in progress - now cancelled"
 msgstr "%1$s: handlekurven endret seg mens %2$d pågikk - nå avbrutt"
 
-#: WC_Gateway_Vipps.class.php:2558
+#: WC_Gateway_Vipps.class.php:2790
 #, php-format
 #| msgid ""
 #| "%1$s Express Checkout: Could not deserialize the chosen shipping method "
@@ -397,11 +416,11 @@ msgid ""
 msgstr ""
 "%1$s : Kunne ikke serialisere den valgte fraktmetoden %2s$s for ordre %3$d"
 
-#: Vipps.class.php:562
+#: Vipps.class.php:856
 msgid "- very, very simple"
 msgstr "- veldig, veldig enkelt"
 
-#: Vipps.class.php:623
+#: Vipps.class.php:917
 #, php-format
 #| msgid ""
 #| "<a href='%1$s' target='_blank'>%2$s Recurring Payments for WooCommerce</a>"
@@ -419,7 +438,7 @@ msgstr ""
 "med abonnement-basert tjenester, eller andre produkter der abonnement hadde "
 "vært nyttig."
 
-#: Vipps.class.php:647
+#: Vipps.class.php:941
 #, php-format
 msgid ""
 "<a href='%1$s' target='_blank'>%3$s</a> is a password-less solution that "
@@ -432,13 +451,13 @@ msgstr ""
 "passord - du trenger bare %2$s-appen.  Utvidelsen krever ikke WooCommerce og "
 "kan tilpasses for mange forskjellige bruksområder."
 
-#: Vipps.class.php:602
+#: Vipps.class.php:896
 #, php-format
 #| msgid "<a href='%s'>Vipps configuration</a> is complete."
 msgid "<a href='%1$s'>%2$s configuration</a> is complete."
 msgstr "<a href='%1$s'>%2$s -oppsettet</a> er ferdig."
 
-#: Vipps.class.php:292
+#: Vipps.class.php:307
 #, php-format
 #| msgid ""
 #| "<p>Vipps not yet configured:  please go to <a href='%s'>the Vipps "
@@ -450,7 +469,7 @@ msgstr ""
 "<p>%1$s er ikke konfigurert. Vennligst gå til <a href='%2$s'>%1$s-"
 "instillingene</a> for å fullføre oppsettet!</p>"
 
-#: Vipps.class.php:290
+#: Vipps.class.php:305
 #, php-format
 #| msgid ""
 #| "<p>Vipps not yet correctly configured:  please go to <a href='%s'>the "
@@ -462,11 +481,15 @@ msgstr ""
 "<p>%1$s er ennå ikke korrekt konfigurert: Vennligst gå til <a href='%2$s'>"
 "%1$s -instillingene</a> for å fullføre oppsettet:<br> %3$s</p>"
 
-#: WC_Gateway_Vipps.class.php:2102 VippsCheckout.class.php:620
+#: WC_Gateway_Vipps.class.php:2309
 msgid "Abandonded by customer"
 msgstr "Kunde har oppgitt å fullføre ordren"
 
-#: Vipps.class.php:1151
+#: Vipps.class.php:461
+msgid "Aborted"
+msgstr "Avbrutt"
+
+#: Vipps.class.php:432 Vipps.class.php:1447
 msgid "Action"
 msgstr "Handling"
 
@@ -480,23 +503,23 @@ msgstr "Aktiver"
 msgid "Activate %1$s as an external payment method for Klarna Checkout"
 msgstr "Aktiver %1$s som ekstern betalingsmetode for Klarna Checkout"
 
-#: WC_Gateway_Vipps.class.php:952
+#: WC_Gateway_Vipps.class.php:1096
 msgid "Activate compatibility mode for all \"Buy now\" buttons"
 msgstr "Aktiver kompatibilitetsmodus for alle \"Kjøp nå\"-knappene"
 
-#: WC_Gateway_Vipps.class.php:750
+#: WC_Gateway_Vipps.class.php:894
 #, php-format
 #| msgid "Activate this for Helthjem as a %1$s Checkout Shipping method."
 msgid "Activate this for Helthjem as a %1$s Shipping method."
 msgstr "Aktiver dette for å kunne tilby Helthjem som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:726
+#: WC_Gateway_Vipps.class.php:870
 #, php-format
 #| msgid "Activate this for Instabox as a %1$s Checkout Shipping method."
 msgid "Activate this for Instabox as a %1$s Shipping method."
 msgstr "Aktiver dette for å kunne tilby Instabox som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:694
+#: WC_Gateway_Vipps.class.php:838
 #, php-format
 #| msgid ""
 #| "Activate this for Porterbuddy as a %1$s Checkout Shipping method. Your "
@@ -511,41 +534,54 @@ msgstr ""
 "Butikkens addresse vil bli anvendt som hentepunkt for pakken, og din admin-"
 "epost vil bli brukt for booking-informasjon fra Porterbuddy."
 
-#: WC_Gateway_Vipps.class.php:674
+#: WC_Gateway_Vipps.class.php:808
 #, php-format
 #| msgid "Activate this for Posten Norge as a %1$s Checkout Shipping method."
 msgid "Activate this for Posten Norge as a %1$s Shipping method."
 msgstr "Aktiver dette for å kunne tilby Posten Norge som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:684
+#: WC_Gateway_Vipps.class.php:818
+#, php-format
+msgid "Activate this for Posti as a %1$s Shipping method."
+msgstr "Aktiver denne for å kunne tilby Posti som en %1$s-fraktmetode"
+
+#: WC_Gateway_Vipps.class.php:828
 #, php-format
 #| msgid "Activate this for PostNord as a %1$s Checkout Shipping method."
 msgid "Activate this for PostNord as a %1$s Shipping method."
 msgstr "Aktiver dette for å kunne tilby PostNord som fraktmetode i %1$s"
 
-#: Vipps.class.php:1025
+#: Vipps.class.php:1321
 #, php-format
 #| msgid "Add  'Buy now with Vipps' button"
 msgid "Add  'Buy now with %1$s' button"
 msgstr "Legg til en 'Kjøp nå med %1$s'-knapp"
 
-#: WC_Gateway_Vipps.class.php:912
+#: WC_Gateway_Vipps.class.php:1056
 msgid "Add 'Buy now' button on catalog pages too"
 msgstr "Legg til \"Kjøp nå\"-knapp også på katalogsider"
 
-#: Vipps.class.php:1791
+#: Vipps.class.php:2133
 #, php-format
 #| msgid "Add a Vipps Buy Now-button to the product block"
 msgid "Add a %1$s Buy Now-button to the product block"
 msgstr "Legg til en Kjøp nå med %1$s-knapp til produktblokken"
 
-#: Vipps.class.php:1027
+#: Vipps.class.php:1323
 #, php-format
 #| msgid "Add a 'Buy now with Vipps'-button to this product"
 msgid "Add a 'Buy now with %1$s'-button to this product"
 msgstr "Legg til en 'Kjøp nå med %1$s'-knapp til dette produktet"
 
-#: Vipps.class.php:395
+#: Vipps.class.php:500
+msgid "Add a webhook"
+msgstr "Legg til en webhook"
+
+#: Vipps.class.php:425
+msgid "Add a webhook to this MSN"
+msgstr "Legg til en webhook for denne MSN"
+
+#: Vipps.class.php:689
 msgid "Add badge to all products by default"
 msgstr "Legg til merker på alle produkter som standard"
 
@@ -563,36 +599,56 @@ msgstr "Legg til ny QR-kode"
 msgid "Add support for %1$s Senere, if your store provides it"
 msgstr "Legg til støtte for %1$s Senere, hvis butikken din støtter det"
 
-#: WC_Gateway_Vipps.class.php:919
+#: WC_Gateway_Vipps.class.php:1063
 #, php-format
 msgid "Add terms and conditions checkbox on %1$s"
 msgstr "Legg til avhuking for vilkår og betingelse i %1$s"
 
-#: WC_Gateway_Vipps.class.php:913
+#: WC_Gateway_Vipps.class.php:1057
 msgid "Add the button for all relevant products on catalog pages"
 msgstr "Legg til knappen for alle aktuelle produkter på katalogsidene"
 
-#: Vipps.class.php:1329
+#: Vipps.class.php:528
+msgid "Add this URL as a webhook"
+msgstr "Legg til denne URLen som webhook"
+
+#: Vipps.class.php:1644
 msgid "Address"
 msgstr "Addresse"
 
-#: WC_Gateway_Vipps.class.php:988
+#: WC_Gateway_Vipps.class.php:1132
 msgid "Advanced"
 msgstr "Avansert"
 
-#: WC_Gateway_Vipps.class.php:906
+#: Vipps.class.php:469
+msgid "Agreement accepted"
+msgstr "Avtale akseptert"
+
+#: Vipps.class.php:472
+msgid "Agreement expired"
+msgstr "Avtale utløpt"
+
+#: Vipps.class.php:470
+msgid "Agreement rejected"
+msgstr "Avtale avvist"
+
+#: Vipps.class.php:471
+msgid "Agreement stopped"
+msgstr "Avtale stoppet"
+
+#: WC_Gateway_Vipps.class.php:1050
 msgid "All products"
 msgstr "Alle produkter"
 
-#: Vipps.class.php:1310
+#: Vipps.class.php:1625
 msgid "All values in ører (1/100 NOK)"
 msgstr "Alle verdier er i øre (1/100 NOK)"
 
-#: VippsCheckoutShippingMethods.php:182
+#: VippsCheckoutShippingMethods.php:183
 msgid "Allow user to choose pickup point"
 msgstr "La kunden velge leveringssted"
 
-#: WC_Gateway_Vipps.class.php:869
+#: WC_Gateway_Vipps.class.php:1013
 #, php-format
 #| msgid ""
 #| "Almost done! Remember, there are no fees using Vipps when shopping online."
@@ -600,22 +656,22 @@ msgid ""
 "Almost done! Remember, there are no fees using %1$s when shopping online."
 msgstr "Snart i mål! Husk, %1$s er gebyrfritt når du handler på nett."
 
-#: WC_Gateway_Vipps.class.php:927
+#: WC_Gateway_Vipps.class.php:1071
 msgid "Always ask for address, even if products don't need shipping"
 msgstr "Alltid be om addresse, selv om produktene ikke trenger frakt"
 
-#: WC_Gateway_Vipps.class.php:920
+#: WC_Gateway_Vipps.class.php:1064
 #, php-format
 #| msgid "Always ask for confirmation on %1$"
 msgid "Always ask for confirmation on %1$s"
 msgstr "Be alltid om at kunden bekrefter i %1$s"
 
-#: WC_Gateway_Vipps.class.php:928
+#: WC_Gateway_Vipps.class.php:1072
 msgid ""
 "Always ask the user for their address, even if you don't need it for shipping"
 msgstr "Spør alltid kunden om addresse, selv om du ikke trenger det for frakt"
 
-#: Vipps.class.php:1372 Vipps.class.php:1390
+#: Vipps.class.php:1687 Vipps.class.php:1705
 msgid "Amount"
 msgstr "Handling"
 
@@ -623,7 +679,7 @@ msgstr "Handling"
 msgid "Amount in minor units"
 msgstr "Mengde i små enheter"
 
-#: WC_Gateway_Vipps.class.php:811
+#: WC_Gateway_Vipps.class.php:955
 msgid ""
 "An alphanumeric textstring to use as a prefix on orders from your shop, to "
 "avoid duplicate order-ids"
@@ -631,7 +687,7 @@ msgstr ""
 "En kort tekst med bokstaver og tall som brukes som prefiks på ordre-id fra "
 "butikken, slik at det ikke oppstår duplikater hos Vipps"
 
-#: VippsCheckout.class.php:538
+#: VippsCheckout.class.php:530
 msgid ""
 "An error has occured - please reload the page to restart your transaction, "
 "or return to the shop"
@@ -639,7 +695,7 @@ msgstr ""
 "En feil har oppstått - vennligst last inn siden omigjen for å restarte "
 "transaksjonen, eller gå tilbake til butikken."
 
-#: Vipps.class.php:3854
+#: Vipps.class.php:4318
 msgid ""
 "An error occured during order confirmation. The error has been logged. "
 "Please contact us to determine the status of your order"
@@ -647,29 +703,29 @@ msgstr ""
 "En feil oppsto under bekreftelse av bestillingen. Feilen har blitt logget. "
 "Vær så vennlig å ta kontakt med oss for å se status på din bestilling"
 
-#: Vipps.class.php:1141
+#: Vipps.class.php:1437
 msgid "An error occured while creating a shareable link"
 msgstr "En feil oppsto under opprettelse av delbar lenke"
 
-#: WC_Gateway_Vipps.class.php:2754
+#: WC_Gateway_Vipps.class.php:3005
 #, php-format
 #| msgid "Anomalous callback from vipps, handle errors and clean up"
 msgid "Anomalous callback from %1$s, handle errors and clean up"
 msgstr "Uvanlig callback fra %1$s - håndter feil og rydd opp"
 
-#: WC_Gateway_Vipps.class.php:2225
+#: WC_Gateway_Vipps.class.php:2450
 msgid "Anonymous customer"
 msgstr "Anonym kunde"
 
-#: Vipps.class.php:1309
+#: Vipps.class.php:1624
 msgid "API"
 msgstr "API"
 
-#: VippsQRCodeController.class.php:235 Vipps.class.php:3654
+#: VippsQRCodeController.class.php:235 Vipps.class.php:4114
 msgid "Are you sure?"
 msgstr "Er du sikker?"
 
-#: WC_Gateway_Vipps.class.php:963
+#: WC_Gateway_Vipps.class.php:1107
 msgid ""
 "As Express Checkout orders are anonymous, failed orders will end up as "
 "\"cancelled\" orders with no information in them. Enable this to delete "
@@ -681,74 +737,93 @@ msgstr ""
 "vil disse bli slettet automatisk uten at du trenger å gjøre noe; men pass på "
 "at dette er kompatible med andre plugins."
 
-#: WC_Gateway_Vipps.class.php:634 WC_Gateway_Vipps.class.php:635
+#: WC_Gateway_Vipps.class.php:768 WC_Gateway_Vipps.class.php:769
 msgid "Ask the user to consent to share user information"
 msgstr "Be brukeren om godkjennelse til å lagre brukerinformasjon"
 
-#: WC_Gateway_Vipps.class.php:1347
+#: Vipps.class.php:466
+msgid "Authorized"
+msgstr "Autorisert"
+
+#: WC_Gateway_Vipps.class.php:1501
 #, php-format
 #| msgid "Awaiting Vipps payment confirmation"
 msgid "Awaiting %1$s payment confirmation"
 msgstr "Venter på bekreftelse fra %1$s "
 
-#: Vipps.class.php:818
+#: Vipps.class.php:1112
 msgid "Badges"
 msgstr "Merker"
 
-#: Vipps.class.php:1345
+#: WC_Gateway_Vipps.class.php:2021 WC_Gateway_Vipps.class.php:2499
+#, php-format
+msgid "Bank Transfer/ %1$s"
+msgstr "Bankoverføring/ %1$s"
+
+#: Vipps.class.php:1660
 msgid "Billing details"
 msgstr "Fakturadetaljer"
 
-#: Vipps.class.php:1786
+#: Vipps.class.php:2128
 msgid "Buy now with"
 msgstr "Kjøp nå med"
 
-#: Vipps.class.php:1690 Vipps.class.php:1787 Vipps.class.php:3307
+#: Vipps.class.php:2032 Vipps.class.php:2129 Vipps.class.php:3767
 #, php-format
 #| msgid "Buy now with Vipps"
 msgid "Buy now with %1$s"
 msgstr "Kjøp nå med %1$s"
 
-#: Vipps.class.php:936 Vipps.class.php:3710
+#: Vipps.class.php:1232 Vipps.class.php:4174
 #, php-format
 #| msgid "Buy now with Vipps!"
 msgid "Buy now with %1$s!"
 msgstr "Kjøp nå med %1$s!"
 
-#: Vipps.class.php:1017
+#: Vipps.class.php:1313
 msgid "Buy-now button"
 msgstr "Kjøp nå-knapp"
 
-#: WC_Gateway_Vipps.class.php:854
+#: WC_Gateway_Vipps.class.php:998
 msgid ""
-"By default, orders that are <b>reserved</b> but not <b>captured</b> will "
-"have the order status 'On hold' until you capture the sum (by changing the "
-"status to 'Processing' or 'Complete')<br> Some stores prefer to use 'On "
-"hold' only for orders where there are issues with the payment. In this case "
-"you can choose  'Processing' instead, but you must then ensure that you do "
-"<b>not ship the order until after you have done capture</b> - because the "
-"'capture' step may in rare cases fail. <br>If you choose this setting, "
-"capture will still automatically happen on the status change to 'Complete' "
+"By default, orders that are <b>reserved</b> but not <b>yet captured</b> will "
+"now have the order status 'Processing'. You can capture the sum manually, or "
+"by changing the status to 'Complete'. You should ensure that your workflow "
+"is such that the order is not shipped until after this capture.<br><br> The "
+"status 'On hold' can be chosen instead for stores using a workflow where "
+"orders are shipped when the status is 'Processing'. In this case, 'On hold' "
+"will mean \"order is reserved but not yet captured\".  This is a slightly "
+"safer solution, and ensures that the order status will reflect the payment "
+"status. <br><br>However, in many stores 'On hold' has the additional meaning "
+"\"there is a problem with the order\"; and an email is often sent to the "
+"customer about this problem. The default is 'Processing' because of this, "
+"and because many plugins and integrations expect orders to be 'Processing' "
+"when the customer has completed payment."
 msgstr ""
-"Som standard er ordre som er <b>reservert</b> men ikke <b>belastet</b> satt "
-"til ordrestatus 'På vent' inntil du belaster summen (ved å endre status til "
-"'Behandler' eller 'Fullført').<br>\n"
-"Noen butikker foretrekker å bruke 'På vent' utelukkende for ordre som har et "
-"problem med betalingen. I dette tilfellet kan du velge 'Behandler' istedet, "
-"men du må da sørge for at du <b>ikke sender ordren før etter at belastning "
-"er gjort</b> - fordi dette steget kan i sjeldne tilfeller mislykkes.<br>\n"
-"Hvis du velger denne settingen, så vil belastning fortsatt skje automatisk "
-"når du endrer status til 'Fullført'."
+"Som standard så vil ordre som er <b>reservert</b> men ikke ennå <b>"
+"overført</b> nå ha ordrestatus 'Behandler'. Du kan overføre summen manuelt, "
+"eller ved å endre ordrestatus til 'Fullført'. Du bør da sørge for at "
+"arbeidsflyten din er slik at ordren ikke blir sendt av gårde før etter at "
+"pengene er overført.<br><br>Statusen 'På vent' kan velges istedetfor for "
+"butikker som har en arbeidsflyt der ordre sendes når status er 'Behandler'. "
+"I dette tilfellet vil 'På vent' bety at \"ordren er reservert, men ikke ennå "
+"overført\". Dette er en bittelitt tryggere løsning, og sørger for at "
+"ordrestatus vil reflektere betalingsstatus.<br><br>. Imidlertid er det for "
+"mange butikker slik at 'På vent' har en ekstra betydning \"det er noe galt "
+"med bestillingen\"; og en epost blir da ofte sendt til kunden om problemet. "
+"På grunn av dette er standardinnstillingen her 'Behandler'. I tillegg er det "
+"mange utvidelser og integrasjoner som forventer at en ordre står som "
+"'Behandler' når en kunde har fullført betalingen."
 
-#: VippsCheckoutShippingMethods.php:152
+#: VippsCheckoutShippingMethods.php:153
 msgid "Calculate cost in Checkout"
 msgstr "Beregnet på betalingssiden"
 
-#: VippsCheckoutShippingMethods.php:153
+#: VippsCheckoutShippingMethods.php:154
 msgid "Calculate costs in the Checkout window"
 msgstr "Beregn fraktkostnader i Checkout-vinduet"
 
-#: Vipps.class.php:2569
+#: Vipps.class.php:3023
 #, php-format
 #| msgid ""
 #| "Callback from Vipps delayed or never happened; order status checked by "
@@ -760,23 +835,39 @@ msgstr ""
 "Tilbakekall fra %1$s er forsinket eller aldri skjedd; ordrestatus sjekket "
 "med periodisk oppgave"
 
-#: Vipps.class.php:2152
+#: Vipps.class.php:2606
 msgid "Callback was:"
 msgstr "Callback var:"
 
-#: Vipps.class.php:1321
+#: WC_Gateway_Vipps.class.php:3109
+#, php-format
+msgid "Callback: Payment cancelled at %1$s"
+msgstr "Tilbakekall: Betalingen er kansellert hos %1$s"
+
+#: Vipps.class.php:463
+msgid "Cancelled"
+msgstr "Kansellert"
+
+#: Vipps.class.php:1636
 msgid "Cancelled amount"
 msgstr "Kansellert beløp"
 
-#: VippsApi.class.php:312 VippsApi.class.php:355
-msgid "Cannot add category for order %1\$d: No vipps id present"
+#: VippsCheckout.class.php:618
+#, php-format
+msgid "Cancelling Checkout order because order changed: %1$s"
+msgstr "Kansellerer Checkout-bestilling fordi ordre endret seg: %1$s"
+
+#: VippsApi.class.php:366 VippsApi.class.php:399
+#, php-format
+msgid "Cannot add category for order %1$d: No vipps id present"
 msgstr "Kan ikke legge til kategori for ordre %d: Ingen Vipps-ID"
 
-#: VippsApi.class.php:176
-msgid "Cannot add receipt for order %1\$d: No vipps id present"
+#: VippsApi.class.php:345
+#, php-format
+msgid "Cannot add receipt for order %1$d: No vipps id present"
 msgstr "Kan ikke legge til kvittering for ordre %d: Ingen Vipps-id for ordren"
 
-#: WC_Gateway_Vipps.class.php:1581
+#: WC_Gateway_Vipps.class.php:1739
 #, php-format
 #| msgid "Cannot cancel a captured Vipps transaction - use refund instead"
 msgid "Cannot cancel a captured %1$s transaction - use refund instead"
@@ -784,36 +875,46 @@ msgstr ""
 "Kan ikke kansellere en %1$s -transaksjon etter at den er blitt belastet - "
 "bruk \"refunder\" istedet"
 
-#: WC_Gateway_Vipps.class.php:1575
+#: WC_Gateway_Vipps.class.php:1733
 #, php-format
 #| msgid "Cannot cancel payment on orders not made by Vipps"
 msgid "Cannot cancel payment on orders not made by %1$s"
 msgstr "Kan ikke kansellere ordren; den er ikke utført med %1$s"
 
-#: WC_Gateway_Vipps.class.php:1427
+#: WC_Gateway_Vipps.class.php:1581
 #, php-format
 #| msgid "Cannot capture payment on orders not made by Vipps"
 msgid "Cannot capture payment on orders not made by %1$s"
 msgstr "Kan ikke belaste betalingen på bestillinger ikke utført med %1$s"
 
-#: WC_Gateway_Vipps.class.php:1931
+#: VippsApi.class.php:334
+#, php-format
+msgid "Cannot create receipt for order %1$d: %2$s"
+msgstr "Kan ikke lage ordrekvittering for bestilling %1$d: %2$s"
+
+#: WC_Gateway_Vipps.class.php:2106
 #, php-format
 #| msgid "Cannot get address information for %1$s Checkout order:"
 msgid "Cannot get address information for %1$s order:"
 msgstr "Kan ikke hente addresseinformasjon for %1$s-ordre:"
 
-#: WC_Gateway_Vipps.class.php:1522
+#: WC_Gateway_Vipps.class.php:1830
+#, php-format
+msgid "Cannot refund bank transfer order %1$d"
+msgstr "Kan ikke refundere bank-overføringsordre %1$d"
+
+#: WC_Gateway_Vipps.class.php:1680
 #, php-format
 #| msgid "Cannot refund payment on orders not made by Vipps"
 msgid "Cannot refund payment on orders not made by %1$s"
 msgstr "Kan ikke refundere betalinger på ordre ikke gjort gjennom %1$s"
 
-#: WC_Gateway_Vipps.class.php:1514
+#: WC_Gateway_Vipps.class.php:1672
 msgid "Cannot refund superfluous capture on non-completed order:"
 msgstr ""
 "Kan ikke betale tilbake overflødig belastet sum: ordren er ikke fullført:"
 
-#: WC_Gateway_Vipps.class.php:508
+#: WC_Gateway_Vipps.class.php:643
 #, php-format
 #| msgid "Cannot refund through Vipps - the payment has not been captured yet."
 msgid "Cannot refund through %1$s - the payment has not been captured yet."
@@ -821,7 +922,7 @@ msgstr ""
 "Kan ikke tilbakebetale beløpet via %1$s - betalingen har ikke blitt belastet "
 "ennå."
 
-#: WC_Gateway_Vipps.class.php:511
+#: WC_Gateway_Vipps.class.php:646
 #, php-format
 #| msgid "Cannot refund through Vipps - the refund amount is too large."
 msgid "Cannot refund through %1$s - the refund amount is too large."
@@ -829,17 +930,17 @@ msgstr ""
 "Kan ikke tilbakebetale gjennom %1$s - beløpet som skal tilbakebetales er for "
 "stort."
 
-#: WC_Gateway_Vipps.class.php:1268
+#: WC_Gateway_Vipps.class.php:1414
 #, php-format
 #| msgid "Cannot restart order at Vipps"
 msgid "Cannot restart order at %1$s"
 msgstr "Kan ikke restarte ordre hos %1$s"
 
-#: WC_Gateway_Vipps.class.php:1317
+#: WC_Gateway_Vipps.class.php:1471
 msgid "Cannot restart order with same order ID: Must cancel"
 msgstr "Kan ikke restarte ordre med samme ordre-id: Må kansellere"
 
-#: WC_Gateway_Vipps.class.php:259
+#: WC_Gateway_Vipps.class.php:328
 #, php-format
 #| msgid ""
 #| "Cannot use %s as status for non-autocapturable orders: payment is "
@@ -851,17 +952,17 @@ msgstr ""
 "Kan ikke bruke %1$s som status for ikke-autobelastbare ordre: Ordren ville "
 "blitt belastet på denne statusen. Se filteret woo_vipps_captured_statuses"
 
-#: Vipps.class.php:1511
+#: Vipps.class.php:1826
 msgid "Cannot use flock() to lock orders: cannot create lockfiles "
 msgstr "Kan ikke bruke flock() til å låse ordre: Kan ikke lage låsfiler"
 
-#: Vipps.class.php:1504
+#: Vipps.class.php:1819
 msgid "Cannot use flock() to lock orders: cannot create or write to directory"
 msgstr ""
 "Kan ikke bruke flock() til å låse ordre: Kan ikke opprette eller skrive til "
 "katalogen"
 
-#: Vipps.class.php:2379
+#: Vipps.class.php:2833
 #, php-format
 #| msgid ""
 #| "Cannot use shipping method %s in Vipps Express checkout: the shipping "
@@ -873,15 +974,56 @@ msgstr ""
 "Kan ikke bruke fraktmetode %2$s i %1$s Hurtigkasse: Fraktmetoden er ikke "
 "serialiserbar"
 
-#: Vipps.class.php:1883
+#: Vipps.class.php:2319
+#, php-format
+msgid ""
+"Cannot verify webhook callback for order %1$d - signature does not match. "
+"This may be an attempt to forge callbacks"
+msgstr ""
+"Kan ikke verifisere webhook-callback for ordre %1$d - signaturen stemmer "
+"ikke. Dette kan være et forsøk på å forfalske callbacks."
+
+#: Vipps.class.php:2314
+#, php-format
+msgid ""
+"Cannot verify webhook callback for order %1$d - this shop does not know the "
+"secret. You should delete all unwanted webhooks. If you are using the same "
+"MSN on several shops, this callback is probably for one of the others."
+msgstr ""
+"Kan ikke verifisere webhook-calback for ordre %1$d - butikken kjenner ikke "
+"til hemmeligheten. Du bør slette alle uønskede webhooks. Hvis du bruker "
+"samme MSN på forskjellige butikker, er denne callbacken antagelig ment for "
+"en av de andre."
+
+#: Vipps.class.php:2225
 msgid "Capture payment"
 msgstr "Trekk betaling"
 
-#: Vipps.class.php:1316
+#: Vipps.class.php:464
+msgid "Captured"
+msgstr "Overført"
+
+#: Vipps.class.php:1631
 msgid "Capured amount"
 msgstr "Trukket beløp"
 
-#: Vipps.class.php:423
+#: Vipps.class.php:475
+msgid "Charge cancelled"
+msgstr "Betaling kansellert"
+
+#: Vipps.class.php:474
+msgid "Charge captured"
+msgstr "Betaling overført"
+
+#: Vipps.class.php:476
+msgid "Charge failed"
+msgstr "Betaling mislykket"
+
+#: Vipps.class.php:473
+msgid "Charge reserved"
+msgstr "Betaling reservert"
+
+#: Vipps.class.php:717
 #, php-format
 #| msgid ""
 #| "Check this if your store supports Vipps Senere and you want the "
@@ -893,19 +1035,28 @@ msgstr ""
 "Huk av her om butikken din støtter %1$s Senere og du vil at merket skal "
 "opplyse om dette"
 
-#: WC_Gateway_Vipps.class.php:602
+#: WC_Gateway_Vipps.class.php:736
 msgid "Checkout"
 msgstr "Checkout"
+
+#: WC_Gateway_Vipps.class.php:2307
+#, php-format
+msgid ""
+"Checkout order older than 120 minutes with no order status - cancelled as "
+"abandoned: %1$s"
+msgstr ""
+"Checkout-ordre eldre enn 120 minutter og uten ordrestatus - kanselleres som "
+"avbrutt: %1$s"
 
 #. Name of the plugin
 msgid "Checkout with Vipps for WooCommerce"
 msgstr "Betal med Vipps for WooCommerce"
 
-#: Vipps.class.php:412
+#: Vipps.class.php:706
 msgid "Choose color variant:"
 msgstr "Velg fargevariant:"
 
-#: WC_Gateway_Vipps.class.php:848
+#: WC_Gateway_Vipps.class.php:992
 msgid "Choose default order status for reserved (not captured) orders"
 msgstr "Velg standard ordrestatus for ordre som er reservert men ikke belastet"
 
@@ -925,11 +1076,11 @@ msgstr "Velg produkt"
 msgid "Choose the badge variant with the perfect colors for your site"
 msgstr "Velg merke-varianten med de perfekte fargene for ditt nettsted"
 
-#: WC_Gateway_Vipps.class.php:797 WC_Gateway_Vipps.class.php:803
+#: WC_Gateway_Vipps.class.php:941 WC_Gateway_Vipps.class.php:947
 msgid "Choose which payment method should be displayed to users at checkout"
 msgstr "Velg betalingsmåte som vises til brukerne i kassen"
 
-#: WC_Gateway_Vipps.class.php:954
+#: WC_Gateway_Vipps.class.php:1098
 msgid ""
 "Choosing this will use a different method of handling the \"Buy now\" button "
 "on a single product, which will work for more product types and more plugins "
@@ -942,25 +1093,25 @@ msgstr ""
 "denne hvis produktene dine trenger mer konfigurasjon en standard enkle og "
 "variable produkter"
 
-#: Vipps.class.php:1128 Vipps.class.php:1157 Vipps.class.php:1159
+#: Vipps.class.php:1424 Vipps.class.php:1453 Vipps.class.php:1455
 msgid "Click to copy"
 msgstr "Klikk for å kopiere"
 
-#: WC_Gateway_Vipps.class.php:822 WC_Gateway_Vipps.class.php:824
-#: WC_Gateway_Vipps.class.php:1071 WC_Gateway_Vipps.class.php:1072
+#: WC_Gateway_Vipps.class.php:966 WC_Gateway_Vipps.class.php:968
+#: WC_Gateway_Vipps.class.php:1215 WC_Gateway_Vipps.class.php:1216
 msgid "Client Id"
 msgstr "Client id"
 
-#: WC_Gateway_Vipps.class.php:830 WC_Gateway_Vipps.class.php:831
-#: WC_Gateway_Vipps.class.php:1079 WC_Gateway_Vipps.class.php:1080
+#: WC_Gateway_Vipps.class.php:974 WC_Gateway_Vipps.class.php:975
+#: WC_Gateway_Vipps.class.php:1223 WC_Gateway_Vipps.class.php:1224
 msgid "Client Secret"
 msgstr "Client Secret"
 
-#: WC_Gateway_Vipps.class.php:740
+#: WC_Gateway_Vipps.class.php:884
 msgid "Client secret provided to you by Instabox"
 msgstr "Client Secret som du fikk fra Instabox"
 
-#: Vipps.class.php:591
+#: Vipps.class.php:885
 #, php-format
 #| msgid ""
 #| "Configure the plugin on its <a href='%s'>settings page</a> and  get your "
@@ -972,104 +1123,127 @@ msgstr ""
 "Konfigurer pluginen på dens <a href='%1$s'>instillingerside</a> og hent "
 "nøklene dine hos <a target='_blank' href=\"%2$s\">%3$s-portalen</a>."
 
-#: VippsApi.class.php:602
+#: VippsApi.class.php:522 VippsApi.class.php:777
 msgid "Confirm your order"
 msgstr "Bekreft din bestilling"
 
-#: VippsApi.class.php:595
+#: VippsApi.class.php:516 VippsApi.class.php:770
 msgid "Confirm your order from"
 msgstr "Bekreft din bestilling fra"
 
-#: WC_Gateway_Vipps.class.php:3248
+#: WC_Gateway_Vipps.class.php:3531
 #, php-format
 msgid "Connection to %1$s is OK"
 msgstr "Forbindelse til %1$s er OK"
 
-#: Vipps.class.php:3859
+#: Vipps.class.php:4323
 msgid "Continue"
 msgstr "Fortsett"
 
-#: Vipps.class.php:3816 Vipps.class.php:3855 Vipps.class.php:3863
+#: Vipps.class.php:4280 Vipps.class.php:4319 Vipps.class.php:4327
 msgid "Continue shopping"
 msgstr "Fortsett å handle"
 
-#: Vipps.class.php:860
+#: Vipps.class.php:1155
 #, php-format
 #| msgid "Continue with Vipps"
 msgid "Continue with %1$s"
 msgstr "Fortsett med %1$s"
 
-#: Vipps.class.php:1131 Vipps.class.php:1159
+#: Vipps.class.php:1427 Vipps.class.php:1455
 msgid "Copy"
 msgstr "Kopier"
 
-#: VippsCheckoutShippingMethods.php:163
+#: VippsCheckoutShippingMethods.php:164
 msgid "Cost"
 msgstr "Kostnad"
 
-#: VippsCheckoutShippingMethods.php:166
+#: VippsCheckoutShippingMethods.php:167
 msgid "Cost of shipping"
 msgstr "Fraktkostnad"
 
-#: VippsApi.class.php:347
+#: VippsApi.class.php:567
 #, php-format
-msgid "Could not add category %1\$s to Vipps: "
+msgid ""
+"Could not add all keys to the payment metadata of order %1$s - only 5 items "
+"are allowed"
+msgstr ""
+"Kan ikke legge til alle nøklene til betalings-metadataene til ordre %1$s - "
+"kun 5 nøkler er tillatt"
+
+#: VippsApi.class.php:390
+#, php-format
+msgid "Could not add category %1$s to Vipps: "
 msgstr "Kunne ikke legge til kategori %s til Vipps-appen: "
 
-#: WC_Gateway_Vipps.class.php:411
+#: VippsApi.class.php:562
+#, php-format
+msgid ""
+"Could not add key %1$s to payment metadata of order %2$s - key or value is "
+"too long (100, 500 respectively)"
+msgstr ""
+"Kunne ikke legge til nøkkel %1$s til betalingsmetadataene til ordre %2$s - "
+"nøkkel eller verdi er for lang (100 og 500 tegn henholdsvis)"
+
+#: WC_Gateway_Vipps.class.php:528
 #, php-format
 #| msgid "Could not cancel Vipps payment"
 msgid "Could not cancel %1$s payment"
 msgstr "Kunne ikke kansellere %1$s-betalingen"
 
-#: WC_Gateway_Vipps.class.php:1602
+#: WC_Gateway_Vipps.class.php:1763
 #, php-format
 #| msgid "Could not cancel Vipps payment for order id:"
 msgid "Could not cancel %1$s payment for order id:"
 msgstr "Kunne ikke kansellere %1$s-betaling for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:1598
+#: WC_Gateway_Vipps.class.php:1759
 #, php-format
 #| msgid "Could not cancel Vipps payment for order_id:"
 msgid "Could not cancel %1$s payment for order_id:"
 msgstr "Kunne ikke kansellere %1$s-betaling for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:1410
+#: WC_Gateway_Vipps.class.php:1564
 #, php-format
 #| msgid "Could not capture Vipps payment - status set to"
 msgid "Could not capture %1$s payment - status set to"
 msgstr "Kunne ikke belaste %1$s-betalingen - status satt til"
 
-#: WC_Gateway_Vipps.class.php:1469
+#: WC_Gateway_Vipps.class.php:1627
 #, php-format
 #| msgid "Could not capture Vipps payment for order id:"
 msgid "Could not capture %1$s payment for order id:"
 msgstr "Kunne ikke belaste %1$s-betalingen for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:1473
+#: WC_Gateway_Vipps.class.php:1631
 #, php-format
 #| msgid "Could not capture Vipps payment for order_id:"
 msgid "Could not capture %1$s payment for order_id:"
 msgstr "Kunne ikke belaste %1$s-betalingen for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:1406
+#: WC_Gateway_Vipps.class.php:1560
 #, php-format
 #| msgid "Could not capture Vipps payment for this order!"
 msgid "Could not capture %1$s payment for this order!"
 msgstr "Kunne ikke fange %1$s-betalingen for denne ordren!"
 
-#: WC_Gateway_Vipps.class.php:3250
+#: WC_Gateway_Vipps.class.php:3533
 #, php-format
 #| msgid "Could not connect to Vipps"
 msgid "Could not connect to %1$s"
 msgstr "Kunne ikke oppnå forbindelse med %1$s"
 
-#: Vipps.class.php:2923 Vipps.class.php:2928 Vipps.class.php:2938
-#: Vipps.class.php:3061 Vipps.class.php:3067 Vipps.class.php:3077
+#: Vipps.class.php:3385 Vipps.class.php:3390 Vipps.class.php:3400
+#: Vipps.class.php:3522 Vipps.class.php:3528 Vipps.class.php:3538
 msgid "Could not create order"
 msgstr "Kunne ikke opprette bestilling"
 
-#: WC_Gateway_Vipps.class.php:2936
+#: VippsApi.class.php:139
+#, php-format
+msgid "Could not delete webhook for merchant serial number %1$s id %2$s: "
+msgstr "Kan ikke slette webhook for merchant serial number %1$s id %2$s:"
+
+#: WC_Gateway_Vipps.class.php:3192
 #, php-format
 #| msgid "Could not do all payment-complete actions on Vipps order %d: %s "
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
@@ -1077,13 +1251,13 @@ msgstr ""
 "Kunne ikke fullføre alle payment_complete-handlingene for %1$s-ordre %2$d: "
 "%3$s "
 
-#: Vipps.class.php:2152
+#: Vipps.class.php:2606
 #, php-format
 #| msgid "Could not find Vipps order with id:"
 msgid "Could not find %1$s order with id:"
 msgstr "Kunne ikke finne %1$s-ordre med id:"
 
-#: Vipps.class.php:2286
+#: Vipps.class.php:2740
 #, php-format
 #| msgid ""
 #| "Could not find any applicable shipping methods for Vipps Express Checkout "
@@ -1092,17 +1266,17 @@ msgid ""
 "Could not find any applicable shipping methods for %1$s - order will fail"
 msgstr "Fant ingen fraktmetoder for %1$s - ordren vil mislykkes"
 
-#: Vipps.class.php:2160
+#: Vipps.class.php:2614
 msgid "Could not find Woo order with id:"
 msgstr "Kunne ikke finne Woo-ordre med ID:"
 
-#: WC_Gateway_Vipps.class.php:2378
+#: WC_Gateway_Vipps.class.php:2609
 #, php-format
 #| msgid "Could not get Vipps order status"
 msgid "Could not get %1$s order status"
 msgstr "Kunne ikke hente ordrestatus hos %1$s"
 
-#: WC_Gateway_Vipps.class.php:2367
+#: WC_Gateway_Vipps.class.php:2598
 #, php-format
 #| msgid ""
 #| "Could not get Vipps order status - it has no Vipps Order Id. Must cancel."
@@ -1111,41 +1285,68 @@ msgstr ""
 "Kunne ikke hente ordrestatus hos %1$s - den mangler %1$s-ordreid. Må "
 "kansellere."
 
-#: WC_Gateway_Vipps.class.php:2375 WC_Gateway_Vipps.class.php:2385
+#: WC_Gateway_Vipps.class.php:2606 WC_Gateway_Vipps.class.php:2616
 #, php-format
 #| msgid "Could not get Vipps order status for order id:"
 msgid "Could not get %1$s order status for order id:"
 msgstr "Kunne ikke hente %1$s ordre-status for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:1218
+#: WC_Gateway_Vipps.class.php:1364
 #, php-format
 #| msgid ""
 #| "Could not get access token when initiating Vipps payment for order id:"
 msgid "Could not get access token when initiating %1$s payment for order id:"
 msgstr "Kunne ikke hente access token ved start av %1$s-betaling for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:1957
+#: WC_Gateway_Vipps.class.php:2132
 #, php-format
 #| msgid "Could not get address info for order from Vipps"
 msgid "Could not get address info for order from %1$s"
 msgstr "Kunne ikke hente addresseinfo for ordren fra %1$s"
 
-#: WC_Gateway_Vipps.class.php:2025
+#: VippsCheckout.class.php:613
+#, php-format
+msgid ""
+"Could not get Checkout status for order %1$s in progress while cancelling"
+msgstr ""
+"Kan ikke hente Checkout-status for ordre %1$s under utførelse når den skal "
+"kanselleres"
+
+#: WC_Gateway_Vipps.class.php:2205 WC_Gateway_Vipps.class.php:2209
 #, php-format
 #| msgid "Could not get order status from Vipps using epayment api: "
 msgid "Could not get order status from %1$s using epayment api: "
 msgstr "Kunne ikke hente ordrestatus fra %1$s med epayment-apiet"
 
-#: VippsApi.class.php:383
+#: Vipps.class.php:2355
 #, php-format
-msgid "Could not get receipt data for order %1\$s from Vipps: "
+msgid "Could not get orderid of reference %2$s from %1$s: "
+msgstr "Kan ikke finne ordreid til referanse %2$s fra %1$s:"
+
+#: WC_Gateway_Vipps.class.php:2217
+#, php-format
+msgid "Could not get payment results for order %1$s"
+msgstr "Kan ikke hente betalingsresultater for ordre %1$s"
+
+#: WC_Gateway_Vipps.class.php:2218
+#, php-format
+msgid ""
+"Could not get payment results for order %1$s - you may have the wrong MSN "
+"for the order. Please check logs for more information"
+msgstr ""
+"Kan ikke hente betalingsresultater for ordre %1$s - det er mulig du har feil "
+"MSN for bestillingen. Vennligst sjekk loggene for mer informasjon."
+
+#: VippsApi.class.php:413
+#, php-format
+msgid "Could not get receipt data for order %1$s from Vipps: "
 msgstr "Kunne ikke hente kvitteringsdata for ordre %s fra Vipps: "
 
-#: Vipps.class.php:2708
+#: Vipps.class.php:3170
 msgid "Could not get user email from order before thankyou-page"
 msgstr "Kunne ikke hente bruker-epost før takk-siden"
 
-#: WC_Gateway_Vipps.class.php:2124
+#: WC_Gateway_Vipps.class.php:2330
 #, php-format
 msgid ""
 "Could not get user info for order %1$d using the userinfo API: %2$s. Please "
@@ -1156,45 +1357,55 @@ msgstr ""
 "Vennligst bruk \"Hent fullstendige transaksjonsdetaljer\" for å prøve å "
 "gjenopprette informasjonen."
 
-#: VippsApi.class.php:99 VippsApi.class.php:102
+#: VippsApi.class.php:176 VippsApi.class.php:179
 msgid "Could not get Vipps access token"
 msgstr "Kunne ikke hente access token for Vipps"
 
-#: WC_Gateway_Vipps.class.php:1307 WC_Gateway_Vipps.class.php:1320
+#: WC_Gateway_Vipps.class.php:251
+#, php-format
+msgid "Could not get webhooks for Merchant Serial Number  %1$s: %2$s"
+msgstr "Kan ikke hente webhooks for merchant serial number %1$s: %2$s"
+
+#: VippsApi.class.php:107
+#, php-format
+msgid "Could not get webhooks for merchant serial number %1$s: "
+msgstr "Kan ikke hente webhooks for merchant serial number %1$s:"
+
+#: WC_Gateway_Vipps.class.php:1461 WC_Gateway_Vipps.class.php:1474
 #, php-format
 #| msgid "Could not initiate Vipps payment"
 msgid "Could not initiate %1$s payment"
 msgstr "Kunne ikke opprette %1$s-betaling"
 
-#: VippsCheckout.class.php:307
+#: VippsCheckout.class.php:300
 #, php-format
 #| msgid "Could not initiate %1$s Checkout session: %2$s"
 msgid "Could not initiate %1$s session: %2$s"
 msgstr "Kunne ikke starte %1$s-økten: %2$s"
 
-#: WC_Gateway_Vipps.class.php:1838
+#: WC_Gateway_Vipps.class.php:2000
 #, php-format
 #| msgid "Could not interpret Vipps order status"
 msgid "Could not interpret %1$s order status"
 msgstr "Kunne ikke lese ordrestatus hos %1$s"
 
-#: VippsApi.class.php:118
+#: VippsApi.class.php:195
 msgid "Could not read image file: "
 msgstr "Kunne ikke lese bildefil: "
 
-#: WC_Gateway_Vipps.class.php:527 WC_Gateway_Vipps.class.php:1558
+#: WC_Gateway_Vipps.class.php:662 WC_Gateway_Vipps.class.php:1716
 #, php-format
 #| msgid "Could not refund Vipps payment"
 msgid "Could not refund %1$s payment"
 msgstr "Kunne ikke tilbakebetale %1$s-betalingen"
 
-#: WC_Gateway_Vipps.class.php:524 WC_Gateway_Vipps.class.php:1555
+#: WC_Gateway_Vipps.class.php:659 WC_Gateway_Vipps.class.php:1713
 #, php-format
 #| msgid "Could not refund Vipps payment for order id:"
 msgid "Could not refund %1$s payment for order id:"
 msgstr "Kunne ikke refundere %1$s-betalingen for ordreid:"
 
-#: WC_Gateway_Vipps.class.php:457
+#: WC_Gateway_Vipps.class.php:592
 #, php-format
 #| msgid ""
 #| "Could not refund payment through Vipps - ensure the refund is handled "
@@ -1206,45 +1417,60 @@ msgstr ""
 "Det var ikke mulig å tilbakebetale med %1$s - sørg for at tilbakebetalingen "
 "gjøres manuelt!"
 
-#: VippsApi.class.php:166
+#: VippsApi.class.php:125
+#, php-format
+msgid ""
+"Could not register webhooks for merchant serial number %1$s callback %2$s: "
+msgstr ""
+"Kan ikke registrere webhooks for merchant serial number %1$s callback %2$s:"
+
+#: VippsApi.class.php:227
 msgid "Could not send image to Vipps: "
 msgstr "Kunne ikke sende bilde til Vipps "
 
-#: VippsApi.class.php:305
+#: VippsApi.class.php:357
 msgid "Could not send receipt to Vipps: "
 msgstr "Kunne ikke sende kvittering til Vipps "
 
 #: VippsQRCodeController.class.php:582
 #, php-format
-msgid "Couldn't create or update QR image: %1\$s"
+msgid "Couldn't create or update QR image: %1$s"
 msgstr "Kunne ikke lage eller oppdatere QR-bilde: %s"
 
 #: VippsQRCodeController.class.php:572
 #, php-format
-msgid "Couldn't download QR image: try saving post again! Error was: %1\$s"
+msgid "Couldn't download QR image: try saving post again! Error was: %1$s"
 msgstr ""
 "Kunne ikke laste ned QR-bilde: Prøv å lagre siden på nytt! Feilen var: %s"
 
-#: WC_Gateway_Vipps.class.php:617 WC_Gateway_Vipps.class.php:618
+#: WC_Gateway_Vipps.class.php:751 WC_Gateway_Vipps.class.php:752
 #, php-format
 msgid "Create new customers on %1$s"
 msgstr "Opprett nye kunder med %1$s"
 
-#: WC_Gateway_Vipps.class.php:944 WC_Gateway_Vipps.class.php:945
+#: WC_Gateway_Vipps.class.php:1088 WC_Gateway_Vipps.class.php:1089
 msgid "Create new customers on Express Checkout"
 msgstr "Opprett nye brukere gjennom Hurtigkassen"
 
-#: Vipps.class.php:1113 Vipps.class.php:1123
+#: Vipps.class.php:1409 Vipps.class.php:1419
 msgid "Create shareable link"
 msgstr "Lag delbar lenke"
 
-#: WC_Gateway_Vipps.class.php:1846 WC_Gateway_Vipps.class.php:2269
-#: WC_Gateway_Vipps.class.php:2802
+#: Vipps.class.php:460
+msgid "Created"
+msgstr "Opprettet"
+
+#: Vipps.class.php:449
+msgid "Created for this site"
+msgstr "Opprettet for dette nettstedet"
+
+#: WC_Gateway_Vipps.class.php:2015 WC_Gateway_Vipps.class.php:2494
+#: WC_Gateway_Vipps.class.php:3056
 #, php-format
 msgid "Credit Card / %1$s"
 msgstr "Kredittkort / %1$s"
 
-#: VippsCheckout.class.php:298
+#: VippsCheckout.class.php:291
 #, php-format
 msgid "Customer passed to %1$s"
 msgstr "Kunde sendt til %1$s"
@@ -1253,11 +1479,11 @@ msgstr "Kunde sendt til %1$s"
 msgid "Default"
 msgstr "Standard"
 
-#: Vipps.class.php:1069 Vipps.class.php:1085
+#: Vipps.class.php:1365 Vipps.class.php:1381
 msgid "Default setting"
 msgstr "Standardinnstilling"
 
-#: Vipps.class.php:1132 Vipps.class.php:1160
+#: Vipps.class.php:447 Vipps.class.php:1428 Vipps.class.php:1456
 msgid "Delete"
 msgstr "Slett"
 
@@ -1265,20 +1491,20 @@ msgstr "Slett"
 msgid "delete"
 msgstr "slett"
 
-#: WC_Gateway_Vipps.class.php:960 WC_Gateway_Vipps.class.php:961
+#: WC_Gateway_Vipps.class.php:1104 WC_Gateway_Vipps.class.php:1105
 msgid "Delete failed Express Checkout Orders"
 msgstr "Slett hurtigkasse-ordre som aldri ble fullført"
 
-#: VippsCheckoutShippingMethods.php:185
+#: VippsCheckoutShippingMethods.php:186
 msgid "Deliver to customers' home address"
 msgstr "Lever til kundens hjemmeaddresse"
 
-#: VippsCheckoutShippingMethods.php:179
+#: VippsCheckoutShippingMethods.php:180
 msgid "Deliver to customers' mailbox"
 msgstr "Lever til kundens postkasse"
 
-#: VippsKCSupport.class.php:67 VippsCheckoutShippingMethods.php:116
-#: VippsCheckoutShippingMethods.php:143
+#: VippsKCSupport.class.php:67 VippsCheckoutShippingMethods.php:117
+#: VippsCheckoutShippingMethods.php:144
 msgid "Description"
 msgstr "Beskrivelse"
 
@@ -1294,11 +1520,11 @@ msgstr ""
 "Beskrivelse for %1$s-betalingsmetoden. Dette kontrollerer beskrivelsen som "
 "vises på kassasiden."
 
-#: WC_Gateway_Vipps.class.php:1048
+#: WC_Gateway_Vipps.class.php:1192
 msgid "Developer mode"
 msgstr "Utviklermodus"
 
-#: Vipps.class.php:1941
+#: Vipps.class.php:2290
 #, php-format
 #| msgid "Did not understand callback from Vipps:"
 msgid "Did not understand callback from %1$s:"
@@ -1317,29 +1543,29 @@ msgstr "Skrur av \"Velg annen betalingsmetode\" for Klarna Checkout"
 msgid "Dismissed message "
 msgstr "Avvist melding"
 
-#: Vipps.class.php:1087
+#: Vipps.class.php:1383
 #, php-format
 #| msgid "Do not use Vipps Later"
 msgid "Do not use %1$s Later"
 msgstr "Ikke bruk %1$s Senere"
 
-#: WC_Gateway_Vipps.class.php:643
+#: WC_Gateway_Vipps.class.php:777
 msgid "Don't require the address fields"
 msgstr "Ikke krev addressefelter"
 
-#: WC_Gateway_Vipps.class.php:651
+#: WC_Gateway_Vipps.class.php:785
 msgid "Don't require the contact fields"
 msgstr "Ikke krev kontaktinformasjonsfelter"
 
-#: WC_Gateway_Vipps.class.php:642
+#: WC_Gateway_Vipps.class.php:776
 msgid "Drop the address fields on the Checkout screen"
 msgstr "Dropp addressefeltene på Checkout-skjermen"
 
-#: WC_Gateway_Vipps.class.php:650
+#: WC_Gateway_Vipps.class.php:784
 msgid "Drop the contact fields on the Checkout screen"
 msgstr "Dropp kontaktfeltene på Checkout-skjermen"
 
-#: WC_Gateway_Vipps.class.php:1316
+#: WC_Gateway_Vipps.class.php:1470
 #, php-format
 #| msgid ""
 #| "Duplicate Order ID! Please report this to support@wp-hosting.no together "
@@ -1358,16 +1584,16 @@ msgstr ""
 msgid "Edit QR Code"
 msgstr "Rediger QR-kode"
 
-#: Vipps.class.php:1349 Vipps.class.php:1355 Vipps.class.php:1364
+#: Vipps.class.php:1664 Vipps.class.php:1670 Vipps.class.php:1679
 msgid "Email"
 msgstr "Epost"
 
-#: WC_Gateway_Vipps.class.php:789
+#: WC_Gateway_Vipps.class.php:933
 #, php-format
 msgid "Enable %1$s"
 msgstr "Skru på %1$s"
 
-#: WC_Gateway_Vipps.class.php:610
+#: WC_Gateway_Vipps.class.php:744
 #, php-format
 #| msgid ""
 #| "Enable Alternative %1$s Checkout screen, replacing the standard checkout "
@@ -1375,37 +1601,37 @@ msgstr "Skru på %1$s"
 msgid "Enable Alternative %1$s screen, replacing the standard checkout page"
 msgstr "Skru på alternativ %1$s kassaskjerm, erstatt standard kassaside."
 
-#: WC_Gateway_Vipps.class.php:1036 WC_Gateway_Vipps.class.php:1037
+#: WC_Gateway_Vipps.class.php:1180 WC_Gateway_Vipps.class.php:1181
 msgid "Enable developer mode"
 msgstr "Skru på utviklermodus"
 
-#: WC_Gateway_Vipps.class.php:900 WC_Gateway_Vipps.class.php:901
+#: WC_Gateway_Vipps.class.php:1044 WC_Gateway_Vipps.class.php:1045
 msgid "Enable Express Checkout for single products"
 msgstr "Skru på hurtigkasse for enkeltprodukter"
 
-#: WC_Gateway_Vipps.class.php:891 WC_Gateway_Vipps.class.php:892
+#: WC_Gateway_Vipps.class.php:1035 WC_Gateway_Vipps.class.php:1036
 msgid "Enable Express Checkout in cart"
 msgstr "Skru på Hurtigkassen i handlekurven"
 
-#: WC_Gateway_Vipps.class.php:627 WC_Gateway_Vipps.class.php:936
+#: WC_Gateway_Vipps.class.php:761 WC_Gateway_Vipps.class.php:1080
 msgid "Enable static shipping"
 msgstr "Skru på statisk fraktberegning"
 
-#: WC_Gateway_Vipps.class.php:626
+#: WC_Gateway_Vipps.class.php:760
 #, php-format
 #| msgid "Enable static shipping for %1$s Checkout"
 msgid "Enable static shipping for %1$s"
 msgstr "Skru på statisk frakt for %1$s"
 
-#: WC_Gateway_Vipps.class.php:935
+#: WC_Gateway_Vipps.class.php:1079
 msgid "Enable static shipping for Express Checkout"
 msgstr "Skru på statisk fraktberegning for Hurtigkassen"
 
-#: WC_Gateway_Vipps.class.php:1056
+#: WC_Gateway_Vipps.class.php:1200
 msgid "Enable test mode"
 msgstr "Skru på testmodus"
 
-#: WC_Gateway_Vipps.class.php:908
+#: WC_Gateway_Vipps.class.php:1052
 #, php-format
 #| msgid ""
 #| "Enable this to allow customers to buy a product using Express Checkout "
@@ -1420,7 +1646,7 @@ msgstr ""
 "produktsiden. Hvis du velger \"noen\", må du skru dette på på de aktuelle "
 "produktene enkeltvis."
 
-#: WC_Gateway_Vipps.class.php:894
+#: WC_Gateway_Vipps.class.php:1038
 #, php-format
 #| msgid ""
 #| "Enable this to allow customers to shop using %1$s Express Checkout "
@@ -1432,7 +1658,7 @@ msgstr ""
 "Skru på denne for å la kunder handle med %1$s direkte fra handlekurven uten "
 "å måtte logge inn eller skrive inn en addresse"
 
-#: WC_Gateway_Vipps.class.php:620
+#: WC_Gateway_Vipps.class.php:754
 #, php-format
 #| msgid ""
 #| "Enable this to create and login customers when using %1$s. Otherwise "
@@ -1447,7 +1673,7 @@ msgstr ""
 "ikke vil de være gjestekjøp. Hvis du bruker dette, vil du kanskje ønske å "
 "bruke Logg inn med Vipps også."
 
-#: WC_Gateway_Vipps.class.php:947
+#: WC_Gateway_Vipps.class.php:1091
 #| msgid ""
 #| "Enable this to create and login new customers when using express checkout."
 #| " Otherwise these will all be guest checkouts. If you have \"Login with "
@@ -1464,7 +1690,7 @@ msgstr ""
 "med Vipps\" installert, vil dette være på som standard (så lenge du i det "
 "hele tatt oppretter WooCommerce-kunder)"
 
-#: WC_Gateway_Vipps.class.php:1039
+#: WC_Gateway_Vipps.class.php:1183
 msgid ""
 "Enable this to enter developer mode. This gives you access to the test-api "
 "and sometimes other tools not yet ready for general consumption"
@@ -1472,7 +1698,7 @@ msgstr ""
 "Skru på denne for å starte utviklermodus. Dette gir deg tilgang til test-"
 "api'et, og av og til andre verktøy som ikke her helt ferdig ennå"
 
-#: WC_Gateway_Vipps.class.php:876
+#: WC_Gateway_Vipps.class.php:1020
 #, php-format
 #| msgid ""
 #| "Enable this to use Vipps as the default payment method on the checkout "
@@ -1488,7 +1714,7 @@ msgstr ""
 msgid "English"
 msgstr "Engelsk"
 
-#: Vipps.class.php:2936 Vipps.class.php:3075
+#: Vipps.class.php:3398 Vipps.class.php:3536
 msgid "Error calculating static shipping"
 msgstr "Feil under beregning av statisk fraktvalg"
 
@@ -1498,45 +1724,45 @@ msgstr "Feil under beregning av statisk fraktvalg"
 msgid "Error calculating static shipping for order %1$s"
 msgstr "Feil under kalkulering av statisk frakt for ordre %1$s"
 
-#: WC_Gateway_Vipps.class.php:2907
+#: WC_Gateway_Vipps.class.php:3163
 #, php-format
 #| msgid "Error calling the Order Management API: %s "
 msgid "Error calling the Order Management API: %1$s "
 msgstr "Feil under kalling av Order Management APIet til Vipps: %1$s "
 
-#: Vipps.class.php:2844
+#: Vipps.class.php:3306
 msgid "Error creating customer in express checkout: "
 msgstr "Feil under opprettelse av bruker i hurtigkassen:"
 
 #: VippsQRCodeController.class.php:579
 #, php-format
-msgid "Error creating or updating QR code: %1\$s"
+msgid "Error creating or updating QR code: %1$s"
 msgstr "Feil under oppretting eller oppdatering av QR-kode: %s"
 
 #: VippsQRCodeController.class.php:494
 #, php-format
-msgid "Error deleting QR code: %1\$s"
+msgid "Error deleting QR code: %1$s"
 msgstr "Feil under sletting av QR-kode: %s"
 
 #: VippsQRCodeController.class.php:187
 #, php-format
-msgid "Error deleting unsynched QR code with id %1\$s: %2\$s"
+msgid "Error deleting unsynched QR code with id %1$s: %2$s"
 msgstr "Feil under sletting av usynkronisert QR-kode med ID: %s: %s"
 
 #: VippsQRCodeController.class.php:570
 #, php-format
-msgid "Error downloading QR code image: %1\$s"
+msgid "Error downloading QR code image: %1$s"
 msgstr "Feil under nedlasting av QR-kode bilde: %s"
 
-#: Vipps.class.php:3853
+#: Vipps.class.php:4317
 msgid "Error during order confirmation"
 msgstr "Feil under bekreftelse av bestillingen"
 
-#: Vipps.class.php:3004
+#: Vipps.class.php:3465
 msgid "Error finding product - cannot create order"
 msgstr "Fant ikke produktet - kan ikke opprette bestilling"
 
-#: Vipps.class.php:2141
+#: Vipps.class.php:2595
 #, php-format
 #| msgid ""
 #| "Error getting customer data in the Vipps shipping details callback: %s"
@@ -1549,26 +1775,26 @@ msgstr "Feil under henting av kundedata i %1$s fraktdetaljer-callback: %2$s"
 msgid "Error getting list of QR codes from %1$s: %2$s"
 msgstr "Feil under henting av listen av QR-koder fra %1$s: %2$s"
 
-#: Vipps.class.php:2574
+#: Vipps.class.php:3028
 #, php-format
 #| msgid "Error getting order status at Vipps for order %d"
 msgid "Error getting order status at %1$s for order %2$d"
 msgstr "Feil ved henting av ordrestatus fra %1$s for ordre %2$d"
 
-#: WC_Gateway_Vipps.class.php:396
+#: WC_Gateway_Vipps.class.php:513
 msgid "Error getting payment details before doing cancel: "
 msgstr "Feil under henting av betalingsinfo før ordrekansellering:"
 
-#: WC_Gateway_Vipps.class.php:1396
+#: WC_Gateway_Vipps.class.php:1550
 msgid "Error getting payment details before doing capture: "
 msgstr "Feil under henting av betalingsdetaljer før capture:"
 
-#: WC_Gateway_Vipps.class.php:431 WC_Gateway_Vipps.class.php:501
-#: WC_Gateway_Vipps.class.php:1530
+#: WC_Gateway_Vipps.class.php:566 WC_Gateway_Vipps.class.php:636
+#: WC_Gateway_Vipps.class.php:1688
 msgid "Error getting payment details before doing refund: "
 msgstr "Feil ved henting av betalingsdetaljer før utføring av tilbakebetaling:"
 
-#: WC_Gateway_Vipps.class.php:1875
+#: WC_Gateway_Vipps.class.php:2050
 #, php-format
 #| msgid "Error getting payment details from Vipps for order_id:"
 msgid "Error getting payment details from %1$s for order_id:"
@@ -1576,27 +1802,27 @@ msgstr "Feil under henting av betalingsdetaljer fra %1$s for ordreid:"
 
 #: VippsQRCodeController.class.php:212 VippsQRCodeController.class.php:215
 #, php-format
-msgid "Error importing unsynched QR code with id %1\$s: %2\$s"
+msgid "Error importing unsynched QR code with id %1$s: %2$s"
 msgstr "Feil under import av usynkronisert QR-kode med id %s: %s"
 
-#: VippsApi.class.php:764 VippsApi.class.php:770
+#: VippsApi.class.php:952 VippsApi.class.php:958
 #, php-format
-msgid "Error polling status - error message %1\$s"
+msgid "Error polling status - error message %1$s"
 msgstr "Feil under henting av status - feilmeldingen er %s"
 
-#: Vipps.class.php:1942
+#: Vipps.class.php:2291
 #, php-format
 #| msgid "Error was: %s"
 msgid "Error was: %1$s"
 msgstr "Feilen var: %1$s"
 
-#: WC_Gateway_Vipps.class.php:452
+#: WC_Gateway_Vipps.class.php:587
 #, php-format
 #| msgid "Error when refunding payment through Vipps:"
 msgid "Error when refunding payment through %1$s:"
 msgstr "Feil under tilbakebetaling via %1$s:"
 
-#: Vipps.class.php:113
+#: Vipps.class.php:114
 msgid ""
 "Error: Cannot instantiate payment gateway, because WooCommerce is not loaded!"
 " This can happen when WooCommerce updates itself; but if it didn't, please "
@@ -1606,11 +1832,15 @@ msgstr ""
 "inn ennå! Dette kan hende i noen situasjoner der WooCommerce oppdaterer seg "
 "selv; men hvis ikke, vennligst reaktiver WooCommerce"
 
-#: WC_Gateway_Vipps.class.php:884
+#: Vipps.class.php:462
+msgid "Expired"
+msgstr "Utløpt"
+
+#: WC_Gateway_Vipps.class.php:1028
 msgid "Express Checkout"
 msgstr "Hurtigkassen"
 
-#: Vipps.class.php:913
+#: Vipps.class.php:1209
 msgid "express checkout"
 msgstr "hurtigkasse"
 
@@ -1624,7 +1854,7 @@ msgstr "Ekstern betalingsmetode - %1$s"
 msgid "Featured Image"
 msgstr "Framhevet bilde"
 
-#: WC_Gateway_Vipps.class.php:2991
+#: WC_Gateway_Vipps.class.php:3247
 #, php-format
 msgid "File type was %1$s; supported types are %2$s"
 msgstr "Filetype var %1$s; støttede typer er %2$s"
@@ -1633,7 +1863,7 @@ msgstr "Filetype var %1$s; støttede typer er %2$s"
 msgid "Filter items list"
 msgstr "Filtrer innholdsliste"
 
-#: WC_Gateway_Vipps.class.php:1384
+#: WC_Gateway_Vipps.class.php:1538
 #, php-format
 #| msgid ""
 #| "Filters are setting the payment_complete order status to '%s' - will not "
@@ -1645,7 +1875,7 @@ msgstr ""
 "Filtere setter payment_complete-ordrestatusen til '%1$s' - kan ikke overføre "
 "pengene"
 
-#: WC_Gateway_Vipps.class.php:826
+#: WC_Gateway_Vipps.class.php:970
 msgid ""
 "Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
 "and choose \"Show keys\". Copy the value of \"client_id\""
@@ -1653,7 +1883,7 @@ msgstr ""
 "Finn ditt salgssted under “Utvikler” på https://portal.vipps.no/ og trykk på "
 "“Show keys”, kopier verdien til “client_id”"
 
-#: WC_Gateway_Vipps.class.php:834
+#: WC_Gateway_Vipps.class.php:978
 msgid ""
 "Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
 "and choose \"show keys\". Copy the value of \"client_secret\""
@@ -1661,7 +1891,7 @@ msgstr ""
 "Finn ditt salgssted under “Utvikler” på https://portal.vipps.no/ og trykk på "
 "“Show keys”, kopier verdien til “client_secret”"
 
-#: WC_Gateway_Vipps.class.php:842
+#: WC_Gateway_Vipps.class.php:986
 msgid ""
 "Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
 "and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
@@ -1669,7 +1899,7 @@ msgstr ""
 "Finn ditt salgssted under “Utvikler” på https://portal.vipps.no/ og trykk på "
 "“Show keys”, kopier verdien til “Vipps-Subscription-Key”"
 
-#: WC_Gateway_Vipps.class.php:1075
+#: WC_Gateway_Vipps.class.php:1219
 msgid ""
 "Find your test account under the \"Developer\" tab on https://portal.vipps."
 "no/ and choose \"Show keys\". Copy the value of \"client_id\""
@@ -1677,7 +1907,7 @@ msgstr ""
 "Finn ditt test-salgssted under “Utvikler” på https://portal.vipps.no/ og "
 "trykk på “Show keys”, kopier verdien til “client_id”"
 
-#: WC_Gateway_Vipps.class.php:1083
+#: WC_Gateway_Vipps.class.php:1227
 msgid ""
 "Find your test account under the \"Developer\" tab on https://portal.vipps."
 "no/ and choose \"show keys\". Copy the value of \"client_secret\""
@@ -1685,7 +1915,7 @@ msgstr ""
 "Finn ditt test-salgssted under “Utvikler” på https://portal.vipps.no/ og "
 "trykk på “Show keys”, kopier verdien til “client_secret”"
 
-#: WC_Gateway_Vipps.class.php:1091
+#: WC_Gateway_Vipps.class.php:1235
 msgid ""
 "Find your test account under the \"Developer\" tab on https://portal.vipps."
 "no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
@@ -1693,33 +1923,33 @@ msgstr ""
 "Finn ditt test-salgssted under “Utvikler” på https://portal.vipps.no/ og "
 "trykk på “Show keys”, kopier verdien til “Vipps-Subscription-Key”"
 
-#: Vipps.class.php:1346 Vipps.class.php:1361
+#: Vipps.class.php:1661 Vipps.class.php:1676
 msgid "First Name"
 msgstr "Fornavn"
 
-#: Vipps.class.php:2572
+#: Vipps.class.php:3026
 #, php-format
 #| msgid "For order %d order status at vipps is %s"
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr "For ordre %2$d er ordrestatus hos %1$s %3$s"
 
-#: Vipps.class.php:368 Vipps.class.php:1072 Blocks/Badges/vipps-badge.php:53
+#: Vipps.class.php:662 Vipps.class.php:1368 Blocks/Badges/vipps-badge.php:53
 msgid "Grey"
 msgstr "Grå"
 
-#: WC_Gateway_Vipps.class.php:745 VippsCheckoutShippingMethods.php:491
+#: WC_Gateway_Vipps.class.php:889 VippsCheckoutShippingMethods.php:507
 msgid "Helthjem"
 msgstr "Helthjem"
 
-#: WC_Gateway_Vipps.class.php:771
+#: WC_Gateway_Vipps.class.php:915
 msgid "Helthjem Password"
 msgstr "Helthjem Passord"
 
-#: WC_Gateway_Vipps.class.php:755
+#: WC_Gateway_Vipps.class.php:899
 msgid "Helthjem Shop Id"
 msgstr "Helthjem Shop Id"
 
-#: WC_Gateway_Vipps.class.php:764
+#: WC_Gateway_Vipps.class.php:908
 msgid "Helthjem Username"
 msgstr "Helthjem Brukernavn"
 
@@ -1735,7 +1965,7 @@ msgstr "https://www.wp-hosting.no/"
 msgid "Id"
 msgstr "Id"
 
-#: WC_Gateway_Vipps.class.php:915
+#: WC_Gateway_Vipps.class.php:1059
 #, php-format
 #| msgid ""
 #| "If Express Checkout is enabled for a product, add the 'Buy now' button to "
@@ -1747,7 +1977,7 @@ msgstr ""
 "Hvis %1$s er skrudd på for ett produkt, legg også til kjøpeknappen på "
 "katalogsider"
 
-#: WC_Gateway_Vipps.class.php:612
+#: WC_Gateway_Vipps.class.php:746
 #, php-format
 #| msgid ""
 #| "If activated, this will <strong>replace</strong> the standard Woo "
@@ -1762,7 +1992,7 @@ msgstr ""
 "kassasiden med %1$s, og tilby en enkel kassaside med Vipps og kredittkort, "
 "og uten behov for å skrive inn addresser."
 
-#: VippsCheckoutShippingMethods.php:156
+#: VippsCheckoutShippingMethods.php:157
 #, php-format
 #| msgid ""
 #| "If checked, cost of shipping will be calculated dynamically in the %1$s "
@@ -1773,7 +2003,7 @@ msgid ""
 msgstr ""
 "Hvis avhuket så vil fraktkostnaden bli dynamisk beregnet i %1$s-vinduet"
 
-#: Vipps.class.php:398
+#: Vipps.class.php:692
 #, php-format
 #| msgid ""
 #| "If selected, all products will get a badge, but you can override this on "
@@ -1788,7 +2018,7 @@ msgstr ""
 "dette på %1$s-fliken på produktets dataside. Hvis ikke, så gjelder det "
 "motsatte. Du kan også velge en spesiell fargevariant på produktsiden."
 
-#: WC_Gateway_Vipps.class.php:1022
+#: WC_Gateway_Vipps.class.php:1166
 #, php-format
 #| msgid ""
 #| "If set, this image will be uploaded to Vipps and used to profile your "
@@ -1800,7 +2030,7 @@ msgstr ""
 "Hvis du bruker denne, vil bildet bli lastet opp til %1$s og brukt som profil "
 "for din butikk i Vipps-appen for lenker til ordrebekreftelser og lignende."
 
-#: WC_Gateway_Vipps.class.php:930
+#: WC_Gateway_Vipps.class.php:1074
 msgid ""
 "If the order contains only \"virtual\" products that do not need shipping, "
 "we do not normally ask the user for their address - but check this box to do "
@@ -1810,7 +2040,7 @@ msgstr ""
 "ber Vipps vanligvis ikke kunden om addresse - men huk av her for å gjøre det "
 "likevel."
 
-#: WC_Gateway_Vipps.class.php:1014
+#: WC_Gateway_Vipps.class.php:1158
 #, php-format
 #| msgid ""
 #| "If this is checked, a receipt will be sent to Vipps which will be "
@@ -1822,7 +2052,7 @@ msgstr ""
 "Hvis avhuket, så vil en kvittering bli sendt til %1$s. Denne er synlig i "
 "brukerens app, og har med ordrelinjer, frakt og så videre."
 
-#: WC_Gateway_Vipps.class.php:637
+#: WC_Gateway_Vipps.class.php:771
 #, php-format
 msgid ""
 "If using %1$s, ask for the users consent to share user information with the "
@@ -1833,7 +2063,7 @@ msgstr ""
 "butikken. Dette vil gjøre det enklere å integrere med Logg inn med %1$s, men "
 "det vil også være ett ekstra steg for førstegangskunder."
 
-#: VippsCheckoutShippingMethods.php:195
+#: VippsCheckoutShippingMethods.php:196
 #, php-format
 #| msgid ""
 #| "If you are using %1$s Checkout, you can select extended delivery method "
@@ -1848,7 +2078,7 @@ msgstr ""
 "Hvis du gjør dette, så vil disse metodene ikke dukke opp i hurtigkassen "
 "eller standard-kassen til WooCommerce; men bare i %1$s."
 
-#: WC_Gateway_Vipps.class.php:1058
+#: WC_Gateway_Vipps.class.php:1202
 #, php-format
 #| msgid ""
 #| "If you enable this, transactions will be made towards the Vipps Test API "
@@ -1880,7 +2110,7 @@ msgstr ""
 "du har VIPPS_TEST_MODE definert i wp-config-filen din, så vil den overstyre "
 "denne verdien."
 
-#: Vipps.class.php:592
+#: Vipps.class.php:886
 #, php-format
 #| msgid ""
 #| "If you experience problems or unexpected results, please check the 'fatal-"
@@ -1893,7 +2123,7 @@ msgstr ""
 "errors' og 'woo-vipps'-loggene på\n"
 "<a href='%1$s'>WooCommerce sin logg-side</a>."
 
-#: WC_Gateway_Vipps.class.php:991
+#: WC_Gateway_Vipps.class.php:1135
 msgid ""
 "If you have issues with your theme, you might find a setting here that will "
 "help. Normally you do not need to change these."
@@ -1901,7 +2131,7 @@ msgstr ""
 "Hvis du har problemer med theme eller andre plugins, kan det tenkes du vil "
 "finne instillinger her som hjelper. Du vil normalt ikke trenge å endre disse."
 
-#: Vipps.class.php:593
+#: Vipps.class.php:887
 #, php-format
 #| msgid ""
 #| "If you need support, please use the <a href='%s'>forum page</a> for the "
@@ -1916,7 +2146,7 @@ msgstr ""
 "side</a>. Hvis du ikke kan legge inn spørsmålet ditt offentlig, kontakt WP-"
 "Hosting direkte på support@wp-hosting.no."
 
-#: Vipps.class.php:442
+#: Vipps.class.php:736
 #, php-format
 #| msgid ""
 #| "If you need to add a Vipps-badge on a specific page, footer, header and "
@@ -1936,7 +2166,7 @@ msgstr ""
 "nofollow rel=nofollow target=_blank>dokumentert her</a>), eller så kan du "
 "bruke kortkoden."
 
-#: Vipps.class.php:648
+#: Vipps.class.php:942
 #, php-format
 #| msgid ""
 #| "If you use %1$s Checkout or Express Checkout in WooCommerce, this allows "
@@ -1948,7 +2178,7 @@ msgstr ""
 "Hvis du bruker %1$s eller %2$s i WooCommerce, så vil dette la dine %3$s-"
 "kunder logge inn trygt uten å måtte bruke passord."
 
-#: Vipps.class.php:439
+#: Vipps.class.php:733
 #, php-format
 #| msgid ""
 #| "If you use Gutenberg, you should be able to add a Vipps Badge block "
@@ -1960,7 +2190,18 @@ msgstr ""
 "Hvis du bruker Gutenberg, skal du kunne legge til en %1$s-merke-blokk "
 "overalt der du trenger det. Blokken heter %1$s On-Site Messaging Badge Block."
 
-#: WC_Gateway_Vipps.class.php:653
+#: Vipps.class.php:400
+msgid ""
+"If your MSN has registered other callbacks, for instance for another website,"
+" you can manage these here - and you can also add your own hooks that will "
+"be notified of payment events to any other URL you enter."
+msgstr ""
+"Hvis din MSN har registrert andre callbacks, foreksempel for et annet "
+"nettsted, kan du vedlikeholde dise her - og du kan også legge til dine egne "
+"hooks som vil få melding om betalingshendelser til en hvilkensomhelst URL du "
+"bruker. "
+
+#: WC_Gateway_Vipps.class.php:787
 msgid ""
 "If your products <i>don't require shipping</i> as above, and you also don't "
 "care about the customers name or contact information, you can drop this too! "
@@ -1976,7 +2217,7 @@ msgstr ""
 "ikke dette virke så bra. Du må også ha krysset av for \"ingen addresser\" om "
 "dette skal virke."
 
-#: WC_Gateway_Vipps.class.php:645
+#: WC_Gateway_Vipps.class.php:779
 msgid ""
 "If your products <i>don't require shipping</i>, either because they are "
 "digital downloads, immaterial products or delivering the products directly "
@@ -1992,7 +2233,7 @@ msgstr ""
 "produktene krever frakt vil dette ikke ha noen effekt. NB: Hvis du har "
 "utvidelser som krever fraktinformasjon så vil ikke dette virke så bra."
 
-#: WC_Gateway_Vipps.class.php:629
+#: WC_Gateway_Vipps.class.php:763
 #, php-format
 #| msgid ""
 #| "If your shipping options do not depend on the customers address, you can "
@@ -2027,7 +2268,7 @@ msgstr ""
 "så hvis kundene dine alltid er innlogget, vil du antagelig kunne bruke dette "
 "da også."
 
-#: WC_Gateway_Vipps.class.php:938
+#: WC_Gateway_Vipps.class.php:1082
 msgid ""
 "If your shipping options do not depend on the customers address, you can "
 "enable 'Static shipping', which will precompute the shipping options when "
@@ -2054,6 +2295,17 @@ msgstr ""
 msgid "Image url"
 msgstr "Bilde-URL"
 
+#: Vipps.class.php:401
+#, php-format
+msgid ""
+"Implementing a webhook is not trivial, so you will probably need a developer "
+"for this.  You can read more about what is required <a href=\"%1$s\">here</a>"
+". "
+msgstr ""
+"Å implementere en webhook er ikketrivielt, så du vil antagelig trenge en "
+"utvikler for dette. Du kan lese mer om hva som trengs <a href=\"%1$s\">"
+"her</a>."
+
 #: VippsQRCodeController.class.php:239
 msgid "Import"
 msgstr "Importer"
@@ -2066,19 +2318,19 @@ msgstr "Importert QR-kode"
 msgid "Insert into item"
 msgstr "Sett inn i element"
 
-#: WC_Gateway_Vipps.class.php:721 VippsCheckoutShippingMethods.php:554
+#: WC_Gateway_Vipps.class.php:865 VippsCheckoutShippingMethods.php:570
 msgid "Instabox"
 msgstr "Instabox"
 
-#: WC_Gateway_Vipps.class.php:730
+#: WC_Gateway_Vipps.class.php:874
 msgid "Instabox Client Id"
 msgstr "Instabox Client Id"
 
-#: WC_Gateway_Vipps.class.php:737
+#: WC_Gateway_Vipps.class.php:881
 msgid "Instabox Client Secret"
 msgstr "Instabox Client Secret"
 
-#: Vipps.class.php:2164
+#: Vipps.class.php:2618
 msgid "Invalid order for shipping callback:"
 msgstr "Ugyldig ordre for frakt-callback:"
 
@@ -2086,7 +2338,7 @@ msgstr "Ugyldig ordre for frakt-callback:"
 msgid "Invalid request"
 msgstr "Ugyldig forespørsel"
 
-#: Vipps.class.php:3578
+#: Vipps.class.php:4038
 msgid ""
 "It seems a customer is trying to re-order product(s) recently bought in the "
 "same session, asking user for confirmation"
@@ -2097,7 +2349,7 @@ msgstr ""
 #: VippsQRCodeController.class.php:587
 #, php-format
 msgid ""
-"It seems a QR code with this ID (%1\$s) already exists at Vipps.  If you have "
+"It seems a QR code with this ID (%1$s) already exists at Vipps.  If you have "
 "recently done a database restore, try to instead import the QR code from the "
 "Unsynchronized codes, deleting this. If you have several Wordpress instances "
 "using the same Vipps account, make sure you use different prefixes (in the "
@@ -2130,7 +2382,7 @@ msgstr "Innholdsliste"
 msgid "Items list navigation"
 msgstr "Navigasjon for innholdsliste"
 
-#: WC_Gateway_Vipps.class.php:976
+#: WC_Gateway_Vipps.class.php:1120
 msgid "Keep using old shipping callback with my custom filter"
 msgstr ""
 "Fortsett å bruke den gamle frakt-callback'en med mitt overstyrte filter"
@@ -2139,23 +2391,23 @@ msgstr ""
 msgid "Language"
 msgstr "Språk"
 
-#: Vipps.class.php:1347 Vipps.class.php:1362
+#: Vipps.class.php:1662 Vipps.class.php:1677
 msgid "Last Name"
 msgstr "Etternavn"
 
-#: Vipps.class.php:369 Vipps.class.php:1074 Blocks/Badges/vipps-badge.php:55
+#: Vipps.class.php:663 Vipps.class.php:1370 Blocks/Badges/vipps-badge.php:55
 msgid "Light Orange"
 msgstr "Lys Oransje"
 
-#: Vipps.class.php:1150
+#: Vipps.class.php:1446
 msgid "Link"
 msgstr "Lenke"
 
-#: Vipps.class.php:3509
+#: Vipps.class.php:3969
 msgid "Link expired, please try again"
 msgstr "Lenken er utløpt - vennligst forsøk igjen"
 
-#: Vipps.class.php:1144
+#: Vipps.class.php:1440
 msgid "Link(s) will be deleted when you save the product"
 msgstr "Lenk(ene) vil bli slettet når du lagrer produktet"
 
@@ -2173,41 +2425,46 @@ msgstr ""
 "\n"
 "registrering og innlogging - Aldri mer brukernavn og passord. Kom igang her"
 
-#: WC_Gateway_Vipps.class.php:783
+#: WC_Gateway_Vipps.class.php:927
 msgid "Main options"
 msgstr "Hovedvalg"
 
-#: Vipps.class.php:1160
+#: Vipps.class.php:1456
 msgid "Mark this link for deletion"
 msgstr "Marker denne lenken for sletting"
 
-#: WC_Gateway_Vipps.class.php:815 WC_Gateway_Vipps.class.php:816
-#: WC_Gateway_Vipps.class.php:1063 WC_Gateway_Vipps.class.php:1065
+#: WC_Gateway_Vipps.class.php:959 WC_Gateway_Vipps.class.php:960
+#: WC_Gateway_Vipps.class.php:1207 WC_Gateway_Vipps.class.php:1209
 msgid "Merchant Serial Number"
 msgstr "Merchant Serial Number"
 
-#: WC_Gateway_Vipps.class.php:2737
+#: Vipps.class.php:423
+#, php-format
+msgid "Merchant Serial Number %1$s"
+msgstr "Merchant Serial Number %1$s"
+
+#: WC_Gateway_Vipps.class.php:2974
 #, php-format
 msgid "Message from %1$s: %2$s"
 msgstr "Melding fra %1$s: %2$s"
 
-#: WC_Gateway_Vipps.class.php:2736
+#: WC_Gateway_Vipps.class.php:2973
 #, php-format
 #| msgid "Error message in callback from Vipps for order"
 msgid "Message in callback from %1$s for order"
 msgstr "Feilmelding i callback fra %1$s for bestilling"
 
-#: Vipps.class.php:426
+#: Vipps.class.php:720
 #, php-format
 #| msgid "Minimum price for \"Vipps Later\"\""
 msgid "Minimum price for \"%1$s Later\"\""
 msgstr "Minimumspris for %1$s Senere"
 
-#: Vipps.class.php:1348 Vipps.class.php:1363
+#: Vipps.class.php:1663 Vipps.class.php:1678
 msgid "Mobile Number"
 msgstr "Mobilnummer"
 
-#: WC_Gateway_Vipps.class.php:801
+#: WC_Gateway_Vipps.class.php:945
 msgid "MobilePay"
 msgstr "MobilePay"
 
@@ -2219,7 +2476,7 @@ msgstr "Navn"
 msgid "New QR Code"
 msgstr "Ny QR-kode"
 
-#: WC_Gateway_Vipps.class.php:1961
+#: WC_Gateway_Vipps.class.php:2136
 #, php-format
 #| msgid ""
 #| "No address information for order %2$d, but there still might be an active "
@@ -2231,33 +2488,37 @@ msgstr ""
 "Ingen addresseinfo for ordre %2$d, men det kan fortsatt være en aktiv %1$s-"
 "session, så den avbrytes ikke."
 
-#: Vipps.class.php:1070
+#: Vipps.class.php:1366
 msgid "No badge"
 msgstr "Ikke noe merke"
 
-#: VippsCheckoutShippingMethods.php:174
+#: VippsCheckoutShippingMethods.php:175
 msgid "No delivery method specified"
 msgstr "Ingen leveringsmetode valgt"
 
-#: WC_Gateway_Vipps.class.php:904
+#: WC_Gateway_Vipps.class.php:1048
 msgid "No products"
 msgstr "Ingen produkter"
 
-#: VippsApi.class.php:1334
+#: VippsApi.class.php:1420
 msgid "No response from Vipps"
 msgstr "Manglende respons fra Vipps"
 
-#: WC_Gateway_Vipps.class.php:1952
+#: WC_Gateway_Vipps.class.php:2127
 #, php-format
 #| msgid "No shipping details from Vipps for express checkout for order id:"
 msgid "No shipping details from %1$s for express checkout for order id:"
 msgstr "Ingen fraktinformasjon fra %1$s for hurtigkasse-kjøp med ordreid:"
 
-#: Vipps.class.php:2276 Vipps.class.php:2425
+#: Vipps.class.php:2730 Vipps.class.php:2879
 msgid "No shipping required"
 msgstr "Ingen frakt nødvendig"
 
-#: WC_Gateway_Vipps.class.php:3181
+#: Vipps.class.php:529
+msgid "No, forget it"
+msgstr "Nei, glem det"
+
+#: WC_Gateway_Vipps.class.php:3458
 msgid "No, thank you not right now anyway"
 msgstr "Nei takk, ikke akkurat nå"
 
@@ -2269,7 +2530,7 @@ msgstr "Ingen valgt"
 msgid "Norwegian"
 msgstr "Norsk"
 
-#: Vipps.class.php:3137 Vipps.class.php:3142
+#: Vipps.class.php:3597 Vipps.class.php:3602
 msgid "Not an order"
 msgstr "Ikke en bestilling"
 
@@ -2285,27 +2546,27 @@ msgstr "Ikke funnet i papirkurven"
 msgid "Offer Vipps as a payment method for WooCommerce"
 msgstr "Tilby Vipps som betalingsmetode for WooCommerce"
 
-#: WC_Gateway_Vipps.class.php:132
+#: WC_Gateway_Vipps.class.php:131
 msgid "Offer Vipps or MobilePay as a payment method"
 msgstr "Tilby Vipps eller MobilePay som betalingsmetode"
 
-#: WC_Gateway_Vipps.class.php:851
+#: WC_Gateway_Vipps.class.php:996
 msgid "On hold"
 msgstr "På vent"
 
-#: Vipps.class.php:1060
+#: Vipps.class.php:1356
 msgid "On-site messaging badge"
 msgstr "On-Site Messaging-merke"
 
-#: Vipps.class.php:1371 Vipps.class.php:1386
+#: Vipps.class.php:1686 Vipps.class.php:1701
 msgid "Operation"
 msgstr "Operasjon"
 
-#: Vipps.class.php:369 Vipps.class.php:1073 Blocks/Badges/vipps-badge.php:54
+#: Vipps.class.php:663 Vipps.class.php:1369 Blocks/Badges/vipps-badge.php:54
 msgid "Orange"
 msgstr "Oransje"
 
-#: WC_Gateway_Vipps.class.php:1956
+#: WC_Gateway_Vipps.class.php:2131
 #, php-format
 #| msgid ""
 #| "Order %2$d has no address info and any %1$s Checkout session is dead - "
@@ -2314,7 +2575,7 @@ msgid ""
 "Order %2$d has no address info and any %1$s session is dead - have to cancel."
 msgstr "Ordre %2$d har ingen addresseinfo, og %1$s-økten er død - må avbryte."
 
-#: WC_Gateway_Vipps.class.php:1266
+#: WC_Gateway_Vipps.class.php:1412
 #, php-format
 #| msgid ""
 #| "Order %d was attempted restarted, but had no Vipps session url stored. "
@@ -2326,81 +2587,87 @@ msgstr ""
 "Ordre %2$d ble forsøkt startet på nytt, men hadde ingen %1$s-sessionurl. Kan "
 "ikke fortsette!"
 
-#: VippsApi.class.php:857
+#: VippsApi.class.php:1031
 msgid "Order cancel for order"
 msgstr "Kansellering av ordre"
 
-#: Vipps.class.php:3815 Vipps.class.php:3818 Vipps.class.php:3862
+#: Vipps.class.php:4279 Vipps.class.php:4282 Vipps.class.php:4326
 msgid "Order cancelled"
 msgstr "Bestilling avbrutt"
 
-#: VippsApi.class.php:811 VippsApi.class.php:817
+#: VippsApi.class.php:992 VippsApi.class.php:998
 msgid "Order capture for order"
 msgstr "Belastning av betaling for bestilling"
 
-#: Vipps.class.php:3858
+#: Vipps.class.php:4322
 msgid "Order confirmed"
 msgstr "Ordre bekreftet"
 
-#: WC_Gateway_Vipps.class.php:2381
+#: WC_Gateway_Vipps.class.php:2612
 #, php-format
 #| msgid "Order does not exist at Vipps - cancelling"
 msgid "Order does not exist at %1$s - cancelling"
 msgstr "Bestillingen eksisterer ikke hos %1$s - kansellerer"
 
-#: Vipps.class.php:3152 Vipps.class.php:3181
+#: Vipps.class.php:3612 Vipps.class.php:3641
 msgid "Order failed"
 msgstr "Bestilling mislyktes"
 
-#: WC_Gateway_Vipps.class.php:1982
+#: WC_Gateway_Vipps.class.php:2157
 #, php-format
 #| msgid "Order failed or rejected at Vipps"
 msgid "Order failed or rejected at %1$s"
 msgstr "Bestilling mislyktes eller ble avvist hos %1$s"
 
-#: Vipps.class.php:1302
+#: Vipps.class.php:1617
 msgid "Order id"
 msgstr "Ordre-id"
 
-#: Vipps.class.php:3702
+#: Vipps.class.php:4166
 msgid "Order in progress"
 msgstr "Bestilling underveis"
 
-#: WC_Gateway_Vipps.class.php:1515
+#: WC_Gateway_Vipps.class.php:1673
 msgid "Order not completed, cannot refund superfluous capture"
 msgstr "Ordren er ikke fullført, kan ikke refundere overflødig belastet beløp"
 
-#: WC_Gateway_Vipps.class.php:1267
+#: WC_Gateway_Vipps.class.php:1413
 #, php-format
 #| msgid "Order session expired at Vipps, please try again!"
 msgid "Order session expired at %1$s, please try again!"
 msgstr "Ordresession er utløpt hos %1$s, vennligst forsøk på nytt!"
 
-#: Vipps.class.php:1303
+#: VippsCheckout.class.php:619
+msgid ""
+"Order specification changed - this order abandoned by customer in Checkout  "
+msgstr ""
+"Ordrespesifiksasjon har endret seg - ordren er forlatt av kunden i Checkout"
+
+#: Vipps.class.php:1618
 msgid "Order status"
 msgstr "Ordrestatus"
 
-#: WC_Gateway_Vipps.class.php:847
+#: WC_Gateway_Vipps.class.php:991
 #, php-format
 #| msgid "Order status on return from Vipps"
 msgid "Order status on return from %1$s"
 msgstr "Ordrestatus ved retur fra %1$s"
 
-#: WC_Gateway_Vipps.class.php:808 WC_Gateway_Vipps.class.php:809
+#: WC_Gateway_Vipps.class.php:952 WC_Gateway_Vipps.class.php:953
 msgid "Order-id Prefix"
 msgstr "Bestillingsnummer-prefiks"
 
-#: Vipps.class.php:1083
+#: Vipps.class.php:1379
 #, php-format
 #| msgid "Override Vipps Later"
 msgid "Override %1$s Later"
 msgstr "Overstyr %1$s Senere"
 
-#: Vipps.class.php:1067
+#: Vipps.class.php:1363
 msgid "Override default settings"
 msgstr "Overstyr standardinnstillinger"
 
-#: WC_Gateway_Vipps.class.php:995
+#: WC_Gateway_Vipps.class.php:1139
 #, php-format
 #| msgid "Override page template used for the special Vipps pages"
 msgid "Override page template used for the special %1$s pages"
@@ -2410,12 +2677,12 @@ msgstr "Overstyr sidemalen som skal brukes for de spesielle %1$s-sidene"
 msgid "Page"
 msgstr "Side"
 
-#: Vipps.class.php:3409
+#: Vipps.class.php:3869
 msgctxt "Page slug"
 msgid "vipps_checkout"
 msgstr "vipps_checkout"
 
-#: Vipps.class.php:3410
+#: Vipps.class.php:3870
 msgctxt "Page title"
 msgid "Vipps MobilePay Checkout"
 msgstr "Vipps MobilePay Checkout"
@@ -2424,47 +2691,41 @@ msgstr "Vipps MobilePay Checkout"
 msgid "Parent Item:"
 msgstr "Foreldreelement:"
 
-#: WC_Gateway_Vipps.class.php:774
+#: WC_Gateway_Vipps.class.php:918
 msgid "Password provided to you by Helthjem"
 msgstr "Passordet du fikk fra Helthjem"
 
-#: Vipps.class.php:589
+#: Vipps.class.php:883
 #, php-format
 #| msgid "Pay with Vipps for WooCommerce"
 msgid "Pay with %1$s for WooCommerce"
 msgstr "Betal med %1$s for WooCommerce"
 
-#: WC_Gateway_Vipps.class.php:1444 WC_Gateway_Vipps.class.php:1452
+#: WC_Gateway_Vipps.class.php:1598 WC_Gateway_Vipps.class.php:1606
 msgid "Payment already captured"
 msgstr "Betalingen er allerede belastet"
 
-#: Vipps.class.php:3170
+#: Vipps.class.php:3630
 msgid "Payment authorized"
 msgstr "Betaling godkjent"
 
-#: WC_Gateway_Vipps.class.php:2883
+#: WC_Gateway_Vipps.class.php:3139
 #, php-format
 #| msgid "Payment authorized at Vipps"
 msgid "Payment authorized at %1$s"
 msgstr "Betaling reservert hos %1$s"
 
-#: WC_Gateway_Vipps.class.php:2853
-#, php-format
-#| msgid "Payment cancelled at Vipps"
-msgid "Payment cancelled at %1$s"
-msgstr "Betaling avbrutt hos %1$s"
-
-#: Vipps.class.php:3176
+#: Vipps.class.php:3636
 msgid "Payment captured"
 msgstr "Betaling trukket"
 
-#: WC_Gateway_Vipps.class.php:1975 WC_Gateway_Vipps.class.php:2849
+#: WC_Gateway_Vipps.class.php:2150 WC_Gateway_Vipps.class.php:3105
 #, php-format
 #| msgid "Payment captured directly at Vipps"
 msgid "Payment captured directly at %1$s"
 msgstr "Betalingen overført direkte hos %1$s"
 
-#: WC_Gateway_Vipps.class.php:1385
+#: WC_Gateway_Vipps.class.php:1539
 #, php-format
 #| msgid ""
 #| "Payment complete set status to \"%s\" - will not capture payments "
@@ -2476,11 +2737,11 @@ msgstr ""
 "Payment-complete satt status til '%1$s' - kan ikke overføre pengene "
 "automatisk"
 
-#: WC_Gateway_Vipps.class.php:796 Vipps.class.php:1305 Vipps.class.php:1307
+#: WC_Gateway_Vipps.class.php:940 Vipps.class.php:1620 Vipps.class.php:1622
 msgid "Payment method"
 msgstr "Betalingsmetode"
 
-#: WC_Gateway_Vipps.class.php:1798
+#: WC_Gateway_Vipps.class.php:1962
 #, php-format
 #| msgid ""
 #| "Payment method reset to Vipps - it had been set to KCO while completing "
@@ -2492,11 +2753,11 @@ msgstr ""
 "Betalingsmetoden er satt tilbake til %1$s - den var blitt satt til KCO mens "
 "ordre %2$d ble fullført"
 
-#: Vipps.class.php:1335
+#: Vipps.class.php:1650
 msgid "Pickup Point"
 msgstr "Pakke til hentested"
 
-#: WC_Gateway_Vipps.class.php:895
+#: WC_Gateway_Vipps.class.php:1039
 #, php-format
 #| msgid ""
 #| "Please note that for Express Checkout, shipping must be calculated in a "
@@ -2516,27 +2777,36 @@ msgstr ""
 "hurtigkasse kan være inkompatibel med enkelte frakt-utvidelser eller oppsett."
 " Du bør teste at ditt eget oppsett virker om du planlegger å tilby dette."
 
-#: Vipps.class.php:445
+#: Vipps.class.php:402
+#, php-format
+msgid ""
+"Please note that there is normally a limit of <em><strong>5</strong> "
+"webhooks per MSN</em> - contact %1$s if you need more"
+msgstr ""
+"Vær oppmerkom på at det er normalt en grense på <em><strong>5</strong> "
+"webhooks per MSN</em> - kontakt %1$s om du trenger mer"
+
+#: Vipps.class.php:739
 msgid "Please refer to the documentation for the meaning of the parameters."
 msgstr "Vennligst les dokumentasjonen for hva parameterne betyr."
 
-#: Vipps.class.php:3700
+#: Vipps.class.php:4164
 msgid "Please wait while we are preparing your order"
 msgstr "Vennligst vent mens vi forbereder din bestilling"
 
-#: WC_Gateway_Vipps.class.php:689 VippsCheckoutShippingMethods.php:529
+#: WC_Gateway_Vipps.class.php:833 VippsCheckoutShippingMethods.php:545
 msgid "Porterbuddy"
 msgstr "Porterbuddy"
 
-#: WC_Gateway_Vipps.class.php:705
+#: WC_Gateway_Vipps.class.php:849
 msgid "Porterbuddy API key"
 msgstr "Porterbuddy API-nøkkel"
 
-#: WC_Gateway_Vipps.class.php:712
+#: WC_Gateway_Vipps.class.php:856
 msgid "Porterbuddy Phone Number"
 msgstr "Porterbuddy telefonnummer"
 
-#: WC_Gateway_Vipps.class.php:698
+#: WC_Gateway_Vipps.class.php:842
 msgid "Porterbuddy public token"
 msgstr "Porterbuddy public token"
 
@@ -2550,29 +2820,33 @@ msgctxt "Post Type Singular Name"
 msgid "Vipps QR Code"
 msgstr "Vipps QR-kode"
 
-#: WC_Gateway_Vipps.class.php:669 VippsCheckoutShippingMethods.php:470
+#: WC_Gateway_Vipps.class.php:803 VippsCheckoutShippingMethods.php:471
 msgid "Posten Norge"
 msgstr "Posten Norge"
 
-#: WC_Gateway_Vipps.class.php:679
+#: WC_Gateway_Vipps.class.php:813 VippsCheckoutShippingMethods.php:487
+msgid "Posti"
+msgstr "Posti"
+
+#: WC_Gateway_Vipps.class.php:823
 msgid "PostNord"
 msgstr "PostNord"
 
-#: VippsCheckoutShippingMethods.php:507
+#: VippsCheckoutShippingMethods.php:523
 msgid "Postnord"
 msgstr "PostNord"
 
-#: VippsCheckout.class.php:545
+#: VippsCheckout.class.php:537
 #, php-format
 #| msgid "Press the button to complete your order with Vipps!"
 msgid "Press the button to complete your order with %1$s!"
 msgstr "Trykk på knappen for å fullføre din ordre med %1$s!"
 
-#: WC_Gateway_Vipps.class.php:852
+#: WC_Gateway_Vipps.class.php:995
 msgid "Processing"
 msgstr "Behandler"
 
-#: Vipps.class.php:2882
+#: Vipps.class.php:3344
 msgid "Processing order... "
 msgstr "Behandler bestillingen..."
 
@@ -2580,17 +2854,17 @@ msgstr "Behandler bestillingen..."
 msgid "Product"
 msgstr "Produkt"
 
-#: Vipps.class.php:3472
+#: Vipps.class.php:3932
 msgid "Product is no longer available"
 msgstr "Produktet er ikke lenger tilgjengelig"
 
-#: WC_Gateway_Vipps.class.php:1020
+#: WC_Gateway_Vipps.class.php:1164
 #, php-format
 #| msgid "Profile image used in the Vipps App"
 msgid "Profile image used in the %1$s App"
 msgstr "Profilbilde som brukes i %1$s-appen"
 
-#: Vipps.class.php:370 Vipps.class.php:1075 Blocks/Badges/vipps-badge.php:56
+#: Vipps.class.php:664 Vipps.class.php:1371 Blocks/Badges/vipps-badge.php:56
 msgid "Purple"
 msgstr "Lilla"
 
@@ -2615,48 +2889,64 @@ msgstr ""
 msgid "QR-id"
 msgstr "QR-id"
 
-#: Vipps.class.php:2142
+#: Vipps.class.php:2596
 msgid "Raw input was "
 msgstr "Dataene som ble sendt var"
 
-#: Vipps.class.php:3696
+#: Vipps.class.php:4160
 #, php-format
 msgid "Ready for %1$s - press the button"
 msgstr "Klar for %1$s - trykk på knappen"
 
-#: VippsApi.class.php:302
-msgid "Receipt for order %1\$d sent to Vipps "
-msgstr "Kvittering for ordre %d sent til Vipps"
-
-#: Vipps.class.php:1948
+#: Vipps.class.php:2297
 msgid "Received a test callback, exiting"
 msgstr "Har mottatt en test-callback - avslutter"
 
-#: VippsApi.class.php:902
+#: Vipps.class.php:2375
+#, php-format
+msgid ""
+"Received webhook callback for checkout/express checkout order %1$d - "
+"ignoring since full callback should come"
+msgstr ""
+"Mottok webhook-callback for checkout/hurtigkasseordre %1$d - ignorerer denne "
+"siden en fullstending callback skal komme"
+
+#: Vipps.class.php:2370
+#, php-format
+msgid "Received webhook callback for order %1$d but this is no longer pending."
+msgstr ""
+"Mottok webhook callback for ordre %1$d men denne er ikke lenger i status "
+"påventer betaling."
+
+#: VippsApi.class.php:1068
 msgid "Refund for order"
 msgstr "Refundering av bestilling"
 
-#: Vipps.class.php:1908
+#: Vipps.class.php:2250
 msgid "Refund superfluous payment"
 msgstr "Betal tilbake overskytende beløp"
 
-#: Vipps.class.php:1318
+#: Vipps.class.php:465
+msgid "Refunded"
+msgstr "Tilbakebetalt"
+
+#: Vipps.class.php:1633
 msgid "Refunded amount"
 msgstr "Tilbakebetalt beløp"
 
-#: Vipps.class.php:1322
+#: Vipps.class.php:1637
 msgid "Remaining amount to cancel"
 msgstr "Gjenstående beløp av kansellere"
 
-#: Vipps.class.php:1317
+#: Vipps.class.php:1632
 msgid "Remaining amount to capture"
 msgstr "Gjenstående beløp å trekke"
 
-#: Vipps.class.php:1319
+#: Vipps.class.php:1634
 msgid "Remaining amount to refund"
 msgstr "Gjenstående å tilbakebetale"
 
-#: Vipps.class.php:650
+#: Vipps.class.php:944
 #, php-format
 #| msgid ""
 #| "Remember, you need to set up Login with Vipps at the <a target='_blank' "
@@ -2676,15 +2966,15 @@ msgstr ""
 msgid "Remove featured image"
 msgstr "Fjern fremhevet bilde"
 
-#: WC_Gateway_Vipps.class.php:113 WC_Gateway_Vipps.class.php:116
+#: WC_Gateway_Vipps.class.php:112 WC_Gateway_Vipps.class.php:115
 msgid "Remove image"
 msgstr "Fjern bilde"
 
-#: Vipps.class.php:1377
+#: Vipps.class.php:1692
 msgid "Request ID"
 msgstr "Forespørsel-ID"
 
-#: Vipps.class.php:2563
+#: Vipps.class.php:3017
 #, php-format
 #| msgid "Restoring session of order %d"
 msgid "Restoring session of order %1$d"
@@ -2694,23 +2984,23 @@ msgstr "Gjenoppretter sesjon for ordre %1$d"
 msgid "Search Item"
 msgstr "Søk objekt"
 
-#: WC_Gateway_Vipps.class.php:975
+#: WC_Gateway_Vipps.class.php:1119
 msgid "Select one"
 msgstr "Velg en"
 
-#: Vipps.class.php:1114
+#: Vipps.class.php:1410
 msgid "Select variant"
 msgstr "Velg variant"
 
-#: Vipps.class.php:3021
+#: Vipps.class.php:3482
 msgid "Selected product variant is not available"
 msgstr "Valgte produktvariant er ikke tilgjengelig"
 
-#: Vipps.class.php:3033
+#: Vipps.class.php:3494
 msgid "Selected product variant is not available for purchase"
 msgstr "Valgte produktvariant er ikke mulig å bestille"
 
-#: WC_Gateway_Vipps.class.php:1011
+#: WC_Gateway_Vipps.class.php:1155
 msgid ""
 "Send receipts and order confirmation info to the customers' app on completed "
 "purchases."
@@ -2718,13 +3008,13 @@ msgstr ""
 "Send kvittering og ordrebekreftelsesinformasjon til kundens app når betaling "
 "er gjennomført."
 
-#: WC_Gateway_Vipps.class.php:1012
+#: WC_Gateway_Vipps.class.php:1156
 #, php-format
 #| msgid "Send receipts to the customers Vipps app"
 msgid "Send receipts to the customers %1$s app"
 msgstr "Send kvittering til kundens %1$s-app"
 
-#: WC_Gateway_Vipps.class.php:2078
+#: WC_Gateway_Vipps.class.php:2283
 msgid "Session terminated with no payment"
 msgstr "Økten utløp uten betaling"
 
@@ -2732,19 +3022,19 @@ msgstr "Økten utløp uten betaling"
 msgid "Set featured image"
 msgstr "Bestem fremhevet bilde"
 
-#: WC_Gateway_Vipps.class.php:1300
+#: WC_Gateway_Vipps.class.php:1446
 msgid "Setting order status to pending to start payment"
 msgstr "Setter ordrestatus til Avventer Betaling for å starte betalingen"
 
-#: Vipps.class.php:384 Vipps.class.php:677
+#: Vipps.class.php:678 Vipps.class.php:971
 msgid "Settings"
 msgstr "Instillinger"
 
-#: Vipps.class.php:1105
+#: Vipps.class.php:1401
 msgid "Shareable links"
 msgstr "Delbare lenker"
 
-#: Vipps.class.php:1106
+#: Vipps.class.php:1402
 #, php-format
 #| msgid ""
 #| "Shareable links are links you can share externally on banners or other "
@@ -2759,11 +3049,11 @@ msgstr ""
 " som er slik at når du klikker på dem så vil de starte %1$s på produktet "
 "straks. Du kan holde orden på disse lenkene her for dette produktet."
 
-#: Vipps.class.php:1331
+#: Vipps.class.php:1646
 msgid "Shipping cost"
 msgstr "Fraktkostnad"
 
-#: Vipps.class.php:1328
+#: Vipps.class.php:1643
 msgid "Shipping details"
 msgstr "Fraktdetaljer"
 
@@ -2771,36 +3061,36 @@ msgstr "Fraktdetaljer"
 msgid "Shipping information is autofilled with Vipps"
 msgstr "Ferdig utfylt informasjon for brukerne."
 
-#: Vipps.class.php:1330
+#: Vipps.class.php:1645
 msgid "Shipping method"
 msgstr "Fraktmetode"
 
-#: VippsCheckoutShippingMethods.php:472 VippsCheckoutShippingMethods.php:493
-#: VippsCheckoutShippingMethods.php:509 VippsCheckoutShippingMethods.php:531
-#: VippsCheckoutShippingMethods.php:556
+#: VippsCheckoutShippingMethods.php:473 VippsCheckoutShippingMethods.php:489
+#: VippsCheckoutShippingMethods.php:509 VippsCheckoutShippingMethods.php:525
+#: VippsCheckoutShippingMethods.php:547 VippsCheckoutShippingMethods.php:572
 #, php-format
 msgid "Shipping method for %1$s only: %2$s"
 msgstr "Fraktmetode kun for %1$s: %2$s"
 
-#: Vipps.class.php:1332
+#: Vipps.class.php:1647
 msgid "Shipping method ID"
 msgstr "Fraktmetode-ID"
 
-#: VippsCheckoutShippingMethods.php:145
+#: VippsCheckoutShippingMethods.php:146
 msgid "Short description of shipping method"
 msgstr "Kort beskrivelse av fraktmetoden"
 
-#: VippsCheckoutShippingMethods.php:118
+#: VippsCheckoutShippingMethods.php:119
 #, php-format
 #| msgid "Short description of shipping method used in %1$s Checkout"
 msgid "Short description of shipping method used in %1$s"
 msgstr "Kort beskrivelse av fraktmetoden som blir brukt i %1$s"
 
-#: Vipps.class.php:441
+#: Vipps.class.php:735
 msgid "Shortcodes"
 msgstr "Kortkoder"
 
-#: Vipps.class.php:1262
+#: Vipps.class.php:1558
 msgid "Show complete transaction details"
 msgstr "Vis fullstendige transaksjonsdetaljer"
 
@@ -2808,7 +3098,7 @@ msgstr "Vis fullstendige transaksjonsdetaljer"
 msgid "Show QR codes not synchronized to this site"
 msgstr "Vis QR-koder som ikke er blitt synkronisert til dette nettstedet"
 
-#: WC_Gateway_Vipps.class.php:979
+#: WC_Gateway_Vipps.class.php:1123
 #, php-format
 #| msgid ""
 #| "Since version 1.4 this plugin uses a new method of providing shipping "
@@ -2839,11 +3129,11 @@ msgstr ""
 "fortsette å virke som før. Hvis du vil koble ut filterne dine og bruke den "
 "nye metoden, kan du velge dette her."
 
-#: Vipps.class.php:912
+#: Vipps.class.php:1208
 msgid "Skip entering your address and just checkout using"
 msgstr "Dropp å skrive adressen din, kjøp heller med"
 
-#: Vipps.class.php:2913
+#: Vipps.class.php:3375
 #, php-format
 #| msgid ""
 #| "Some of the products in your cart are no longer available in the "
@@ -2858,11 +3148,11 @@ msgstr ""
 "kvanta du ville bestille. Vennligst gå til <a href=\"%1$s\">handlekurven</a> "
 "og rediger bestillingen før du fortsetter til hurtigkassen"
 
-#: WC_Gateway_Vipps.class.php:905
+#: WC_Gateway_Vipps.class.php:1049
 msgid "Some products"
 msgstr "Noen produkter"
 
-#: WC_Gateway_Vipps.class.php:1007
+#: WC_Gateway_Vipps.class.php:1151
 #, php-format
 #| msgid ""
 #| "Some very few themes do not work with the simulated pages used by this "
@@ -2894,52 +3184,57 @@ msgstr ""
 "På en eller annen måte har denne QR-koden blitt slettet hos %1$s. Lagre nå "
 "for å få den til å virke igjen!"
 
-#: WC_Gateway_Vipps.class.php:838 WC_Gateway_Vipps.class.php:839
-#: WC_Gateway_Vipps.class.php:1087 WC_Gateway_Vipps.class.php:1088
+#: WC_Gateway_Vipps.class.php:982 WC_Gateway_Vipps.class.php:983
+#: WC_Gateway_Vipps.class.php:1231 WC_Gateway_Vipps.class.php:1232
 msgid "Subscription Key"
 msgstr "Subscription Key"
 
-#: Vipps.class.php:1373 Vipps.class.php:1391
+#: Vipps.class.php:1688 Vipps.class.php:1706
 msgid "Success"
 msgstr "Suksess"
 
-#: Vipps.class.php:421
+#: Vipps.class.php:715
 #, php-format
 #| msgid "Support \"Vipps Later\""
 msgid "Support \"%1$s Later\""
 msgstr "Støtt \"%1$s Senere\""
 
-#: WC_Gateway_Vipps.class.php:746
+#: WC_Gateway_Vipps.class.php:890
 #, php-format
 #| msgid "Support Helthjem as a shipping method in %1$s Checkout"
 msgid "Support Helthjem as a shipping method in %1$s"
 msgstr "Tilby Helthjem som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:722
+#: WC_Gateway_Vipps.class.php:866
 #, php-format
 #| msgid "Support Instabox as a shipping method in %1$s Checkout"
 msgid "Support Instabox as a shipping method in %1$s"
 msgstr "Tilby Instabox som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:692
+#: WC_Gateway_Vipps.class.php:836
 #, php-format
 #| msgid "Support Porterbuddy as a shipping method in %1$s Checkout"
 msgid "Support Porterbuddy as a shipping method in %1$s"
 msgstr "Tilby Porterbuddy som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:672
+#: WC_Gateway_Vipps.class.php:806
 #, php-format
 #| msgid "Support Posten Norge as a shipping method in %1$s Checkout"
 msgid "Support Posten Norge as a shipping method in %1$s"
 msgstr "Tilby Posten Norge som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:682
+#: WC_Gateway_Vipps.class.php:826
 #, php-format
 #| msgid "Support PostenNord as a shipping method in %1$s Checkout"
 msgid "Support PostenNord as a shipping method in %1$s"
 msgstr "Legg til PostNord som fraktmetode i %1$s"
 
-#: WC_Gateway_Vipps.class.php:446
+#: WC_Gateway_Vipps.class.php:816
+#, php-format
+msgid "Support Posti as a shipping method in %1$s"
+msgstr "Tilby Posti som fraktmetode i %1$s"
+
+#: WC_Gateway_Vipps.class.php:581
 #, php-format
 #| msgid ""
 #| "Temporary error when refunding payment through Vipps - ensure order is "
@@ -2952,59 +3247,72 @@ msgstr ""
 "tilbakebetales manuelt, eller sett status tilbake til \"Behandler\" og prøv "
 "igjen"
 
-#: WC_Gateway_Vipps.class.php:1055
+#: Vipps.class.php:467
+msgid "Terminated"
+msgstr "Avbrutt"
+
+#: WC_Gateway_Vipps.class.php:1199 Vipps.class.php:424
 msgid "Test mode"
 msgstr "Testmodus"
 
-#: Vipps.class.php:587
+#: Vipps.class.php:881
 #, php-format
 #| msgid "The Vipps plugins"
 msgid "The %1$s plugins"
 msgstr "%1$s-utvidelsene"
 
-#: Vipps.class.php:1049
-#, php-format
+#: Vipps.class.php:1345
+#, fuzzy, php-format
 #| msgid ""
-#| "The <a href='%s'>Vipps settings</a> are configured so that no products "
+#| "The <a href='%1$s'>%2$s settings</a> are configured so that no products "
 #| "will have a Buy Now button - including this."
 msgid ""
-"The <a href='%1$s'>%2$s settings</a> are configured so that no products will "
-"have a Buy Now button - including this."
+"The <a href=\"%1$s\">%2$s settings</a> are configured so that no products "
+"will have a Buy Now button - including this."
 msgstr ""
 "<a href='%1$s'>%2$s instillingene</a> er satt opp slik at ingen produkter "
 "har en \"Kjøp nå\"-knapp, inklusive dette."
 
-#: Vipps.class.php:1038
-#, php-format
+#: Vipps.class.php:1334
+#, fuzzy, php-format
 #| msgid ""
-#| "The <a href='%s'>Vipps settings</a> are currently set up so all products "
+#| "The <a href='%1$s'>%2$s settings</a> are currently set up so all products "
 #| "that can be bought with Express Checkout will have a Buy Now button."
 msgid ""
-"The <a href='%1$s'>%2$s settings</a> are currently set up so all products "
+"The <a href=\"%1$s\">%2$s settings</a> are currently set up so all products "
 "that can be bought with Express Checkout will have a Buy Now button."
 msgstr ""
 "<a href='%1$s>%2$s instillingene</a> er satt opp slik at alle produkter som "
 "kan kjøpes med hurtigkassen, vil ha en \"Kjøp nå\"-knapp."
 
-#: WC_Gateway_Vipps.class.php:708
+#: WC_Gateway_Vipps.class.php:852
 msgid "The API key provided to you by Porterbuddy"
 msgstr "API-nøkkelen du fikk fra Porterbuddy"
 
-#: WC_Gateway_Vipps.class.php:733
+#: WC_Gateway_Vipps.class.php:877
 msgid "The client id provided to you by Instabox"
 msgstr "Client ID som du fikk fra Instabox"
 
-#: Vipps.class.php:1874
+#: Vipps.class.php:2216
 #, php-format
 #| msgid "The entire amount has been captured at Vipps"
 msgid "The entire amount has been captured at %1$s"
 msgstr "Hele beløpet er trukket hos %1$s"
 
-#: Vipps.class.php:438
+#: Vipps.class.php:404
+msgid ""
+"The following is a listing of your webhooks. If you have changed your "
+"website name, you may see some hooks that you do not recognize - these "
+"should be deleted"
+msgstr ""
+"Det følgende er dine webhooks. Hvis du har endret nettstednavnet, kan det "
+"være du ser noen hooks du ikke kjenner igjen her - disse bør da slettes"
+
+#: Vipps.class.php:732
 msgid "The Gutenberg Block"
 msgstr "Gutenberg-blokken"
 
-#: Vipps.class.php:3473
+#: Vipps.class.php:3933
 msgid ""
 "The link you have followed is for a product that is no longer available at "
 "this location. Please return to the store and try again"
@@ -3012,13 +3320,13 @@ msgstr ""
 "Lenken du har fulgt er for et produkt som ikke lenger er tilgjengelig her. "
 "Vennligst gå tilbake til butikken og forsøk på nytt"
 
-#: Vipps.class.php:1277
+#: Vipps.class.php:1592
 #, php-format
 #| msgid "The order is not a Vipps order"
 msgid "The order is not a %1$s order"
 msgstr "Ordren er ikke en %1$s-ordre"
 
-#: Vipps.class.php:609
+#: Vipps.class.php:903
 #, php-format
 #| msgid ""
 #| "The plugin is currently <b>active</b> - Vipps is available as a payment "
@@ -3030,23 +3338,32 @@ msgstr ""
 "Utvidelsen er for tiden <b>aktiv</b> - %1$s er tilgjengelig som "
 "betalingsmetode."
 
-#: Vipps.class.php:1199
+#: Vipps.class.php:1495
 msgid "The product doesn't exist"
 msgstr "Produktet eksisterer ikke"
 
-#: WC_Gateway_Vipps.class.php:701
+#: WC_Gateway_Vipps.class.php:845
 msgid "The public key provided to you by Porterbuddy"
 msgstr "Public key som du fikk fra Porterbuddy"
 
-#: WC_Gateway_Vipps.class.php:759
+#: Vipps.class.php:2346
+#, php-format
+msgid ""
+"The reference %1$s and order id %2$s does not match in webhook event %3$s - "
+"callback is invalid for the order."
+msgstr ""
+"Referansen %1$s og ordreid %2$s stemmer ikke overens i webhook-event %3$s - "
+"callbacken er ugyldig for denne bestillingen."
+
+#: WC_Gateway_Vipps.class.php:903
 msgid "The ShopId provided to you by Helthjem"
 msgstr "ShopId som du fikk fra Helthjem"
 
-#: Vipps.class.php:443
+#: Vipps.class.php:737
 msgid "The shortcode looks like this:"
 msgstr "Kortkoden ser slik ut:"
 
-#: VippsApi.class.php:457
+#: VippsApi.class.php:641
 msgid ""
 "The transaction text is too long! We are using a shorter transaction text to "
 "allow the transaction text to go through, but please check the "
@@ -3058,33 +3375,34 @@ msgstr ""
 "'woo_vipps_transaction_text_shop_id' hvor du kan sette et kortere navn på "
 "butikken din."
 
-#: WC_Gateway_Vipps.class.php:767
+#: WC_Gateway_Vipps.class.php:911
 msgid "The Username provided to you by Helthjem"
 msgstr "Brukernavnet du fikk fra Helthjem"
 
-#: WC_Gateway_Vipps.class.php:1549
+#: WC_Gateway_Vipps.class.php:1707
 msgid "The value of the order is less than the amount captured."
 msgstr "Ordreverdien er mindre enn det som er overført"
 
-#: VippsApi.class.php:405 VippsApi.class.php:406 VippsApi.class.php:409
-#: VippsApi.class.php:410 VippsApi.class.php:546 VippsApi.class.php:547
-#: VippsApi.class.php:550 VippsApi.class.php:551 VippsApi.class.php:791
-#: VippsApi.class.php:792 VippsApi.class.php:795 VippsApi.class.php:796
-#: VippsApi.class.php:842 VippsApi.class.php:843 VippsApi.class.php:846
-#: VippsApi.class.php:847 VippsApi.class.php:879 VippsApi.class.php:880
-#: VippsApi.class.php:883 VippsApi.class.php:884 VippsApi.class.php:924
-#: VippsApi.class.php:925 VippsApi.class.php:928 VippsApi.class.php:929
-#: VippsApi.class.php:957 VippsApi.class.php:958 VippsApi.class.php:961
-#: VippsApi.class.php:962 VippsApi.class.php:998 VippsApi.class.php:999
-#: VippsApi.class.php:1002 VippsApi.class.php:1003 VippsApi.class.php:1044
-#: VippsApi.class.php:1045 VippsApi.class.php:1048 VippsApi.class.php:1049
-#: VippsApi.class.php:1090 VippsApi.class.php:1091 VippsApi.class.php:1094
-#: VippsApi.class.php:1095 VippsApi.class.php:1122 VippsApi.class.php:1123
-#: VippsApi.class.php:1126 VippsApi.class.php:1127 VippsApi.class.php:1153
-#: VippsApi.class.php:1154 VippsApi.class.php:1157 VippsApi.class.php:1158
-#: VippsApi.class.php:1203 VippsApi.class.php:1204 VippsApi.class.php:1207
-#: VippsApi.class.php:1208 VippsApi.class.php:1237 VippsApi.class.php:1238
-#: VippsApi.class.php:1241 VippsApi.class.php:1242
+#: VippsApi.class.php:430 VippsApi.class.php:431 VippsApi.class.php:434
+#: VippsApi.class.php:435 VippsApi.class.php:599 VippsApi.class.php:600
+#: VippsApi.class.php:603 VippsApi.class.php:604 VippsApi.class.php:728
+#: VippsApi.class.php:729 VippsApi.class.php:732 VippsApi.class.php:733
+#: VippsApi.class.php:976 VippsApi.class.php:977 VippsApi.class.php:980
+#: VippsApi.class.php:981 VippsApi.class.php:1020 VippsApi.class.php:1021
+#: VippsApi.class.php:1024 VippsApi.class.php:1025 VippsApi.class.php:1050
+#: VippsApi.class.php:1051 VippsApi.class.php:1054 VippsApi.class.php:1055
+#: VippsApi.class.php:1087 VippsApi.class.php:1088 VippsApi.class.php:1091
+#: VippsApi.class.php:1092 VippsApi.class.php:1112 VippsApi.class.php:1113
+#: VippsApi.class.php:1116 VippsApi.class.php:1117 VippsApi.class.php:1140
+#: VippsApi.class.php:1141 VippsApi.class.php:1144 VippsApi.class.php:1145
+#: VippsApi.class.php:1175 VippsApi.class.php:1176 VippsApi.class.php:1179
+#: VippsApi.class.php:1180 VippsApi.class.php:1218 VippsApi.class.php:1219
+#: VippsApi.class.php:1222 VippsApi.class.php:1223 VippsApi.class.php:1242
+#: VippsApi.class.php:1243 VippsApi.class.php:1246 VippsApi.class.php:1247
+#: VippsApi.class.php:1264 VippsApi.class.php:1265 VippsApi.class.php:1268
+#: VippsApi.class.php:1269 VippsApi.class.php:1305 VippsApi.class.php:1306
+#: VippsApi.class.php:1309 VippsApi.class.php:1310 VippsApi.class.php:1330
+#: VippsApi.class.php:1331 VippsApi.class.php:1334 VippsApi.class.php:1335
 msgid "The Vipps gateway is not correctly configured."
 msgstr "Betal med Vipps for Woocommerce er ikke korrekt konfigurert"
 
@@ -3103,17 +3421,17 @@ msgstr ""
 "Hvis nødvendig, kan du importere disse inn i ditt nåværende nettsted og "
 "administrere dem derfra."
 
-#: Vipps.class.php:1956
+#: Vipps.class.php:2393
 #, php-format
 #| msgid "There is no order with this Vipps orderid, callback fails:"
 msgid "There is no order with this %1$s orderid, callback fails:"
 msgstr "Det er ingen ordre med denne %1$s-ordrerid'en - callback mislykkes:"
 
-#: Vipps.class.php:1962
+#: Vipps.class.php:2399
 msgid "There is no order with this order id, callback fails:"
 msgstr "Det er ingen ordre med denne ordreid'en - calllback mislykkes:"
 
-#: WC_Gateway_Vipps.class.php:1051
+#: WC_Gateway_Vipps.class.php:1195
 msgid ""
 "These are settings for developers that contain extra features that are "
 "normally not useful for regular users, or are not yet ready for primetime"
@@ -3122,7 +3440,7 @@ msgstr ""
 "normalt ikke er nyttige for vanlige brukere, eller som ikke er helt klare "
 "ennå"
 
-#: WC_Gateway_Vipps.class.php:1251
+#: WC_Gateway_Vipps.class.php:1397
 #, php-format
 #| msgid ""
 #| "This order cannot be paid with Vipps - please try another payment method "
@@ -3134,7 +3452,7 @@ msgstr ""
 "Denne ordren kan ikke betales med %1$s - vennligst forsøk en annen "
 "betalingsmetode eller forsøk igjen senere."
 
-#: VippsCheckout.class.php:671
+#: VippsCheckout.class.php:670
 #, php-format
 #| msgid ""
 #| "This page is used for the alternative %1$s Checkout page, which you can "
@@ -3146,7 +3464,7 @@ msgstr ""
 "Denne siden brukes av den alternative %1$s-kassasiden, som du kan velge å "
 "bruke istedetfor den vanlige WooCommerce-kassasiden"
 
-#: Vipps.class.php:590
+#: Vipps.class.php:884
 #, php-format
 #| msgid ""
 #| "This plugin, currently active at your site, implements a Vipps checkout "
@@ -3167,7 +3485,7 @@ msgstr ""
 "betaling og kredittkort. Den støtter også %1$s' QR-api for å lage QR-koder "
 "for dine landingssider eller produkter."
 
-#: Vipps.class.php:1043
+#: Vipps.class.php:1339
 msgid ""
 "This product does <b>not</b> support express checkout, and so will <b>not</b>"
 " have a Buy Now button."
@@ -3175,17 +3493,17 @@ msgstr ""
 "Dette produktet støtter <b>ikke</b> hurtigkassen, og vil derfor <b>ikke</b> "
 "få en Kjøp-nå knapp."
 
-#: Vipps.class.php:1041
+#: Vipps.class.php:1337
 msgid ""
 "This product supports express checkout, and so will have a Buy Now button."
 msgstr ""
 "Dette produktet støtter hurtigkassen, og vil derfor ha en \"Kjøp Nå\"-knapp."
 
-#: Vipps.class.php:1374 Vipps.class.php:1392
+#: Vipps.class.php:1689 Vipps.class.php:1707
 msgid "Timestamp"
 msgstr "Tidsstempel"
 
-#: VippsCheckoutShippingMethods.php:136
+#: VippsCheckoutShippingMethods.php:137
 msgid "Title"
 msgstr "Tittel"
 
@@ -3201,11 +3519,11 @@ msgstr ""
 "Tittel for %1$s-betalingsmetoden. Dette kontrollerer tittelen som vises til "
 "kunde på kassasiden."
 
-#: VippsCheckoutShippingMethods.php:138
+#: VippsCheckoutShippingMethods.php:139
 msgid "Title to be display on site"
 msgstr "Tittel som vises på nettstedet"
 
-#: WC_Gateway_Vipps.class.php:3176
+#: WC_Gateway_Vipps.class.php:3453
 #, php-format
 #| msgid ""
 #| "To activate %1$s Checkout, just press the button below. Otherwise, %1$s "
@@ -3221,7 +3539,7 @@ msgstr ""
 "selvfølgelig også være tilgjengelig på den vanlige kassasiden, og du kan "
 "også tilby %3$s fra både produktsider og handlekurven om du vil."
 
-#: Vipps.class.php:1107
+#: Vipps.class.php:1403
 #, php-format
 #| msgid ""
 #| "To create a QR code for your shareable link, we recommend copying the URL "
@@ -3233,7 +3551,16 @@ msgstr ""
 "For å lage en QR-kode for din delbare lenke, anbefaler vi å kopiere URLen og "
 "bruke <a href='%2$s'>%1$s' QR Api</a>"
 
-#: Vipps.class.php:585
+#: Vipps.class.php:399
+msgid ""
+"To do this, the plugin will automatically add webhooks for the MSN - "
+"Merchant Serial Numbers - configured on this site"
+msgstr ""
+"For å kunne gjøre dette, vil utvidelsen automatisk opprette webhooks for MSN-"
+"ene - altså merchant serial numbers - som er konfigurert for dette "
+"nettstedet."
+
+#: Vipps.class.php:879
 #, php-format
 #| msgid ""
 #| "To order or  configure your Vipps account that powers these plugins, log "
@@ -3248,61 +3575,61 @@ msgstr ""
 "utvidelsene, logg på <a target='_blank'  href='%2$s'>%1$s-portalen</a> og "
 "bruk nøklene og dataene derfra til å sette opp utvidelsene dine etter behov."
 
-#: Vipps.class.php:3631
+#: Vipps.class.php:4091
 #, php-format
 #| msgid "To the Vipps app!"
 msgid "To the %1$s app!"
 msgstr "Til %1$s-appen!"
 
-#: Vipps.class.php:1300
+#: Vipps.class.php:1615
 msgid "Transaction details"
 msgstr "Transaksjonsdetaljer"
 
-#: Vipps.class.php:1295
+#: Vipps.class.php:1610
 msgid "Transaction details not retrievable: "
 msgstr "Transaksjonsdetaljer er ikke mulig å hente:"
 
-#: Vipps.class.php:1376 Vipps.class.php:1393
+#: Vipps.class.php:1691 Vipps.class.php:1708
 msgid "Transaction ID"
 msgstr "Transaksjons-ID"
 
-#: Vipps.class.php:1367 Vipps.class.php:1381
+#: Vipps.class.php:1682 Vipps.class.php:1696
 msgid "Transaction Log"
 msgstr "Transaksjonslogg"
 
-#: Vipps.class.php:1315
+#: Vipps.class.php:1630
 msgid "Transaction summary"
 msgstr "Transaksjonsoversikt"
 
-#: Vipps.class.php:1375
+#: Vipps.class.php:1690
 msgid "Transaction text"
 msgstr "Transaksjonsstekst"
 
-#: WC_Gateway_Vipps.class.php:1574
+#: WC_Gateway_Vipps.class.php:1732
 #, php-format
 #| msgid "Trying to cancel payment on order not made by Vipps:"
 msgid "Trying to cancel payment on order not made by %1$s:"
 msgstr "Forsøker å kansellere betaling på bestilling ikke gjort med %1$s:"
 
-#: WC_Gateway_Vipps.class.php:1426
+#: WC_Gateway_Vipps.class.php:1580
 #, php-format
 #| msgid "Trying to capture payment on order not made by Vipps:"
 msgid "Trying to capture payment on order not made by %1$s:"
 msgstr "Prøver å belaste en bestilling som ikke er gjort med %1$s:"
 
-#: WC_Gateway_Vipps.class.php:1658
+#: WC_Gateway_Vipps.class.php:1818
 #, php-format
 #| msgid "Trying to refund payment on Vipps payment not captured:"
 msgid "Trying to refund payment on %1$s payment not captured:"
 msgstr "Forsøker å tilbakebetale %1$s-betaling som ikke er belastet:"
 
-#: WC_Gateway_Vipps.class.php:1521 WC_Gateway_Vipps.class.php:1649
+#: WC_Gateway_Vipps.class.php:1679 WC_Gateway_Vipps.class.php:1809
 #, php-format
 #| msgid "Trying to refund payment on order not made by Vipps:"
 msgid "Trying to refund payment on order not made by %1$s:"
 msgstr "Forsøker å tilbakebetale bestilling ikke gjort med %1$s:"
 
-#: WC_Gateway_Vipps.class.php:1250
+#: WC_Gateway_Vipps.class.php:1396
 #, php-format
 #| msgid ""
 #| "Trying to start order %s with status %s - only 'pending' and 'failed' are "
@@ -3314,13 +3641,13 @@ msgstr ""
 "Forsøker å starte ordre %1$s med status %2$s - men bare 'pending' og "
 "'failed' er tillatt. Dette vil derfor ikke lykkes."
 
-#: Vipps.class.php:389
+#: Vipps.class.php:683
 #, php-format
 #| msgid "Turn on support for Vipps On-site Messaging badges"
 msgid "Turn on support for %1$s On-site Messaging badges"
 msgstr "Skru på støtte for %1$s On-Site Messaging merker"
 
-#: WC_Gateway_Vipps.class.php:1219 WC_Gateway_Vipps.class.php:1321
+#: WC_Gateway_Vipps.class.php:1365 WC_Gateway_Vipps.class.php:1475
 #, php-format
 #| msgid ""
 #| "Unfortunately, the Vipps payment method is currently unavailable. Please "
@@ -3332,7 +3659,7 @@ msgstr ""
 "Dessverre så er %1$s-betaling ikke tilgjengelig for øyeblikket. Vennligst "
 "velg en annen metode."
 
-#: WC_Gateway_Vipps.class.php:1308
+#: WC_Gateway_Vipps.class.php:1462
 #, php-format
 #| msgid ""
 #| "Unfortunately, the Vipps payment method is temporarily unavailable. "
@@ -3350,13 +3677,13 @@ msgstr ""
 msgid "Unknown error creating %1$s partial order"
 msgstr "Ukjent feil under opprettelse av ordre for %1$s"
 
-#: VippsCheckout.class.php:304
+#: VippsCheckout.class.php:297
 #, php-format
 #| msgid "Unknown error creating %1$s Checkout session"
 msgid "Unknown error creating %1$s session"
 msgstr "Ukjent feil under opprettelse av %1$s-økt"
 
-#: Vipps.class.php:2846
+#: Vipps.class.php:3308
 msgid "Unknown error customer in express checkout."
 msgstr "Ukjent feil for kunde i hurtigkassen"
 
@@ -3364,15 +3691,15 @@ msgstr "Ukjent feil for kunde i hurtigkassen"
 msgid "Unknown operation"
 msgstr "Ukjent operasjon"
 
-#: Vipps.class.php:1272 Vipps.class.php:3770
+#: Vipps.class.php:1587 Vipps.class.php:4234
 msgid "Unknown order"
 msgstr "Ukjent ordre"
 
-#: Vipps.class.php:3184
+#: Vipps.class.php:3644
 msgid "Unknown payment status"
 msgstr "Ukjent betalingsstatus"
 
-#: Vipps.class.php:3011
+#: Vipps.class.php:3472
 msgid "Unknown product, cannot create order"
 msgstr "Ukjent produkt - kan ikke opprette bestilling"
 
@@ -3384,11 +3711,11 @@ msgstr "Usynkroniserte QR-koder"
 msgid "Update QR Code"
 msgstr "Oppdater QR-kode"
 
-#: Vipps.class.php:433
+#: Vipps.class.php:727
 msgid "Update settings"
 msgstr "Oppdater instillingene"
 
-#: WC_Gateway_Vipps.class.php:112 WC_Gateway_Vipps.class.php:115
+#: WC_Gateway_Vipps.class.php:111 WC_Gateway_Vipps.class.php:114
 msgid "Upload image"
 msgstr "Last opp bilde"
 
@@ -3407,28 +3734,28 @@ msgstr "URL"
 msgid "URL to the %1$s logo"
 msgstr "URL til %1$s-logoen"
 
-#: WC_Gateway_Vipps.class.php:873
+#: WC_Gateway_Vipps.class.php:1017
 #, php-format
 #| msgid "Use Vipps as default payment method on checkout page"
 msgid "Use %1$s as default payment method on checkout page"
 msgstr "Bruk %1$s som standard betalingsmetode på kassa-siden"
 
-#: WC_Gateway_Vipps.class.php:3174
+#: WC_Gateway_Vipps.class.php:3451
 #, php-format
 msgid "Use %1$s for all purchases"
 msgstr "Bruk %1$s for alle bestillinger"
 
-#: Vipps.class.php:1086
+#: Vipps.class.php:1382
 #, php-format
 #| msgid "Use Vipps Later"
 msgid "Use %1$s Later"
 msgstr "Bruk %1$s Senere"
 
-#: WC_Gateway_Vipps.class.php:1004
+#: WC_Gateway_Vipps.class.php:1148
 msgid "Use a real page ID"
 msgstr "Bruk en ekte side-id"
 
-#: WC_Gateway_Vipps.class.php:1003
+#: WC_Gateway_Vipps.class.php:1147
 #, php-format
 #| msgid ""
 #| "Use a real page ID for the special Vipps pages - neccessary for some "
@@ -3439,7 +3766,7 @@ msgstr ""
 "Bruk en ekte side-id for de spesielle %1$s-sidene - dette er nødvendig i "
 "noen themes"
 
-#: WC_Gateway_Vipps.class.php:324
+#: WC_Gateway_Vipps.class.php:413
 msgid "Use a simulated page (default)"
 msgstr "Bruk en simulert side (standard)"
 
@@ -3447,29 +3774,29 @@ msgstr "Bruk en simulert side (standard)"
 msgid "Use as featured image"
 msgstr "Bruk som fremhevet bilde"
 
-#: WC_Gateway_Vipps.class.php:310
+#: WC_Gateway_Vipps.class.php:399
 msgid "Use default template"
 msgstr "Bruk standardsidemal"
 
-#: WC_Gateway_Vipps.class.php:1028 WC_Gateway_Vipps.class.php:1029
+#: WC_Gateway_Vipps.class.php:1172 WC_Gateway_Vipps.class.php:1173
 msgid "Use flock() to lock orders for Express Checkout"
 msgstr "Bruk flock() til å låse ordrene i Hurtigkassekjøp"
 
-#: WC_Gateway_Vipps.class.php:977
+#: WC_Gateway_Vipps.class.php:1121
 msgid "Use new shipping callback"
 msgstr "Bruk den nye frakt-callbacken"
 
-#: WC_Gateway_Vipps.class.php:971
+#: WC_Gateway_Vipps.class.php:1115
 msgid "Use old-style shipping callback for express checkout"
 msgstr "Bruk den gamle frakt-callback-metoden for Vipps Hurtigkasse"
 
-#: WC_Gateway_Vipps.class.php:996
+#: WC_Gateway_Vipps.class.php:1140
 #, php-format
 #| msgid "Use specific template for Vipps"
 msgid "Use specific template for %1$s"
 msgstr "Bruk denne malen for %1$s"
 
-#: WC_Gateway_Vipps.class.php:1031
+#: WC_Gateway_Vipps.class.php:1175
 msgid ""
 "Use the flock() system call to ensure orders are only finalized once. You "
 "can use this for normal setups, but probably not on Windows with IIS, and "
@@ -3484,7 +3811,7 @@ msgstr ""
 "bruke det. Hvis du får dobbelt med fraktlinjer på noen få hurtigkasseordre, "
 "så kan du prøve dette."
 
-#: WC_Gateway_Vipps.class.php:1019
+#: WC_Gateway_Vipps.class.php:1163
 #, php-format
 #| msgid ""
 #| "Use this image for the order confirmation link uploaded to the customers' "
@@ -3495,7 +3822,7 @@ msgid ""
 msgstr ""
 "Bruk dette bildet for ordrebekreftelseslenken lastet opp til kundens %1$s-app"
 
-#: WC_Gateway_Vipps.class.php:999
+#: WC_Gateway_Vipps.class.php:1143
 #, php-format
 #| msgid ""
 #| "Use this template from your theme or child-theme to display all the "
@@ -3510,21 +3837,29 @@ msgstr ""
 "spesielle %1$s-sidene. Du vil sannsynligvis ha en full-bredde mal her, og "
 "det er viktig at den kaller 'the_content()' på vanlig måte."
 
-#: WC_Gateway_Vipps.class.php:972
+#: WC_Gateway_Vipps.class.php:1116
 msgid "Use your current shipping filters"
 msgstr "Bruk dine nåværende frakt-filtre"
 
-#: Vipps.class.php:1354 Vipps.class.php:1359
+#: Vipps.class.php:478
+msgid "User Checked in"
+msgstr "Bruker har besøkt lenken"
+
+#: Vipps.class.php:1669 Vipps.class.php:1674
 msgid "User details"
 msgstr "Brukerdetaljer"
 
-#: Vipps.class.php:1360
+#: Vipps.class.php:1675
 msgid "User ID"
 msgstr "Bruker ID"
 
-#: Vipps.class.php:409 Vipps.class.php:1149 Blocks/Badges/vipps-badge.php:63
+#: Vipps.class.php:703 Vipps.class.php:1445 Blocks/Badges/vipps-badge.php:63
 msgid "Variant"
 msgstr "Variant"
+
+#: Vipps.class.php:445
+msgid "View"
+msgstr "Se"
 
 #: VippsQRCodeController.class.php:615
 msgid "View QR Code"
@@ -3534,23 +3869,19 @@ msgstr "Vis QR-kode"
 msgid "View QR Codes"
 msgstr "Vis QR-koder"
 
-#: WC_Gateway_Vipps.class.php:800
+#: WC_Gateway_Vipps.class.php:944
 msgid "Vipps"
 msgstr "Vipps"
 
-#: WC_Gateway_Vipps.class.php:3044 Vipps.class.php:60
+#: WC_Gateway_Vipps.class.php:3300 Vipps.class.php:60
 msgid "Vipps Checkout"
 msgstr "Vipps Checkout"
 
-#: WC_Gateway_Vipps.class.php:3155
-msgid "%1$s does not support your currency."
-msgstr "%1$s støtter ikke din valuta"
-
-#: WC_Gateway_Vipps.class.php:3043 Vipps.class.php:63
+#: WC_Gateway_Vipps.class.php:3299 Vipps.class.php:63
 msgid "Vipps Express Checkout"
 msgstr "Vipps Hurtigkasse"
 
-#: WC_Gateway_Vipps.class.php:134 WC_Gateway_Vipps.class.php:135
+#: WC_Gateway_Vipps.class.php:133 WC_Gateway_Vipps.class.php:134
 #: Vipps.class.php:57
 msgid "Vipps MobilePay"
 msgstr "Vipps MobilePay"
@@ -3574,43 +3905,43 @@ msgstr ""
 "medlemskap. Plugin er tilgjengelig for WordPress og Woocommerce - kom i gang "
 "her!"
 
-#: WC_Gateway_Vipps.class.php:3164
-msgid "%1$s requires that your site uses HTTPS."
-msgstr "%1$s krever at nettstedet ditt bruker HTTPS."
-
-#: WC_Gateway_Vipps.class.php:3156
-msgid "%1$s supported currencies: %2$s"
-msgstr "%1$s støttede valutaer: %2$s"
-
-#: WC_Gateway_Vipps.class.php:1119
+#: WC_Gateway_Vipps.class.php:1263
 msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"
 msgstr ""
 "VIPPS_TEST_MODE er satt til sant i konfig-filen din - utviklermodus er "
 "skrudd på"
 
-#: WC_Gateway_Vipps.class.php:1120
+#: WC_Gateway_Vipps.class.php:1264
 msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
 msgstr ""
 "VIPPS_TEST_MODE er satt til sann i din konfigurasjon - test-modus er skrudd "
 "på"
 
-#: Vipps.class.php:3836
+#: Vipps.class.php:4300
 #, php-format
 #| msgid "Waiting for confirmation of purchase from Vipps"
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr "Venter på bekreftelse fra %1$s"
 
-#: Vipps.class.php:3868
+#: Vipps.class.php:4332
 msgid "Waiting for your order confirmation"
 msgstr "Venter på bekreftelse av din bestilling"
 
-#: Vipps.class.php:3147 Vipps.class.php:3162
+#: Vipps.class.php:3607 Vipps.class.php:3622
 msgid "Waiting on order"
 msgstr "Venter på bestilling"
 
-#: WC_Gateway_Vipps.class.php:922
+#: Vipps.class.php:432
+msgid "Webhook"
+msgstr "Webhook"
+
+#: Vipps.class.php:397 Vipps.class.php:1113 Vipps.class.php:1113
+msgid "Webhooks"
+msgstr "Webhooker"
+
+#: WC_Gateway_Vipps.class.php:1066
 #, php-format
 #| msgid ""
 #| "When using Express Checkout, ask the user to confirm that they have read "
@@ -3622,7 +3953,7 @@ msgstr ""
 "Be kunden om å bekrefte at de har lest og godtar butikkens vilkår og "
 "betingelser når de kjøper med %1$s"
 
-#: WC_Gateway_Vipps.class.php:665
+#: WC_Gateway_Vipps.class.php:799
 #, php-format
 msgid ""
 "When using %1$s, you have the option to use %1$s specific shipping methods "
@@ -3639,7 +3970,20 @@ msgstr ""
 "Du kan så legge til disse fraktmetodene til dine fraktsoner på vanlig måte; "
 "men de vil bare dukke opp i %1$s."
 
-#: Vipps.class.php:368 Vipps.class.php:1071 Blocks/Badges/vipps-badge.php:52
+#: Vipps.class.php:398
+#, php-format
+msgid ""
+"Whenever an event like a payment or a cancellation occurs on a %1$s account, "
+"you can be notified of this using a <i>webhook</i>. This is used by this "
+"plugin to get noticed of payments by users even when they do not return to "
+"your store."
+msgstr ""
+"Når en hendelse som en betaling eller kansellering skjer på en %1$s-konto, "
+"kan du få beskjed om det via en <i>webhook</i>. Dette brukes av denne "
+"utvidelsen til å få beskjed om betalinger fra brukere selv når de ikke "
+"kommer tilbake til butikken etter et kjøp."
+
+#: Vipps.class.php:662 Vipps.class.php:1367 Blocks/Badges/vipps-badge.php:52
 msgid "White"
 msgstr "Hvit"
 
@@ -3647,19 +3991,19 @@ msgstr "Hvit"
 msgid "WP Hosting"
 msgstr "WP Hosting"
 
-#: WC_Gateway_Vipps.class.php:2729 Vipps.class.php:1972
+#: WC_Gateway_Vipps.class.php:2966 Vipps.class.php:2409
 #, php-format
 #| msgid "Wrong Vipps Orderid - possibly an attempt to fake a callback "
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
 msgstr "Feil %1$s-ordreid - muligens et forsøk på å forfalske en callback"
 
-#: Vipps.class.php:2173
+#: Vipps.class.php:2627
 #, php-format
 #| msgid "Wrong Vipps Orderid on shipping details callback"
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr "Feil %1$s-ordreid under fraktmetode-callback"
 
-#: WC_Gateway_Vipps.class.php:2724
+#: WC_Gateway_Vipps.class.php:2959
 #, php-format
 #| msgid ""
 #| "Wrong auth token in callback from Vipps - possibly an attempt to fake a "
@@ -3671,12 +4015,12 @@ msgstr ""
 "Feil auth-token i callback fra %1$s - muligens et forsøk på å forfalske en "
 "callback"
 
-#: WC_Gateway_Vipps.class.php:3179
+#: WC_Gateway_Vipps.class.php:3456
 #, php-format
 msgid "Yes, activate %1$s!"
 msgstr "Ja, skru på %1$s!"
 
-#: Vipps.class.php:611
+#: Vipps.class.php:905
 #, php-format
 #| msgid ""
 #| "You are using %1$s Checkout instead of the standard WooCommerce Checkout "
@@ -3692,7 +4036,7 @@ msgstr ""
 "Du kan legge til et beløp for merket her, i små-enhetene til valutaen (for "
 "NOK altså øre)."
 
-#: Vipps.class.php:381
+#: Vipps.class.php:675
 msgid ""
 "You can configure these badges on this page, turning them on in all or some "
 "products and configure their default setup. You can also add a badge using a "
@@ -3707,11 +4051,16 @@ msgstr ""
 msgid "You can get %1$s now!"
 msgstr "Nå kan du få %1$s!"
 
-#: VippsQRCodeController.class.php:165 Vipps.class.php:365 Vipps.class.php:540
+#: Vipps.class.php:619 Vipps.class.php:640
+msgid "You don't have sufficient rights"
+msgstr "Du har ikke tilstrekkelige rettigheter"
+
+#: VippsQRCodeController.class.php:165 Vipps.class.php:391 Vipps.class.php:659
+#: Vipps.class.php:834
 msgid "You don't have sufficient rights to access this page"
 msgstr "Du har ikke tilstrekkelige rettigheter til å se denne siden"
 
-#: Vipps.class.php:486 Vipps.class.php:487 Vipps.class.php:1178
+#: Vipps.class.php:780 Vipps.class.php:781 Vipps.class.php:1474
 msgid "You don't have sufficient rights to edit this product"
 msgstr "Du har ikke nok rettigheter til å redigere dette produktet"
 
@@ -3719,19 +4068,19 @@ msgstr "Du har ikke nok rettigheter til å redigere dette produktet"
 msgid "You get settlement in three days"
 msgstr "Oppgjør etter 3 dager"
 
-#: VippsApi.class.php:608
+#: VippsApi.class.php:784
 #, php-format
 #| msgid "You need a newer version of WooCommerce to use Vipps Checkout!"
 msgid "You need a newer version of WooCommerce to use %1$s!"
 msgstr "Du trenger en nyere versjon av WooCommerce for å kunne bruke  %1$s!"
 
-#: WC_Gateway_Vipps.class.php:1241
+#: WC_Gateway_Vipps.class.php:1387
 #, php-format
 #| msgid "You need to enter your phone number to pay with Vipps"
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr "Du må skrive inn ditt telefonnummer for å handle med %1$s"
 
-#: Vipps.class.php:3655
+#: Vipps.class.php:4115
 msgid ""
 "You recently completed an order with exactly the same products as you are "
 "buying now. There should be an email in your inbox from the previous "
@@ -3741,7 +4090,7 @@ msgstr ""
 "kjøper nå. Det bør være en epost i inboksen din fra forrige bestilling. Er "
 "du sikker på at du vil bestille igjen?"
 
-#: WC_Gateway_Vipps.class.php:818
+#: WC_Gateway_Vipps.class.php:962
 msgid ""
 "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
 "vipps.no"
@@ -3755,11 +4104,11 @@ msgstr ""
 msgid "Your customers can pay with %1$s , Visa or Mastercard"
 msgstr "Betaling med %1$s eller kort."
 
-#: VippsApi.class.php:451
+#: VippsApi.class.php:635
 msgid "Your order from"
 msgstr "Din bestilling fra"
 
-#: WC_Gateway_Vipps.class.php:715
+#: WC_Gateway_Vipps.class.php:859
 msgid ""
 "Your phone number where Porterbuddy may send you important messages. Format "
 "must be MSISDN (including country code). Example: \"4791234567\""
@@ -3767,11 +4116,11 @@ msgstr ""
 "Telefonnummeret ditt hvor Porterbuddy kan sende deg viktige meldinger. "
 "Formatet må være MSISDN inklusive landkode. Eksempel: \"4791234567\""
 
-#: Vipps.class.php:3039
+#: Vipps.class.php:3500
 msgid "Your product is temporarily no longer available for purchase"
 msgstr "Produktet ditt er midlertidig ikke tilgjengelig for bestliling"
 
-#: VippsCheckout.class.php:539
+#: VippsCheckout.class.php:531
 msgid ""
 "Your session has expired - please reload the page to restart, or return to "
 "the shop"
@@ -3779,11 +4128,11 @@ msgstr ""
 "Økten din har utløpt - vennligst last inn siden på nytt for å restarte, "
 "eller gå tilbake til butikken."
 
-#: Vipps.class.php:3515
+#: Vipps.class.php:3975
 msgid "Your shopping cart is empty"
 msgstr "Handlekurven din er tom"
 
-#: VippsApi.class.php:620
+#: VippsApi.class.php:796
 #, php-format
 #| msgid ""
 #| "Your site does not have a Terms and Conditions page defined - starting "
@@ -3795,7 +4144,7 @@ msgstr ""
 "Nettstedet ditt har ingen Vilkår-side definert - starter %1$s  likevel, men "
 "en slik side er påkrevet"
 
-#: WC_Gateway_Vipps.class.php:1067
+#: WC_Gateway_Vipps.class.php:1211
 msgid ""
 "Your test account \"Merchant Serial Number\" from the Developer tab on https:"
 "//portal.vipps.no"
@@ -3803,7 +4152,7 @@ msgstr ""
 "Din “Merchant Serial Number” for din testkonto under “Utvikler” fanen på "
 "https://portal.vipps.no/"
 
-#: Vipps.class.php:276
+#: Vipps.class.php:291
 #, php-format
 #| msgid ""
 #| "Your theme or a plugin is currently overriding the <code>"

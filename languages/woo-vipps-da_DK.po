@@ -3,9 +3,16 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
+"X-Generator: Loco https://localise.biz/\n"
 "Project-Id-Version: Vipps MobilePay Woo\n"
-"Language: da\n"
+"Language: da_DK\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-16 12:36+0000\n"
+"PO-Revision-Date: 2024-01-16 12:36+0000\n"
+"Last-Translator: \n"
+"Language-Team: Dansk\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Loco-Version: 2.6.6; wp-6.4.2"
 
 #: WC_Gateway_Vipps.class.php:2102
 msgid " - no status retrievable"
@@ -17,6 +24,7 @@ msgstr " - ordren skal ikke behandles"
 
 #: WC_Gateway_Vipps.class.php:517 WC_Gateway_Vipps.class.php:534
 #: WC_Gateway_Vipps.class.php:1565
+#, php-format
 msgid " refunded through %1$s:"
 msgstr " refunderet gennem %1$s:"
 
@@ -28,216 +36,369 @@ msgstr "\"Køb nu\"-kompatibilitetstilstand"
 #: VippsCheckout.class.php:546 VippsKCSupport.class.php:64 Vipps.class.php:621
 #: Vipps.class.php:646 Vipps.class.php:817 Vipps.class.php:817
 #: Vipps.class.php:847 Vipps.class.php:860 Vipps.class.php:1000
+#, php-format
 msgid "%1$s"
 msgstr "%1$s"
 
 #: WC_Gateway_Vipps.class.php:887
-msgid "%1$s allows you to buy products by a single click from the cart page or directly from product or catalog pages. Product will get a 'buy now' button which will start the purchase process immediately."
-msgstr "%1$s giver dig mulighed for at købe produkter med et enkelt klik fra indkøbskurvsiden eller direkte fra produkt- eller katalogsider. Produktet får en 'køb nu'-knap, som starter købsprocessen med det samme."
+#, php-format
+msgid ""
+"%1$s allows you to buy products by a single click from the cart page or "
+"directly from product or catalog pages. Product will get a 'buy now' button "
+"which will start the purchase process immediately."
+msgstr ""
+"%1$s giver dig mulighed for at købe produkter med et enkelt klik fra "
+"indkøbskurvsiden eller direkte fra produkt- eller katalogsider. Produktet "
+"får en 'køb nu'-knap, som starter købsprocessen med det samme."
 
 #: Vipps.class.php:1790
+#, php-format
 msgid "%1$s Buy Now button"
 msgstr "%1$s Køb nu-knap"
 
 #: WC_Gateway_Vipps.class.php:2716
+#, php-format
 msgid "%1$s callback for unknown order"
 msgstr "%1$s tilbagekald for ukendt ordre"
 
 #: WC_Gateway_Vipps.class.php:2759
+#, php-format
 msgid "%1$s callback received"
 msgstr "%1$s tilbagekald modtaget"
 
 #: WC_Gateway_Vipps.class.php:2711
+#, php-format
 msgid "%1$s callback with wrong merchantSerialNumber - might be forged"
 msgstr "%1$s callback med forkert merchantSerialNumber - kan være forfalsket"
 
 #: WC_Gateway_Vipps.class.php:2794
+#, php-format
 msgid "%1$s callback: Handling order: "
 msgstr "%1$s tilbagekaldelse: Håndtering af ordre: "
 
 #: Vipps.class.php:604
-msgid "%1$s configuration is not yet complete - you must get your keys from the %1$s portal and enter them on the <a href='%2$s'>settings page</a>"
-msgstr "%1$s-konfigurationen er endnu ikke færdig - du skal hente dine nøgler fra %1$s-portalen og indtaste dem på <a href='%2$s'>indstillingssiden</a>"
+#, php-format
+msgid ""
+"%1$s configuration is not yet complete - you must get your keys from the "
+"%1$s portal and enter them on the <a href='%2$s'>settings page</a>"
+msgstr ""
+"%1$s-konfigurationen er endnu ikke færdig - du skal hente dine nøgler fra "
+"%1$s-portalen og indtaste dem på <a href='%2$s'>indstillingssiden</a>"
+
+#: WC_Gateway_Vipps.class.php:3155
+msgid "%1$s does not support your currency."
+msgstr "%1$s understøtter ikke din valuta."
 
 #: Vipps.class.php:3713
+#, php-format
 msgid "%1$s Express Checkout"
 msgstr "%1$s Hurtig betaling"
 
 #: Vipps.class.php:583
+#, php-format
 msgid "%1$s for WordPress and WooCommerce"
 msgstr "%1$s til WordPress og WooCommerce"
 
 #: Vipps.class.php:634
-msgid "%1$s installed, but <em>not active</em>. Activate it on the <a href='%2$s'>plugins page</a>"
-msgstr "%1$s installeret, men <em>ikke aktiv</em>. Aktivér det på <a href='%2$s'>plugins-siden</a>"
+#, php-format
+msgid ""
+"%1$s installed, but <em>not active</em>. Activate it on the <a href='%2$s'>"
+"plugins page</a>"
+msgstr ""
+"%1$s installeret, men <em>ikke aktiv</em>. Aktivér det på <a href='%2$s'>"
+"plugins-siden</a>"
 
 #: Vipps.class.php:630
-msgid "%1$s is <b>installed and active</b>. You can configure the plugin at its <a href='%2$s'>settings page</a>"
-msgstr "%1$s er <b>installeret og aktiv</b>. Du kan konfigurere plugin'et på dets <a href='%2$s'>indstillingsside</a>"
+#, php-format
+msgid ""
+"%1$s is <b>installed and active</b>. You can configure the plugin at its <a "
+"href='%2$s'>settings page</a>"
+msgstr ""
+"%1$s er <b>installeret og aktiv</b>. Du kan konfigurere plugin'et på dets <a "
+"href='%2$s'>indstillingsside</a>"
 
 #: WC_Gateway_Vipps.class.php:605 WC_Gateway_Vipps.class.php:3175
-msgid "%1$s is a new service from %2$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2$s and credit card. Additionally, your customers will get the option of providing their address information using their %2$s app directly."
-msgstr "%1$s er en ny service fra %2$s, som helt erstatter den sædvanlige WooCommerce checkout-side med en forenklet checkout-skærm, der giver mulighed for betaling både med %2$s og kreditkort. Derudover får dine kunder mulighed for at angive deres adresseoplysninger ved hjælp af deres %2$s-app direkte."
+#, php-format
+msgid ""
+"%1$s is a new service from %2$s which replaces the usual WooCommerce "
+"checkout page entirely, replacing it with a simplified checkout screen "
+"providing payment both with %2$s and credit card. Additionally, your "
+"customers will get the option of providing their address information using "
+"their %2$s app directly."
+msgstr ""
+"%1$s er en ny service fra %2$s, som helt erstatter den sædvanlige "
+"WooCommerce checkout-side med en forenklet checkout-skærm, der giver "
+"mulighed for betaling både med %2$s og kreditkort. Derudover får dine kunder "
+"mulighed for at angive deres adresseoplysninger ved hjælp af deres %2$s-app "
+"direkte."
 
 #: Vipps.class.php:267 Vipps.class.php:597
+#, php-format
 msgid "%1$s is currently in test mode - no real transactions will occur"
-msgstr "%1$s er i øjeblikket i testtilstand - ingen rigtige transaktioner vil finde sted"
+msgstr ""
+"%1$s er i øjeblikket i testtilstand - ingen rigtige transaktioner vil finde "
+"sted"
 
 #: WC_Gateway_Vipps.class.php:874
+#, php-format
 msgid "%1$s is default payment method"
 msgstr "%1$s er standard betalingsmetode"
 
 #: Vipps.class.php:656
-msgid "%1$s is installed and active. You can configure the plugin at its <a href='%2$s'>settings page</a>"
-msgstr "%1$s er installeret og aktiv. Du kan konfigurere plugin'et på dets <a href='%2$s'>indstillingsside</a>"
+#, php-format
+msgid ""
+"%1$s is installed and active. You can configure the plugin at its <a "
+"href='%2$s'>settings page</a>"
+msgstr ""
+"%1$s er installeret og aktiv. Du kan konfigurere plugin'et på dets <a "
+"href='%2$s'>indstillingsside</a>"
 
 #: Vipps.class.php:660
-msgid "%1$s is installed, but not active. Activate it on the <a href='%2$s'>plugins page</a>"
-msgstr "%1$s er installeret, men ikke aktiv. Aktivér det på <a href='%2$s'>plugins-siden</a>"
+#, php-format
+msgid ""
+"%1$s is installed, but not active. Activate it on the <a href='%2$s'>plugins "
+"page</a>"
+msgstr ""
+"%1$s er installeret, men ikke aktiv. Aktivér det på <a href='%2$s'>plugins-"
+"siden</a>"
 
 #: WC_Gateway_Vipps.class.php:2990
+#, php-format
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr "%1$s er ikke et billede, der kan uploades til %2$s"
 
 #: Vipps.class.php:2893 Vipps.class.php:2963 Vipps.class.php:3026
+#, php-format
 msgid "%1$s is not available for this order"
 msgstr "%1$s er ikke tilgængelig for denne ordre"
 
 #: Vipps.class.php:638 Vipps.class.php:664
+#, php-format
 msgid "%1$s is not installed. You can install it <a href='%2$s'>here!</a>"
-msgstr "%1$s er ikke installeret. Du kan installere det <a href='%2$s'>her!</a>"
+msgstr ""
+"%1$s er ikke installeret. Du kan installere det <a href='%2$s'>her!</a>"
 
 #: WC_Gateway_Vipps.class.php:525 WC_Gateway_Vipps.class.php:1470
 #: WC_Gateway_Vipps.class.php:1556 WC_Gateway_Vipps.class.php:1599
 #: Vipps.class.php:2950 Vipps.class.php:3096 Vipps.class.php:3630
+#, php-format
 msgid "%1$s is temporarily unavailable."
 msgstr "%1$s er midlertidigt utilgængelig."
 
 #: Vipps.class.php:584
-msgid "%1$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an Express Checkout for WooCommerce, an optional complete checkout solution powered by %1$s, a system for managing QR-codes that link to your products or landing pages,  a plugin for recurring payments, and a system for passwordless logins"
-msgstr "%1$s understøtter officielt WordPress og WooCommerce med en familie af plugins, der implementerer en betalingsgateway til WooCommerce, en Express Checkout til WooCommerce, en valgfri komplet kasseløsning drevet af %1$s, et system til styring af QR-koder, der linker til dine produkter eller landingssider, et plugin til tilbagevendende betalinger og et system til login uden adgangskode"
+#, php-format
+msgid ""
+"%1$s officially supports WordPress and WooCommerce with a family of plugins "
+"implementing a payment gateway for WooCommerce, an Express Checkout for "
+"WooCommerce, an optional complete checkout solution powered by %1$s, a "
+"system for managing QR-codes that link to your products or landing pages,  a "
+"plugin for recurring payments, and a system for passwordless logins"
+msgstr ""
+"%1$s understøtter officielt WordPress og WooCommerce med en familie af "
+"plugins, der implementerer en betalingsgateway til WooCommerce, en Express "
+"Checkout til WooCommerce, en valgfri komplet kasseløsning drevet af %1$s, et "
+"system til styring af QR-koder, der linker til dine produkter eller "
+"landingssider, et plugin til tilbagevendende betalinger og et system til "
+"login uden adgangskode"
 
 #: Vipps.class.php:376
+#, php-format
 msgid "%1$s On-Site Messaging"
 msgstr "%1$s Beskeder på stedet"
 
 #: Blocks/Badges/vipps-badge.php:61
+#, php-format
 msgid "%1$s On-Site Messaging Badge"
 msgstr "%1$s On-Site Besked Badge"
 
 #: Vipps.class.php:378
-msgid "%1$s On-Site Messaging contains <em>badges</em> in different variants that can be used to let your customers know that %1$s payment is accepted."
-msgstr "%1$s On-Site Messaging indeholder <em>badges</em> i forskellige varianter, som kan bruges til at fortælle dine kunder, at %1$s betaling er accepteret."
+#, php-format
+msgid ""
+"%1$s On-Site Messaging contains <em>badges</em> in different variants that "
+"can be used to let your customers know that %1$s payment is accepted."
+msgstr ""
+"%1$s On-Site Messaging indeholder <em>badges</em> i forskellige varianter, "
+"som kan bruges til at fortælle dine kunder, at %1$s betaling er accepteret."
 
 #: WC_Gateway_Vipps.class.php:2077 WC_Gateway_Vipps.class.php:2101
-msgid "%1$s Order with no order status, so session was never completed; setting status to cancelled"
-msgstr "%1$s Ordre uden ordrestatus, så sessionen blev aldrig afsluttet; status sættes til annulleret"
+#, php-format
+msgid ""
+"%1$s Order with no order status, so session was never completed; setting "
+"status to cancelled"
+msgstr ""
+"%1$s Ordre uden ordrestatus, så sessionen blev aldrig afsluttet; status "
+"sættes til annulleret"
 
 #: VippsCheckout.class.php:670
+#, php-format
 msgid "%1$s Page"
 msgstr "%1$s Side"
 
 #: WC_Gateway_Vipps.class.php:1636
+#, php-format
 msgid "%1$s Payment cancelled:"
 msgstr "%1$s Betaling annulleret:"
 
 #: WC_Gateway_Vipps.class.php:1489 WC_Gateway_Vipps.class.php:1501
+#, php-format
 msgid "%1$s Payment captured:"
 msgstr "%1$s Betaling modtaget:"
 
 #: WC_Gateway_Vipps.class.php:1346 VippsCheckout.class.php:297
+#, php-format
 msgid "%1$s payment initiated"
 msgstr "%1$s betaling påbegyndt"
 
 #: WC_Gateway_Vipps.class.php:1705
+#, php-format
 msgid "%1$s Payment Refunded:"
 msgstr "%1$s Betaling refunderet:"
 
 #: WC_Gateway_Vipps.class.php:1684
+#, php-format
 msgid "%1$s payment refunded:"
 msgstr "%1$s betaling refunderet:"
 
 #: WC_Gateway_Vipps.class.php:1272
+#, php-format
 msgid "%1$s payment restarted"
 msgstr "%1$s betaling genstartet"
 
 #: VippsQRCodeController.class.php:640
+#, php-format
 msgid "%1$s QR Code"
 msgstr "%1$s QR-kode"
 
 #: VippsQRCodeController.class.php:605 VippsQRCodeController.class.php:641
+#, php-format
 msgid "%1$s QR Codes"
 msgstr "%1$s QR-koder"
 
+#: WC_Gateway_Vipps.class.php:3164
+msgid "%1$s requires that your site uses HTTPS."
+msgstr "%1$s kræver, at din hjemmeside bruger HTTPS."
+
 #: Vipps.class.php:625
-msgid "%1$s requires the <a href='%2$s' target='_blank'>WooCommerce Subscriptions plugin</a>."
-msgstr "%1$s kræver <a href='%2$s' target='_blank'>WooCommerce Subscriptions-plugin</a>'et."
+#, php-format
+msgid ""
+"%1$s requires the <a href='%2$s' target='_blank'>WooCommerce Subscriptions "
+"plugin</a>."
+msgstr ""
+"%1$s kræver <a href='%2$s' target='_blank'>WooCommerce Subscriptions-"
+"plugin</a>'et."
 
 #: Blocks/Badges/vipps-badge.php:66
+#, php-format
 msgid "%1$s senere"
 msgstr "%1$s senere"
 
 #: VippsCheckout.class.php:328
+#, php-format
 msgid "%1$s session %2$d cancelled (payment status)"
 msgstr "%1$s session %2$d annulleret (betalingsstatus)"
 
 #: VippsCheckout.class.php:470
+#, php-format
 msgid "%1$s session %2$d cancelled (pending session)"
 msgstr "%1$s session %2$d annulleret (afventer session)"
 
 #: VippsCheckout.class.php:361
+#, php-format
 msgid "%1$s session %2$d expired after %3$d minutes (limit 50)"
 msgstr "%1$s session %2$d udløb efter %3$d minutter (limit 50)"
 
 #: VippsCheckout.class.php:374
+#, php-format
 msgid "%1$s session %2$d failed with message %3$s"
 msgstr "%1$s session %2$d mislykkedes med besked %3$s"
 
 #: VippsCheckout.class.php:489
+#, php-format
 msgid "%1$s session %2$d is gone"
 msgstr "%1$s session %2$d er væk"
 
 #: WC_Gateway_Vipps.class.php:663
+#, php-format
 msgid "%1$s Shipping Methods"
 msgstr "%1$s Forsendelsesmetoder"
+
+#: WC_Gateway_Vipps.class.php:3156
+msgid "%1$s supported currencies: %2$s"
+msgstr "%1$s understøttede valutaer: %2$s"
 
 #: VippsCheckoutShippingMethods.php:471 VippsCheckoutShippingMethods.php:492
 #: VippsCheckoutShippingMethods.php:508 VippsCheckoutShippingMethods.php:530
 #: VippsCheckoutShippingMethods.php:555
+#, php-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
 #: VippsCheckout.class.php:581
+#, php-format
 msgid "%1$s: cart changed while session %2$d in progress - now cancelled"
 msgstr "%1$s: vognen blev ændret, mens session %2$d var i gang - nu annulleret"
 
 #: WC_Gateway_Vipps.class.php:2558
-msgid "%1$s: Could not deserialize the chosen shipping method %2$s for order %3$d"
-msgstr "%1$s: Kunne ikke deserialisere den valgte forsendelsesmetode %2$s for ordre %3$d"
+#, php-format
+msgid ""
+"%1$s: Could not deserialize the chosen shipping method %2$s for order %3$d"
+msgstr ""
+"%1$s: Kunne ikke deserialisere den valgte forsendelsesmetode %2$s for ordre "
+"%3$d"
 
 #: Vipps.class.php:562
 msgid "- very, very simple"
 msgstr "- meget, meget enkel"
 
 #: Vipps.class.php:623
-msgid "<a href='%1$s' target='_blank'>%2$s for WooCommerce</a> by <a href='%3$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions."
-msgstr "<a href='%1$s' target='_blank'>%2$s for WooCommerce</a> by <a href='%3$s' target='_blank'>Everyday</a> er perfekt til dig, hvis du driver en webshop med abonnementsbaserede tjenester eller andre produkter, der kan drage fordel af abonnementer."
+#, php-format
+msgid ""
+"<a href='%1$s' target='_blank'>%2$s for WooCommerce</a> by <a href='%3$s' "
+"target='_blank'>Everyday</a>  is perfect for you if you run a web shop with "
+"subscription based services or other products that would benefit from "
+"subscriptions."
+msgstr ""
+"<a href='%1$s' target='_blank'>%2$s for WooCommerce</a> by <a href='%3$s' "
+"target='_blank'>Everyday</a> er perfekt til dig, hvis du driver en webshop "
+"med abonnementsbaserede tjenester eller andre produkter, der kan drage "
+"fordel af abonnementer."
 
 #: Vipps.class.php:647
-msgid "<a href='%1$s' target='_blank'>%3$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases."
-msgstr "<a href='%1$s' target='_blank'>%3$s</a> er en passwordløs løsning, der giver dig eller dine kunder mulighed for at logge sikkert ind på din hjemmeside uden at skulle huske passwords - du behøver kun %2$s-appen. Pluginet kræver ikke WooCommerce, og det kan tilpasses til mange forskellige brugssituationer."
+#, php-format
+msgid ""
+"<a href='%1$s' target='_blank'>%3$s</a> is a password-less solution that "
+"lets you or your customers to securely log into your site without having to "
+"remember passwords - you only need the %2$s app. The plugin does not require "
+"WooCommerce, and it can be customized for many different usecases."
+msgstr ""
+"<a href='%1$s' target='_blank'>%3$s</a> er en passwordløs løsning, der giver "
+"dig eller dine kunder mulighed for at logge sikkert ind på din hjemmeside "
+"uden at skulle huske passwords - du behøver kun %2$s-appen. Pluginet kræver "
+"ikke WooCommerce, og det kan tilpasses til mange forskellige "
+"brugssituationer."
 
 #: Vipps.class.php:602
+#, php-format
 msgid "<a href='%1$s'>%2$s configuration</a> is complete."
 msgstr "<a href='%1$s'>%2$s konfiguration</a> er fuldført."
 
 #: Vipps.class.php:292
-msgid "<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s settings</a> to complete your setup!</p>"
-msgstr "<p>%1$s er endnu ikke konfigureret: gå til <a href='%2$s'>%1$s indstillinger</a> for at fuldføre din opsætning!</p>"
+#, php-format
+msgid ""
+"<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s "
+"settings</a> to complete your setup!</p>"
+msgstr ""
+"<p>%1$s er endnu ikke konfigureret: gå til <a href='%2$s'>%1$s "
+"indstillinger</a> for at fuldføre din opsætning!</p>"
 
 #: Vipps.class.php:290
-msgid "<p>%1$s not yet correctly configured:  please go to <a href='%2$s'>the %1$s settings</a> to complete your setup:<br> %3$s</p>"
-msgstr "<p>%1$s er endnu ikke korrekt konfigureret: Gå til <a href='%2$s'>%1$s indstillinger</a> for at fuldføre din opsætning:<br> %3$s</p>"
+#, php-format
+msgid ""
+"<p>%1$s not yet correctly configured:  please go to <a href='%2$s'>the %1$s "
+"settings</a> to complete your setup:<br> %3$s</p>"
+msgstr ""
+"<p>%1$s er endnu ikke korrekt konfigureret: Gå til <a href='%2$s'>%1$s "
+"indstillinger</a> for at fuldføre din opsætning:<br> %3$s</p>"
 
 #: WC_Gateway_Vipps.class.php:2102 VippsCheckout.class.php:620
 msgid "Abandonded by customer"
@@ -252,6 +413,7 @@ msgid "Activate"
 msgstr "Aktivér"
 
 #: VippsKCSupport.class.php:57
+#, php-format
 msgid "Activate %1$s as an external payment method for Klarna Checkout"
 msgstr "Aktivér %1$s som en ekstern betalingsmetode til Klarna Checkout"
 
@@ -260,26 +422,38 @@ msgid "Activate compatibility mode for all \"Buy now\" buttons"
 msgstr "Aktivér kompatibilitetstilstand for alle \"Køb nu\"-knapper"
 
 #: WC_Gateway_Vipps.class.php:750
+#, php-format
 msgid "Activate this for Helthjem as a %1$s Shipping method."
 msgstr "Aktivér dette for Helthjem som en %1$s forsendelsesmetode."
 
 #: WC_Gateway_Vipps.class.php:726
+#, php-format
 msgid "Activate this for Instabox as a %1$s Shipping method."
 msgstr "Aktivér dette for Instabox som en %1$s forsendelsesmetode."
 
 #: WC_Gateway_Vipps.class.php:694
-msgid "Activate this for Porterbuddy as a %1$s Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy."
-msgstr "Aktivér dette for Porterbuddy som en %1$s forsendelsesmetode. Din butiksadresse vil blive brugt som afhentningssted, og din administrator-e-mail vil blive brugt til bookingoplysninger fra Porterbuddy."
+#, php-format
+msgid ""
+"Activate this for Porterbuddy as a %1$s Shipping method. Your store address "
+"will be used as the pick-up point and your admin email will be used for "
+"booking information from Porterbuddy."
+msgstr ""
+"Aktivér dette for Porterbuddy som en %1$s forsendelsesmetode. Din "
+"butiksadresse vil blive brugt som afhentningssted, og din administrator-e-"
+"mail vil blive brugt til bookingoplysninger fra Porterbuddy."
 
 #: WC_Gateway_Vipps.class.php:674
+#, php-format
 msgid "Activate this for Posten Norge as a %1$s Shipping method."
 msgstr "Aktivér dette for Posten Norge som en %1$s forsendelsesmetode."
 
 #: WC_Gateway_Vipps.class.php:684
+#, php-format
 msgid "Activate this for PostNord as a %1$s Shipping method."
 msgstr "Aktivér dette for PostNord som en %1$s forsendelsesmetode."
 
 #: Vipps.class.php:1025
+#, php-format
 msgid "Add  'Buy now with %1$s' button"
 msgstr "Tilføj knappen 'Køb nu med %1$s'"
 
@@ -288,10 +462,12 @@ msgid "Add 'Buy now' button on catalog pages too"
 msgstr "Tilføj også 'Køb nu'-knappen på katalogsiderne"
 
 #: Vipps.class.php:1791
+#, php-format
 msgid "Add a %1$s Buy Now-button to the product block"
 msgstr "Tilføj en %1$s Køb nu-knap til produktblokken"
 
 #: Vipps.class.php:1027
+#, php-format
 msgid "Add a 'Buy now with %1$s'-button to this product"
 msgstr "Tilføj en 'Køb nu med %1$s'-knap til dette produkt"
 
@@ -308,10 +484,12 @@ msgid "Add New QR Code"
 msgstr "Tilføj ny QR-kode"
 
 #: Blocks/Badges/vipps-badge.php:67
+#, php-format
 msgid "Add support for %1$s Senere, if your store provides it"
 msgstr "Tilføj understøttelse af %1$s Senere, hvis din butik tilbyder det"
 
 #: WC_Gateway_Vipps.class.php:919
+#, php-format
 msgid "Add terms and conditions checkbox on %1$s"
 msgstr "Tilføj afkrydsningsfelt for vilkår og betingelser på %1$s"
 
@@ -340,20 +518,28 @@ msgid "Allow user to choose pickup point"
 msgstr "Tillad brugeren at vælge afhentningssted"
 
 #: WC_Gateway_Vipps.class.php:869
-msgid "Almost done! Remember, there are no fees using %1$s when shopping online."
-msgstr "Næsten færdig! Husk, at der ikke er nogen gebyrer ved at bruge %1$s, når du handler online."
+#, php-format
+msgid ""
+"Almost done! Remember, there are no fees using %1$s when shopping online."
+msgstr ""
+"Næsten færdig! Husk, at der ikke er nogen gebyrer ved at bruge %1$s, når du "
+"handler online."
 
 #: WC_Gateway_Vipps.class.php:927
 msgid "Always ask for address, even if products don't need shipping"
 msgstr "Spørg altid efter adressen, også selvom produkterne ikke skal sendes"
 
 #: WC_Gateway_Vipps.class.php:920
+#, php-format
 msgid "Always ask for confirmation on %1$s"
 msgstr "Bed altid om bekræftelse på %1$s"
 
 #: WC_Gateway_Vipps.class.php:928
-msgid "Always ask the user for their address, even if you don't need it for shipping"
-msgstr "Bed altid brugeren om deres adresse, også selvom du ikke har brug for den til forsendelsen"
+msgid ""
+"Always ask the user for their address, even if you don't need it for shipping"
+msgstr ""
+"Bed altid brugeren om deres adresse, også selvom du ikke har brug for den "
+"til forsendelsen"
 
 #: Vipps.class.php:1372 Vipps.class.php:1390
 msgid "Amount"
@@ -364,22 +550,35 @@ msgid "Amount in minor units"
 msgstr "Beløb i mindre enheder"
 
 #: WC_Gateway_Vipps.class.php:811
-msgid "An alphanumeric textstring to use as a prefix on orders from your shop, to avoid duplicate order-ids"
-msgstr "En alfanumerisk tekststreng, der skal bruges som præfiks på ordrer fra din butik for at undgå dobbelte ordre-id'er"
+msgid ""
+"An alphanumeric textstring to use as a prefix on orders from your shop, to "
+"avoid duplicate order-ids"
+msgstr ""
+"En alfanumerisk tekststreng, der skal bruges som præfiks på ordrer fra din "
+"butik for at undgå dobbelte ordre-id'er"
 
 #: VippsCheckout.class.php:538
-msgid "An error has occured - please reload the page to restart your transaction, or return to the shop"
-msgstr "Der er opstået en fejl - genindlæs siden for at genstarte din transaktion, eller vend tilbage til butikken"
+msgid ""
+"An error has occured - please reload the page to restart your transaction, "
+"or return to the shop"
+msgstr ""
+"Der er opstået en fejl - genindlæs siden for at genstarte din transaktion, "
+"eller vend tilbage til butikken"
 
 #: Vipps.class.php:3854
-msgid "An error occured during order confirmation. The error has been logged. Please contact us to determine the status of your order"
-msgstr "Der opstod en fejl under ordrebekræftelsen. Fejlen er blevet logget. Kontakt os venligst for at få status på din ordre"
+msgid ""
+"An error occured during order confirmation. The error has been logged. "
+"Please contact us to determine the status of your order"
+msgstr ""
+"Der opstod en fejl under ordrebekræftelsen. Fejlen er blevet logget. Kontakt "
+"os venligst for at få status på din ordre"
 
 #: Vipps.class.php:1141
 msgid "An error occured while creating a shareable link"
 msgstr "Der opstod en fejl under oprettelsen af et delbart link"
 
 #: WC_Gateway_Vipps.class.php:2754
+#, php-format
 msgid "Anomalous callback from %1$s, handle errors and clean up"
 msgstr "Anomalt tilbagekald fra %1$s, håndter fejl og ryd op"
 
@@ -396,14 +595,23 @@ msgid "Are you sure?"
 msgstr "Er du sikker?"
 
 #: WC_Gateway_Vipps.class.php:963
-msgid "As Express Checkout orders are anonymous, failed orders will end up as \"cancelled\" orders with no information in them. Enable this to delete these automatically when cancelled - but test to make sure no other plugin needs them for anything."
-msgstr "Da Express Checkout-ordrer er anonyme, vil mislykkede ordrer ende som \"annullerede\" ordrer uden oplysninger i dem. Aktivér dette for at slette dem automatisk, når de annulleres - men test for at sikre, at ingen andre plugins har brug for dem til noget."
+msgid ""
+"As Express Checkout orders are anonymous, failed orders will end up as "
+"\"cancelled\" orders with no information in them. Enable this to delete "
+"these automatically when cancelled - but test to make sure no other plugin "
+"needs them for anything."
+msgstr ""
+"Da Express Checkout-ordrer er anonyme, vil mislykkede ordrer ende som "
+"\"annullerede\" ordrer uden oplysninger i dem. Aktivér dette for at slette "
+"dem automatisk, når de annulleres - men test for at sikre, at ingen andre "
+"plugins har brug for dem til noget."
 
 #: WC_Gateway_Vipps.class.php:634 WC_Gateway_Vipps.class.php:635
 msgid "Ask the user to consent to share user information"
 msgstr "Bed brugeren om samtykke til at dele brugeroplysninger"
 
 #: WC_Gateway_Vipps.class.php:1347
+#, php-format
 msgid "Awaiting %1$s payment confirmation"
 msgstr "Afventer %1$s betalingsbekræftelse"
 
@@ -420,10 +628,12 @@ msgid "Buy now with"
 msgstr "Køb nu med"
 
 #: Vipps.class.php:1690 Vipps.class.php:1787 Vipps.class.php:3307
+#, php-format
 msgid "Buy now with %1$s"
 msgstr "Køb nu med %1$s"
 
 #: Vipps.class.php:936 Vipps.class.php:3710
+#, php-format
 msgid "Buy now with %1$s!"
 msgstr "Køb nu med %1$s!"
 
@@ -432,8 +642,25 @@ msgid "Buy-now button"
 msgstr "Køb-nu-knap"
 
 #: WC_Gateway_Vipps.class.php:854
-msgid "By default, orders that are <b>reserved</b> but not <b>captured</b> will have the order status 'On hold' until you capture the sum (by changing the status to 'Processing' or 'Complete')<br> Some stores prefer to use 'On hold' only for orders where there are issues with the payment. In this case you can choose  'Processing' instead, but you must then ensure that you do <b>not ship the order until after you have done capture</b> - because the 'capture' step may in rare cases fail. <br>If you choose this setting, capture will still automatically happen on the status change to 'Complete' "
-msgstr "Som standard vil ordrer, der er <b>reserveret</b>, men ikke <b>registreret</b>, have ordrestatus \"I venteposition\", indtil du registrerer beløbet (ved at ændre status til \"Behandling\" eller \"Fuldført\")<br> Nogle butikker foretrækker kun at bruge 'On hold' til ordrer, hvor der er problemer med betalingen. I så fald kan du vælge 'Behandling' i stedet, men du skal så sikre dig, at du <b>ikke sender ordren, før du har foretaget</b> inddrivelsen - fordi inddrivelsestrinnet i sjældne tilfælde kan mislykkes. <br>Hvis du vælger denne indstilling, vil capture stadig ske automatisk, når status ændres til 'Complete' "
+msgid ""
+"By default, orders that are <b>reserved</b> but not <b>captured</b> will "
+"have the order status 'On hold' until you capture the sum (by changing the "
+"status to 'Processing' or 'Complete')<br> Some stores prefer to use 'On "
+"hold' only for orders where there are issues with the payment. In this case "
+"you can choose  'Processing' instead, but you must then ensure that you do "
+"<b>not ship the order until after you have done capture</b> - because the "
+"'capture' step may in rare cases fail. <br>If you choose this setting, "
+"capture will still automatically happen on the status change to 'Complete' "
+msgstr ""
+"Som standard vil ordrer, der er <b>reserveret</b>, men ikke <b>"
+"registreret</b>, have ordrestatus \"I venteposition\", indtil du registrerer "
+"beløbet (ved at ændre status til \"Behandling\" eller \"Fuldført\")<br> "
+"Nogle butikker foretrækker kun at bruge 'On hold' til ordrer, hvor der er "
+"problemer med betalingen. I så fald kan du vælge 'Behandling' i stedet, men "
+"du skal så sikre dig, at du <b>ikke sender ordren, før du har foretaget</b> "
+"inddrivelsen - fordi inddrivelsestrinnet i sjældne tilfælde kan mislykkes. "
+"<br>Hvis du vælger denne indstilling, vil capture stadig ske automatisk, når "
+"status ændres til 'Complete' "
 
 #: VippsCheckoutShippingMethods.php:152
 msgid "Calculate cost in Checkout"
@@ -444,8 +671,13 @@ msgid "Calculate costs in the Checkout window"
 msgstr "Beregn omkostninger i checkout-vinduet"
 
 #: Vipps.class.php:2569
-msgid "Callback from %1$s delayed or never happened; order status checked by periodic job"
-msgstr "Callback fra %1$s forsinket eller aldrig sket; ordrestatus tjekket af periodisk job"
+#, php-format
+msgid ""
+"Callback from %1$s delayed or never happened; order status checked by "
+"periodic job"
+msgstr ""
+"Callback fra %1$s forsinket eller aldrig sket; ordrestatus tjekket af "
+"periodisk job"
 
 #: Vipps.class.php:2152
 msgid "Callback was:"
@@ -456,30 +688,41 @@ msgid "Cancelled amount"
 msgstr "Annulleret beløb"
 
 #: VippsApi.class.php:312 VippsApi.class.php:355
-msgid "Cannot add category for order %1\\$d: No vipps id present"
+#, fuzzy
+#| msgid "Cannot add category for order %1\\$d: No vipps id present"
+msgid "Cannot add category for order %1$d: No vipps id present"
 msgstr "Kan ikke tilføje kategori for ordre %1\\$d: Ingen vipps id til stede"
 
 #: VippsApi.class.php:176
-msgid "Cannot add receipt for order %1\\$d: No vipps id present"
+#, fuzzy
+#| msgid "Cannot add receipt for order %1\\$d: No vipps id present"
+msgid "Cannot add receipt for order %1$d: No vipps id present"
 msgstr "Kan ikke tilføje kvittering for ordre %1\\$d: Ingen vipps id til stede"
 
 #: WC_Gateway_Vipps.class.php:1581
+#, php-format
 msgid "Cannot cancel a captured %1$s transaction - use refund instead"
-msgstr "Kan ikke annullere en fanget %1$s-transaktion - brug refusion i stedet for"
+msgstr ""
+"Kan ikke annullere en fanget %1$s-transaktion - brug refusion i stedet for"
 
 #: WC_Gateway_Vipps.class.php:1575
+#, php-format
 msgid "Cannot cancel payment on orders not made by %1$s"
-msgstr "Kan ikke annullere betaling på ordrer, der ikke er foretaget inden %1$s"
+msgstr ""
+"Kan ikke annullere betaling på ordrer, der ikke er foretaget inden %1$s"
 
 #: WC_Gateway_Vipps.class.php:1427
+#, php-format
 msgid "Cannot capture payment on orders not made by %1$s"
 msgstr "Kan ikke modtage betaling på ordrer, der ikke er lavet af %1$s"
 
 #: WC_Gateway_Vipps.class.php:1931
+#, php-format
 msgid "Cannot get address information for %1$s order:"
 msgstr "Kan ikke hente adresseoplysninger for %1$s ordre:"
 
 #: WC_Gateway_Vipps.class.php:1522
+#, php-format
 msgid "Cannot refund payment on orders not made by %1$s"
 msgstr "Kan ikke refundere betaling for ordrer, der ikke er foretaget af %1$s"
 
@@ -488,14 +731,18 @@ msgid "Cannot refund superfluous capture on non-completed order:"
 msgstr "Kan ikke refundere overflødig capture på ikke-afsluttet ordre:"
 
 #: WC_Gateway_Vipps.class.php:508
+#, php-format
 msgid "Cannot refund through %1$s - the payment has not been captured yet."
-msgstr "Kan ikke refundere gennem %1$s - betalingen er ikke blevet registreret endnu."
+msgstr ""
+"Kan ikke refundere gennem %1$s - betalingen er ikke blevet registreret endnu."
 
 #: WC_Gateway_Vipps.class.php:511
+#, php-format
 msgid "Cannot refund through %1$s - the refund amount is too large."
 msgstr "Kan ikke refundere gennem %1$s - refusionsbeløbet er for stort."
 
 #: WC_Gateway_Vipps.class.php:1268
+#, php-format
 msgid "Cannot restart order at %1$s"
 msgstr "Kan ikke genstarte ordre ved %1$s"
 
@@ -504,8 +751,13 @@ msgid "Cannot restart order with same order ID: Must cancel"
 msgstr "Kan ikke genstarte ordre med samme ordre-ID: Skal annulleres"
 
 #: WC_Gateway_Vipps.class.php:259
-msgid "Cannot use %1$s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter."
-msgstr "Kan ikke bruge %1$s som status for ikke-autocapturable ordrer: betaling er opfanget på denne status. Se woo_vipps_captured_statuses-filteret."
+#, php-format
+msgid ""
+"Cannot use %1$s as status for non-autocapturable orders: payment is captured "
+"on this status. See the woo_vipps_captured_statuses-filter."
+msgstr ""
+"Kan ikke bruge %1$s som status for ikke-autocapturable ordrer: betaling er "
+"opfanget på denne status. Se woo_vipps_captured_statuses-filteret."
 
 #: Vipps.class.php:1511
 msgid "Cannot use flock() to lock orders: cannot create lockfiles "
@@ -513,11 +765,18 @@ msgstr "Kan ikke bruge flock() til at låse ordrer: kan ikke oprette lockfiles "
 
 #: Vipps.class.php:1504
 msgid "Cannot use flock() to lock orders: cannot create or write to directory"
-msgstr "Kan ikke bruge flock() til at låse ordrer: kan ikke oprette eller skrive til mappe"
+msgstr ""
+"Kan ikke bruge flock() til at låse ordrer: kan ikke oprette eller skrive til "
+"mappe"
 
 #: Vipps.class.php:2379
-msgid "Cannot use shipping method %2$s in %1$s Express checkout: the shipping method isn't serializable."
-msgstr "Kan ikke bruge forsendelsesmetode %2$s i %1$s Express checkout: forsendelsesmetoden kan ikke serialiseres."
+#, php-format
+msgid ""
+"Cannot use shipping method %2$s in %1$s Express checkout: the shipping "
+"method isn't serializable."
+msgstr ""
+"Kan ikke bruge forsendelsesmetode %2$s i %1$s Express checkout: "
+"forsendelsesmetoden kan ikke serialiseres."
 
 #: Vipps.class.php:1883
 msgid "Capture payment"
@@ -528,15 +787,19 @@ msgid "Capured amount"
 msgstr "Sikret beløb"
 
 #: Vipps.class.php:423
-msgid "Check this if your store supports %1$s Senere and you want the specialized badge for that"
-msgstr "Markér dette, hvis din butik understøtter %1$s Senere, og du vil have det specialiserede badge for det"
+#, php-format
+msgid ""
+"Check this if your store supports %1$s Senere and you want the specialized "
+"badge for that"
+msgstr ""
+"Markér dette, hvis din butik understøtter %1$s Senere, og du vil have det "
+"specialiserede badge for det"
 
 #: WC_Gateway_Vipps.class.php:602
 msgid "Checkout"
 msgstr "Til kassen"
 
 #. Name of the plugin
-#: 
 msgid "Checkout with Vipps for WooCommerce"
 msgstr "Checkout med Vipps til WooCommerce"
 
@@ -569,8 +832,17 @@ msgid "Choose which payment method should be displayed to users at checkout"
 msgstr "Vælg, hvilken betalingsmetode der skal vises til brugerne ved checkout"
 
 #: WC_Gateway_Vipps.class.php:954
-msgid "Choosing this will use a different method of handling the \"Buy now\" button on a single product, which will work for more product types and more plugins - while being <i>slightly</i> less smooth. Use this if your product needs more configuration than simple or standard variable products"
-msgstr "Hvis du vælger dette, vil du bruge en anden metode til at håndtere \"Køb nu\"-knappen på et enkelt produkt, som vil fungere for flere produkttyper og flere plugins - mens den er <i>lidt</i> mindre glat. Brug dette, hvis dit produkt har brug for mere konfiguration end simple eller standard variable produkter"
+msgid ""
+"Choosing this will use a different method of handling the \"Buy now\" button "
+"on a single product, which will work for more product types and more plugins "
+"- while being <i>slightly</i> less smooth. Use this if your product needs "
+"more configuration than simple or standard variable products"
+msgstr ""
+"Hvis du vælger dette, vil du bruge en anden metode til at håndtere \"Køb "
+"nu\"-knappen på et enkelt produkt, som vil fungere for flere produkttyper og "
+"flere plugins - mens den er <i>lidt</i> mindre glat. Brug dette, hvis dit "
+"produkt har brug for mere konfiguration end simple eller standard variable "
+"produkter"
 
 #: Vipps.class.php:1128 Vipps.class.php:1157 Vipps.class.php:1159
 msgid "Click to copy"
@@ -591,8 +863,13 @@ msgid "Client secret provided to you by Instabox"
 msgstr "Kundehemmelighed leveret til dig af Instabox"
 
 #: Vipps.class.php:591
-msgid "Configure the plugin on its <a href='%1$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2$s'>%3$s portal</a>."
-msgstr "Konfigurer plugin'et på dets <a href='%1$s'>indstillingsside</a>, og hent dine nøgler fra <a target='_blank' href='%2$s'>%3$s-portalen</a>."
+#, php-format
+msgid ""
+"Configure the plugin on its <a href='%1$s'>settings page</a> and  get your "
+"keys from the <a target='_blank' href='%2$s'>%3$s portal</a>."
+msgstr ""
+"Konfigurer plugin'et på dets <a href='%1$s'>indstillingsside</a>, og hent "
+"dine nøgler fra <a target='_blank' href='%2$s'>%3$s-portalen</a>."
 
 #: VippsApi.class.php:602
 msgid "Confirm your order"
@@ -603,6 +880,7 @@ msgid "Confirm your order from"
 msgstr "Bekræft din ordre fra"
 
 #: WC_Gateway_Vipps.class.php:3248
+#, php-format
 msgid "Connection to %1$s is OK"
 msgstr "Forbindelsen til %1$s er OK"
 
@@ -615,6 +893,7 @@ msgid "Continue shopping"
 msgstr "Fortsæt med at handle"
 
 #: Vipps.class.php:860
+#, php-format
 msgid "Continue with %1$s"
 msgstr "Fortsæt med %1$s"
 
@@ -631,38 +910,48 @@ msgid "Cost of shipping"
 msgstr "Udgifter til forsendelse"
 
 #: VippsApi.class.php:347
-msgid "Could not add category %1\\$s to Vipps: "
+#, fuzzy, php-format
+#| msgid "Could not add category %1\\$s to Vipps: "
+msgid "Could not add category %1$s to Vipps: "
 msgstr "Kunne ikke tilføje kategori %1\\$s til Vipps: "
 
 #: WC_Gateway_Vipps.class.php:411
+#, php-format
 msgid "Could not cancel %1$s payment"
 msgstr "Kunne ikke annullere %1$s betaling"
 
 #: WC_Gateway_Vipps.class.php:1602
+#, php-format
 msgid "Could not cancel %1$s payment for order id:"
 msgstr "Kunne ikke annullere %1$s betaling for ordre-id:"
 
 #: WC_Gateway_Vipps.class.php:1598
+#, php-format
 msgid "Could not cancel %1$s payment for order_id:"
 msgstr "Kunne ikke annullere %1$s betaling for order_id:"
 
 #: WC_Gateway_Vipps.class.php:1410
+#, php-format
 msgid "Could not capture %1$s payment - status set to"
 msgstr "Kunne ikke modtage %1$s betaling - status sat til"
 
 #: WC_Gateway_Vipps.class.php:1469
+#, php-format
 msgid "Could not capture %1$s payment for order id:"
 msgstr "Kunne ikke registrere %1$s betaling for ordre-id:"
 
 #: WC_Gateway_Vipps.class.php:1473
+#, php-format
 msgid "Could not capture %1$s payment for order_id:"
 msgstr "Kunne ikke registrere %1$s betaling for order_id:"
 
 #: WC_Gateway_Vipps.class.php:1406
+#, php-format
 msgid "Could not capture %1$s payment for this order!"
 msgstr "Kunne ikke registrere %1$s betaling for denne ordre!"
 
 #: WC_Gateway_Vipps.class.php:3250
+#, php-format
 msgid "Could not connect to %1$s"
 msgstr "Kunne ikke oprette forbindelse til %1$s"
 
@@ -672,47 +961,63 @@ msgid "Could not create order"
 msgstr "Kunne ikke oprette ordre"
 
 #: WC_Gateway_Vipps.class.php:2936
+#, php-format
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
 msgstr "Kunne ikke udføre alle betalingshandlinger på %1$s ordre %2$d: %3$s "
 
 #: Vipps.class.php:2152
+#, php-format
 msgid "Could not find %1$s order with id:"
 msgstr "Kunne ikke finde %1$s ordre med id:"
 
 #: Vipps.class.php:2286
-msgid "Could not find any applicable shipping methods for %1$s - order will fail"
-msgstr "Kunne ikke finde nogen relevante forsendelsesmetoder for %1$s - ordren vil mislykkes"
+#, php-format
+msgid ""
+"Could not find any applicable shipping methods for %1$s - order will fail"
+msgstr ""
+"Kunne ikke finde nogen relevante forsendelsesmetoder for %1$s - ordren vil "
+"mislykkes"
 
 #: Vipps.class.php:2160
 msgid "Could not find Woo order with id:"
 msgstr "Kunne ikke finde Woo-ordre med id:"
 
 #: WC_Gateway_Vipps.class.php:2378
+#, php-format
 msgid "Could not get %1$s order status"
 msgstr "Kunne ikke få %1$s ordrestatus"
 
 #: WC_Gateway_Vipps.class.php:2367
+#, php-format
 msgid "Could not get %1$s order status - it has no %1$s Order Id. Must cancel."
-msgstr "Kunne ikke få %1$s ordrestatus - den har ikke %1$s ordre-id. Skal annulleres."
+msgstr ""
+"Kunne ikke få %1$s ordrestatus - den har ikke %1$s ordre-id. Skal annulleres."
 
 #: WC_Gateway_Vipps.class.php:2375 WC_Gateway_Vipps.class.php:2385
+#, php-format
 msgid "Could not get %1$s order status for order id:"
 msgstr "Kunne ikke få %1$s ordrestatus for ordre-id:"
 
 #: WC_Gateway_Vipps.class.php:1218
+#, php-format
 msgid "Could not get access token when initiating %1$s payment for order id:"
-msgstr "Kunne ikke få adgangstoken ved initiering af %1$s-betaling for ordre-id:"
+msgstr ""
+"Kunne ikke få adgangstoken ved initiering af %1$s-betaling for ordre-id:"
 
 #: WC_Gateway_Vipps.class.php:1957
+#, php-format
 msgid "Could not get address info for order from %1$s"
 msgstr "Kunne ikke hente adresseoplysninger for ordre fra %1$s"
 
 #: WC_Gateway_Vipps.class.php:2025
+#, php-format
 msgid "Could not get order status from %1$s using epayment api: "
 msgstr "Kunne ikke få ordrestatus fra %1$s ved hjælp af epayment api: "
 
 #: VippsApi.class.php:383
-msgid "Could not get receipt data for order %1\\$s from Vipps: "
+#, fuzzy, php-format
+#| msgid "Could not get receipt data for order %1\\$s from Vipps: "
+msgid "Could not get receipt data for order %1$s from Vipps: "
 msgstr "Kunne ikke hente kvitteringsdata for ordre %1\\$s fra Vipps: "
 
 #: Vipps.class.php:2708
@@ -720,22 +1025,32 @@ msgid "Could not get user email from order before thankyou-page"
 msgstr "Kunne ikke hente bruger-e-mail fra ordre før tak-side"
 
 #: WC_Gateway_Vipps.class.php:2124
-msgid "Could not get user info for order %1$d using the userinfo API: %2$s. Please use the 'get complete transaction details' on the button to try to recover this. "
-msgstr "Kunne ikke hente brugeroplysninger for ordre %1$d ved hjælp af userinfo API: %2$s. Brug venligst knappen 'get complete transaction details' til at forsøge at gendanne dette. "
+#, php-format
+msgid ""
+"Could not get user info for order %1$d using the userinfo API: %2$s. Please "
+"use the 'get complete transaction details' on the button to try to recover "
+"this. "
+msgstr ""
+"Kunne ikke hente brugeroplysninger for ordre %1$d ved hjælp af userinfo API: "
+"%2$s. Brug venligst knappen 'get complete transaction details' til at "
+"forsøge at gendanne dette. "
 
 #: VippsApi.class.php:99 VippsApi.class.php:102
 msgid "Could not get Vipps access token"
 msgstr "Kunne ikke få Vipps access token"
 
 #: WC_Gateway_Vipps.class.php:1307 WC_Gateway_Vipps.class.php:1320
+#, php-format
 msgid "Could not initiate %1$s payment"
 msgstr "Kunne ikke igangsætte %1$s betaling"
 
 #: VippsCheckout.class.php:307
+#, php-format
 msgid "Could not initiate %1$s session: %2$s"
 msgstr "Kunne ikke starte %1$s session: %2$s"
 
 #: WC_Gateway_Vipps.class.php:1838
+#, php-format
 msgid "Could not interpret %1$s order status"
 msgstr "Kunne ikke fortolke %1$s ordrestatus"
 
@@ -744,16 +1059,23 @@ msgid "Could not read image file: "
 msgstr "Kunne ikke læse billedfil: "
 
 #: WC_Gateway_Vipps.class.php:527 WC_Gateway_Vipps.class.php:1558
+#, php-format
 msgid "Could not refund %1$s payment"
 msgstr "Kunne ikke refundere %1$s betaling"
 
 #: WC_Gateway_Vipps.class.php:524 WC_Gateway_Vipps.class.php:1555
+#, php-format
 msgid "Could not refund %1$s payment for order id:"
 msgstr "Kunne ikke refundere %1$s betaling for ordre-id:"
 
 #: WC_Gateway_Vipps.class.php:457
-msgid "Could not refund payment through %1$s - ensure the refund is handled manually!"
-msgstr "Kunne ikke refundere betaling gennem %1$s - sørg for, at refusionen håndteres manuelt!"
+#, php-format
+msgid ""
+"Could not refund payment through %1$s - ensure the refund is handled "
+"manually!"
+msgstr ""
+"Kunne ikke refundere betaling gennem %1$s - sørg for, at refusionen "
+"håndteres manuelt!"
 
 #: VippsApi.class.php:166
 msgid "Could not send image to Vipps: "
@@ -764,14 +1086,21 @@ msgid "Could not send receipt to Vipps: "
 msgstr "Kunne ikke sende kvittering til Vipps: "
 
 #: VippsQRCodeController.class.php:582
-msgid "Couldn't create or update QR image: %1\\$s"
+#, fuzzy, php-format
+#| msgid "Couldn't create or update QR image: %1\\$s"
+msgid "Couldn't create or update QR image: %1$s"
 msgstr "Kunne ikke oprette eller opdatere QR-billede: %1\\$s"
 
 #: VippsQRCodeController.class.php:572
-msgid "Couldn't download QR image: try saving post again! Error was: %1\\$s"
-msgstr "Kunne ikke downloade QR-billede: Prøv at gemme indlægget igen! Fejlen var: %1\\$s"
+#, fuzzy, php-format
+#| msgid "Couldn't download QR image: try saving post again! Error was: %1\\$s"
+msgid "Couldn't download QR image: try saving post again! Error was: %1$s"
+msgstr ""
+"Kunne ikke downloade QR-billede: Prøv at gemme indlægget igen! Fejlen var: "
+"%1\\$s"
 
 #: WC_Gateway_Vipps.class.php:617 WC_Gateway_Vipps.class.php:618
+#, php-format
 msgid "Create new customers on %1$s"
 msgstr "Opret nye kunder på %1$s"
 
@@ -785,10 +1114,12 @@ msgstr "Opret link, der kan deles"
 
 #: WC_Gateway_Vipps.class.php:1846 WC_Gateway_Vipps.class.php:2269
 #: WC_Gateway_Vipps.class.php:2802
+#, php-format
 msgid "Credit Card / %1$s"
 msgstr "Kreditkort / %1$s"
 
 #: VippsCheckout.class.php:298
+#, php-format
 msgid "Customer passed to %1$s"
 msgstr "Kunde overført til %1$s"
 
@@ -826,14 +1157,20 @@ msgid "Description"
 msgstr "Beskrivelse"
 
 #: VippsKCSupport.class.php:69
-msgid "Description for %1$s payment method. This controls the description which the user sees in the checkout form."
-msgstr "Beskrivelse for %1$s betalingsmetode. Dette styrer den beskrivelse, som brugeren ser i checkout-formularen."
+#, php-format
+msgid ""
+"Description for %1$s payment method. This controls the description which the "
+"user sees in the checkout form."
+msgstr ""
+"Beskrivelse for %1$s betalingsmetode. Dette styrer den beskrivelse, som "
+"brugeren ser i checkout-formularen."
 
 #: WC_Gateway_Vipps.class.php:1048
 msgid "Developer mode"
 msgstr "Udvikler-tilstand"
 
 #: Vipps.class.php:1941
+#, php-format
 msgid "Did not understand callback from %1$s:"
 msgstr "Forstod ikke tilbagekald fra %1$s:"
 
@@ -842,14 +1179,17 @@ msgid "Disable other gateway button"
 msgstr "Deaktiver anden gateway-knap"
 
 #: VippsKCSupport.class.php:81
-msgid "Disables the \"Select another Payment method\" button on the Klarna Checkout."
-msgstr "Deaktiverer knappen \"Vælg en anden betalingsmetode\" i Klarna Checkout."
+msgid ""
+"Disables the \"Select another Payment method\" button on the Klarna Checkout."
+msgstr ""
+"Deaktiverer knappen \"Vælg en anden betalingsmetode\" i Klarna Checkout."
 
 #: VippsDismissibleAdminBanners.class.php:78
 msgid "Dismissed message "
 msgstr "Afvist besked "
 
 #: Vipps.class.php:1087
+#, php-format
 msgid "Do not use %1$s Later"
 msgstr "Brug ikke %1$s Senere"
 
@@ -870,8 +1210,15 @@ msgid "Drop the contact fields on the Checkout screen"
 msgstr "Drop kontaktfelterne på checkout-skærmen"
 
 #: WC_Gateway_Vipps.class.php:1316
-msgid "Duplicate Order ID! Please report this to support@wp-hosting.no together with as much info about the order as possible. Express: %1$s Status: %2$s User agent: %3$s"
-msgstr "Duplikat af ordre-id! Rapporter venligst dette til support@wp-hosting.no sammen med så meget information om ordren som muligt. Ekspres: %1$s Status: %2$s Brugeragent: %3$s"
+#, php-format
+msgid ""
+"Duplicate Order ID! Please report this to support@wp-hosting.no together "
+"with as much info about the order as possible. Express: %1$s Status: %2$s "
+"User agent: %3$s"
+msgstr ""
+"Duplikat af ordre-id! Rapporter venligst dette til support@wp-hosting.no "
+"sammen med så meget information om ordren som muligt. Ekspres: %1$s Status: "
+"%2$s Brugeragent: %3$s"
 
 #: VippsQRCodeController.class.php:613
 msgid "Edit QR Code"
@@ -882,10 +1229,12 @@ msgid "Email"
 msgstr "E-mail"
 
 #: WC_Gateway_Vipps.class.php:789
+#, php-format
 msgid "Enable %1$s"
 msgstr "Aktiver %1$s"
 
 #: WC_Gateway_Vipps.class.php:610
+#, php-format
 msgid "Enable Alternative %1$s screen, replacing the standard checkout page"
 msgstr "Aktiver alternativ %1$s-skærm, der erstatter standard checkout-siden"
 
@@ -906,6 +1255,7 @@ msgid "Enable static shipping"
 msgstr "Aktivér statisk forsendelse"
 
 #: WC_Gateway_Vipps.class.php:626
+#, php-format
 msgid "Enable static shipping for %1$s"
 msgstr "Aktivér statisk forsendelse for %1$s"
 
@@ -918,28 +1268,65 @@ msgid "Enable test mode"
 msgstr "Aktiver testtilstand"
 
 #: WC_Gateway_Vipps.class.php:908
-msgid "Enable this to allow customers to buy a product using %1$s directly from the product page. If you choose 'some', you must enable this on the relevant products"
-msgstr "Aktivér dette for at give kunderne mulighed for at købe et produkt ved hjælp af %1$s direkte fra produktsiden. Hvis du vælger \"nogle\", skal du aktivere dette på de relevante produkter"
+#, php-format
+msgid ""
+"Enable this to allow customers to buy a product using %1$s directly from the "
+"product page. If you choose 'some', you must enable this on the relevant "
+"products"
+msgstr ""
+"Aktivér dette for at give kunderne mulighed for at købe et produkt ved hjælp "
+"af %1$s direkte fra produktsiden. Hvis du vælger \"nogle\", skal du aktivere "
+"dette på de relevante produkter"
 
 #: WC_Gateway_Vipps.class.php:894
-msgid "Enable this to allow customers to shop using %1$s directly from the cart with no login or address input needed"
-msgstr "Aktiver dette for at give kunderne mulighed for at handle med %1$s direkte fra indkøbskurven uden login eller adresseinput"
+#, php-format
+msgid ""
+"Enable this to allow customers to shop using %1$s directly from the cart "
+"with no login or address input needed"
+msgstr ""
+"Aktiver dette for at give kunderne mulighed for at handle med %1$s direkte "
+"fra indkøbskurven uden login eller adresseinput"
 
 #: WC_Gateway_Vipps.class.php:620
-msgid "Enable this to create and login customers when using %1$s. Otherwise these will all be guest checkouts. If using, you may want to install Login with Vipps too."
-msgstr "Aktivér dette for at oprette og logge kunder ind, når du bruger %1$s. Ellers vil alle disse være gæstecheckouts. Hvis du bruger det, kan du også installere Login med Vipps."
+#, php-format
+msgid ""
+"Enable this to create and login customers when using %1$s. Otherwise these "
+"will all be guest checkouts. If using, you may want to install Login with "
+"Vipps too."
+msgstr ""
+"Aktivér dette for at oprette og logge kunder ind, når du bruger %1$s. Ellers "
+"vil alle disse være gæstecheckouts. Hvis du bruger det, kan du også "
+"installere Login med Vipps."
 
 #: WC_Gateway_Vipps.class.php:947
-msgid "Enable this to create and login new customers when using express checkout. Otherwise these will all be guest checkouts. If you have \"Login with Vipps\" installed, this will be the default (unless you have turned off user creation in WooCommerce itself)"
-msgstr "Aktivér dette for at oprette og logge ind på nye kunder, når du bruger express checkout. Ellers vil alle disse være gæstecheckouts. Hvis du har \"Login med Vipps\" installeret, vil dette være standard (medmindre du har slået brugeroprettelse fra i selve WooCommerce)"
+msgid ""
+"Enable this to create and login new customers when using express checkout. "
+"Otherwise these will all be guest checkouts. If you have \"Login with "
+"Vipps\" installed, this will be the default (unless you have turned off user "
+"creation in WooCommerce itself)"
+msgstr ""
+"Aktivér dette for at oprette og logge ind på nye kunder, når du bruger "
+"express checkout. Ellers vil alle disse være gæstecheckouts. Hvis du har "
+"\"Login med Vipps\" installeret, vil dette være standard (medmindre du har "
+"slået brugeroprettelse fra i selve WooCommerce)"
 
 #: WC_Gateway_Vipps.class.php:1039
-msgid "Enable this to enter developer mode. This gives you access to the test-api and sometimes other tools not yet ready for general consumption"
-msgstr "Aktivér dette for at gå i udviklertilstand. Det giver dig adgang til test-api og nogle gange andre værktøjer, der endnu ikke er klar til almindelig brug"
+msgid ""
+"Enable this to enter developer mode. This gives you access to the test-api "
+"and sometimes other tools not yet ready for general consumption"
+msgstr ""
+"Aktivér dette for at gå i udviklertilstand. Det giver dig adgang til test-"
+"api og nogle gange andre værktøjer, der endnu ikke er klar til almindelig "
+"brug"
 
 #: WC_Gateway_Vipps.class.php:876
-msgid "Enable this to use %1$s as the default payment method on the checkout page, regardless of order."
-msgstr "Aktivér dette for at bruge %1$s som standardbetalingsmetode på betalingssiden, uanset ordre."
+#, php-format
+msgid ""
+"Enable this to use %1$s as the default payment method on the checkout page, "
+"regardless of order."
+msgstr ""
+"Aktivér dette for at bruge %1$s som standardbetalingsmetode på "
+"betalingssiden, uanset ordre."
 
 #: Blocks/Badges/vipps-badge.php:73
 msgid "English"
@@ -950,10 +1337,12 @@ msgid "Error calculating static shipping"
 msgstr "Fejl ved beregning af statisk forsendelse"
 
 #: VippsCheckout.class.php:217
+#, php-format
 msgid "Error calculating static shipping for order %1$s"
 msgstr "Fejl ved beregning af statisk forsendelse for ordre %1$s"
 
 #: WC_Gateway_Vipps.class.php:2907
+#, php-format
 msgid "Error calling the Order Management API: %1$s "
 msgstr "Fejl ved kald af API til ordrehåndtering: %1$s "
 
@@ -962,19 +1351,27 @@ msgid "Error creating customer in express checkout: "
 msgstr "Fejl ved oprettelse af kunde i express checkout: "
 
 #: VippsQRCodeController.class.php:579
-msgid "Error creating or updating QR code: %1\\$s"
+#, fuzzy, php-format
+#| msgid "Error creating or updating QR code: %1\\$s"
+msgid "Error creating or updating QR code: %1$s"
 msgstr "Fejl ved oprettelse eller opdatering af QR-kode: %1\\$s"
 
 #: VippsQRCodeController.class.php:494
-msgid "Error deleting QR code: %1\\$s"
+#, fuzzy, php-format
+#| msgid "Error deleting QR code: %1\\$s"
+msgid "Error deleting QR code: %1$s"
 msgstr "Fejl ved sletning af QR-kode: %1\\$s"
 
 #: VippsQRCodeController.class.php:187
-msgid "Error deleting unsynched QR code with id %1\\$s: %2\\$s"
+#, fuzzy, php-format
+#| msgid "Error deleting unsynched QR code with id %1\\$s: %2\\$s"
+msgid "Error deleting unsynched QR code with id %1$s: %2$s"
 msgstr "Fejl ved sletning af usynkroniseret QR-kode med id %1\\$s: %2\\$s"
 
 #: VippsQRCodeController.class.php:570
-msgid "Error downloading QR code image: %1\\$s"
+#, fuzzy, php-format
+#| msgid "Error downloading QR code image: %1\\$s"
+msgid "Error downloading QR code image: %1$s"
 msgstr "Fejl ved download af QR-kodebillede: %1\\$s"
 
 #: Vipps.class.php:3853
@@ -986,14 +1383,18 @@ msgid "Error finding product - cannot create order"
 msgstr "Fejl ved søgning efter produkt - kan ikke oprette ordre"
 
 #: Vipps.class.php:2141
+#, php-format
 msgid "Error getting customer data in the %1$s shipping details callback: %2$s"
-msgstr "Fejl ved hentning af kundedata i %1$s forsendelsesdetaljer callback: %2$s"
+msgstr ""
+"Fejl ved hentning af kundedata i %1$s forsendelsesdetaljer callback: %2$s"
 
 #: VippsQRCodeController.class.php:124
+#, php-format
 msgid "Error getting list of QR codes from %1$s: %2$s"
 msgstr "Fejl ved hentning af liste over QR-koder fra %1$s: %2$s"
 
 #: Vipps.class.php:2574
+#, php-format
 msgid "Error getting order status at %1$s for order %2$d"
 msgstr "Fejl ved hentning af ordrestatus ved %1$s for ordre %2$d"
 
@@ -1011,28 +1412,41 @@ msgid "Error getting payment details before doing refund: "
 msgstr "Fejl ved indhentning af betalingsoplysninger før refundering: "
 
 #: WC_Gateway_Vipps.class.php:1875
+#, php-format
 msgid "Error getting payment details from %1$s for order_id:"
 msgstr "Fejl ved hentning af betalingsoplysninger fra %1$s for order_id:"
 
 #: VippsQRCodeController.class.php:212 VippsQRCodeController.class.php:215
-msgid "Error importing unsynched QR code with id %1\\$s: %2\\$s"
+#, fuzzy, php-format
+#| msgid "Error importing unsynched QR code with id %1\\$s: %2\\$s"
+msgid "Error importing unsynched QR code with id %1$s: %2$s"
 msgstr "Fejl ved import af usynkroniseret QR-kode med id %1\\$s: %2\\$s"
 
 #: VippsApi.class.php:764 VippsApi.class.php:770
-msgid "Error polling status - error message %1\\$s"
+#, fuzzy, php-format
+#| msgid "Error polling status - error message %1\\$s"
+msgid "Error polling status - error message %1$s"
 msgstr "Fejl i polling-status - fejlmeddelelse %1\\$s"
 
 #: Vipps.class.php:1942
+#, php-format
 msgid "Error was: %1$s"
 msgstr "Fejlen var: %1$s"
 
 #: WC_Gateway_Vipps.class.php:452
+#, php-format
 msgid "Error when refunding payment through %1$s:"
 msgstr "Fejl ved tilbagebetaling af betaling via %1$s:"
 
 #: Vipps.class.php:113
-msgid "Error: Cannot instantiate payment gateway, because WooCommerce is not loaded! This can happen when WooCommerce updates itself; but if it didn't, please activate WooCommerce again"
-msgstr "Fejl: Kan ikke instantiere betalingsgateway, fordi WooCommerce ikke er indlæst! Det kan ske, når WooCommerce opdaterer sig selv, men hvis det ikke er sket, skal du aktivere WooCommerce igen"
+msgid ""
+"Error: Cannot instantiate payment gateway, because WooCommerce is not loaded!"
+" This can happen when WooCommerce updates itself; but if it didn't, please "
+"activate WooCommerce again"
+msgstr ""
+"Fejl: Kan ikke instantiere betalingsgateway, fordi WooCommerce ikke er "
+"indlæst! Det kan ske, når WooCommerce opdaterer sig selv, men hvis det ikke "
+"er sket, skal du aktivere WooCommerce igen"
 
 #: WC_Gateway_Vipps.class.php:884
 msgid "Express Checkout"
@@ -1043,6 +1457,7 @@ msgid "express checkout"
 msgstr "ekspres checkout"
 
 #: VippsKCSupport.class.php:51
+#, php-format
 msgid "External Payment Method - %1$s"
 msgstr "Ekstern betalingsmetode - %1$s"
 
@@ -1051,6 +1466,7 @@ msgid "Featured Image"
 msgstr "Udvalgt billede"
 
 #: WC_Gateway_Vipps.class.php:2991
+#, php-format
 msgid "File type was %1$s; supported types are %2$s"
 msgstr "Filtype var %1$s; understøttede typer er %2$s"
 
@@ -1059,38 +1475,68 @@ msgid "Filter items list"
 msgstr "Filtrer listen over emner"
 
 #: WC_Gateway_Vipps.class.php:1384
-msgid "Filters are setting the payment_complete order status to '%1$s' - will not capture"
-msgstr "Filtre sætter ordrestatus for payment_complete til '%1$s' - vil ikke blive fanget"
+#, php-format
+msgid ""
+"Filters are setting the payment_complete order status to '%1$s' - will not "
+"capture"
+msgstr ""
+"Filtre sætter ordrestatus for payment_complete til '%1$s' - vil ikke blive "
+"fanget"
 
 #: WC_Gateway_Vipps.class.php:826
-msgid "Find your account under the \"Developer\" tab on https://portal.vipps.no/ and choose \"Show keys\". Copy the value of \"client_id\""
-msgstr "Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og vælg \"Show keys\". Kopier værdien af \"client_id\""
+msgid ""
+"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"and choose \"Show keys\". Copy the value of \"client_id\""
+msgstr ""
+"Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"vælg \"Show keys\". Kopier værdien af \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:834
-msgid "Find your account under the \"Developer\" tab on https://portal.vipps.no/ and choose \"show keys\". Copy the value of \"client_secret\""
-msgstr "Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og vælg \"show keys\". Kopier værdien af \"client_secret\""
+msgid ""
+"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"and choose \"show keys\". Copy the value of \"client_secret\""
+msgstr ""
+"Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"vælg \"show keys\". Kopier værdien af \"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:842
-msgid "Find your account under the \"Developer\" tab on https://portal.vipps.no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
-msgstr "Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og vælg \"show keys\". Kopier værdien af \"Vipps-Subscription-Key\""
+msgid ""
+"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
+msgstr ""
+"Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"vælg \"show keys\". Kopier værdien af \"Vipps-Subscription-Key\""
 
 #: WC_Gateway_Vipps.class.php:1075
-msgid "Find your test account under the \"Developer\" tab on https://portal.vipps.no/ and choose \"Show keys\". Copy the value of \"client_id\""
-msgstr "Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og vælg \"Show keys\". Kopier værdien af \"client_id\""
+msgid ""
+"Find your test account under the \"Developer\" tab on https://portal.vipps."
+"no/ and choose \"Show keys\". Copy the value of \"client_id\""
+msgstr ""
+"Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"vælg \"Show keys\". Kopier værdien af \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:1083
-msgid "Find your test account under the \"Developer\" tab on https://portal.vipps.no/ and choose \"show keys\". Copy the value of \"client_secret\""
-msgstr "Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og vælg \"show keys\". Kopier værdien af \"client_secret\""
+msgid ""
+"Find your test account under the \"Developer\" tab on https://portal.vipps."
+"no/ and choose \"show keys\". Copy the value of \"client_secret\""
+msgstr ""
+"Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"vælg \"show keys\". Kopier værdien af \"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:1091
-msgid "Find your test account under the \"Developer\" tab on https://portal.vipps.no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
-msgstr "Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og vælg \"show keys\". Kopier værdien af \"Vipps-Subscription-Key\""
+msgid ""
+"Find your test account under the \"Developer\" tab on https://portal.vipps."
+"no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
+msgstr ""
+"Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"vælg \"show keys\". Kopier værdien af \"Vipps-Subscription-Key\""
 
 #: Vipps.class.php:1346 Vipps.class.php:1361
 msgid "First Name"
 msgstr "Fornavn"
 
 #: Vipps.class.php:2572
+#, php-format
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr "For ordre %2$d er ordrestatus ved %1$s %3$s"
 
@@ -1115,12 +1561,10 @@ msgid "Helthjem Username"
 msgstr "Helthjem Brugernavn"
 
 #. URI of the plugin
-#: 
 msgid "https://wordpress.org/plugins/woo-vipps/"
 msgstr "https://wordpress.org/plugins/woo-vipps/"
 
 #. Author URI of the plugin
-#: 
 msgid "https://www.wp-hosting.no/"
 msgstr "https://www.wp-hosting.no/"
 
@@ -1129,86 +1573,255 @@ msgid "Id"
 msgstr "Id"
 
 #: WC_Gateway_Vipps.class.php:915
-msgid "If %1$s is enabled for a product, add the 'Buy now' button to catalog pages too"
-msgstr "Hvis %1$s er aktiveret for et produkt, tilføjes knappen 'Køb nu' også til katalogsider"
+#, php-format
+msgid ""
+"If %1$s is enabled for a product, add the 'Buy now' button to catalog pages "
+"too"
+msgstr ""
+"Hvis %1$s er aktiveret for et produkt, tilføjes knappen 'Køb nu' også til "
+"katalogsider"
 
 #: WC_Gateway_Vipps.class.php:612
-msgid "If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses."
-msgstr "Hvis den er aktiveret, <strong>erstatter</strong> den standard Woo checkout-skærmen med %1$s, hvilket giver nem checkout med %1$s eller kreditkort, uden at du behøver at indtaste adresser."
+#, php-format
+msgid ""
+"If activated, this will <strong>replace</strong> the standard Woo checkout "
+"screen with %1$s, providing easy checkout using %1$s or credit card, with no "
+"need to type in addresses."
+msgstr ""
+"Hvis den er aktiveret, <strong>erstatter</strong> den standard Woo checkout-"
+"skærmen med %1$s, hvilket giver nem checkout med %1$s eller kreditkort, uden "
+"at du behøver at indtaste adresser."
 
 #: VippsCheckoutShippingMethods.php:156
-msgid "If checked, cost of shipping will be calculated dynamically in the %1$s window"
-msgstr "Hvis markeret, beregnes forsendelsesomkostningerne dynamisk i vinduet %1$s"
+#, php-format
+msgid ""
+"If checked, cost of shipping will be calculated dynamically in the %1$s "
+"window"
+msgstr ""
+"Hvis markeret, beregnes forsendelsesomkostningerne dynamisk i vinduet %1$s"
 
 #: Vipps.class.php:398
-msgid "If selected, all products will get a badge, but you can override this on the %1$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page"
-msgstr "Hvis det er valgt, vil alle produkter få et badge, men du kan tilsidesætte dette på fanen %1$s på produktdatasiden. Hvis ikke, er det den anden vej rundt. Du kan også vælge en bestemt variant på den side"
+#, php-format
+msgid ""
+"If selected, all products will get a badge, but you can override this on the "
+"%1$s tab on the product data page. If not, it's the other way around. You "
+"can also choose a particular variant on that page"
+msgstr ""
+"Hvis det er valgt, vil alle produkter få et badge, men du kan tilsidesætte "
+"dette på fanen %1$s på produktdatasiden. Hvis ikke, er det den anden vej "
+"rundt. Du kan også vælge en bestemt variant på den side"
 
 #: WC_Gateway_Vipps.class.php:1022
-msgid "If set, this image will be uploaded to %1$s and used to profile your store in the %1$s app for links to the order confirmation etc"
-msgstr "Hvis indstillet, uploades dette billede til %1$s og bruges til at profilere din butik i %1$s-appen til links til ordrebekræftelsen osv"
+#, php-format
+msgid ""
+"If set, this image will be uploaded to %1$s and used to profile your store "
+"in the %1$s app for links to the order confirmation etc"
+msgstr ""
+"Hvis indstillet, uploades dette billede til %1$s og bruges til at profilere "
+"din butik i %1$s-appen til links til ordrebekræftelsen osv"
 
 #: WC_Gateway_Vipps.class.php:930
-msgid "If the order contains only \"virtual\" products that do not need shipping, we do not normally ask the user for their address - but check this box to do so anyway."
-msgstr "Hvis ordren kun indeholder \"virtuelle\" produkter, der ikke skal sendes, beder vi normalt ikke brugeren om deres adresse - men marker dette felt for at gøre det alligevel."
+msgid ""
+"If the order contains only \"virtual\" products that do not need shipping, "
+"we do not normally ask the user for their address - but check this box to do "
+"so anyway."
+msgstr ""
+"Hvis ordren kun indeholder \"virtuelle\" produkter, der ikke skal sendes, "
+"beder vi normalt ikke brugeren om deres adresse - men marker dette felt for "
+"at gøre det alligevel."
 
 #: WC_Gateway_Vipps.class.php:1014
-msgid "If this is checked, a receipt will be sent to %1$s which will be viewable in the users' app, specifying the order items, shipping et cetera"
-msgstr "Hvis dette er markeret, sendes en kvittering til %1$s, som kan ses i brugerens app, med angivelse af ordrens varer, forsendelse osv"
+#, php-format
+msgid ""
+"If this is checked, a receipt will be sent to %1$s which will be viewable in "
+"the users' app, specifying the order items, shipping et cetera"
+msgstr ""
+"Hvis dette er markeret, sendes en kvittering til %1$s, som kan ses i "
+"brugerens app, med angivelse af ordrens varer, forsendelse osv"
 
 #: WC_Gateway_Vipps.class.php:637
-msgid "If using %1$s, ask for the users consent to share user information with the store. This will allow better integration between Login With %1$s but will add another step to first-time buyers."
-msgstr "Hvis du bruger %1$s, skal du bede om brugerens samtykke til at dele brugeroplysninger med butikken. Dette vil give bedre integration mellem Login With %1$s, men vil tilføje endnu et trin for førstegangskøbere."
+#, php-format
+msgid ""
+"If using %1$s, ask for the users consent to share user information with the "
+"store. This will allow better integration between Login With %1$s but will "
+"add another step to first-time buyers."
+msgstr ""
+"Hvis du bruger %1$s, skal du bede om brugerens samtykke til at dele "
+"brugeroplysninger med butikken. Dette vil give bedre integration mellem "
+"Login With %1$s, men vil tilføje endnu et trin for førstegangskøbere."
 
 #: VippsCheckoutShippingMethods.php:195
-msgid "If you are using %1$s, you can select extended delivery method options here. If you do, these methods will not appear in Express Checkout or the standard WooCommerce checkout page."
-msgstr "Hvis du bruger %1$s, kan du vælge udvidede leveringsmetoder her. Hvis du gør det, vises disse metoder ikke i Express Checkout eller på den almindelige WooCommerce checkout-side."
+#, php-format
+msgid ""
+"If you are using %1$s, you can select extended delivery method options here. "
+"If you do, these methods will not appear in Express Checkout or the standard "
+"WooCommerce checkout page."
+msgstr ""
+"Hvis du bruger %1$s, kan du vælge udvidede leveringsmetoder her. Hvis du gør "
+"det, vises disse metoder ikke i Express Checkout eller på den almindelige "
+"WooCommerce checkout-side."
 
 #: WC_Gateway_Vipps.class.php:1058
-msgid "If you enable this, transactions will be made towards the %1$s Test API instead of the live one. No real transactions will be performed. You will need to fill out your test\n"
-"                    accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular %1$s app). Contact %1$s's technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. "
-msgstr "Hvis du aktiverer dette, vil transaktioner blive foretaget mod %1$s Test API i stedet for den live. Ingen rigtige transaktioner vil blive udført. Du bliver nødt til at udfylde dine test\n"
-"                    kontonøgler nedenfor, og du skal installere en særlig testtilstands-app fra Testflight på en enhed (som ikke kan køre den almindelige %1$s-app). Kontakt %1$s' tekniske support, hvis du har brug for det. Hvis du slukker for denne tilstand, genoptages normal drift. Hvis du har VIPPS_TEST_MODE defineret i din wp-config-fil, vil den tilsidesætte denne værdi. "
+#, php-format
+msgid ""
+"If you enable this, transactions will be made towards the %1$s Test API "
+"instead of the live one. No real transactions will be performed. You will "
+"need to fill out your test\n"
+"                    accounts keys below, and you will need to install a "
+"special test-mode app from Testflight on a device (which cannot run the "
+"regular %1$s app). Contact %1$s's technical support if you need this. If you "
+"turn this mode off, normal operation will resume. If you have the "
+"VIPPS_TEST_MODE defined in your wp-config file, this will override this "
+"value. "
+msgstr ""
+"Hvis du aktiverer dette, vil transaktioner blive foretaget mod %1$s Test API "
+"i stedet for den live. Ingen rigtige transaktioner vil blive udført. Du "
+"bliver nødt til at udfylde dine test\n"
+"                    kontonøgler nedenfor, og du skal installere en særlig "
+"testtilstands-app fra Testflight på en enhed (som ikke kan køre den "
+"almindelige %1$s-app). Kontakt %1$s' tekniske support, hvis du har brug for "
+"det. Hvis du slukker for denne tilstand, genoptages normal drift. Hvis du "
+"har VIPPS_TEST_MODE defineret i din wp-config-fil, vil den tilsidesætte "
+"denne værdi. "
 
 #: Vipps.class.php:592
-msgid "If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1$s'>WooCommerce logs page</a>."
-msgstr "Hvis du oplever problemer eller uventede resultater, bedes du tjekke logfilerne 'fatal-errors' og 'woo-vipps' på <a href='%1$s'>WooCommerce logs-siden</a>."
+#, php-format
+msgid ""
+"If you experience problems or unexpected results, please check the 'fatal-"
+"errors' and 'woo-vipps' logs at <a href='%1$s'>WooCommerce logs page</a>."
+msgstr ""
+"Hvis du oplever problemer eller uventede resultater, bedes du tjekke "
+"logfilerne 'fatal-errors' og 'woo-vipps' på <a href='%1$s'>WooCommerce logs-"
+"siden</a>."
 
 #: WC_Gateway_Vipps.class.php:991
-msgid "If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these."
-msgstr "Hvis du har problemer med dit tema, kan du måske finde en indstilling her, der kan hjælpe. Normalt behøver du ikke at ændre disse."
+msgid ""
+"If you have issues with your theme, you might find a setting here that will "
+"help. Normally you do not need to change these."
+msgstr ""
+"Hvis du har problemer med dit tema, kan du måske finde en indstilling her, "
+"der kan hjælpe. Normalt behøver du ikke at ændre disse."
 
 #: Vipps.class.php:593
-msgid "If you need support, please use the <a href='%1$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no."
-msgstr "Hvis du har brug for support, bedes du bruge <a href='%1$s'>forumsiden</a> for pluginet. Hvis du ikke kan stille dit spørgsmål offentligt, kan du kontakte WP-Hosting direkte på support@wp-hosting.no."
+#, php-format
+msgid ""
+"If you need support, please use the <a href='%1$s'>forum page</a> for the "
+"plugin. If you cannot post your question publicly, contact WP-Hosting "
+"directly at support@wp-hosting.no."
+msgstr ""
+"Hvis du har brug for support, bedes du bruge <a href='%1$s'>forumsiden</a> "
+"for pluginet. Hvis du ikke kan stille dit spørgsmål offentligt, kan du "
+"kontakte WP-Hosting direkte på support@wp-hosting.no."
 
 #: Vipps.class.php:442
-msgid "If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href=\"%2$s\" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode."
-msgstr "Hvis du har brug for at tilføje et %1$s-badge på en bestemt side, footer, header og så videre, og du ikke kan bruge Gutenberg-blokken til dette, kan du enten tilføje %1$s-badget manuelt (som <a href=\"%2$s\" nofollow rel=nofollow target=_blank>dokumenteret her</a>), eller du kan bruge kortkoden."
+#, php-format
+msgid ""
+"If you need to add a %1$s badge on a specific page, footer, header and so on,"
+" and you cannot use the Gutenberg Block provided for this, you can either "
+"add the %1$s Badge manually (as <a href=\"%2$s\" nofollow rel=nofollow "
+"target=_blank>documented here</a>) or you can use the shortcode."
+msgstr ""
+"Hvis du har brug for at tilføje et %1$s-badge på en bestemt side, footer, "
+"header og så videre, og du ikke kan bruge Gutenberg-blokken til dette, kan "
+"du enten tilføje %1$s-badget manuelt (som <a href=\"%2$s\" nofollow "
+"rel=nofollow target=_blank>dokumenteret her</a>), eller du kan bruge "
+"kortkoden."
 
 #: Vipps.class.php:648
-msgid "If you use %1$s or %2$s in WooCommerce, this allows your %3$s customers to safely log in without ever using a password."
-msgstr "Hvis du bruger %1$s eller %2$s i WooCommerce, giver det dine %3$s kunder mulighed for at logge sikkert ind uden nogensinde at bruge en adgangskode."
+#, php-format
+msgid ""
+"If you use %1$s or %2$s in WooCommerce, this allows your %3$s customers to "
+"safely log in without ever using a password."
+msgstr ""
+"Hvis du bruger %1$s eller %2$s i WooCommerce, giver det dine %3$s kunder "
+"mulighed for at logge sikkert ind uden nogensinde at bruge en adgangskode."
 
 #: Vipps.class.php:439
-msgid "If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block."
-msgstr "Hvis du bruger Gutenberg, bør du kunne tilføje en %1$s Badge-blok, hvor som helst du har brug for det. Den hedder %1$s On-Site Messaging Badge Block."
+#, php-format
+msgid ""
+"If you use Gutenberg, you should be able to add a %1$s Badge block wherever "
+"you need it. It is called %1$s On-Site Messaging Badge Block."
+msgstr ""
+"Hvis du bruger Gutenberg, bør du kunne tilføje en %1$s Badge-blok, hvor som "
+"helst du har brug for det. Den hedder %1$s On-Site Messaging Badge Block."
 
 #: WC_Gateway_Vipps.class.php:653
-msgid "If your products <i>don't require shipping</i> as above, and you also don't care about the customers name or contact information, you can drop this too! The customer fields will then be filled with a placeholder. NB: If you have plugins that require contact information, then this is not going to work very well. Also, for this to work you have to check the 'no addresses' box as well."
-msgstr "Hvis dine produkter <i>ikke kræver forsendelse</i> som ovenfor, og du heller ikke er interesseret i kundens navn eller kontaktoplysninger, kan du også droppe dette! Kundefelterne vil så blive udfyldt med en pladsholder. NB: Hvis du har plugins, der kræver kontaktoplysninger, vil dette ikke fungere særlig godt. For at det skal fungere, skal du også markere afkrydsningsfeltet \"ingen adresser\"."
+msgid ""
+"If your products <i>don't require shipping</i> as above, and you also don't "
+"care about the customers name or contact information, you can drop this too! "
+"The customer fields will then be filled with a placeholder. NB: If you have "
+"plugins that require contact information, then this is not going to work "
+"very well. Also, for this to work you have to check the 'no addresses' box "
+"as well."
+msgstr ""
+"Hvis dine produkter <i>ikke kræver forsendelse</i> som ovenfor, og du heller "
+"ikke er interesseret i kundens navn eller kontaktoplysninger, kan du også "
+"droppe dette! Kundefelterne vil så blive udfyldt med en pladsholder. NB: "
+"Hvis du har plugins, der kræver kontaktoplysninger, vil dette ikke fungere "
+"særlig godt. For at det skal fungere, skal du også markere "
+"afkrydsningsfeltet \"ingen adresser\"."
 
 #: WC_Gateway_Vipps.class.php:645
-msgid "If your products <i>don't require shipping</i>, either because they are digital downloads, immaterial products or delivering the products directly on purchase, you can check this box. The user will then not be required to provide an address, which should speed things up a bit. If your products require shipping, this will have no effect. NB: If you have plugins that require shipping information, then this is not going to work very well."
-msgstr "Hvis dine produkter <i>ikke kræver forsendelse</i>, enten fordi de er digitale downloads, immaterielle produkter eller leverer produkterne direkte ved køb, kan du markere dette felt. Brugeren behøver så ikke at angive en adresse, hvilket burde gøre tingene lidt hurtigere. Hvis dine produkter kræver forsendelse, vil dette ikke have nogen effekt. NB: Hvis du har plugins, der kræver forsendelsesoplysninger, vil dette ikke fungere særlig godt."
+msgid ""
+"If your products <i>don't require shipping</i>, either because they are "
+"digital downloads, immaterial products or delivering the products directly "
+"on purchase, you can check this box. The user will then not be required to "
+"provide an address, which should speed things up a bit. If your products "
+"require shipping, this will have no effect. NB: If you have plugins that "
+"require shipping information, then this is not going to work very well."
+msgstr ""
+"Hvis dine produkter <i>ikke kræver forsendelse</i>, enten fordi de er "
+"digitale downloads, immaterielle produkter eller leverer produkterne direkte "
+"ved køb, kan du markere dette felt. Brugeren behøver så ikke at angive en "
+"adresse, hvilket burde gøre tingene lidt hurtigere. Hvis dine produkter "
+"kræver forsendelse, vil dette ikke have nogen effekt. NB: Hvis du har "
+"plugins, der kræver forsendelsesoplysninger, vil dette ikke fungere særlig "
+"godt."
 
 #: WC_Gateway_Vipps.class.php:629
-msgid "If your shipping options do not depend on the customers address, you can enable 'Static shipping', which will precompute the shipping options when using %1$s so that this will be much faster. If you do this and the customer isn't logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually 'static', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too."
-msgstr "Hvis dine forsendelsesmuligheder ikke afhænger af kundens adresse, kan du aktivere 'Statisk forsendelse', som forudberegner forsendelsesmulighederne, når du bruger %1$s, så det går meget hurtigere. Hvis du gør dette, og kunden ikke er logget ind, vil butikkens baseplacering blive brugt til at beregne forsendelsesmulighederne for ordren. Du bør kun bruge dette, hvis din forsendelse faktisk er 'statisk', dvs. ikke varierer baseret på kundens adresse. Så fast pris/gratis forsendelse vil fungere. Hvis kunden er logget ind, bruges deres adresse, som den er registreret i butikken, så hvis dine kunder altid er logget ind, kan du måske også bruge dette."
+#, php-format
+msgid ""
+"If your shipping options do not depend on the customers address, you can "
+"enable 'Static shipping', which will precompute the shipping options when "
+"using %1$s so that this will be much faster. If you do this and the customer "
+"isn't logged in, the base location of the store will be used to compute the "
+"shipping options for the order. You should only use this if your shipping is "
+"actually 'static', that is, does not vary based on the customers address. So "
+"fixed price/free shipping will work. If the customer is logged in, their "
+"address as registered in the store will be used, so if your customers are "
+"always logged in, you may be able to use this too."
+msgstr ""
+"Hvis dine forsendelsesmuligheder ikke afhænger af kundens adresse, kan du "
+"aktivere 'Statisk forsendelse', som forudberegner forsendelsesmulighederne, "
+"når du bruger %1$s, så det går meget hurtigere. Hvis du gør dette, og kunden "
+"ikke er logget ind, vil butikkens baseplacering blive brugt til at beregne "
+"forsendelsesmulighederne for ordren. Du bør kun bruge dette, hvis din "
+"forsendelse faktisk er 'statisk', dvs. ikke varierer baseret på kundens "
+"adresse. Så fast pris/gratis forsendelse vil fungere. Hvis kunden er logget "
+"ind, bruges deres adresse, som den er registreret i butikken, så hvis dine "
+"kunder altid er logget ind, kan du måske også bruge dette."
 
 #: WC_Gateway_Vipps.class.php:938
-msgid "If your shipping options do not depend on the customers address, you can enable 'Static shipping', which will precompute the shipping options when using Express Checkout so that this will be much faster. If you do this and the customer isn't logged in, the base location of the store will be used to compute the shipping options for the order. You should only use this if your shipping is actually 'static', that is, does not vary based on the customers address. So fixed price/free shipping will work. If the customer is logged in, their address as registered in the store will be used, so if your customers are always logged in, you may be able to use this too."
-msgstr "Hvis dine forsendelsesmuligheder ikke afhænger af kundens adresse, kan du aktivere \"Statisk forsendelse\", som forudberegner forsendelsesmulighederne, når du bruger Express Checkout, så det går meget hurtigere. Hvis du gør dette, og kunden ikke er logget ind, vil butikkens baseplacering blive brugt til at beregne forsendelsesmulighederne for ordren. Du bør kun bruge dette, hvis din forsendelse faktisk er \"statisk\", dvs. ikke varierer baseret på kundens adresse. Så fast pris/gratis forsendelse vil fungere. Hvis kunden er logget ind, bruges deres adresse, som den er registreret i butikken, så hvis dine kunder altid er logget ind, kan du måske også bruge dette."
+msgid ""
+"If your shipping options do not depend on the customers address, you can "
+"enable 'Static shipping', which will precompute the shipping options when "
+"using Express Checkout so that this will be much faster. If you do this and "
+"the customer isn't logged in, the base location of the store will be used to "
+"compute the shipping options for the order. You should only use this if your "
+"shipping is actually 'static', that is, does not vary based on the customers "
+"address. So fixed price/free shipping will work. If the customer is logged "
+"in, their address as registered in the store will be used, so if your "
+"customers are always logged in, you may be able to use this too."
+msgstr ""
+"Hvis dine forsendelsesmuligheder ikke afhænger af kundens adresse, kan du "
+"aktivere \"Statisk forsendelse\", som forudberegner forsendelsesmulighederne,"
+" når du bruger Express Checkout, så det går meget hurtigere. Hvis du gør "
+"dette, og kunden ikke er logget ind, vil butikkens baseplacering blive brugt "
+"til at beregne forsendelsesmulighederne for ordren. Du bør kun bruge dette, "
+"hvis din forsendelse faktisk er \"statisk\", dvs. ikke varierer baseret på "
+"kundens adresse. Så fast pris/gratis forsendelse vil fungere. Hvis kunden er "
+"logget ind, bruges deres adresse, som den er registreret i butikken, så hvis "
+"dine kunder altid er logget ind, kan du måske også bruge dette."
 
 #: VippsKCSupport.class.php:73
 msgid "Image url"
@@ -1247,12 +1860,39 @@ msgid "Invalid request"
 msgstr "Ugyldig anmodning"
 
 #: Vipps.class.php:3578
-msgid "It seems a customer is trying to re-order product(s) recently bought in the same session, asking user for confirmation"
-msgstr "Det ser ud til, at en kunde forsøger at genbestille produkter, der for nylig er købt i samme session, og beder brugeren om bekræftelse"
+msgid ""
+"It seems a customer is trying to re-order product(s) recently bought in the "
+"same session, asking user for confirmation"
+msgstr ""
+"Det ser ud til, at en kunde forsøger at genbestille produkter, der for nylig "
+"er købt i samme session, og beder brugeren om bekræftelse"
 
 #: VippsQRCodeController.class.php:587
-msgid "It seems a QR code with this ID (%1\\$s) already exists at Vipps.  If you have recently done a database restore, try to instead import the QR code from the Unsynchronized codes, deleting this. If you have several Wordpress instances using the same Vipps account, make sure you use different prefixes (in the WooCommerce Vipps settings). You can try to change the slug of this entry (you may need to enable this in the page settings) and save again if you don't care about the duplicate. "
-msgstr "Det ser ud til, at der allerede findes en QR-kode med dette ID (%1\\$s) hos Vipps.  Hvis du for nylig har gendannet databasen, kan du i stedet prøve at importere QR-koden fra de usynkroniserede koder og slette den. Hvis du har flere Wordpress-forekomster, der bruger den samme Vipps-konto, skal du sørge for at bruge forskellige præfikser (i WooCommerce Vipps-indstillingerne). Du kan prøve at ændre sluggen for denne post (du skal muligvis aktivere dette i sideindstillingerne) og gemme igen, hvis du er ligeglad med duplikatet. "
+#, fuzzy, php-format
+#| msgid ""
+#| "It seems a QR code with this ID (%1\\$s) already exists at Vipps.  If you "
+#| "have recently done a database restore, try to instead import the QR code "
+#| "from the Unsynchronized codes, deleting this. If you have several "
+#| "Wordpress instances using the same Vipps account, make sure you use "
+#| "different prefixes (in the WooCommerce Vipps settings). You can try to "
+#| "change the slug of this entry (you may need to enable this in the page "
+#| "settings) and save again if you don't care about the duplicate. "
+msgid ""
+"It seems a QR code with this ID (%1$s) already exists at Vipps.  If you have "
+"recently done a database restore, try to instead import the QR code from the "
+"Unsynchronized codes, deleting this. If you have several Wordpress instances "
+"using the same Vipps account, make sure you use different prefixes (in the "
+"WooCommerce Vipps settings). You can try to change the slug of this entry "
+"(you may need to enable this in the page settings) and save again if you "
+"don't care about the duplicate. "
+msgstr ""
+"Det ser ud til, at der allerede findes en QR-kode med dette ID (%1\\$s) hos "
+"Vipps.  Hvis du for nylig har gendannet databasen, kan du i stedet prøve at "
+"importere QR-koden fra de usynkroniserede koder og slette den. Hvis du har "
+"flere Wordpress-forekomster, der bruger den samme Vipps-konto, skal du sørge "
+"for at bruge forskellige præfikser (i WooCommerce Vipps-indstillingerne). Du "
+"kan prøve at ændre sluggen for denne post (du skal muligvis aktivere dette i "
+"sideindstillingerne) og gemme igen, hvis du er ligeglad med duplikatet. "
 
 #: VippsQRCodeController.class.php:606
 msgid "Item Archives"
@@ -1272,7 +1912,9 @@ msgstr "Navigation på vareliste"
 
 #: WC_Gateway_Vipps.class.php:976
 msgid "Keep using old shipping callback with my custom filter"
-msgstr "Fortsæt med at bruge det gamle shipping-callback med mit brugerdefinerede filter"
+msgstr ""
+"Fortsæt med at bruge det gamle shipping-callback med mit brugerdefinerede "
+"filter"
 
 #: Blocks/Badges/vipps-badge.php:69
 msgid "Language"
@@ -1303,8 +1945,13 @@ msgid "Login with Vipps"
 msgstr "Log ind med Vipps"
 
 #: VippsDismissibleAdminBanners.class.php:151
-msgid "Login with Vipps is available for WordPress and WooCommerce - Super easy registration and login - No more usernames and passwords. Get started here"
-msgstr "Login med Vipps er tilgængelig for WordPress og WooCommerce - Super nem registrering og login - Ikke flere brugernavne og adgangskoder. Kom i gang her"
+msgid ""
+"Login with Vipps is available for WordPress and WooCommerce - Super easy "
+"registration and login - No more usernames and passwords. Get started here"
+msgstr ""
+"Login med Vipps er tilgængelig for WordPress og WooCommerce - Super nem "
+"registrering og login - Ikke flere brugernavne og adgangskoder. Kom i gang "
+"her"
 
 #: WC_Gateway_Vipps.class.php:783
 msgid "Main options"
@@ -1320,14 +1967,17 @@ msgid "Merchant Serial Number"
 msgstr "Forhandlerens serienummer"
 
 #: WC_Gateway_Vipps.class.php:2737
+#, php-format
 msgid "Message from %1$s: %2$s"
 msgstr "Besked fra %1$s: %2$s"
 
 #: WC_Gateway_Vipps.class.php:2736
+#, php-format
 msgid "Message in callback from %1$s for order"
 msgstr "Besked i tilbagekald fra %1$s for ordre"
 
 #: Vipps.class.php:426
+#, php-format
 msgid "Minimum price for \"%1$s Later\"\""
 msgstr "Minimumspris for \"%1$s senere\"\""
 
@@ -1348,8 +1998,13 @@ msgid "New QR Code"
 msgstr "Ny QR-kode"
 
 #: WC_Gateway_Vipps.class.php:1961
-msgid "No address information for order %2$d, but there still might be an active %1$s session for it, so do not cancel it."
-msgstr "Ingen adresseoplysninger for ordre %2$d, men der kan stadig være en aktiv %1$s-session for den, så du skal ikke annullere den."
+#, php-format
+msgid ""
+"No address information for order %2$d, but there still might be an active "
+"%1$s session for it, so do not cancel it."
+msgstr ""
+"Ingen adresseoplysninger for ordre %2$d, men der kan stadig være en aktiv "
+"%1$s-session for den, så du skal ikke annullere den."
 
 #: Vipps.class.php:1070
 msgid "No badge"
@@ -1368,8 +2023,10 @@ msgid "No response from Vipps"
 msgstr "Intet svar fra Vipps"
 
 #: WC_Gateway_Vipps.class.php:1952
+#, php-format
 msgid "No shipping details from %1$s for express checkout for order id:"
-msgstr "Ingen forsendelsesoplysninger fra %1$s til ekspres-checkout for ordre-id:"
+msgstr ""
+"Ingen forsendelsesoplysninger fra %1$s til ekspres-checkout for ordre-id:"
 
 #: Vipps.class.php:2276 Vipps.class.php:2425
 msgid "No shipping required"
@@ -1400,7 +2057,6 @@ msgid "Not found in Trash"
 msgstr "Ikke fundet i papirkurven"
 
 #. Description of the plugin
-#: 
 msgid "Offer Vipps as a payment method for WooCommerce"
 msgstr "Tilbyd Vipps som betalingsmetode til WooCommerce"
 
@@ -1425,12 +2081,21 @@ msgid "Orange"
 msgstr "Orange"
 
 #: WC_Gateway_Vipps.class.php:1956
-msgid "Order %2$d has no address info and any %1$s session is dead - have to cancel."
-msgstr "Ordre %2$d har ingen adresseoplysninger, og enhver %1$s-session er død - skal annulleres."
+#, php-format
+msgid ""
+"Order %2$d has no address info and any %1$s session is dead - have to cancel."
+msgstr ""
+"Ordre %2$d har ingen adresseoplysninger, og enhver %1$s-session er død - "
+"skal annulleres."
 
 #: WC_Gateway_Vipps.class.php:1266
-msgid "Order %2$d was attempted restarted, but had no %1$s session url stored. Cannot continue!"
-msgstr "Ordre %2$d blev forsøgt genstartet, men havde ingen %1$s session url gemt. Kan ikke fortsætte!"
+#, php-format
+msgid ""
+"Order %2$d was attempted restarted, but had no %1$s session url stored. "
+"Cannot continue!"
+msgstr ""
+"Ordre %2$d blev forsøgt genstartet, men havde ingen %1$s session url gemt. "
+"Kan ikke fortsætte!"
 
 #: VippsApi.class.php:857
 msgid "Order cancel for order"
@@ -1449,6 +2114,7 @@ msgid "Order confirmed"
 msgstr "Ordre bekræftet"
 
 #: WC_Gateway_Vipps.class.php:2381
+#, php-format
 msgid "Order does not exist at %1$s - cancelling"
 msgstr "Ordren findes ikke på %1$s - annullering"
 
@@ -1457,6 +2123,7 @@ msgid "Order failed"
 msgstr "Ordren mislykkedes"
 
 #: WC_Gateway_Vipps.class.php:1982
+#, php-format
 msgid "Order failed or rejected at %1$s"
 msgstr "Ordren mislykkedes eller blev afvist ved %1$s"
 
@@ -1473,6 +2140,7 @@ msgid "Order not completed, cannot refund superfluous capture"
 msgstr "Ordre ikke gennemført, kan ikke refundere overflødig fangst"
 
 #: WC_Gateway_Vipps.class.php:1267
+#, php-format
 msgid "Order session expired at %1$s, please try again!"
 msgstr "Ordresessionen udløb ved %1$s, prøv venligst igen!"
 
@@ -1481,6 +2149,7 @@ msgid "Order status"
 msgstr "Ordre status"
 
 #: WC_Gateway_Vipps.class.php:847
+#, php-format
 msgid "Order status on return from %1$s"
 msgstr "Ordrestatus ved returnering fra %1$s"
 
@@ -1489,6 +2158,7 @@ msgid "Order-id Prefix"
 msgstr "Ordre-id Præfiks"
 
 #: Vipps.class.php:1083
+#, php-format
 msgid "Override %1$s Later"
 msgstr "Tilsidesæt %1$s senere"
 
@@ -1497,6 +2167,7 @@ msgid "Override default settings"
 msgstr "Tilsidesæt standardindstillinger"
 
 #: WC_Gateway_Vipps.class.php:995
+#, php-format
 msgid "Override page template used for the special %1$s pages"
 msgstr "Tilsidesæt sideskabelon brugt til de specielle %1$s-sider"
 
@@ -1523,6 +2194,7 @@ msgid "Password provided to you by Helthjem"
 msgstr "Adgangskode givet til dig af Helthjem"
 
 #: Vipps.class.php:589
+#, php-format
 msgid "Pay with %1$s for WooCommerce"
 msgstr "Betal med %1$s til WooCommerce"
 
@@ -1535,10 +2207,12 @@ msgid "Payment authorized"
 msgstr "Godkendt betaling"
 
 #: WC_Gateway_Vipps.class.php:2883
+#, php-format
 msgid "Payment authorized at %1$s"
 msgstr "Betaling godkendt ved %1$s"
 
 #: WC_Gateway_Vipps.class.php:2853
+#, php-format
 msgid "Payment cancelled at %1$s"
 msgstr "Betaling annulleret ved %1$s"
 
@@ -1547,28 +2221,50 @@ msgid "Payment captured"
 msgstr "Betaling registreret"
 
 #: WC_Gateway_Vipps.class.php:1975 WC_Gateway_Vipps.class.php:2849
+#, php-format
 msgid "Payment captured directly at %1$s"
 msgstr "Betaling indhentet direkte på %1$s"
 
 #: WC_Gateway_Vipps.class.php:1385
-msgid "Payment complete set status to \"%1$s\" - will not capture payments automatically"
-msgstr "Betaling fuldført sætter status til \"%1$s\" - vil ikke modtage betalinger automatisk"
+#, php-format
+msgid ""
+"Payment complete set status to \"%1$s\" - will not capture payments "
+"automatically"
+msgstr ""
+"Betaling fuldført sætter status til \"%1$s\" - vil ikke modtage betalinger "
+"automatisk"
 
 #: WC_Gateway_Vipps.class.php:796 Vipps.class.php:1305 Vipps.class.php:1307
 msgid "Payment method"
 msgstr "Betalingsmetode"
 
 #: WC_Gateway_Vipps.class.php:1798
-msgid "Payment method reset to %1$s - it had been set to KCO while completing the order for %2$d"
-msgstr "Betalingsmetode nulstillet til %1$s - den var blevet indstillet til KCO, mens du gennemførte ordren for %2$d"
+#, php-format
+msgid ""
+"Payment method reset to %1$s - it had been set to KCO while completing the "
+"order for %2$d"
+msgstr ""
+"Betalingsmetode nulstillet til %1$s - den var blevet indstillet til KCO, "
+"mens du gennemførte ordren for %2$d"
 
 #: Vipps.class.php:1335
 msgid "Pickup Point"
 msgstr "Opsamlingssted"
 
 #: WC_Gateway_Vipps.class.php:895
-msgid "Please note that for Express Checkout, shipping must be calculated in a callback from the %1$s app, without any knowledge of the customer. This means that Express Checkout may not be compatible with all Shipping plugins or setup. You should test that your setup works if you intend to provide this feature."
-msgstr "Bemærk, at ved Express Checkout skal fragten beregnes i et callback fra %1$s-appen, uden at kunden ved noget om det. Det betyder, at Express Checkout muligvis ikke er kompatibel med alle forsendelsesplugins eller opsætninger. Du bør teste, at din opsætning fungerer, hvis du har til hensigt at tilbyde denne funktion."
+#, php-format
+msgid ""
+"Please note that for Express Checkout, shipping must be calculated in a "
+"callback from the %1$s app, without any knowledge of the customer. This "
+"means that Express Checkout may not be compatible with all Shipping plugins "
+"or setup. You should test that your setup works if you intend to provide "
+"this feature."
+msgstr ""
+"Bemærk, at ved Express Checkout skal fragten beregnes i et callback fra %1$s-"
+"appen, uden at kunden ved noget om det. Det betyder, at Express Checkout "
+"muligvis ikke er kompatibel med alle forsendelsesplugins eller opsætninger. "
+"Du bør teste, at din opsætning fungerer, hvis du har til hensigt at tilbyde "
+"denne funktion."
 
 #: Vipps.class.php:445
 msgid "Please refer to the documentation for the meaning of the parameters."
@@ -1617,6 +2313,7 @@ msgid "Postnord"
 msgstr "Postnord"
 
 #: VippsCheckout.class.php:545
+#, php-format
 msgid "Press the button to complete your order with %1$s!"
 msgstr "Tryk på knappen for at gennemføre din ordre med %1$s!"
 
@@ -1637,6 +2334,7 @@ msgid "Product is no longer available"
 msgstr "Produktet er ikke længere tilgængeligt"
 
 #: WC_Gateway_Vipps.class.php:1020
+#, php-format
 msgid "Profile image used in the %1$s App"
 msgstr "Profilbillede brugt i %1$s-appen"
 
@@ -1650,8 +2348,13 @@ msgid "QR Codes"
 msgstr "QR-koder"
 
 #: VippsQRCodeController.class.php:535
-msgid "QR image with id %2$s that was supposed to be stored at %1$s, isnt. Recreating it. Error was:. : %3$s"
-msgstr "QR-billede med id %2$s, der skulle have været gemt på %1$s, er det ikke. Genskaber det. Fejlen var:. : %3$s"
+#, php-format
+msgid ""
+"QR image with id %2$s that was supposed to be stored at %1$s, isnt. "
+"Recreating it. Error was:. : %3$s"
+msgstr ""
+"QR-billede med id %2$s, der skulle have været gemt på %1$s, er det ikke. "
+"Genskaber det. Fejlen var:. : %3$s"
 
 #: VippsQRCodeController.class.php:324
 msgid "QR-id"
@@ -1662,11 +2365,14 @@ msgid "Raw input was "
 msgstr "Rå input var "
 
 #: Vipps.class.php:3696
+#, php-format
 msgid "Ready for %1$s - press the button"
 msgstr "Klar til %1$s - tryk på knappen"
 
 #: VippsApi.class.php:302
-msgid "Receipt for order %1\\$d sent to Vipps "
+#, fuzzy
+#| msgid "Receipt for order %1\\$d sent to Vipps "
+msgid "Receipt for order %1$d sent to Vipps "
 msgstr "Kvittering for ordre %1\\$d sendt til Vipps "
 
 #: Vipps.class.php:1948
@@ -1698,8 +2404,15 @@ msgid "Remaining amount to refund"
 msgstr "Resterende beløb til refusion"
 
 #: Vipps.class.php:650
-msgid "Remember, you need to set up %3$s at the <a target='_blank' href='%2$s'>%1$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page."
-msgstr "Husk, at du skal konfigurere %3$s på <a target='_blank' href='%2$s'>%1$s-portalen</a>, hvor du finder de nøgler, du skal bruge, og hvor du skal registrere den <em>retur-url</em>, du finder på indstillingssiden."
+#, php-format
+msgid ""
+"Remember, you need to set up %3$s at the <a target='_blank' href='%2$s'>%1$s "
+"Portal</a>, where you will find the keys you need and where you will have to "
+"register the <em>return url</em> you will find on the settings page."
+msgstr ""
+"Husk, at du skal konfigurere %3$s på <a target='_blank' href='%2$s'>%1$s-"
+"portalen</a>, hvor du finder de nøgler, du skal bruge, og hvor du skal "
+"registrere den <em>retur-url</em>, du finder på indstillingssiden."
 
 #: VippsQRCodeController.class.php:622
 msgid "Remove featured image"
@@ -1714,6 +2427,7 @@ msgid "Request ID"
 msgstr "Anmodnings-ID"
 
 #: Vipps.class.php:2563
+#, php-format
 msgid "Restoring session of order %1$d"
 msgstr "Gendannelse af session af ordre %1$d"
 
@@ -1738,10 +2452,14 @@ msgid "Selected product variant is not available for purchase"
 msgstr "Den valgte produktvariant er ikke tilgængelig for køb"
 
 #: WC_Gateway_Vipps.class.php:1011
-msgid "Send receipts and order confirmation info to the customers' app on completed purchases."
-msgstr "Send kvitteringer og ordrebekræftelse til kundernes app ved gennemførte køb."
+msgid ""
+"Send receipts and order confirmation info to the customers' app on completed "
+"purchases."
+msgstr ""
+"Send kvitteringer og ordrebekræftelse til kundernes app ved gennemførte køb."
 
 #: WC_Gateway_Vipps.class.php:1012
+#, php-format
 msgid "Send receipts to the customers %1$s app"
 msgstr "Send kvitteringer til kundernes %1$s-app"
 
@@ -1766,8 +2484,15 @@ msgid "Shareable links"
 msgstr "Links, der kan deles"
 
 #: Vipps.class.php:1106
-msgid "Shareable links are links you can share externally on banners or other places that when followed will start %1$s of this product immediately. Maintain these links here for this product."
-msgstr "Delbare links er links, du kan dele eksternt på bannere eller andre steder, og når de følges, starter %1$s af dette produkt med det samme. Vedligehold disse links her for dette produkt."
+#, php-format
+msgid ""
+"Shareable links are links you can share externally on banners or other "
+"places that when followed will start %1$s of this product immediately. "
+"Maintain these links here for this product."
+msgstr ""
+"Delbare links er links, du kan dele eksternt på bannere eller andre steder, "
+"og når de følges, starter %1$s af dette produkt med det samme. Vedligehold "
+"disse links her for dette produkt."
 
 #: Vipps.class.php:1331
 msgid "Shipping cost"
@@ -1788,6 +2513,7 @@ msgstr "Forsendelsesmetode"
 #: VippsCheckoutShippingMethods.php:472 VippsCheckoutShippingMethods.php:493
 #: VippsCheckoutShippingMethods.php:509 VippsCheckoutShippingMethods.php:531
 #: VippsCheckoutShippingMethods.php:556
+#, php-format
 msgid "Shipping method for %1$s only: %2$s"
 msgstr "Forsendelsesmetode kun for %1$s: %2$s"
 
@@ -1800,6 +2526,7 @@ msgid "Short description of shipping method"
 msgstr "Kort beskrivelse af forsendelsesmetode"
 
 #: VippsCheckoutShippingMethods.php:118
+#, php-format
 msgid "Short description of shipping method used in %1$s"
 msgstr "Kort beskrivelse af forsendelsesmetode brugt i %1$s"
 
@@ -1816,28 +2543,67 @@ msgid "Show QR codes not synchronized to this site"
 msgstr "Vis QR-koder, der ikke er synkroniseret med dette websted"
 
 #: WC_Gateway_Vipps.class.php:979
-msgid "Since version 1.4 this plugin uses a new method of providing shipping methods to %1$s when using Express Checkout. The new method supports metadata in the shipping options, which is neccessary for integration with Bring, Postnord etc. However, the new method is not compatible with the old <code>'woo_vipps_shipping_methods'</code> filter, which your site has overridden in a theme or plugin. If you want to, you can continue using this filter and the old method. If you want to disable your filters and use the new method, you can choose this here. "
-msgstr "Siden version 1.4 har dette plugin brugt en ny metode til at levere forsendelsesmetoder til %1$s, når man bruger Express Checkout. Den nye metode understøtter metadata i forsendelsesmulighederne, hvilket er nødvendigt for integration med Bring, Postnord osv. Den nye metode er dog ikke kompatibel med det gamle <code>'woo_vipps_shipping_methods'</code> -filter, som din side har tilsidesat i et tema eller plugin. Hvis du vil, kan du fortsætte med at bruge dette filter og den gamle metode. Hvis du vil deaktivere dine filtre og bruge den nye metode, kan du vælge det her. "
+#, php-format
+msgid ""
+"Since version 1.4 this plugin uses a new method of providing shipping "
+"methods to %1$s when using Express Checkout. The new method supports "
+"metadata in the shipping options, which is neccessary for integration with "
+"Bring, Postnord etc. However, the new method is not compatible with the old "
+"<code>'woo_vipps_shipping_methods'</code> filter, which your site has "
+"overridden in a theme or plugin. If you want to, you can continue using this "
+"filter and the old method. If you want to disable your filters and use the "
+"new method, you can choose this here. "
+msgstr ""
+"Siden version 1.4 har dette plugin brugt en ny metode til at levere "
+"forsendelsesmetoder til %1$s, når man bruger Express Checkout. Den nye "
+"metode understøtter metadata i forsendelsesmulighederne, hvilket er "
+"nødvendigt for integration med Bring, Postnord osv. Den nye metode er dog "
+"ikke kompatibel med det gamle <code>'woo_vipps_shipping_methods'</code> -"
+"filter, som din side har tilsidesat i et tema eller plugin. Hvis du vil, kan "
+"du fortsætte med at bruge dette filter og den gamle metode. Hvis du vil "
+"deaktivere dine filtre og bruge den nye metode, kan du vælge det her. "
 
 #: Vipps.class.php:912
 msgid "Skip entering your address and just checkout using"
 msgstr "Undlad at indtaste din adresse, og gå bare til kassen med"
 
 #: Vipps.class.php:2913
-msgid "Some of the products in your cart are no longer available in the quantities you have ordered. Please <a href=\"%1$s\">edit your order</a> before continuing the checkout"
-msgstr "Nogle af produkterne i din indkøbskurv er ikke længere tilgængelige i de mængder, du har bestilt. <a href=\"%1$s\">Rediger</a> venligst <a href=\"%1$s\">din ordre</a>, før du fortsætter til kassen"
+#, php-format
+msgid ""
+"Some of the products in your cart are no longer available in the quantities "
+"you have ordered. Please <a href=\"%1$s\">edit your order</a> before "
+"continuing the checkout"
+msgstr ""
+"Nogle af produkterne i din indkøbskurv er ikke længere tilgængelige i de "
+"mængder, du har bestilt. <a href=\"%1$s\">Rediger</a> venligst <a "
+"href=\"%1$s\">din ordre</a>, før du fortsætter til kassen"
 
 #: WC_Gateway_Vipps.class.php:905
 msgid "Some products"
 msgstr "Nogle produkter"
 
 #: WC_Gateway_Vipps.class.php:1007
-msgid "Some very few themes do not work with the simulated pages used by this plugin, and needs a real page ID for this. Choose a blank page for this; the content will be replaced, but the template and other metadata will be present. You only need to use this if the plugin seems to break on the special %1$s pages."
-msgstr "Nogle meget få temaer fungerer ikke med de simulerede sider, der bruges af dette plugin, og har brug for et rigtigt side-ID til dette. Vælg en tom side til dette; indholdet vil blive erstattet, men skabelonen og andre metadata vil være til stede. Du behøver kun at bruge dette, hvis pluginet ser ud til at bryde sammen på de specielle %1$s-sider."
+#, php-format
+msgid ""
+"Some very few themes do not work with the simulated pages used by this "
+"plugin, and needs a real page ID for this. Choose a blank page for this; the "
+"content will be replaced, but the template and other metadata will be "
+"present. You only need to use this if the plugin seems to break on the "
+"special %1$s pages."
+msgstr ""
+"Nogle meget få temaer fungerer ikke med de simulerede sider, der bruges af "
+"dette plugin, og har brug for et rigtigt side-ID til dette. Vælg en tom side "
+"til dette; indholdet vil blive erstattet, men skabelonen og andre metadata "
+"vil være til stede. Du behøver kun at bruge dette, hvis pluginet ser ud til "
+"at bryde sammen på de specielle %1$s-sider."
 
 #: VippsQRCodeController.class.php:97
-msgid "Somehow, this QR code has disappeard at %1$s. Save it to make it work again!"
-msgstr "På en eller anden måde er denne QR-kode forsvundet på %1$s. Gem den for at få den til at virke igen!"
+#, php-format
+msgid ""
+"Somehow, this QR code has disappeard at %1$s. Save it to make it work again!"
+msgstr ""
+"På en eller anden måde er denne QR-kode forsvundet på %1$s. Gem den for at "
+"få den til at virke igen!"
 
 #: WC_Gateway_Vipps.class.php:838 WC_Gateway_Vipps.class.php:839
 #: WC_Gateway_Vipps.class.php:1087 WC_Gateway_Vipps.class.php:1088
@@ -1849,48 +2615,70 @@ msgid "Success"
 msgstr "Succes"
 
 #: Vipps.class.php:421
+#, php-format
 msgid "Support \"%1$s Later\""
 msgstr "Support \"%1$s senere\""
 
 #: WC_Gateway_Vipps.class.php:746
+#, php-format
 msgid "Support Helthjem as a shipping method in %1$s"
 msgstr "Støt Helthjem som forsendelsesmetode i %1$s"
 
 #: WC_Gateway_Vipps.class.php:722
+#, php-format
 msgid "Support Instabox as a shipping method in %1$s"
 msgstr "Understøt Instabox som forsendelsesmetode i %1$s"
 
 #: WC_Gateway_Vipps.class.php:692
+#, php-format
 msgid "Support Porterbuddy as a shipping method in %1$s"
 msgstr "Støt Porterbuddy som forsendelsesmetode i %1$s"
 
 #: WC_Gateway_Vipps.class.php:672
+#, php-format
 msgid "Support Posten Norge as a shipping method in %1$s"
 msgstr "Støt Posten Norge som forsendelsesmetode i %1$s"
 
 #: WC_Gateway_Vipps.class.php:682
+#, php-format
 msgid "Support PostenNord as a shipping method in %1$s"
 msgstr "Støt PostenNord som forsendelsesmetode i %1$s"
 
 #: WC_Gateway_Vipps.class.php:446
-msgid "Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to \"Processing\" and try again"
-msgstr "Midlertidig fejl ved refundering af betaling via %1$s - sørg for, at ordren refunderes manuelt, eller nulstil ordren til \"Behandling\", og prøv igen"
+#, php-format
+msgid ""
+"Temporary error when refunding payment through %1$s - ensure order is "
+"refunded manually, or reset the order to \"Processing\" and try again"
+msgstr ""
+"Midlertidig fejl ved refundering af betaling via %1$s - sørg for, at ordren "
+"refunderes manuelt, eller nulstil ordren til \"Behandling\", og prøv igen"
 
 #: WC_Gateway_Vipps.class.php:1055
 msgid "Test mode"
 msgstr "Testtilstand"
 
 #: Vipps.class.php:587
+#, php-format
 msgid "The %1$s plugins"
 msgstr "De %1$s plugins"
 
 #: Vipps.class.php:1049
-msgid "The <a href='%1$s'>%2$s settings</a> are configured so that no products will have a Buy Now button - including this."
-msgstr "<a href='%1$s'>Indstillingerne for %2$s</a> er konfigureret, så ingen produkter har en Køb nu-knap - heller ikke dette."
+#, php-format
+msgid ""
+"The <a href='%1$s'>%2$s settings</a> are configured so that no products will "
+"have a Buy Now button - including this."
+msgstr ""
+"<a href='%1$s'>Indstillingerne for %2$s</a> er konfigureret, så ingen "
+"produkter har en Køb nu-knap - heller ikke dette."
 
 #: Vipps.class.php:1038
-msgid "The <a href='%1$s'>%2$s settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button."
-msgstr "<a href='%1$s'>Indstillingerne for %2$s</a> er i øjeblikket sat op, så alle produkter, der kan købes med Express Checkout, vil have en Køb nu-knap."
+#, php-format
+msgid ""
+"The <a href='%1$s'>%2$s settings</a> are currently set up so all products "
+"that can be bought with Express Checkout will have a Buy Now button."
+msgstr ""
+"<a href='%1$s'>Indstillingerne for %2$s</a> er i øjeblikket sat op, så alle "
+"produkter, der kan købes med Express Checkout, vil have en Køb nu-knap."
 
 #: WC_Gateway_Vipps.class.php:708
 msgid "The API key provided to you by Porterbuddy"
@@ -1901,6 +2689,7 @@ msgid "The client id provided to you by Instabox"
 msgstr "Det klient-id, du har fået af Instabox"
 
 #: Vipps.class.php:1874
+#, php-format
 msgid "The entire amount has been captured at %1$s"
 msgstr "Hele beløbet er blevet opkrævet ved %1$s"
 
@@ -1909,16 +2698,26 @@ msgid "The Gutenberg Block"
 msgstr "Gutenberg-blokken"
 
 #: Vipps.class.php:3473
-msgid "The link you have followed is for a product that is no longer available at this location. Please return to the store and try again"
-msgstr "Det link, du har fulgt, er til et produkt, der ikke længere er tilgængeligt på dette sted. Vend venligst tilbage til butikken og prøv igen"
+msgid ""
+"The link you have followed is for a product that is no longer available at "
+"this location. Please return to the store and try again"
+msgstr ""
+"Det link, du har fulgt, er til et produkt, der ikke længere er tilgængeligt "
+"på dette sted. Vend venligst tilbage til butikken og prøv igen"
 
 #: Vipps.class.php:1277
+#, php-format
 msgid "The order is not a %1$s order"
 msgstr "Ordren er ikke en %1$s-ordre"
 
 #: Vipps.class.php:609
-msgid "The plugin is currently <b>active</b> - %1$s is available as a payment method."
-msgstr "Pluginet er i øjeblikket <b>aktivt</b> - %1$s er tilgængelig som betalingsmetode."
+#, php-format
+msgid ""
+"The plugin is currently <b>active</b> - %1$s is available as a payment "
+"method."
+msgstr ""
+"Pluginet er i øjeblikket <b>aktivt</b> - %1$s er tilgængelig som "
+"betalingsmetode."
 
 #: Vipps.class.php:1199
 msgid "The product doesn't exist"
@@ -1937,8 +2736,16 @@ msgid "The shortcode looks like this:"
 msgstr "Kortkoden ser sådan ud:"
 
 #: VippsApi.class.php:457
-msgid "The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the 'woo_vipps_transaction_text_shop_id' filter so that you can use a shorter name for your store"
-msgstr "Transaktionsteksten er for lang! Vi bruger en kortere transaktionstekst, så transaktionsteksten kan gå igennem, men tjek venligst filteret 'woo_vipps_transaction_text_shop_id', så du kan bruge et kortere navn til din butik"
+msgid ""
+"The transaction text is too long! We are using a shorter transaction text to "
+"allow the transaction text to go through, but please check the "
+"'woo_vipps_transaction_text_shop_id' filter so that you can use a shorter "
+"name for your store"
+msgstr ""
+"Transaktionsteksten er for lang! Vi bruger en kortere transaktionstekst, så "
+"transaktionsteksten kan gå igennem, men tjek venligst filteret "
+"'woo_vipps_transaction_text_shop_id', så du kan bruge et kortere navn til "
+"din butik"
 
 #: WC_Gateway_Vipps.class.php:767
 msgid "The Username provided to you by Helthjem"
@@ -1971,10 +2778,22 @@ msgid "The Vipps gateway is not correctly configured."
 msgstr "Vipps-gatewayen er ikke konfigureret korrekt."
 
 #: VippsQRCodeController.class.php:233
-msgid "There are some QR codes present at Vipps that are not part of this Website. This may be because these are part of some <i>other</i> website using this same account, or they may have gotten 'lost' in a database restore - or maybe you are creating an entire new site. If neccessary, you can import these into your current site and manage them from here"
-msgstr "Der er nogle QR-koder på Vipps, som ikke er en del af denne hjemmeside. Det kan skyldes, at de er en del af en <i>anden</i> hjemmeside, der bruger den samme konto, eller de kan være blevet \"tabt\" i en database-gendannelse - eller måske er du ved at oprette en helt ny hjemmeside. Hvis det er nødvendigt, kan du importere dem til din nuværende hjemmeside og administrere dem herfra"
+msgid ""
+"There are some QR codes present at Vipps that are not part of this Website. "
+"This may be because these are part of some <i>other</i> website using this "
+"same account, or they may have gotten 'lost' in a database restore - or "
+"maybe you are creating an entire new site. If neccessary, you can import "
+"these into your current site and manage them from here"
+msgstr ""
+"Der er nogle QR-koder på Vipps, som ikke er en del af denne hjemmeside. Det "
+"kan skyldes, at de er en del af en <i>anden</i> hjemmeside, der bruger den "
+"samme konto, eller de kan være blevet \"tabt\" i en database-gendannelse - "
+"eller måske er du ved at oprette en helt ny hjemmeside. Hvis det er "
+"nødvendigt, kan du importere dem til din nuværende hjemmeside og "
+"administrere dem herfra"
 
 #: Vipps.class.php:1956
+#, php-format
 msgid "There is no order with this %1$s orderid, callback fails:"
 msgstr "Der er ingen ordre med dette %1$s ordreid, tilbagekald fejler:"
 
@@ -1983,28 +2802,62 @@ msgid "There is no order with this order id, callback fails:"
 msgstr "Der er ingen ordre med dette ordre-id, tilbagekald fejler:"
 
 #: WC_Gateway_Vipps.class.php:1051
-msgid "These are settings for developers that contain extra features that are normally not useful for regular users, or are not yet ready for primetime"
-msgstr "Dette er indstillinger for udviklere, som indeholder ekstra funktioner, der normalt ikke er nyttige for almindelige brugere, eller som endnu ikke er klar til primetime"
+msgid ""
+"These are settings for developers that contain extra features that are "
+"normally not useful for regular users, or are not yet ready for primetime"
+msgstr ""
+"Dette er indstillinger for udviklere, som indeholder ekstra funktioner, der "
+"normalt ikke er nyttige for almindelige brugere, eller som endnu ikke er "
+"klar til primetime"
 
 #: WC_Gateway_Vipps.class.php:1251
-msgid "This order cannot be paid with %1$s - please try another payment method or try again later"
-msgstr "Denne ordre kan ikke betales med %1$s - prøv venligst en anden betalingsmetode, eller prøv igen senere"
+#, php-format
+msgid ""
+"This order cannot be paid with %1$s - please try another payment method or "
+"try again later"
+msgstr ""
+"Denne ordre kan ikke betales med %1$s - prøv venligst en anden "
+"betalingsmetode, eller prøv igen senere"
 
 #: VippsCheckout.class.php:671
-msgid "This page is used for the alternative %1$s page, which you can choose to use instead of the normal WooCommerce checkout page. "
-msgstr "Denne side bruges til den alternative %1$s-side, som du kan vælge at bruge i stedet for den normale WooCommerce checkout-side. "
+#, php-format
+msgid ""
+"This page is used for the alternative %1$s page, which you can choose to use "
+"instead of the normal WooCommerce checkout page. "
+msgstr ""
+"Denne side bruges til den alternative %1$s-side, som du kan vælge at bruge i "
+"stedet for den normale WooCommerce checkout-side. "
 
 #: Vipps.class.php:590
-msgid "This plugin, currently active at your site, implements a %1$s checkout solution in WooCommerce, and Express Checkout solution for instant buys using the %1$s app, and an alternate %1$s-hosted checkout supporting both %1$s and credit cards. It also supports %1$s's QR-api for creating QR-codes to your landing pages or products"
-msgstr "Dette plugin, som i øjeblikket er aktivt på din side, implementerer en %1$s checkout-løsning i WooCommerce, og Express Checkout-løsning til øjeblikkelige køb ved hjælp af %1$s-appen og en alternativ %1$s-hosted checkout, der understøtter både %1$s og kreditkort. Den understøtter også %1$s' QR-api til oprettelse af QR-koder til dine landingssider eller produkter"
+#, php-format
+msgid ""
+"This plugin, currently active at your site, implements a %1$s checkout "
+"solution in WooCommerce, and Express Checkout solution for instant buys "
+"using the %1$s app, and an alternate %1$s-hosted checkout supporting both "
+"%1$s and credit cards. It also supports %1$s's QR-api for creating QR-codes "
+"to your landing pages or products"
+msgstr ""
+"Dette plugin, som i øjeblikket er aktivt på din side, implementerer en %1$s "
+"checkout-løsning i WooCommerce, og Express Checkout-løsning til "
+"øjeblikkelige køb ved hjælp af %1$s-appen og en alternativ %1$s-hosted "
+"checkout, der understøtter både %1$s og kreditkort. Den understøtter også "
+"%1$s' QR-api til oprettelse af QR-koder til dine landingssider eller "
+"produkter"
 
 #: Vipps.class.php:1043
-msgid "This product does <b>not</b> support express checkout, and so will <b>not</b> have a Buy Now button."
-msgstr "Dette produkt understøtter <b>ikke</b> ekspres-checkout og har derfor <b>ikke</b> en Køb nu-knap."
+msgid ""
+"This product does <b>not</b> support express checkout, and so will <b>not</b>"
+" have a Buy Now button."
+msgstr ""
+"Dette produkt understøtter <b>ikke</b> ekspres-checkout og har derfor <b>"
+"ikke</b> en Køb nu-knap."
 
 #: Vipps.class.php:1041
-msgid "This product supports express checkout, and so will have a Buy Now button."
-msgstr "Dette produkt understøtter ekspres-checkout og vil derfor have en Køb nu-knap."
+msgid ""
+"This product supports express checkout, and so will have a Buy Now button."
+msgstr ""
+"Dette produkt understøtter ekspres-checkout og vil derfor have en Køb nu-"
+"knap."
 
 #: Vipps.class.php:1374 Vipps.class.php:1392
 msgid "Timestamp"
@@ -2015,26 +2868,52 @@ msgid "Title"
 msgstr "Titel"
 
 #: VippsKCSupport.class.php:63
-msgid "Title for %1$s payment method. This controls the title which the user sees in the checkout form."
-msgstr "Titel for %1$s betalingsmetode. Dette styrer den titel, som brugeren ser i checkout-formularen."
+#, php-format
+msgid ""
+"Title for %1$s payment method. This controls the title which the user sees "
+"in the checkout form."
+msgstr ""
+"Titel for %1$s betalingsmetode. Dette styrer den titel, som brugeren ser i "
+"checkout-formularen."
 
 #: VippsCheckoutShippingMethods.php:138
 msgid "Title to be display on site"
 msgstr "Titel, der skal vises på webstedet"
 
 #: WC_Gateway_Vipps.class.php:3176
-msgid "To activate %1$s, just press the button below. Otherwise, %2$s will of course be available in the regular checkout screen; and you can also offer %3$s from both the product pages and the shopping cart if you wish."
-msgstr "For at aktivere %1$s skal du bare trykke på knappen nedenfor. Ellers vil %2$s selvfølgelig være tilgængelige i den almindelige checkout-skærm; og du kan også tilbyde %3$s fra både produktsiderne og indkøbskurven, hvis du ønsker det."
+#, php-format
+msgid ""
+"To activate %1$s, just press the button below. Otherwise, %2$s will of "
+"course be available in the regular checkout screen; and you can also offer "
+"%3$s from both the product pages and the shopping cart if you wish."
+msgstr ""
+"For at aktivere %1$s skal du bare trykke på knappen nedenfor. Ellers vil "
+"%2$s selvfølgelig være tilgængelige i den almindelige checkout-skærm; og du "
+"kan også tilbyde %3$s fra både produktsiderne og indkøbskurven, hvis du "
+"ønsker det."
 
 #: Vipps.class.php:1107
-msgid "To create a QR code for your shareable link, we recommend copying the URL and then using the <a href='%2$s'>%1$s QR Api</a>"
-msgstr "For at oprette en QR-kode til dit delbare link anbefaler vi, at du kopierer URL'en og derefter bruger <a href='%2$s'>%1$s QR Api</a>"
+#, php-format
+msgid ""
+"To create a QR code for your shareable link, we recommend copying the URL "
+"and then using the <a href='%2$s'>%1$s QR Api</a>"
+msgstr ""
+"For at oprette en QR-kode til dit delbare link anbefaler vi, at du kopierer "
+"URL'en og derefter bruger <a href='%2$s'>%1$s QR Api</a>"
 
 #: Vipps.class.php:585
-msgid "To order or configure your %1$s account that powers these plugins, log onto <a target='_blank'  href='%2$s'>the %1$s portal</a> and use the keys and data from that to set up your plugins as needed."
-msgstr "For at bestille eller konfigurere din %1$s-konto, der driver disse plugins, skal du logge på <a target='_blank'  href='%2$s'>%1$s-portalen</a> og bruge nøglerne og dataene derfra til at konfigurere dine plugins efter behov."
+#, php-format
+msgid ""
+"To order or configure your %1$s account that powers these plugins, log onto "
+"<a target='_blank'  href='%2$s'>the %1$s portal</a> and use the keys and "
+"data from that to set up your plugins as needed."
+msgstr ""
+"For at bestille eller konfigurere din %1$s-konto, der driver disse plugins, "
+"skal du logge på <a target='_blank'  href='%2$s'>%1$s-portalen</a> og bruge "
+"nøglerne og dataene derfra til at konfigurere dine plugins efter behov."
 
 #: Vipps.class.php:3631
+#, php-format
 msgid "To the %1$s app!"
 msgstr "Til %1$s-appen!"
 
@@ -2063,42 +2942,64 @@ msgid "Transaction text"
 msgstr "Transaktionstekst"
 
 #: WC_Gateway_Vipps.class.php:1574
+#, php-format
 msgid "Trying to cancel payment on order not made by %1$s:"
 msgstr "Forsøger at annullere betaling på ordre ikke lavet af %1$s:"
 
 #: WC_Gateway_Vipps.class.php:1426
+#, php-format
 msgid "Trying to capture payment on order not made by %1$s:"
 msgstr "Forsøger at modtage betaling for en ordre, der ikke er lavet af %1$s:"
 
 #: WC_Gateway_Vipps.class.php:1658
+#, php-format
 msgid "Trying to refund payment on %1$s payment not captured:"
 msgstr "Forsøg på at refundere betaling på %1$s betaling ikke fanget:"
 
 #: WC_Gateway_Vipps.class.php:1521 WC_Gateway_Vipps.class.php:1649
+#, php-format
 msgid "Trying to refund payment on order not made by %1$s:"
 msgstr "Forsøger at refundere betaling på ordre, der ikke er lavet af %1$s:"
 
 #: WC_Gateway_Vipps.class.php:1250
-msgid "Trying to start order %1$s with status %2$s - only 'pending' and 'failed' are allowed, so this will fail"
-msgstr "Forsøger at starte ordre %1$s med status %2$s - kun 'pending' og 'failed' er tilladt, så dette vil mislykkes"
+#, php-format
+msgid ""
+"Trying to start order %1$s with status %2$s - only 'pending' and 'failed' "
+"are allowed, so this will fail"
+msgstr ""
+"Forsøger at starte ordre %1$s med status %2$s - kun 'pending' og 'failed' er "
+"tilladt, så dette vil mislykkes"
 
 #: Vipps.class.php:389
+#, php-format
 msgid "Turn on support for %1$s On-site Messaging badges"
 msgstr "Slå understøttelse af %1$s On-site Messaging-badges til"
 
 #: WC_Gateway_Vipps.class.php:1219 WC_Gateway_Vipps.class.php:1321
-msgid "Unfortunately, the %1$s payment method is currently unavailable. Please choose another method."
-msgstr "Desværre er betalingsmetoden %1$s ikke tilgængelig i øjeblikket. Vælg venligst en anden metode."
+#, php-format
+msgid ""
+"Unfortunately, the %1$s payment method is currently unavailable. Please "
+"choose another method."
+msgstr ""
+"Desværre er betalingsmetoden %1$s ikke tilgængelig i øjeblikket. Vælg "
+"venligst en anden metode."
 
 #: WC_Gateway_Vipps.class.php:1308
-msgid "Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method."
-msgstr "Desværre er betalingsmetoden %1$s midlertidigt utilgængelig. Vent venligst eller vælg en anden metode."
+#, php-format
+msgid ""
+"Unfortunately, the %1$s payment method is temporarily unavailable. Please "
+"wait or choose another method."
+msgstr ""
+"Desværre er betalingsmetoden %1$s midlertidigt utilgængelig. Vent venligst "
+"eller vælg en anden metode."
 
 #: VippsCheckout.class.php:223
+#, php-format
 msgid "Unknown error creating %1$s partial order"
 msgstr "Ukendt fejl ved oprettelse af %1$s delordre"
 
 #: VippsCheckout.class.php:304
+#, php-format
 msgid "Unknown error creating %1$s session"
 msgstr "Ukendt fejl ved oprettelse af %1$s-session"
 
@@ -2148,18 +3049,22 @@ msgid "URL"
 msgstr "URL"
 
 #: VippsKCSupport.class.php:75
+#, php-format
 msgid "URL to the %1$s logo"
 msgstr "URL til %1$s-logoet"
 
 #: WC_Gateway_Vipps.class.php:873
+#, php-format
 msgid "Use %1$s as default payment method on checkout page"
 msgstr "Brug %1$s som standardbetalingsmetode på checkout-siden"
 
 #: WC_Gateway_Vipps.class.php:3174
+#, php-format
 msgid "Use %1$s for all purchases"
 msgstr "Brug %1$s til alle køb"
 
 #: Vipps.class.php:1086
+#, php-format
 msgid "Use %1$s Later"
 msgstr "Brug %1$s senere"
 
@@ -2168,8 +3073,12 @@ msgid "Use a real page ID"
 msgstr "Brug et rigtigt side-ID"
 
 #: WC_Gateway_Vipps.class.php:1003
-msgid "Use a real page ID for the special %1$s pages - neccessary for some themes"
-msgstr "Brug et rigtigt side-ID til de særlige %1$s-sider - nødvendigt for nogle temaer"
+#, php-format
+msgid ""
+"Use a real page ID for the special %1$s pages - neccessary for some themes"
+msgstr ""
+"Brug et rigtigt side-ID til de særlige %1$s-sider - nødvendigt for nogle "
+"temaer"
 
 #: WC_Gateway_Vipps.class.php:324
 msgid "Use a simulated page (default)"
@@ -2196,20 +3105,43 @@ msgid "Use old-style shipping callback for express checkout"
 msgstr "Brug gammeldags forsendelses-callback til ekspres-checkout"
 
 #: WC_Gateway_Vipps.class.php:996
+#, php-format
 msgid "Use specific template for %1$s"
 msgstr "Brug specifik skabelon til %1$s"
 
 #: WC_Gateway_Vipps.class.php:1031
-msgid "Use the flock() system call to ensure orders are only finalized once. You can use this for normal setups, but probably not on Windows with IIS, and possibly not on distributed filesystems like NFS. If you don\\t know what it is, probably do not use it. If you get duplicated shipping lines on some express orders, you may try using this"
-msgstr "Brug systemkaldet flock() til at sikre, at ordrer kun afsluttes én gang. Du kan bruge dette til normale opsætninger, men sandsynligvis ikke på Windows med IIS, og muligvis ikke på distribuerede filsystemer som NFS. Hvis du ikke ved, hvad det er, skal du nok ikke bruge det. Hvis du får duplikerede forsendelseslinjer på nogle ekspresordrer, kan du prøve at bruge dette"
+msgid ""
+"Use the flock() system call to ensure orders are only finalized once. You "
+"can use this for normal setups, but probably not on Windows with IIS, and "
+"possibly not on distributed filesystems like NFS. If you don\\t know what it "
+"is, probably do not use it. If you get duplicated shipping lines on some "
+"express orders, you may try using this"
+msgstr ""
+"Brug systemkaldet flock() til at sikre, at ordrer kun afsluttes én gang. Du "
+"kan bruge dette til normale opsætninger, men sandsynligvis ikke på Windows "
+"med IIS, og muligvis ikke på distribuerede filsystemer som NFS. Hvis du ikke "
+"ved, hvad det er, skal du nok ikke bruge det. Hvis du får duplikerede "
+"forsendelseslinjer på nogle ekspresordrer, kan du prøve at bruge dette"
 
 #: WC_Gateway_Vipps.class.php:1019
-msgid "Use this image for the order confirmation link uploaded to the customers' %1$s app"
-msgstr "Brug dette billede til linket til ordrebekræftelsen, der uploades til kundernes %1$s-app"
+#, php-format
+msgid ""
+"Use this image for the order confirmation link uploaded to the customers' "
+"%1$s app"
+msgstr ""
+"Brug dette billede til linket til ordrebekræftelsen, der uploades til "
+"kundernes %1$s-app"
 
 #: WC_Gateway_Vipps.class.php:999
-msgid "Use this template from your theme or child-theme to display all the special %1$s pages. You will probably want a full-width template and it should call 'the_content()' normally."
-msgstr "Brug denne skabelon fra dit tema eller child-theme til at vise alle de særlige %1$s-sider. Du vil sandsynligvis have en skabelon i fuld bredde, og den bør kalde 'the_content()' normalt."
+#, php-format
+msgid ""
+"Use this template from your theme or child-theme to display all the special "
+"%1$s pages. You will probably want a full-width template and it should call "
+"'the_content()' normally."
+msgstr ""
+"Brug denne skabelon fra dit tema eller child-theme til at vise alle de "
+"særlige %1$s-sider. Du vil sandsynligvis have en skabelon i fuld bredde, og "
+"den bør kalde 'the_content()' normalt."
 
 #: WC_Gateway_Vipps.class.php:972
 msgid "Use your current shipping filters"
@@ -2243,10 +3175,6 @@ msgstr "Vipps"
 msgid "Vipps Checkout"
 msgstr "Vipps Checkout"
 
-#: WC_Gateway_Vipps.class.php:3155
-msgid "%1$s does not support your currency."
-msgstr "%1$s understøtter ikke din valuta."
-
 #: WC_Gateway_Vipps.class.php:3043 Vipps.class.php:63
 msgid "Vipps Express Checkout"
 msgstr "Vipps Express Checkout"
@@ -2265,26 +3193,29 @@ msgid "Vipps Recurring Payments"
 msgstr "Vipps tilbagevendende betalinger"
 
 #: VippsDismissibleAdminBanners.class.php:188
-msgid "Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce - get started here!"
-msgstr "Vipps Recurring Payments for WooCommerce er perfekt, hvis du sælger abonnementer eller medlemskaber. Pluginet er tilgængeligt til Wordpress og WooCommerce - kom i gang her!"
-
-#: WC_Gateway_Vipps.class.php:3164
-msgid "%1$s requires that your site uses HTTPS."
-msgstr "%1$s kræver, at din hjemmeside bruger HTTPS."
-
-#: WC_Gateway_Vipps.class.php:3156
-msgid "%1$s supported currencies: %2$s"
-msgstr "%1$s understøttede valutaer: %2$s"
+msgid ""
+"Vipps Recurring Payments for WooCommerce is perfect if you sell "
+"subscriptions or memberships. The plugin is available for Wordpress and "
+"WooCommerce - get started here!"
+msgstr ""
+"Vipps Recurring Payments for WooCommerce er perfekt, hvis du sælger "
+"abonnementer eller medlemskaber. Pluginet er tilgængeligt til Wordpress og "
+"WooCommerce - kom i gang her!"
 
 #: WC_Gateway_Vipps.class.php:1119
-msgid "VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"
-msgstr "VIPPS_TEST_MODE er sat til true i din konfiguration - dev-tilstand er tvungen"
+msgid ""
+"VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"
+msgstr ""
+"VIPPS_TEST_MODE er sat til true i din konfiguration - dev-tilstand er tvungen"
 
 #: WC_Gateway_Vipps.class.php:1120
-msgid "VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
-msgstr "VIPPS_TEST_MODE er sat til true i din konfiguration - testtilstand er tvungen"
+msgid ""
+"VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
+msgstr ""
+"VIPPS_TEST_MODE er sat til true i din konfiguration - testtilstand er tvungen"
 
 #: Vipps.class.php:3836
+#, php-format
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr "Venter på bekræftelse af køb fra %1$s"
 
@@ -2297,51 +3228,90 @@ msgid "Waiting on order"
 msgstr "Venter på bestilling"
 
 #: WC_Gateway_Vipps.class.php:922
-msgid "When using %1$s, ask the user to confirm that they have read and accepted the stores terms and conditons before proceeding"
-msgstr "Når du bruger %1$s, skal du bede brugeren om at bekræfte, at de har læst og accepteret butikkens vilkår og betingelser, før du går videre"
+#, php-format
+msgid ""
+"When using %1$s, ask the user to confirm that they have read and accepted "
+"the stores terms and conditons before proceeding"
+msgstr ""
+"Når du bruger %1$s, skal du bede brugeren om at bekræfte, at de har læst og "
+"accepteret butikkens vilkår og betingelser, før du går videre"
 
 #: WC_Gateway_Vipps.class.php:665
-msgid "When using %1$s, you have the option to use %1$s specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the %1$s screen."
-msgstr "Når du bruger %1$s, har du mulighed for at bruge %1$s specifikke forsendelsesmetoder med udvidede funktioner for visse transportører. Disse vil tilføje et passende logo samt udvidede leveringsmuligheder for visse metoder. For nogle af disse skal du tilføje integrationsdata fra transportørerne nedenfor. Du kan derefter tilføje disse forsendelsesmetoder til dine forsendelseszoner på normal vis, men de vil kun blive vist på %1$s-skærmen."
+#, php-format
+msgid ""
+"When using %1$s, you have the option to use %1$s specific shipping methods "
+"with extended features for certain carriers. These will add an apropriate "
+"logo as well as extended delivery options for certain methods. For some of "
+"these, you need to add integration data from the carriers below. You can "
+"then add these shipping methods to your shipping zones the normal way, but "
+"they will only appear in the %1$s screen."
+msgstr ""
+"Når du bruger %1$s, har du mulighed for at bruge %1$s specifikke "
+"forsendelsesmetoder med udvidede funktioner for visse transportører. Disse "
+"vil tilføje et passende logo samt udvidede leveringsmuligheder for visse "
+"metoder. For nogle af disse skal du tilføje integrationsdata fra "
+"transportørerne nedenfor. Du kan derefter tilføje disse forsendelsesmetoder "
+"til dine forsendelseszoner på normal vis, men de vil kun blive vist på %1$s-"
+"skærmen."
 
 #: Vipps.class.php:368 Vipps.class.php:1071 Blocks/Badges/vipps-badge.php:52
 msgid "White"
 msgstr "Hvid"
 
 #. Author of the plugin
-#: 
 msgid "WP Hosting"
 msgstr "WP-hosting"
 
 #: WC_Gateway_Vipps.class.php:2729 Vipps.class.php:1972
+#, php-format
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
-msgstr "Forkert %1$s Orderid - muligvis et forsøg på at forfalske et tilbagekald "
+msgstr ""
+"Forkert %1$s Orderid - muligvis et forsøg på at forfalske et tilbagekald "
 
 #: Vipps.class.php:2173
+#, php-format
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr "Forkert %1$s Orderid ved tilbagekald af forsendelsesdetaljer"
 
 #: WC_Gateway_Vipps.class.php:2724
-msgid "Wrong auth token in callback from %1$s - possibly an attempt to fake a callback"
-msgstr "Forkert auth-token i callback fra %1$s - muligvis et forsøg på at forfalske et callback"
+#, php-format
+msgid ""
+"Wrong auth token in callback from %1$s - possibly an attempt to fake a "
+"callback"
+msgstr ""
+"Forkert auth-token i callback fra %1$s - muligvis et forsøg på at forfalske "
+"et callback"
 
 #: WC_Gateway_Vipps.class.php:3179
+#, php-format
 msgid "Yes, activate %1$s!"
 msgstr "Ja, aktiver %1$s!"
 
 #: Vipps.class.php:611
+#, php-format
 msgid "You are using %1$s instead of the standard WooCommerce Checkout page."
 msgstr "Du bruger %1$s i stedet for standard WooCommerce Checkout-siden."
 
 #: Blocks/Badges/vipps-badge.php:77
-msgid "You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)"
-msgstr "Du kan tilføje et beløb for badgen her, i de mindre enheder af valutaen (f.eks. for NOK, i øre)"
+msgid ""
+"You can add an amount for the badge here, in the minor units of the currency "
+"(e.g. for NOK, in øre)"
+msgstr ""
+"Du kan tilføje et beløb for badgen her, i de mindre enheder af valutaen (f."
+"eks. for NOK, i øre)"
 
 #: Vipps.class.php:381
-msgid "You can configure these badges on this page, turning them on in all or some products and configure their default setup. You can also add a badge using a shortcode or a Block"
-msgstr "Du kan konfigurere disse badges på denne side, slå dem til i alle eller nogle produkter og konfigurere deres standardopsætning. Du kan også tilføje et badge ved hjælp af en shortcode eller en Block"
+msgid ""
+"You can configure these badges on this page, turning them on in all or some "
+"products and configure their default setup. You can also add a badge using a "
+"shortcode or a Block"
+msgstr ""
+"Du kan konfigurere disse badges på denne side, slå dem til i alle eller "
+"nogle produkter og konfigurere deres standardopsætning. Du kan også tilføje "
+"et badge ved hjælp af en shortcode eller en Block"
 
 #: VippsDismissibleAdminBanners.class.php:112
+#, php-format
 msgid "You can get %1$s now!"
 msgstr "Du kan få %1$s nu!"
 
@@ -2358,22 +3328,35 @@ msgid "You get settlement in three days"
 msgstr "Du får afregning på tre dage"
 
 #: VippsApi.class.php:608
+#, php-format
 msgid "You need a newer version of WooCommerce to use %1$s!"
 msgstr "Du skal bruge en nyere version af WooCommerce for at bruge %1$s!"
 
 #: WC_Gateway_Vipps.class.php:1241
+#, php-format
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr "Du skal indtaste dit telefonnummer for at betale med %1$s"
 
 #: Vipps.class.php:3655
-msgid "You recently completed an order with exactly the same products as you are buying now. There should be an email in your inbox from the previous purchase. Are you sure you want to order again?"
-msgstr "Du har for nylig gennemført en ordre med præcis de samme produkter, som du køber nu. Der burde være en e-mail i din indbakke fra det tidligere køb. Er du sikker på, at du vil bestille igen?"
+msgid ""
+"You recently completed an order with exactly the same products as you are "
+"buying now. There should be an email in your inbox from the previous "
+"purchase. Are you sure you want to order again?"
+msgstr ""
+"Du har for nylig gennemført en ordre med præcis de samme produkter, som du "
+"køber nu. Der burde være en e-mail i din indbakke fra det tidligere køb. Er "
+"du sikker på, at du vil bestille igen?"
 
 #: WC_Gateway_Vipps.class.php:818
-msgid "Your \"Merchant Serial Number\" from the Developer tab on https://portal.vipps.no"
-msgstr "Dit \"Merchant Serial Number\" fra fanebladet Developer på https://portal.vipps.no"
+msgid ""
+"Your \"Merchant Serial Number\" from the Developer tab on https://portal."
+"vipps.no"
+msgstr ""
+"Dit \"Merchant Serial Number\" fra fanebladet Developer på https://portal."
+"vipps.no"
 
 #: VippsDismissibleAdminBanners.class.php:114
+#, php-format
 msgid "Your customers can pay with %1$s , Visa or Mastercard"
 msgstr "Dine kunder kan betale med %1$s , Visa eller Mastercard"
 
@@ -2382,30 +3365,59 @@ msgid "Your order from"
 msgstr "Din ordre fra"
 
 #: WC_Gateway_Vipps.class.php:715
-msgid "Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: \"4791234567\""
-msgstr "Dit telefonnummer, hvor Porterbuddy kan sende dig vigtige beskeder. Formatet skal være MSISDN (inklusive landekode). Eksempel: \"4791234567\""
+msgid ""
+"Your phone number where Porterbuddy may send you important messages. Format "
+"must be MSISDN (including country code). Example: \"4791234567\""
+msgstr ""
+"Dit telefonnummer, hvor Porterbuddy kan sende dig vigtige beskeder. Formatet "
+"skal være MSISDN (inklusive landekode). Eksempel: \"4791234567\""
 
 #: Vipps.class.php:3039
 msgid "Your product is temporarily no longer available for purchase"
 msgstr "Dit produkt er midlertidigt ikke længere tilgængeligt for køb"
 
 #: VippsCheckout.class.php:539
-msgid "Your session has expired - please reload the page to restart, or return to the shop"
-msgstr "Din session er udløbet - genindlæs siden for at genstarte, eller vend tilbage til butikken"
+msgid ""
+"Your session has expired - please reload the page to restart, or return to "
+"the shop"
+msgstr ""
+"Din session er udløbet - genindlæs siden for at genstarte, eller vend "
+"tilbage til butikken"
 
 #: Vipps.class.php:3515
 msgid "Your shopping cart is empty"
 msgstr "Din indkøbskurv er tom"
 
 #: VippsApi.class.php:620
-msgid "Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined"
-msgstr "Din hjemmeside har ikke defineret en side med vilkår og betingelser - den starter alligevel med %1$s, men den bør defineres"
+#, php-format
+msgid ""
+"Your site does not have a Terms and Conditions page defined - starting %1$s "
+"anyway, but this should be defined"
+msgstr ""
+"Din hjemmeside har ikke defineret en side med vilkår og betingelser - den "
+"starter alligevel med %1$s, men den bør defineres"
 
 #: WC_Gateway_Vipps.class.php:1067
-msgid "Your test account \"Merchant Serial Number\" from the Developer tab on https://portal.vipps.no"
-msgstr "Din testkontos \"Merchant Serial Number\" fra fanebladet Developer på https://portal.vipps.no"
+msgid ""
+"Your test account \"Merchant Serial Number\" from the Developer tab on https:"
+"//portal.vipps.no"
+msgstr ""
+"Din testkontos \"Merchant Serial Number\" fra fanebladet Developer på https:"
+"//portal.vipps.no"
 
 #: Vipps.class.php:276
-msgid "Your theme or a plugin is currently overriding the <code>'woo_vipps_shipping_methods'</code> filter to customize your shipping alternatives.  While this works, this disables the newer Express Checkout shipping system, which is neccessary if your shipping is to include metadata. You can do this, or stop this message, from the <a href=\"%1$s\">settings page</a>"
-msgstr "Dit tema eller et plugin overstyrer i øjeblikket filteret <code>'woo_vipps_shipping_methods'</code> for at tilpasse dine forsendelsesalternativer.  Selvom det fungerer, deaktiverer det det nyere Express Checkout-forsendelsessystem, som er nødvendigt, hvis din forsendelse skal inkludere metadata. Du kan gøre dette, eller stoppe denne besked, fra <a href=\"%1$s\">indstillingssiden</a>"
-
+#, php-format
+msgid ""
+"Your theme or a plugin is currently overriding the <code>"
+"'woo_vipps_shipping_methods'</code> filter to customize your shipping "
+"alternatives.  While this works, this disables the newer Express Checkout "
+"shipping system, which is neccessary if your shipping is to include metadata."
+" You can do this, or stop this message, from the <a href=\"%1$s\">settings "
+"page</a>"
+msgstr ""
+"Dit tema eller et plugin overstyrer i øjeblikket filteret <code>"
+"'woo_vipps_shipping_methods'</code> for at tilpasse dine "
+"forsendelsesalternativer.  Selvom det fungerer, deaktiverer det det nyere "
+"Express Checkout-forsendelsessystem, som er nødvendigt, hvis din forsendelse "
+"skal inkludere metadata. Du kan gøre dette, eller stoppe denne besked, fra "
+"<a href=\"%1$s\">indstillingssiden</a>"
