@@ -3555,6 +3555,7 @@ function activate_vipps_checkout(yesno) {
         $callback = $this->webhook_callback_url();
         $callback_compare = strtok($callback, '?');
         $problems = false;
+        if (!$local_hooks) return false;
         foreach($local_hooks as $msn => $hooks) {
            foreach ($hooks as $id => $hook) {
                $noargs = strtok($hook['url'], '?');
