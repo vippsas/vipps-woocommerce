@@ -3418,7 +3418,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$this->can_be_activated()) {
             $this->update_option('enabled', 'no');
         }
-        ?>
+
+        if ($payment_method != "Vipps"): ?> 
+        <style>
+          #woocommerce_vipps_express_options, #woocommerce_vipps_express_options-table  {
+           display: none;
+          }
+        </style>
+        <?php endif; ?>
+
             <h2 id='vipps-settings-page'><?php echo __(Vipps::CompanyName(),'woo-vipps'); ?> <img style="float:right;max-height:40px;margin-top:-15px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
 
