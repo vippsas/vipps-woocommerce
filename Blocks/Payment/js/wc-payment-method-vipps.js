@@ -30,15 +30,10 @@ const Content = () => {
 };
 
 const Label = props => {
-        var label = null;
-        if (iconsrc != '') {
-            const icon = React.createElement('img', { alt: label, title: label, className: 'vipps-payment-logo', src:iconsrc});
-            label = icon;
-        } else {
-          // Just do a text label if no icon is passed (this is filterable) IOK 2020-08-10
-	  const { PaymentMethodLabel } = props.components;
-          label = React.createElement(PaymentMethodLabel, { text: label, icon: icon });
-        }
+        const { PaymentMethodLabel } = props.components;
+        let textlabel = React.createElement( 'span', null, decodeEntities(settings.title || ''));
+        let icon = React.createElement('img', { alt: textlabel, title: textlabel, className: 'vipps-payment-logo', src:iconsrc});
+        let label =  React.createElement(PaymentMethodLabel, { text: textlabel, icon: icon });
         return applyFilters('woo_vipps_checkout_label', label, settings);
 };
 

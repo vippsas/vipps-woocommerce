@@ -2373,7 +2373,7 @@ EOF;
 
             if (!$pending) {
                 // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
-                $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $order->get_id()), 'debug');
+                $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
                 return; 
             }
             // We are not interested in Checkout or Express orders - they have their own callback systems
