@@ -3,7 +3,7 @@
 }());
 
 function registerVippsRecurringGateway() {
-  //const {__} = wp.i18n; // todo: use this instead of VippsRecurringLocale
+  const {__, sprintf} = wp.i18n;
 
   const {decodeEntities} = window.wp.htmlEntities;
   const {getSetting} = window.wc.wcSettings;
@@ -21,25 +21,23 @@ function registerVippsRecurringGateway() {
   };
 
   const Label = props => {
-    const {PaymentMethodLabel} = props.components;
-    const textlabel = React.createElement('span', null, decodeEntities(settings.title || ''));
+    const { PaymentMethodLabel } = props.components;
 
-    const icon = React.createElement('img', {
-      alt: textlabel,
-      title: textlabel,
-      className: 'vipps-recurring-payment-logo',
-      src: logo
-    });
+    const title = decodeEntities(settings.title || '')
+    let label;
 
-    const label = React.createElement(PaymentMethodLabel, {
-      text: textlabel,
-      icon: icon
-    });
+    if (logo && logo.length > 0) {
+      label = React.createElement('img', { alt: title, title: title, className: 'vipps-recurring-payment-logo', src: logo });
+    } else {
+      label = React.createElement(PaymentMethodLabel, {
+        text: React.createElement('span', null, title)
+      });
+    }
 
     return applyFilters('woo_vipps_recurring_checkout_label', label, settings);
   };
 
-  const canMakePayment = (args) => {
+  const canMakePayment = () => {
     return applyFilters('woo_vipps_recurring_checkout_show_gateway', true, settings);
   };
 
@@ -48,8 +46,7 @@ function registerVippsRecurringGateway() {
    */
   const paymentMethod = {
     name: 'vipps_recurring',
-    paymentMethodId: 'vipps_recurring',
-    placeOrderButtonLabel: VippsRecurringLocale['Continue with %s'],
+    placeOrderButtonLabel: sprintf(__("Continue with %s", "woo-vipps-recurring"), settings.title),
     supports: {
       features: settings.supports || []
     },
@@ -60,8 +57,6 @@ function registerVippsRecurringGateway() {
     canMakePayment,
     ariaLabel
   };
-
-  console.log(paymentMethod)
 
   registerPaymentMethod(paymentMethod);
 }

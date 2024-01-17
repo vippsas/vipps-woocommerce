@@ -19,28 +19,6 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'WC_VIPPS_RECURRING_VERSION', '1.17.3' );
 
-
-// declare compatibility with WooCommerce HPOS
-add_action( 'before_woocommerce_init', function () {
-	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
-	}
-} );
-
-// Declare compatibility with the WooCommerce checkout block
-add_action( 'woocommerce_blocks_loaded', function () {
-	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-		require_once __DIR__ . '/includes/wc-vipps-recurring-blocks-support.php';
-
-		add_action(
-			'woocommerce_blocks_payment_method_type_registration',
-			function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-				$payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
-			}
-		);
-	}
-} );
-
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
 /**
@@ -879,3 +857,24 @@ function woocommerce_gateway_vipps_recurring_init() {
 		require_once __DIR__ . '/includes/wc-vipps-recurring-compatibility.php';
 	}
 }
+
+// Declare compatibility with WooCommerce HPOS
+add_action( 'before_woocommerce_init', function () {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__ );
+	}
+} );
+
+// Declare compatibility with the WooCommerce checkout block
+add_action( 'woocommerce_blocks_loaded', function () {
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		require_once dirname( __FILE__ ) . '/includes/wc-vipps-recurring-blocks-support.php';
+
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
+			}
+		);
+	}
+} );
