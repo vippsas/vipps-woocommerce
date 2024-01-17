@@ -43,7 +43,7 @@ final class WC_Vipps_Recurring_Blocks_Support extends AbstractPaymentMethodType 
 		$version      = filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . "/assets/js/vipps-recurring-payment-method-block.js" );
 		$path         = WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/js/vipps-recurring-payment-method-block.js';
 		$handle       = 'wc-payment-method-vipps_recurring';
-		$dependencies = [ 'wp-hooks', 'wp-i18n', 'woo-vipps-recurring' ];
+		$dependencies = [ 'wp-hooks', 'wp-i18n' ];
 
 		wp_register_script( $handle, $path, $dependencies, $version, true );
 
