@@ -8,7 +8,7 @@ msgstr ""
 "Language: fi\n"
 "Language-Team: Finnish\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"PO-Revision-Date: 2024-01-16 12:47+0000"
+"PO-Revision-Date: 2024-01-17 16:25+0000"
 
 #: WC_Gateway_Vipps.class.php:2309
 msgid " - no status retrievable"
@@ -28,10 +28,10 @@ msgstr " palautetaan %1$s:n kautta:"
 msgid "\"Buy now\" compatibility mode"
 msgstr "\"Osta nyt\" -yhteensopivuustila"
 
-#: WC_Gateway_Vipps.class.php:1006 WC_Gateway_Vipps.class.php:3703
-#: VippsCheckout.class.php:538 VippsKCSupport.class.php:64 Vipps.class.php:915
-#: Vipps.class.php:940 Vipps.class.php:1111 Vipps.class.php:1111
-#: Vipps.class.php:1142 Vipps.class.php:1155 Vipps.class.php:1296
+#: WC_Gateway_Vipps.class.php:1006 WC_Gateway_Vipps.class.php:3711
+#: VippsCheckout.class.php:538 VippsKCSupport.class.php:64 Vipps.class.php:918
+#: Vipps.class.php:943 Vipps.class.php:1114 Vipps.class.php:1114
+#: Vipps.class.php:1149 Vipps.class.php:1162 Vipps.class.php:1303
 #, php-format
 msgid "%1$s"
 msgstr "%1$s"
@@ -47,7 +47,7 @@ msgstr ""
 "suoraan tuote- tai luettelosivuilta. Tuote saa 'osta nyt' -painikkeen, joka "
 "käynnistää ostoprosessin välittömästi."
 
-#: Vipps.class.php:2132
+#: Vipps.class.php:2141
 #, php-format
 msgid "%1$s Buy Now button"
 msgstr "%1$s Osta nyt -painike"
@@ -73,7 +73,7 @@ msgstr ""
 msgid "%1$s callback: Handling order: "
 msgstr "%1$s callback: Käsittelyjärjestys: "
 
-#: Vipps.class.php:898
+#: Vipps.class.php:901
 #, php-format
 msgid ""
 "%1$s configuration is not yet complete - you must get your keys from the "
@@ -82,22 +82,22 @@ msgstr ""
 "%1$s-konfiguraatio ei ole vielä valmis - sinun on haettava avaimesi %1$s "
 "portaalista ja syötettävä ne <a href='%2$s'>asetussivulla</a>"
 
-#: WC_Gateway_Vipps.class.php:3431
+#: WC_Gateway_Vipps.class.php:3439
 #, php-format
 msgid "%1$s does not support your currency."
 msgstr "%1$s ei tue valuuttaasi."
 
-#: Vipps.class.php:4177
+#: Vipps.class.php:4186
 #, php-format
 msgid "%1$s Express Checkout"
 msgstr "%1$s Pikakassa"
 
-#: Vipps.class.php:877
+#: Vipps.class.php:880
 #, php-format
 msgid "%1$s for WordPress and WooCommerce"
 msgstr "%1$s WordPressille ja WooCommercelle"
 
-#: Vipps.class.php:928
+#: Vipps.class.php:931
 #, php-format
 msgid ""
 "%1$s installed, but <em>not active</em>. Activate it on the <a href='%2$s'>"
@@ -106,7 +106,7 @@ msgstr ""
 "%1$s asennettu, mutta <em>ei aktiivinen</em>. Aktivoi se <a href='%2$s'>"
 "lisäosat-sivulla</a>"
 
-#: Vipps.class.php:924
+#: Vipps.class.php:927
 #, php-format
 msgid ""
 "%1$s is <b>installed and active</b>. You can configure the plugin at its <a "
@@ -115,7 +115,7 @@ msgstr ""
 "%1$s on <b>asennettu ja aktiivinen</b>. Voit määrittää laajennuksen sen <a "
 "href='%2$s'>asetussivulla</a>"
 
-#: WC_Gateway_Vipps.class.php:739 WC_Gateway_Vipps.class.php:3452
+#: WC_Gateway_Vipps.class.php:739 WC_Gateway_Vipps.class.php:3460
 #, php-format
 msgid ""
 "%1$s is a new service from %2$s which replaces the usual WooCommerce "
@@ -129,7 +129,7 @@ msgstr ""
 "tarjoaa maksun sekä %2$s:llä että luottokortilla. Lisäksi asiakkaasi saavat "
 "mahdollisuuden antaa osoitetietonsa suoraan %2$s-sovelluksen avulla."
 
-#: Vipps.class.php:282 Vipps.class.php:891
+#: Vipps.class.php:285 Vipps.class.php:894
 #, php-format
 msgid "%1$s is currently in test mode - no real transactions will occur"
 msgstr "%1$s on tällä hetkellä testitilassa - todellisia tapahtumia ei tapahdu"
@@ -139,7 +139,7 @@ msgstr "%1$s on tällä hetkellä testitilassa - todellisia tapahtumia ei tapahd
 msgid "%1$s is default payment method"
 msgstr "%1$s on oletusmaksutapa"
 
-#: Vipps.class.php:950
+#: Vipps.class.php:953
 #, php-format
 msgid ""
 "%1$s is installed and active. You can configure the plugin at its <a "
@@ -148,7 +148,7 @@ msgstr ""
 "%1$s on asennettu ja aktiivinen. Voit määrittää laajennuksen sen <a "
 "href='%2$s'>asetussivulla</a>"
 
-#: Vipps.class.php:954
+#: Vipps.class.php:957
 #, php-format
 msgid ""
 "%1$s is installed, but not active. Activate it on the <a href='%2$s'>plugins "
@@ -162,24 +162,24 @@ msgstr ""
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr "%1$s ei ole kuva, jonka voi ladata osoitteeseen %2$s"
 
-#: Vipps.class.php:3355 Vipps.class.php:3424 Vipps.class.php:3487
+#: Vipps.class.php:3364 Vipps.class.php:3433 Vipps.class.php:3496
 #, php-format
 msgid "%1$s is not available for this order"
 msgstr "%1$s ei ole saatavilla tähän tilaukseen"
 
-#: Vipps.class.php:932 Vipps.class.php:958
+#: Vipps.class.php:935 Vipps.class.php:961
 #, php-format
 msgid "%1$s is not installed. You can install it <a href='%2$s'>here!</a>"
 msgstr "%1$s ei ole asennettu. Voit asentaa sen <a href='%2$s'>täältä!</a>"
 
 #: WC_Gateway_Vipps.class.php:660 WC_Gateway_Vipps.class.php:1628
 #: WC_Gateway_Vipps.class.php:1714 WC_Gateway_Vipps.class.php:1760
-#: Vipps.class.php:3411 Vipps.class.php:3556 Vipps.class.php:4090
+#: Vipps.class.php:3420 Vipps.class.php:3565 Vipps.class.php:4099
 #, php-format
 msgid "%1$s is temporarily unavailable."
 msgstr "%1$s ei ole tilapäisesti käytettävissä."
 
-#: Vipps.class.php:878
+#: Vipps.class.php:881
 #, php-format
 msgid ""
 "%1$s officially supports WordPress and WooCommerce with a family of plugins "
@@ -194,7 +194,7 @@ msgstr ""
 "hallintaan QR-koodit, jotka linkittävät tuotteisiin tai laskeutumissivuja, "
 "plugin toistuvia maksuja, ja järjestelmä salasanattoman kirjautumiset"
 
-#: Vipps.class.php:670
+#: Vipps.class.php:673
 #, php-format
 msgid "%1$s On-Site Messaging"
 msgstr "%1$s Paikan päällä tapahtuva viestinvälitys"
@@ -204,7 +204,7 @@ msgstr "%1$s Paikan päällä tapahtuva viestinvälitys"
 msgid "%1$s On-Site Messaging Badge"
 msgstr "%1$s Paikan päällä tapahtuvan viestinnän merkki"
 
-#: Vipps.class.php:672
+#: Vipps.class.php:675
 #, php-format
 msgid ""
 "%1$s On-Site Messaging contains <em>badges</em> in different variants that "
@@ -257,22 +257,22 @@ msgstr "%1$s maksu palautettu:"
 msgid "%1$s payment restarted"
 msgstr "%1$s maksu käynnistetty uudelleen"
 
-#: VippsQRCodeController.class.php:640
+#: VippsQRCodeController.class.php:643
 #, php-format
 msgid "%1$s QR Code"
 msgstr "%1$s QR-koodi"
 
-#: VippsQRCodeController.class.php:605 VippsQRCodeController.class.php:641
+#: VippsQRCodeController.class.php:608 VippsQRCodeController.class.php:644
 #, php-format
 msgid "%1$s QR Codes"
 msgstr "%1$s QR-koodit"
 
-#: WC_Gateway_Vipps.class.php:3441
+#: WC_Gateway_Vipps.class.php:3449
 #, php-format
 msgid "%1$s requires that your site uses HTTPS."
 msgstr "%1$s edellyttää, että sivustosi käyttää HTTPS:ää."
 
-#: Vipps.class.php:919
+#: Vipps.class.php:922
 #, php-format
 msgid ""
 "%1$s requires the <a href='%2$s' target='_blank'>WooCommerce Subscriptions "
@@ -316,7 +316,7 @@ msgstr "%1$s istunto %2$d on poissa"
 msgid "%1$s Shipping Methods"
 msgstr "%1$s Toimitustavat"
 
-#: WC_Gateway_Vipps.class.php:3433
+#: WC_Gateway_Vipps.class.php:3441
 #, php-format
 msgid "%1$s supported currencies: %2$s"
 msgstr "%1$s tuetut valuutat: %2$s"
@@ -342,11 +342,11 @@ msgstr ""
 "%1$s: Ei pystynyt deserialisoimaan valittua toimitustapaa %2$s tilaukselle "
 "%3$d"
 
-#: Vipps.class.php:856
+#: Vipps.class.php:859
 msgid "- very, very simple"
 msgstr "- hyvin, hyvin yksinkertainen"
 
-#: Vipps.class.php:917
+#: Vipps.class.php:920
 #, php-format
 msgid ""
 "<a href='%1$s' target='_blank'>%2$s for WooCommerce</a> by <a href='%3$s' "
@@ -359,7 +359,7 @@ msgstr ""
 "verkkokauppa, jossa on tilauspohjaisia palveluita tai muita tuotteita, jotka "
 "hyötyvät tilauksista."
 
-#: Vipps.class.php:941
+#: Vipps.class.php:944
 #, php-format
 msgid ""
 "<a href='%1$s' target='_blank'>%3$s</a> is a password-less solution that "
@@ -372,12 +372,12 @@ msgstr ""
 "salasanojen muistamista - tarvitset vain %2$s-sovelluksen. Lisäosa ei vaadi "
 "WooCommercea, ja se voidaan räätälöidä moniin eri käyttötapauksiin."
 
-#: Vipps.class.php:896
+#: Vipps.class.php:899
 #, php-format
 msgid "<a href='%1$s'>%2$s configuration</a> is complete."
 msgstr "<a href='%1$s'>%2$s-konfiguraatio</a> on valmis."
 
-#: Vipps.class.php:307
+#: Vipps.class.php:310
 #, php-format
 msgid ""
 "<p>%1$s not yet configured:  please go to <a href='%2$s'>the %1$s "
@@ -386,7 +386,7 @@ msgstr ""
 "<p>%1$s ei ole vielä määritetty: siirry <a href='%2$s'>%1$s-asetuksiin</a> "
 "viimeistelläksesi asetukset!</p>"
 
-#: Vipps.class.php:305
+#: Vipps.class.php:308
 #, php-format
 msgid ""
 "<p>%1$s not yet correctly configured:  please go to <a href='%2$s'>the %1$s "
@@ -399,11 +399,11 @@ msgstr ""
 msgid "Abandonded by customer"
 msgstr "Asiakas on hylännyt sopimuksen"
 
-#: Vipps.class.php:461
+#: Vipps.class.php:464
 msgid "Aborted"
 msgstr "Keskeytetty"
 
-#: Vipps.class.php:432 Vipps.class.php:1447
+#: Vipps.class.php:435 Vipps.class.php:1456
 msgid "Action"
 msgstr "Toiminta"
 
@@ -456,7 +456,7 @@ msgstr "Aktivoi tämä Postille %1$s toimitustavaksi."
 msgid "Activate this for PostNord as a %1$s Shipping method."
 msgstr "Aktivoi tämä PostNordille lähetystavaksi %1$s."
 
-#: Vipps.class.php:1321
+#: Vipps.class.php:1331
 #, php-format
 msgid "Add  'Buy now with %1$s' button"
 msgstr "Lisää 'Osta nyt %1$s' -painike"
@@ -465,33 +465,33 @@ msgstr "Lisää 'Osta nyt %1$s' -painike"
 msgid "Add 'Buy now' button on catalog pages too"
 msgstr "Lisää 'Osta nyt' -painike myös luettelon sivuille"
 
-#: Vipps.class.php:2133
+#: Vipps.class.php:2142
 #, php-format
 msgid "Add a %1$s Buy Now-button to the product block"
 msgstr "Lisää %1$s Osta nyt-painike tuotelohkoon"
 
-#: Vipps.class.php:1323
+#: Vipps.class.php:1333
 #, php-format
 msgid "Add a 'Buy now with %1$s'-button to this product"
 msgstr "Lisää 'Osta nyt %1$s'-painike tähän tuotteeseen"
 
-#: Vipps.class.php:500
+#: Vipps.class.php:503
 msgid "Add a webhook"
 msgstr "Lisää webhook"
 
-#: Vipps.class.php:425
+#: Vipps.class.php:428
 msgid "Add a webhook to this MSN"
 msgstr "Lisää verkkokoukku tähän MSN:ään"
 
-#: Vipps.class.php:689
+#: Vipps.class.php:692
 msgid "Add badge to all products by default"
 msgstr "Lisää merkki kaikkiin tuotteisiin oletusarvoisesti"
 
-#: VippsQRCodeController.class.php:611
+#: VippsQRCodeController.class.php:614
 msgid "Add New"
 msgstr "Lisää uusi"
 
-#: VippsQRCodeController.class.php:610
+#: VippsQRCodeController.class.php:613
 msgid "Add New QR Code"
 msgstr "Lisää uusi QR-koodi"
 
@@ -509,11 +509,11 @@ msgstr "Lisää ehtojen valintaruutu kohtaan %1$s"
 msgid "Add the button for all relevant products on catalog pages"
 msgstr "Lisää painike kaikille asiaankuuluville tuotteille luettelon sivuilla"
 
-#: Vipps.class.php:528
+#: Vipps.class.php:531
 msgid "Add this URL as a webhook"
 msgstr "Lisää tämä URL-osoite webhookiksi"
 
-#: Vipps.class.php:1644
+#: Vipps.class.php:1653
 msgid "Address"
 msgstr "Osoite"
 
@@ -521,19 +521,19 @@ msgstr "Osoite"
 msgid "Advanced"
 msgstr "Edistynyt"
 
-#: Vipps.class.php:469
+#: Vipps.class.php:472
 msgid "Agreement accepted"
 msgstr "Hyväksytty sopimus"
 
-#: Vipps.class.php:472
+#: Vipps.class.php:475
 msgid "Agreement expired"
 msgstr "Sopimuksen voimassaolo päättyi"
 
-#: Vipps.class.php:470
+#: Vipps.class.php:473
 msgid "Agreement rejected"
 msgstr "Sopimus hylätty"
 
-#: Vipps.class.php:471
+#: Vipps.class.php:474
 msgid "Agreement stopped"
 msgstr "Sopimus lopetettiin"
 
@@ -541,7 +541,7 @@ msgstr "Sopimus lopetettiin"
 msgid "All products"
 msgstr "Kaikki tuotteet"
 
-#: Vipps.class.php:1625
+#: Vipps.class.php:1634
 msgid "All values in ører (1/100 NOK)"
 msgstr "Kaikki arvot ørereinä (1/100 NOK)"
 
@@ -573,7 +573,7 @@ msgstr ""
 "Pyydä aina käyttäjältä hänen osoitteensa, vaikka et tarvitsisikaan sitä "
 "toimitusta varten"
 
-#: Vipps.class.php:1687 Vipps.class.php:1705
+#: Vipps.class.php:1696 Vipps.class.php:1714
 msgid "Amount"
 msgstr "Määrä"
 
@@ -597,7 +597,7 @@ msgstr ""
 "On tapahtunut virhe - lataa sivu uudelleen aloittaaksesi tapahtuman "
 "uudelleen tai palaa kauppaan"
 
-#: Vipps.class.php:4318
+#: Vipps.class.php:4327
 msgid ""
 "An error occured during order confirmation. The error has been logged. "
 "Please contact us to determine the status of your order"
@@ -605,7 +605,7 @@ msgstr ""
 "Tilausvahvistuksessa tapahtui virhe. Virhe on kirjattu. Ota yhteyttä meihin "
 "selvittääksesi tilauksesi tilan"
 
-#: Vipps.class.php:1437
+#: Vipps.class.php:1446
 msgid "An error occured while creating a shareable link"
 msgstr "Jakokelpoisen linkin luomisessa ilmeni virhe"
 
@@ -618,11 +618,11 @@ msgstr "Poikkeava takaisinsoitto %1$s:ltä, käsittele virheet ja siivoa asia"
 msgid "Anonymous customer"
 msgstr "Anonyymi asiakas"
 
-#: Vipps.class.php:1624
+#: Vipps.class.php:1633
 msgid "API"
 msgstr "API"
 
-#: VippsQRCodeController.class.php:235 Vipps.class.php:4114
+#: VippsQRCodeController.class.php:235 Vipps.class.php:4123
 msgid "Are you sure?"
 msgstr "Oletko varma?"
 
@@ -643,7 +643,7 @@ msgstr ""
 msgid "Ask the user to consent to share user information"
 msgstr "Pyydä käyttäjää antamaan suostumus käyttäjätietojen jakamiseen"
 
-#: Vipps.class.php:466
+#: Vipps.class.php:469
 msgid "Authorized"
 msgstr "Valtuutettu"
 
@@ -652,7 +652,7 @@ msgstr "Valtuutettu"
 msgid "Awaiting %1$s payment confirmation"
 msgstr "Odotamme %1$s maksun vahvistusta"
 
-#: Vipps.class.php:1112
+#: Vipps.class.php:1118
 msgid "Badges"
 msgstr "Nimilaput"
 
@@ -661,25 +661,25 @@ msgstr "Nimilaput"
 msgid "Bank Transfer/ %1$s"
 msgstr "Pankkisiirto/ %1$s"
 
-#: Vipps.class.php:1660
+#: Vipps.class.php:1669
 msgid "Billing details"
 msgstr "Laskutustiedot"
 
-#: Vipps.class.php:2128
+#: Vipps.class.php:2137
 msgid "Buy now with"
 msgstr "Osta nyt"
 
-#: Vipps.class.php:2032 Vipps.class.php:2129 Vipps.class.php:3767
+#: Vipps.class.php:2041 Vipps.class.php:2138 Vipps.class.php:3776
 #, php-format
 msgid "Buy now with %1$s"
 msgstr "Osta nyt %1$s"
 
-#: Vipps.class.php:1232 Vipps.class.php:4174
+#: Vipps.class.php:1239 Vipps.class.php:4183
 #, php-format
 msgid "Buy now with %1$s!"
 msgstr "Osta nyt %1$s!"
 
-#: Vipps.class.php:1313
+#: Vipps.class.php:1323
 msgid "Buy-now button"
 msgstr "Osta-nyt-painike"
 
@@ -722,7 +722,7 @@ msgstr "Laske kustannukset kassalla"
 msgid "Calculate costs in the Checkout window"
 msgstr "Laske kustannukset Kassa-ikkunassa"
 
-#: Vipps.class.php:3023
+#: Vipps.class.php:3032
 #, php-format
 msgid ""
 "Callback from %1$s delayed or never happened; order status checked by "
@@ -731,7 +731,7 @@ msgstr ""
 "Takaisinsoitto %1$s:ltä viivästyi tai sitä ei koskaan tapahtunut; tilauksen "
 "tila tarkistetaan jaksottaisella työllä"
 
-#: Vipps.class.php:2606
+#: Vipps.class.php:2615
 msgid "Callback was:"
 msgstr "Takaisinsoitto oli:"
 
@@ -740,11 +740,11 @@ msgstr "Takaisinsoitto oli:"
 msgid "Callback: Payment cancelled at %1$s"
 msgstr "Takaisinsoitto: %1$s"
 
-#: Vipps.class.php:463
+#: Vipps.class.php:466
 msgid "Cancelled"
 msgstr "Peruutettu"
 
-#: Vipps.class.php:1636
+#: Vipps.class.php:1645
 msgid "Cancelled amount"
 msgstr "Peruutettu määrä"
 
@@ -836,19 +836,19 @@ msgstr ""
 "tilauksille: maksu kirjataan tällä tilalla. Katso "
 "woo_vipps_captured_statuses-suodatin."
 
-#: Vipps.class.php:1826
+#: Vipps.class.php:1835
 msgid "Cannot use flock() to lock orders: cannot create lockfiles "
 msgstr ""
 "Ei voi käyttää flock()-toimintoa toimeksiantojen lukitsemiseen: ei voi luoda "
 "lukituskansioita "
 
-#: Vipps.class.php:1819
+#: Vipps.class.php:1828
 msgid "Cannot use flock() to lock orders: cannot create or write to directory"
 msgstr ""
 "Ei voi käyttää flock()-toimintoa tilausten lukitsemiseen: ei voi luoda tai "
 "kirjoittaa hakemistoon"
 
-#: Vipps.class.php:2833
+#: Vipps.class.php:2842
 #, php-format
 msgid ""
 "Cannot use shipping method %2$s in %1$s Express checkout: the shipping "
@@ -857,7 +857,7 @@ msgstr ""
 "Toimitusmenetelmää %2$s ei voi käyttää %1$s-pikakassassa: toimitusmenetelmä "
 "ei ole sarjallistettavissa."
 
-#: Vipps.class.php:2319
+#: Vipps.class.php:2328
 #, php-format
 msgid ""
 "Cannot verify webhook callback for order %1$d - signature does not match. "
@@ -866,7 +866,7 @@ msgstr ""
 "Tilaus %1$d:n webhook-kutsua ei voida tarkistaa - allekirjoitus ei täsmää. "
 "Tämä voi olla yritys väärentää takaisinsoittoa"
 
-#: Vipps.class.php:2314
+#: Vipps.class.php:2323
 #, php-format
 msgid ""
 "Cannot verify webhook callback for order %1$d - this shop does not know the "
@@ -878,35 +878,35 @@ msgstr ""
 "samaa MSN:ää useissa kaupoissa, tämä takaisinsoitto on luultavasti "
 "tarkoitettu jollekin muulle kaupalle."
 
-#: Vipps.class.php:2225
+#: Vipps.class.php:2234
 msgid "Capture payment"
 msgstr "Maksun kerääminen"
 
-#: Vipps.class.php:464
+#: Vipps.class.php:467
 msgid "Captured"
 msgstr "Captured"
 
-#: Vipps.class.php:1631
+#: Vipps.class.php:1640
 msgid "Capured amount"
 msgstr "Vakuudellinen määrä"
 
-#: Vipps.class.php:475
+#: Vipps.class.php:478
 msgid "Charge cancelled"
 msgstr "Maksu peruutettu"
 
-#: Vipps.class.php:474
+#: Vipps.class.php:477
 msgid "Charge captured"
 msgstr "Lataus otettu kiinni"
 
-#: Vipps.class.php:476
+#: Vipps.class.php:479
 msgid "Charge failed"
 msgstr "Lataus epäonnistui"
 
-#: Vipps.class.php:473
+#: Vipps.class.php:476
 msgid "Charge reserved"
 msgstr "Maksu varattu"
 
-#: Vipps.class.php:717
+#: Vipps.class.php:720
 #, php-format
 msgid ""
 "Check this if your store supports %1$s Senere and you want the specialized "
@@ -932,7 +932,7 @@ msgstr ""
 msgid "Checkout with Vipps for WooCommerce"
 msgstr "Kassalle Vipps for WooCommerce kanssa"
 
-#: Vipps.class.php:706
+#: Vipps.class.php:709
 msgid "Choose color variant:"
 msgstr "Valitse värivaihtoehto:"
 
@@ -975,7 +975,7 @@ msgstr ""
 "tuotteesi tarvitsee enemmän määrityksiä kuin yksinkertaiset tai tavalliset "
 "muuttuvat tuotteet"
 
-#: Vipps.class.php:1424 Vipps.class.php:1453 Vipps.class.php:1455
+#: Vipps.class.php:1433 Vipps.class.php:1462 Vipps.class.php:1464
 msgid "Click to copy"
 msgstr "Klikkaa kopioidaksesi"
 
@@ -993,7 +993,7 @@ msgstr "Asiakassalaisuus"
 msgid "Client secret provided to you by Instabox"
 msgstr "Instaboxin sinulle tarjoama asiakassalaisuus"
 
-#: Vipps.class.php:885
+#: Vipps.class.php:888
 #, php-format
 msgid ""
 "Configure the plugin on its <a href='%1$s'>settings page</a> and  get your "
@@ -1011,25 +1011,25 @@ msgstr "Vahvista tilauksesi"
 msgid "Confirm your order from"
 msgstr "Vahvista tilauksesi osoitteesta"
 
-#: WC_Gateway_Vipps.class.php:3531
+#: WC_Gateway_Vipps.class.php:3539
 #, php-format
 msgid "Connection to %1$s is OK"
 msgstr "Yhteys %1$s on OK"
 
-#: Vipps.class.php:4323
+#: Vipps.class.php:4332
 msgid "Continue"
 msgstr "Jatka"
 
-#: Vipps.class.php:4280 Vipps.class.php:4319 Vipps.class.php:4327
+#: Vipps.class.php:4289 Vipps.class.php:4328 Vipps.class.php:4336
 msgid "Continue shopping"
 msgstr "Jatka ostoksia"
 
-#: Vipps.class.php:1155
+#: Vipps.class.php:1162
 #, php-format
 msgid "Continue with %1$s"
 msgstr "Jatka %1$s"
 
-#: Vipps.class.php:1427 Vipps.class.php:1455
+#: Vipps.class.php:1436 Vipps.class.php:1464
 msgid "Copy"
 msgstr "Kopioi"
 
@@ -1099,13 +1099,13 @@ msgstr "Maksua %1$s ei voitu tallentaa tilaus_id:lle:"
 msgid "Could not capture %1$s payment for this order!"
 msgstr "Maksua %1$s ei voitu kirjata tähän tilaukseen!"
 
-#: WC_Gateway_Vipps.class.php:3533
+#: WC_Gateway_Vipps.class.php:3541
 #, php-format
 msgid "Could not connect to %1$s"
 msgstr "Yhteyttä %1$s:ään ei saatu muodostettua"
 
-#: Vipps.class.php:3385 Vipps.class.php:3390 Vipps.class.php:3400
-#: Vipps.class.php:3522 Vipps.class.php:3528 Vipps.class.php:3538
+#: Vipps.class.php:3394 Vipps.class.php:3399 Vipps.class.php:3409
+#: Vipps.class.php:3531 Vipps.class.php:3537 Vipps.class.php:3547
 msgid "Could not create order"
 msgstr "Tilausta ei voitu luoda"
 
@@ -1121,18 +1121,18 @@ msgstr ""
 "Kaikkia maksun loppuunsaattamistoimia ei voitu tehdä %1$s-tilaukselle %2$d: "
 "%3$s: %3$s "
 
-#: Vipps.class.php:2606
+#: Vipps.class.php:2615
 #, php-format
 msgid "Could not find %1$s order with id:"
 msgstr "Ei löytynyt %1$s tilausta tunnuksella id:"
 
-#: Vipps.class.php:2740
+#: Vipps.class.php:2749
 #, php-format
 msgid ""
 "Could not find any applicable shipping methods for %1$s - order will fail"
 msgstr "%1$s ei löytänyt sopivia toimitustapoja - tilaus epäonnistuu"
 
-#: Vipps.class.php:2614
+#: Vipps.class.php:2623
 msgid "Could not find Woo order with id:"
 msgstr "Ei löydy Woo-tilausta tunnuksella id:"
 
@@ -1177,7 +1177,7 @@ msgstr ""
 msgid "Could not get order status from %1$s using epayment api: "
 msgstr "Tilauksen tilaa ei saatu %1$s:ltä käyttämällä epayment api:tä: "
 
-#: Vipps.class.php:2355
+#: Vipps.class.php:2364
 #, php-format
 msgid "Could not get orderid of reference %2$s from %1$s: "
 msgstr "Viitteen %2$s tilaustunnusta ei saatu %1$s:stä: "
@@ -1201,7 +1201,7 @@ msgstr ""
 msgid "Could not get receipt data for order %1$s from Vipps: "
 msgstr "Tilauksen %1$s kuittitietoja ei saatu Vippsistä: "
 
-#: Vipps.class.php:3170
+#: Vipps.class.php:3179
 msgid "Could not get user email from order before thankyou-page"
 msgstr "Käyttäjän sähköpostia ei saatu tilauksesta ennen kiitos-sivua"
 
@@ -1284,12 +1284,12 @@ msgstr "Kuvaa ei voitu lähettää Vippsiin: "
 msgid "Could not send receipt to Vipps: "
 msgstr "Kuittia ei voitu lähettää Vippsille: "
 
-#: VippsQRCodeController.class.php:582
+#: VippsQRCodeController.class.php:585
 #, php-format
 msgid "Couldn't create or update QR image: %1$s"
 msgstr "QR-kuvaa ei voitu luoda tai päivittää: %1$s"
 
-#: VippsQRCodeController.class.php:572
+#: VippsQRCodeController.class.php:575
 #, php-format
 msgid "Couldn't download QR image: try saving post again! Error was: %1$s"
 msgstr ""
@@ -1304,15 +1304,15 @@ msgstr "Luo uusia asiakkaita %1$s"
 msgid "Create new customers on Express Checkout"
 msgstr "Luo uusia asiakkaita Express Checkout -palvelussa"
 
-#: Vipps.class.php:1409 Vipps.class.php:1419
+#: Vipps.class.php:1418 Vipps.class.php:1428
 msgid "Create shareable link"
 msgstr "Luo jaettava linkki"
 
-#: Vipps.class.php:460
+#: Vipps.class.php:463
 msgid "Created"
 msgstr "Luotu"
 
-#: Vipps.class.php:449
+#: Vipps.class.php:452
 msgid "Created for this site"
 msgstr "Luotu tätä sivustoa varten"
 
@@ -1331,11 +1331,11 @@ msgstr "Asiakas siirretty %1$s:lle"
 msgid "Default"
 msgstr "Oletus"
 
-#: Vipps.class.php:1365 Vipps.class.php:1381
+#: Vipps.class.php:1374 Vipps.class.php:1390
 msgid "Default setting"
 msgstr "Oletusasetus"
 
-#: Vipps.class.php:447 Vipps.class.php:1428 Vipps.class.php:1456
+#: Vipps.class.php:450 Vipps.class.php:1437 Vipps.class.php:1465
 msgid "Delete"
 msgstr "Poista"
 
@@ -1373,7 +1373,7 @@ msgstr ""
 msgid "Developer mode"
 msgstr "Kehittäjätila"
 
-#: Vipps.class.php:2290
+#: Vipps.class.php:2299
 #, php-format
 msgid "Did not understand callback from %1$s:"
 msgstr "Ei ymmärtänyt %1$s:n takaisinsoittoa:"
@@ -1393,7 +1393,7 @@ msgstr ""
 msgid "Dismissed message "
 msgstr "Viesti hylätty "
 
-#: Vipps.class.php:1383
+#: Vipps.class.php:1392
 #, php-format
 msgid "Do not use %1$s Later"
 msgstr "Älä käytä %1$s Myöhemmin"
@@ -1425,11 +1425,11 @@ msgstr ""
 "no ja anna mahdollisimman paljon tietoa tilauksesta. Express: %1$s Tila: "
 "%2$s Käyttäjä: %3$s"
 
-#: VippsQRCodeController.class.php:613
+#: VippsQRCodeController.class.php:616
 msgid "Edit QR Code"
 msgstr "Muokkaa QR-koodia"
 
-#: Vipps.class.php:1664 Vipps.class.php:1670 Vipps.class.php:1679
+#: Vipps.class.php:1673 Vipps.class.php:1679 Vipps.class.php:1688
 msgid "Email"
 msgstr "Sähköposti"
 
@@ -1538,7 +1538,7 @@ msgstr ""
 msgid "English"
 msgstr "Englanti"
 
-#: Vipps.class.php:3398 Vipps.class.php:3536
+#: Vipps.class.php:3407 Vipps.class.php:3545
 msgid "Error calculating static shipping"
 msgstr "Virhe staattisen merenkulun laskennassa"
 
@@ -1552,16 +1552,16 @@ msgstr "Virhe staattisen toimituksen laskemisessa tilaukselle %1$s"
 msgid "Error calling the Order Management API: %1$s "
 msgstr "Virhe tilauksenhallinta-API:n kutsumisessa: %1$s "
 
-#: Vipps.class.php:3306
+#: Vipps.class.php:3315
 msgid "Error creating customer in express checkout: "
 msgstr "Virhe asiakkaan luomisessa pikakassalla: "
 
-#: VippsQRCodeController.class.php:579
+#: VippsQRCodeController.class.php:582
 #, php-format
 msgid "Error creating or updating QR code: %1$s"
 msgstr "Virhe QR-koodin luomisessa tai päivittämisessä: %1$s"
 
-#: VippsQRCodeController.class.php:494
+#: VippsQRCodeController.class.php:497
 #, php-format
 msgid "Error deleting QR code: %1$s"
 msgstr "Virhe QR-koodin poistamisessa: %1$s"
@@ -1571,20 +1571,20 @@ msgstr "Virhe QR-koodin poistamisessa: %1$s"
 msgid "Error deleting unsynched QR code with id %1$s: %2$s"
 msgstr "Virhe synkronoimattoman QR-koodin poistamisessa tunnuksella %1$s: %2$s"
 
-#: VippsQRCodeController.class.php:570
+#: VippsQRCodeController.class.php:573
 #, php-format
 msgid "Error downloading QR code image: %1$s"
 msgstr "Virhe QR-koodin kuvan lataamisessa: %1$s"
 
-#: Vipps.class.php:4317
+#: Vipps.class.php:4326
 msgid "Error during order confirmation"
 msgstr "Virhe tilauksen vahvistuksen aikana"
 
-#: Vipps.class.php:3465
+#: Vipps.class.php:3474
 msgid "Error finding product - cannot create order"
 msgstr "Virhe tuotteen löytämisessä - tilausta ei voi luoda"
 
-#: Vipps.class.php:2595
+#: Vipps.class.php:2604
 #, php-format
 msgid "Error getting customer data in the %1$s shipping details callback: %2$s"
 msgstr ""
@@ -1595,7 +1595,7 @@ msgstr ""
 msgid "Error getting list of QR codes from %1$s: %2$s"
 msgstr "Virhe luettelon saamisessa QR-koodeista %1$s:stä: %2$s:stä"
 
-#: Vipps.class.php:3028
+#: Vipps.class.php:3037
 #, php-format
 msgid "Error getting order status at %1$s for order %2$d"
 msgstr "Virhe tilauksen tilan saamisessa %1$s:ssä tilaukselle %2$d"
@@ -1628,7 +1628,7 @@ msgstr "Virhe synkronoimattoman QR-koodin tuonnissa tunnuksella %1$s: %2$s"
 msgid "Error polling status - error message %1$s"
 msgstr "Virhe kyselyn tilassa - virheilmoitus %1$s"
 
-#: Vipps.class.php:2291
+#: Vipps.class.php:2300
 #, php-format
 msgid "Error was: %1$s"
 msgstr "Virhe oli: %1$s"
@@ -1647,7 +1647,7 @@ msgstr ""
 "Virhe: WooCommerce ei ole ladattu! Tämä voi tapahtua, kun WooCommerce "
 "päivittää itsensä; mutta jos se ei ole, aktivoi WooCommerce uudelleen"
 
-#: Vipps.class.php:462
+#: Vipps.class.php:465
 msgid "Expired"
 msgstr "Vanhentunut"
 
@@ -1655,7 +1655,7 @@ msgstr "Vanhentunut"
 msgid "Express Checkout"
 msgstr "Pikakassa"
 
-#: Vipps.class.php:1209
+#: Vipps.class.php:1216
 msgid "express checkout"
 msgstr "pikakassa"
 
@@ -1664,7 +1664,7 @@ msgstr "pikakassa"
 msgid "External Payment Method - %1$s"
 msgstr "Ulkoinen maksutapa - %1$s"
 
-#: VippsQRCodeController.class.php:620
+#: VippsQRCodeController.class.php:623
 msgid "Featured Image"
 msgstr "Suositeltava kuva"
 
@@ -1673,7 +1673,7 @@ msgstr "Suositeltava kuva"
 msgid "File type was %1$s; supported types are %2$s"
 msgstr "Tiedostotyyppi oli %1$s; tuettuja tyyppejä ovat %2$s"
 
-#: VippsQRCodeController.class.php:628
+#: VippsQRCodeController.class.php:631
 msgid "Filter items list"
 msgstr "Suodata kohteiden luettelo"
 
@@ -1734,16 +1734,16 @@ msgstr ""
 "Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
 "no/ ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-Subscription-Key\""
 
-#: Vipps.class.php:1661 Vipps.class.php:1676
+#: Vipps.class.php:1670 Vipps.class.php:1685
 msgid "First Name"
 msgstr "Etunimi"
 
-#: Vipps.class.php:3026
+#: Vipps.class.php:3035
 #, php-format
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr "Tilauksen %2$d tilauksen tila %1$s on %3$s"
 
-#: Vipps.class.php:662 Vipps.class.php:1368 Blocks/Badges/vipps-badge.php:53
+#: Vipps.class.php:665 Vipps.class.php:1377 Blocks/Badges/vipps-badge.php:53
 msgid "Grey"
 msgstr "Harmaa"
 
@@ -1802,7 +1802,7 @@ msgid ""
 "window"
 msgstr "Jos valitaan, toimituskulut lasketaan dynaamisesti %1$s -ikkunassa"
 
-#: Vipps.class.php:692
+#: Vipps.class.php:695
 #, php-format
 msgid ""
 "If selected, all products will get a badge, but you can override this on the "
@@ -1886,7 +1886,7 @@ msgstr ""
 "VIPPS_TEST_MODE määritelty wp-config-tiedostossasi, tämä ohittaa tämän arvon."
 " "
 
-#: Vipps.class.php:886
+#: Vipps.class.php:889
 #, php-format
 msgid ""
 "If you experience problems or unexpected results, please check the 'fatal-"
@@ -1903,7 +1903,7 @@ msgstr ""
 "Jos sinulla on ongelmia teemasi kanssa, saatat löytää täältä asetuksen, joka "
 "auttaa. Normaalisti näitä ei tarvitse muuttaa."
 
-#: Vipps.class.php:887
+#: Vipps.class.php:890
 #, php-format
 msgid ""
 "If you need support, please use the <a href='%1$s'>forum page</a> for the "
@@ -1914,7 +1914,7 @@ msgstr ""
 "voi lähettää kysymystäsi julkisesti, ota yhteyttä WP-Hostingiin suoraan "
 "osoitteeseen support@wp-hosting.no."
 
-#: Vipps.class.php:736
+#: Vipps.class.php:739
 #, php-format
 msgid ""
 "If you need to add a %1$s badge on a specific page, footer, header and so on,"
@@ -1927,7 +1927,7 @@ msgstr ""
 "lisätä %1$s-kyltin manuaalisesti (kuten <a href=\"%2$s\" nofollow "
 "rel=nofollow target=_blank>täällä on kuvattu</a>) tai käyttää lyhytkoodia."
 
-#: Vipps.class.php:942
+#: Vipps.class.php:945
 #, php-format
 msgid ""
 "If you use %1$s or %2$s in WooCommerce, this allows your %3$s customers to "
@@ -1936,7 +1936,7 @@ msgstr ""
 "Jos käytät %1$s tai %2$s WooCommercessa, tämä antaa %3$s asiakkaillesi "
 "mahdollisuuden kirjautua sisään turvallisesti ilman salasanaa."
 
-#: Vipps.class.php:733
+#: Vipps.class.php:736
 #, php-format
 msgid ""
 "If you use Gutenberg, you should be able to add a %1$s Badge block wherever "
@@ -1945,7 +1945,7 @@ msgstr ""
 "Jos käytät Gutenbergiä, sinun pitäisi pystyä lisäämään %1$s Badge -lohko "
 "minne haluat. Sen nimi on %1$s On-Site Messaging Badge Block."
 
-#: Vipps.class.php:400
+#: Vipps.class.php:403
 msgid ""
 "If your MSN has registered other callbacks, for instance for another website,"
 " you can manage these here - and you can also add your own hooks that will "
@@ -2038,7 +2038,7 @@ msgstr ""
 msgid "Image url"
 msgstr "Kuvan url"
 
-#: Vipps.class.php:401
+#: Vipps.class.php:404
 #, php-format
 msgid ""
 "Implementing a webhook is not trivial, so you will probably need a developer "
@@ -2057,7 +2057,7 @@ msgstr "Tuo"
 msgid "Imported QR Code"
 msgstr "Tuotu QR-koodi"
 
-#: VippsQRCodeController.class.php:624
+#: VippsQRCodeController.class.php:627
 msgid "Insert into item"
 msgstr "Lisää kohteeseen"
 
@@ -2073,7 +2073,7 @@ msgstr "Instabox Client Id"
 msgid "Instabox Client Secret"
 msgstr "Instabox-asiakkaan salaisuus"
 
-#: Vipps.class.php:2618
+#: Vipps.class.php:2627
 msgid "Invalid order for shipping callback:"
 msgstr "Väärä tilaus toimituksen takaisinsoittoa varten:"
 
@@ -2081,7 +2081,7 @@ msgstr "Väärä tilaus toimituksen takaisinsoittoa varten:"
 msgid "Invalid request"
 msgstr "Virheellinen pyyntö"
 
-#: Vipps.class.php:4038
+#: Vipps.class.php:4047
 msgid ""
 "It seems a customer is trying to re-order product(s) recently bought in the "
 "same session, asking user for confirmation"
@@ -2089,7 +2089,7 @@ msgstr ""
 "Näyttää siltä, että asiakas yrittää tilata uudelleen äskettäin ostamansa "
 "tuotteen (tuotteet) samassa istunnossa ja pyytää käyttäjältä vahvistusta"
 
-#: VippsQRCodeController.class.php:587
+#: VippsQRCodeController.class.php:590
 #, php-format
 msgid ""
 "It seems a QR code with this ID (%1$s) already exists at Vipps.  If you have "
@@ -2109,19 +2109,19 @@ msgstr ""
 "käyttöön sivun asetuksissa) ja tallentaa uudelleen, jos et välitä "
 "kaksoiskappaleesta. "
 
-#: VippsQRCodeController.class.php:606
+#: VippsQRCodeController.class.php:609
 msgid "Item Archives"
 msgstr "Kohteen arkisto"
 
-#: VippsQRCodeController.class.php:607
+#: VippsQRCodeController.class.php:610
 msgid "Item Attributes"
 msgstr "Tuotteen ominaisuudet"
 
-#: VippsQRCodeController.class.php:626
+#: VippsQRCodeController.class.php:629
 msgid "Items list"
 msgstr "Tavaraluettelo"
 
-#: VippsQRCodeController.class.php:627
+#: VippsQRCodeController.class.php:630
 msgid "Items list navigation"
 msgstr "Kohteiden luettelon navigointi"
 
@@ -2133,23 +2133,23 @@ msgstr "Pidä vanhan shipping callback minun mukautetun suodattimen kanssa"
 msgid "Language"
 msgstr "Kieli"
 
-#: Vipps.class.php:1662 Vipps.class.php:1677
+#: Vipps.class.php:1671 Vipps.class.php:1686
 msgid "Last Name"
 msgstr "Sukunimi"
 
-#: Vipps.class.php:663 Vipps.class.php:1370 Blocks/Badges/vipps-badge.php:55
+#: Vipps.class.php:666 Vipps.class.php:1379 Blocks/Badges/vipps-badge.php:55
 msgid "Light Orange"
 msgstr "Vaalean oranssi"
 
-#: Vipps.class.php:1446
+#: Vipps.class.php:1455
 msgid "Link"
 msgstr "Linkki"
 
-#: Vipps.class.php:3969
+#: Vipps.class.php:3978
 msgid "Link expired, please try again"
 msgstr "Linkki vanhentunut, yritä uudelleen"
 
-#: Vipps.class.php:1440
+#: Vipps.class.php:1449
 msgid "Link(s) will be deleted when you save the product"
 msgstr "Linkki(t) poistetaan, kun tallennat tuotteen"
 
@@ -2170,7 +2170,7 @@ msgstr ""
 msgid "Main options"
 msgstr "Tärkeimmät vaihtoehdot"
 
-#: Vipps.class.php:1456
+#: Vipps.class.php:1465
 msgid "Mark this link for deletion"
 msgstr "Merkitse tämä linkki poistettavaksi"
 
@@ -2179,7 +2179,7 @@ msgstr "Merkitse tämä linkki poistettavaksi"
 msgid "Merchant Serial Number"
 msgstr "Kauppiaan sarjanumero"
 
-#: Vipps.class.php:423
+#: Vipps.class.php:426
 #, php-format
 msgid "Merchant Serial Number %1$s"
 msgstr "Kauppiaan sarjanumero %1$s"
@@ -2194,12 +2194,12 @@ msgstr "Viesti %1$s: %2$s"
 msgid "Message in callback from %1$s for order"
 msgstr "Viesti takaisinkutsussa %1$s:ltä tilaukselle"
 
-#: Vipps.class.php:720
+#: Vipps.class.php:723
 #, php-format
 msgid "Minimum price for \"%1$s Later\"\""
 msgstr "Vähimmäishinta tuotteelle \"%1$s Myöhemmin\"\"\""
 
-#: Vipps.class.php:1663 Vipps.class.php:1678
+#: Vipps.class.php:1672 Vipps.class.php:1687
 msgid "Mobile Number"
 msgstr "Matkapuhelinnumero"
 
@@ -2211,7 +2211,7 @@ msgstr "MobilePay"
 msgid "Name"
 msgstr "Nimi"
 
-#: VippsQRCodeController.class.php:612
+#: VippsQRCodeController.class.php:615
 msgid "New QR Code"
 msgstr "Uusi QR-koodi"
 
@@ -2224,7 +2224,7 @@ msgstr ""
 "Tilaukselle %2$d ei ole osoitetietoja, mutta sitä varten saattaa olla vielä "
 "aktiivinen %1$s istunto, joten älä peruuta sitä."
 
-#: Vipps.class.php:1366
+#: Vipps.class.php:1375
 msgid "No badge"
 msgstr "Ei merkkiä"
 
@@ -2245,15 +2245,15 @@ msgstr "Ei vastausta Vippsiltä"
 msgid "No shipping details from %1$s for express checkout for order id:"
 msgstr "Ei toimitustietoja %1$s pikakassalle tilauksen id:"
 
-#: Vipps.class.php:2730 Vipps.class.php:2879
+#: Vipps.class.php:2739 Vipps.class.php:2888
 msgid "No shipping required"
 msgstr "Toimitusta ei tarvita"
 
-#: Vipps.class.php:529
+#: Vipps.class.php:532
 msgid "No, forget it"
 msgstr "Ei, unohda se"
 
-#: WC_Gateway_Vipps.class.php:3458
+#: WC_Gateway_Vipps.class.php:3466
 msgid "No, thank you not right now anyway"
 msgstr "Ei, kiitos, ei kuitenkaan juuri nyt"
 
@@ -2265,15 +2265,15 @@ msgstr "Ei valittu"
 msgid "Norwegian"
 msgstr "Norjalainen"
 
-#: Vipps.class.php:3597 Vipps.class.php:3602
+#: Vipps.class.php:3606 Vipps.class.php:3611
 msgid "Not an order"
 msgstr "Ei tilaus"
 
-#: VippsQRCodeController.class.php:618
+#: VippsQRCodeController.class.php:621
 msgid "Not found"
 msgstr "Ei löydy"
 
-#: VippsQRCodeController.class.php:619
+#: VippsQRCodeController.class.php:622
 msgid "Not found in Trash"
 msgstr "Ei löydy roskakorista"
 
@@ -2289,15 +2289,15 @@ msgstr "Tarjoa Vipps tai MobilePay maksutapana"
 msgid "On hold"
 msgstr "Odotuksessa"
 
-#: Vipps.class.php:1356
+#: Vipps.class.php:1365
 msgid "On-site messaging badge"
 msgstr "Paikan päällä tapahtuva viestimerkki"
 
-#: Vipps.class.php:1686 Vipps.class.php:1701
+#: Vipps.class.php:1695 Vipps.class.php:1710
 msgid "Operation"
 msgstr "Operaatio"
 
-#: Vipps.class.php:663 Vipps.class.php:1369 Blocks/Badges/vipps-badge.php:54
+#: Vipps.class.php:666 Vipps.class.php:1378 Blocks/Badges/vipps-badge.php:54
 msgid "Orange"
 msgstr "Oranssi"
 
@@ -2322,7 +2322,7 @@ msgstr ""
 msgid "Order cancel for order"
 msgstr "Tilauksen peruutus tilaukselle"
 
-#: Vipps.class.php:4279 Vipps.class.php:4282 Vipps.class.php:4326
+#: Vipps.class.php:4288 Vipps.class.php:4291 Vipps.class.php:4335
 msgid "Order cancelled"
 msgstr "Tilaus peruutettu"
 
@@ -2330,7 +2330,7 @@ msgstr "Tilaus peruutettu"
 msgid "Order capture for order"
 msgstr "Tilauksen kaappaus tilausta varten"
 
-#: Vipps.class.php:4322
+#: Vipps.class.php:4331
 msgid "Order confirmed"
 msgstr "Tilaus vahvistettu"
 
@@ -2339,7 +2339,7 @@ msgstr "Tilaus vahvistettu"
 msgid "Order does not exist at %1$s - cancelling"
 msgstr "Tilausta ei ole olemassa osoitteessa %1$s - peruutus"
 
-#: Vipps.class.php:3612 Vipps.class.php:3641
+#: Vipps.class.php:3621 Vipps.class.php:3650
 msgid "Order failed"
 msgstr "Tilaus epäonnistui"
 
@@ -2348,11 +2348,11 @@ msgstr "Tilaus epäonnistui"
 msgid "Order failed or rejected at %1$s"
 msgstr "Tilaus epäonnistui tai hylättiin osoitteessa %1$s"
 
-#: Vipps.class.php:1617
+#: Vipps.class.php:1626
 msgid "Order id"
 msgstr "Tilaus id"
 
-#: Vipps.class.php:4166
+#: Vipps.class.php:4175
 msgid "Order in progress"
 msgstr "Käynnissä oleva tilaus"
 
@@ -2371,7 +2371,7 @@ msgid ""
 msgstr ""
 "Tilauksen erittely muuttui - asiakas hylkäsi tämän tilauksen kassalla  "
 
-#: Vipps.class.php:1618
+#: Vipps.class.php:1627
 msgid "Order status"
 msgstr "Tilauksen tila"
 
@@ -2384,12 +2384,12 @@ msgstr "Tilauksen tila palatessa %1$s:stä"
 msgid "Order-id Prefix"
 msgstr "Tilaus-tunnus Etuliite"
 
-#: Vipps.class.php:1379
+#: Vipps.class.php:1388
 #, php-format
 msgid "Override %1$s Later"
 msgstr "Ohita %1$s myöhemmin"
 
-#: Vipps.class.php:1363
+#: Vipps.class.php:1372
 msgid "Override default settings"
 msgstr "Ohita oletusasetukset"
 
@@ -2402,17 +2402,17 @@ msgstr "Ohita sivumalli, jota käytetään erityissivuilla %1$s"
 msgid "Page"
 msgstr "Sivu"
 
-#: Vipps.class.php:3869
+#: Vipps.class.php:3878
 msgctxt "Page slug"
 msgid "vipps_checkout"
 msgstr "vipps_checkout"
 
-#: Vipps.class.php:3870
+#: Vipps.class.php:3879
 msgctxt "Page title"
 msgid "Vipps MobilePay Checkout"
 msgstr "Vipps MobilePay-kassa"
 
-#: VippsQRCodeController.class.php:608
+#: VippsQRCodeController.class.php:611
 msgid "Parent Item:"
 msgstr "Vanhempi tuote:"
 
@@ -2420,7 +2420,7 @@ msgstr "Vanhempi tuote:"
 msgid "Password provided to you by Helthjem"
 msgstr "Helthjemin antama salasana"
 
-#: Vipps.class.php:883
+#: Vipps.class.php:886
 #, php-format
 msgid "Pay with %1$s for WooCommerce"
 msgstr "Maksa %1$s WooCommerce-kaupassa"
@@ -2429,7 +2429,7 @@ msgstr "Maksa %1$s WooCommerce-kaupassa"
 msgid "Payment already captured"
 msgstr "Maksu on jo kirjattu"
 
-#: Vipps.class.php:3630
+#: Vipps.class.php:3639
 msgid "Payment authorized"
 msgstr "Hyväksytty maksu"
 
@@ -2438,7 +2438,7 @@ msgstr "Hyväksytty maksu"
 msgid "Payment authorized at %1$s"
 msgstr "Maksu hyväksytty %1$s"
 
-#: Vipps.class.php:3636
+#: Vipps.class.php:3645
 msgid "Payment captured"
 msgstr "Maksu kirjattu"
 
@@ -2456,7 +2456,7 @@ msgstr ""
 "Maksu on suoritettu, tila on \"%1$s\" - maksuja ei oteta vastaan "
 "automaattisesti"
 
-#: WC_Gateway_Vipps.class.php:940 Vipps.class.php:1620 Vipps.class.php:1622
+#: WC_Gateway_Vipps.class.php:940 Vipps.class.php:1629 Vipps.class.php:1631
 msgid "Payment method"
 msgstr "Maksutapa"
 
@@ -2469,7 +2469,7 @@ msgstr ""
 "Maksutapa palautui %1$s:ksi - se oli asetettu KCO:ksi, kun tilausta %2$d:lle "
 "täydennettiin"
 
-#: Vipps.class.php:1650
+#: Vipps.class.php:1659
 msgid "Pickup Point"
 msgstr "Noutopaikka"
 
@@ -2488,7 +2488,7 @@ msgstr ""
 "liitännäisten tai -asetusten kanssa. Sinun on testattava, että asetuksesi "
 "toimii, jos aiot tarjota tämän ominaisuuden."
 
-#: Vipps.class.php:402
+#: Vipps.class.php:405
 #, php-format
 msgid ""
 "Please note that there is normally a limit of <em><strong>5</strong> "
@@ -2497,11 +2497,11 @@ msgstr ""
 "Huomaa, että tavallisesti <em>MSN:ää kohden</em> on rajoitettu <em><strong>"
 "5</strong> webhookia</em> - ota yhteyttä %1$s, jos tarvitset enemmän"
 
-#: Vipps.class.php:739
+#: Vipps.class.php:742
 msgid "Please refer to the documentation for the meaning of the parameters."
 msgstr "Katso parametrien merkitys asiakirjoista."
 
-#: Vipps.class.php:4164
+#: Vipps.class.php:4173
 msgid "Please wait while we are preparing your order"
 msgstr "Odota, kun valmistelemme tilaustasi"
 
@@ -2521,12 +2521,12 @@ msgstr "Porterbuddyn puhelinnumero"
 msgid "Porterbuddy public token"
 msgstr "Porterbuddy julkinen merkki"
 
-#: VippsQRCodeController.class.php:602
+#: VippsQRCodeController.class.php:605
 msgctxt "Post Type General Name"
 msgid "Vipps QR Codes"
 msgstr "Vipps QR-koodit"
 
-#: VippsQRCodeController.class.php:603
+#: VippsQRCodeController.class.php:606
 msgctxt "Post Type Singular Name"
 msgid "Vipps QR Code"
 msgstr "Vipps QR-koodi"
@@ -2556,7 +2556,7 @@ msgstr "Paina painiketta saadaksesi tilauksesi valmiiksi %1$s!"
 msgid "Processing"
 msgstr "Käsittely"
 
-#: Vipps.class.php:3344
+#: Vipps.class.php:3353
 msgid "Processing order... "
 msgstr "Tilauksen käsittely... "
 
@@ -2564,7 +2564,7 @@ msgstr "Tilauksen käsittely... "
 msgid "Product"
 msgstr "Tuote"
 
-#: Vipps.class.php:3932
+#: Vipps.class.php:3941
 msgid "Product is no longer available"
 msgstr "Tuote ei ole enää saatavilla"
 
@@ -2573,16 +2573,16 @@ msgstr "Tuote ei ole enää saatavilla"
 msgid "Profile image used in the %1$s App"
 msgstr "%1$s-sovelluksessa käytetty profiilikuva"
 
-#: Vipps.class.php:664 Vipps.class.php:1371 Blocks/Badges/vipps-badge.php:56
+#: Vipps.class.php:667 Vipps.class.php:1380 Blocks/Badges/vipps-badge.php:56
 msgid "Purple"
 msgstr "Violetti"
 
-#: VippsQRCodeController.class.php:470 VippsQRCodeController.class.php:604
-#: VippsQRCodeController.class.php:609
+#: VippsQRCodeController.class.php:473 VippsQRCodeController.class.php:607
+#: VippsQRCodeController.class.php:612
 msgid "QR Codes"
 msgstr "QR-koodit"
 
-#: VippsQRCodeController.class.php:535
+#: VippsQRCodeController.class.php:538
 #, php-format
 msgid ""
 "QR image with id %2$s that was supposed to be stored at %1$s, isnt. "
@@ -2595,20 +2595,20 @@ msgstr ""
 msgid "QR-id"
 msgstr "QR-tunnus"
 
-#: Vipps.class.php:2596
+#: Vipps.class.php:2605
 msgid "Raw input was "
 msgstr "Raaka tulo oli "
 
-#: Vipps.class.php:4160
+#: Vipps.class.php:4169
 #, php-format
 msgid "Ready for %1$s - press the button"
 msgstr "Valmis %1$s - paina painiketta"
 
-#: Vipps.class.php:2297
+#: Vipps.class.php:2306
 msgid "Received a test callback, exiting"
 msgstr "Vastaanotti testikutsun, poistuu"
 
-#: Vipps.class.php:2375
+#: Vipps.class.php:2384
 #, php-format
 msgid ""
 "Received webhook callback for checkout/express checkout order %1$d - "
@@ -2617,7 +2617,7 @@ msgstr ""
 "Vastaanotettu webhook-kutsukutsu kassalle/express-kassatilaukselle %1$d - "
 "jätetään huomiotta, koska koko kutsukutsun pitäisi tulla"
 
-#: Vipps.class.php:2370
+#: Vipps.class.php:2379
 #, php-format
 msgid "Received webhook callback for order %1$d but this is no longer pending."
 msgstr ""
@@ -2628,31 +2628,31 @@ msgstr ""
 msgid "Refund for order"
 msgstr "Tilauksen palautus"
 
-#: Vipps.class.php:2250
+#: Vipps.class.php:2259
 msgid "Refund superfluous payment"
 msgstr "Turhan maksun palauttaminen"
 
-#: Vipps.class.php:465
+#: Vipps.class.php:468
 msgid "Refunded"
 msgstr "Palautetut"
 
-#: Vipps.class.php:1633
+#: Vipps.class.php:1642
 msgid "Refunded amount"
 msgstr "Palautettu määrä"
 
-#: Vipps.class.php:1637
+#: Vipps.class.php:1646
 msgid "Remaining amount to cancel"
 msgstr "Jäljellä oleva peruutettava määrä"
 
-#: Vipps.class.php:1632
+#: Vipps.class.php:1641
 msgid "Remaining amount to capture"
 msgstr "Jäljelle jäävä määrä"
 
-#: Vipps.class.php:1634
+#: Vipps.class.php:1643
 msgid "Remaining amount to refund"
 msgstr "Jäljellä oleva tuki"
 
-#: Vipps.class.php:944
+#: Vipps.class.php:947
 #, php-format
 msgid ""
 "Remember, you need to set up %3$s at the <a target='_blank' href='%2$s'>%1$s "
@@ -2663,7 +2663,7 @@ msgstr ""
 "portaalissa %1$s</a>, josta löydät tarvitsemasi avaimet ja jossa sinun on "
 "rekisteröitävä <em>palautusurl</em>, jonka löydät asetussivulta."
 
-#: VippsQRCodeController.class.php:622
+#: VippsQRCodeController.class.php:625
 msgid "Remove featured image"
 msgstr "Poista esillä oleva kuva"
 
@@ -2671,16 +2671,16 @@ msgstr "Poista esillä oleva kuva"
 msgid "Remove image"
 msgstr "Poista kuva"
 
-#: Vipps.class.php:1692
+#: Vipps.class.php:1701
 msgid "Request ID"
 msgstr "Pyynnön tunnus"
 
-#: Vipps.class.php:3017
+#: Vipps.class.php:3026
 #, php-format
 msgid "Restoring session of order %1$d"
 msgstr "Järjestyksen %1$d istunnon palauttaminen"
 
-#: VippsQRCodeController.class.php:617
+#: VippsQRCodeController.class.php:620
 msgid "Search Item"
 msgstr "Etsi kohde"
 
@@ -2688,15 +2688,15 @@ msgstr "Etsi kohde"
 msgid "Select one"
 msgstr "Valitse yksi"
 
-#: Vipps.class.php:1410
+#: Vipps.class.php:1419
 msgid "Select variant"
 msgstr "Valitse vaihtoehto"
 
-#: Vipps.class.php:3482
+#: Vipps.class.php:3491
 msgid "Selected product variant is not available"
 msgstr "Valittu tuotevaihtoehto ei ole saatavilla"
 
-#: Vipps.class.php:3494
+#: Vipps.class.php:3503
 msgid "Selected product variant is not available for purchase"
 msgstr "Valittu tuotevaihtoehto ei ole ostettavissa"
 
@@ -2717,7 +2717,7 @@ msgstr "Kuittien lähettäminen asiakkaille %1$s-sovellukseen"
 msgid "Session terminated with no payment"
 msgstr "Istunto päättyi ilman maksua"
 
-#: VippsQRCodeController.class.php:621
+#: VippsQRCodeController.class.php:624
 msgid "Set featured image"
 msgstr "Aseta esillä oleva kuva"
 
@@ -2725,15 +2725,15 @@ msgstr "Aseta esillä oleva kuva"
 msgid "Setting order status to pending to start payment"
 msgstr "Tilauksen tilan asettaminen odottavaksi maksun aloittamiseksi"
 
-#: Vipps.class.php:678 Vipps.class.php:971
+#: Vipps.class.php:681 Vipps.class.php:974
 msgid "Settings"
 msgstr "Asetukset"
 
-#: Vipps.class.php:1401
+#: Vipps.class.php:1410
 msgid "Shareable links"
 msgstr "Jaettavat linkit"
 
-#: Vipps.class.php:1402
+#: Vipps.class.php:1411
 #, php-format
 msgid ""
 "Shareable links are links you can share externally on banners or other "
@@ -2744,11 +2744,11 @@ msgstr ""
 "muissa paikoissa ja joita seuratessasi tämän tuotteen %1$s tuotteen myynti "
 "alkaa välittömästi. Ylläpidä näitä linkkejä täällä tätä tuotetta varten."
 
-#: Vipps.class.php:1646
+#: Vipps.class.php:1655
 msgid "Shipping cost"
 msgstr "Toimituskulut"
 
-#: Vipps.class.php:1643
+#: Vipps.class.php:1652
 msgid "Shipping details"
 msgstr "Toimitustiedot"
 
@@ -2756,7 +2756,7 @@ msgstr "Toimitustiedot"
 msgid "Shipping information is autofilled with Vipps"
 msgstr "Toimitustiedot täytetään automaattisesti Vippsin avulla"
 
-#: Vipps.class.php:1645
+#: Vipps.class.php:1654
 msgid "Shipping method"
 msgstr "Toimitustapa"
 
@@ -2767,7 +2767,7 @@ msgstr "Toimitustapa"
 msgid "Shipping method for %1$s only: %2$s"
 msgstr "Toimitustapa vain %1$s: %2$s"
 
-#: Vipps.class.php:1647
+#: Vipps.class.php:1656
 msgid "Shipping method ID"
 msgstr "Toimitusmenetelmän ID"
 
@@ -2780,11 +2780,11 @@ msgstr "Lyhyt kuvaus toimitustavasta"
 msgid "Short description of shipping method used in %1$s"
 msgstr "Lyhyt kuvaus lähetysmenetelmästä, jota käytetään %1$s:ssä"
 
-#: Vipps.class.php:735
+#: Vipps.class.php:738
 msgid "Shortcodes"
 msgstr "Shortcodes"
 
-#: Vipps.class.php:1558
+#: Vipps.class.php:1567
 msgid "Show complete transaction details"
 msgstr "Näytä täydelliset tapahtuman tiedot"
 
@@ -2814,11 +2814,11 @@ msgstr ""
 "haluat poistaa suodattimesi käytöstä ja käyttää uutta menetelmää, voit "
 "valita tämän tästä. "
 
-#: Vipps.class.php:1208
+#: Vipps.class.php:1215
 msgid "Skip entering your address and just checkout using"
 msgstr "Ohita osoitteen syöttäminen ja maksa vain käyttämällä"
 
-#: Vipps.class.php:3375
+#: Vipps.class.php:3384
 #, php-format
 msgid ""
 "Some of the products in your cart are no longer available in the quantities "
@@ -2860,11 +2860,11 @@ msgstr ""
 msgid "Subscription Key"
 msgstr "Tilausavain"
 
-#: Vipps.class.php:1688 Vipps.class.php:1706
+#: Vipps.class.php:1697 Vipps.class.php:1715
 msgid "Success"
 msgstr "Menestys"
 
-#: Vipps.class.php:715
+#: Vipps.class.php:718
 #, php-format
 msgid "Support \"%1$s Later\""
 msgstr "Tuki \"%1$s myöhemmin\""
@@ -2909,37 +2909,43 @@ msgstr ""
 "palautetaan manuaalisesti, tai palauta tilaus tilaan \"käsittely\" ja yritä "
 "uudelleen"
 
-#: Vipps.class.php:467
+#: Vipps.class.php:470
 msgid "Terminated"
 msgstr "Lopetettu"
 
-#: WC_Gateway_Vipps.class.php:1199 Vipps.class.php:424
+#: WC_Gateway_Vipps.class.php:1199 Vipps.class.php:427
 msgid "Test mode"
 msgstr "Testitila"
 
-#: Vipps.class.php:881
+#: Vipps.class.php:884
 #, php-format
 msgid "The %1$s plugins"
 msgstr "Liitännäiset %1$s"
 
-#: Vipps.class.php:1345
+#: Vipps.class.php:1343
 #, php-format
+#| msgid ""
+#| "The <a href=\"%1$s\">%2$s settings</a> are currently set up so all "
+#| "products that can be bought with Express Checkout will have a Buy Now "
+#| "button."
 msgid ""
-"The <a href=\"%1$s\">%2$s settings</a> are configured so that no products "
-"will have a Buy Now button - including this."
+"The %1$s settings are currently set up so all products that can be bought "
+"with Express Checkout will have a Buy Now button."
 msgstr ""
-"<a href=\"%1$s\">%2$s-asetukset</a> on määritetty siten, että missään "
-"tuotteessa ei ole Osta heti -painiketta - tämä mukaan lukien."
+"%1$s-asetukset on tällä hetkellä määritetty siten, että kaikissa tuotteissa, "
+"jotka voidaan ostaa Express Checkout -palvelun avulla, on Osta nyt -painike."
 
-#: Vipps.class.php:1334
+#: Vipps.class.php:1354
 #, php-format
+#| msgid ""
+#| "The <a href=\"%1$s\">%2$s settings</a> are configured so that no products "
+#| "will have a Buy Now button - including this."
 msgid ""
-"The <a href=\"%1$s\">%2$s settings</a> are currently set up so all products "
-"that can be bought with Express Checkout will have a Buy Now button."
+"The %1$s settings</a> are configured so that no products will have a Buy Now "
+"button - including this."
 msgstr ""
-"<a href=\"%1$s\">%2$s-asetukset</a> on tällä hetkellä määritetty siten, että "
-"kaikissa tuotteissa, jotka voidaan ostaa Express Checkout -palvelun avulla, "
-"on Osta nyt -painike."
+"%1$s-asetukset on määritetty siten, että missään tuotteessa ei ole Osta heti "
+"-painiketta - tämä mukaan lukien."
 
 #: WC_Gateway_Vipps.class.php:852
 msgid "The API key provided to you by Porterbuddy"
@@ -2949,12 +2955,12 @@ msgstr "Porterbuddyn sinulle antama API-avain"
 msgid "The client id provided to you by Instabox"
 msgstr "Instaboxin antama asiakastunnus"
 
-#: Vipps.class.php:2216
+#: Vipps.class.php:2225
 #, php-format
 msgid "The entire amount has been captured at %1$s"
 msgstr "Koko summa on kirjattu %1$s:ssä"
 
-#: Vipps.class.php:404
+#: Vipps.class.php:407
 msgid ""
 "The following is a listing of your webhooks. If you have changed your "
 "website name, you may see some hooks that you do not recognize - these "
@@ -2964,11 +2970,11 @@ msgstr ""
 "verkkosivustosi nimeä, saatat nähdä joitakin koukkuja, joita et tunnista - "
 "nämä tulisi poistaa"
 
-#: Vipps.class.php:732
+#: Vipps.class.php:735
 msgid "The Gutenberg Block"
 msgstr "Gutenbergin lohko"
 
-#: Vipps.class.php:3933
+#: Vipps.class.php:3942
 msgid ""
 "The link you have followed is for a product that is no longer available at "
 "this location. Please return to the store and try again"
@@ -2976,12 +2982,12 @@ msgstr ""
 "Seuraamasi linkki koskee tuotetta, jota ei ole enää saatavilla tässä "
 "paikassa. Palaa myymälään ja yritä uudelleen"
 
-#: Vipps.class.php:1592
+#: Vipps.class.php:1601
 #, php-format
 msgid "The order is not a %1$s order"
 msgstr "Tilaus ei ole %1$s-tilaus"
 
-#: Vipps.class.php:903
+#: Vipps.class.php:906
 #, php-format
 msgid ""
 "The plugin is currently <b>active</b> - %1$s is available as a payment "
@@ -2990,7 +2996,7 @@ msgstr ""
 "Lisäosa on tällä hetkellä <b>aktiivinen</b> - %1$s on käytettävissä "
 "maksutapana."
 
-#: Vipps.class.php:1495
+#: Vipps.class.php:1504
 msgid "The product doesn't exist"
 msgstr "Tuotetta ei ole olemassa"
 
@@ -2998,7 +3004,7 @@ msgstr "Tuotetta ei ole olemassa"
 msgid "The public key provided to you by Porterbuddy"
 msgstr "Porterbuddyn sinulle antama julkinen avain"
 
-#: Vipps.class.php:2346
+#: Vipps.class.php:2355
 #, php-format
 msgid ""
 "The reference %1$s and order id %2$s does not match in webhook event %3$s - "
@@ -3011,7 +3017,7 @@ msgstr ""
 msgid "The ShopId provided to you by Helthjem"
 msgstr "Helthjemin sinulle antama ShopId-tunnus"
 
-#: Vipps.class.php:737
+#: Vipps.class.php:740
 msgid "The shortcode looks like this:"
 msgstr "Lyhytkoodi näyttää tältä:"
 
@@ -3073,12 +3079,12 @@ msgstr ""
 "Tarvittaessa voit tuoda ne nykyiselle sivustollesi ja hallita niitä täältä "
 "käsin"
 
-#: Vipps.class.php:2393
+#: Vipps.class.php:2402
 #, php-format
 msgid "There is no order with this %1$s orderid, callback fails:"
 msgstr "Tilausta ei ole tällä %1$s orderid-tunnuksella, callback epäonnistuu:"
 
-#: Vipps.class.php:2399
+#: Vipps.class.php:2408
 msgid "There is no order with this order id, callback fails:"
 msgstr "Tällä tilausnumerolla ei ole tilausta, takaisinkutsu epäonnistuu:"
 
@@ -3109,7 +3115,7 @@ msgstr ""
 "Tätä sivua käytetään vaihtoehtoista %1$s-sivua varten, jota voit käyttää "
 "WooCommercen normaalin kassasivun sijaan. "
 
-#: Vipps.class.php:884
+#: Vipps.class.php:887
 #, php-format
 msgid ""
 "This plugin, currently active at your site, implements a %1$s checkout "
@@ -3124,7 +3130,7 @@ msgstr ""
 "joka tukee sekä %1$s:ää että luottokortteja. Se tukee myös %1$s:n QR-api:tä "
 "QR-koodien luomiseksi aloitussivuillesi tai tuotteisiisi"
 
-#: Vipps.class.php:1339
+#: Vipps.class.php:1348
 msgid ""
 "This product does <b>not</b> support express checkout, and so will <b>not</b>"
 " have a Buy Now button."
@@ -3132,12 +3138,12 @@ msgstr ""
 "Tämä tuote <b>ei</b> tue pikakassaa, joten siinä <b>ei</b> ole Osta nyt -"
 "painiketta."
 
-#: Vipps.class.php:1337
+#: Vipps.class.php:1346
 msgid ""
 "This product supports express checkout, and so will have a Buy Now button."
 msgstr "Tämä tuote tukee pikakassakäyntiä, joten siinä on Osta nyt -painike."
 
-#: Vipps.class.php:1689 Vipps.class.php:1707
+#: Vipps.class.php:1698 Vipps.class.php:1716
 msgid "Timestamp"
 msgstr "Aikaleima"
 
@@ -3158,7 +3164,7 @@ msgstr ""
 msgid "Title to be display on site"
 msgstr "Sivustolla näytettävä otsikko"
 
-#: WC_Gateway_Vipps.class.php:3453
+#: WC_Gateway_Vipps.class.php:3461
 #, php-format
 msgid ""
 "To activate %1$s, just press the button below. Otherwise, %2$s will of "
@@ -3169,7 +3175,7 @@ msgstr ""
 "saatavilla tavallisessa kassanäytössä, ja voit halutessasi tarjota myös %3$s "
 "sekä tuotesivuilla että ostoskorissa."
 
-#: Vipps.class.php:1403
+#: Vipps.class.php:1412
 #, php-format
 msgid ""
 "To create a QR code for your shareable link, we recommend copying the URL "
@@ -3178,7 +3184,7 @@ msgstr ""
 "Jos haluat luoda QR-koodin jaettavalle linkille, suosittelemme kopioimaan "
 "URL-osoitteen ja käyttämään sitten <a href='%2$s'>%1$s QR Api</a> -ohjelmaa"
 
-#: Vipps.class.php:399
+#: Vipps.class.php:402
 msgid ""
 "To do this, the plugin will automatically add webhooks for the MSN - "
 "Merchant Serial Numbers - configured on this site"
@@ -3186,7 +3192,7 @@ msgstr ""
 "Tätä varten liitännäinen lisää automaattisesti verkkokoukut MSN - kauppiaan "
 "sarjanumeroille - jotka on määritetty tällä sivustolla"
 
-#: Vipps.class.php:879
+#: Vipps.class.php:882
 #, php-format
 msgid ""
 "To order or configure your %1$s account that powers these plugins, log onto "
@@ -3197,32 +3203,32 @@ msgstr ""
 "kirjaudu sisään <a target='_blank'  href='%2$s'>%1$s-portaaliin</a> ja käytä "
 "siellä olevia avaimia ja tietoja lisäosien määrittämiseen tarpeen mukaan."
 
-#: Vipps.class.php:4091
+#: Vipps.class.php:4100
 #, php-format
 msgid "To the %1$s app!"
 msgstr "%1$s-sovellukseen!"
 
-#: Vipps.class.php:1615
+#: Vipps.class.php:1624
 msgid "Transaction details"
 msgstr "Tapahtuman tiedot"
 
-#: Vipps.class.php:1610
+#: Vipps.class.php:1619
 msgid "Transaction details not retrievable: "
 msgstr "Tapahtuman tietoja ei voida hakea: "
 
-#: Vipps.class.php:1691 Vipps.class.php:1708
+#: Vipps.class.php:1700 Vipps.class.php:1717
 msgid "Transaction ID"
 msgstr "Tapahtuman ID"
 
-#: Vipps.class.php:1682 Vipps.class.php:1696
+#: Vipps.class.php:1691 Vipps.class.php:1705
 msgid "Transaction Log"
 msgstr "Tapahtumaloki"
 
-#: Vipps.class.php:1630
+#: Vipps.class.php:1639
 msgid "Transaction summary"
 msgstr "Tapahtumien yhteenveto"
 
-#: Vipps.class.php:1690
+#: Vipps.class.php:1699
 msgid "Transaction text"
 msgstr "Transaktioteksti"
 
@@ -3255,7 +3261,7 @@ msgstr ""
 "Yritetään käynnistää tilaus %1$s tilalla %2$s - vain 'pending' ja 'failed' "
 "ovat sallittuja, joten tämä epäonnistuu"
 
-#: Vipps.class.php:683
+#: Vipps.class.php:686
 #, php-format
 msgid "Turn on support for %1$s On-site Messaging badges"
 msgstr "Ota käyttöön tuki %1$s On-site-viestimerkkejä varten"
@@ -3288,7 +3294,7 @@ msgstr "Tuntematon virhe osittaisen tilauksen %1$s luomisessa"
 msgid "Unknown error creating %1$s session"
 msgstr "Tuntematon virhe %1$s istunnon luomisessa"
 
-#: Vipps.class.php:3308
+#: Vipps.class.php:3317
 msgid "Unknown error customer in express checkout."
 msgstr "Tuntematon virhe asiakas pikakassalla."
 
@@ -3296,15 +3302,15 @@ msgstr "Tuntematon virhe asiakas pikakassalla."
 msgid "Unknown operation"
 msgstr "Tuntematon toiminta"
 
-#: Vipps.class.php:1587 Vipps.class.php:4234
+#: Vipps.class.php:1596 Vipps.class.php:4243
 msgid "Unknown order"
 msgstr "Tuntematon tilaus"
 
-#: Vipps.class.php:3644
+#: Vipps.class.php:3653
 msgid "Unknown payment status"
 msgstr "Tuntematon maksutilanne"
 
-#: Vipps.class.php:3472
+#: Vipps.class.php:3481
 msgid "Unknown product, cannot create order"
 msgstr "Tuntematon tuote, ei voi luoda tilausta"
 
@@ -3312,11 +3318,11 @@ msgstr "Tuntematon tuote, ei voi luoda tilausta"
 msgid "Unsynchronized QR codes"
 msgstr "Synkronoimattomat QR-koodit"
 
-#: VippsQRCodeController.class.php:614
+#: VippsQRCodeController.class.php:617
 msgid "Update QR Code"
 msgstr "Päivitä QR-koodi"
 
-#: Vipps.class.php:727
+#: Vipps.class.php:730
 msgid "Update settings"
 msgstr "Päivitä asetukset"
 
@@ -3324,7 +3330,7 @@ msgstr "Päivitä asetukset"
 msgid "Upload image"
 msgstr "Lataa kuva"
 
-#: VippsQRCodeController.class.php:625
+#: VippsQRCodeController.class.php:628
 msgid "Uploaded to this item"
 msgstr "Ladattu tähän kohteeseen"
 
@@ -3343,12 +3349,12 @@ msgstr "URL-osoite %1$s-logoon"
 msgid "Use %1$s as default payment method on checkout page"
 msgstr "Käytä %1$s oletusmaksutapaa kassasivulla"
 
-#: WC_Gateway_Vipps.class.php:3451
+#: WC_Gateway_Vipps.class.php:3459
 #, php-format
 msgid "Use %1$s for all purchases"
 msgstr "Käytä %1$s kaikkiin ostoksiin"
 
-#: Vipps.class.php:1382
+#: Vipps.class.php:1391
 #, php-format
 msgid "Use %1$s Later"
 msgstr "Käytä %1$s myöhemmin"
@@ -3369,7 +3375,7 @@ msgstr ""
 msgid "Use a simulated page (default)"
 msgstr "Käytä simuloitua sivua (oletus)"
 
-#: VippsQRCodeController.class.php:623
+#: VippsQRCodeController.class.php:626
 msgid "Use as featured image"
 msgstr "Käytä esillä olevana kuvana"
 
@@ -3435,31 +3441,31 @@ msgstr ""
 msgid "Use your current shipping filters"
 msgstr "Käytä nykyisiä lähetyssuodattimia"
 
-#: Vipps.class.php:478
+#: Vipps.class.php:481
 msgid "User Checked in"
 msgstr "Käyttäjä kirjautunut sisään"
 
-#: Vipps.class.php:1669 Vipps.class.php:1674
+#: Vipps.class.php:1678 Vipps.class.php:1683
 msgid "User details"
 msgstr "Käyttäjän tiedot"
 
-#: Vipps.class.php:1675
+#: Vipps.class.php:1684
 msgid "User ID"
 msgstr "Käyttäjätunnus"
 
-#: Vipps.class.php:703 Vipps.class.php:1445 Blocks/Badges/vipps-badge.php:63
+#: Vipps.class.php:706 Vipps.class.php:1454 Blocks/Badges/vipps-badge.php:63
 msgid "Variant"
 msgstr "Vaihtoehto"
 
-#: Vipps.class.php:445
+#: Vipps.class.php:448
 msgid "View"
 msgstr "Näytä"
 
-#: VippsQRCodeController.class.php:615
+#: VippsQRCodeController.class.php:618
 msgid "View QR Code"
 msgstr "Näytä QR-koodi"
 
-#: VippsQRCodeController.class.php:616
+#: VippsQRCodeController.class.php:619
 msgid "View QR Codes"
 msgstr "Näytä QR-koodit"
 
@@ -3512,24 +3518,24 @@ msgstr ""
 "VIPPS_TEST_MODE on asetettuna true:ksi konfiguraatiossasi - testitila on "
 "pakotettu"
 
-#: Vipps.class.php:4300
+#: Vipps.class.php:4309
 #, php-format
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr "Odotamme vahvistusta ostosta %1$s:ltä"
 
-#: Vipps.class.php:4332
+#: Vipps.class.php:4341
 msgid "Waiting for your order confirmation"
 msgstr "Odotamme tilausvahvistusta"
 
-#: Vipps.class.php:3607 Vipps.class.php:3622
+#: Vipps.class.php:3616 Vipps.class.php:3631
 msgid "Waiting on order"
 msgstr "Odottaa tilausta"
 
-#: Vipps.class.php:432
+#: Vipps.class.php:435
 msgid "Webhook"
 msgstr "Webhook"
 
-#: Vipps.class.php:397 Vipps.class.php:1113 Vipps.class.php:1113
+#: Vipps.class.php:400 Vipps.class.php:1120 Vipps.class.php:1120
 msgid "Webhooks"
 msgstr "Verkkokoukut"
 
@@ -3560,7 +3566,7 @@ msgstr ""
 "lisätä nämä toimitustavat toimitusalueisiin tavalliseen tapaan, mutta ne "
 "näkyvät vain %1$s-näytössä."
 
-#: Vipps.class.php:398
+#: Vipps.class.php:401
 #, php-format
 msgid ""
 "Whenever an event like a payment or a cancellation occurs on a %1$s account, "
@@ -3573,7 +3579,7 @@ msgstr ""
 "jotta käyttäjät saavat ilmoituksen maksuista, vaikka he eivät palaisi "
 "myymälääsi."
 
-#: Vipps.class.php:662 Vipps.class.php:1367 Blocks/Badges/vipps-badge.php:52
+#: Vipps.class.php:665 Vipps.class.php:1376 Blocks/Badges/vipps-badge.php:52
 msgid "White"
 msgstr "Valkoinen"
 
@@ -3581,12 +3587,12 @@ msgstr "Valkoinen"
 msgid "WP Hosting"
 msgstr "WP Hosting"
 
-#: WC_Gateway_Vipps.class.php:2966 Vipps.class.php:2409
+#: WC_Gateway_Vipps.class.php:2966 Vipps.class.php:2418
 #, php-format
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
 msgstr "Väärä %1$s Orderid - mahdollisesti yritys väärentää takaisinsoittoa "
 
-#: Vipps.class.php:2627
+#: Vipps.class.php:2636
 #, php-format
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr "Väärä %1$s Tilausnumero toimitustietojen takaisinsoittoilmoituksessa"
@@ -3600,12 +3606,12 @@ msgstr ""
 "Väärä tunniste %1$s:n takaisinkutsussa - mahdollisesti yritys väärentää "
 "takaisinkutsua"
 
-#: WC_Gateway_Vipps.class.php:3456
+#: WC_Gateway_Vipps.class.php:3464
 #, php-format
 msgid "Yes, activate %1$s!"
 msgstr "Kyllä, aktivoi %1$s!"
 
-#: Vipps.class.php:905
+#: Vipps.class.php:908
 #, php-format
 msgid "You are using %1$s instead of the standard WooCommerce Checkout page."
 msgstr "Käytät %1$s-sivua WooCommercen tavallisen Checkout-sivun sijasta."
@@ -3618,7 +3624,7 @@ msgstr ""
 "Voit lisätä tässä merkin summan valuutan pienemmissä yksiköissä (esim. "
 "Norjan kruunun osalta øre)"
 
-#: Vipps.class.php:675
+#: Vipps.class.php:678
 msgid ""
 "You can configure these badges on this page, turning them on in all or some "
 "products and configure their default setup. You can also add a badge using a "
@@ -3633,16 +3639,16 @@ msgstr ""
 msgid "You can get %1$s now!"
 msgstr "Voit saada %1$s nyt!"
 
-#: Vipps.class.php:619 Vipps.class.php:640
+#: Vipps.class.php:622 Vipps.class.php:643
 msgid "You don't have sufficient rights"
 msgstr "Sinulla ei ole riittävästi oikeuksia"
 
-#: VippsQRCodeController.class.php:165 Vipps.class.php:391 Vipps.class.php:659
-#: Vipps.class.php:834
+#: VippsQRCodeController.class.php:165 Vipps.class.php:394 Vipps.class.php:662
+#: Vipps.class.php:837
 msgid "You don't have sufficient rights to access this page"
 msgstr "Sinulla ei ole riittäviä oikeuksia käyttää tätä sivua"
 
-#: Vipps.class.php:780 Vipps.class.php:781 Vipps.class.php:1474
+#: Vipps.class.php:783 Vipps.class.php:784 Vipps.class.php:1483
 msgid "You don't have sufficient rights to edit this product"
 msgstr "Sinulla ei ole riittäviä oikeuksia tämän tuotteen muokkaamiseen"
 
@@ -3660,7 +3666,7 @@ msgstr "Tarvitset uudemman WooCommerce-version käyttääksesi %1$s!"
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr "Sinun täytyy syöttää puhelinnumerosi maksaaksesi %1$s:llä"
 
-#: Vipps.class.php:4115
+#: Vipps.class.php:4124
 msgid ""
 "You recently completed an order with exactly the same products as you are "
 "buying now. There should be an email in your inbox from the previous "
@@ -3695,7 +3701,7 @@ msgstr ""
 "Puhelinnumerosi, johon Porterbuddy voi lähettää sinulle tärkeitä viestejä. "
 "Muodon on oltava MSISDN (mukaan lukien maakoodi). Esimerkki: \"4791234567\""
 
-#: Vipps.class.php:3500
+#: Vipps.class.php:3509
 msgid "Your product is temporarily no longer available for purchase"
 msgstr "Tuote ei ole tilapäisesti enää ostettavissa"
 
@@ -3707,7 +3713,7 @@ msgstr ""
 "Istuntosi on päättynyt - lataa sivu uudelleen aloittaaksesi uudelleen tai "
 "palaa kauppaan"
 
-#: Vipps.class.php:3975
+#: Vipps.class.php:3984
 msgid "Your shopping cart is empty"
 msgstr "Ostoskorisi on tyhjä"
 
@@ -3728,7 +3734,7 @@ msgstr ""
 "Testitilisi \"Merchant Serial Number\" Developer-välilehdeltä osoitteessa "
 "https://portal.vipps.no"
 
-#: Vipps.class.php:291
+#: Vipps.class.php:294
 #, php-format
 msgid ""
 "Your theme or a plugin is currently overriding the <code>"

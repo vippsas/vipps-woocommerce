@@ -257,9 +257,12 @@ class Vipps {
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // Custom product properties
-        add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
-        add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
-        add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
+        // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps - FIXME
+        if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "Vipps") {
+            add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
+            add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
+            add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
+        }
 
         add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
 
@@ -1109,7 +1112,11 @@ jQuery('a.webhook-adder').click(function (e) {
         $logo = plugins_url('img/vmp-logo.png', __FILE__);
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
+
+        // IOK 2024-01-17 temporarily: Only Vipps supports Badges codes. FIXME
+        if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "Vipps") {
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
+        }
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
 
@@ -1299,9 +1306,12 @@ jQuery('a.webhook-adder').click(function (e) {
     public function woocommerce_product_data_panels() {
         global $post;
         echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
-        $this->product_options_vipps();
-        $this->product_options_vipps_badges();
-        $this->product_options_vipps_shareable_link();
+        // IOK 2024-01-17 Temporary: Only Vipps supports express checkout, shareable links (express checkout) and badges FIXME
+        if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "Vipps") {
+            $this->product_options_vipps();
+            $this->product_options_vipps_badges();
+            $this->product_options_vipps_shareable_link();
+        }
         echo "</div>";
     }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
@@ -1330,8 +1340,7 @@ jQuery('a.webhook-adder').click(function (e) {
           }
 
           echo "<p>";
-          $settings = esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
-          echo sprintf(__("The <a href=\"%1\$s\">%2\$s settings</a> are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $settings, Vipps::CompanyName()); 
+          echo sprintf(__("The %1\$s settings are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), Vipps::CompanyName()); 
           echo " ";
           if ($canbebought) {
             echo __("This product supports express checkout, and so will have a Buy Now button." , 'woo-vipps');
@@ -1342,7 +1351,7 @@ jQuery('a.webhook-adder').click(function (e) {
         } else {
          $settings = esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
           echo "<p>";
-          echo sprintf(__("The <a href=\"%1\$s\">%2\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $settings, Vipps::CompanyName());
+          echo sprintf(__("The %1\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), Vipps::CompanyName());
           echo "</p>";
         }
         echo '</div>';
