@@ -50,9 +50,9 @@ return apply_filters(
 			'desc_tip'    => true,
 		],
 		'subscription_key'                 => [
-			'title'       => __( 'Vipps-Subscription-Key', 'woo-vipps-recurring' ),
+			'title'       => __( 'Ocp-Apim-Subscription-Key', 'woo-vipps-recurring' ),
 			'type'        => 'password',
-			'description' => __( 'Get your API keys from your Vipps developer portal.', 'woo-vipps-recurring' ),
+			'description' => __( 'Get your API keys from your Vipps MobilePay developer portal.', 'woo-vipps-recurring' ),
 			'default'     => '',
 			'desc_tip'    => true,
 		],

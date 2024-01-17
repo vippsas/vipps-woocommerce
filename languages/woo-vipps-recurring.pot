@@ -140,7 +140,7 @@ msgid "client_secret"
 msgstr ""
 
 #: includes/admin/vipps-recurring-settings.php:49
-msgid "Vipps-Subscription-Key"
+msgid "Ocp-Apim-Subscription-Key"
 msgstr ""
 
 #: includes/admin/vipps-recurring-settings.php:58

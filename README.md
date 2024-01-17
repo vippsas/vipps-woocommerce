@@ -1,13 +1,13 @@
 <!-- START_METADATA
 ---
-title: Vipps MobilePay Recurring Payments for WooCommerce
+title: Vipps/MobilePay Recurring Payments for WooCommerce
 sidebar_position: 1
 pagination_next: null
 pagination_prev: null
 ---
 END_METADATA -->
 
-# Vipps MobilePay Recurring Payments for WooCommerce
+# Vipps/MobilePay Recurring Payments for WooCommerce
 
 ![Support and development by Everyday ](./docs/images/everyday.svg#gh-light-mode-only)![Support and development by Everyday](./docs/images/everyday_dark.svg#gh-dark-mode-only)
 
@@ -22,14 +22,14 @@ END_METADATA -->
 <!-- END_COMMENT -->
 
 This is the official
-[Vipps MobilePay Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
+[Vipps/MobilePay Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
 plugin for
 [WooCommerce](https://woocommerce.com).
 It is owned by [Vipps MobilePay](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
-Vipps MobilePay Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
+Vipps/MobilePay Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
-With Vipps MobilePay Recurring Payments for WooCommerce you can:
+With Vipps/MobilePay Recurring Payments for WooCommerce you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
@@ -70,7 +70,7 @@ for an overview.
 ### Installation
 
 1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
-2. Enable the *Vipps MobilePay Recurring Payments* payment method in WooCommerce: *Settings* > *Payments*.
+2. Enable the *Vipps/MobilePay Recurring Payments* payment method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
 4. Proceed to [Retrieving Vipps API Keys](#retrieving-vipps-api-keys).
 
@@ -90,7 +90,7 @@ Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys
 
 ### Configuring products
 
-Configuring products for use with the *Vipps MobilePay Recurring Payments* plugin is not any
+Configuring products for use with the *Vipps/MobilePay Recurring Payments* plugin is not any
 different from default WooCommerce, with one exception: The configuration for
 whether the product is virtual or physical is important to consider.
 
@@ -186,7 +186,7 @@ and
 [WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
 are able to work together for access to recurring memberships that unlock content.
 
-**Please note:** *WooCommerce Subscriptions* is required in order to use *Vipps MobilePay Recurring Payments for WooCommerce*, but *WooCommerce Memberships* is not.
+**Please note:** *WooCommerce Subscriptions* is required in order to use *Vipps/MobilePay Recurring Payments for WooCommerce*, but *WooCommerce Memberships* is not.
 
 You can read about how *WooCommerce Subscriptions* and *WooCommerce Memberships* work together at
 [WooCommerce Memberships Subscriptions Integration](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
@@ -210,7 +210,7 @@ This is because of the Norwegian law. You are not allowed to charge for a physic
 See
 [Guidelines for the standard sales conditions for consumer purchases of goods over the internet](https://www.forbrukertilsynet.no/english/guidelines/guidelines-the-standard-sales-conditions-consumer-purchases-of-goods-the-internet#chapter-7) for more information.
 
-If you have a valid reason to do so you can use the *Capture payment instantly* option from the *Vipps MobilePay Recurring Payments* settings in your product's settings.
+If you have a valid reason to do so you can use the *Capture payment instantly* option from the *Vipps/MobilePay Recurring Payments* settings in your product's settings.
 
 ### When a renewal happens, why is the order on hold?
 

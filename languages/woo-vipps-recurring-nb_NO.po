@@ -596,8 +596,8 @@ msgstr ""
 "betalingsavtale."
 
 #: includes/admin/vipps-recurring-settings.php:49
-msgid "Vipps-Subscription-Key"
-msgstr "Vipps-Subscription-Key"
+msgid "Ocp-Apim-Subscription-Key"
+msgstr "Ocp-Apim-Subscription-Key"
 
 #: includes/wc-vipps-recurring-api.php:395
 msgid "We hit Vipps' rate limit, we will retry later."

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Vipps MobilePay Recurring Payments Gateway for WooCommerce
+ * Plugin Name: Vipps/MobilePay Recurring Payments Gateway for WooCommerce
  * Description: Offer recurring payments with Vipps MobilePay for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
@@ -279,7 +279,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( ! class_exists( 'WC_Subscriptions' ) ) {
 					// translators: %s link to WooCommerce Subscription's purchase page
-					$notice = sprintf( esc_html__( 'Vipps MobilePay recurring payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
+					$notice = sprintf( esc_html__( 'Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
 					$this->notices->error( $notice );
 
 					return;
@@ -292,7 +292,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				if ( $this->gateway->test_mode ) {
-					$notice = __( 'Vipps MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
+					$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
 					$this->notices->warning( $notice );
 				}
 
@@ -527,8 +527,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function admin_menu() {
 				add_options_page(
-					__( 'Vipps MobilePay Recurring Payments', 'woo-vipps-recurring' ),
-					__( 'Vipps MobilePay Recurring Payments', 'woo-vipps-recurring' ),
+					__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
+					__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
 					'manage_options',
 					'woo-vipps-recurring',
 					[ $this, 'admin_menu_page_html' ]
@@ -567,7 +567,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function woocommerce_product_data_tabs( $tabs ) {
 				$tabs['wc_vipps_recurring'] = [
-					'label'    => __( 'Vipps MobilePay Recurring Payments', 'woo-vipps-recurring' ),
+					'label'    => __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
 					'target'   => 'wc_vipps_recurring_product_data',
 					'priority' => 100,
 				];

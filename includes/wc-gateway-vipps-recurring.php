@@ -110,8 +110,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 */
 		public function __construct() {
 			$this->id                 = 'vipps_recurring';
-			$this->method_title       = __( 'Vipps MobilePay Recurring Payments', 'woo-vipps-recurring' );
-			$this->method_description = __( 'Vipps MobilePay Recurring Payments works by redirecting your customers to the Vipps MobilePay portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
+			$this->method_title       = __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' );
+			$this->method_description = __( 'Vipps/MobilePay Recurring Payments works by redirecting your customers to the Vipps MobilePay portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
 			$this->has_fields         = true;
 
 			/*
@@ -282,7 +282,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * Indicate to WooCommerce Subscriptions that the payment method change for Vipps MobilePay Recurring Payments
+		 * Indicate to WooCommerce Subscriptions that the payment method change for Vipps/MobilePay Recurring Payments
 		 * should be asynchronous.
 		 *
 		 * WC_Subscriptions_Change_Payment_Gateway::change_payment_method_via_pay_shortcode uses the
