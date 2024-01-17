@@ -32,7 +32,7 @@ const Content = () => {
 const Label = props => {
         const { PaymentMethodLabel } = props.components;
         let textlabel = React.createElement( 'span', null, decodeEntities(settings.title || ''));
-        let icon = React.createElement('img', { alt: textlabel, title: textlabel, className: 'vipps-payment-logo', src:iconsrc});
+        let icon = React.createElement('img', { style: {display: 'inline-block'}, alt: textlabel, title: textlabel, className: 'vipps-payment-logo', src:iconsrc});
         let label =  React.createElement(PaymentMethodLabel, { text: textlabel, icon: icon });
         return applyFilters('woo_vipps_checkout_label', label, settings);
 };
