@@ -868,8 +868,7 @@ jQuery('a.webhook-adder').click(function (e) {
            $ischeckout = ($gw->get_option('vipps_checkout_enabled') == 'yes');
         }
 
-
-
+        if (WC_Gateway_Vipps::instance()->get_payment_method_name() != "Vipps"):
     ?>
     <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
     <header class="vipps-admin-page-header">
@@ -878,20 +877,15 @@ jQuery('a.webhook-adder').click(function (e) {
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
             <h1><?php echo sprintf(__("%1\$s for WordPress and WooCommerce", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an Express Checkout for WooCommerce, an optional complete checkout solution powered by %1\$s, a system for managing QR-codes that link to your products or landing pages,  a plugin for recurring payments, and a system for passwordless logins", 'woo-vipps'), Vipps::CompanyName());?></p>
-            <p><?php echo sprintf(__("To order or configure your %1\$s account that powers these plugins, log onto <a target='_blank'  href='%2\$s'>the %1\$s portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), Vipps::CompanyName(), $portalurl); ?></p>
-
-            <h1><?php echo sprintf(__("The %1\$s plugins", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
             <div class="pluginsection woo-vipps">
-               <h2><?php echo sprintf(__('Pay with %1$s for WooCommerce', 'woo-vipps' ), Vipps::CompanyName());?></h2>
-               <p><?php echo sprintf(__("This plugin, currently active at your site, implements a %1\$s checkout solution in WooCommerce, and Express Checkout solution for instant buys using the %1\$s app, and an alternate %1\$s-hosted checkout supporting both %1\$s and credit cards. It also supports %1\$s's QR-api for creating QR-codes to your landing pages or products", 'woo-vipps'), Vipps::CompanyName()); ?></p>
+               <p><?php echo sprintf(__("This plugin implements a %1\$s checkout solution for WooCommerce and an alternate %1\$s hosted checkout that supports both %2\$s and credit cards.", 'woo-vipps'), Vipps::CompanyName(), WC_Gateway_Vipps::instance()->get_payment_method_name()); ?></p>
                <p><?php echo sprintf(__("Configure the plugin on its <a href='%1\$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2\$s'>%3\$s portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl, Vipps::CompanyName());?></p>
                <p><?php echo sprintf(__("If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1\$s'>WooCommerce logs page</a>.", 'woo-vipps'), $logspage); ?></p>
                <p><?php echo sprintf(__("If you need support, please use the <a href='%1\$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no.", 'woo-vipps'), $forumpage); ?></p>
                <div class="pluginstatus vipps_admin_highlighted_section">
                <?php if ($istestmode): ?>
                   <p><b>
-                   <?php echo sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), Vipps::CompanyName()); ?>
+                   <?php echo sprintf(__('%1$s is currently in test mode - no real transactions will occur.', 'woo-vipps'), Vipps::CompanyName()); ?>
                   </b></p>
                <?php endif; ?>
                <p>
@@ -903,9 +897,59 @@ jQuery('a.webhook-adder').click(function (e) {
                </p>
                <?php if ($isactive): ?>
                  <p> 
-                   <?php echo sprintf(__("The plugin is currently <b>active</b> - %1\$s is available as a payment method.", 'woo-vipps'), Vipps::CompanyName()); ?>
+                   <?php echo sprintf(__("The plugin is <b>active</b> - %1\$s is available as a payment method.", 'woo-vipps'), Vipps::CompanyName()); ?>
                    <?php if ($ischeckout): ?>
-                      <?php echo sprintf(__("You are using %1\$s instead of the standard WooCommerce Checkout page.", 'woo-vipps'), Vipps::CheckoutName()); ?>     
+                    </p>
+                    <p> 
+                    <?php echo sprintf(__("You are now using <b>%1\$s Checkout</b> instead of the standard WooCommerce Checkout page.", 'woo-vipps'), WC_Gateway_Vipps::instance()->get_payment_method_name()); ?>     
+                   <?php endif; ?>
+                 </p>
+               <?php else:; ?>
+               <?php endif; ?>
+              </div>
+
+            </div>
+    </div> 
+    
+    <?php else: ?>
+    
+    <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
+    <header class="vipps-admin-page-header">
+            <h1><span><img src="<?php echo plugins_url('/img/vipps-mobilepay-banner.png', __FILE__);?>" alt="Vipps"></span><span class="slogan"><?php echo esc_html($slogan); ?></span></h1>
+    </header>
+    <div class='wrap vipps-admin-page'>
+            <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
+            <h1><?php echo sprintf(__("%1\$s for WordPress and WooCommerce", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
+            <p><?php echo sprintf(__("%1\$s officially supports WordPress and WooCommerce with a family of plugins implementing a payment gateway for WooCommerce, an optional complete checkout solution powered by %1\$s, a system for managing QR-codes that link to your products or landing pages, a plugin for recurring payments, and a system for passwordless logins.", 'woo-vipps'), Vipps::CompanyName());?></p>
+            <p><?php echo sprintf(__("To order or configure your %1\$s account that powers these plugins, log onto <a target='_blank'  href='%2\$s'>the %1\$s portal</a> and use the keys and data from that to set up your plugins as needed.", 'woo-vipps'), Vipps::CompanyName(), $portalurl); ?></p>
+
+            <h1><?php echo sprintf(__("The %1\$s plugins", 'woo-vipps'), Vipps::CompanyName()); ?></h1>
+            <div class="pluginsection woo-vipps">
+               <h2><?php echo sprintf(__('Pay with %1$s for WooCommerce', 'woo-vipps' ), Vipps::CompanyName());?></h2>
+               <p><?php echo sprintf(__("This plugin implements a %1\$s checkout solution for WooCommerce and an alternate %1\$s hosted checkout that supports both %2\$s and credit cards. It also supports %1\$s's QR-api for creating QR-codes to your landing pages or products.", 'woo-vipps'), Vipps::CompanyName(), WC_Gateway_Vipps::instance()->get_payment_method_name()); ?></p>
+               <p><?php echo sprintf(__("Configure the plugin on its <a href='%1\$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2\$s'>%3\$s portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl, Vipps::CompanyName());?></p>
+               <p><?php echo sprintf(__("If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1\$s'>WooCommerce logs page</a>.", 'woo-vipps'), $logspage); ?></p>
+               <p><?php echo sprintf(__("If you need support, please use the <a href='%1\$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no.", 'woo-vipps'), $forumpage); ?></p>
+               <div class="pluginstatus vipps_admin_highlighted_section">
+               <?php if ($istestmode): ?>
+                  <p><b>
+                   <?php echo sprintf(__('%1$s is currently in test mode - no real transactions will occur.', 'woo-vipps'), Vipps::CompanyName()); ?>
+                  </b></p>
+               <?php endif; ?>
+               <p>
+                  <?php if ($configured): ?>
+                    <?php echo sprintf(__("<a href='%1\$s'>%2\$s configuration</a> is complete.", 'woo-vipps'), $checkoutsettings, Vipps::CompanyName()); ?> 
+                  <?php else: ?>
+                    <?php echo sprintf(__("%1\$s configuration is not yet complete - you must get your keys from the %1\$s portal and enter them on the <a href='%2\$s'>settings page</a>", 'woo-vipps'), Vipps::CompanyName(), $checkoutsettings); ?> 
+                  <?php endif; ?>
+               </p>
+               <?php if ($isactive): ?>
+                <p> 
+                   <?php echo sprintf(__("The plugin is <b>active</b> - %1\$s is available as a payment method.", 'woo-vipps'), Vipps::CompanyName()); ?>
+                   <?php if ($ischeckout): ?>
+                    </p>
+                    <p> 
+                    <?php echo sprintf(__("You are now using <b>%1\$s Checkout</b> instead of the standard WooCommerce Checkout page.", 'woo-vipps'), WC_Gateway_Vipps::instance()->get_payment_method_name()); ?>     
                    <?php endif; ?>
                  </p>
                <?php else:; ?>
@@ -942,7 +986,7 @@ jQuery('a.webhook-adder').click(function (e) {
             <div class="pluginsection login-with-vipps">
                <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::LoginName());?></h2>
                <p><?php echo sprintf(__("<a href='%1\$s' target='_blank'>%3\$s</a> is a password-less solution that lets you or your customers to securely log into your site without having to remember passwords - you only need the %2\$s app. The plugin does not require WooCommerce, and it can be customized for many different usecases.", 'woo-vipps'), 'https://www.wordpress.org/plugins/login-with-vipps/',Vipps::CompanyName(), Vipps::LoginName()); ?></p>
-               <p> <?php echo sprintf(__("If you use %1\$s or %2\$s in WooCommerce, this allows your %3\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::ExpressCheckoutName(), Vipps::CompanyName()); ?>
+               <p> <?php echo sprintf(__("If you use %1\$s in WooCommerce, this allows your %2\$s customers to safely log in without ever using a password.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()); ?>
                <p>
                        <?php echo sprintf(__("Remember, you need to set up %3\$s at the <a target='_blank' href='%2\$s'>%1\$s Portal</a>, where you will find the keys you need and where you will have to register the <em>return url</em> you will find on the settings page.", 'woo-vipps'),Vipps::CompanyName(),$portalurl, Vipps::LoginName()); ?>
                </p>
@@ -966,7 +1010,8 @@ jQuery('a.webhook-adder').click(function (e) {
             </div>
    
     </div> 
-    <?php
+    
+    <?php endif;
     }
 
     // Add a link to the settings page from the plugin list
