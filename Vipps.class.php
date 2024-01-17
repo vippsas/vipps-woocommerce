@@ -1009,7 +1009,7 @@ jQuery('a.webhook-adder').click(function (e) {
                     if (isset($dismissed[$key])) return;
                 }
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
-                        $logo = plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
+                        $logo = plugins_url('img/vmp-logo.png',__FILE__);
                         $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
@@ -1066,7 +1066,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     public function admin_head() {
         // Add some styling to the Vipps product-meta box
-        $smile= plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
+        $smile= plugins_url('img/vmp-logo.png',__FILE__);
         ?>
             <style>
             @media only screen and (max-width: 900px) {
@@ -1106,7 +1106,7 @@ jQuery('a.webhook-adder').click(function (e) {
     public function admin_menu () {
         // IOK 2023-12-01 replace old Vipps smile in larger contexts
         // $logo= plugins_url('img/vipps-smile-orange.png',__FILE__);
-        $logo = plugins_url('img/vipps-mobilepay-logo-only.png', __FILE__);
+        $logo = plugins_url('img/vmp-logo.png', __FILE__);
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
@@ -2128,7 +2128,7 @@ EOF;
         $this->vippsJSConfig['BuyNowWith'] = __('Buy now with', 'woo-vipps');
         $this->vippsJSConfig['BuyNowWithVipps'] = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
+        $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vmp-logo.png',__FILE__);
         $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), $this->get_payment_method_name());
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
