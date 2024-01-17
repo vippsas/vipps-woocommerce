@@ -12,11 +12,15 @@ return apply_filters(
 			'description' => '',
 			'default'     => 'no',
 		],
-		'title'                            => [
-			'title'       => __( 'Title', 'woo-vipps-recurring' ),
-			'type'        => 'text',
-			'description' => __( 'This controls the title which the user sees during checkout.', 'woo-vipps-recurring' ),
-			'default'     => __( 'Vipps', 'woo-vipps-recurring' ),
+		'branding'                         => [
+			'title'       => __( 'Branding', 'woo-vipps-recurring' ),
+			'type'        => 'select',
+			'description' => __( 'Controls the payment flow branding (Vipps or MobilePay).', 'woo-vipps-recurring' ),
+			'default'     => 'vipps',
+			'options'     => [
+				'vipps'     => 'Vipps',
+				'mobilepay' => 'MobilePay'
+			]
 		],
 		'description'                      => [
 			'title'       => __( 'Description', 'woo-vipps-recurring' ),
@@ -24,7 +28,7 @@ return apply_filters(
 			'description' => __( 'This controls the description which the user sees during checkout.', 'woo-vipps-recurring' ),
 			'default'     => __( 'Pay with Vipps.', 'woo-vipps-recurring' ),
 		],
-		'merchant_serial_number'                 => [
+		'merchant_serial_number'           => [
 			'title'       => __( 'Merchant Serial Number (MSN)', 'woo-vipps-recurring' ),
 			'type'        => 'text',
 			'description' => __( 'Get your Merchant Serial Number your Vipps developer portal.', 'woo-vipps-recurring' ),

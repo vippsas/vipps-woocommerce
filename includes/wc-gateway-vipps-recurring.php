@@ -13,7 +13,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 	 */
 	class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		/**
-		 * Vipps merchant serial number
+		 * Which branding to use, will be one of: vipps, mobilepay
+		 */
+		public string $branding;
+
+		/**
+		 * Vipps MobilePay merchant serial number
 		 */
 		public string $merchant_serial_number;
 
@@ -53,7 +58,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public string $default_renewal_status;
 
 		/**
-		 * The default status pending orders that have yet to be captured (reserved charges in Vipps) should be given
+		 * The default status pending orders that have yet to be captured (reserved charges in Vipps MobilePay) should be given
 		 */
 		public string $default_reserved_charge_status;
 
@@ -85,7 +90,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		public WC_Vipps_Recurring_Api $api;
 
-		public ?bool $useHighPerformanceOrderStorage = null;
+		public ?bool $use_high_performance_order_storage = null;
 
 		/**
 		 * Returns the *Singleton* instance of this class.
@@ -105,14 +110,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 */
 		public function __construct() {
 			$this->id                 = 'vipps_recurring';
-			$this->method_title       = __( 'Vipps Recurring Payments', 'woo-vipps-recurring' );
-			$this->method_description = __( 'Vipps Recurring Payments works by redirecting your customers to the Vipps portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
+			$this->method_title       = __( 'Vipps MobilePay Recurring Payments', 'woo-vipps-recurring' );
+			$this->method_description = __( 'Vipps MobilePay Recurring Payments works by redirecting your customers to the Vipps MobilePay portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps-recurring' );
 			$this->has_fields         = true;
 
 			/*
 			 * Do not add 'multiple_subscriptions' to $supports.
-			 * Vipps Recurring API does not have any concept of multiple line items at the time of writing this.
-			 * It could technically be possible to support this, but it's very confusing for a customer in the Vipps app.
+			 * Vipps MobilePay Recurring API does not have any concept of multiple line items at the time of writing this.
+			 * It could technically be possible to support this, but it's very confusing for a customer in the Vipps MobilePay app.
 			 * There are a lot of edge cases to think about in order to support this functionality too,
 			 * 'process_payment' would have to be rewritten entirely.
 			 */
@@ -135,7 +140,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// Load the settings.
 			$this->init_settings();
 
-			$this->title                            = $this->get_option( 'title' );
+			$this->branding                         = $this->get_option( 'branding' );
+			$this->title                            = $this->get_form_fields()['branding']['options'][ $this->branding ];
 			$this->description                      = $this->get_option( 'description' );
 			$this->enabled                          = $this->get_option( 'enabled' );
 			$this->test_mode                        = WC_VIPPS_RECURRING_TEST_MODE;
@@ -149,7 +155,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
 			$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
-			$this->order_button_text                = __( 'Pay with Vipps', 'woo-vipps-recurring' );
+			$this->order_button_text                = __( sprintf( 'Pay with %s', $this->title ), 'woo-vipps-recurring' );
 
 			$this->api_url = $this->test_mode ? 'https://apitest.vipps.no' : 'https://api.vipps.no';
 			$this->api     = new WC_Vipps_Recurring_Api( $this );
@@ -165,7 +171,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			/*
 			 * We have to remove the status corresponding to `$this->default_reserved_charge_status` otherwise we end up
-			 * prematurely capturing this reserved Vipps charge
+			 * prematurely capturing this reserved Vipps MobilePay charge
 			 */
 			$capture_status_transition_id = array_search( str_replace( 'wc-', '', $this->default_reserved_charge_status ), $capture_statuses, true );
 			if ( $capture_status_transition_id ) {
@@ -211,9 +217,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			], 10, 2 );
 
 			/*
-			 * When changing the payment method for a WooCommerce Subscription to Vipps, let WooCommerce Subscription
+			 * When changing the payment method for a WooCommerce Subscription to Vipps MobilePay, let WooCommerce Subscription
 			 * know that the payment method for that subscription should not be changed immediately. Instead, it should
-			 * wait for the go ahead in cron, after the user confirmed the payment method change with Vipps.
+			 * wait for the go ahead in cron, after the user confirmed the payment method change with Vipps MobilePay.
 			 */
 			add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [
 				$this,
@@ -264,7 +270,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			add_action( 'woocommerce_order_after_calculate_totals', [ $this, 'update_agreement_price_in_app' ], 10, 2 );
 
-			// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps API
+			// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps MobilePay API
 			// Unless we whitelist the domains specifically
 			add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
 				$hosts[] = 'api.vipps.no';
@@ -275,7 +281,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		}
 
 		/**
-		 * Indicate to WooCommerce Subscriptions that the payment method change for Vipps Recurring Payments
+		 * Indicate to WooCommerce Subscriptions that the payment method change for Vipps MobilePay Recurring Payments
 		 * should be asynchronous.
 		 *
 		 * WC_Subscriptions_Change_Payment_Gateway::change_payment_method_via_pay_shortcode uses the
@@ -283,7 +289,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * right away or not.
 		 *
 		 * In our case, the payment method will not be updated until after the user confirms the
-		 * payment method change with Vipps. Once that's done, we'll take care of finishing
+		 * payment method change with Vipps MobilePay. Once that's done, we'll take care of finishing
 		 * the payment method update with the subscription.
 		 *
 		 * @param bool $should_update Current value of whether the payment method should be updated immediately.
@@ -429,14 +435,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * This function is used for backwards compatibility in certain places
 		 */
 		public function useHighPerformanceOrderStorage(): bool {
-			if ( $this->useHighPerformanceOrderStorage === null ) {
-				$this->useHighPerformanceOrderStorage = function_exists( 'wc_get_container' ) &&  // 4.4.0
-														function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
-														class_exists( "Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController" ) &&
-														wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+			if ( $this->use_high_performance_order_storage === null ) {
+				$this->use_high_performance_order_storage = function_exists( 'wc_get_container' ) &&  // 4.4.0
+															function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
+															class_exists( "Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController" ) &&
+															wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
 			}
 
-			return $this->useHighPerformanceOrderStorage;
+			return $this->use_high_performance_order_storage;
 		}
 
 		/**

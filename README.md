@@ -1,19 +1,19 @@
 <!-- START_METADATA
 ---
-title: Vipps Recurring Payments for WooCommerce
+title: Vipps MobilePay Recurring Payments for WooCommerce
 sidebar_position: 1
 pagination_next: null
 pagination_prev: null
 ---
 END_METADATA -->
 
-# Vipps Recurring Payments for WooCommerce
+# Vipps MobilePay Recurring Payments for WooCommerce
 
 ![Support and development by Everyday ](./docs/images/everyday.svg#gh-light-mode-only)![Support and development by Everyday](./docs/images/everyday_dark.svg#gh-dark-mode-only)
 
 ![Vipps](./docs/images/vipps.png) *Available for Vipps.*
 
-![MobilePay](./docs/images/mp.png) *Available for MobilePay in Finland and Denmark in Q1 2024.*
+![MobilePay](./docs/images/mp.png) *Available for MobilePay*
 
 *This plugin is built and maintained by [Everyday AS](https://everyday.no) and is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).*
 
@@ -22,14 +22,14 @@ END_METADATA -->
 <!-- END_COMMENT -->
 
 This is the official
-[Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
+[Vipps MobilePay Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
 plugin for
 [WooCommerce](https://woocommerce.com).
-It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
+It is owned by [Vipps MobilePay](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
 
-Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
+Vipps MobilePay Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
-With Vipps Recurring Payments for WooCommerce you can:
+With Vipps MobilePay Recurring Payments for WooCommerce you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
@@ -44,7 +44,7 @@ for an overview.
 * [Requirements](#requirements)
 * [Getting started](#getting-started)
   * [Installation](#installation)
-  * [Retrieving Vipps API keys](#retrieving-vipps-api-keys)
+  * [Retrieving Vipps MobilePay API keys](#retrieving-vipps-mobilepay-api-keys)
   * [Configuration of the plugin](#configuration-of-the-plugin)
   * [Configuring products](#configuring-products)
 * [Extending the plugin](#extending-the-plugin)
@@ -64,19 +64,19 @@ for an overview.
 ## Getting started
 
 * Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
-* Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
+* Vipps MobilePay will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
 * Proceed to [Installation](#installation).
 
 ### Installation
 
 1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
-2. Enable the *Vipps Recurring Payments* ("Vipps faste betalinger") payment method in WooCommerce: *Settings* > *Payments* ("Betalinger").
+2. Enable the *Vipps MobilePay Recurring Payments* payment method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
 4. Proceed to [Retrieving Vipps API Keys](#retrieving-vipps-api-keys).
 
 ![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-1.png)
 
-### Retrieving Vipps API Keys
+### Retrieving Vipps MobilePay API Keys
 
 Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
@@ -90,7 +90,7 @@ Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys
 
 ### Configuring products
 
-Configuring products for use with the *Vipps Recurring Payments* plugin is not any
+Configuring products for use with the *Vipps MobilePay Recurring Payments* plugin is not any
 different from default WooCommerce, with one exception: The configuration for
 whether the product is virtual or physical is important to consider.
 
@@ -119,12 +119,12 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 
 `WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 4
 
-The amount of days Vipps will retry a charge for before it fails.
+The amount of days Vipps MobilePay will retry a charge for before it fails.
 See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-guide/#charge-retries) for more information.
 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
 
-Enables someone with access to Vipps developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
+Enables someone with access to Vipps MobilePay developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
 
 ## Actions
 
@@ -136,9 +136,9 @@ Available actions:
 
 Available filters:
 
-`wc_vipps_recurring_supported_currencies(array $currencies)` - Takes an array of supported currencies in ISO 4217 format (like NOK). Vipps only supports NOK at the moment.
+`wc_vipps_recurring_supported_currencies(array $currencies)` - Takes an array of supported currencies in ISO 4217 format (like NOK).
 
-`wc_vipps_recurring_payment_icons(array $icons)` - Takes an array of icons that a WooCommerce payment gateway can have. Currently, it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps' design specifications.
+`wc_vipps_recurring_payment_icons(array $icons)` - Takes an array of icons that a WooCommerce payment gateway can have. Currently, it only contains `vipps`, you can replace the image passed here if you want. It is however not recommended unless it follows Vipps MobilePay's design specifications.
 
 `wc_vipps_recurring_show_capture_button(bool $show_capture_button, WC_Order $order)` - Decides whether the direct capture button shall be displayed on an order or not. Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current value for displaying the capture button or not. `$order` contains the current `WC_Order` being viewed.
 
@@ -148,15 +148,15 @@ Available filters:
 
 `wc_vipps_recurring_transaction_id_for_order(string $transaction_id, WC_Order $order)` - Determines the return value of `WC_Vipps_Recurring_Helper::get_transaction_id_for_order`
 
-`wc_vipps_recurring_create_agreement_data(array $data)` - Allows you to alter the request body sent to the Vipps API when a new agreement is being created.
+`wc_vipps_recurring_create_agreement_data(array $data)` - Allows you to alter the request body sent to the Vipps MobilePay API when a new agreement is being created.
 
-`wc_vipps_recurring_update_agreement_data(array $data)` - Allows you to alter the request body sent to the Vipps API when an agreement is being updated.
+`wc_vipps_recurring_update_agreement_data(array $data)` - Allows you to alter the request body sent to the Vipps MobilePay API when an agreement is being updated.
 
-`wc_vipps_recurring_cancel_agreement_data(array $data)` - Allows you to alter the request body sent to the Vipps API when an agreement is cancelled.
+`wc_vipps_recurring_cancel_agreement_data(array $data)` - Allows you to alter the request body sent to the Vipps MobilePay API when an agreement is cancelled.
 
-`wc_vipps_recurring_create_charge_data(array $data)` - Allows you to alter the request body sent to the Vipps API when a new charge is being created.
+`wc_vipps_recurring_create_charge_data(array $data)` - Allows you to alter the request body sent to the Vipps MobilePay API when a new charge is being created.
 
-`wc_vipps_recurring_process_payment_agreement(WC_Vipps_Agreement $agreement, WC_Subscription $subscription, WC_Order $order)` - Allows you to modify the Vipps agreement before we send the request to the Vipps API. Includes subscription and order in case you need to make some custom logic.
+`wc_vipps_recurring_process_payment_agreement(WC_Vipps_Agreement $agreement, WC_Subscription $subscription, WC_Order $order)` - Allows you to modify the Vipps MobilePay agreement before we send the request to the Vipps MobilePay API. Includes subscription and order in case you need to make some custom logic.
 
 ## Frequently Asked Questions
 
@@ -167,13 +167,13 @@ If your question is not answered on this page:
 * For help with the plugin, use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
 
 * The
-  [Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
+  [Vipps MobilePay Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
   may also be useful.
 
-### Does this plugin work alongside the Vipps for WooCommerce plugin?
+### Does this plugin work alongside the Vipps MobilePay Checkout for WooCommerce plugin?
 
 Yes! You can use this plugin at the same time as
-[Vipps for WooCommerce](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
+[Vipps MobilePay Checkout for WooCommerce](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
 
 ### Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 
@@ -186,21 +186,21 @@ and
 [WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
 are able to work together for access to recurring memberships that unlock content.
 
-**Please note:** *WooCommerce Subscriptions* is required in order to use *Vipps Recurring Payments for WooCommerce*, but *WooCommerce Memberships* is not.
+**Please note:** *WooCommerce Subscriptions* is required in order to use *Vipps MobilePay Recurring Payments for WooCommerce*, but *WooCommerce Memberships* is not.
 
 You can read about how *WooCommerce Subscriptions* and *WooCommerce Memberships* work together at
 [WooCommerce Memberships Subscriptions Integration](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
 
-### Where can I use Vipps?
+###  Where can I use Vipps MobilePay?
 
-Vipps is only available in Norway at the moment and only users who have Vipps will be able to pay with Vipps.
+Vipps MobilePay is available in Norway, Denmark and Finland. Only users who have Vipps Mobilepay will be able to pay with Vipps MobilePay.
 
 ### How can I test that the plugin works correctly?
 
-If you have access to the Vipps test environment, you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
+If you have access to the Vipps MobilePay test environment, you are able to use the test mode by setting the `WC_VIPPS_RECURRING_TEST_MODE` constant in `wp-config.php`.
 See the [getting started](https://developer.vippsmobilepay.com/docs/) guide for details about how to get started using the test environment.
 
-Vipps does not offer test accounts for regular users of the plugin, but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
+Vipps MobilePay does not offer test accounts for regular users of the plugin, but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
 You can then refund or cancel the purchase afterwards.
 
 ### Why do I have to capture payments for physical products manually?
@@ -210,11 +210,11 @@ This is because of the Norwegian law. You are not allowed to charge for a physic
 See
 [Guidelines for the standard sales conditions for consumer purchases of goods over the internet](https://www.forbrukertilsynet.no/english/guidelines/guidelines-the-standard-sales-conditions-consumer-purchases-of-goods-the-internet#chapter-7) for more information.
 
-If you have a valid reason to do so you can use the *Capture payment instantly* option from the *Vipps Recurring Payments* settings in your product's settings.
+If you have a valid reason to do so you can use the *Capture payment instantly* option from the *Vipps MobilePay Recurring Payments* settings in your product's settings.
 
 ### When a renewal happens, why is the order on hold?
 
-This is because when an order is charged in Vipps, it takes 2 days before the payment has been fully captured from the customer's bank account.
+This is because when an order is charged in Vipps MobilePay, it takes 2 days before the payment has been fully captured from the customer's bank account.
 
 After 2 days, it will move to the "Processing" status. You can however change the behavior of this by using the "Default status to give pending renewals" option in the plugin settings.
 
