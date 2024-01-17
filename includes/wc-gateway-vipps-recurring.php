@@ -1716,7 +1716,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			return apply_filters(
 				'wc_vipps_recurring_payment_icons',
 				[
-					'vipps' => '<img src="' . WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/vipps-logo.svg" class="vipps-recurring-icon" alt="Vipps" />',
+					'vipps' => '<img src="' . WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/vipps-mark.svg" class="vipps-recurring-icon" alt="Vipps" />',
 				]
 			);
 		}
@@ -1731,9 +1731,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public function get_icon(): string {
 			$icons = $this->payment_icons();
 
-			$icons_str = $icons['vipps'];
-
-			return apply_filters( 'woocommerce_gateway_icon', $icons_str, $this->id );
+			return apply_filters( 'woocommerce_gateway_icon', $icons['vipps'], $this->id );
 		}
 
 		/**

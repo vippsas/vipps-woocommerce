@@ -27,6 +27,20 @@ add_action( 'before_woocommerce_init', function () {
 	}
 } );
 
+// Declare compatibility with the WooCommerce checkout block
+add_action( 'woocommerce_blocks_loaded', function () {
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		require_once __DIR__ . '/includes/wc-vipps-recurring-blocks-support.php';
+
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
+			}
+		);
+	}
+} );
+
 add_action( 'plugins_loaded', 'woocommerce_gateway_vipps_recurring_init' );
 
 /**
@@ -819,6 +833,15 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function wp_enqueue_scripts() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
+
+				wp_register_script( 'woo-vipps-recurring', plugins_url( 'assets/js/vipps-recurring.js', __FILE__ ), [], filemtime( dirname( __FILE__ ) . "/assets/js/vipps-recurring.js" ), true );
+
+				$strings = [
+					'Vipps' => 'Vipps',
+					'Continue with %s' => sprintf(__('Continue with %s', 'woo-vipps-recurring'), 'Vipps')
+				];
+				wp_localize_script('woo-vipps-recurring', 'VippsRecurringLocale', $strings);
+				wp_enqueue_script( 'woo-vipps-recurring' );
 			}
 
 			/**
