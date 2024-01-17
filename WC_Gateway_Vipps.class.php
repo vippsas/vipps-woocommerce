@@ -957,6 +957,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    'description' => __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps')
                    ),
 
+                 'vippsorderattribution' => array(
+                     'title'       => __( 'Support WooCommerces Order Attribution API for Checkout and Express Checkout', 'woo-vipps' ),
+                     'label'       => __( 'Add support for Order Attribution', 'woo-vipps' ),
+                     'type'        => 'checkbox',
+                     'default'=> 'no',
+                     'description' => __('Turn this on to add support for Woos Order Attribution API for Checkout and Express Checkout. Some stores have reported problems when using this API together with Vipps, so be sure to test this if you turn it on.', 'woo-vipps'),
+),
+
                  'vippsspecialpagetemplate' => array(
                      'title'       => __( 'Override page template used for the special Vipps pages', 'woo-vipps' ),
                      'label'       => __( 'Use specific template for Vipps', 'woo-vipps' ),
