@@ -122,6 +122,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			 * 'process_payment' would have to be rewritten entirely.
 			 */
 			$this->supports = [
+				'products',
 				'subscriptions',
 				'refunds',
 				'subscription_cancellation',
