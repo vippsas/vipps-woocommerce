@@ -11,8 +11,7 @@ function registerVippsRecurringGateway() {
   const {applyFilters} = window.wp.hooks;
 
   const settings = getSetting('vipps_recurring_data', {});
-  const defaultLabel = VippsRecurringLocale['Vipps'];
-  const ariaLabel = decodeEntities(settings.title) || defaultLabel;
+  const ariaLabel = decodeEntities(settings.title);
   const logo = settings.logo;
 
   const Content = () => {

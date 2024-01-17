@@ -811,15 +811,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function wp_enqueue_scripts() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
-
-				wp_register_script( 'woo-vipps-recurring', plugins_url( 'assets/js/vipps-recurring.js', __FILE__ ), [], filemtime( dirname( __FILE__ ) . "/assets/js/vipps-recurring.js" ), true );
-
-				$strings = [
-					'Vipps' => 'Vipps',
-					'Continue with %s' => sprintf(__('Continue with %s', 'woo-vipps-recurring'), 'Vipps')
-				];
-				wp_localize_script('woo-vipps-recurring', 'VippsRecurringLocale', $strings);
-				wp_enqueue_script( 'woo-vipps-recurring' );
 			}
 
 			/**
