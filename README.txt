@@ -162,6 +162,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.18.0 =
+* Added: Support for WooCommerce checkout blocks. This allows Vipps Recurring Payments to be used with the new standard checkout.
+
 = 1.17.3 =
 * Fixed: No longer use the `wp_safe_remote_post` function and instead use `wp_remote_post` because it causes problems on some hosts, and our calls are to endpoints returned by Vipps MobilePay either way.
 
