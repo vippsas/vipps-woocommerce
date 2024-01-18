@@ -46,7 +46,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 ## How to get started
 
 * Sign up to use [*Vipps på Nett*](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/).
-* After 1-2 days, you will get an email with login details to Vipps Developer Portal, where you can get the API credentials.
+* After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
 
@@ -56,19 +56,18 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
    The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the *Plugins* screen on WordPress.
 3. Go to the *WooCommerce Settings* page, choose *Payment Gateways* (*Betalinger*), and enable Vipps.
-4. Go the *Settings* page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal. For information, see [How to get Vipps account keys from Vipps Developer Portal](#how-to-get-vipps-account-keys-from-vipps-developer-portal).
+4. Go the *Settings* page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Merchant Portal. For information, see [How to get account keys from Merchant Portal](#how-to-get-account-keys-from-merchant-portal).
 
-## How to get Vipps account keys from Merchant Portal
+## How to get account keys from Merchant Portal
 
-1. Sign in to the Vipps Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
-2. Select the *Utvikler* (*Developer*) tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
-3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret* and *Vipps Subscription Key*
+1. Sign in to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/).
+2. In the *Developer* section, choose *Production Keys*. Here you can find the merchant serial number (6 figures).
+3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret* and *Vipps Subscription Key*.
 
-For more information, see:
+See:
 
-* [Getting Started](https://developer.vippsmobilepay.com/docs/getting-started)
-* [API Keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys)
-* [eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq)
+* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/developer-resources/portal#logging-in)
+* [How to find the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal#how-to-find-the-api-keys).
 
 ## Screenshots
 
@@ -103,11 +102,9 @@ through TestFlight. See
 for more information.
 
 API keys for both the test and production environment are available on
-[portal.vippsmobilepay.com](https://portal.vippsmobilepay.com), where you log in with BankID.
+[portal.vippsmobilepay.com](https://portal.vippsmobilepay.com), where you log in.
 See [Getting the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal/#how-to-find-the-api-keys)
-and the
-[Getting started](https://developer.vippsmobilepay.com/docs/getting-started)
-guide for more information.
+for more information.
 
 To use test mode in WooCommerce, switch *Developer mode* on. There you can input
 the API keys for the test environment, and turn test mode on and off.
@@ -121,13 +118,13 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 For issues with your WooCommerce installation you should use the
 [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps).
-For other issues you should [contact Vipps](https://developer.vippsmobilepay.com/docs/contact).
+For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact).
 
-### Vipps FAQ
+### FAQ
 
 See the
-[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
-for more help with Vipps eCommerce.
+[Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
+for more help with Vipps MobilePay eCommerce.
 
 ## Requirements
 
