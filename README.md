@@ -1,13 +1,13 @@
 <!-- START_METADATA
 ---
-title: Vipps for WooCommerce plugin
+title: "Vipps/MobilePay for WooCommerce plugin"
 sidebar_position: 1
 pagination_next: null
 pagination_prev: null
 ---
 END_METADATA -->
 
-# Vipps for WooCommerce
+# Vipps/MobilePay for WooCommerce
 
 ![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
