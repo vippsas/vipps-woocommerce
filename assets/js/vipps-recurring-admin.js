@@ -52,7 +52,7 @@ jQuery(document).ready(function ($) {
           button.removeAttr('disabled');
           button.removeClass('disabled');
 
-          alert("Error performing Vipps Recurring action " + message + " " + error);
+          alert("Error performing Vipps/MobilePay Recurring action " + message + " " + error);
         },
         success: function() {
           window.location.reload();

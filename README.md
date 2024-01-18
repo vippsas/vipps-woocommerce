@@ -25,7 +25,7 @@ This is the official
 [Vipps/MobilePay Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
 plugin for
 [WooCommerce](https://woocommerce.com).
-It is owned by [Vipps MobilePay](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
+It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
 
 Vipps/MobilePay Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
@@ -44,7 +44,7 @@ for an overview.
 * [Requirements](#requirements)
 * [Getting started](#getting-started)
   * [Installation](#installation)
-  * [Retrieving Vipps MobilePay API keys](#retrieving-vipps-mobilepay-api-keys)
+  * [Retrieving Vipps/MobilePay API keys](#retrieving-vipps-mobilepay-api-keys)
   * [Configuration of the plugin](#configuration-of-the-plugin)
   * [Configuring products](#configuring-products)
 * [Extending the plugin](#extending-the-plugin)
@@ -69,10 +69,10 @@ for an overview.
 
 ### Installation
 
-1. Download and activate the plugin from this GitHub repository or [Vipps Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
+1. Download and activate the plugin from this GitHub repository or [Vipps/MobilePay Recurring Payments for WooCommerce on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
 2. Enable the *Vipps/MobilePay Recurring Payments* payment method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
-4. Proceed to [Retrieving Vipps API Keys](#retrieving-vipps-api-keys).
+4. Proceed to [Retrieving Vipps MobilePay API Keys](#retrieving-vipps-api-keys).
 
 ![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-1.png)
 
@@ -102,7 +102,7 @@ In most cases your products should be virtual when using subscriptions, but it i
 possible to use the plugin with physical products if you need to do so.
 
 See the
-[Vipps Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
+[Vipps/MobilePay Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
 for more details:
 [What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#what-is-the-difference-between-reserve-capture-and-direct-capture).
 
@@ -119,12 +119,12 @@ Constants can be re-defined by using `define('CONSTANT_NAME', 'value');` in `wp-
 
 `WC_VIPPS_RECURRING_RETRY_DAYS`: (integer) default: 4
 
-The amount of days Vipps MobilePay will retry a charge for before it fails.
+The amount of days Vipps/MobilePay will retry a charge for before it fails.
 See [Charge retries](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-guide/#charge-retries) for more information.
 
 `WC_VIPPS_RECURRING_TEST_MODE`: (boolean) default: false
 
-Enables someone with access to Vipps MobilePay developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
+Enables someone with access to Vipps/MobilePay developer keys to test the plugin. This is not available to regular users. See [#how-can-i-test-that-the-plugin-works-correctly](#how-can-i-test-that-the-plugin-works-correctly).
 
 ## Actions
 
@@ -201,7 +201,7 @@ If you have access to the Vipps MobilePay test environment, you are able to use 
 See the [getting started](https://developer.vippsmobilepay.com/docs/) guide for details about how to get started using the test environment.
 
 Vipps MobilePay does not offer test accounts for regular users of the plugin, but you can still penny-test the plugin by sending a small amount of money like 1 or 2 NOK using your production keys.
-You can then refund or cancel the purchase afterwards.
+You can then refund or cancel the purchase afterward.
 
 ### Why do I have to capture payments for physical products manually?
 

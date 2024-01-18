@@ -41,10 +41,11 @@ function registerVippsRecurringGateway() {
   };
 
   /**
-   * Vipps Recurring payment method config object.
+   * Vipps/MobilePay Recurring payment method config object.
    */
   const paymentMethod = {
     name: 'vipps_recurring',
+    // translators: %s: brand name, Vipps or MobilePay
     placeOrderButtonLabel: sprintf(__("Continue with %s", "woo-vipps-recurring"), settings.title),
     supports: {
       features: settings.supports || []

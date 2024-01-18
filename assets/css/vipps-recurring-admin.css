@@ -10,8 +10,15 @@
 }
 
 .notice-vipps-recurring {
-	border-left-color: #fe5b24;
 	min-height: 56px;
+}
+
+.notice-vipps-recurring.vipps {
+	border-left-color: #fe5b24;
+}
+
+.notice-vipps-recurring.mobilepay {
+	border-left-color: #5A78FF;
 }
 
 .notice-vipps-recurring__inner {
@@ -36,4 +43,16 @@
 
 .notice-vipps-recurring--login-promotion a {
 	color: #fff;
+}
+
+.capture-payment-button.vipps, .capture-payment-button.vipps:hover {
+	background-color: #ff5b24;
+	border-color: #ff5b24;
+	color: #ffffff;
+}
+
+.capture-payment-button.mobilepay, .capture-payment-button.mobilepay:hover {
+	background-color: #5A78FF;
+	border-color: #5A78FF;
+	color: #ffffff;
 }

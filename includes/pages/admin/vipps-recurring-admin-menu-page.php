@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
 
 <div class="wrap">
 	<h1>
-		<?php echo __( 'Vipps Recurring Payments', 'woo-vipps-recurring' ); ?>
+		<?php echo __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ); ?>
 	</h1>
 
 	<?php
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<div class="card">
 		<p>
-			<?php echo __( 'If you have a lot of Vipps subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it\'s job.', 'woo-vipps-recurring' ); ?>
+			<?php echo __( 'If you have a lot of Vipps/MobilePay subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it\'s job.', 'woo-vipps-recurring' ); ?>
 		</p>
 
 		<button
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 			type="submit"
 			id="check_charge_statuses_now"
 		>
-			<?php echo __( 'Check status of all Vipps subscription orders now', 'woo-vipps-recurring' ); ?>
+			<?php echo __( 'Check status of all Vipps/MobilePay subscription orders now', 'woo-vipps-recurring' ); ?>
 		</button>
 	</div>
 

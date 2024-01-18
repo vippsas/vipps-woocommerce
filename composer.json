@@ -5,7 +5,10 @@
     "description": "",
     "authors": [
         {
-            "name": "Vipps AS"
+            "name": "Everyday AS"
+        },
+      {
+            "name": "Vipps MobilePay AS"
         }
     ],
     "require": {

@@ -276,7 +276,7 @@ If you renew early, and you're not already using Vipps MobilePay you will be sen
 * Fixed: Now sets the correct order status for RESERVED payments when paying with Vipps MobilePay through KCO.
 
 = 1.12.4 =
-* Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps app or app-switch screen.
+* Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps/MobilePay app or app-switch screen.
 
 = 1.12.3 =
 * Fixed: Initial charge description no longer contains " + " when no extra products are purchased.
