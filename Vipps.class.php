@@ -4180,10 +4180,13 @@ EOF;
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
         $content .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
         $content .= "<input type='hidden' name='action' value='" . esc_attr($action) ."'>";
-        // This is for the new order attribution feature of woo. IOK 2024-01-09
-        ob_start();
-        do_action( 'woocommerce_after_order_notes');
-        $content .= ob_get_clean();
+        if ($this->gateway()->get_option('vippsorderattribution') == 'yes') {
+            // This is for the new order attribution feature of woo. IOK 2024-01-09
+            $content .= '<input type="hidden" id="vippsorderattribution" value="1" />';
+            ob_start();
+            do_action( 'woocommerce_after_order_notes');
+            $content .= ob_get_clean();
+        }
         $content .= wp_nonce_field('do_express','sec',1,false); 
 
         $termsHTML = '';

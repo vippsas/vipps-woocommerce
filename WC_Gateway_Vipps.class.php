@@ -1135,6 +1135,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    'description' => __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps')
                    ),
 
+                 'vippsorderattribution' => array(
+                     'title'       => __( 'Support WooCommerces Order Attribution API for Checkout and Express Checkout', 'woo-vipps' ),
+                     'label'       => __( 'Add support for Order Attribution', 'woo-vipps' ),
+                     'type'        => 'checkbox',
+                     'default'=> 'no',
+                     'description' => __('Turn this on to add support for Woos Order Attribution API for Checkout and Express Checkout. Some stores have reported problems when using this API together with Vipps, so be sure to test this if you turn it on.', 'woo-vipps'),
+),
+
                  'vippsspecialpagetemplate' => array(
                      'title'       => sprintf(__('Override page template used for the special %1$s pages', 'woo-vipps'), Vipps::CompanyName()),
                      'label'       => sprintf(__('Use specific template for %1$s', 'woo-vipps'), Vipps::CompanyName()),
@@ -3330,6 +3338,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
             do_action('woocommerce_checkout_update_order_meta', $orderid, array());
+
+            // It isn't possible to remove the javascript or 'after order notice' actions, because these are added as closures
+            // before anything else is run. But we can disable the hook that saves data. IOK 2024-01-18
+            if (WC_Gateway_Vipps::instance()->get_option('vippsorderattribution') != 'yes') {
+                remove_all_filters( 'woocommerce_order_save_attribution_data');
+            }
+
             // And another one. IOK 2021-11-24
             do_action('woocommerce_checkout_order_created', $order );
         } catch ( Exception $e ) {
