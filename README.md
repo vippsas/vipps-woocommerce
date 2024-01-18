@@ -1,13 +1,13 @@
 <!-- START_METADATA
 ---
-title: Vipps for WooCommerce plugin
+title: "Vipps/MobilePay for WooCommerce plugin"
 sidebar_position: 1
 pagination_next: null
 pagination_prev: null
 ---
 END_METADATA -->
 
-# Vipps for WooCommerce
+# Vipps/MobilePay for WooCommerce
 
 ![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
@@ -21,11 +21,13 @@ END_METADATA -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/). 💥
 <!-- END_COMMENT -->
 
-*Official Vipps Express Checkout and Payment for WooCommerce. More than 3.9 million Norwegians use Vipps. Give them a fast and familiar shopping experience.*
+*Official Vipps/MobilePay payment plugin for WooCommerce.* 
 
-This is the official Vipps plugin that provides a direct integration with the Vipps backend. Now you can let your customers choose Vipps directly in the checkout or even do an express checkout from the cart.
+*Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway. One platform gathering more than 11 million users and more than 400.000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.*
 
-You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
+This is the official Vipps/MobilePay plugin for payments, a complete Checkout and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
+
+You can do important backoffice tasks such as capture and refund directly from WooCommerce.
 
 For more information, see:
 
@@ -33,19 +35,38 @@ For more information, see:
 * [Vipps.no: We have these WooCommerce plugins available](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/)
 * [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
+## Checkout
+
+With Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed and run by Vipps MobilePay.
+Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
+For Finland it is also possible to activate bank transfer as a payment method, with some restrictions.
+VISA/MasterCard payments will be coming soon for MobilePay.
+
 ## Vipps Express Checkout
 
-When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
+When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps app.
 
-Since Vipps knows who the customers are, they don't have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
+Since Vipps knows who the customers are, they don’t have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
 
-## Vipps Payment
+The express checkout can be done in the following ways:
+* From the cart
+* From the category pages
+* From the product page
+* From shareable links distributed by email, banners etc
+* From QR codes distributed digitally or in print
+	
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
+Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
-When you enable this plugin, your customers will be able to choose Vipps as a payment method directly in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps, she fills in her name and address and is then asked to enter her phone number in the Vipps dialogue. Then she confirms the payment in the Vipps app.
+Express checkout buttons is only available with Vipps. Coming later 2024 for MobilePay.
+
+## Single Payments
+
+When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the checkout. There is no need to go via a third party payment method. When choosing Vipps/MobilePay, user fills in name and address and is then asked to enter phone number in the Vipps/MobilePay landing page. User confirms the payment in the Vipps or MobilePay app.
 
 ## How to get started
 
-* Sign up to use [*Vipps på Nett*](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/).
+* Sign up for a merchant agreement and product order from [Vipps MobilePay merchant portal](https://portal.vippsmobilepay.com).
 * After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
