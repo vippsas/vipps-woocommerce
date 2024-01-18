@@ -80,8 +80,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Support Order Attribution in Vipps Checkout and Express Checkout, if selected in the "Advanced" settings.
-NB: There has been reports of memory-related crashes when doing this.
-Minor fixes
+NB: There has been reports of memory-related crashes when doing this, so be sure to test!
 
 == Frequently Asked Questions ==
 
