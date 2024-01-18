@@ -8,18 +8,18 @@ msgstr ""
 "Language: fi\n"
 "Language-Team: Finnish\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"PO-Revision-Date: 2024-01-17 19:14+0000"
+"PO-Revision-Date: 2024-01-18 13:34+0000"
 
-#: WC_Gateway_Vipps.class.php:2309
+#: WC_Gateway_Vipps.class.php:2317
 msgid " - no status retrievable"
 msgstr " - tila ei ole haettavissa"
 
-#: WC_Gateway_Vipps.class.php:2151
+#: WC_Gateway_Vipps.class.php:2159
 msgid " - order does not need processing"
 msgstr " - tilaus ei tarvitse käsittelyä"
 
 #: WC_Gateway_Vipps.class.php:652 WC_Gateway_Vipps.class.php:669
-#: WC_Gateway_Vipps.class.php:1723
+#: WC_Gateway_Vipps.class.php:1731
 #, php-format
 msgid " refunded through %1$s:"
 msgstr " palautetaan %1$s:n kautta:"
@@ -28,7 +28,7 @@ msgstr " palautetaan %1$s:n kautta:"
 msgid "\"Buy now\" compatibility mode"
 msgstr "\"Osta nyt\" -yhteensopivuustila"
 
-#: WC_Gateway_Vipps.class.php:1006 WC_Gateway_Vipps.class.php:3711
+#: WC_Gateway_Vipps.class.php:1006 WC_Gateway_Vipps.class.php:3726
 #: VippsCheckout.class.php:538 VippsKCSupport.class.php:64 Vipps.class.php:962
 #: Vipps.class.php:987 Vipps.class.php:1159 Vipps.class.php:1159
 #: Vipps.class.php:1194 Vipps.class.php:1207 Vipps.class.php:1348
@@ -52,23 +52,23 @@ msgstr ""
 msgid "%1$s Buy Now button"
 msgstr "%1$s Osta nyt -painike"
 
-#: WC_Gateway_Vipps.class.php:2949
+#: WC_Gateway_Vipps.class.php:2957
 #, php-format
 msgid "%1$s callback for unknown order"
 msgstr "%1$s callback tuntemattomalle tilaukselle"
 
-#: WC_Gateway_Vipps.class.php:3010
+#: WC_Gateway_Vipps.class.php:3018
 #, php-format
 msgid "%1$s callback received"
 msgstr "%1$s takaisinsoitto vastaanotettu"
 
-#: WC_Gateway_Vipps.class.php:2944
+#: WC_Gateway_Vipps.class.php:2952
 #, php-format
 msgid "%1$s callback with wrong merchantSerialNumber - might be forged"
 msgstr ""
 "%1$s callback, jossa on väärä merchantSerialNumber - saattaa olla väärennetty"
 
-#: WC_Gateway_Vipps.class.php:3045
+#: WC_Gateway_Vipps.class.php:3053
 #, php-format
 msgid "%1$s callback: Handling order: "
 msgstr "%1$s callback: Käsittelyjärjestys: "
@@ -82,12 +82,12 @@ msgstr ""
 "%1$s-konfiguraatio ei ole vielä valmis - sinun on haettava avaimesi %1$s "
 "portaalista ja syötettävä ne <a href='%2$s'>asetussivulla</a>"
 
-#: WC_Gateway_Vipps.class.php:3439
+#: WC_Gateway_Vipps.class.php:3454
 #, php-format
 msgid "%1$s does not support your currency."
 msgstr "%1$s ei tue valuuttaasi."
 
-#: Vipps.class.php:4231
+#: Vipps.class.php:4234
 #, php-format
 msgid "%1$s Express Checkout"
 msgstr "%1$s Pikakassa"
@@ -115,7 +115,7 @@ msgstr ""
 "%1$s on <b>asennettu ja aktiivinen</b>. Voit määrittää laajennuksen sen <a "
 "href='%2$s'>asetussivulla</a>"
 
-#: WC_Gateway_Vipps.class.php:739 WC_Gateway_Vipps.class.php:3460
+#: WC_Gateway_Vipps.class.php:739 WC_Gateway_Vipps.class.php:3475
 #, php-format
 msgid ""
 "%1$s is a new service from %2$s which replaces the usual WooCommerce "
@@ -163,7 +163,7 @@ msgstr ""
 "%1$s on asennettu, mutta ei ole aktiivinen. Aktivoi se <a href='%2$s'>"
 "lisäosat-sivulla</a>"
 
-#: WC_Gateway_Vipps.class.php:3246
+#: WC_Gateway_Vipps.class.php:3254
 #, php-format
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr "%1$s ei ole kuva, jonka voi ladata osoitteeseen %2$s"
@@ -178,8 +178,8 @@ msgstr "%1$s ei ole saatavilla tähän tilaukseen"
 msgid "%1$s is not installed. You can install it <a href='%2$s'>here!</a>"
 msgstr "%1$s ei ole asennettu. Voit asentaa sen <a href='%2$s'>täältä!</a>"
 
-#: WC_Gateway_Vipps.class.php:660 WC_Gateway_Vipps.class.php:1628
-#: WC_Gateway_Vipps.class.php:1714 WC_Gateway_Vipps.class.php:1760
+#: WC_Gateway_Vipps.class.php:660 WC_Gateway_Vipps.class.php:1636
+#: WC_Gateway_Vipps.class.php:1722 WC_Gateway_Vipps.class.php:1768
 #: Vipps.class.php:3465 Vipps.class.php:3610 Vipps.class.php:4144
 #, php-format
 msgid "%1$s is temporarily unavailable."
@@ -220,7 +220,7 @@ msgstr ""
 "%1$s On-Site Messaging sisältää eri variantteina olevia <em>merkkejä</em>, "
 "joita voit käyttää kertomaan asiakkaille, että %1$s-maksu on hyväksytty."
 
-#: WC_Gateway_Vipps.class.php:2282 WC_Gateway_Vipps.class.php:2308
+#: WC_Gateway_Vipps.class.php:2290 WC_Gateway_Vipps.class.php:2316
 #, php-format
 msgid ""
 "%1$s Order with no order status, so session was never completed; setting "
@@ -229,37 +229,37 @@ msgstr ""
 "%1$s Tilaus, jolla ei ole tilauksen tilaa, joten istuntoa ei koskaan "
 "suoritettu loppuun; tila asetetaan peruuntuneeksi"
 
-#: VippsCheckout.class.php:669
+#: VippsCheckout.class.php:672
 #, php-format
 msgid "%1$s Page"
 msgstr "%1$s Sivu"
 
-#: WC_Gateway_Vipps.class.php:1797
+#: WC_Gateway_Vipps.class.php:1805
 #, php-format
 msgid "%1$s Payment cancelled:"
 msgstr "%1$s Maksu peruutettu:"
 
-#: WC_Gateway_Vipps.class.php:1647 WC_Gateway_Vipps.class.php:1659
+#: WC_Gateway_Vipps.class.php:1655 WC_Gateway_Vipps.class.php:1667
 #, php-format
 msgid "%1$s Payment captured:"
 msgstr "%1$s Maksu kaapattu:"
 
-#: WC_Gateway_Vipps.class.php:1500 VippsCheckout.class.php:290
+#: WC_Gateway_Vipps.class.php:1508 VippsCheckout.class.php:290
 #, php-format
 msgid "%1$s payment initiated"
 msgstr "%1$s maksu käynnistetty"
 
-#: WC_Gateway_Vipps.class.php:1869
+#: WC_Gateway_Vipps.class.php:1877
 #, php-format
 msgid "%1$s Payment Refunded:"
 msgstr "%1$s Maksu palautettu:"
 
-#: WC_Gateway_Vipps.class.php:1848
+#: WC_Gateway_Vipps.class.php:1856
 #, php-format
 msgid "%1$s payment refunded:"
 msgstr "%1$s maksu palautettu:"
 
-#: WC_Gateway_Vipps.class.php:1418
+#: WC_Gateway_Vipps.class.php:1426
 #, php-format
 msgid "%1$s payment restarted"
 msgstr "%1$s maksu käynnistetty uudelleen"
@@ -274,7 +274,7 @@ msgstr "%1$s QR-koodi"
 msgid "%1$s QR Codes"
 msgstr "%1$s QR-koodit"
 
-#: WC_Gateway_Vipps.class.php:3449
+#: WC_Gateway_Vipps.class.php:3464
 #, php-format
 msgid "%1$s requires that your site uses HTTPS."
 msgstr "%1$s edellyttää, että sivustosi käyttää HTTPS:ää."
@@ -323,7 +323,7 @@ msgstr "%1$s istunto %2$d on poissa"
 msgid "%1$s Shipping Methods"
 msgstr "%1$s Toimitustavat"
 
-#: WC_Gateway_Vipps.class.php:3441
+#: WC_Gateway_Vipps.class.php:3456
 #, php-format
 msgid "%1$s supported currencies: %2$s"
 msgstr "%1$s tuetut valuutat: %2$s"
@@ -335,13 +335,13 @@ msgstr "%1$s tuetut valuutat: %2$s"
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
-#: VippsCheckout.class.php:577
+#: VippsCheckout.class.php:580
 #, php-format
 msgid "%1$s: cart changed while session %2$d in progress - now cancelled"
 msgstr ""
 "%1$s: ostoskoria muutettiin istunnon %2$d ollessa käynnissä - nyt peruutettu"
 
-#: WC_Gateway_Vipps.class.php:2790
+#: WC_Gateway_Vipps.class.php:2798
 #, php-format
 msgid ""
 "%1$s: Could not deserialize the chosen shipping method %2$s for order %3$d"
@@ -402,7 +402,7 @@ msgstr ""
 "<p>%1$s ei ole vielä määritetty oikein: siirry <a href='%2$s'>%1$s-"
 "asetuksiin</a> viimeistelläksesi asetukset:<br> %3$s</p>"
 
-#: WC_Gateway_Vipps.class.php:2309
+#: WC_Gateway_Vipps.class.php:2317
 msgid "Abandonded by customer"
 msgstr "Asiakas on hylännyt sopimuksen"
 
@@ -507,6 +507,10 @@ msgstr "Lisää uusi QR-koodi"
 msgid "Add support for %1$s Senere, if your store provides it"
 msgstr "Lisää tuki %1$s Senere -palvelulle, jos myymäläsi tarjoaa sen"
 
+#: WC_Gateway_Vipps.class.php:1140
+msgid "Add support for Order Attribution"
+msgstr "Lisää tuki \"Order Attribution\" -toiminnolle"
+
 #: WC_Gateway_Vipps.class.php:1063
 #, php-format
 msgid "Add terms and conditions checkbox on %1$s"
@@ -604,7 +608,7 @@ msgstr ""
 "On tapahtunut virhe - lataa sivu uudelleen aloittaaksesi tapahtuman "
 "uudelleen tai palaa kauppaan"
 
-#: Vipps.class.php:4372
+#: Vipps.class.php:4375
 msgid ""
 "An error occured during order confirmation. The error has been logged. "
 "Please contact us to determine the status of your order"
@@ -616,12 +620,12 @@ msgstr ""
 msgid "An error occured while creating a shareable link"
 msgstr "Jakokelpoisen linkin luomisessa ilmeni virhe"
 
-#: WC_Gateway_Vipps.class.php:3005
+#: WC_Gateway_Vipps.class.php:3013
 #, php-format
 msgid "Anomalous callback from %1$s, handle errors and clean up"
 msgstr "Poikkeava takaisinsoitto %1$s:ltä, käsittele virheet ja siivoa asia"
 
-#: WC_Gateway_Vipps.class.php:2450
+#: WC_Gateway_Vipps.class.php:2458
 msgid "Anonymous customer"
 msgstr "Anonyymi asiakas"
 
@@ -654,7 +658,7 @@ msgstr "Pyydä käyttäjää antamaan suostumus käyttäjätietojen jakamiseen"
 msgid "Authorized"
 msgstr "Valtuutettu"
 
-#: WC_Gateway_Vipps.class.php:1501
+#: WC_Gateway_Vipps.class.php:1509
 #, php-format
 msgid "Awaiting %1$s payment confirmation"
 msgstr "Odotamme %1$s maksun vahvistusta"
@@ -663,7 +667,7 @@ msgstr "Odotamme %1$s maksun vahvistusta"
 msgid "Badges"
 msgstr "Nimilaput"
 
-#: WC_Gateway_Vipps.class.php:2021 WC_Gateway_Vipps.class.php:2499
+#: WC_Gateway_Vipps.class.php:2029 WC_Gateway_Vipps.class.php:2507
 #, php-format
 msgid "Bank Transfer/ %1$s"
 msgstr "Pankkisiirto/ %1$s"
@@ -681,7 +685,7 @@ msgstr "Osta nyt"
 msgid "Buy now with %1$s"
 msgstr "Osta nyt %1$s"
 
-#: Vipps.class.php:1284 Vipps.class.php:4228
+#: Vipps.class.php:1284 Vipps.class.php:4231
 #, php-format
 msgid "Buy now with %1$s!"
 msgstr "Osta nyt %1$s!"
@@ -742,7 +746,7 @@ msgstr ""
 msgid "Callback was:"
 msgstr "Takaisinsoitto oli:"
 
-#: WC_Gateway_Vipps.class.php:3109
+#: WC_Gateway_Vipps.class.php:3117
 #, php-format
 msgid "Callback: Payment cancelled at %1$s"
 msgstr "Takaisinsoitto: %1$s"
@@ -755,7 +759,7 @@ msgstr "Peruutettu"
 msgid "Cancelled amount"
 msgstr "Peruutettu määrä"
 
-#: VippsCheckout.class.php:618
+#: VippsCheckout.class.php:621
 #, php-format
 msgid "Cancelling Checkout order because order changed: %1$s"
 msgstr "Kassatilauksen peruuttaminen, koska tilaus muuttui: %1$s"
@@ -770,18 +774,18 @@ msgstr "Tilaukselle %1$d ei voida lisätä luokkaa: Ei vipps id:tä"
 msgid "Cannot add receipt for order %1$d: No vipps id present"
 msgstr "Kuittia ei voi lisätä tilaukselle %1$d: Ei vipps id:tä"
 
-#: WC_Gateway_Vipps.class.php:1739
+#: WC_Gateway_Vipps.class.php:1747
 #, php-format
 msgid "Cannot cancel a captured %1$s transaction - use refund instead"
 msgstr ""
 "Ei voi peruuttaa kaapattua %1$s-transaktiota - käytä sen sijaan palautusta"
 
-#: WC_Gateway_Vipps.class.php:1733
+#: WC_Gateway_Vipps.class.php:1741
 #, php-format
 msgid "Cannot cancel payment on orders not made by %1$s"
 msgstr "Ei voi peruuttaa maksua tilauksista, joita ei ole tehty %1$s mennessä"
 
-#: WC_Gateway_Vipps.class.php:1581
+#: WC_Gateway_Vipps.class.php:1589
 #, php-format
 msgid "Cannot capture payment on orders not made by %1$s"
 msgstr ""
@@ -792,22 +796,22 @@ msgstr ""
 msgid "Cannot create receipt for order %1$d: %2$s"
 msgstr "Kuittia ei voida luoda tilaukselle %1$d: %2$s"
 
-#: WC_Gateway_Vipps.class.php:2106
+#: WC_Gateway_Vipps.class.php:2114
 #, php-format
 msgid "Cannot get address information for %1$s order:"
 msgstr "Osoitetietoja ei saada %1$s-tilaukselle:"
 
-#: WC_Gateway_Vipps.class.php:1830
+#: WC_Gateway_Vipps.class.php:1838
 #, php-format
 msgid "Cannot refund bank transfer order %1$d"
 msgstr "Pankkisiirtotilausta %1$d ei voida palauttaa"
 
-#: WC_Gateway_Vipps.class.php:1680
+#: WC_Gateway_Vipps.class.php:1688
 #, php-format
 msgid "Cannot refund payment on orders not made by %1$s"
 msgstr "Ei voi palauttaa maksua tilauksista, joita ei ole tehty %1$s mennessä"
 
-#: WC_Gateway_Vipps.class.php:1672
+#: WC_Gateway_Vipps.class.php:1680
 msgid "Cannot refund superfluous capture on non-completed order:"
 msgstr "Ei voi korvata turhaa maksua suorittamattomasta tilauksesta:"
 
@@ -822,12 +826,12 @@ msgid "Cannot refund through %1$s - the refund amount is too large."
 msgstr ""
 "Palautusta ei voi tehdä %1$s:n kautta - palautuksen määrä on liian suuri."
 
-#: WC_Gateway_Vipps.class.php:1414
+#: WC_Gateway_Vipps.class.php:1422
 #, php-format
 msgid "Cannot restart order at %1$s"
 msgstr "Tilausta ei voida käynnistää uudelleen osoitteessa %1$s"
 
-#: WC_Gateway_Vipps.class.php:1471
+#: WC_Gateway_Vipps.class.php:1479
 msgid "Cannot restart order with same order ID: Must cancel"
 msgstr ""
 "Tilausta ei voi käynnistää uudelleen samalla tilaustunnuksella: Täytyy "
@@ -926,7 +930,7 @@ msgstr ""
 msgid "Checkout"
 msgstr "Kassa"
 
-#: WC_Gateway_Vipps.class.php:2307
+#: WC_Gateway_Vipps.class.php:2315
 #, php-format
 msgid ""
 "Checkout order older than 120 minutes with no order status - cancelled as "
@@ -987,12 +991,12 @@ msgid "Click to copy"
 msgstr "Klikkaa kopioidaksesi"
 
 #: WC_Gateway_Vipps.class.php:966 WC_Gateway_Vipps.class.php:968
-#: WC_Gateway_Vipps.class.php:1215 WC_Gateway_Vipps.class.php:1216
+#: WC_Gateway_Vipps.class.php:1223 WC_Gateway_Vipps.class.php:1224
 msgid "Client Id"
 msgstr "Asiakastunnus"
 
 #: WC_Gateway_Vipps.class.php:974 WC_Gateway_Vipps.class.php:975
-#: WC_Gateway_Vipps.class.php:1223 WC_Gateway_Vipps.class.php:1224
+#: WC_Gateway_Vipps.class.php:1231 WC_Gateway_Vipps.class.php:1232
 msgid "Client Secret"
 msgstr "Asiakassalaisuus"
 
@@ -1018,16 +1022,16 @@ msgstr "Vahvista tilauksesi"
 msgid "Confirm your order from"
 msgstr "Vahvista tilauksesi osoitteesta"
 
-#: WC_Gateway_Vipps.class.php:3539
+#: WC_Gateway_Vipps.class.php:3554
 #, php-format
 msgid "Connection to %1$s is OK"
 msgstr "Yhteys %1$s on OK"
 
-#: Vipps.class.php:4377
+#: Vipps.class.php:4380
 msgid "Continue"
 msgstr "Jatka"
 
-#: Vipps.class.php:4334 Vipps.class.php:4373 Vipps.class.php:4381
+#: Vipps.class.php:4337 Vipps.class.php:4376 Vipps.class.php:4384
 msgid "Continue shopping"
 msgstr "Jatka ostoksia"
 
@@ -1076,37 +1080,37 @@ msgstr ""
 msgid "Could not cancel %1$s payment"
 msgstr "Maksua %1$s ei voitu peruuttaa"
 
-#: WC_Gateway_Vipps.class.php:1763
+#: WC_Gateway_Vipps.class.php:1771
 #, php-format
 msgid "Could not cancel %1$s payment for order id:"
 msgstr "Ei voitu peruuttaa %1$s maksua tilauksen id. kohdalla:"
 
-#: WC_Gateway_Vipps.class.php:1759
+#: WC_Gateway_Vipps.class.php:1767
 #, php-format
 msgid "Could not cancel %1$s payment for order_id:"
 msgstr "Maksua %1$s ei voitu peruuttaa tilaus_id:n osalta:"
 
-#: WC_Gateway_Vipps.class.php:1564
+#: WC_Gateway_Vipps.class.php:1572
 #, php-format
 msgid "Could not capture %1$s payment - status set to"
 msgstr "Maksua %1$s ei voitu tallentaa - status asetettu tilaan"
 
-#: WC_Gateway_Vipps.class.php:1627
+#: WC_Gateway_Vipps.class.php:1635
 #, php-format
 msgid "Could not capture %1$s payment for order id:"
 msgstr "Maksua %1$s ei voitu tallentaa tilauksen id:lle:"
 
-#: WC_Gateway_Vipps.class.php:1631
+#: WC_Gateway_Vipps.class.php:1639
 #, php-format
 msgid "Could not capture %1$s payment for order_id:"
 msgstr "Maksua %1$s ei voitu tallentaa tilaus_id:lle:"
 
-#: WC_Gateway_Vipps.class.php:1560
+#: WC_Gateway_Vipps.class.php:1568
 #, php-format
 msgid "Could not capture %1$s payment for this order!"
 msgstr "Maksua %1$s ei voitu kirjata tähän tilaukseen!"
 
-#: WC_Gateway_Vipps.class.php:3541
+#: WC_Gateway_Vipps.class.php:3556
 #, php-format
 msgid "Could not connect to %1$s"
 msgstr "Yhteyttä %1$s:ään ei saatu muodostettua"
@@ -1121,7 +1125,7 @@ msgstr "Tilausta ei voitu luoda"
 msgid "Could not delete webhook for merchant serial number %1$s id %2$s: "
 msgstr "Kauppias sarjanumeron %1$s id %2$s webhookia ei voitu poistaa: "
 
-#: WC_Gateway_Vipps.class.php:3192
+#: WC_Gateway_Vipps.class.php:3200
 #, php-format
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
 msgstr ""
@@ -1143,35 +1147,35 @@ msgstr "%1$s ei löytänyt sopivia toimitustapoja - tilaus epäonnistuu"
 msgid "Could not find Woo order with id:"
 msgstr "Ei löydy Woo-tilausta tunnuksella id:"
 
-#: WC_Gateway_Vipps.class.php:2609
+#: WC_Gateway_Vipps.class.php:2617
 #, php-format
 msgid "Could not get %1$s order status"
 msgstr "Ei saatu %1$s tilauksen tilaa"
 
-#: WC_Gateway_Vipps.class.php:2598
+#: WC_Gateway_Vipps.class.php:2606
 #, php-format
 msgid "Could not get %1$s order status - it has no %1$s Order Id. Must cancel."
 msgstr ""
 "Ei saatu %1$s-tilauksen tilaa - sillä ei ole %1$s-tilaustunnusta. Täytyy "
 "peruuttaa."
 
-#: WC_Gateway_Vipps.class.php:2606 WC_Gateway_Vipps.class.php:2616
+#: WC_Gateway_Vipps.class.php:2614 WC_Gateway_Vipps.class.php:2624
 #, php-format
 msgid "Could not get %1$s order status for order id:"
 msgstr "Ei saatu %1$s tilauksen tilaa tilauksen id:lle:"
 
-#: WC_Gateway_Vipps.class.php:1364
+#: WC_Gateway_Vipps.class.php:1372
 #, php-format
 msgid "Could not get access token when initiating %1$s payment for order id:"
 msgstr ""
 "Käyttäjätunnusta ei saatu, kun aloitettiin %1$s-maksua tilauksen id:lle:"
 
-#: WC_Gateway_Vipps.class.php:2132
+#: WC_Gateway_Vipps.class.php:2140
 #, php-format
 msgid "Could not get address info for order from %1$s"
 msgstr "Osoitetietoja ei saatu %1$s:n tilaukselle"
 
-#: VippsCheckout.class.php:613
+#: VippsCheckout.class.php:616
 #, php-format
 msgid ""
 "Could not get Checkout status for order %1$s in progress while cancelling"
@@ -1179,7 +1183,7 @@ msgstr ""
 "Tilaus %1$s ei voinut saada kassan tilaa tilauksen %1$s ollessa käynnissä "
 "peruutuksen aikana"
 
-#: WC_Gateway_Vipps.class.php:2205 WC_Gateway_Vipps.class.php:2209
+#: WC_Gateway_Vipps.class.php:2213 WC_Gateway_Vipps.class.php:2217
 #, php-format
 msgid "Could not get order status from %1$s using epayment api: "
 msgstr "Tilauksen tilaa ei saatu %1$s:ltä käyttämällä epayment api:tä: "
@@ -1189,12 +1193,12 @@ msgstr "Tilauksen tilaa ei saatu %1$s:ltä käyttämällä epayment api:tä: "
 msgid "Could not get orderid of reference %2$s from %1$s: "
 msgstr "Viitteen %2$s tilaustunnusta ei saatu %1$s:stä: "
 
-#: WC_Gateway_Vipps.class.php:2217
+#: WC_Gateway_Vipps.class.php:2225
 #, php-format
 msgid "Could not get payment results for order %1$s"
 msgstr "Tilauksen %1$s maksutuloksia ei saatu"
 
-#: WC_Gateway_Vipps.class.php:2218
+#: WC_Gateway_Vipps.class.php:2226
 #, php-format
 msgid ""
 "Could not get payment results for order %1$s - you may have the wrong MSN "
@@ -1212,7 +1216,7 @@ msgstr "Tilauksen %1$s kuittitietoja ei saatu Vippsistä: "
 msgid "Could not get user email from order before thankyou-page"
 msgstr "Käyttäjän sähköpostia ei saatu tilauksesta ennen kiitos-sivua"
 
-#: WC_Gateway_Vipps.class.php:2330
+#: WC_Gateway_Vipps.class.php:2338
 #, php-format
 msgid ""
 "Could not get user info for order %1$d using the userinfo API: %2$s. Please "
@@ -1237,7 +1241,7 @@ msgstr "Kauppias Sarjanumero %1$s: %2$s ei saanut verkkokoukkuja %1$s:lle"
 msgid "Could not get webhooks for merchant serial number %1$s: "
 msgstr "Ei saatu verkkokoukkuja kauppiaan sarjanumerolle %1$s: "
 
-#: WC_Gateway_Vipps.class.php:1461 WC_Gateway_Vipps.class.php:1474
+#: WC_Gateway_Vipps.class.php:1469 WC_Gateway_Vipps.class.php:1482
 #, php-format
 msgid "Could not initiate %1$s payment"
 msgstr "Maksua %1$s ei voitu käynnistää"
@@ -1247,7 +1251,7 @@ msgstr "Maksua %1$s ei voitu käynnistää"
 msgid "Could not initiate %1$s session: %2$s"
 msgstr "%1$s istuntoa ei voitu aloittaa: %2$s"
 
-#: WC_Gateway_Vipps.class.php:2000
+#: WC_Gateway_Vipps.class.php:2008
 #, php-format
 msgid "Could not interpret %1$s order status"
 msgstr "Ei pystynyt tulkitsemaan %1$s tilauksen tilaa"
@@ -1256,12 +1260,12 @@ msgstr "Ei pystynyt tulkitsemaan %1$s tilauksen tilaa"
 msgid "Could not read image file: "
 msgstr "Kuvatiedostoa ei voitu lukea: "
 
-#: WC_Gateway_Vipps.class.php:662 WC_Gateway_Vipps.class.php:1716
+#: WC_Gateway_Vipps.class.php:662 WC_Gateway_Vipps.class.php:1724
 #, php-format
 msgid "Could not refund %1$s payment"
 msgstr "Maksua %1$s ei voitu palauttaa"
 
-#: WC_Gateway_Vipps.class.php:659 WC_Gateway_Vipps.class.php:1713
+#: WC_Gateway_Vipps.class.php:659 WC_Gateway_Vipps.class.php:1721
 #, php-format
 msgid "Could not refund %1$s payment for order id:"
 msgstr "Ei voitu palauttaa %1$s maksua tilauksen id:"
@@ -1323,8 +1327,8 @@ msgstr "Luotu"
 msgid "Created for this site"
 msgstr "Luotu tätä sivustoa varten"
 
-#: WC_Gateway_Vipps.class.php:2015 WC_Gateway_Vipps.class.php:2494
-#: WC_Gateway_Vipps.class.php:3056
+#: WC_Gateway_Vipps.class.php:2023 WC_Gateway_Vipps.class.php:2502
+#: WC_Gateway_Vipps.class.php:3064
 #, php-format
 msgid "Credit Card / %1$s"
 msgstr "Luottokortti / %1$s"
@@ -1376,7 +1380,7 @@ msgstr ""
 "Kuvaus maksutavasta %1$s. Tämä ohjaa kuvausta, jonka käyttäjä näkee "
 "kassalomakkeessa."
 
-#: WC_Gateway_Vipps.class.php:1192
+#: WC_Gateway_Vipps.class.php:1200
 msgid "Developer mode"
 msgstr "Kehittäjätila"
 
@@ -1421,7 +1425,7 @@ msgstr "Pudota osoitekentät kassanäytöltä"
 msgid "Drop the contact fields on the Checkout screen"
 msgstr "Pudota yhteystietokentät kassanäytöllä"
 
-#: WC_Gateway_Vipps.class.php:1470
+#: WC_Gateway_Vipps.class.php:1478
 #, php-format
 msgid ""
 "Duplicate Order ID! Please report this to support@wp-hosting.no together "
@@ -1451,7 +1455,7 @@ msgid "Enable Alternative %1$s screen, replacing the standard checkout page"
 msgstr ""
 "Ota käyttöön vaihtoehtoinen %1$s-näyttö, joka korvaa tavallisen kassasivun"
 
-#: WC_Gateway_Vipps.class.php:1180 WC_Gateway_Vipps.class.php:1181
+#: WC_Gateway_Vipps.class.php:1188 WC_Gateway_Vipps.class.php:1189
 msgid "Enable developer mode"
 msgstr "Ota kehittäjätila käyttöön"
 
@@ -1476,7 +1480,7 @@ msgstr "Ota staattinen toimitus käyttöön %1$s:lle"
 msgid "Enable static shipping for Express Checkout"
 msgstr "Ota käyttöön staattinen toimitus Express Checkout -palvelua varten"
 
-#: WC_Gateway_Vipps.class.php:1200
+#: WC_Gateway_Vipps.class.php:1208
 msgid "Enable test mode"
 msgstr "Ota testitila käyttöön"
 
@@ -1523,7 +1527,7 @@ msgstr ""
 "asennettuna \"Login with Vipps\", tämä on oletusarvo (ellet ole poistanut "
 "käyttäjän luomista käytöstä itse WooCommercessa)"
 
-#: WC_Gateway_Vipps.class.php:1183
+#: WC_Gateway_Vipps.class.php:1191
 msgid ""
 "Enable this to enter developer mode. This gives you access to the test-api "
 "and sometimes other tools not yet ready for general consumption"
@@ -1554,7 +1558,7 @@ msgstr "Virhe staattisen merenkulun laskennassa"
 msgid "Error calculating static shipping for order %1$s"
 msgstr "Virhe staattisen toimituksen laskemisessa tilaukselle %1$s"
 
-#: WC_Gateway_Vipps.class.php:3163
+#: WC_Gateway_Vipps.class.php:3171
 #, php-format
 msgid "Error calling the Order Management API: %1$s "
 msgstr "Virhe tilauksenhallinta-API:n kutsumisessa: %1$s "
@@ -1583,7 +1587,7 @@ msgstr "Virhe synkronoimattoman QR-koodin poistamisessa tunnuksella %1$s: %2$s"
 msgid "Error downloading QR code image: %1$s"
 msgstr "Virhe QR-koodin kuvan lataamisessa: %1$s"
 
-#: Vipps.class.php:4371
+#: Vipps.class.php:4374
 msgid "Error during order confirmation"
 msgstr "Virhe tilauksen vahvistuksen aikana"
 
@@ -1611,16 +1615,16 @@ msgstr "Virhe tilauksen tilan saamisessa %1$s:ssä tilaukselle %2$d"
 msgid "Error getting payment details before doing cancel: "
 msgstr "Virhe saada maksutiedot ennen peruutusta: "
 
-#: WC_Gateway_Vipps.class.php:1550
+#: WC_Gateway_Vipps.class.php:1558
 msgid "Error getting payment details before doing capture: "
 msgstr "Virhe maksutietojen saamisessa ennen kaappausta: "
 
 #: WC_Gateway_Vipps.class.php:566 WC_Gateway_Vipps.class.php:636
-#: WC_Gateway_Vipps.class.php:1688
+#: WC_Gateway_Vipps.class.php:1696
 msgid "Error getting payment details before doing refund: "
 msgstr "Virhe maksutietojen saamisessa ennen palautuksen tekemistä: "
 
-#: WC_Gateway_Vipps.class.php:2050
+#: WC_Gateway_Vipps.class.php:2058
 #, php-format
 msgid "Error getting payment details from %1$s for order_id:"
 msgstr "Virhe maksutietojen saamisessa %1$s:ltä tilaus_id:lle:"
@@ -1675,7 +1679,7 @@ msgstr "Ulkoinen maksutapa - %1$s"
 msgid "Featured Image"
 msgstr "Suositeltava kuva"
 
-#: WC_Gateway_Vipps.class.php:3247
+#: WC_Gateway_Vipps.class.php:3255
 #, php-format
 msgid "File type was %1$s; supported types are %2$s"
 msgstr "Tiedostotyyppi oli %1$s; tuettuja tyyppejä ovat %2$s"
@@ -1684,7 +1688,7 @@ msgstr "Tiedostotyyppi oli %1$s; tuettuja tyyppejä ovat %2$s"
 msgid "Filter items list"
 msgstr "Suodata kohteiden luettelo"
 
-#: WC_Gateway_Vipps.class.php:1538
+#: WC_Gateway_Vipps.class.php:1546
 #, php-format
 msgid ""
 "Filters are setting the payment_complete order status to '%1$s' - will not "
@@ -1695,48 +1699,67 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:970
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
-"and choose \"Show keys\". Copy the value of \"client_id\""
+"Find your account under the \"Developer\" tab on https://portal."
+"vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
-"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vippsmobilepay.com/ "
-"ja valitse \"Show keys\". Kopioi arvo \"client_id\""
+"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
+"vippsmobilepay.com/ ja valitse \"Show keys\". Kopioi arvo \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:978
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
-"and choose \"show keys\". Copy the value of \"client_secret\""
+"Find your account under the \"Developer\" tab on https://portal."
+"vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
+"\"client_secret\""
 msgstr ""
-"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vippsmobilepay.com/ "
-"ja valitse \"näytä avaimet\". Kopioi arvo \"client_secret\""
+"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
+"vippsmobilepay.com/ ja valitse \"näytä avaimet\". Kopioi arvo "
+"\"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:986
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
-"and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
+"Find your account under the \"Developer\" tab on https://portal."
+"vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Vipps-"
+"Subscription-Key\""
 msgstr ""
-"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vippsmobilepay.com/ "
-"ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-Subscription-Key\""
+"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
+"vippsmobilepay.com/ ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-"
+"Subscription-Key\""
 
-#: WC_Gateway_Vipps.class.php:1219
+#: WC_Gateway_Vipps.class.php:1227
+#, fuzzy
+#| msgid ""
+#| "Find your test account under the \"Developer\" tab on https://portal."
+#| "vipps.no/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgid ""
-"Find your test account under the \"Developer\" tab on https://portal.vipps."
-"no/ and choose \"Show keys\". Copy the value of \"client_id\""
+"Find your test account under the \"Developer\" tab on https://portal."
+"vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
 "Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
 "no/ ja valitse \"Show keys\". Kopioi arvo \"client_id\""
 
-#: WC_Gateway_Vipps.class.php:1227
+#: WC_Gateway_Vipps.class.php:1235
+#, fuzzy
+#| msgid ""
+#| "Find your test account under the \"Developer\" tab on https://portal."
+#| "vipps.no/ and choose \"show keys\". Copy the value of \"client_secret\""
 msgid ""
-"Find your test account under the \"Developer\" tab on https://portal.vipps."
-"no/ and choose \"show keys\". Copy the value of \"client_secret\""
+"Find your test account under the \"Developer\" tab on https://portal."
+"vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
+"\"client_secret\""
 msgstr ""
 "Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
 "no/ ja valitse \"näytä avaimet\". Kopioi arvo \"client_secret\""
 
-#: WC_Gateway_Vipps.class.php:1235
+#: WC_Gateway_Vipps.class.php:1243
+#, fuzzy
+#| msgid ""
+#| "Find your test account under the \"Developer\" tab on https://portal."
+#| "vipps.no/ and choose \"show keys\". Copy the value of \"Vipps-"
+#| "Subscription-Key\""
 msgid ""
-"Find your test account under the \"Developer\" tab on https://portal.vipps."
-"no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
+"Find your test account under the \"Developer\" tab on https://portal."
+"vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Vipps-"
+"Subscription-Key\""
 msgstr ""
 "Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
 "no/ ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-Subscription-Key\""
@@ -1820,7 +1843,7 @@ msgstr ""
 "tuotetietosivun %1$s-välilehdellä. Jos ei, asia on päinvastoin. Voit myös "
 "valita tietyn vaihtoehdon kyseisellä sivulla"
 
-#: WC_Gateway_Vipps.class.php:1166
+#: WC_Gateway_Vipps.class.php:1174
 #, php-format
 msgid ""
 "If set, this image will be uploaded to %1$s and used to profile your store "
@@ -1840,7 +1863,7 @@ msgstr ""
 "postitusta, emme yleensä kysy käyttäjän osoitetta - mutta valitse tämä "
 "valintaruutu, jos haluat tehdä sen kuitenkin."
 
-#: WC_Gateway_Vipps.class.php:1158
+#: WC_Gateway_Vipps.class.php:1166
 #, php-format
 msgid ""
 "If this is checked, a receipt will be sent to %1$s which will be viewable in "
@@ -1871,7 +1894,7 @@ msgstr ""
 "Jos teet näin, nämä menetelmät eivät näy Express Checkoutissa tai "
 "WooCommercen tavallisella kassasivulla."
 
-#: WC_Gateway_Vipps.class.php:1202
+#: WC_Gateway_Vipps.class.php:1210
 #, php-format
 msgid ""
 "If you enable this, transactions will be made towards the %1$s Test API "
@@ -2185,7 +2208,7 @@ msgid "Mark this link for deletion"
 msgstr "Merkitse tämä linkki poistettavaksi"
 
 #: WC_Gateway_Vipps.class.php:959 WC_Gateway_Vipps.class.php:960
-#: WC_Gateway_Vipps.class.php:1207 WC_Gateway_Vipps.class.php:1209
+#: WC_Gateway_Vipps.class.php:1215 WC_Gateway_Vipps.class.php:1217
 msgid "Merchant Serial Number"
 msgstr "Kauppiaan sarjanumero"
 
@@ -2194,12 +2217,12 @@ msgstr "Kauppiaan sarjanumero"
 msgid "Merchant Serial Number %1$s"
 msgstr "Kauppiaan sarjanumero %1$s"
 
-#: WC_Gateway_Vipps.class.php:2974
+#: WC_Gateway_Vipps.class.php:2982
 #, php-format
 msgid "Message from %1$s: %2$s"
 msgstr "Viesti %1$s: %2$s"
 
-#: WC_Gateway_Vipps.class.php:2973
+#: WC_Gateway_Vipps.class.php:2981
 #, php-format
 msgid "Message in callback from %1$s for order"
 msgstr "Viesti takaisinkutsussa %1$s:ltä tilaukselle"
@@ -2225,7 +2248,7 @@ msgstr "Nimi"
 msgid "New QR Code"
 msgstr "Uusi QR-koodi"
 
-#: WC_Gateway_Vipps.class.php:2136
+#: WC_Gateway_Vipps.class.php:2144
 #, php-format
 msgid ""
 "No address information for order %2$d, but there still might be an active "
@@ -2250,7 +2273,7 @@ msgstr "Ei tuotteita"
 msgid "No response from Vipps"
 msgstr "Ei vastausta Vippsiltä"
 
-#: WC_Gateway_Vipps.class.php:2127
+#: WC_Gateway_Vipps.class.php:2135
 #, php-format
 msgid "No shipping details from %1$s for express checkout for order id:"
 msgstr "Ei toimitustietoja %1$s pikakassalle tilauksen id:"
@@ -2263,7 +2286,7 @@ msgstr "Toimitusta ei tarvita"
 msgid "No, forget it"
 msgstr "Ei, unohda se"
 
-#: WC_Gateway_Vipps.class.php:3466
+#: WC_Gateway_Vipps.class.php:3481
 msgid "No, thank you not right now anyway"
 msgstr "Ei, kiitos, ei kuitenkaan juuri nyt"
 
@@ -2311,7 +2334,7 @@ msgstr "Operaatio"
 msgid "Orange"
 msgstr "Oranssi"
 
-#: WC_Gateway_Vipps.class.php:2131
+#: WC_Gateway_Vipps.class.php:2139
 #, php-format
 msgid ""
 "Order %2$d has no address info and any %1$s session is dead - have to cancel."
@@ -2319,7 +2342,7 @@ msgstr ""
 "Tilauksella %2$d ei ole osoitetietoja ja %1$s istunto on kuollut - on "
 "peruutettava."
 
-#: WC_Gateway_Vipps.class.php:1412
+#: WC_Gateway_Vipps.class.php:1420
 #, php-format
 msgid ""
 "Order %2$d was attempted restarted, but had no %1$s session url stored. "
@@ -2332,7 +2355,7 @@ msgstr ""
 msgid "Order cancel for order"
 msgstr "Tilauksen peruutus tilaukselle"
 
-#: Vipps.class.php:4333 Vipps.class.php:4336 Vipps.class.php:4380
+#: Vipps.class.php:4336 Vipps.class.php:4339 Vipps.class.php:4383
 msgid "Order cancelled"
 msgstr "Tilaus peruutettu"
 
@@ -2340,11 +2363,11 @@ msgstr "Tilaus peruutettu"
 msgid "Order capture for order"
 msgstr "Tilauksen kaappaus tilausta varten"
 
-#: Vipps.class.php:4376
+#: Vipps.class.php:4379
 msgid "Order confirmed"
 msgstr "Tilaus vahvistettu"
 
-#: WC_Gateway_Vipps.class.php:2612
+#: WC_Gateway_Vipps.class.php:2620
 #, php-format
 msgid "Order does not exist at %1$s - cancelling"
 msgstr "Tilausta ei ole olemassa osoitteessa %1$s - peruutus"
@@ -2353,7 +2376,7 @@ msgstr "Tilausta ei ole olemassa osoitteessa %1$s - peruutus"
 msgid "Order failed"
 msgstr "Tilaus epäonnistui"
 
-#: WC_Gateway_Vipps.class.php:2157
+#: WC_Gateway_Vipps.class.php:2165
 #, php-format
 msgid "Order failed or rejected at %1$s"
 msgstr "Tilaus epäonnistui tai hylättiin osoitteessa %1$s"
@@ -2362,20 +2385,20 @@ msgstr "Tilaus epäonnistui tai hylättiin osoitteessa %1$s"
 msgid "Order id"
 msgstr "Tilaus id"
 
-#: Vipps.class.php:4220
+#: Vipps.class.php:4223
 msgid "Order in progress"
 msgstr "Käynnissä oleva tilaus"
 
-#: WC_Gateway_Vipps.class.php:1673
+#: WC_Gateway_Vipps.class.php:1681
 msgid "Order not completed, cannot refund superfluous capture"
 msgstr "Tilaus ei ole valmis, ei voi palauttaa turhaa kaappausta"
 
-#: WC_Gateway_Vipps.class.php:1413
+#: WC_Gateway_Vipps.class.php:1421
 #, php-format
 msgid "Order session expired at %1$s, please try again!"
 msgstr "Tilaus istunto päättyi %1$s, yritä uudelleen!"
 
-#: VippsCheckout.class.php:619
+#: VippsCheckout.class.php:622
 msgid ""
 "Order specification changed - this order abandoned by customer in Checkout  "
 msgstr ""
@@ -2403,7 +2426,7 @@ msgstr "Ohita %1$s myöhemmin"
 msgid "Override default settings"
 msgstr "Ohita oletusasetukset"
 
-#: WC_Gateway_Vipps.class.php:1139
+#: WC_Gateway_Vipps.class.php:1147
 #, php-format
 msgid "Override page template used for the special %1$s pages"
 msgstr "Ohita sivumalli, jota käytetään erityissivuilla %1$s"
@@ -2435,7 +2458,7 @@ msgstr "Helthjemin antama salasana"
 msgid "Pay with %1$s for WooCommerce"
 msgstr "Maksa %1$s WooCommerce-kaupassa"
 
-#: WC_Gateway_Vipps.class.php:1598 WC_Gateway_Vipps.class.php:1606
+#: WC_Gateway_Vipps.class.php:1606 WC_Gateway_Vipps.class.php:1614
 msgid "Payment already captured"
 msgstr "Maksu on jo kirjattu"
 
@@ -2443,7 +2466,7 @@ msgstr "Maksu on jo kirjattu"
 msgid "Payment authorized"
 msgstr "Hyväksytty maksu"
 
-#: WC_Gateway_Vipps.class.php:3139
+#: WC_Gateway_Vipps.class.php:3147
 #, php-format
 msgid "Payment authorized at %1$s"
 msgstr "Maksu hyväksytty %1$s"
@@ -2452,12 +2475,12 @@ msgstr "Maksu hyväksytty %1$s"
 msgid "Payment captured"
 msgstr "Maksu kirjattu"
 
-#: WC_Gateway_Vipps.class.php:2150 WC_Gateway_Vipps.class.php:3105
+#: WC_Gateway_Vipps.class.php:2158 WC_Gateway_Vipps.class.php:3113
 #, php-format
 msgid "Payment captured directly at %1$s"
 msgstr "Maksu suoraan %1$s"
 
-#: WC_Gateway_Vipps.class.php:1539
+#: WC_Gateway_Vipps.class.php:1547
 #, php-format
 msgid ""
 "Payment complete set status to \"%1$s\" - will not capture payments "
@@ -2470,7 +2493,7 @@ msgstr ""
 msgid "Payment method"
 msgstr "Maksutapa"
 
-#: WC_Gateway_Vipps.class.php:1962
+#: WC_Gateway_Vipps.class.php:1970
 #, php-format
 msgid ""
 "Payment method reset to %1$s - it had been set to KCO while completing the "
@@ -2511,7 +2534,7 @@ msgstr ""
 msgid "Please refer to the documentation for the meaning of the parameters."
 msgstr "Katso parametrien merkitys asiakirjoista."
 
-#: Vipps.class.php:4218
+#: Vipps.class.php:4221
 msgid "Please wait while we are preparing your order"
 msgstr "Odota, kun valmistelemme tilaustasi"
 
@@ -2578,7 +2601,7 @@ msgstr "Tuote"
 msgid "Product is no longer available"
 msgstr "Tuote ei ole enää saatavilla"
 
-#: WC_Gateway_Vipps.class.php:1164
+#: WC_Gateway_Vipps.class.php:1172
 #, php-format
 msgid "Profile image used in the %1$s App"
 msgstr "%1$s-sovelluksessa käytetty profiilikuva"
@@ -2609,7 +2632,7 @@ msgstr "QR-tunnus"
 msgid "Raw input was "
 msgstr "Raaka tulo oli "
 
-#: Vipps.class.php:4214
+#: Vipps.class.php:4217
 #, php-format
 msgid "Ready for %1$s - press the button"
 msgstr "Valmis %1$s - paina painiketta"
@@ -2710,7 +2733,7 @@ msgstr "Valittu tuotevaihtoehto ei ole saatavilla"
 msgid "Selected product variant is not available for purchase"
 msgstr "Valittu tuotevaihtoehto ei ole ostettavissa"
 
-#: WC_Gateway_Vipps.class.php:1155
+#: WC_Gateway_Vipps.class.php:1163
 msgid ""
 "Send receipts and order confirmation info to the customers' app on completed "
 "purchases."
@@ -2718,12 +2741,12 @@ msgstr ""
 "Lähetä kuitit ja tilausvahvistustiedot asiakkaiden sovellukseen "
 "suoritetuista ostoksista."
 
-#: WC_Gateway_Vipps.class.php:1156
+#: WC_Gateway_Vipps.class.php:1164
 #, php-format
 msgid "Send receipts to the customers %1$s app"
 msgstr "Kuittien lähettäminen asiakkaille %1$s-sovellukseen"
 
-#: WC_Gateway_Vipps.class.php:2283
+#: WC_Gateway_Vipps.class.php:2291
 msgid "Session terminated with no payment"
 msgstr "Istunto päättyi ilman maksua"
 
@@ -2731,7 +2754,7 @@ msgstr "Istunto päättyi ilman maksua"
 msgid "Set featured image"
 msgstr "Aseta esillä oleva kuva"
 
-#: WC_Gateway_Vipps.class.php:1446
+#: WC_Gateway_Vipps.class.php:1454
 msgid "Setting order status to pending to start payment"
 msgstr "Tilauksen tilan asettaminen odottavaksi maksun aloittamiseksi"
 
@@ -2842,7 +2865,7 @@ msgstr ""
 msgid "Some products"
 msgstr "Jotkin tuotteet"
 
-#: WC_Gateway_Vipps.class.php:1151
+#: WC_Gateway_Vipps.class.php:1159
 #, php-format
 msgid ""
 "Some very few themes do not work with the simulated pages used by this "
@@ -2866,7 +2889,7 @@ msgstr ""
 "toimisi uudelleen!"
 
 #: WC_Gateway_Vipps.class.php:982 WC_Gateway_Vipps.class.php:983
-#: WC_Gateway_Vipps.class.php:1231 WC_Gateway_Vipps.class.php:1232
+#: WC_Gateway_Vipps.class.php:1239 WC_Gateway_Vipps.class.php:1240
 msgid "Subscription Key"
 msgstr "Tilausavain"
 
@@ -2909,6 +2932,12 @@ msgstr "Tue PostenNordia toimitustapana %1$s:ssä"
 msgid "Support Posti as a shipping method in %1$s"
 msgstr "Tue Postia toimitustapana %1$s:ssä"
 
+#: WC_Gateway_Vipps.class.php:1139
+msgid ""
+"Support WooCommerces Order Attribution API for Checkout and Express Checkout"
+msgstr ""
+"Tuki WooCommerces Order Attribution API kassalle ja Express Checkoutille"
+
 #: WC_Gateway_Vipps.class.php:581
 #, php-format
 msgid ""
@@ -2923,7 +2952,7 @@ msgstr ""
 msgid "Terminated"
 msgstr "Lopetettu"
 
-#: WC_Gateway_Vipps.class.php:1199 Vipps.class.php:427
+#: WC_Gateway_Vipps.class.php:1207 Vipps.class.php:427
 msgid "Test mode"
 msgstr "Testitila"
 
@@ -3048,7 +3077,7 @@ msgstr ""
 msgid "The Username provided to you by Helthjem"
 msgstr "Helthjemin sinulle antama käyttäjätunnus"
 
-#: WC_Gateway_Vipps.class.php:1707
+#: WC_Gateway_Vipps.class.php:1715
 msgid "The value of the order is less than the amount captured."
 msgstr "Tilauksen arvo on pienempi kuin otettu määrä."
 
@@ -3099,7 +3128,7 @@ msgstr "Tilausta ei ole tällä %1$s orderid-tunnuksella, callback epäonnistuu:
 msgid "There is no order with this order id, callback fails:"
 msgstr "Tällä tilausnumerolla ei ole tilausta, takaisinkutsu epäonnistuu:"
 
-#: WC_Gateway_Vipps.class.php:1195
+#: WC_Gateway_Vipps.class.php:1203
 msgid ""
 "These are settings for developers that contain extra features that are "
 "normally not useful for regular users, or are not yet ready for primetime"
@@ -3108,7 +3137,7 @@ msgstr ""
 "lisäominaisuuksia, jotka eivät yleensä ole hyödyllisiä tavallisille "
 "käyttäjille, tai jotka eivät ole vielä valmiita käyttöönotettaviksi"
 
-#: WC_Gateway_Vipps.class.php:1397
+#: WC_Gateway_Vipps.class.php:1405
 #, php-format
 msgid ""
 "This order cannot be paid with %1$s - please try another payment method or "
@@ -3117,7 +3146,7 @@ msgstr ""
 "Tätä tilausta ei voi maksaa %1$s - yritä toista maksutapaa tai yritä "
 "myöhemmin uudelleen"
 
-#: VippsCheckout.class.php:670
+#: VippsCheckout.class.php:673
 #, php-format
 msgid ""
 "This page is used for the alternative %1$s page, which you can choose to use "
@@ -3181,7 +3210,7 @@ msgstr ""
 msgid "Title to be display on site"
 msgstr "Sivustolla näytettävä otsikko"
 
-#: WC_Gateway_Vipps.class.php:3461
+#: WC_Gateway_Vipps.class.php:3476
 #, php-format
 msgid ""
 "To activate %1$s, just press the button below. Otherwise, %2$s will of "
@@ -3249,27 +3278,27 @@ msgstr "Tapahtumien yhteenveto"
 msgid "Transaction text"
 msgstr "Transaktioteksti"
 
-#: WC_Gateway_Vipps.class.php:1732
+#: WC_Gateway_Vipps.class.php:1740
 #, php-format
 msgid "Trying to cancel payment on order not made by %1$s:"
 msgstr "Yritän peruuttaa maksun tilauksesta, jota ei ole tehty %1$s mennessä:"
 
-#: WC_Gateway_Vipps.class.php:1580
+#: WC_Gateway_Vipps.class.php:1588
 #, php-format
 msgid "Trying to capture payment on order not made by %1$s:"
 msgstr "Yritetään saada maksu tilauksesta, jota ei ole tehty %1$s mennessä:"
 
-#: WC_Gateway_Vipps.class.php:1818
+#: WC_Gateway_Vipps.class.php:1826
 #, php-format
 msgid "Trying to refund payment on %1$s payment not captured:"
 msgstr "Yritän palauttaa maksun %1$s-maksusta, jota ei ole otettu talteen:"
 
-#: WC_Gateway_Vipps.class.php:1679 WC_Gateway_Vipps.class.php:1809
+#: WC_Gateway_Vipps.class.php:1687 WC_Gateway_Vipps.class.php:1817
 #, php-format
 msgid "Trying to refund payment on order not made by %1$s:"
 msgstr "Yritän palauttaa maksun tilauksesta, jota ei ole tehty %1$s mennessä:"
 
-#: WC_Gateway_Vipps.class.php:1396
+#: WC_Gateway_Vipps.class.php:1404
 #, php-format
 msgid ""
 "Trying to start order %1$s with status %2$s - only 'pending' and 'failed' "
@@ -3283,7 +3312,18 @@ msgstr ""
 msgid "Turn on support for %1$s On-site Messaging badges"
 msgstr "Ota käyttöön tuki %1$s On-site-viestimerkkejä varten"
 
-#: WC_Gateway_Vipps.class.php:1365 WC_Gateway_Vipps.class.php:1475
+#: WC_Gateway_Vipps.class.php:1143
+msgid ""
+"Turn this on to add support for Woos Order Attribution API for Checkout and "
+"Express Checkout. Some stores have reported problems when using this API "
+"together with Vipps, so be sure to test this if you turn it on."
+msgstr ""
+"Ota tämä käyttöön lisätäksesi tuen Woos Order Attribution API:lle Checkout- "
+"ja Express Checkout -palveluihin. Jotkut kaupat ovat raportoineet ongelmista,"
+" kun tätä API:ta on käytetty yhdessä Vippsin kanssa, joten muista testata "
+"tämä, jos otat sen käyttöön."
+
+#: WC_Gateway_Vipps.class.php:1373 WC_Gateway_Vipps.class.php:1483
 #, php-format
 msgid ""
 "Unfortunately, the %1$s payment method is currently unavailable. Please "
@@ -3292,7 +3332,7 @@ msgstr ""
 "Valitettavasti %1$s-maksutapa ei ole tällä hetkellä käytettävissä. Valitse "
 "toinen maksutapa."
 
-#: WC_Gateway_Vipps.class.php:1462
+#: WC_Gateway_Vipps.class.php:1470
 #, php-format
 msgid ""
 "Unfortunately, the %1$s payment method is temporarily unavailable. Please "
@@ -3319,7 +3359,7 @@ msgstr "Tuntematon virhe asiakas pikakassalla."
 msgid "Unknown operation"
 msgstr "Tuntematon toiminta"
 
-#: Vipps.class.php:1641 Vipps.class.php:4288
+#: Vipps.class.php:1641 Vipps.class.php:4291
 msgid "Unknown order"
 msgstr "Tuntematon tilaus"
 
@@ -3366,7 +3406,7 @@ msgstr "URL-osoite %1$s-logoon"
 msgid "Use %1$s as default payment method on checkout page"
 msgstr "Käytä %1$s oletusmaksutapaa kassasivulla"
 
-#: WC_Gateway_Vipps.class.php:3459
+#: WC_Gateway_Vipps.class.php:3474
 #, php-format
 msgid "Use %1$s for all purchases"
 msgstr "Käytä %1$s kaikkiin ostoksiin"
@@ -3376,11 +3416,11 @@ msgstr "Käytä %1$s kaikkiin ostoksiin"
 msgid "Use %1$s Later"
 msgstr "Käytä %1$s myöhemmin"
 
-#: WC_Gateway_Vipps.class.php:1148
+#: WC_Gateway_Vipps.class.php:1156
 msgid "Use a real page ID"
 msgstr "Käytä todellista sivun ID:tä"
 
-#: WC_Gateway_Vipps.class.php:1147
+#: WC_Gateway_Vipps.class.php:1155
 #, php-format
 msgid ""
 "Use a real page ID for the special %1$s pages - neccessary for some themes"
@@ -3400,7 +3440,7 @@ msgstr "Käytä esillä olevana kuvana"
 msgid "Use default template"
 msgstr "Käytä oletusmallia"
 
-#: WC_Gateway_Vipps.class.php:1172 WC_Gateway_Vipps.class.php:1173
+#: WC_Gateway_Vipps.class.php:1180 WC_Gateway_Vipps.class.php:1181
 msgid "Use flock() to lock orders for Express Checkout"
 msgstr ""
 "Käytä flock()-toimintoa tilausten lukitsemiseen Express Checkout -toimintoa "
@@ -3414,12 +3454,12 @@ msgstr "Käytä uutta lähetyssoittoa"
 msgid "Use old-style shipping callback for express checkout"
 msgstr "Käytä vanhan tyylisiä toimituskutsuja pikakassalle"
 
-#: WC_Gateway_Vipps.class.php:1140
+#: WC_Gateway_Vipps.class.php:1148
 #, php-format
 msgid "Use specific template for %1$s"
 msgstr "Käytä erityistä mallia %1$s:lle"
 
-#: WC_Gateway_Vipps.class.php:1175
+#: WC_Gateway_Vipps.class.php:1183
 msgid ""
 "Use the flock() system call to ensure orders are only finalized once. You "
 "can use this for normal setups, but probably not on Windows with IIS, and "
@@ -3434,7 +3474,7 @@ msgstr ""
 "on, älä luultavasti käytä sitä. Jos saat päällekkäisiä toimitusriviä "
 "joissakin pikatilauksissa, voit kokeilla käyttää seuraavaa"
 
-#: WC_Gateway_Vipps.class.php:1163
+#: WC_Gateway_Vipps.class.php:1171
 #, php-format
 msgid ""
 "Use this image for the order confirmation link uploaded to the customers' "
@@ -3443,7 +3483,7 @@ msgstr ""
 "Käytä tätä kuvaa asiakkaan %1$s-sovellukseen ladattavassa "
 "tilausvahvistuslinkissä"
 
-#: WC_Gateway_Vipps.class.php:1143
+#: WC_Gateway_Vipps.class.php:1151
 #, php-format
 msgid ""
 "Use this template from your theme or child-theme to display all the special "
@@ -3490,11 +3530,11 @@ msgstr "Näytä QR-koodit"
 msgid "Vipps"
 msgstr "Vipps"
 
-#: WC_Gateway_Vipps.class.php:3300 Vipps.class.php:60
+#: WC_Gateway_Vipps.class.php:3308 Vipps.class.php:60
 msgid "Vipps Checkout"
 msgstr "Vipps kassalle"
 
-#: WC_Gateway_Vipps.class.php:3299 Vipps.class.php:63
+#: WC_Gateway_Vipps.class.php:3307 Vipps.class.php:63
 msgid "Vipps Express Checkout"
 msgstr "Vipps Express-kassa"
 
@@ -3521,26 +3561,26 @@ msgstr ""
 "tai jäsenyyksiä. Lisäosa on saatavilla Wordpressiin ja WooCommerceen - "
 "aloita tästä!"
 
-#: WC_Gateway_Vipps.class.php:1263
+#: WC_Gateway_Vipps.class.php:1271
 msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"
 msgstr ""
 "VIPPS_TEST_MODE on asetettu true:ksi konfiguraatiossasi - dev-tila on "
 "pakotettu"
 
-#: WC_Gateway_Vipps.class.php:1264
+#: WC_Gateway_Vipps.class.php:1272
 msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
 msgstr ""
 "VIPPS_TEST_MODE on asetettuna true:ksi konfiguraatiossasi - testitila on "
 "pakotettu"
 
-#: Vipps.class.php:4354
+#: Vipps.class.php:4357
 #, php-format
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr "Odotamme vahvistusta ostosta %1$s:ltä"
 
-#: Vipps.class.php:4386
+#: Vipps.class.php:4389
 msgid "Waiting for your order confirmation"
 msgstr "Odotamme tilausvahvistusta"
 
@@ -3604,7 +3644,7 @@ msgstr "Valkoinen"
 msgid "WP Hosting"
 msgstr "WP Hosting"
 
-#: WC_Gateway_Vipps.class.php:2966 Vipps.class.php:2463
+#: WC_Gateway_Vipps.class.php:2974 Vipps.class.php:2463
 #, php-format
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
 msgstr "Väärä %1$s Orderid - mahdollisesti yritys väärentää takaisinsoittoa "
@@ -3614,7 +3654,7 @@ msgstr "Väärä %1$s Orderid - mahdollisesti yritys väärentää takaisinsoitt
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr "Väärä %1$s Tilausnumero toimitustietojen takaisinsoittoilmoituksessa"
 
-#: WC_Gateway_Vipps.class.php:2959
+#: WC_Gateway_Vipps.class.php:2967
 #, php-format
 msgid ""
 "Wrong auth token in callback from %1$s - possibly an attempt to fake a "
@@ -3623,7 +3663,7 @@ msgstr ""
 "Väärä tunniste %1$s:n takaisinkutsussa - mahdollisesti yritys väärentää "
 "takaisinkutsua"
 
-#: WC_Gateway_Vipps.class.php:3464
+#: WC_Gateway_Vipps.class.php:3479
 #, php-format
 msgid "Yes, activate %1$s!"
 msgstr "Kyllä, aktivoi %1$s!"
@@ -3682,7 +3722,7 @@ msgstr "Saat ratkaisun kolmessa päivässä"
 msgid "You need a newer version of WooCommerce to use %1$s!"
 msgstr "Tarvitset uudemman WooCommerce-version käyttääksesi %1$s!"
 
-#: WC_Gateway_Vipps.class.php:1387
+#: WC_Gateway_Vipps.class.php:1395
 #, php-format
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr "Sinun täytyy syöttää puhelinnumerosi maksaaksesi %1$s:llä"
@@ -3698,9 +3738,13 @@ msgstr ""
 "edellisestä ostoksesta. Oletko varma, että haluat tilata uudelleen?"
 
 #: WC_Gateway_Vipps.class.php:962
+#, fuzzy
+#| msgid ""
+#| "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
+#| "vipps.no"
 msgid ""
 "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
-"vipps.no"
+"vippsmobilepay.com"
 msgstr ""
 "\"Merchant Serial Number\" -numerosi Developer-välilehdeltä osoitteessa "
 "https://portal.vippsmobilepay.com"
@@ -3747,7 +3791,7 @@ msgstr ""
 "Sivustollasi ei ole määritetty käyttöehdot-sivua - joka alkaa kuitenkin %1$s,"
 " mutta tämä pitäisi määritellä"
 
-#: WC_Gateway_Vipps.class.php:1211
+#: WC_Gateway_Vipps.class.php:1219
 msgid ""
 "Your test account \"Merchant Serial Number\" from the Developer tab on https:"
 "//portal.vippsmobilepay.com"
