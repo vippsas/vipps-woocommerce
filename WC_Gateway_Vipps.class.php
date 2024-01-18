@@ -3044,6 +3044,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
             do_action('woocommerce_checkout_update_order_meta', $orderid, array());
+
+            // It isn't possible to remove the javascript or 'after order notice' actions, because these are added as closures
+            // before anything else is run. But we can disable the hook that saves data. IOK 2024-01-18
+            if (WC_Gateway_Vipps::instance()->get_option('vippsorderattribution') != 'yes') {
+                remove_all_filters( 'woocommerce_order_save_attribution_data');
+            }
+
             // And another one. IOK 2021-11-24
             do_action( 'woocommerce_checkout_order_created', $order );
         } catch ( Exception $e ) {
