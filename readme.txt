@@ -46,7 +46,7 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
 === How to get started ===
-* Sign up to use Vipps, adn choose your product on [Vipps Portal](https://portal.vipps.no)
+* Sign up to use Vipps, adn choose your product on [Vipps Portal](https://portal.vippsmobilepay.com)
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
@@ -65,7 +65,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 === How to get Vipps account keys from Vipps Developer Portal ===
-1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
+1. Sign in to the Vipps Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
@@ -654,7 +654,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2019.08.06 version 1.2.0 =
 * Removed separate Access Key subscription, now only one subscription key is required
-* Documentation updated to reflect that the keys are now to be fetched from portal.vipps.no, and that the separate Access Key subscription is no longer necessary
+* Documentation updated to reflect that the keys are now to be fetched from portal.vippsmobilepay.com, and that the separate Access Key subscription is no longer necessary
 
 
 = 2019.06.24 version 1.1.18 =
