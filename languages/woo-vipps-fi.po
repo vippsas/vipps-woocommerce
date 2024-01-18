@@ -1695,26 +1695,26 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:970
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
-"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps.no/ "
+"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vippsmobilepay.com/ "
 "ja valitse \"Show keys\". Kopioi arvo \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:978
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"show keys\". Copy the value of \"client_secret\""
 msgstr ""
-"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps.no/ "
+"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vippsmobilepay.com/ "
 "ja valitse \"näytä avaimet\". Kopioi arvo \"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:986
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
 msgstr ""
-"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps.no/ "
+"Etsi tilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vippsmobilepay.com/ "
 "ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-Subscription-Key\""
 
 #: WC_Gateway_Vipps.class.php:1219
@@ -3703,7 +3703,7 @@ msgid ""
 "vipps.no"
 msgstr ""
 "\"Merchant Serial Number\" -numerosi Developer-välilehdeltä osoitteessa "
-"https://portal.vipps.no"
+"https://portal.vippsmobilepay.com"
 
 #: VippsDismissibleAdminBanners.class.php:114
 #, php-format
@@ -3750,10 +3750,10 @@ msgstr ""
 #: WC_Gateway_Vipps.class.php:1211
 msgid ""
 "Your test account \"Merchant Serial Number\" from the Developer tab on https:"
-"//portal.vipps.no"
+"//portal.vippsmobilepay.com"
 msgstr ""
 "Testitilisi \"Merchant Serial Number\" Developer-välilehdeltä osoitteessa "
-"https://portal.vipps.no"
+"https://portal.vippsmobilepay.com"
 
 #: Vipps.class.php:294
 #, php-format

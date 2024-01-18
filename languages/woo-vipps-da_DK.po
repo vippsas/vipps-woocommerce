@@ -1485,26 +1485,26 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:826
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
-"Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"Find din konto under fanen \"Developer\" på https://portal.vippsmobilepay.com/, og "
 "vælg \"Show keys\". Kopier værdien af \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:834
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"show keys\". Copy the value of \"client_secret\""
 msgstr ""
-"Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"Find din konto under fanen \"Developer\" på https://portal.vippsmobilepay.com/, og "
 "vælg \"show keys\". Kopier værdien af \"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:842
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
 msgstr ""
-"Find din konto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"Find din konto under fanen \"Developer\" på https://portal.vippsmobilepay.com/, og "
 "vælg \"show keys\". Kopier værdien af \"Vipps-Subscription-Key\""
 
 #: WC_Gateway_Vipps.class.php:1075
@@ -1512,7 +1512,7 @@ msgid ""
 "Find your test account under the \"Developer\" tab on https://portal.vipps."
 "no/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
-"Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"Find din testkonto under fanen \"Developer\" på https://portal.vippsmobilepay.com/, og "
 "vælg \"Show keys\". Kopier værdien af \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:1083
@@ -1520,7 +1520,7 @@ msgid ""
 "Find your test account under the \"Developer\" tab on https://portal.vipps."
 "no/ and choose \"show keys\". Copy the value of \"client_secret\""
 msgstr ""
-"Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"Find din testkonto under fanen \"Developer\" på https://portal.vippsmobilepay.com/, og "
 "vælg \"show keys\". Kopier værdien af \"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:1091
@@ -1528,7 +1528,7 @@ msgid ""
 "Find your test account under the \"Developer\" tab on https://portal.vipps."
 "no/ and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
 msgstr ""
-"Find din testkonto under fanen \"Developer\" på https://portal.vipps.no/, og "
+"Find din testkonto under fanen \"Developer\" på https://portal.vippsmobilepay.com/, og "
 "vælg \"show keys\". Kopier værdien af \"Vipps-Subscription-Key\""
 
 #: Vipps.class.php:1346 Vipps.class.php:1361
@@ -3400,10 +3400,10 @@ msgstr ""
 #: WC_Gateway_Vipps.class.php:1067
 msgid ""
 "Your test account \"Merchant Serial Number\" from the Developer tab on https:"
-"//portal.vipps.no"
+"//portal.vippsmobilepay.com"
 msgstr ""
 "Din testkontos \"Merchant Serial Number\" fra fanebladet Developer på https:"
-"//portal.vipps.no"
+"//portal.vippsmobilepay.com"
 
 #: Vipps.class.php:276
 #, php-format

@@ -393,7 +393,7 @@ class Vipps {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
-        $portalurl = 'https://portal.vipps.no';
+        $portalurl = 'https://portal.vippsmobilepay.com';
         $webhookapi = 'https://developer.vippsmobilepay.com/docs/APIs/webhooks-api/';
 
         echo "<div class='wrap vipps-badge-settings'>\n";
@@ -848,7 +848,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $logspage = admin_url('/admin.php?page=wc-status&tab=logs');
         $forumpage = 'https://wordpress.org/support/plugin/woo-vipps/';
 
-        $portalurl = 'https://portal.vipps.no';
+        $portalurl = 'https://portal.vippsmobilepay.com';
 
         $installed = get_plugins();
         $recurringinstalled = array_key_exists('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php',$installed);

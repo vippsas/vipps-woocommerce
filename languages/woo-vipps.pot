@@ -1534,19 +1534,19 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:970
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:978
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"show keys\". Copy the value of \"client_secret\""
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:986
 msgid ""
-"Find your account under the \"Developer\" tab on https://portal.vipps.no/ "
+"Find your account under the \"Developer\" tab on https://portal.vippsmobilepay.com/ "
 "and choose \"show keys\". Copy the value of \"Vipps-Subscription-Key\""
 msgstr ""
 
@@ -3305,7 +3305,7 @@ msgstr ""
 #: WC_Gateway_Vipps.class.php:1211
 msgid ""
 "Your test account \"Merchant Serial Number\" from the Developer tab on https:"
-"//portal.vipps.no"
+"//portal.vippsmobilepay.com"
 msgstr ""
 
 #: Vipps.class.php:294
