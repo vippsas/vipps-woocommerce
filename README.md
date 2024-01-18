@@ -64,7 +64,7 @@ for an overview.
 ## Getting started
 
 * Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
-* Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
+* Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
 * Proceed to [Installation](#installation).
 
 ### Installation
@@ -78,7 +78,7 @@ for an overview.
 
 ### Retrieving Vipps API Keys
 
-Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys, as described in
+Log-in to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
 
 ### Configuration of the plugin
