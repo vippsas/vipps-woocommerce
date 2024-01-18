@@ -1,8 +1,8 @@
 === Pay with Vipps for WooCommerce ===
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps
-Version: 1.14.22
-Stable tag: 1.14.22
+Version: 1.14.23
+Stable tag: 1.14.23
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
@@ -46,7 +46,7 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
 === How to get started ===
-* Sign up to use Vipps, adn choose your product on [Vipps Portal](https://portal.vipps.no)
+* Sign up to use Vipps, adn choose your product on [Vipps Portal](https://portal.vippsmobilepay.com)
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
@@ -65,7 +65,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 === How to get Vipps account keys from Vipps Developer Portal ===
-1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
+1. Sign in to the Vipps Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
@@ -79,9 +79,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Support Order Attribution in Vipps Checkout and Express Checkout
-Minor fixes
-Fix for regression in activate/deactivate actions
+Support Order Attribution in Vipps Checkout and Express Checkout, if selected in the "Advanced" settings.
+NB: There has been reports of memory-related crashes when doing this, so be sure to test!
 
 == Frequently Asked Questions ==
 
@@ -217,6 +216,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2023-01-17 version 1.14.21 and 1.14.23 =
+Disable support for order attribution by default - it can be added in the "Advanced" settings. Some sites got crashes due to memory use.
 
 = 2023-01-16 version 1.14.21 and 1.14.22 =
 Minor fix for 8.5.1 and express checkout
@@ -656,7 +658,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2019.08.06 version 1.2.0 =
 * Removed separate Access Key subscription, now only one subscription key is required
-* Documentation updated to reflect that the keys are now to be fetched from portal.vipps.no, and that the separate Access Key subscription is no longer necessary
+* Documentation updated to reflect that the keys are now to be fetched from portal.vippsmobilepay.com, and that the separate Access Key subscription is no longer necessary
 
 
 = 2019.06.24 version 1.1.18 =

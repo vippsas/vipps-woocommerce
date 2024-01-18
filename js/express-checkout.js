@@ -136,10 +136,13 @@ jQuery(document).ready(function () {
    }
 
    // Required for the order attribution thing IOK 2024-01-16
-   try {
-       jQuery(document.body).trigger( 'init_checkout' );
-   } catch (error) {
-       console.log("Could not trigger init-checkout: %j", error);
+   if (jQuery('#vippsorderattribution').val() == 1) {
+       try {
+           console.log("Triggering init_checkout");
+           jQuery(document.body).trigger( 'init_checkout' );
+       } catch (error) {
+           console.log("Could not trigger init-checkout: %j", error);
+       }
    }
 
    jQuery('#do-express-checkout').prop('disabled',true);

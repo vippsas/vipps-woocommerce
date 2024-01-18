@@ -569,9 +569,12 @@ class VippsCheckout {
         $out .= "<form id='vippsdata' class='" . esc_attr($classlist) . "'>";
         $out .= "<input type='hidden' id='vippsorderid' name='_vippsorder' value='" . intval($current_pending) . "' />";
         // And this is for the order attribution feature of Woo 8.5 IOK 2024-01-09
-        ob_start();
-        do_action( 'woocommerce_after_order_notes');
-        $out .= ob_get_clean();
+        if (WC_Gateway_Vipps::instance()->get_option('vippsorderattribution') == 'yes') {
+            $out .= '<input type="hidden" id="vippsorderattribution" value="1" />';
+            ob_start();
+            do_action( 'woocommerce_after_order_notes');
+            $out .= ob_get_clean();
+        }
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "</form>";
 
