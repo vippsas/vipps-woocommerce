@@ -224,7 +224,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
         $test = @$this->get_option('merchantSerialNumber_test');
-        if ($test) {
+        $testmode = @$this->get_option('testmode');
+        if ($testmode === 'yes' && $test) {
             $data = [
                 'client_id'=>$clientid=$this->get_option('clientId_test'),
                 'client_secret' => $this->get_option('secret_test'), 
