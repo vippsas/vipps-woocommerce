@@ -3741,10 +3741,11 @@ EOF;
 
     // Just create a spinner and a overlay.
     public function spinner () {
+        $flavour = sanitize_title($this->get_payment_method_name());
         ob_start();
         ?>
             <div class="vippsoverlay">
-            <div id="floatingCirclesG" class="vippsspinner">
+            <div id="floatingCirclesG" class="vippsspinner <?php echo esc_attr($flavour); ?>">
             <div class="f_circleG" id="frotateG_01"></div>
             <div class="f_circleG" id="frotateG_02"></div>
             <div class="f_circleG" id="frotateG_03"></div>

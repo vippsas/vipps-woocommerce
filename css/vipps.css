@@ -209,6 +209,12 @@ body.processing {
         display:block;
 }
 
+.vippsspinner {
+    --oncolor: rgba(254,90,36,0.97);
+}
+.vippsspinner.mobilepay {
+    --oncolor: rgba(90, 120, 255, 0.97);
+}
 
 .f_circleG{
     position:absolute;
@@ -316,6 +322,7 @@ body.processing {
 @keyframes f_fadeG{
     0%{
         background-color:rgba(254,90,36,0.97);
+        background-color: var(--oncolor);
     }
     100%{
         background-color:rgb(255,255,255);
@@ -324,6 +331,7 @@ body.processing {
 @-o-keyframes f_fadeG{
     0%{
         background-color:rgba(254,90,36,0.97);
+        background-color: var(--oncolor);
     }
     100%{
         background-color:rgb(255,255,255);
@@ -332,6 +340,7 @@ body.processing {
 @-ms-keyframes f_fadeG{
     0%{
         background-color:rgba(254,90,36,0.97);
+        background-color: var(--oncolor);
     }
     100%{
         background-color:rgb(255,255,255);
@@ -340,6 +349,7 @@ body.processing {
 @-webkit-keyframes f_fadeG{
     0%{
         background-color:rgba(254,90,36,0.97);
+        background-color: var(--oncolor);
     }
 
     100%{
@@ -349,6 +359,7 @@ body.processing {
 @-moz-keyframes f_fadeG{
     0%{
         background-color:rgba(254,90,36,0.97);
+        background-color: var(--oncolor);
     }
 
     100%{
