@@ -8,7 +8,11 @@ msgstr ""
 "Language: fi\n"
 "Language-Team: Finnish\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"PO-Revision-Date: 2024-01-18 14:40+0000"
+"PO-Revision-Date: 2024-01-19 10:34+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-19 10:33+0000\n"
+"Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
+"X-Loco-Version: 2.6.6; wp-6.4.2"
 
 #: WC_Gateway_Vipps.class.php:2318
 msgid " - no status retrievable"
@@ -1726,7 +1730,6 @@ msgstr ""
 "Subscription-Key\""
 
 #: WC_Gateway_Vipps.class.php:1228
-#, fuzzy
 #| msgid ""
 #| "Find your test account under the \"Developer\" tab on https://portal."
 #| "vipps.no/ and choose \"Show keys\". Copy the value of \"client_id\""
@@ -1734,11 +1737,10 @@ msgid ""
 "Find your test account under the \"Developer\" tab on https://portal."
 "vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgstr ""
-"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
-"no/ ja valitse \"Show keys\". Kopioi arvo \"client_id\""
+"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
+"vippsmobilepay.com/ ja valitse \"Show keys\". Kopioi arvo \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:1236
-#, fuzzy
 #| msgid ""
 #| "Find your test account under the \"Developer\" tab on https://portal."
 #| "vipps.no/ and choose \"show keys\". Copy the value of \"client_secret\""
@@ -1747,11 +1749,11 @@ msgid ""
 "vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
 "\"client_secret\""
 msgstr ""
-"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
-"no/ ja valitse \"näytä avaimet\". Kopioi arvo \"client_secret\""
+"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
+"vippsmobilepay.no/ ja valitse \"näytä avaimet\". Kopioi arvo "
+"\"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:1244
-#, fuzzy
 #| msgid ""
 #| "Find your test account under the \"Developer\" tab on https://portal."
 #| "vipps.no/ and choose \"show keys\". Copy the value of \"Vipps-"
@@ -1761,8 +1763,9 @@ msgid ""
 "vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Vipps-"
 "Subscription-Key\""
 msgstr ""
-"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal.vipps."
-"no/ ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-Subscription-Key\""
+"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https:"
+"//portalmobilepay.vipps.no/ ja valitse \"näytä avaimet\". Kopioi arvo "
+"\"Vipps-Subscription-Key\""
 
 #: Vipps.class.php:1717 Vipps.class.php:1732
 msgid "First Name"
@@ -3027,7 +3030,7 @@ msgid "The order is not a %1$s order"
 msgstr "Tilaus ei ole %1$s-tilaus"
 
 #: Vipps.class.php:902 Vipps.class.php:950
-#, fuzzy, php-format
+#, php-format
 #| msgid ""
 #| "The plugin is currently <b>active</b> - %1$s is available as a payment "
 #| "method."
@@ -3749,7 +3752,6 @@ msgstr ""
 "edellisestä ostoksesta. Oletko varma, että haluat tilata uudelleen?"
 
 #: WC_Gateway_Vipps.class.php:963
-#, fuzzy
 #| msgid ""
 #| "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
 #| "vipps.no"
