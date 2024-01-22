@@ -11,9 +11,11 @@ namespace Automattic\WooCommerce\Blocks\Payments\Integrations;
 final class Vipps extends AbstractPaymentMethodType {
         private $localized=0;
 	protected $name = 'vipps';
+        protected $payment_method_name = "Vipps";
 
 	public function initialize() {
 		$this->settings = get_option( 'woocommerce_vipps_settings', [] );
+                $this->payment_method_name =  \WC_Gateway_Vipps::instance()->get_payment_method_name();
 	}
 
         // Register this payment method IOK 2020-08-10
@@ -57,10 +59,13 @@ final class Vipps extends AbstractPaymentMethodType {
         }
 
 	public function get_payment_method_data() {
+
+                $logo = ($this->payment_method_name == "Vipps") ? plugins_url('../../img/vipps-mark.svg', __FILE__) : plugins_url('../../img/mobilepay-mark.png', __FILE__);
+
 		return [
 			'title'                    => $this->get_setting( 'title' ),
 			'description'              => $this->get_setting( 'description' ),
-                        'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', plugins_url('../../img/vmp-logo.png', __FILE__)),
+                        'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', $logo),
                         'show_express_checkout' => $this->show_express_checkout_button(),
                         'expressbutton' => $this->get_express_checkout_button()
 		];

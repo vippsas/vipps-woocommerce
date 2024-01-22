@@ -174,6 +174,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     }
 
+
+    public function get_icon () {
+        $src =  $this->icon;
+        if ($this->get_payment_method_name() == "Vipps") {
+            $src = plugins_url('img/vipps-mark.svg',__FILE__);
+        } else {
+            $src = plugins_url('img/mobilepay-mark.png',__FILE__);
+        }
+        return '<img src="' . esc_attr($src) . '" alt="' .  $this->get_payment_method_name() . '">';
+    }
+
+
     // True iff this gateway is currently in test mode. IOK 2019-08-30
     public function is_test_mode() {
        if (VIPPS_TEST_MODE) return true;
