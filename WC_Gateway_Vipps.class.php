@@ -1012,12 +1012,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => 'processing',
             ),
 
+/*
             'title' => array(
                 'title' => __('Title', 'woocommerce'),
                 'type' => 'text',
                 'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
                 'default' => sprintf(__('%1$s','woo-vipps'), $payment_method_name),
             ),
+*/
 
             'description' => array(
                 'title' => __('Description', 'woocommerce'),
@@ -3735,9 +3737,7 @@ function activate_vipps_checkout(yesno) {
 
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12
     public function get_title() {
-     $title = trim($this->get_option('title'));
-     if (!$title) $title = sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name());
-     return $title;
+     return apply_filters('woo_vipps_payment_method_title', $this->get_payment_method_name());
     }
 
     public function get_payment_method_name() {

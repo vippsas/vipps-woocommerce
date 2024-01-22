@@ -63,7 +63,7 @@ final class Vipps extends AbstractPaymentMethodType {
                 $logo = ($this->payment_method_name == "Vipps") ? plugins_url('../../img/vipps-mark.svg', __FILE__) : plugins_url('../../img/mobilepay-mark.png', __FILE__);
 
 		return [
-			'title'                    => $this->get_setting( 'title' ),
+			'title'                    => $this->payment_method_name,
 			'description'              => $this->get_setting( 'description' ),
                         'iconsrc'                  => apply_filters('woo_vipps_block_logo_url', $logo),
                         'show_express_checkout' => $this->show_express_checkout_button(),
