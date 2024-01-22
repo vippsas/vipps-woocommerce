@@ -114,7 +114,7 @@ You will need a *Vipps på Nett* account for direct integration with the eCom AP
 
 If you already have a Vipps account for WooCommerce and want to contribute to
 the development of the plugin, contact
-[customer service](https://www.vipps.no/kontakt-oss/)
+[customer service](https://vippsmobilepay.com/help)
 to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
