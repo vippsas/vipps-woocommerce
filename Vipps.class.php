@@ -832,6 +832,8 @@ jQuery('a.webhook-adder').click(function (e) {
 
 
     public function admin_menu_page () {
+        $flavour = sanitize_title($this->get_payment_method_name());
+
         // The function which is hooked in to handle the output of the page must check that the user has the required capability as well.  (manage_woocommerce)
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
@@ -871,7 +873,7 @@ jQuery('a.webhook-adder').click(function (e) {
         if (WC_Gateway_Vipps::instance()->get_payment_method_name() != "Vipps"):
     ?>
     <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
-    <header class="vipps-admin-page-header" style="padding-top: 3.5rem ; line-height: 30px;">
+    <header class="vipps-admin-page-header <?php echo esc_attr($flavour); ?>" style="padding-top: 3.5rem ; line-height: 30px;">
             <h1><?php echo esc_html(Vipps::CompanyName()); ?> <?php echo esc_html($slogan); ?></h1>
     </header>
     <div class='wrap vipps-admin-page'>
@@ -884,7 +886,7 @@ jQuery('a.webhook-adder').click(function (e) {
                <p><?php echo sprintf(__("Configure the plugin on its <a href='%1\$s'>settings page</a> and  get your keys from the <a target='_blank' href='%2\$s'>%3\$s portal</a>.",'woo-vipps'), $checkoutsettings, $portalurl, Vipps::CompanyName());?></p>
                <p><?php echo sprintf(__("If you experience problems or unexpected results, please check the 'fatal-errors' and 'woo-vipps' logs at <a href='%1\$s'>WooCommerce logs page</a>.", 'woo-vipps'), $logspage); ?></p>
                <p><?php echo sprintf(__("If you need support, please use the <a href='%1\$s'>forum page</a> for the plugin. If you cannot post your question publicly, contact WP-Hosting directly at support@wp-hosting.no.", 'woo-vipps'), $forumpage); ?></p>
-               <div class="pluginstatus vipps_admin_highlighted_section">
+               <div class="pluginstatus vipps_admin_highlighted_section <?php echo esc_attr($flavour); ?>">
                <?php if ($istestmode): ?>
                   <p><b>
                    <?php echo sprintf(__('%1$s is currently in test mode - no real transactions will occur.', 'woo-vipps'), Vipps::CompanyName()); ?>
@@ -916,7 +918,7 @@ jQuery('a.webhook-adder').click(function (e) {
     <?php else: ?>
     
     <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
-    <header class="vipps-admin-page-header" style="padding-top: 3.5rem ; line-height: 30px;">
+    <header class="vipps-admin-page-header <?php echo esc_attr($flavour); ?>" style="padding-top: 3.5rem ; line-height: 30px;">
             <h1><?php echo esc_html(Vipps::CompanyName()); ?> <?php echo esc_html($slogan); ?></h1>
     </header>
     <div class='wrap vipps-admin-page'>
