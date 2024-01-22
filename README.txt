@@ -1,4 +1,4 @@
-=== Vipps/MobilePay Recurring Payments for WooCommerce ===
+=== Vipps/MobilePay recurring payments ===
 Contributors: Vipps MobilePay, EverydayAS
 Tags: vipps, mobilepay, vippsmobilepay, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
@@ -10,26 +10,24 @@ License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
 == Description ==
 
-_Official Vipps/MobilePay Recurring Payments plugin for WooCommerce. 11 million scandinavians use Vipps MobilePay. Give them a fast and familiar shopping experience._
+_Official Vipps/MobilePay recurring payments plugin for WooCommerce. Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway. One platform gathering more than 11 million users and more than 400.000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience._
 
-This is the official Vipps/MobilePay Recurring Payments plugin for WooCommerce. It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
+This is the official Vipps/MobilePay recurring payments plugin for WooCommerce. It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
 
 **We encourage you to create an issue here or on the [GitHub page](https://github.com/vippsas/vipps-recurring-woocommerce/issues) if you require assistance or run in to a problem.**
 
-== Vipps/MobilePay Recurring Payments ==
+== Vipps/MobilePay recurring payments ==
 
-Vipps/MobilePay Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
+Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
-With Vipps/MobilePay Recurring Payments for WooCommerce you can:
+With Vipps/MobilePay recurring payments you can:
 
 * Sell recurring products (virtual and physical)
 * Offer subscription services
 
 See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/) for an overview.
 
-
 ![Recurring Process](./docs/images/recurring-process.svg)
-
 
 == Requirements ==
 
@@ -41,17 +39,18 @@ See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/
 
 == Getting started ==
 
-* Sign up to use Vipps på Nett ([WooCommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
-* Vipps MobilePay will review the application and perform KYC and AML controls. You may log onto [portal.vipps.no](https://portal.vipps.no) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
-* Proceed to "Installation" below
+* Sign up for a merchant agreement and product order from Vipps MobilePay merchant portal.
+* After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](portal.vippsmobilepay.com), where you can get the API credentials.
+* Download and install the plugin.
+* Configure the plugin.
 
 == Installation ==
 
 To use the plugin you need to do the following:
 
 1. Download and activate the plugin from this GitHub repository or Wordpress.org
-2. Enable the Vipps/MobilePay Recurring Payments payment method in WooCommerce: `Settings` -> `Payments`.
-3. Click "Manage" on the Vipps/MobilePay Recurring Payments payment method
+2. Enable the Vipps/MobilePay recurring payments payment method in WooCommerce: `Settings` -> `Payments`.
+3. Click "Manage" on the Vipps/MobilePay recurring payments payment method
 4. Proceed to "Retrieving Vipps MobilePay API Keys" below
 
 = Retrieving Vipps MobilePay API Keys =
@@ -65,7 +64,7 @@ The documentation for retrieving your Vipps MobilePay API Keys can be found [her
 
 = Configuring products =
 
-Configuring products for use with the Vipps/MobilePay Recurring Payments plugin is not any
+Configuring products for use with the Vipps/MobilePay recurring payments plugin is not any
 different from default WooCommerce, with one exception: The configuration for
 whether the product is virtual or physical is important to consider.
 
@@ -104,9 +103,9 @@ If your question is not answered on this page:
   and the
   [Vipps MobilePay eCom FAQ](https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api-faq/) may also be useful.
 
-= Does this plugin work alongside the Vipps MobilePay Checkout for WooCommerce plugin? =
+= Does this plugin work alongside the Vipps MobilePay Checkout plugin? =
 
-Yes! You can use this plugin at the same time as [Vipps MobilePay Checkout for WooCommerce](https://github.com/vippsas/vipps-woocommerce).
+Yes! You can use this plugin at the same time as [Vipps MobilePay Checkout](https://github.com/vippsas/vipps-woocommerce).
 
 = Do I need to have a license for WooCommerce Subscriptions in order to use this plugin? =
 
@@ -120,7 +119,7 @@ and
 [WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
 are able to work together for access to recurring memberships that unlock content.
 
-**WooCommerce Subscriptions is required in order to use Vipps/MobilePay Recurring Payments for WooCommerce, but Memberships is not.**
+**WooCommerce Subscriptions is required in order to use Vipps/MobilePay recurring payments, but Memberships is not.**
 
 You can read about how WooCommerce Subscriptions and WooCommerce Memberships work together [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
 
@@ -146,7 +145,7 @@ This is because of the Norwegian law. You are not allowed to charge for a physic
 
 You can read about it [here](https://www.forbrukertilsynet.no/english/guidelines/guidelines-the-standard-sales-conditions-consumer-purchases-of-goods-the-internet#chapter-7).
 
-If you have a valid reason to do so you can use the "Capture payment instantly" option from the "Vipps/MobilePay Recurring Payments" settings in your product's settings.
+If you have a valid reason to do so you can use the "Capture payment instantly" option from the "Vipps/MobilePay recurring payments" settings in your product's settings.
 
 = When a renewal happens, why is the order on hold? =
 
@@ -163,7 +162,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 == Changelog ==
 
 = 1.18.0 =
-* Added: Support for WooCommerce checkout blocks. This allows Vipps/MobilePay Recurring Payments to be used with the new standard checkout.
+* Added: Support for WooCommerce checkout blocks. This allows Vipps/MobilePay recurring payments to be used with the new standard checkout.
 
 = 1.17.3 =
 * Fixed: No longer use the `wp_safe_remote_post` function and instead use `wp_remote_post` because it causes problems on some hosts, and our calls are to endpoints returned by Vipps MobilePay either way.
@@ -230,7 +229,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: Fixed a conflict that prevented Vipps MobilePay from working in Klarna if Vipps MobilePay Recurring and Vipps MobilePay Checkout were installed at the same time.
 
 = 1.14.5 =
-* Fixed: You can now swap gateway to Vipps/MobilePay Recurring Payments from a subscription again.
+* Fixed: You can now swap gateway to Vipps/MobilePay recurring payments from a subscription again.
 
 = 1.14.4 =
 * Fixed: You can now pay for failed renewal orders. It will cancel the old agreement and substitute it with a new one.
@@ -286,14 +285,14 @@ If you renew early, and you're not already using Vipps MobilePay you will be sen
 * Fixed: Fixed an issue where `initialCharge.description` was empty. It cannot be empty under any circumstances.
 
 = 1.12.1 =
-* Fixed: A bug in Klarna Checkout where it would attempt to use Vipps/MobilePay Recurring Payments instead of Vipps MobilePay Checkout when you're only purchasing one time payment products.
+* Fixed: A bug in Klarna Checkout where it would attempt to use Vipps/MobilePay recurring payments instead of Vipps MobilePay Checkout when you're only purchasing one time payment products.
 * Fixed: Descriptions of products you are not paying for right away is no longer included in initialCharge's description.
 * Fixed: Campaigns are now used correctly when a single product is purchased along with a synced subscription product.
 * Fixed: Campaigns are now used correctly when a single product is purchased along with a subscription product with a free trial.
 
 = 1.12.0 =
 * Added: Support for Klarna Checkout.
-* Fixed: No longer attempt to load Vipps/MobilePay Recurring Payments if WooCommerce is disabled/not installed.
+* Fixed: No longer attempt to load Vipps/MobilePay recurring payments if WooCommerce is disabled/not installed.
 * Fixed: If you have a variable subscription product the Vipps MobilePay settings from the "parent" will now be respected.
 * Fixed: This gateway no longer shows up for single purchase products, only if there is at least one subscription product in the cart.
 
@@ -366,7 +365,7 @@ If you renew early, and you're not already using Vipps MobilePay you will be sen
 * Fix: Remove visibility modifier from `const` to fix support for PHP 7.0.
 
 = 1.6.0 =
-* Enhancement: There's now an overview of failed charges and their failure reason on the Settings -> Vipps/MobilePay Recurring Payments page.
+* Enhancement: There's now an overview of failed charges and their failure reason on the Settings -> Vipps/MobilePay recurring payments page.
 * Refactor: Use the Helper class for most of our frequently used meta keys.
 * Refactor: Renamed the class filenames, class names remain untouched.
 * Fix: Redirect to last known agreement confirmation URL if the agreement is pending. This prevents being stuck in checkout.
@@ -397,7 +396,7 @@ If you renew early, and you're not already using Vipps MobilePay you will be sen
 * Fix: No longer attempt to cancel an already cancelled charge.
 * Fix: We should no longer hit the Vipps MobilePay API rate-limit as a result of a renewal order.
 * Fix: Properly set the `_charge_id` meta key when capturing a payment.
-* Fix: Changing of gateways to Vipps/MobilePay Recurring Payments would sometimes cancel the new agreement instead of the old one due to a race condition.
+* Fix: Changing of gateways to Vipps/MobilePay recurring payments would sometimes cancel the new agreement instead of the old one due to a race condition.
 * Fix: Multiples of the same product in the same subscription will now be charged correctly based on the total order price.
 * Tweak: Updated the `WC_VIPPS_RECURRING_RETRY_DAYS` constant to 4 days by default.
 * Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs and fetching plus updating meta.
