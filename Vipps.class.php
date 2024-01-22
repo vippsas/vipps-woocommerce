@@ -916,8 +916,8 @@ jQuery('a.webhook-adder').click(function (e) {
     <?php else: ?>
     
     <style>.notice.notice-vipps.test-mode { display: none; }body.wp-admin.toplevel_page_vipps_admin_menu #wpcontent {background-color: white; }</style>
-    <header class="vipps-admin-page-header">
-            <h1><span><img src="<?php echo plugins_url('/img/vipps-mobilepay-banner.png', __FILE__);?>" alt="Vipps"></span><span class="slogan"><?php echo esc_html($slogan); ?></span></h1>
+    <header class="vipps-admin-page-header" style="padding-top: 3.5rem ; line-height: 30px;">
+            <h1><?php echo esc_html(Vipps::CompanyName()); ?> <?php echo esc_html($slogan); ?></h1>
     </header>
     <div class='wrap vipps-admin-page'>
             <div id="vipps_page_vipps_banners"><?php echo apply_filters('woo_vipps_vipps_page_banners', ""); ?></div>
