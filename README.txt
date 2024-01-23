@@ -41,7 +41,7 @@ See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/
 
 == Getting started ==
 
-* Sign up to use Vipps på Nett ([WooCommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
+* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration), ([WooCommerce](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/))
 * Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
 * Proceed to "Installation" below
 

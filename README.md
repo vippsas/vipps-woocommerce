@@ -22,10 +22,10 @@ END_METADATA -->
 <!-- END_COMMENT -->
 
 This is the official
-[Vipps Recurring Payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
+[Recurring Payments](https://vippsmobilepay.com/online/billing-recurring)
 plugin for
 [WooCommerce](https://woocommerce.com).
-It is owned by [Vipps AS](https://vipps.no) and maintained by [Everyday AS](https://everyday.no).
+It is owned by [Vipps MobilePay AS](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
 
 Vipps Recurring Payments for WooCommerce is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
@@ -63,7 +63,7 @@ for an overview.
 
 ## Getting started
 
-* Sign up to use ([Vipps på Nett](https://www.vipps.no/signup/vippspanett/))
+* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 * Vipps will review the application and perform KYC and AML controls. You may log onto [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com) to see the status of your application. This is also where you can retrieve the API credentials used to configure the plugin in WooCommerce after your application has been approved.
 * Proceed to [Installation](#installation).
 
