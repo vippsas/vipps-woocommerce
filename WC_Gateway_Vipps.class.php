@@ -744,12 +744,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
         $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
 
+        // Disclaimer for Vipps Checkout at release, IOK 2024-01-23
+        $disclaimer = ($payment_method_name == 'Vipps') ? "" : 
+             '<br><br><strong>' . __("NB! Checkout for MobilePay is currently in beta mode; Bank Transfer has limited availability", 'woo-vipps') . '</strong>';
+
         $checkoutfields = array(
                 'checkout_options' => array(
                     'title' => sprintf(__('Checkout', 'woo-vipps'), Vipps::CompanyName()),
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName())
+                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()) . $disclaimer,
                     ),
 
                 'vipps_checkout_enabled' => array(
