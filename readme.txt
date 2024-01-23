@@ -231,17 +231,17 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2023-01-23 version 2.0.0 =
+= 2024-01-23 version 2.0.0 =
 Support MobilePay as a payment method in Finland
 Use the Epayment api for all transactions other than Vipps Express Checkout
 
-= 2023-01-17 version 1.14.21 and 1.14.23 =
+= 2024-01-17 version 1.14.21 and 1.14.23 =
 Disable support for order attribution by default - it can be added in the "Advanced" settings. Some sites got crashes due to memory use.
 
-= 2023-01-16 version 1.14.21 and 1.14.22 =
+= 2024-01-16 version 1.14.21 and 1.14.22 =
 Minor fix for 8.5.1 and express checkout
 
-= 2023-01-15 version 1.14.20 =
+= 2024-01-15 version 1.14.20 =
 Support Order Attribution in Vipps Checkout and Express Checkout
 
 = 2023-12-14 version 1.14.19 =
