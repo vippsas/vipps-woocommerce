@@ -42,6 +42,8 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 For Finland it is also possible to activate bank transfer as a payment method, with some restrictions.
 VISA/MasterCard payments will be coming soon for MobilePay.
 
+_Checkout is still in beta mode in Finland, bank transfer has limited availability._
+
 ## Vipps Express Checkout
 
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps app.
