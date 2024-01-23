@@ -30,7 +30,6 @@ You can also do important back office tasks such as capture and refund directly 
 For more information, see:
 
 * [How Checkout works for WooCommerce](https://developer.vippsmobilepay.com/docs/APIs/checkout-api/checkout-how-it-works-woocommerce/)
-* [Vipps.no: We have these WooCommerce plugins available](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/)
 * [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
 ## Vipps Express Checkout
@@ -45,7 +44,7 @@ When you enable this plugin, your customers will be able to choose Vipps as a pa
 
 ## How to get started
 
-* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration), [*Woocommerce*](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/).
+* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 * After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
