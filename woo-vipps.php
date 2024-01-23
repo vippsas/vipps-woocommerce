@@ -1,6 +1,6 @@
 <?php
 /*
-   Plugin Name: Checkout with Vipps for WooCommerce
+   Plugin Name: Pay with Vipps and MobilePay for WooCommerce
    Plugin URI: https://wordpress.org/plugins/woo-vipps/
    Description: Offer Vipps as a payment method for WooCommerce
    Author: WP Hosting
@@ -19,7 +19,7 @@
    License URI: https://choosealicense.com/licenses/mit/
 
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License

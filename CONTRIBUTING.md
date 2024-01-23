@@ -1,4 +1,4 @@
-# Contributing to Checkout with Vipps for WooCommerce
+# Contributing to Pay with Vipps and MobilePay for WooCommerce
 
 If you want to contribute: Great! No issue or pull request is too small!
 
@@ -34,4 +34,4 @@ find your issue helpful too. For more information on how issues work, check out 
 
 The LICENSE file defines the license for the project. An open source project's license informs users what they can and can't do (e.g., use, modify, redistribute), and contributors, what they are allowing others to do. 
 
-The Checkout with Vipps for WooCommerce is since version 1.4.8 licensed under the MIT License:  https://choosealicense.com/licenses/mit/. Earlier versions were licensed under the Affero General Public License version 3: https://choosealicense.com/licenses/agpl-3.0/
+The Pay with Vipps and MobilePay for WooCommerce is since version 1.4.8 licensed under the MIT License:  https://choosealicense.com/licenses/mit/. Earlier versions were licensed under the Affero General Public License version 3: https://choosealicense.com/licenses/agpl-3.0/

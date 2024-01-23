@@ -5,7 +5,7 @@
    For WP-specific interactions.
 
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2023 WP-Hosting AS
 
 MIT License

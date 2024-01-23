@@ -1,6 +1,6 @@
 /*
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License

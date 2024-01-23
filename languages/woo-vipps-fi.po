@@ -8,7 +8,7 @@ msgstr ""
 "Language: fi\n"
 "Language-Team: Finnish\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"PO-Revision-Date: 2024-01-19 10:34+0000\n"
+"PO-Revision-Date: 2024-01-23 12:56+0000\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-01-19 10:33+0000\n"
 "Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
@@ -944,7 +944,7 @@ msgstr ""
 "%1$s"
 
 #. Name of the plugin
-msgid "Checkout with Vipps for WooCommerce"
+msgid "Pay with Vipps and MobilePay for WooCommerce"
 msgstr "Kassalle Vipps for WooCommerce kanssa"
 
 #: Vipps.class.php:709

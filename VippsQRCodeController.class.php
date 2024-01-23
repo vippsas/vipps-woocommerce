@@ -3,7 +3,7 @@
    This class is for the Vipps QR-code feature, and is implemented as its own singleton instance because this isolates that 'aspect' of the
    system. It is instantiated as a member of the main Vipps class.
 
-   This file is part of the plugin Checkout with Vipps for WooCommerce
+   This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
    Copyright (c) 2022 WP-Hosting AS
 
    MIT License

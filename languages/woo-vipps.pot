@@ -840,7 +840,7 @@ msgid ""
 msgstr ""
 
 #. Name of the plugin
-msgid "Checkout with Vipps for WooCommerce"
+msgid "Pay with Vipps and MobilePay for WooCommerce"
 msgstr ""
 
 #: Vipps.class.php:709
