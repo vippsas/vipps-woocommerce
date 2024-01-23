@@ -32,7 +32,6 @@ You can do important backoffice tasks such as capture and refund directly from W
 For more information, see:
 
 * [How Checkout works for WooCommerce](https://developer.vippsmobilepay.com/docs/APIs/checkout-api/checkout-how-it-works-woocommerce/)
-* [Vipps.no: We have these WooCommerce plugins available](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/)
 * [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
 ## Checkout
@@ -66,7 +65,7 @@ When you enable this plugin, your customers will be able to choose Vipps or Mobi
 
 ## How to get started
 
-* Sign up for a merchant agreement and product order from [Vipps MobilePay merchant portal](https://portal.vippsmobilepay.com).
+* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 * After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
@@ -109,8 +108,8 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 Yes, for developers that want to contribute to the development of the plugin.
 Vipps does not offer a test account for normal users of the plugin.
 
-You will need a *Vipps på Nett* account for direct integration with the eCom API, which can be ordered from
-[vipps.no](https://vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/).
+You will need an account for direct integration with the eCom API, which can be ordered from
+[*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 
 If you already have a Vipps account for WooCommerce and want to contribute to
 the development of the plugin, contact
