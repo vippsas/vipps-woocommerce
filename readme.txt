@@ -2,8 +2,8 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.0
-Stable tag: 2.0.0
+Version: 2.0.1
+Stable tag: 2.0.1
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
@@ -230,6 +230,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-01-24 version 2.0.1 =
+Fix bug in uninstall hook
 
 = 2024-01-23 version 2.0.0 =
 Support MobilePay as a payment method in Finland

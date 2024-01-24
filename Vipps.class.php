@@ -3131,8 +3131,6 @@ EOF;
     }
 
     public static function uninstall() {
-       // IOK 2023-12-20 Delete all webhooks for this instance on uninstall too
-       WC_Gateway_Vipps::instance()->delete_all_webhooks();
        // Nothing yet
     }
     public function footer() {
