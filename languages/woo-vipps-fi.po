@@ -1,18 +1,17 @@
+# Translation of Plugins - Pay with Vipps and MobilePay for WooCommerce - Stable (latest release) in Finnish
+# This file is distributed under the same license as the Plugins - Pay with Vipps and MobilePay for WooCommerce - Stable (latest release) package.
 msgid ""
 msgstr ""
+"PO-Revision-Date: 2024-01-24 08:21+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Loco https://localise.biz/\n"
-"Project-Id-Version: Vipps MobilePay\n"
-"Language: fi\n"
-"Language-Team: Finnish\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"PO-Revision-Date: 2024-01-23 12:56+0000\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-19 10:33+0000\n"
-"Last-Translator: Iver Odin Kvello <iver@wp-hosting.no>\n"
-"X-Loco-Version: 2.6.6; wp-6.4.2"
+"X-Generator: Loco https://localise.biz/\n"
+"Language: fi\n"
+"Project-Id-Version: Plugins - Pay with Vipps and MobilePay for WooCommerce - "
+"Stable (latest release)\n"
+"Language-Team: Suomi"
 
 #: WC_Gateway_Vipps.class.php:2318
 msgid " - no status retrievable"
@@ -943,10 +942,6 @@ msgstr ""
 "Yli 120 minuuttia vanha tilaus ilman tilauksen tilaa - peruutettu hylätyksi: "
 "%1$s"
 
-#. Name of the plugin
-msgid "Pay with Vipps and MobilePay for WooCommerce"
-msgstr "Kassalle Vipps for WooCommerce kanssa"
-
 #: Vipps.class.php:709
 msgid "Choose color variant:"
 msgstr "Valitse värivaihtoehto:"
@@ -1014,9 +1009,8 @@ msgid ""
 "Configure the plugin on its <a href='%1$s'>settings page</a> and  get your "
 "keys from the <a target='_blank' href='%2$s'>%3$s portal</a>."
 msgstr ""
-"Määritä laajennuksen <a href='%1$s'>asetukset</a> sen <a href='%1$s'>"
-"asetussivulla</a> ja hae avaimet <a target='_blank' href='%2$s'>%3$s-"
-"portaalista</a>."
+"Määritä laajennuksen <a href='%1$s'>asetukset</a> sen asetussivulla ja hae "
+"avaimet <a target='_blank' href='%2$s'>%3$s-portaalista</a>."
 
 #: VippsApi.class.php:522 VippsApi.class.php:777
 msgid "Confirm your order"
@@ -1134,7 +1128,7 @@ msgstr "Kauppias sarjanumeron %1$s id %2$s webhookia ei voitu poistaa: "
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
 msgstr ""
 "Kaikkia maksun loppuunsaattamistoimia ei voitu tehdä %1$s-tilaukselle %2$d: "
-"%3$s: %3$s "
+"%3$s "
 
 #: Vipps.class.php:2662
 #, php-format
@@ -1183,9 +1177,7 @@ msgstr "Osoitetietoja ei saatu %1$s:n tilaukselle"
 #, php-format
 msgid ""
 "Could not get Checkout status for order %1$s in progress while cancelling"
-msgstr ""
-"Tilaus %1$s ei voinut saada kassan tilaa tilauksen %1$s ollessa käynnissä "
-"peruutuksen aikana"
+msgstr "Tilauksen %1$s kassatilaa ei saatu peruutuksen aikana."
 
 #: WC_Gateway_Vipps.class.php:2214 WC_Gateway_Vipps.class.php:2218
 #, php-format
@@ -1238,7 +1230,7 @@ msgstr "Vippsin käyttöoikeustunnusta ei saatu"
 #: WC_Gateway_Vipps.class.php:252
 #, php-format
 msgid "Could not get webhooks for Merchant Serial Number  %1$s: %2$s"
-msgstr "Kauppias Sarjanumero %1$s: %2$s ei saanut verkkokoukkuja %1$s:lle"
+msgstr "Verkkokoukkuja ei saatu kauppiaan sarjanumerolle %1$s: %2$s."
 
 #: VippsApi.class.php:107
 #, php-format
@@ -1730,9 +1722,6 @@ msgstr ""
 "Subscription-Key\""
 
 #: WC_Gateway_Vipps.class.php:1228
-#| msgid ""
-#| "Find your test account under the \"Developer\" tab on https://portal."
-#| "vipps.no/ and choose \"Show keys\". Copy the value of \"client_id\""
 msgid ""
 "Find your test account under the \"Developer\" tab on https://portal."
 "vippsmobilepay.com/ and choose \"Show keys\". Copy the value of \"client_id\""
@@ -1741,31 +1730,24 @@ msgstr ""
 "vippsmobilepay.com/ ja valitse \"Show keys\". Kopioi arvo \"client_id\""
 
 #: WC_Gateway_Vipps.class.php:1236
-#| msgid ""
-#| "Find your test account under the \"Developer\" tab on https://portal."
-#| "vipps.no/ and choose \"show keys\". Copy the value of \"client_secret\""
 msgid ""
 "Find your test account under the \"Developer\" tab on https://portal."
 "vippsmobilepay.com/ and choose \"show keys\". Copy the value of "
 "\"client_secret\""
 msgstr ""
 "Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
-"vippsmobilepay.no/ ja valitse \"näytä avaimet\". Kopioi arvo "
+"vippsmobilepay.com/  ja valitse \"näytä avaimet\". Kopioi arvo "
 "\"client_secret\""
 
 #: WC_Gateway_Vipps.class.php:1244
-#| msgid ""
-#| "Find your test account under the \"Developer\" tab on https://portal."
-#| "vipps.no/ and choose \"show keys\". Copy the value of \"Vipps-"
-#| "Subscription-Key\""
 msgid ""
 "Find your test account under the \"Developer\" tab on https://portal."
 "vippsmobilepay.com/ and choose \"show keys\". Copy the value of \"Vipps-"
 "Subscription-Key\""
 msgstr ""
-"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https:"
-"//portalmobilepay.vipps.no/ ja valitse \"näytä avaimet\". Kopioi arvo "
-"\"Vipps-Subscription-Key\""
+"Etsi testitilisi \"Developer\"-välilehdeltä osoitteessa https://portal."
+"vippsmobilepay.com/  ja valitse \"näytä avaimet\". Kopioi arvo \"Vipps-"
+"Subscription-Key\""
 
 #: Vipps.class.php:1717 Vipps.class.php:1732
 msgid "First Name"
@@ -1962,9 +1944,6 @@ msgstr ""
 
 #: Vipps.class.php:991
 #, php-format
-#| msgid ""
-#| "If you use %1$s or %2$s in WooCommerce, this allows your %3$s customers "
-#| "to safely log in without ever using a password."
 msgid ""
 "If you use %1$s in WooCommerce, this allows your %2$s customers to safely "
 "log in without ever using a password."
@@ -2139,7 +2118,7 @@ msgstr ""
 "Näyttää siltä, että QR-koodi tällä tunnuksella (%1$s) on jo olemassa "
 "Vippsissä.  Jos olet hiljattain tehnyt tietokannan palautuksen, yritä sen "
 "sijaan tuoda QR-koodi Synkronoimattomista koodeista ja poistaa tämä. Jos "
-"sinulla on useita Wordpress-instansseja, jotka käyttävät samaa Vipps-tiliä, "
+"sinulla on useita WordPress-instansseja, jotka käyttävät samaa Vipps-tiliä, "
 "varmista, että käytät eri etuliitteitä (WooCommerce Vippsin asetuksissa). "
 "Voit kokeilla muuttaa tämän merkinnän slugia (sinun on ehkä otettava tämä "
 "käyttöön sivun asetuksissa) ja tallentaa uudelleen, jos et välitä "
@@ -2461,6 +2440,10 @@ msgstr "Helthjemin antama salasana"
 msgid "Pay with %1$s for WooCommerce"
 msgstr "Maksa %1$s WooCommerce-kaupassa"
 
+#. Name of the plugin
+msgid "Pay with Vipps and MobilePay for WooCommerce"
+msgstr "Kassalle Vipps for WooCommerce kanssa"
+
 #: WC_Gateway_Vipps.class.php:1607 WC_Gateway_Vipps.class.php:1615
 msgid "Payment already captured"
 msgstr "Maksu on jo kirjattu"
@@ -2530,8 +2513,8 @@ msgid ""
 "Please note that there is normally a limit of <em><strong>5</strong> "
 "webhooks per MSN</em> - contact %1$s if you need more"
 msgstr ""
-"Huomaa, että tavallisesti <em>MSN:ää kohden</em> on rajoitettu <em><strong>"
-"5</strong> webhookia</em> - ota yhteyttä %1$s, jos tarvitset enemmän"
+"Huomaa, että tavallisesti MSN:ää kohden on rajoitettu <em><strong>5</strong> "
+"webhookia</em> - ota yhteyttä %1$s, jos tarvitset enemmän"
 
 #: Vipps.class.php:742
 msgid "Please refer to the documentation for the meaning of the parameters."
@@ -2966,10 +2949,6 @@ msgstr "Liitännäiset %1$s"
 
 #: Vipps.class.php:1390
 #, php-format
-#| msgid ""
-#| "The <a href=\"%1$s\">%2$s settings</a> are currently set up so all "
-#| "products that can be bought with Express Checkout will have a Buy Now "
-#| "button."
 msgid ""
 "The %1$s settings are currently set up so all products that can be bought "
 "with Express Checkout will have a Buy Now button."
@@ -2979,15 +2958,12 @@ msgstr ""
 
 #: Vipps.class.php:1401
 #, php-format
-#| msgid ""
-#| "The <a href=\"%1$s\">%2$s settings</a> are configured so that no products "
-#| "will have a Buy Now button - including this."
 msgid ""
 "The %1$s settings</a> are configured so that no products will have a Buy Now "
 "button - including this."
 msgstr ""
-"%1$s-asetukset on määritetty siten, että missään tuotteessa ei ole Osta heti "
-"-painiketta - tämä mukaan lukien."
+"%1$s-asetukset</a> on määritetty siten, että missään tuotteessa ei ole Osta "
+"heti -painiketta - tämä mukaan lukien."
 
 #: WC_Gateway_Vipps.class.php:853
 msgid "The API key provided to you by Porterbuddy"
@@ -3031,9 +3007,6 @@ msgstr "Tilaus ei ole %1$s-tilaus"
 
 #: Vipps.class.php:902 Vipps.class.php:950
 #, php-format
-#| msgid ""
-#| "The plugin is currently <b>active</b> - %1$s is available as a payment "
-#| "method."
 msgid "The plugin is <b>active</b> - %1$s is available as a payment method."
 msgstr ""
 "Lisäosa on tällä hetkellä <b>aktiivinen</b> - %1$s on käytettävissä "
@@ -3561,7 +3534,7 @@ msgid ""
 "WooCommerce - get started here!"
 msgstr ""
 "Vipps Recurring Payments for WooCommerce on täydellinen, jos myyt tilauksia "
-"tai jäsenyyksiä. Lisäosa on saatavilla Wordpressiin ja WooCommerceen - "
+"tai jäsenyyksiä. Lisäosa on saatavilla WordPressiin ja WooCommerceen - "
 "aloita tästä!"
 
 #: WC_Gateway_Vipps.class.php:1272
@@ -3752,9 +3725,6 @@ msgstr ""
 "edellisestä ostoksesta. Oletko varma, että haluat tilata uudelleen?"
 
 #: WC_Gateway_Vipps.class.php:963
-#| msgid ""
-#| "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
-#| "vipps.no"
 msgid ""
 "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
 "vippsmobilepay.com"
