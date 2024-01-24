@@ -106,7 +106,7 @@ Enter your Vipps account keys and configure the plugin
 You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
 
 ### In which countries can I use MobilePay?
-You can only get paid by users who have MobilePay. At the moment, MobilePay is only available in Finland and Denmark.
+You can only get paid by users who have MobilePay. At the moment plugin is only supporting MobilePay users in Finland. Support for MobilePay in Denmark coming later in Q1 2024.
 
 ### Does Vipps MobilePay offer a test environment for the plugin?
 
@@ -115,7 +115,7 @@ For developers that want to contribute to the development of the plugin, there i
 You will need an account for direct integration with the payment APIs, which can be ordered from
 [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 
-If you already have a Vipps account for WooCommerce and want to contribute to
+If you already have a Vipps or MobilePay account for WooCommerce and want to contribute to
 the development of the plugin, contact
 [customer service](https://vippsmobilepay.com/help)
 to *upgrade* your account with access to the test environment.
