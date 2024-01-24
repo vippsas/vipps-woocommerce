@@ -519,8 +519,7 @@ class VippsApi {
         $length = strlen($data['paymentDescription']);
         if ($length>99) {
           $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
-          $data['paymentDescription'] =  __('Confirm your order','woo-vipps');
-          $data['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
+          $data['paymentDescription'] = substr($data['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
         // Epayment can send the receipt already in the initiate call, so lets do it. IOK 2023-12-23
@@ -774,7 +773,6 @@ class VippsApi {
         $length = strlen($transaction['paymentDescription']);
         if ($length>99) {
           $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
-          $transaction['paymentDescription'] =  __('Confirm your order','woo-vipps');
           $transaction['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
