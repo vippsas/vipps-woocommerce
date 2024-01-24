@@ -2372,12 +2372,12 @@ EOF;
             $hookdata = $this->gateway()->get_local_webhook($msn);
             $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
             if (!$secret) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.', 'woo-vipps'), $order->get_id()), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.', 'woo-vipps'), $vippsorderid), 'debug');
                 return false;
             }
             $verified = $this->verify_webhook($raw_post, $secret);
             if (!$verified) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks', 'woo-vipps'), $order->get_id()), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks', 'woo-vipps'), $vippsorderid), 'debug');
                 return;
             }
 
