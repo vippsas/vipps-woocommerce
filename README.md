@@ -36,9 +36,11 @@ For more information, see:
 
 ## Checkout
 
+*Checkout is still in beta mode in Finland, bank transfer has limited availability.*
+
 With Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed and run by Vipps MobilePay.
 Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
-For Finland it is also possible to activate bank transfer as a payment method, with some restrictions.
+For Finland, it is also possible to activate bank transfer as a payment method, with some restrictions.
 VISA/MasterCard payments will be coming soon for MobilePay.
 
 ## Vipps Express Checkout
@@ -103,12 +105,14 @@ Enter your Vipps account keys and configure the plugin
 
 You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
 
-### Does Vipps offer a test environment for Vipps for WooCommerce?
+### In which countries can I use MobilePay?
+You can only get paid by users who have MobilePay. At the moment, MobilePay is only available in Finland and Denmark.
 
-Yes, for developers that want to contribute to the development of the plugin.
-Vipps does not offer a test account for normal users of the plugin.
+### Does Vipps MobilePay offer a test environment for the plugin?
 
-You will need an account for direct integration with the eCom API, which can be ordered from
+For developers that want to contribute to the development of the plugin, there is a test environment.
+
+You will need an account for direct integration with the payment APIs, which can be ordered from
 [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 
 If you already have a Vipps account for WooCommerce and want to contribute to
@@ -140,7 +144,7 @@ For issues with your WooCommerce installation you should use the
 [support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps).
 For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact).
 
-### FAQ
+### General FAQs
 
 See the
 [Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
@@ -148,7 +152,7 @@ for more help with Vipps MobilePay eCommerce.
 
 ## Requirements
 
-* WooCommerce 3.3.4 or newer is required
+* WooCommerce 3.3.4 or newer is required.
 * PHP 5.6 or higher is required.
 * An SSL Certificate is required.
-* The port 443 must not be blocked for outward traffic
+* The port 443 must not be blocked for outward traffic.
