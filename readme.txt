@@ -2,8 +2,8 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.1
-Stable tag: 2.0.1
+Version: 2.0.2
+Stable tag: 2.0.2
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
@@ -231,8 +231,8 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-01-24 version 2.0.1 =
-Fix bug in uninstall hook
+= 2024-01-24 version 2.0.1, 2.0.2 =
+Fix bug in uninstall hook and activation hook when settings are wrong in the database
 
 = 2024-01-23 version 2.0.0 =
 Support MobilePay as a payment method in Finland

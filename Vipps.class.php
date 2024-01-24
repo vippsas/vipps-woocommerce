@@ -3115,7 +3115,11 @@ EOF;
          $gw->update_option('orderprefix', $this->generate_order_prefix()); 
        }
        // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
-       $gw->initialize_webhooks();
+       try {
+           $gw->initialize_webhooks();
+       } catch (Exception $e) {
+            $this->log(sprintf(__("Could not initialize webhooks for this site: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
+       }
        $this->payment_method_name = $gw->get_option('payment_method_name');
 
     }   
