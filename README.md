@@ -13,7 +13,7 @@ END_METADATA -->
 
 ![Vipps](./docs/images/vipps.png) *Available for Vipps.*
 
-![MobilePay](./docs/images/mp.png) *Available for MobilePay*
+![MobilePay](./docs/images/mp.png) *Available for MobilePay in Finland. Expected availability in Denmark is Q1 2024.*
 
 *This plugin is built and maintained by [Everyday AS](https://everyday.no) and is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).*
 

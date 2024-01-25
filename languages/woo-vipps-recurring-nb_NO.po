@@ -9,7 +9,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2020-10-16T12:18:56+00:00\n"
-"PO-Revision-Date: 2024-01-18 15:12+0000\n"
+"PO-Revision-Date: 2024-01-25 08:20+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: woo-vipps-recurring\n"
 "Report-Msgid-Bugs-To: \n"
@@ -633,7 +633,8 @@ msgid "Vipps/MobilePay Recurring Payments"
 msgstr "Vipps/MobilePay faste betalinger"
 
 #. Plugin Name of the plugin
-msgid "Vipps/MobilePay Recurring Payments Gateway for WooCommerce"
+#| msgid "Vipps/MobilePay Recurring Payments Gateway for WooCommerce"
+msgid "Vipps/MobilePay recurring payments for WooCommerce"
 msgstr "Vipps/MobilePay faste betalinger for WooCommerce"
 
 #: woo-vipps-recurring.php:293
