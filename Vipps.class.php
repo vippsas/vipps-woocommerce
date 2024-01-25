@@ -3118,14 +3118,9 @@ EOF;
          $gw->update_option('orderprefix', $this->generate_order_prefix()); 
        }
        // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
-       try {
-           $gw->initialize_webhooks();
-       } catch (Exception $e) {
-            $this->log(sprintf(__("Could not initialize webhooks for this site: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
-       }
+       $gw->initialize_webhooks();
        $this->payment_method_name = $gw->get_option('payment_method_name');
-
-    }   
+    }  
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
     public static function deactivate() {

@@ -3654,6 +3654,16 @@ function activate_vipps_checkout(yesno) {
     // This will initalize the webhooks for this instance, for all MSNs that are configured.
     // Hooks that point to us that we *do not* know the secret for, have to be deleted.
     public function initialize_webhooks() {
+       // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
+       try {
+           return $this->initialize_webhooks_internal();
+       } catch (Exception $e) {
+            $this->log(sprintf(__("Could not initialize webhooks for this site: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
+           return [];
+       }
+    }
+
+    private function initialize_webhooks_internal () {
         $local_hooks = get_option('_woo_vipps_webhooks');
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();

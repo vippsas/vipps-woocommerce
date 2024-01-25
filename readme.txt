@@ -2,8 +2,8 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.3
-Stable tag: 2.0.3
+Version: 2.0.4
+Stable tag: 2.0.4
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
@@ -232,8 +232,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-01-25 version 2.0.3  =
+= 2024-01-25 version 2.0.3, 2.0.4  =
 Fix default payment status
+More protection against issues where settings are wrong and the plugin tries to instantiate webhooks
 
 = 2024-01-24 version 2.0.1, 2.0.2 =
 Fix bug in uninstall hook and activation hook when settings are wrong in the database
