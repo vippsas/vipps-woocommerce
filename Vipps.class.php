@@ -80,12 +80,15 @@ class Vipps {
         if (!$development) {
            return load_plugin_textdomain($domain, $deprecated, $plugin_rel_path);
         }
+        // Available since 6.1.0 only IOK 2023-01-25
         global $wp_textdomain_registry;
-        $locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
-        $mofile = $domain . '-' . $locale . '.mo';
-        $path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
-        $wp_textdomain_registry->set_custom_path( $domain, $path );
-        return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+        if ($wp_textdomain_registry) {
+            $locale = apply_filters( 'plugin_locale', determine_locale(), $domain );
+            $mofile = $domain . '-' . $locale . '.mo';
+            $path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
+            $wp_textdomain_registry->set_custom_path( $domain, $path );
+            return load_textdomain( $domain, $path . '/' . $mofile, $locale );
+        }
     }
 
     public static function register_hooks() {
