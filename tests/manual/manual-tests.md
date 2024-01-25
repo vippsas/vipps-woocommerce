@@ -1,6 +1,6 @@
 # Manual tests
 
-We currently have no testing suite for Vipps Recurring Payments for WooCommerce
+We currently have no testing suite for Vipps/MobilePay Recurring Payments for WooCommerce
 
 It's imperative we test each update manually.
 
@@ -8,7 +8,7 @@ It's imperative we test each update manually.
 
 ### Order creation
 
-I should be able to create an order for a subscription product and pay via Vipps with the following configurations:
+I should be able to create an order for a subscription product and pay via Vipps/MobilePay with the following configurations:
 
 - Physical products
     - On different intervals (day, week, month, year)
@@ -48,5 +48,5 @@ I should be able to cancel a subscription, the subscription agreement should the
 
 ### Swapping gateway
 
-- I should be able to swap to Vipps Recurring Payments from any other gateway successfully.
-- I should be able to swap to Vipps from Vipps
+- I should be able to swap to Vipps/MobilePay Recurring Payments from any other gateway successfully.
+- I should be able to swap to Vipps/MobilePay from Vipps/MobilePay 

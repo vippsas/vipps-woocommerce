@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 class WC_Vipps_Recurring_All_Products_Support {
 	/**
-	 * Initialize Vipps Recurring All Products Support class.
+	 * Initialize Vipps/MobilePay Recurring All Products Support class.
 	 */
 	public static function init() {
 		add_filter( 'wc_vipps_recurring_cart_has_subscription_product', [

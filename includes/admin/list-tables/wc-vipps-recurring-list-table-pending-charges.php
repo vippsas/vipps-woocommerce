@@ -1,6 +1,6 @@
 <?php
 /**
- * Vipps Recurring List Table
+ * Vipps/MobilePay Recurring List Pending Charges Table
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -193,7 +193,7 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 	}
 
 	/**
-	 * Generate HTML for a single row on the vipps pending charges admin panel.
+	 * Generate HTML for a single row on the Vipps/MobilePay pending charges admin panel.
 	 *
 	 * @param WC_Order $order_object The current user object.
 	 * @param string $style Deprecated. Not used.

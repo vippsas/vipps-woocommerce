@@ -51,11 +51,11 @@ class WC_Vipps_Recurring_Api {
 		try {
 			return $this->http_call( 'accessToken/get', 'POST' );
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			WC_Vipps_Recurring_Logger::log( 'Could not get Vipps access token ' . $e->getMessage() );
+			WC_Vipps_Recurring_Logger::log( 'Could not get Vipps/MobilePay access token ' . $e->getMessage() );
 
 			throw $e;
 		} catch ( Exception $e ) {
-			WC_Vipps_Recurring_Logger::log( 'Could not get Vipps access token ' . $e->getMessage() );
+			WC_Vipps_Recurring_Logger::log( 'Could not get Vipps/MobilePay access token ' . $e->getMessage() );
 
 			throw new WC_Vipps_Recurring_Config_Exception( $e->getMessage() );
 		}
@@ -322,7 +322,7 @@ class WC_Vipps_Recurring_Api {
 		$merchant_serial_number = $this->gateway->get_option( "merchant_serial_number" );
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
-			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps Recurring Payments gateway is not correctly configured.', 'woo-vipps-recurring' ) );
+			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'woo-vipps-recurring' ) );
 		}
 
 		$headers = array_merge( [
@@ -372,7 +372,7 @@ class WC_Vipps_Recurring_Api {
 	private function handle_http_response( $response, $request_body, $endpoint, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
-			$error_msg = __( 'No response from Vipps', 'woo-vipps-recurring' );
+			$error_msg = __( 'No response from Vipps/MobilePay', 'woo-vipps-recurring' );
 			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $error_msg, $request_body ) );
 
 			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
@@ -392,7 +392,7 @@ class WC_Vipps_Recurring_Api {
 
 		// Rate limiting, temporary error
 		if ( $status === 429 ) {
-			$error_msg = __( "We hit Vipps' rate limit, we will retry later.", 'woo-vipps-recurring' );
+			$error_msg = __( "We hit Vipps/MobilePay's rate limit, we will retry later.", 'woo-vipps-recurring' );
 			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
 		}
 

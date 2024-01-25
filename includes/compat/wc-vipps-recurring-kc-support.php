@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 class WC_Vipps_Recurring_Kc_Support {
 	/**
-	 * Initialize Vipps Recurring KC Support class.
+	 * Initialize Vipps/MobilePay Recurring KC Support class.
 	 */
 	public static function init() {
 		add_filter( 'kco_wc_gateway_settings', [ __CLASS__, 'form_fields' ] );
@@ -71,33 +71,34 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * Add custom setting fields to Klarna's Vipps Recurring settings.
+	 * Add custom setting fields to Klarna's Vipps/MobilePay Recurring settings.
 	 */
 	public static function form_fields( $settings ) {
 		$settings['epm_vipps_recurring_settings_title'] = [
-			'title' => __( 'External Payment Method - Vipps Recurring Payments', 'woo-vipps-recurring' ),
+			'title' => __( 'External Payment Method - Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
 			'type'  => 'title',
 		];
 
 		$settings['epm_vipps_recurring_activate'] = [
 			'title'       => __( 'Activate', 'woo-vipps-recurring' ),
 			'type'        => 'checkbox',
-			'description' => __( 'Activate Vipps Recurring Payments as an external payment method for Klarna Checkout', 'woo-vipps-recurring' ),
+			'description' => __( 'Activate Vipps/MobilePay Recurring Payments as an external payment method for Klarna Checkout', 'woo-vipps-recurring' ),
 			'default'     => 'yes',
 		];
 
 		$settings['epm_vipps_recurring_description'] = [
 			'title'       => __( 'Description', 'woo-vipps-recurring' ),
 			'type'        => 'textarea',
-			'description' => __( 'Description for Vipps Recurring Payments method. This controls the description which the user sees in the checkout form.', 'woo-vipps-recurring' ),
-			'default'     => __('Remember: Vipps is always has no fees when paying businesses.', 'woo-vipps-recurring'),
+			'description' => __( 'Description for Vipps/MobilePay Recurring Payments method. This controls the description which the user sees in the checkout form.', 'woo-vipps-recurring' ),
+			// translators: {brand}: brand name, Vipps or MobilePay
+			'default'     => __( 'Remember: {brand} is always has no fees when paying businesses.', 'woo-vipps-recurring' ),
 		];
 
 		$settings['epm_vipps_recurring_img_url'] = [
 			'title'       => __( 'Image url', 'woo-vipps-recurring' ),
 			'type'        => 'text',
-			'description' => __( 'URL to the Vipps logo', 'woo-vipps-recurring' ),
-			'default'     => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/vipps-rgb-black.png'
+			'description' => __( 'URL to the Vipps/MobilePay logo', 'woo-vipps-recurring' ),
+			'default'     => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/{brand}-logo-black.svg'
 		];
 
 		$settings['epm_vipps_recurring_disable_button'] = [
@@ -111,7 +112,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * Add Vipps Recurring to Klarna Checkout.
+	 * Add Vipps/MobilePay Recurring to Klarna Checkout.
 	 */
 	public static function create_vipps_recurring_order( $create ) {
 		$merchant_urls    = KCO_WC()->merchant_urls->get_urls();
@@ -131,13 +132,15 @@ class WC_Vipps_Recurring_Kc_Support {
 			return $create;
 		}
 
-		$image_url   = $kco_settings['epm_vipps_recurring_img_url'] ?? '';
-		$description = $kco_settings['epm_vipps_recurring_description'] ?? '';
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway;
+
+		$image_url   = str_replace( '{brand}', $gateway->brand, $kco_settings['epm_vipps_recurring_img_url'] ?? '' );
+		$description = str_replace( '{brand}', $gateway->title, $kco_settings['epm_vipps_recurring_description'] ?? '' );
 
 		$gateway = [
-			'name'         => 'Vipps',
+			'name'         => $gateway->title,
 			'redirect_url' => add_query_arg( [
-				'kco-external-payment' => WC_Vipps_Recurring::get_instance()->gateway->id,
+				'kco-external-payment' => $gateway->id,
 				'order_id'             => $create['agreement_id'] ?? '{checkout.order.id}'
 			], $confirmation_url ),
 			'image_url'    => $image_url,
@@ -152,7 +155,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * Add the Vipps Recurring Payments method to Klarna
+	 * Add the Vipps/MobilePay Recurring Payments method to Klarna
 	 */
 	public static function add_vipps_recurring_payment_method() {
 		if ( isset( $_GET['kco-external-payment'] ) && 'vipps_recurring' === $_GET['kco-external-payment'] ) { ?>
@@ -165,7 +168,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * Reset the default payment method back to KCO after a completed Vipps payment
+	 * Reset the default payment method back to KCO after a completed Vipps/MobilePay payment
 	 */
 	public static function reset_default_payment_method() {
 		if ( WC()->session && WC()->session->get( 'vipps_via_klarna' ) ) {
@@ -188,11 +191,11 @@ class WC_Vipps_Recurring_Kc_Support {
 	}
 
 	/**
-	 * We need to remove +47 and all spaces from the phone number before handing it off to the Vipps API.
+	 * We need to remove + and all spaces from the phone number before handing it off to the Vipps/MobilePay API.
 	 */
 	public static function canonicalize_phone_number( $klarna_order ) {
 		if ( isset( $_GET['kco-external-payment'] ) && 'vipps_recurring' === $_GET['kco-external-payment'] ) {
-			$phone_number                         = preg_replace( "/^\+47|[\s]/", '', $klarna_order->billing_address->phone );
+			$phone_number                         = preg_replace( "/^\+|\s/", '', $klarna_order->billing_address->phone );
 			$klarna_order->billing_address->phone = $phone_number;
 		}
 

@@ -75,13 +75,15 @@ class WC_Vipps_Recurring_Admin_Notices {
 					'vipps_recurring_dismiss' => sanitize_title( $admin_notice->dismiss_name )
 				], admin_url() );
 
-				$logo_url = $admin_notice->logo ?? 'assets/images/vipps-logo.svg';
+				$gateway = WC_Gateway_Vipps_Recurring::get_instance();
+
+				$logo_url = $admin_notice->logo ?? 'assets/images/' . $gateway->brand . '-logo.svg';
 				$logo     = plugins_url( $logo_url, $this->plugin_path );
 				$img_html = "<img src='$logo' alt=''>";
 
 				if ( ! get_option( "vipps_recurring_dismissed_{$option}" ) && ! get_transient( "vipps_recurring_dismissed_{$option}" ) ) {
 					?>
-					<div class="ui message <?php echo $type; ?> notice notice-vipps-recurring notice-<?php echo $type;
+					<div class="ui message <?php echo $type; ?> notice notice-vipps-recurring <?php echo $gateway->brand; ?> notice-<?php echo $type;
 					if ( $admin_notice->theme ) {
 						echo " notice-vipps-recurring--$admin_notice->theme";
 					}

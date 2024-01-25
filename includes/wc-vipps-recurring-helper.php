@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Vipps_Recurring_Helper {
 	/**
-	 * Vipps charges
+	 * Charges
 	 */
 	public const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';
 	public const META_CHARGE_FAILED_REASON = '_vipps_recurring_failed_charge_reason';
@@ -20,7 +20,7 @@ class WC_Vipps_Recurring_Helper {
 	public const META_CHARGE_LATEST_STATUS = '_vipps_recurring_latest_api_status';
 
 	/**
-	 * Vipps agreements
+	 * Agreements
 	 */
 	public const META_AGREEMENT_ID = '_agreement_id';
 
@@ -52,7 +52,7 @@ class WC_Vipps_Recurring_Helper {
 	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
 
 	/**
-	 * Get Vipps amount to pay
+	 * Get Vipps/MobilePay amount to pay
 	 *
 	 * @param float|int $total Amount due.
 	 *
@@ -94,7 +94,7 @@ class WC_Vipps_Recurring_Helper {
 	}
 
 	/**
-	 * Checks if a phone number is valid according to Vipps standards
+	 * Checks if a phone number is valid according to Vipps/MobilePay standards
 	 *
 	 * @param $phone_number
 	 *
