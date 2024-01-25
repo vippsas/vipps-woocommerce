@@ -333,11 +333,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // normally used to indicate "a problem with the order". Not being able to capture a reserved order has to my knowledge at this
     // point only happened once, in 2018, with a completely different api and backend.
     public function after_vipps_order_status($order=null) {
-      $defaultstatus = 'processing';
+      // Revert to on-hold if the user tries to set a payment status that is a 'captured' status IOK 2024-01-25
+      $defaultstatus = 'on-hold';
+
       $chosen = $this->get_option('result_status');
-      if ($chosen == 'processing') $defaultstatus = $chosen;
-      $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $defaultstatus, $order);
+      $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $chosen, $order);
+
       if (in_array($newstatus, $this->captured_statuses)){
+             error_log("not using $newstatus because it is one of the captured statuses");
              $this->log(sprintf(__("Cannot use %1\$s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus),'debug');
              return  $defaultstatus;
       }
