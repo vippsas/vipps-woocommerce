@@ -171,10 +171,10 @@ If your question is not answered on this page:
   [Vipps MobilePay Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
   may also be useful.
 
-### Does this plugin work alongside the Vipps MobilePay Checkout plugin?
+### Does this plugin work alongside the "Pay with Vipps and MobilePay for WooCommerce" plugin?
 
 Yes! You can use this plugin at the same time as
-[Vipps MobilePay Checkout](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
+[Pay with Vipps and MobilePay for WooCommerce](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
 
 ### Do I need to have a license for WooCommerce Subscriptions in order to use this plugin?
 

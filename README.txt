@@ -1,4 +1,4 @@
-=== Vipps/MobilePay recurring payments ===
+=== Vipps/MobilePay recurring payments for WooCommerce ===
 Contributors: Vipps MobilePay, EverydayAS
 Tags: vipps, mobilepay, vippsmobilepay, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
@@ -161,6 +161,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.19.0 =
+* Added: Support for paying with MobilePay in Finland, and later Denmark.
+
 = 1.18.0 =
 * Added: Support for WooCommerce checkout blocks. This allows Vipps/MobilePay recurring payments to be used with the new standard checkout.
 
@@ -176,7 +179,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 = 1.17.0 =
 * Added: Support for WooCommerce High Performance Order Storage (HPOS)
 * Fixed: Period campaigns now show correctly in the app when there's both a free trial and a sign-up fee.
-* Fixed: Changed the logic for how we determine whether to show our gateway, because certain plugins add their own subscription types. Now we only disable our gateway if Vipps MobilePay Checkout is being shown as well.
+* Fixed: Changed the logic for how we determine whether to show our gateway, because certain plugins add their own subscription types. Now we only disable our gateway if "Pay with Vipps and MobilePay for WooCommerce" is being shown as well.
 * Fixed: We no longer care about an order's status when it comes to displaying the "Capture" button. If there are funds to capture, we show it.
 * Fixed: Better error logging for when we try to capture a charge that can no longer be captured. Rewrote the capture payment handler.
 * Fixed: Changing gateway was no longer possible in one of the later Woo Subscription versions, due to the use of `wp_safe_redirect`. We now whitelist Vipps MobilePay's domains.
@@ -226,7 +229,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.
 
 = 1.14.6 =
-* Fixed: Fixed a conflict that prevented Vipps MobilePay from working in Klarna if Vipps MobilePay Recurring and Vipps MobilePay Checkout were installed at the same time.
+* Fixed: Fixed a conflict that prevented Vipps MobilePay from working in Klarna if Vipps MobilePay Recurring and "Pay with Vipps and MobilePay for WooCommerce" were installed at the same time.
 
 = 1.14.5 =
 * Fixed: You can now swap gateway to Vipps/MobilePay recurring payments from a subscription again.
@@ -243,7 +246,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: Changing payment gateway to Vipps MobilePay now works again.
 
 = 1.14.1 =
-* Fixed: Renamed our Vipps MobilePay access token transient to prevent conflicts with Vipps MobilePay Checkout when two different sets of merchant tokens are used.
+* Fixed: Renamed our Vipps MobilePay access token transient to prevent conflicts with "Pay with Vipps and MobilePay for WooCommerce" when two different sets of merchant tokens are used.
 
 = 1.14.0 =
 * Added: Support for [All Products for WooCommerce Subscriptions](https://woocommerce.com/products/all-products-for-woocommerce-subscriptions/). Thanks to @danielcherubini on GitHub.
@@ -285,7 +288,7 @@ If you renew early, and you're not already using Vipps MobilePay you will be sen
 * Fixed: Fixed an issue where `initialCharge.description` was empty. It cannot be empty under any circumstances.
 
 = 1.12.1 =
-* Fixed: A bug in Klarna Checkout where it would attempt to use Vipps/MobilePay recurring payments instead of Vipps MobilePay Checkout when you're only purchasing one time payment products.
+* Fixed: A bug in Klarna Checkout where it would attempt to use Vipps/MobilePay recurring payments instead of "Pay with Vipps and MobilePay for WooCommerce" when you're only purchasing one time payment products.
 * Fixed: Descriptions of products you are not paying for right away is no longer included in initialCharge's description.
 * Fixed: Campaigns are now used correctly when a single product is purchased along with a synced subscription product.
 * Fixed: Campaigns are now used correctly when a single product is purchased along with a subscription product with a free trial.
