@@ -8,7 +8,7 @@
  * Version: 1.19.0
  * Requires at least: 4.4
  * Tested up to: 6.4
- * WC tested up to: 8.2
+ * WC tested up to: 8.5
  * Text Domain: woo-vipps-recurring
  * Domain Path: /languages
  */
