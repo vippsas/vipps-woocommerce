@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.4
-Stable tag: 2.0.4
+Version: 2.0.5
+Stable tag: 2.0.5
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.5.1
+WC tested up to: 8.5.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -88,6 +88,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fix bug with Checkout when several orderlines have the same product id
 Fixes a bug in version 2.0.0-2.0.2 in the payment status after purchase handling making it always "Processing". 
 Support MobilePay as a payment method in Finland
 Change default payment status to Processing after payment is complete
@@ -231,6 +232,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-01-25 version 2.0.5 =
+Add workaround for Orderline issue with Checkout
+Use translate.wp.org for translations
 
 = 2024-01-25 version 2.0.3, 2.0.4  =
 Fix default payment status

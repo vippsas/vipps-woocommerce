@@ -76,7 +76,7 @@ class Vipps {
 
     // To simplify development, we load translations from the plugins' own .mos on development branches. IOK 2023-11-28
     public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
-        $development = apply_filters('woo_vipps_use_plugin_translations', true);
+        $development = apply_filters('woo_vipps_use_plugin_translations', false);
         if (!$development) {
            return load_plugin_textdomain($domain, $deprecated, $plugin_rel_path);
         }

@@ -865,9 +865,28 @@ class VippsApi {
         // IOK 2024-01-09 Fix this as soon as the EUR bug is fixed!
         if ($summarize) {
             $ordersummary = $this->get_receipt_data($order);
+
             // This is different in the receipt api, the epayment api and in checkout.
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
             unset($ordersummary['bottomLine']);
+
+            // A bug in the Vipps Checkout API will not allow for several order lines with the same
+            // product id (for instance, with different custom text etc). IOK 2024-01-26
+            // FIXME when this is fixed at Vipps
+            $orderlines = $ordersummary['orderLines'];
+            $seen = [];
+            $newlines = [];
+            foreach($orderlines as $orderline) {
+                $productid = $orderline['id'];
+                if (isset($seen[$productid])) {
+                    $seen[$productid]++;
+                    $orderline['id'] = $orderline['id'] . ":" . $seen[$productid];
+                } else {
+                    $seen[$productid] = 0;
+                }
+                $newlines[] = $orderline;
+            }
+            $ordersummary['orderLines'] = $newlines;
 
             // Don't finalize the receipt number - we just want to show this rn.
             unset($ordersummary['orderBottomLine']['receiptNumber']);
