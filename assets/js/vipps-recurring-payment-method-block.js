@@ -46,7 +46,7 @@ function registerVippsRecurringGateway() {
   const paymentMethod = {
     name: 'vipps_recurring',
     // translators: %s: brand name, Vipps or MobilePay
-    placeOrderButtonLabel: sprintf(__("Continue with %s", "woo-vipps-recurring"), settings.title),
+    placeOrderButtonLabel: sprintf(__("Continue with %s", "vipps-recurring-payments-gateway-for-woocommerce"), settings.title),
     supports: {
       features: settings.supports || []
     },

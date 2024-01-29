@@ -322,7 +322,7 @@ class WC_Vipps_Recurring_Api {
 		$merchant_serial_number = $this->gateway->get_option( "merchant_serial_number" );
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
-			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'woo-vipps-recurring' ) );
+			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 		}
 
 		$headers = array_merge( [
@@ -372,7 +372,7 @@ class WC_Vipps_Recurring_Api {
 	private function handle_http_response( $response, $request_body, $endpoint, $default_error ) {
 		// no response from Vipps
 		if ( ! $response ) {
-			$error_msg = __( 'No response from Vipps/MobilePay', 'woo-vipps-recurring' );
+			$error_msg = __( 'No response from Vipps/MobilePay', 'vipps-recurring-payments-gateway-for-woocommerce' );
 			WC_Vipps_Recurring_Logger::log( sprintf( 'HTTP Response Temporary Error: %s with request body: %s', $error_msg, $request_body ) );
 
 			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
@@ -392,7 +392,7 @@ class WC_Vipps_Recurring_Api {
 
 		// Rate limiting, temporary error
 		if ( $status === 429 ) {
-			$error_msg = __( "We hit Vipps/MobilePay's rate limit, we will retry later.", 'woo-vipps-recurring' );
+			$error_msg = __( "We hit Vipps/MobilePay's rate limit, we will retry later.", 'vipps-recurring-payments-gateway-for-woocommerce' );
 			throw new WC_Vipps_Recurring_Temporary_Exception( $error_msg );
 		}
 
@@ -484,11 +484,11 @@ class WC_Vipps_Recurring_Api {
 		$localized_msg = $error_msg;
 		if ( $is_merchant_not_allowed_error ) {
 			/* translators: Link to a GitHub readme about the error */
-			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'woo-vipps-recurring' ), 'https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-faq/#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
+			$localized_msg = sprintf( __( 'Recurring payments is not yet activated for this sale unit. Read more <a href="%s" target="_blank">here</a>', 'vipps-recurring-payments-gateway-for-woocommerce' ), 'https://developer.vippsmobilepay.com/docs/APIs/recurring-api/recurring-api-faq/#why-do-i-get-the-error-merchantnotallowedforrecurringoperation' );
 		}
 
 		if ( $is_url_validation_error ) {
-			$localized_msg = __( 'Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?', 'woo-vipps-recurring' );
+			$localized_msg = __( 'Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?', 'vipps-recurring-payments-gateway-for-woocommerce' );
 		}
 
 		if ( is_array( $request_body ) ) {

@@ -9,7 +9,7 @@
  * Requires at least: 4.4
  * Tested up to: 6.4
  * WC tested up to: 8.5
- * Text Domain: woo-vipps-recurring
+ * Text Domain: vipps-recurring-payments-gateway-for-woocommerce
  * Domain Path: /languages
  */
 
@@ -65,7 +65,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 		return;
 	}
 
-	load_plugin_textdomain( 'woo-vipps-recurring', false, plugin_basename( __DIR__ ) . '/languages' );
+	load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 	if ( ! class_exists( 'WC_Vipps_Recurring' ) ) {
 		/*
@@ -277,7 +277,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( ! class_exists( 'WC_Subscriptions' ) ) {
 					// translators: %s link to WooCommerce Subscription's purchase page
-					$notice = sprintf( esc_html__( 'Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps-recurring' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
+					$notice = sprintf( esc_html__( 'Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'vipps-recurring-payments-gateway-for-woocommerce' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
 					$this->notices->error( $notice );
 
 					return;
@@ -290,7 +290,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				] );
 
 				if ( $this->gateway->test_mode ) {
-					$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'woo-vipps-recurring' );
+					$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'vipps-recurring-payments-gateway-for-woocommerce' );
 					$this->notices->warning( $notice );
 				}
 
@@ -298,7 +298,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				add_action( 'current_screen', [ $this, 'setup_screen' ] );
 
 				if ( isset( $_REQUEST['statuses_checked'] ) ) {
-					$this->notices->success( __( 'Successfully checked the status of these charges', 'woo-vipps-recurring' ) );
+					$this->notices->success( __( 'Successfully checked the status of these charges', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 				}
 
 				// Show Vipps Login notice for a maximum of 10 days
@@ -311,7 +311,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 //
 //					$this->notices->campaign(
 //					/* translators: %1$s URL to login-with-vipps, %2$s translation for "here" */
-//						sprintf( __( 'Login with Vipps is available for WooCommerce. Super-easy and safer login for your customers - no more usernames and passwords. Get started <a href="%1$s" target="_blank">%2$s</a>!', 'woo-vipps-recurring' ), $vipps_login_plugin_url, __( 'here', 'woo-vipps-recurring' ) ),
+//						sprintf( __( 'Login with Vipps is available for WooCommerce. Super-easy and safer login for your customers - no more usernames and passwords. Get started <a href="%1$s" target="_blank">%2$s</a>!', 'vipps-recurring-payments-gateway-for-woocommerce' ), $vipps_login_plugin_url, __( 'here', 'vipps-recurring-payments-gateway-for-woocommerce' ) ),
 //						'login_promotion',
 //						true,
 //						'assets/images/vipps-logg-inn-neg.png',
@@ -525,8 +525,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function admin_menu() {
 				add_options_page(
-					__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
-					__( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
+					__( 'Vipps/MobilePay Recurring Payments', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+					__( 'Vipps/MobilePay Recurring Payments', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 					'manage_options',
 					'woo-vipps-recurring',
 					[ $this, 'admin_menu_page_html' ]
@@ -550,9 +550,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function wp_ajax_vipps_recurring_force_check_charge_statuses(): void {
 				try {
 					/* translators: amount of orders checked */
-					echo sprintf( __( 'Done. Checked the status of %s orders', 'woo-vipps-recurring' ), count( $this->check_order_statuses( - 1 ) ) );
+					echo sprintf( __( 'Done. Checked the status of %s orders', 'vipps-recurring-payments-gateway-for-woocommerce' ), count( $this->check_order_statuses( - 1 ) ) );
 				} catch ( Exception $e ) {
-					echo __( 'Failed to finish checking the status of all orders. Please try again.', 'woo-vipps-recurring' );
+					echo __( 'Failed to finish checking the status of all orders. Please try again.', 'vipps-recurring-payments-gateway-for-woocommerce' );
 				}
 
 				wp_die();
@@ -565,7 +565,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function woocommerce_product_data_tabs( $tabs ) {
 				$tabs['wc_vipps_recurring'] = [
-					'label'    => __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps-recurring' ),
+					'label'    => __( 'Vipps/MobilePay Recurring Payments', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 					'target'   => 'wc_vipps_recurring_product_data',
 					'priority' => 100,
 				];
@@ -582,30 +582,30 @@ function woocommerce_gateway_vipps_recurring_init() {
 				woocommerce_wp_checkbox( [
 					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE,
 					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE, true ),
-					'label'       => __( 'Capture payment instantly', 'woo-vipps-recurring' ),
-					'description' => __( 'Capture payment instantly even if the product is not virtual. Please make sure you are following the local jurisdiction in your country when using this option.', 'woo-vipps-recurring' ),
+					'label'       => __( 'Capture payment instantly', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+					'description' => __( 'Capture payment instantly even if the product is not virtual. Please make sure you are following the local jurisdiction in your country when using this option.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 					'desc_tip'    => true,
 				] );
 
 				woocommerce_wp_select( [
 					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE,
 					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_SOURCE, true ) ?: 'title',
-					'label'       => __( 'Description source', 'woo-vipps-recurring' ),
-					'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps/MobilePay app.', 'woo-vipps-recurring' ),
+					'label'       => __( 'Description source', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+					'description' => __( 'Where we should source the agreement description from. Displayed in the Vipps/MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 					'desc_tip'    => true,
 					'options'     => [
-						'none'              => __( 'None', 'woo-vipps-recurring' ),
-						'short_description' => __( 'Product short description', 'woo-vipps-recurring' ),
-						'custom'            => __( 'Custom', 'woo-vipps-recurring' )
+						'none'              => __( 'None', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+						'short_description' => __( 'Product short description', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+						'custom'            => __( 'Custom', 'vipps-recurring-payments-gateway-for-woocommerce' )
 					]
 				] );
 
 				woocommerce_wp_text_input( [
 					'id'          => WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_TEXT,
 					'value'       => get_post_meta( get_the_ID(), WC_Vipps_Recurring_Helper::META_PRODUCT_DESCRIPTION_TEXT, true ),
-					'label'       => __( 'Custom description', 'woo-vipps-recurring' ),
-					'description' => __( 'If the description source is set to "custom" this text will be used.', 'woo-vipps-recurring' ),
-					'placeholder' => __( 'Max 100 characters', 'woo-vipps-recurring' ),
+					'label'       => __( 'Custom description', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+					'description' => __( 'If the description source is set to "custom" this text will be used.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+					'placeholder' => __( 'Max 100 characters', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 					'desc_tip'    => true,
 				] );
 
@@ -657,7 +657,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( $show_capture_button && ! $is_captured ) {
 					$logo = plugins_url( 'assets/images/' . $this->gateway->brand . '-logo-white.svg', __FILE__ );
 
-					print '<button type="button" data-order-id="' . $order->get_id() . '" data-action="capture_payment" class="button generate-items capture-payment-button '.$this->gateway->brand.'"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'woo-vipps-recurring' ) . '</button>';
+					print '<button type="button" data-order-id="' . $order->get_id() . '" data-action="capture_payment" class="button generate-items capture-payment-button '.$this->gateway->brand.'"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'vipps-recurring-payments-gateway-for-woocommerce' ) . '</button>';
 				}
 			}
 
@@ -769,7 +769,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 */
 			public function plugin_action_links( $links ): array {
 				$plugin_links = [
-					'<a href="admin.php?page=wc-settings&tab=checkout&section=vipps_recurring">' . esc_html__( 'Settings', 'woo-vipps-recurring' ) . '</a>',
+					'<a href="admin.php?page=wc-settings&tab=checkout&section=vipps_recurring">' . esc_html__( 'Settings', 'vipps-recurring-payments-gateway-for-woocommerce' ) . '</a>',
 				];
 
 				return array_merge( $plugin_links, $links );

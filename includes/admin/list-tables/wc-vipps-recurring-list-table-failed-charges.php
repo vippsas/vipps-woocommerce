@@ -100,7 +100,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 	 * Output 'no users' message.
 	 */
 	public function no_items() {
-		_e( 'No failed charges found.', 'woo-vipps-recurring' );
+		_e( 'No failed charges found.', 'vipps-recurring-payments-gateway-for-woocommerce' );
 	}
 
 	/**
@@ -111,7 +111,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 	 */
 	protected function get_bulk_actions() {
 		return [
-			'check_status' => __( 'Check Status', 'woo-vipps-recurring' )
+			'check_status' => __( 'Check Status', 'vipps-recurring-payments-gateway-for-woocommerce' )
 		];
 	}
 
@@ -164,11 +164,11 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 		return [
 			'cb'             => '<input type="checkbox" />',
 			'order'          => __( 'Order', 'woocommerce' ),
-			'agreement_id'   => __( 'Agreement ID', 'woo-vipps-recurring' ),
-			'charge_id'      => __( 'Charge ID', 'woo-vipps-recurring' ),
-			'failure_reason' => __( 'Failure Reason', 'woo-vipps-recurring' ),
-			'api_status'     => __( 'Latest API Status', 'woo-vipps-recurring' ),
-			'created_at'     => __( 'Created At', 'woo-vipps-recurring' ),
+			'agreement_id'   => __( 'Agreement ID', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'charge_id'      => __( 'Charge ID', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'failure_reason' => __( 'Failure Reason', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'api_status'     => __( 'Latest API Status', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'created_at'     => __( 'Created At', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 		];
 	}
 
@@ -215,7 +215,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 			'<input type="checkbox" name="orders[]" id="order_%1$s" value="%1$s" />',
 			$order_object->get_id(),
 			/* translators: %s: Order ID. */
-			sprintf( __( 'Select order %s' ), $order_object->get_id(), 'woo-vipps-recurring' )
+			sprintf( __( 'Select order %s' ), $order_object->get_id(), 'vipps-recurring-payments-gateway-for-woocommerce' )
 		);
 
 		$edit = "<strong>{$order_object->get_id()}</strong>";
@@ -258,7 +258,7 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 
 						break;
 					case 'charge_id':
-						$r .= WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order_object ) ?: __( "Charge ID not available. Check the order's notes instead.", 'woo-vipps-recurring' );
+						$r .= WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order_object ) ?: __( "Charge ID not available. Check the order's notes instead.", 'vipps-recurring-payments-gateway-for-woocommerce' );
 
 						break;
 					case 'failure_reason':
