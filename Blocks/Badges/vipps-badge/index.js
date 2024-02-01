@@ -92,7 +92,7 @@
                 }
             } 
 
-            let extraclass =  props.className  ? props.className : "";
+            let extraclass =  (props.className && props.className != "undefined")  ? props.className : "";
             switch(props.attributes.align) {
                 case 'center':
                     extraclass += " aligncenter"; break;
@@ -156,9 +156,17 @@
                     }
                 } 
             
-                let extraclass =  props.className  ? props.className : "";
+            let extraclass =  (props.className && props.className != "undefined")  ? props.className : "";
+            switch(props.attributes.align) {
+                case 'center':
+                    extraclass += " aligncenter"; break;
+                case 'left':
+                    extraclass += " alignleft"; break;
+                case 'right':
+                    extraclass += " alignright"; break;
+            }
 
-		return el( 'div', { className: 'vipps-badge-wrapper ' + props.extraclass},
+		return el( 'div', { className: 'vipps-badge-wrapper ' + extraclass},
                     el('vipps-badge', attrs, []),
 
                     );
