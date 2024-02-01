@@ -163,7 +163,7 @@
                     extraclass += " alignright"; break;
             }
 
-            return el( 'div', { className: 'vipps-badge-wrapper ' + extraclass},
+            return el( 'div', { ...bp, className: bp.className + ' vipps-badge-wrapper ' + extraclass},
                 el('vipps-badge', attrs, []),
 
             );
