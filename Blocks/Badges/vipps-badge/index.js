@@ -15,6 +15,7 @@
         const InspectorControls = wp.blockEditor.InspectorControls;
 
 	registerBlockType( 'woo-vipps/vipps-badge', {
+        apiversion: 3,
 		title: VippsBadgeBlockConfig['BlockTitle'],
 		category: 'widgets',
                 icon: el('img', {"class": "vipps-smile vipps-component-icon", "src": VippsBadgeBlockConfig['vippssmileurl']}),
