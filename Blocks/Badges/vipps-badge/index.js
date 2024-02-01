@@ -11,11 +11,10 @@
     const TextControl = components.TextControl;
 
     const useBlockProps = wp.blockEditor.useBlockProps;
-    const BlockControls = wp.blockEditor.BlockControls;
     const InspectorControls = wp.blockEditor.InspectorControls;
 
     registerBlockType( 'woo-vipps/vipps-badge', {
-        apiversion: 3,
+        apiVersion: 3,
         title: VippsBadgeBlockConfig['BlockTitle'],
         category: 'widgets',
         icon: el('img', {"class": "vipps-smile vipps-component-icon", "src": VippsBadgeBlockConfig['vippssmileurl']}),
@@ -62,6 +61,7 @@
         },
 
         edit: function( props ) {
+            let bp = useBlockProps();
             let logo =  VippsBadgeBlockConfig['logosrc'];
             let attributes = props.attributes;
             let formats = ['core/bold', 'core/italic'];
@@ -103,16 +103,11 @@
                     extraclass += " alignright"; break;
             }
 
-
             return el(
                 'div',
-                { className: 'vipps-badge-wrapper ' + extraclass},
+                { ...bp, className: bp.className + ' vipps-badge-wrapper ' + extraclass},
 
                 el('vipps-badge', attrs, []), 
-
-                el(BlockControls, {}, 
-                    el(AlignmentToolbar,{ value: attributes.alignment, onChange: x=>console.log("new %j", x)} )
-                ),
 
                 el(InspectorControls, {},
                     el(SelectControl, { onChange: x=>props.setAttributes({variant: x}) , 
@@ -139,6 +134,7 @@
         },
 
         save: function( props ) {
+            let bp = useBlockProps.save();
             var attributes = props.attributes;
 
             let attrs =  { className: props.className, variant: attributes.variant };
