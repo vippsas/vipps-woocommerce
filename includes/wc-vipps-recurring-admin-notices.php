@@ -77,7 +77,7 @@ class WC_Vipps_Recurring_Admin_Notices {
 
 				$gateway = WC_Gateway_Vipps_Recurring::get_instance();
 
-				$logo_url = $admin_notice->logo ?? 'assets/images/' . $gateway->brand . '-logo.svg';
+				$logo_url = $admin_notice->logo ?? 'assets/images/vipps-mobilepay-logo.png';
 				$logo     = plugins_url( $logo_url, $this->plugin_path );
 				$img_html = "<img src='$logo' alt=''>";
 

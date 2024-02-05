@@ -27,8 +27,8 @@
 }
 
 .notice-vipps-recurring__inner img {
-	padding: 10px;
-	height: 36px;
+	padding: 10px 0;
+	height: 40px;
 }
 
 .notice-vipps-recurring--login-promotion {
