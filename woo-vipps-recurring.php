@@ -65,8 +65,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 		return;
 	}
 
-	load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
-
 	if ( ! class_exists( 'WC_Vipps_Recurring' ) ) {
 		/*
 		 * Required minimums and constants
@@ -157,6 +155,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$this->notices = WC_Vipps_Recurring_Admin_Notices::get_instance( __FILE__ );
 				$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
+
+				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 				add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 
@@ -657,7 +657,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 				if ( $show_capture_button && ! $is_captured ) {
 					$logo = plugins_url( 'assets/images/' . $this->gateway->brand . '-logo-white.svg', __FILE__ );
 
-					print '<button type="button" data-order-id="' . $order->get_id() . '" data-action="capture_payment" class="button generate-items capture-payment-button '.$this->gateway->brand.'"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'vipps-recurring-payments-gateway-for-woocommerce' ) . '</button>';
+					print '<button type="button" data-order-id="' . $order->get_id() . '" data-action="capture_payment" class="button generate-items capture-payment-button ' . $this->gateway->brand . '"><img border="0" style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt="0" src="' . $logo . '"/> ' . __( 'Capture payment', 'vipps-recurring-payments-gateway-for-woocommerce' ) . '</button>';
 				}
 			}
 
@@ -837,6 +837,25 @@ function woocommerce_gateway_vipps_recurring_init() {
 				];
 
 				return $schedules;
+			}
+
+			public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ): bool {
+				$use_plugin_translations = apply_filters( 'woo_vipps_recurring_use_plugin_translations', false );
+
+				// Use plugin translations if this is a WP installation older than 6.1.0
+				if ( $use_plugin_translations || WC_Vipps_Recurring_Helper::is_wp_lt( '6.1.0' ) ) {
+					return load_plugin_textdomain( $domain, $deprecated, $plugin_rel_path );
+				}
+
+				global $wp_textdomain_registry;
+
+				$locale  = apply_filters( 'plugin_locale', determine_locale(), $domain );
+				$mo_file = $domain . '-' . $locale . '.mo';
+
+				$path = WP_PLUGIN_DIR . '/' . trim( $plugin_rel_path, '/' );
+				$wp_textdomain_registry->set_custom_path( $domain, $path );
+
+				return load_textdomain( $domain, $path . '/' . $mo_file, $locale );
 			}
 		}
 

@@ -93,6 +93,21 @@ class WC_Vipps_Recurring_Helper {
 		return true;
 	}
 
+
+	/**
+	 * Checks if WP version is less than passed in version.
+	 *
+	 * @param string $version Version to check against.
+	 *
+	 * @return bool
+	 * @since 1.1.1
+	 */
+	public static function is_wp_lt( string $version ): bool {
+		global $wp_version;
+
+		return version_compare( $wp_version, $version, '<' );
+	}
+
 	/**
 	 * Checks if a phone number is valid according to Vipps/MobilePay standards
 	 *
