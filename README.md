@@ -88,7 +88,7 @@ When you enable this plugin, your customers will be able to choose Vipps or Mobi
 
 See:
 
-* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/developer-resources/portal#logging-in)
+* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/developer-resources/portal)
 * [How to find the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal#how-to-find-the-api-keys).
 
 ## Screenshots
