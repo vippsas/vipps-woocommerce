@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.0
-Stable tag: 2.0.0
+Version: 2.0.5
+Stable tag: 2.0.5
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.5.0
+WC tested up to: 8.5.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -55,7 +55,7 @@ Settings for the cart, category and product pages can be found in the WooCommerc
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
 === How to get started ===
-* Sign up in the [Vipps MobilePay portal](https://portal.vipps.no) and choose your product.
+* Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
 * After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
@@ -74,7 +74,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
 
 === How to get Vipps account keys from Vipps Developer Portal ===
-1. Sign in to the Vipps Portal at [https://portal.vipps.no/](https://portal.vipps.no/) using Bank ID
+1. Sign in to the Vipps Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
 
@@ -88,9 +88,12 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Support Order Attribution in Vipps Checkout and Express Checkout
-Minor fixes
-Fix for regression in activate/deactivate actions
+Fix bug with Checkout when several orderlines have the same product id
+Fixes a bug in version 2.0.0-2.0.2 in the payment status after purchase handling making it always "Processing". 
+Support MobilePay as a payment method in Finland
+Change default payment status to Processing after payment is complete
+Support Order Attribution in Vipps Checkout and Express Checkout, if selected in the "Advanced" settings.
+NB: There has been reports of memory-related crashes when doing this, so be sure to test!
 
 == Frequently Asked Questions ==
 
@@ -230,7 +233,28 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2023-01-15 version 1.14.20 =
+= 2024-01-25 version 2.0.5 =
+Add workaround for Orderline issue with Checkout
+Use translate.wp.org for translations
+
+= 2024-01-25 version 2.0.3, 2.0.4  =
+Fix default payment status
+More protection against issues where settings are wrong and the plugin tries to instantiate webhooks
+
+= 2024-01-24 version 2.0.1, 2.0.2 =
+Fix bug in uninstall hook and activation hook when settings are wrong in the database
+
+= 2024-01-23 version 2.0.0 =
+Support MobilePay as a payment method in Finland
+Use the Epayment api for all transactions other than Vipps Express Checkout
+
+= 2024-01-17 version 1.14.21 and 1.14.23 =
+Disable support for order attribution by default - it can be added in the "Advanced" settings. Some sites got crashes due to memory use.
+
+= 2024-01-16 version 1.14.21 and 1.14.22 =
+Minor fix for 8.5.1 and express checkout
+
+= 2024-01-15 version 1.14.20 =
 Support Order Attribution in Vipps Checkout and Express Checkout
 
 = 2023-12-14 version 1.14.19 =
@@ -665,7 +689,7 @@ Added a do-action call to 'woocommerce_cart_loaded_from_session' in callbacks to
 
 = 2019.08.06 version 1.2.0 =
 * Removed separate Access Key subscription, now only one subscription key is required
-* Documentation updated to reflect that the keys are now to be fetched from portal.vipps.no, and that the separate Access Key subscription is no longer necessary
+* Documentation updated to reflect that the keys are now to be fetched from portal.vippsmobilepay.com, and that the separate Access Key subscription is no longer necessary
 
 
 = 2019.06.24 version 1.1.18 =

@@ -1,7 +1,7 @@
 <?php
 /* This file just creates some exception types for error handling. IOK 2018-04-18
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License

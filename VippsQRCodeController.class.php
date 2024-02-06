@@ -3,7 +3,7 @@
    This class is for the Vipps QR-code feature, and is implemented as its own singleton instance because this isolates that 'aspect' of the
    system. It is instantiated as a member of the main Vipps class.
 
-   This file is part of the plugin Checkout with Vipps for WooCommerce
+   This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
    Copyright (c) 2022 WP-Hosting AS
 
    MIT License
@@ -465,7 +465,10 @@ img.onload = function () {
 
 
     public function admin_menu () {
-
+        // IOK 2024-01-17 temporarily: Only Vipps supports QR codes. FIXME
+        if (WC_Gateway_Vipps::instance()->get_payment_method_name() != "Vipps") {
+            return;
+        }
         // Vipps QR-codes are handled as a custom post type, we add them to the Vipps admin menu
         add_submenu_page( 'vipps_admin_menu', __('QR Codes', 'woo-vipps'), __('QR Codes', 'woo-vipps'), 'manage_woocommerce', 'edit.php?post_type=vipps_qr_code', null, 20);
     }

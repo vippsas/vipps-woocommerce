@@ -1,25 +1,25 @@
 <?php
 /*
-   Plugin Name: Checkout with Vipps for WooCommerce
+   Plugin Name: Pay with Vipps and MobilePay for WooCommerce
    Plugin URI: https://wordpress.org/plugins/woo-vipps/
    Description: Offer Vipps as a payment method for WooCommerce
    Author: WP Hosting
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 2.0.0
-   Stable tag: 2.0.0
+   Version: 2.0.5
+   Stable tag: 2.0.5
    Requires at least: 4.7
    Tested up to: 6.4.2
    Requires PHP: 5.6
    WC requires at least: 3.3.4
-   WC tested up to: 8.5.0
+   WC tested up to: 8.5.2
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
 
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License
@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '2.00.00');
+define('WOO_VIPPS_VERSION', '2.0.5');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly

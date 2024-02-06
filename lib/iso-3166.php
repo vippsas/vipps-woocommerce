@@ -3,7 +3,7 @@
   Generate a serialized array map from country names to country codes. Run this to generate a 'countrycodes.php' file which is serialized and used to produce the 
   two-letter code used by WooCommerce. IOK 2018-06-06
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License

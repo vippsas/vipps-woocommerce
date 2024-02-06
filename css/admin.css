@@ -113,6 +113,15 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     padding-bottom: 0.2rem;
 }
 
+.vipps-admin-page-header.mobilepay h1 {
+    color: #5a78fff7;
+}
+
+.vipps-admin-page-header.mobilepay {
+    background-color: #f2f4ff;
+    color: #5a78fff7;
+}
+
 .vipps-admin-page .vipps_admin_highlighted_section {
     background-color: #fff4ec;
     color: #fe5b24;
@@ -122,6 +131,10 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     margin-right: -2rem;
     padding-bottom: .2rem;
     padding-top: .2rem;
+}
+.vipps-admin-page .vipps_admin_highlighted_section.mobilepay {
+    background-color: #f2f4ff;
+    color: #5a78fff7;
 }
 .vipps-admin-page .vipps_admin_highlighted_section a {
     color: #551488;

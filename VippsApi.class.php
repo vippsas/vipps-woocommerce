@@ -4,7 +4,7 @@
    The parameters are fetched from the containing class. IOK 2018-05-11
 
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License
@@ -519,8 +519,7 @@ class VippsApi {
         $length = strlen($data['paymentDescription']);
         if ($length>99) {
           $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
-          $data['paymentDescription'] =  __('Confirm your order','woo-vipps');
-          $data['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
+          $data['paymentDescription'] = substr($data['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
         // Epayment can send the receipt already in the initiate call, so lets do it. IOK 2023-12-23
@@ -774,7 +773,6 @@ class VippsApi {
         $length = strlen($transaction['paymentDescription']);
         if ($length>99) {
           $this->log('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps');
-          $transaction['paymentDescription'] =  __('Confirm your order','woo-vipps');
           $transaction['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
@@ -867,9 +865,28 @@ class VippsApi {
         // IOK 2024-01-09 Fix this as soon as the EUR bug is fixed!
         if ($summarize) {
             $ordersummary = $this->get_receipt_data($order);
+
             // This is different in the receipt api, the epayment api and in checkout.
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
             unset($ordersummary['bottomLine']);
+
+            // A bug in the Vipps Checkout API will not allow for several order lines with the same
+            // product id (for instance, with different custom text etc). IOK 2024-01-26
+            // FIXME when this is fixed at Vipps
+            $orderlines = $ordersummary['orderLines'];
+            $seen = [];
+            $newlines = [];
+            foreach($orderlines as $orderline) {
+                $productid = $orderline['id'];
+                if (isset($seen[$productid])) {
+                    $seen[$productid]++;
+                    $orderline['id'] = $orderline['id'] . ":" . $seen[$productid];
+                } else {
+                    $seen[$productid] = 0;
+                }
+                $newlines[] = $orderline;
+            }
+            $ordersummary['orderLines'] = $newlines;
 
             // Don't finalize the receipt number - we just want to show this rn.
             unset($ordersummary['orderBottomLine']['receiptNumber']);

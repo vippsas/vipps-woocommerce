@@ -1,6 +1,6 @@
 /*
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License
@@ -136,7 +136,14 @@ jQuery(document).ready(function () {
    }
 
    // Required for the order attribution thing IOK 2024-01-16
-   jQuery(document.body).trigger( 'init_checkout' );
+   if (jQuery('#vippsorderattribution').val() == 1) {
+       try {
+           console.log("Triggering init_checkout");
+           jQuery(document.body).trigger( 'init_checkout' );
+       } catch (error) {
+           console.log("Could not trigger init-checkout: %j", error);
+       }
+   }
 
    jQuery('#do-express-checkout').prop('disabled',true);
    jQuery('#do-express-checkout').prop('inactive',true);

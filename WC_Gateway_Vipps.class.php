@@ -2,7 +2,7 @@
 /*
    Delegate class for talking to Vipps MobilePay, encapsulating all the low-level behaviour and mapping error codes to exceptions
 
-This file is part of the plugin Checkout with Vipps for WooCommerce
+This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
 Copyright (c) 2019 WP-Hosting AS
 
 MIT License
@@ -132,7 +132,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
-        $this->icon = plugins_url('img/vipps-mobilepay-logo-only.png',__FILE__);
+        $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
         $this->init_form_fields();
         $this->init_settings();
         $this->api = new VippsApi($this);
@@ -141,7 +141,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
-        $supported_types= array('simple','variable','variation','bundle', 'yith_bundle');
+        $supported_types= array('simple','variable','variation','bundle', 'yith_bundle', 'gift-card');
         $this->express_checkout_supported_product_types = apply_filters('woo_vipps_express_checkout_supported_product_types',  $supported_types);
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options') );
@@ -173,6 +173,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
     }
+
+
+    public function get_icon () {
+        $src =  $this->icon;
+        if ($this->get_payment_method_name() == "Vipps") {
+            $src = plugins_url('img/vipps-mark.svg',__FILE__);
+        } else {
+            $src = plugins_url('img/mobilepay-mark.png',__FILE__);
+        }
+        return '<img src="' . esc_attr($src) . '" alt="' .  $this->get_payment_method_name() . '">';
+    }
+
 
     // True iff this gateway is currently in test mode. IOK 2019-08-30
     public function is_test_mode() {
@@ -224,7 +236,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
         $test = @$this->get_option('merchantSerialNumber_test');
-        if ($test) {
+        $testmode = @$this->get_option('testmode');
+        if ($testmode === 'yes' && $test) {
             $data = [
                 'client_id'=>$clientid=$this->get_option('clientId_test'),
                 'client_secret' => $this->get_option('secret_test'), 
@@ -320,11 +333,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // normally used to indicate "a problem with the order". Not being able to capture a reserved order has to my knowledge at this
     // point only happened once, in 2018, with a completely different api and backend.
     public function after_vipps_order_status($order=null) {
-      $defaultstatus = 'processing';
+      // Revert to on-hold if the user tries to set a payment status that is a 'captured' status IOK 2024-01-25
+      $defaultstatus = 'on-hold';
+
       $chosen = $this->get_option('result_status');
-      if ($chosen == 'processing') $defaultstatus = $chosen;
-      $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $defaultstatus, $order);
+      $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $chosen, $order);
+
       if (in_array($newstatus, $this->captured_statuses)){
+             error_log("not using $newstatus because it is one of the captured statuses");
              $this->log(sprintf(__("Cannot use %1\$s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus),'debug');
              return  $defaultstatus;
       }
@@ -731,12 +747,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
         $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
 
+        // Disclaimer for Vipps Checkout at release, IOK 2024-01-23
+        $disclaimer = ($payment_method_name == 'Vipps') ? "" : 
+             '<br><br><strong>' . __("NB! Checkout for MobilePay is currently in beta mode; Bank Transfer has limited availability", 'woo-vipps') . '</strong>';
+
         $checkoutfields = array(
                 'checkout_options' => array(
                     'title' => sprintf(__('Checkout', 'woo-vipps'), Vipps::CompanyName()),
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName())
+                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()) . $disclaimer,
                     ),
 
                 'vipps_checkout_enabled' => array(
@@ -959,7 +979,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title' => __('Merchant Serial Number', 'woo-vipps'),
                 'label'       => __('Merchant Serial Number', 'woo-vipps'),
                 'type'        => 'number',
-                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
+                'description' => __('Your "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
                 'default'     => '',
             ),
             'clientId' => array(
@@ -967,7 +987,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'class' => 'vippspw',
                 'label'       => __('Client Id', 'woo-vipps'),
                 'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
                 'default'     => '',
             ),
             'secret' => array(
@@ -975,7 +995,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'label'       => __('Client Secret', 'woo-vipps'),
                 'class' => 'vippspw',
                 'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
                 'default'     => '',
             ),
             'Ocp_Apim_Key_eCommerce' => array(
@@ -983,7 +1003,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'label'       => __('Subscription Key', 'woo-vipps'),
                 'class' => 'vippspw',
                 'type'        => 'password',
-                'description' => __('Find your account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+                'description' => __('Find your account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
                 'default'     => '',
             ),
 
@@ -999,12 +1019,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => 'processing',
             ),
 
+/*
             'title' => array(
                 'title' => __('Title', 'woocommerce'),
                 'type' => 'text',
                 'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
                 'default' => sprintf(__('%1$s','woo-vipps'), $payment_method_name),
             ),
+*/
 
             'description' => array(
                 'title' => __('Description', 'woocommerce'),
@@ -1135,6 +1157,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    'description' => __("If you have issues with your theme, you might find a setting here that will help. Normally you do not need to change these.", 'woo-vipps')
                    ),
 
+                 'vippsorderattribution' => array(
+                     'title'       => __( 'Support WooCommerces Order Attribution API for Checkout and Express Checkout', 'woo-vipps' ),
+                     'label'       => __( 'Add support for Order Attribution', 'woo-vipps' ),
+                     'type'        => 'checkbox',
+                     'default'=> 'no',
+                     'description' => __('Turn this on to add support for Woos Order Attribution API for Checkout and Express Checkout. Some stores have reported problems when using this API together with Vipps, so be sure to test this if you turn it on.', 'woo-vipps'),
+),
+
                  'vippsspecialpagetemplate' => array(
                      'title'       => sprintf(__('Override page template used for the special %1$s pages', 'woo-vipps'), Vipps::CompanyName()),
                      'label'       => sprintf(__('Use specific template for %1$s', 'woo-vipps'), Vipps::CompanyName()),
@@ -1208,7 +1238,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'class' => 'vippspw',
                 'label'       => __('Merchant Serial Number', 'woo-vipps'),
                 'type'        => 'number',
-                'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vipps.no','woo-vipps'),
+                'description' => __('Your test account "Merchant Serial Number" from the Developer tab on https://portal.vippsmobilepay.com','woo-vipps'),
                 'default'     => '',
                 ),
             'clientId_test' => array(
@@ -1216,7 +1246,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'label'       => __('Client Id', 'woo-vipps'),
                     'type'        => 'password',
                     'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
+                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "Show keys". Copy the value of "client_id"','woo-vipps'),
                     'default'     => '',
                     ),
             'secret_test' => array(
@@ -1224,7 +1254,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'label'       => __('Client Secret', 'woo-vipps'),
                     'type'        => 'password',
                     'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
+                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "client_secret"','woo-vipps'),
                     'default'     => '',
                     ),
             'Ocp_Apim_Key_eCommerce_test' => array(
@@ -1232,7 +1262,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'label'       => __('Subscription Key', 'woo-vipps'),
                     'type'        => 'password',
                     'class' => 'vippspw',
-                    'description' => __('Find your test account under the "Developer" tab on https://portal.vipps.no/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
+                    'description' => __('Find your test account under the "Developer" tab on https://portal.vippsmobilepay.com/ and choose "show keys". Copy the value of "Vipps-Subscription-Key"','woo-vipps'),
                     'default'     => '',
                     ),
             );
@@ -3330,6 +3360,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Normally done by the WC_Checkout::create_order method, so call it here too. IOK 2018-11-19
             do_action('woocommerce_checkout_update_order_meta', $orderid, array());
+
+            // It isn't possible to remove the javascript or 'after order notice' actions, because these are added as closures
+            // before anything else is run. But we can disable the hook that saves data. IOK 2024-01-18
+            if (WC_Gateway_Vipps::instance()->get_option('vippsorderattribution') != 'yes') {
+                remove_all_filters( 'woocommerce_order_save_attribution_data');
+            }
+
             // And another one. IOK 2021-11-24
             do_action('woocommerce_checkout_order_created', $order );
         } catch ( Exception $e ) {
@@ -3418,7 +3455,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (!$this->can_be_activated()) {
             $this->update_option('enabled', 'no');
         }
-        ?>
+
+        if ($payment_method != "Vipps"): ?> 
+        <style>
+          #woocommerce_vipps_express_options, #woocommerce_vipps_express_options-table  {
+           display: none;
+          }
+        </style>
+        <?php endif; ?>
+
             <h2 id='vipps-settings-page'><?php echo __(Vipps::CompanyName(),'woo-vipps'); ?> <img style="float:right;max-height:40px;margin-top:-15px" alt="<?php _e($this->title,'woo-vipps'); ?>" src="<?php echo $this->icon; ?>"></h2>
             <?php $this->display_errors(); ?>
 
@@ -3611,6 +3656,16 @@ function activate_vipps_checkout(yesno) {
     // This will initalize the webhooks for this instance, for all MSNs that are configured.
     // Hooks that point to us that we *do not* know the secret for, have to be deleted.
     public function initialize_webhooks() {
+       // IOK 2023-12-20 for the epayment api, we need to re-initialize webhooks at this point. 
+       try {
+           return $this->initialize_webhooks_internal();
+       } catch (Exception $e) {
+            $this->log(sprintf(__("Could not initialize webhooks for this site: %1\$s", 'woo-vipps'), $e->getMessage()), 'error');
+           return [];
+       }
+    }
+
+    private function initialize_webhooks_internal () {
         $local_hooks = get_option('_woo_vipps_webhooks');
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
@@ -3701,9 +3756,7 @@ function activate_vipps_checkout(yesno) {
 
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12
     public function get_title() {
-     $title = trim($this->get_option('title'));
-     if (!$title) $title = sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name());
-     return $title;
+     return apply_filters('woo_vipps_payment_method_title', $this->get_payment_method_name());
     }
 
     public function get_payment_method_name() {
