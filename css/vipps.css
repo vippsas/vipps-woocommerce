@@ -110,6 +110,12 @@ a.button.vipps-express-checkout:hover, a.button.vipps-buy-now:hover {
  border: 0;
 }
 
+/* New-style button for Vipps and Mobile Pay is 100% svg */
+a.single-product.button.vipps-buy-now  {
+    padding-left:0;
+    padding-right:0;
+}
+
 .widget_shopping_cart a.button.vipps-express-checkout {
  color:transparent;
  background-color: #fff;
