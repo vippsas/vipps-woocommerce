@@ -50,7 +50,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * The page to redirect to for cancelled orders
 		 */
-		public int $cancelled_order_page;
+		public int $special_actions_page_id;
 
 		/**
 		 * The default status to give pending renewals
@@ -150,7 +150,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
-			$this->cancelled_order_page             = (int) $this->get_option( 'cancelled_order_page' );
+			$this->special_actions_page_id                  = (int) $this->get_option( 'special_actions_page_id' );
 			$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 			$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
@@ -349,30 +349,27 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// redirect to check out, or cancelled page?
-			$page = $this->ensure_cancelled_order_page();
-			wp_redirect( $page->guid . '?vipps_recurring_order_cancelled=true' );
+			$page = $this->ensure_special_actions_page();
+			wp_redirect( $page->guid . '?vipps_recurring_page=cancelled_payment' );
+
 			exit;
 		}
 
 		/**
 		 * @return array|WC_Vipps_Recurring_Exception|WP_Post|null
 		 */
-		public function ensure_cancelled_order_page() {
-			if ( $this->cancelled_order_page ) {
-				$page = get_post( $this->cancelled_order_page );
+		public function ensure_special_actions_page() {
+			if ( $this->special_actions_page_id ) {
+				$page = get_post( $this->special_actions_page_id );
 
 				if ( $page ) {
 					return $page;
 				}
 
-				$this->update_option( 'cancelled_order_page', 0 );
+				$this->update_option( 'special_actions_page_id', 0 );
 			}
 
-			/**
-			 * Create page
-			 */
-
-			// Determine what author to use by the currently logged in user
+			// Determine what author to use by the currently logged-in user
 			$author = null;
 			if ( current_user_can( 'manage_options' ) ) {
 				$author = wp_get_current_user();
@@ -393,25 +390,21 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$author_id = $author->ID ?? 0;
 
-			// translators: %s: brand (Vipps or MobilePay)
-			$content = sprintf( __( 'It looks like you cancelled your order in %s. If this was a mistake you can try again by checking out again :)', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title );
-
 			$page_data = [
-				// translators: %s: brand (Vipps or MobilePay)
-				'post_title'   => sprintf( __( 'Cancelled %s Purchase', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title ),
+				'post_title'   => __( 'Vipps/MobilePay Recurring Payments specials', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 				'post_status'  => 'publish',
 				'post_author'  => $author_id,
 				'post_type'    => 'page',
-				'post_content' => $content
+				'post_content' => ''
 			];
 
 			$post_id = wp_insert_post( $page_data );
 
 			if ( is_wp_error( $post_id ) ) {
-				return new WC_Vipps_Recurring_Exception( __( 'Could not create or find the "Cancelled Vipps/MobilePay Purchase" page', 'vipps-recurring-payments-gateway-for-woocommerce' ) . ": " . $post_id->get_error_message() );
+				return new WC_Vipps_Recurring_Exception( __( 'Could not create or find the "Vipps/MobilePay Recurring Payments specials" page', 'vipps-recurring-payments-gateway-for-woocommerce' ) . ": " . $post_id->get_error_message() );
 			}
 
-			$this->update_option( 'cancelled_order_page', $post_id );
+			$this->update_option( 'special_actions_page_id', $post_id );
 
 			return get_post( $post_id );
 		}
@@ -438,7 +431,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Check if we are using the new HPOS feature from WooCommerce
 		 * This function is used for backwards compatibility in certain places
 		 */
-		public function useHighPerformanceOrderStorage(): bool {
+		public function use_high_performance_order_storage(): bool {
 			if ( $this->use_high_performance_order_storage === null ) {
 				$this->use_high_performance_order_storage = function_exists( 'wc_get_container' ) &&  // 4.4.0
 															function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
@@ -564,7 +557,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			}
 
 			// check if order is temporarily locked
-			if ( ! $this->useHighPerformanceOrderStorage() ) {
+			if ( ! $this->use_high_performance_order_storage() ) {
 				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
 			}
 
@@ -643,7 +636,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			$order->save();
 
-			if ( ! $this->useHighPerformanceOrderStorage() ) {
+			if ( ! $this->use_high_performance_order_storage() ) {
 				clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
 			}
 
@@ -1072,7 +1065,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$this->generate_idempotency_key( $renewal_order );
 
 				// clean the post cache for the renewal order to force Woo to fetch meta again.
-				if ( ! $this->useHighPerformanceOrderStorage() ) {
+				if ( ! $this->use_high_performance_order_storage() ) {
 					clean_post_cache( $renewal_order_id );
 				}
 			}
@@ -1163,7 +1156,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$this->process_order_charge( $order, $captured_charge );
 
-				if ( ! $this->useHighPerformanceOrderStorage() ) {
+				if ( ! $this->use_high_performance_order_storage() ) {
 					clean_post_cache( WC_Vipps_Recurring_Helper::get_id( $order ) );
 				}
 
@@ -1803,7 +1796,30 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Initialise Gateway Settings Form Fields
 		 */
 		public function init_form_fields(): void {
+			// Set some options and default values
+			add_filter( 'wc_vipps_recurring_settings', function ( $settings ) {
+				$settings['brand']['default'] = $this->detect_default_brand();
+
+				return $settings;
+			} );
+
 			$this->form_fields = require( __DIR__ . '/admin/vipps-recurring-settings.php' );
+		}
+
+		public function detect_default_brand(): string {
+			$locale         = get_locale();
+			$store_location = wc_get_base_location();
+			$store_country  = $store_location['country'] ?? '';
+			$currency       = get_woocommerce_currency();
+
+			$default_brand = "mobilepay";
+
+			// If store location, locale, or currency is Norwegian, use Vipps
+			if ( $store_country == "NO" || preg_match( "/_NO/", $locale ) || $currency == "NOK" ) {
+				$default_brand = "vipps";
+			}
+
+			return $default_brand;
 		}
 
 		/**

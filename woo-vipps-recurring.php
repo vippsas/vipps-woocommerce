@@ -99,7 +99,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 			public WC_Gateway_Vipps_Recurring $gateway;
 
-			public array $ajaxConfig = [];
+			public array $ajax_config = [];
+
+			public array $special_pages = [];
 
 			/**
 			 * Returns the *Singleton* instance of this class.
@@ -155,6 +157,14 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$this->notices = WC_Vipps_Recurring_Admin_Notices::get_instance( __FILE__ );
 				$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
+
+				$this->special_pages = [
+					'cancelled_payment' => [
+						'title'   => __( 'Cancelled payment', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+						// translators: %s: brand (Vipps or MobilePay)
+						'content' => sprintf( __( 'It looks like you cancelled your order in %s. If this was a mistake you can try again by checking out again :)', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->gateway->title )
+					]
+				];
 
 				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
@@ -265,6 +275,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 					$this,
 					'order_handle_vipps_recurring_action'
 				] );
+
+				// Add a filter to control the content on our special action pages
+				add_filter( 'the_content', [ $this, 'special_action_page_content' ] );
+				add_filter( 'the_title', [ $this, 'special_action_page_title' ], 10, 2 );
 			}
 
 			/**
@@ -782,7 +796,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @version 3.1.0
 			 */
 			public function install() {
-				$this->gateway->ensure_cancelled_order_page();
+				$this->gateway->ensure_special_actions_page();
 				$this->upgrade();
 			}
 
@@ -818,10 +832,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring-admin.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring-admin.css' ) );
 
-				$this->ajaxConfig['nonce'] = wp_create_nonce( 'vipps_recurring_ajax_nonce' );
+				$this->ajax_config['nonce'] = wp_create_nonce( 'vipps_recurring_ajax_nonce' );
 
 				wp_register_script( 'woo-vipps-recurring-admin', plugins_url( 'assets/js/vipps-recurring-admin.js', __FILE__ ), [], filemtime( dirname( __FILE__ ) . "/assets/js/vipps-recurring-admin.js" ), true );
-				wp_localize_script( 'woo-vipps-recurring-admin', 'VippsRecurringConfig', $this->ajaxConfig );
+				wp_localize_script( 'woo-vipps-recurring-admin', 'VippsRecurringConfig', $this->ajax_config );
 				wp_enqueue_script( 'woo-vipps-recurring-admin' );
 			}
 
@@ -856,6 +870,35 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$wp_textdomain_registry->set_custom_path( $domain, $path );
 
 				return load_textdomain( $domain, $path . '/' . $mo_file, $locale );
+			}
+
+			public function get_special_page_text( string $value, string $part ): string {
+				$action = $_GET['vipps_recurring_page'] ?? '';
+				if ( ! isset( $this->special_pages[ $action ] ) ) {
+					return $value;
+				}
+
+				return $this->special_pages[ $action ][ $part ];
+			}
+
+			public function special_action_page_title( $title, $post_id ): string {
+				// If this is not our special actions page, do not override anything
+				if ( $post_id !== (int) $this->gateway->get_option( 'special_actions_page_id' ) ) {
+					return $title;
+				}
+
+				return $this->get_special_page_text( $title, 'title' );
+			}
+
+			public function special_action_page_content( $content ): string {
+				global $post;
+
+				// If this is not our special actions page, do not override anything
+				if ( $post->ID !== (int) $this->gateway->get_option( 'special_actions_page_id' ) ) {
+					return $content;
+				}
+
+				return $this->get_special_page_text( $content, 'content' );
 			}
 		}
 

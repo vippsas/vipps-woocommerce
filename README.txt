@@ -161,6 +161,12 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.20.0 =
+* Added: Try to detect whether to use Vipps or MobilePay branding.
+* Added: Use the translations from translate.wordpress.org.
+* Added: Better handling of our special action pages.
+* Fixed: Admin notice styling is now a bit better.
+
 = 1.19.0 =
 * Added: Support for paying with MobilePay in Finland, and later Denmark.
 

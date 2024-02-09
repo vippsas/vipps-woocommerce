@@ -12,11 +12,11 @@ return apply_filters(
 			'description' => '',
 			'default'     => 'no',
 		],
-		'brand'                         => [
+		'brand'                            => [
 			'title'       => __( 'Brand', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'type'        => 'select',
 			'description' => __( 'Controls the payment flow brand (Vipps or MobilePay).', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'default'     => 'vipps',
+			'default'     => '', // We set this in the init_form_fields function
 			'options'     => [
 				'vipps'     => 'Vipps',
 				'mobilepay' => 'MobilePay'
@@ -57,10 +57,10 @@ return apply_filters(
 			'default'     => '',
 			'desc_tip'    => true,
 		],
-		'cancelled_order_page'             => [
+		'special_actions_page_id'          => [
 			'type'             => 'page_dropdown',
-			'title'            => __( 'Cancelled order redirect page', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'description'      => __( 'The page to redirect cancelled orders to.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title'            => __( 'Special actions page', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description'      => __( 'The page to use for special pages, like a cancelled purchase.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'show_option_none' => __( 'Create a new page', 'vipps-recurring-payments-gateway-for-woocommerce' )
 		],
 		'default_reserved_charge_status'   => [
