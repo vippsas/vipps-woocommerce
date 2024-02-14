@@ -76,7 +76,7 @@ class VippsCheckout {
                     });
             /* Suppress the title for this page, but on the front page only IOK 2023-01-27 (by request from Vipps) */
             $post_to_hide_title_for = $post->ID;
-            add_filter('the_title', function ($title, $postid) use ($post_to_hide_title_for) {
+            add_filter('the_title', function ($title, $postid = 0) use ($post_to_hide_title_for) {
                     if (!is_admin() && $postid ==  $post_to_hide_title_for && is_singular()  && in_the_loop()) {
                     $title = "";
                     }
