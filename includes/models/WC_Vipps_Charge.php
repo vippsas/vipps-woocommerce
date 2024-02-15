@@ -180,7 +180,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 			],
 			$this->conditional( "type", $this->type ),
 			$this->conditional( "transactionType", $this->transaction_type ),
-			$this->conditional( "transactionId", $this->order_id )
+			$this->conditional( "transactionId", $this->transaction_id )
 		);
 	}
 }
