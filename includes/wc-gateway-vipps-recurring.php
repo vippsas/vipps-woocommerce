@@ -150,7 +150,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
-			$this->special_actions_page_id                  = (int) $this->get_option( 'special_actions_page_id' );
+			$this->special_actions_page_id          = (int) $this->get_option( 'special_actions_page_id' );
 			$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 			$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
@@ -609,7 +609,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			// set _vipps_recurring_latest_api_status
 			WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge->status );
 
-			$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) ) && ! wcs_order_contains_renewal( $order );
+			$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) )
+							  && ! wcs_order_contains_renewal( $order );
 			$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 			$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
@@ -624,6 +625,15 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				WC_Vipps_Charge::STATUS_PENDING,
 				WC_Vipps_Charge::STATUS_RESERVED
 			], true );
+
+			// If the brand is MobilePay, we should capture the payment now if it is not already captured.
+			// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
+			if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && ! $is_captured ) {
+				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 7 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+				$this->maybe_capture_payment( $order_id );
+
+				return 'SUCCESS';
+			}
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, $is_captured );
 

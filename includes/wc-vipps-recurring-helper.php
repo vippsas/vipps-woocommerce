@@ -9,6 +9,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class WC_Vipps_Recurring_Helper {
 	/**
+	 * Brand
+	 */
+	public const BRAND_VIPPS = 'vipps';
+
+	public const BRAND_MOBILEPAY = 'mobilepay';
+
+	/**
 	 * Charges
 	 */
 	public const META_CHARGE_FAILED = '_vipps_recurring_failed_charge';

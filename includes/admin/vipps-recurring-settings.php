@@ -18,8 +18,8 @@ return apply_filters(
 			'description' => __( 'Controls the payment flow brand (Vipps or MobilePay).', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'default'     => '', // We set this in the init_form_fields function
 			'options'     => [
-				'vipps'     => 'Vipps',
-				'mobilepay' => 'MobilePay'
+				WC_Vipps_Recurring_Helper::BRAND_VIPPS     => __( 'Vipps', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+				WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY => __( 'MobilePay', 'vipps-recurring-payments-gateway-for-woocommerce' )
 			]
 		],
 		'description'                      => [
