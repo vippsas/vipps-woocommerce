@@ -206,7 +206,16 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_agreement_id_from_order( $order ) {
-		return self::get_meta( $order, self::META_AGREEMENT_ID );
+		$agreement_id = self::get_meta( $order, self::META_AGREEMENT_ID );
+
+		if ( ! empty( $agreement_id ) ) {
+			return $agreement_id;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscription  = array_shift( $subscriptions );
+
+		return self::get_meta( $subscription, self::META_AGREEMENT_ID );
 	}
 
 	/**
@@ -232,7 +241,13 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_charge_id_from_order( $order ) {
-		return self::get_meta( $order, self::META_CHARGE_ID );
+		$charge_id = self::get_meta( $order, self::META_CHARGE_ID );
+
+		if ( ! empty( $charge_id ) ) {
+			return $charge_id;
+		}
+
+		return $order->get_transaction_id();
 	}
 
 	/**
