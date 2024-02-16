@@ -214,3 +214,12 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 .vipps-badge-settings  div {
     margin-top: .5rem;
 }
+
+.woo-vipps-warning::before {
+    content:"⚠ ";
+    color: darkred;
+}
+.woo-vipps-warning {
+    font-size:larger;
+    font-weight:medium;
+}

@@ -30,9 +30,6 @@ SOFTWARE.
 //
 (function () {
 
-    console.log("Pagenow: " + pagenow);
-
-
     if (pagenow == 'woocommerce_page_wc-settings') {
         jQuery(document).ready(function ()  {
             jQuery('input.vippspw').focus( function () { jQuery(this).attr('type','text') });; 
@@ -101,6 +98,7 @@ SOFTWARE.
 
     /* Tab-ify the settings page */
     if (pagenow == 'woocommerce_page_wc-settings') {
+
         if (jQuery('#vipps-settings-page').length > 0) {
             let toptitle = jQuery('h3.wc-settings-sub-title').parent().find('h2').first();
             let tabholder = jQuery('<div id="vippstabholder" class="vippstabholder"></div>').insertAfter(toptitle);
@@ -210,6 +208,22 @@ SOFTWARE.
 
             });
 
+
+            let thewarning = jQuery("<div class='woo-vipps-warning'>" + VippsConfig['reservationWarning'] + "</div>");
+            let warnReservations = function (where) {
+                let mp = where.val() == 'MobilePay';
+                if (!mp) {
+                    where.parent().children('.warning').remove();
+                } else {
+                  thewarning.insertAfter(where.siblings('p.description'));
+                }
+            };
+
+            console.log("Adding logic");
+            jQuery('#woocommerce_vipps_payment_method_name').change(function () {
+               warnReservations(jQuery(this));
+             });
+             warnReservations(jQuery('#woocommerce_vipps_payment_method_name'));
 
         }
     }

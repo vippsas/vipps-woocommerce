@@ -37,6 +37,12 @@ With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete che
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
 
+=== Mobilepay Reservations are currently for 7 days ===
+When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 7 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+For details, please read the [developer FAQ](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#reserve-and-capture-faq).
+
+If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to "Completed" as is the standard WooCommerce rule.
+
 === Vipps Express Checkout ===
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
 
