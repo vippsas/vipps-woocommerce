@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.5
-Stable tag: 2.0.5
+Version: 2.0.6
+Stable tag: 2.0.6
 Requires at least: 4.7
 Tested up to: 6.4.2
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.5.2
+WC tested up to: 8.6.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -94,12 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Fix bug with Checkout when several orderlines have the same product id
-Fixes a bug in version 2.0.0-2.0.2 in the payment status after purchase handling making it always "Processing". 
-Support MobilePay as a payment method in Finland
-Change default payment status to Processing after payment is complete
-Support Order Attribution in Vipps Checkout and Express Checkout, if selected in the "Advanced" settings.
-NB: There has been reports of memory-related crashes when doing this, so be sure to test!
+Compatibility for users of the filter the_title, notices about the length of reservations in MobilePay
 
 == Frequently Asked Questions ==
 
@@ -238,6 +233,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-02-19 version 2.0.6 =
+Made sure the filters for the_title on the checkout page works even with too few arguments
+Added notice and warning for MobilePay that capture must be done within 7 days
 
 = 2024-01-25 version 2.0.5 =
 Add workaround for Orderline issue with Checkout
