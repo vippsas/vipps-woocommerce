@@ -1,3 +1,5 @@
+const {__} = wp.i18n;
+
 jQuery(document).ready(function ($) {
   $('#check_charge_statuses_now').on('click', function () {
     const $button = $(this);
@@ -71,13 +73,29 @@ jQuery(document).ready(function ($) {
       }
     }
 
+    function toggleMobilePayReservationsWarning(brand, checked) {
+      const note = __('Note: Reservations in MobilePay will be cancelled after 7 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce');
+
+      const brandInput = $('#woocommerce_vipps_recurring_brand');
+      const fieldset = brandInput.parent();
+
+      if (brand !== 'mobilepay' || checked) {
+        fieldset.find('.mobilepay-warning').remove();
+      } else {
+        fieldset.append('<div class="ui message warning notice notice-warning mobilepay-warning" style="margin-bottom: 0;"><p>' + note + '</p></div>');
+      }
+    }
+
     const brandInput = $('#woocommerce_vipps_recurring_brand');
     const autoCaptureMobilePayInput = $('#woocommerce_vipps_recurring_auto_capture_mobilepay');
 
-    vippsRecurringToggleInputRow(autoCaptureMobilePayInput, brandInput.val(), 'mobilepay');
     brandInput.on('change', function (event) {
-      console.log(event.target.value)
       vippsRecurringToggleInputRow(autoCaptureMobilePayInput, event.target.value, 'mobilepay');
-    });
+      toggleMobilePayReservationsWarning(event.target.value, autoCaptureMobilePayInput.is(':checked'));
+    }).trigger('change');
+
+    autoCaptureMobilePayInput.on('change', function (event) {
+      toggleMobilePayReservationsWarning(brandInput.val(), event.target.checked);
+    }).trigger('change');
   }
 });

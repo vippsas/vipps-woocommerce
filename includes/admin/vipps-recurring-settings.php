@@ -26,7 +26,7 @@ return apply_filters(
 			'type'        => 'checkbox',
 			'title'       => __( 'Automatically capture payments made with MobilePay', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'label'       => __( 'Automatically capture payments made with MobilePay', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'description' => __( 'Note: Reservations in MobilePay will be cancelled after 7 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'If this option is checked we will start automatically capturing MobilePay payments. This prevents reservations from being cancelled after 7 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'default'     => 'no',
 		],
 		'description'                      => [
