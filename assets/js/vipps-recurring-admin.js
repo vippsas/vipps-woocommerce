@@ -1,6 +1,6 @@
 jQuery(document).ready(function ($) {
   $('#check_charge_statuses_now').on('click', function () {
-    var $button = $(this);
+    const $button = $(this);
     $button.addClass('disabled');
 
     $.post(ajaxurl, {
@@ -14,9 +14,10 @@ jQuery(document).ready(function ($) {
     });
   })
 
-  $('.notice-vipps-recurring').on('click', '.notice-dismiss', function (event, el) {
-    var $notice = $(this).parent('.notice.is-dismissible');
-    var dismiss_url = $notice.attr('data-dismiss-url');
+  $('.notice-vipps-recurring').on('click', '.notice-dismiss', function () {
+    const $notice = $(this).parent('.notice.is-dismissible');
+    const dismiss_url = $notice.attr('data-dismiss-url');
+
     if (dismiss_url) {
       $.get(dismiss_url);
     }
@@ -48,16 +49,35 @@ jQuery(document).ready(function ($) {
         cache: false,
         dataType: "json",
         timeout: 0,
-        error: function(xhr, message, error) {
+        error: function (xhr, message, error) {
           button.removeAttr('disabled');
           button.removeClass('disabled');
 
           alert("Error performing Vipps/MobilePay Recurring action " + message + " " + error);
         },
-        success: function() {
+        success: function () {
           window.location.reload();
         }
       })
     })
+  }
+
+  if (pagenow === 'woocommerce_page_wc-settings') {
+    function vippsRecurringToggleInputRow(input, currentValue, showIfValue) {
+      if (currentValue !== showIfValue) {
+        input.closest('tr').hide();
+      } else {
+        input.closest('tr').show();
+      }
+    }
+
+    const brandInput = $('#woocommerce_vipps_recurring_brand');
+    const autoCaptureMobilePayInput = $('#woocommerce_vipps_recurring_auto_capture_mobilepay');
+
+    vippsRecurringToggleInputRow(autoCaptureMobilePayInput, brandInput.val(), 'mobilepay');
+    brandInput.on('change', function (event) {
+      console.log(event.target.value)
+      vippsRecurringToggleInputRow(autoCaptureMobilePayInput, event.target.value, 'mobilepay');
+    });
   }
 });

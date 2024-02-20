@@ -92,6 +92,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		public ?bool $use_high_performance_order_storage = null;
 
+		public bool $auto_capture_mobilepay = false;
+
 		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
@@ -156,6 +158,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
 			$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
+			$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
+
 			// translators: %s: brand name, Vipps or MobilePay
 			$this->order_button_text = sprintf( __( 'Pay with %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title );
 
@@ -628,7 +632,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// If the brand is MobilePay, we should capture the payment now if it is not already captured.
 			// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
-			if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && ! $is_captured ) {
+			if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && ! $is_captured && $this->auto_capture_mobilepay ) {
 				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 7 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 				$this->maybe_capture_payment( $order_id );
 
@@ -1844,9 +1848,9 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		/**
 		 * @param $what
 		 */
-		private function admin_notify( $what ): void {
-			add_action( 'admin_notices', static function () use ( $what ) {
-				echo "<div class='notice notice-info is-dismissible'><p>$what</p></div>";
+		private function admin_notify( $what, $type = "info" ): void {
+			add_action( 'admin_notices', static function () use ( $what, $type ) {
+				echo "<div class='notice notice-$type is-dismissible'><p>$what</p></div>";
 			} );
 		}
 
@@ -1864,6 +1868,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					/* translators: %s: the error message returned from Vipps/MobilePay */
 					$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps/MobilePay API: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $e->getMessage() ) );
 				}
+			}
+
+			if ( $this->get_option( 'brand' ) === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && $this->get_option( 'auto_capture_mobilepay' ) === "no" ) {
+				$this->admin_notify( __( 'Note: Reservations in MobilePay will be cancelled after 7 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce' ), "warning" );
 			}
 
 			return $saved;

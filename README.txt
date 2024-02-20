@@ -166,7 +166,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Added: Use the translations from translate.wordpress.org.
 * Added: Better handling of our special action pages.
 * Fixed: Admin notice styling is now a bit better.
-* Changed: MobilePay payments now automatically get captured even when they are physical products in order to prevent the payment reservation from getting cancelled after 7 days.
+* Added: A setting to automatically capture MobilePay payments now even when they are physical products in order to prevent the payment reservation from getting cancelled after 7 days.
 
 = 1.19.0 =
 * Added: Support for paying with MobilePay in Finland, and later Denmark.
