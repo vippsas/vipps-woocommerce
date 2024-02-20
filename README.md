@@ -108,6 +108,12 @@ You can only get paid by users who have Vipps. At the moment Vipps is only avail
 ### In which countries can I use MobilePay?
 You can only get paid by users who have MobilePay. At the moment plugin is only supporting MobilePay users in Finland. Support for MobilePay in Denmark coming later in Q1 2024.
 
+### For how long is an order reserved?
+
+When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For Mobilepay, this reservation period is 7 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+
+If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to “Completed” as is the standard WooCommerce rule.
+
 ### Does Vipps MobilePay offer a test environment for the plugin?
 
 For developers that want to contribute to the development of the plugin, there is a test environment.
