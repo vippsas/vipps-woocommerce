@@ -20,10 +20,14 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 		"interval",
 		"merchant_agreement_url",
 		"merchant_redirect_url",
-		"product_name"
+		"product_name",
+		"external_id",
 	];
 
 	public ?string $id = null;
+
+	public ?string $external_id = null;
+
 	/**
 	 * @var DateTime|string $start
 	 */
@@ -94,6 +98,12 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 
 	public function set_id( string $id ): self {
 		$this->id = $id;
+
+		return $this;
+	}
+
+	public function set_external_id( string $external_id ): self {
+		$this->external_id = $external_id;
 
 		return $this;
 	}
@@ -211,6 +221,7 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 			$this->conditional( "start", $this->start ),
 			$this->conditional( "stop", $this->stop ),
 			$this->conditional( "id", $this->id ),
+			$this->conditional( "externalId", $this->external_id ),
 			$this->conditional( "status", $this->status ),
 			$this->conditional( "campaign", $this->campaign ),
 			$this->conditional( "phoneNumber", $this->phone_number ),

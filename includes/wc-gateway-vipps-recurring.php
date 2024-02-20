@@ -1547,6 +1547,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 
 				$agreement = ( new WC_Vipps_Agreement() )
+					->set_external_id( $order_id )
 					->set_pricing(
 						( new WC_Vipps_Agreement_Pricing() )
 							->set_type( WC_Vipps_Agreement_Pricing::TYPE_LEGACY )
@@ -1870,9 +1871,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 			}
 
-			if ( $this->get_option( 'brand' ) === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && $this->get_option( 'auto_capture_mobilepay' ) === "no" ) {
-				$this->admin_notify( __( 'Note: Reservations in MobilePay will be cancelled after 7 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce' ), "warning" );
-			}
+			$this->webhook_initialize();
 
 			return $saved;
 		}
@@ -2061,7 +2060,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					}
 				} catch ( Exception $e ) {
 					$order->add_order_note( __( 'Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error msg: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
+					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
 				}
 			}
 		}
@@ -2135,6 +2134,178 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Totals were recalculated. Marking subscription for update in the Vipps/MobilePay app.', WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
 			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
 			$subscription->save();
+		}
+
+		/**
+		 * Initialize webhooks if we don't already have one
+		 *
+		 * @throws WC_Vipps_Recurring_Exception
+		 * @throws WC_Vipps_Recurring_Temporary_Exception
+		 * @throws WC_Vipps_Recurring_Config_Exception
+		 */
+		private function webhook_initialize_initial() {
+			$webhooks       = $this->api->get_webhooks();
+			$local_webhooks = $this->webhook_get_local();
+			$callback_url   = $this->webhook_callback_url();
+
+			// Delete webhooks that are not for our MSN + hostname combination. This prevents us from conflicting with Pay with WooCommerce for Vipps and MobilePay
+			$deletion_tracker = [];
+
+			$webhook_initialized = false;
+
+			foreach ( $webhooks['webhooks'] as $webhook ) {
+				if ( ! isset( $local_webhooks[ $this->merchant_serial_number ][ $webhook['id'] ] ) ) {
+					// this webhook is not created by us, so we can continue
+					continue;
+				}
+
+				// If we have multiple webhooks for our MSN we can delete the other ones. We do not want duplicates.
+				if ( $webhook_initialized ) {
+					$deletion_tracker[] = $webhook['id'];
+				}
+
+				$webhook_initialized = true;
+			}
+
+			// Create webhook and save it to _woo_vipps_recurring_webhooks
+			if ( ! $webhook_initialized ) {
+				$response = $this->api->register_webhook();
+
+				$local_webhooks[ $this->merchant_serial_number ][ $response['id'] ] = [
+					'secret' => $response['secret'],
+					'url'    => $callback_url
+				];
+			}
+
+			// Delete superfluous webhooks
+			if ( ! empty( $deletion_tracker ) ) {
+				foreach ( $deletion_tracker as $id ) {
+					try {
+						$this->api->delete_webhook( $id );
+						unset( $local_webhooks[ $this->merchant_serial_number ][ $id ] );
+					} catch ( Exception $e ) {
+						WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to delete webhook %s. Error: %s', $id, $e->getMessage() ) );
+					}
+				}
+			}
+
+			update_option( '_woo_vipps_recurring_webhooks', $local_webhooks );
+		}
+
+		/**
+		 * Check that our local webhooks point to this site.
+		 * If they don't we should delete them, otherwise we end up with hitting the limit of 5.
+		 *
+		 * @throws WC_Vipps_Recurring_Exception
+		 * @throws WC_Vipps_Recurring_Temporary_Exception
+		 * @throws WC_Vipps_Recurring_Config_Exception
+		 */
+		public function webhook_ensure_this_site() {
+			$local_webhooks    = $this->webhook_get_local();
+			$callback_url      = $this->webhook_callback_url();
+			$callback_url_base = strtok( $callback_url, "?" );
+
+			if ( empty( $local_webhooks[ $this->merchant_serial_number ] ) ) {
+				return;
+			}
+
+			foreach ( $local_webhooks[ $this->merchant_serial_number ] as $webhookId => $webhook ) {
+				$webhook_base_url = strtok( $webhook['url'], "?" );
+
+				if ( $webhook_base_url === $callback_url_base ) {
+					continue;
+				}
+
+				$this->api->delete_webhook( $webhookId );
+
+				unset( $local_webhooks[ $this->merchant_serial_number ][ $webhookId ] );
+			}
+
+			update_option( '_woo_vipps_recurring_webhooks', $local_webhooks );
+		}
+
+		public function webhook_get_local(): array {
+			return get_option( '_woo_vipps_recurring_webhooks', [ $this->merchant_serial_number => [] ] );
+		}
+
+		public function webhook_initialize() {
+			try {
+				$this->webhook_ensure_this_site();
+				$this->webhook_initialize_initial();
+			} catch ( Exception $e ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to initialize webhooks. Error: %s', $e->getMessage() ) );
+			}
+		}
+
+		public function webhook_callback_url(): string {
+			$base_url = home_url( '/', 'https' );
+
+			$args   = [ 'callback' => 'webhook' ];
+			$action = 'wc_gateway_vipps_recurring';
+
+			if ( ! get_option( 'permalink_structure' ) ) {
+				$args['wc-api'] = $action;
+			} else {
+				$base_url = trailingslashit( home_url( "wc-api/$action", 'https' ) );
+			}
+
+			return add_query_arg( $args, $base_url );
+		}
+
+		/**
+		 * @throws WC_Vipps_Recurring_Exception
+		 * @throws WC_Vipps_Recurring_Temporary_Exception
+		 * @throws WC_Vipps_Recurring_Config_Exception
+		 */
+		public function handle_webhook_callback( array $webhook_data ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Handling webhook with data: %s", json_encode( $webhook_data ) ) );
+
+			$event_type = $webhook_data['eventType'];
+
+			if ( in_array( $event_type, [
+				'recurring.charge-reserved.v1',
+				'recurring.charge-captured.v1',
+				'recurring.charge-canceled.v1',
+				'recurring.charge-failed.v1',
+			] ) ) {
+				$charge_id = $webhook_data['chargeId'];
+
+				if ( empty( $charge_id ) ) {
+					return;
+				}
+
+				$options = [
+					'limit'          => 1,
+					'type'           => 'shop_order',
+					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
+					'meta_compare'   => '=',
+					'meta_value'     => $charge_id,
+					'return'         => 'ids',
+					'payment_method' => $this->id,
+					'order_by'       => 'post_date'
+				];
+
+				$order_ids = wc_get_orders( $options );
+				$order_id  = array_pop( $order_ids );
+
+				$this->check_charge_status( $order_id );
+			}
+
+			if ( in_array( $event_type, [
+				'recurring.agreement-activated.v1',
+				'recurring.agreement-rejected.v1',
+				'recurring.agreement-stopped.v1',
+				'recurring.agreement-expired.v1',
+			] ) ) {
+				$order_id = $webhook_data['chargeExternalId'];
+
+				// This order is old and does not have a chargeExternalId
+				if ( empty( $order_id ) ) {
+					return;
+				}
+
+				$this->check_charge_status( $order_id );
+			}
 		}
 	}
 }

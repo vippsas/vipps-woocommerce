@@ -192,46 +192,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'woocommerce_vipps_recurring_add_cron_schedules'
 				] );
 
-				// testing code
-//				if ( WC_VIPPS_RECURRING_TEST_MODE ) {
-//					$agreement = new WC_Vipps_Agreement( [
-//						"start"                => "2022-09-29T09:48:02Z",
-//						"stop"                 => null,
-//						"status"               => "ACTIVE",
-//						"pricing"              => [
-//							"type"     => "LEGACY",
-//							"currency" => "NOK",
-//							"amount"   => 14900
-//						],
-//						"productName"          => "This is a name of a really long product wh...",
-//						"productDescription"   => "[På vent] This is a name of a really long product which will be truncated",
-//						"interval"             => [
-//							"unit"  => "MONTH",
-//							"count" => 1,
-//							"text"  => "every month"
-//						],
-//						"campaign"             => [
-//							"price"       => 12665,
-//							"end"         => "2022-10-29T09:47:45Z",
-//							"explanation" => "Original price 149 kr
-//starts October 29",
-//							"type"        => "LEGACY_CAMPAIGN"
-//						],
-//						"sub"                  => null,
-//						"userinfoUrl"          => null,
-//						"merchantAgreementUrl" => "https://8e9f-141-0-97-106.eu.ngrok.io/my-account/",
-//						"id"                   => "agr_GqnvsHY"
-//					] );
-//
-//					die(var_dump($agreement->to_array()));
-
-//					add_action( 'wp_loaded', [
-//						$this,
-//						'check_order_statuses'
-//					] );
-//				}
-				// end testing code
-
 				// schedule recurring payment charge status checking event
 				if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_order_statuses' ) ) {
 					wp_schedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_order_statuses' );
@@ -279,6 +239,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 				// Add a filter to control the content on our special action pages
 				add_filter( 'the_content', [ $this, 'special_action_page_content' ] );
 				add_filter( 'the_title', [ $this, 'special_action_page_title' ], 10, 2 );
+
+				add_action( 'woocommerce_api_wc_gateway_vipps_recurring', [ $this, 'handle_webhook_callback' ] );
 			}
 
 			/**
@@ -899,6 +861,60 @@ function woocommerce_gateway_vipps_recurring_init() {
 				}
 
 				return $this->get_special_page_text( $content, 'content' );
+			}
+
+			public function handle_webhook_callback() {
+				wc_nocache_headers();
+				status_header( 202, "Accepted" );
+
+				$raw_input = @file_get_contents( 'php://input' );
+				$result    = @json_decode( $raw_input, true );
+
+				$callback = $_REQUEST['callback'] ?? "";
+
+				if ( $callback !== "webhook" ) {
+					return;
+				}
+
+				if ( ! $result ) {
+					$error = json_last_error_msg();
+					WC_Vipps_Recurring_Logger::log( sprintf( "Did not understand callback from Vipps/MobilePay with body: %s – error: %s", empty( $raw_input ) ? "(empty string)" : $raw_input, $error ) );
+
+					return;
+				}
+
+				$local_webhooks = $this->gateway->webhook_get_local()[ $this->gateway->merchant_serial_number ];
+				$local_webhook  = array_pop( $local_webhooks );
+				$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
+
+				$orderId = $result['referenceId'];
+
+				if ( ! $secret ) {
+					WC_Vipps_Recurring_Logger::log( sprintf( "Cannot verify webhook callback for order %s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.", $orderId ) );
+				}
+
+				if ( ! $this->verify_webhook( $raw_input, $secret ) ) {
+					return;
+				}
+
+				do_action( "woo_vipps_recurring_webhook_callback", $result, $raw_input );
+
+				// We now have a validated webhook
+				$this->gateway->handle_webhook_callback( $result );
+			}
+
+			public function verify_webhook( $serialized, $secret ): bool {
+				$expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ( $_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? "" );
+				$expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
+
+				$hashed_payload = base64_encode( hash( 'sha256', $serialized, true ) );
+				$path_and_query = $_SERVER['REQUEST_URI'];
+				$host           = $_SERVER['HTTP_HOST'];
+				$toSign         = "POST\n{$path_and_query}\n$expected_date;$host;$hashed_payload";
+				$signature      = base64_encode( hash_hmac( 'sha256', $toSign, $secret, true ) );
+				$auth           = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature=$signature";
+
+				return ( $auth == $expected_auth );
 			}
 		}
 

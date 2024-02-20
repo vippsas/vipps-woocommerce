@@ -308,6 +308,70 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
+	 * @return array
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function get_webhooks(): array {
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		return $this->http_call( 'webhooks/v1/webhooks', 'GET', [], $headers );
+	}
+
+	/**
+	 * @return array
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function register_webhook(): array {
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		$callback_url = $this->gateway->webhook_callback_url();
+
+		return $this->http_call( 'webhooks/v1/webhooks', 'POST', [
+			'url'    => $callback_url,
+			'events' => [
+				'recurring.agreement-activated.v1',
+				'recurring.agreement-rejected.v1',
+				'recurring.agreement-stopped.v1',
+				'recurring.agreement-expired.v1',
+				'recurring.charge-reserved.v1',
+				'recurring.charge-captured.v1',
+				'recurring.charge-canceled.v1',
+				'recurring.charge-failed.v1',
+			]
+		], $headers );
+	}
+
+	/**
+	 * @param string $id
+	 *
+	 * @return array|string
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function delete_webhook( string $id ) {
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		return $this->http_call( 'webhooks/v1/webhooks/' . $id, 'DELETE', [], $headers );
+	}
+
+	/**
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
