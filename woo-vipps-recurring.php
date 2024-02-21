@@ -152,11 +152,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function init() {
 				require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
 				require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
-
-				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
-
 				require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
 				require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+
+				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 				$this->notices = WC_Vipps_Recurring_Admin_Notices::get_instance( __FILE__ );
 				$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
