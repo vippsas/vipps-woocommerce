@@ -152,6 +152,9 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function init() {
 				require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
 				require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
+
+				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
+
 				require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
 				require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
 
@@ -165,8 +168,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 						'content' => sprintf( __( 'It looks like you cancelled your order in %s. If this was a mistake you can try again by checking out again :)', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->gateway->title )
 					]
 				];
-
-				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 				add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 
