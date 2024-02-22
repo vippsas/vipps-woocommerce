@@ -2144,6 +2144,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 */
 		private function webhook_initialize_initial() {
+			// We cannot use webhooks without the MSN being set.
+			if ( empty( $this->merchant_serial_number ) ) {
+				return;
+			}
+
 			$webhooks       = $this->api->get_webhooks();
 			$local_webhooks = $this->webhook_get_local();
 			$callback_url   = $this->webhook_callback_url();
@@ -2201,6 +2206,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 */
 		public function webhook_ensure_this_site() {
+			// We cannot use webhooks without the MSN being set.
+			if ( empty( $this->merchant_serial_number ) ) {
+				return;
+			}
+
 			$local_webhooks    = $this->webhook_get_local();
 			$callback_url      = $this->webhook_callback_url();
 			$callback_url_base = strtok( $callback_url, "?" );
