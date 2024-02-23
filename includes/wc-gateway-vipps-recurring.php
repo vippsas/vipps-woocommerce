@@ -2144,8 +2144,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 */
 		private function webhook_initialize_initial() {
+			$msn = $this->get_option( 'merchant_serial_number' );
+
 			// We cannot use webhooks without the MSN being set.
-			if ( empty( $this->merchant_serial_number ) ) {
+			if ( empty( $msn ) ) {
 				return;
 			}
 
@@ -2159,7 +2161,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$webhook_initialized = false;
 
 			foreach ( $webhooks['webhooks'] as $webhook ) {
-				if ( ! isset( $local_webhooks[ $this->merchant_serial_number ][ $webhook['id'] ] ) ) {
+				if ( ! isset( $local_webhooks[ $msn ][ $webhook['id'] ] ) ) {
 					// this webhook is not created by us, so we can continue
 					continue;
 				}
@@ -2176,7 +2178,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( ! $webhook_initialized ) {
 				$response = $this->api->register_webhook();
 
-				$local_webhooks[ $this->merchant_serial_number ][ $response['id'] ] = [
+				$local_webhooks[ $msn ][ $response['id'] ] = [
 					'secret' => $response['secret'],
 					'url'    => $callback_url
 				];
@@ -2187,7 +2189,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				foreach ( $deletion_tracker as $id ) {
 					try {
 						$this->api->delete_webhook( $id );
-						unset( $local_webhooks[ $this->merchant_serial_number ][ $id ] );
+						unset( $local_webhooks[ $msn ][ $id ] );
 					} catch ( Exception $e ) {
 						WC_Vipps_Recurring_Logger::log( sprintf( 'Failed to delete webhook %s. Error: %s', $id, $e->getMessage() ) );
 					}
@@ -2206,8 +2208,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 */
 		public function webhook_ensure_this_site() {
+			$msn = $this->get_option( 'merchant_serial_number' );
+
 			// We cannot use webhooks without the MSN being set.
-			if ( empty( $this->merchant_serial_number ) ) {
+			if ( empty( $msn ) ) {
 				return;
 			}
 
@@ -2215,11 +2219,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$callback_url      = $this->webhook_callback_url();
 			$callback_url_base = strtok( $callback_url, "?" );
 
-			if ( empty( $local_webhooks[ $this->merchant_serial_number ] ) ) {
+			if ( empty( $local_webhooks[ $msn ] ) ) {
 				return;
 			}
 
-			foreach ( $local_webhooks[ $this->merchant_serial_number ] as $webhookId => $webhook ) {
+			foreach ( $local_webhooks[ $msn ] as $webhookId => $webhook ) {
 				$webhook_base_url = strtok( $webhook['url'], "?" );
 
 				if ( $webhook_base_url === $callback_url_base ) {
@@ -2228,14 +2232,14 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 				$this->api->delete_webhook( $webhookId );
 
-				unset( $local_webhooks[ $this->merchant_serial_number ][ $webhookId ] );
+				unset( $local_webhooks[ $msn ][ $webhookId ] );
 			}
 
 			update_option( '_woo_vipps_recurring_webhooks', $local_webhooks );
 		}
 
 		public function webhook_get_local(): array {
-			return get_option( '_woo_vipps_recurring_webhooks', [ $this->merchant_serial_number => [] ] );
+			return get_option( '_woo_vipps_recurring_webhooks', [ $this->get_option( 'merchant_serial_number' ) => [] ] );
 		}
 
 		public function webhook_initialize() {
