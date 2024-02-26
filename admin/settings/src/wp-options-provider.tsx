@@ -31,7 +31,7 @@ interface WPContext {
    * Submits changes made to WordPress options.
    * @returns A promise that resolves when the changes are submitted.
    */
-  submitChanges: (args?: { forceEnable: boolean }) => Promise<{ ok: boolean; msg: string, options: Record<string, string | null>}>;
+  submitChanges: (args?: { forceEnable: boolean }) => Promise<{ ok: boolean; msg: string; options: Record<string, string | null> }>;
 }
 const WPContext = createContext<WPContext>(null!);
 
@@ -56,12 +56,14 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
     }));
   }
 
-  async function setOptions(options : Record<string, string | null>) {
-      setValues(options);
+  async function setOptions(options: Record<string, string | null>) {
+    setValues(options);
   }
 
   // Submits the options changed to the WordPress backend.
-  async function submitChanges(args?: { forceEnable: boolean }): Promise<{ ok: boolean; msg: string, options: Record<string, string | null> }> {
+  async function submitChanges(args?: {
+    forceEnable: boolean;
+  }): Promise<{ ok: boolean; msg: string; options: Record<string, string | null> }> {
     // In some cases, we want to force-enable the "Enable Vipps MobilePay" option, such as when the user sets up the plugin for the first time in the wizard screen.
     if (args?.forceEnable) {
       setOption('enabled', 'yes');
@@ -69,19 +71,19 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
     }
 
     // Grab the nonce to avoid csrf IOK 2024-01-03
-    let nonce : string = (document.getElementById('vippsadmin_nonce') as HTMLInputElement).value;
+    const nonce: string = (document.getElementById('vippsadmin_nonce') as HTMLInputElement).value;
 
     // IOK 2024-01-03 curiously, using JSON.stringify on the values here ends up with extra slashes in the
     // strings after stringifying the URLSearchParams, which are not handled properly by the php backend...
     const params = new URLSearchParams({
       action: 'vipps_update_admin_settings',
-      vippsadmin_nonce: nonce,
+      vippsadmin_nonce: nonce
     });
 
-    // Therefore we will use the PHP query args convention of passing hashes by using the names 'value[key]' 
+    // Therefore we will use the PHP query args convention of passing hashes by using the names 'value[key]'
     //  as query args. IOK 2024-01-03
     for (const [key, value] of Object.entries(values)) {
-      let phpkey : string = "values[" + key + "]";
+      const phpkey: string = 'values[' + key + ']';
       if (value) params.append(phpkey, value);
       else params.append(phpkey, '');
     }
@@ -95,7 +97,7 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       body: params.toString()
     });
     if (response.ok) {
-        console.log("Response is %j", response);
+      console.log('Response is %j', response);
     }
     return response.json();
   }
