@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useContext, useState } from 'react';
-import { VippsMobilePayReactOptions, getMetadata } from './lib/wp-data';
+import { VippsMobilePayReactOptions, getMetadata, gettext } from './lib/wp-data';
 
 /**
  * Represents the context for WordPress options.
@@ -45,7 +45,11 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
 
   // Get the value of an option from the context.
   function getOption(key: string): string {
-    return values?.[key] ?? '';
+    // retrieve the current value for this option key from the values
+    const currentValue = values[key];
+    // try to retrieve the default value for this option key from the translations
+    const defaultValue = gettext(key + '.default');
+    return currentValue ?? defaultValue ?? '';
   }
 
   // Set the value of an option in the context.

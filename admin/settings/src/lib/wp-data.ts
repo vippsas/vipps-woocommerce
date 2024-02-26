@@ -48,7 +48,18 @@ if (!wpWindow.VippsMobilePayReactMetadata) {
  * @returns The translated string or the original message ID.
  */
 export function gettext(msgid: string): string {
-  return wpWindow.VippsMobilePayReactTranslations?.[msgid] ?? msgid;
+  const translationKey = msgid.split('.');
+  let translation: unknown = wpWindow.VippsMobilePayReactTranslations;
+
+  for (const key of translationKey) {
+    if (typeof translation === 'object' && translation !== null) {
+      translation = (translation as Record<string, unknown>)[key];
+    } else {
+      break;
+    }
+  }
+
+  return translation !== undefined ? (translation as string) : msgid;
 }
 
 /**
