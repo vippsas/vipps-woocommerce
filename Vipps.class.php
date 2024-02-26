@@ -4604,7 +4604,7 @@ EOF;
         $page_list = $this->get_pagelist();
 
         // Loads the React UI
-        $reactpath = "ui/dist";
+        $reactpath = "admin/settings/dist";
         wp_enqueue_script('vipps-mobilepay-react-ui', plugins_url($reactpath . '/plugin.js',__FILE__), array('wp-i18n'), filemtime(__DIR__ . "/$reactpath/plugin.js"), true ); 
         wp_enqueue_style('vipps-mobilepay-react-ui', plugins_url($reactpath . '/plugin.css',__FILE__), array(), filemtime(__DIR__ . "/$reactpath/plugin.css"));
 
