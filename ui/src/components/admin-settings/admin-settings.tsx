@@ -12,15 +12,6 @@ import { useState } from 'react';
 import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
 import { NotificationBanner } from '../notification-banner';
 
-// The tabs to render on the admin settings page.
-const TAB_IDS = [
-  gettext('main_options_title'),
-  gettext('express_options_title'),
-  gettext('checkout_options_title'),
-  gettext('advanced_options_title'),
-  gettext('developer_options_title')
-];
-
 /**
  * A React component that renders the admin settings page.
  *
@@ -30,6 +21,19 @@ export function AdminSettings(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const { submitChanges, getOption, setOptions } = useWP();
+  // The tabs to render on the admin settings page.
+  const TAB_IDS = [
+    gettext('main_options_title'),
+    gettext('express_options_title'),
+    gettext('checkout_options_title'),
+    gettext('advanced_options_title')
+  ];
+  // If the developer mode is enabled, the developer options tab is shown.
+  const canShowDeveloperOptions = getOption('developermode') === 'yes';
+  if (canShowDeveloperOptions) {
+    TAB_IDS.push(gettext('developer_options_title'));
+  }
+
   // Get the active tab from the URL hash.
   const [activeTab, setActiveTab] = useHash(TAB_IDS[0]);
 
@@ -124,7 +128,7 @@ export function AdminSettings(): JSX.Element {
         {isVisible(TAB_IDS[3]) && <AdminSettingsAdvancedOptionsTab />}
 
         {/* Renders the developer options form fields */}
-        {isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
+        {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
 
         <WPButton variant="primary" disabled={isLoading}>
           {gettext('save_changes')}
