@@ -88,47 +88,37 @@ export function AdminSettings(): JSX.Element {
   // When the important settings have been set, the user is shown the normal settings screen.
   const [showWizardScreen, setShowWizardScreen] = useState(() => __DEV_FORCE_WIZARD_SCREEN || showWizardp());
 
-  // Only show the wizard screen if the important settings are not set.
-  if (showWizardScreen) {
-    return (
-      <div>
-        {error && <NotificationBanner variant="error">{error}</NotificationBanner>}
-        <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
-        <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings vippsWizard">
-          <AdminSettingsWizardScreenOptions />
-          <WPButton variant="primary" isLoading={isLoading}>
-            {gettext('save_changes')} 1.4
-          </WPButton>
-        </WPForm>
-      </div>
-    );
-  }
-
-  // If the important settings are set, show the normal settings screen.
   return (
     <>
       {error && <NotificationBanner variant="error">{error}</NotificationBanner>}
 
-      <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} />
       <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings">
-        {/* Renders the main options form fields  */}
-        {isVisible(TAB_IDS[0]) && <AdminSettingsMainOptionsTab />}
+        {showWizardScreen ? (
+          // If the important settings are not set, show the wizard screen.
+          <AdminSettingsWizardScreenOptions isLoading={isLoading} />
+        ) : (
+          // If the important settings are set, show the normal settings screen.
+          <>
+            <Tabs tabs={TAB_IDS} onTabChange={setActiveTab} activeTab={activeTab} />
+            {/* Renders the main options form fields  */}
+            {isVisible(TAB_IDS[0]) && <AdminSettingsMainOptionsTab />}
 
-        {/* Renders the express options form fields */}
-        {isVisible(TAB_IDS[1]) && <AdminSettingsExpressOptionsTab />}
+            {/* Renders the express options form fields */}
+            {isVisible(TAB_IDS[1]) && <AdminSettingsExpressOptionsTab />}
 
-        {/* Renders the checkout options form fields */}
-        {isVisible(TAB_IDS[2]) && <AdminSettingsCheckoutOptionsTab />}
+            {/* Renders the checkout options form fields */}
+            {isVisible(TAB_IDS[2]) && <AdminSettingsCheckoutOptionsTab />}
 
-        {/* Renders the advanced options form fields */}
-        {isVisible(TAB_IDS[3]) && <AdminSettingsAdvancedOptionsTab />}
+            {/* Renders the advanced options form fields */}
+            {isVisible(TAB_IDS[3]) && <AdminSettingsAdvancedOptionsTab />}
 
-        {/* Renders the developer options form fields */}
-        {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
-
-        <WPButton variant="primary" isLoading={isLoading}>
-          {gettext('save_changes')}
-        </WPButton>
+            {/* Renders the developer options form fields */}
+            {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
+            <WPButton variant="primary" isLoading={isLoading}>
+              {gettext('save_changes')}
+            </WPButton>
+          </>
+        )}
       </WPForm>
     </>
   );

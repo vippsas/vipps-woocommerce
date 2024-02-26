@@ -72,9 +72,9 @@
 .vipps-mobilepay-react-field-description {
   color: #666;
 }
-.vipps-mobilepay-react-row-center {
+.vipps-mobilepay-react-button-actions {
   display: flex;
-  align-items: center;
+  column-gap: 1rem;
 }
 
 /* Notification banner */

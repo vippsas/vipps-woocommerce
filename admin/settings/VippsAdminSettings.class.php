@@ -129,6 +129,8 @@ class VippsAdminSettings {
             'initial_settings' => __('Initial settings', 'woo-vipps'),
             'upload_image' => __('Upload image', 'woo-vipps'),
             'remove_image' => __('Remove image', 'woo-vipps'),
+            'next_step' => __('Next step', 'woo-vipps'),
+            'previous_step' => __('Previous step', 'woo-vipps'),
        );
        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $commonTranslations));
        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $gw->settings);
