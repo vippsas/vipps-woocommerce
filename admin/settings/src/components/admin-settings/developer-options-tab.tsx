@@ -9,30 +9,30 @@ import { CheckboxFormField, InputFormField } from '../options-form-fields';
 export function AdminSettingsDeveloperOptionsTab(): JSX.Element {
   return (
     <div>
-      <p className="vipps-mobilepay-react-tab-description">{gettext('developer_options_description')}</p>
+      <p className="vipps-mobilepay-react-tab-description">{gettext('developertitle.description')}</p>
 
       {/* Renders a checkbox to enable test mode */}
-      <CheckboxFormField name="testmode" titleKey="testmode_title" descriptionKey="testmode_description" labelKey="testmode_label" />
+      <CheckboxFormField name="testmode" titleKey="testmode.title" descriptionKey="testmode.description" labelKey="testmode.label" />
 
       {/* Renders an input field for the TEST merchant serial number */}
       <InputFormField
         name="merchantSerialNumber_test"
-        titleKey="merchantSerialNumber_test_title"
-        labelKey="merchantSerialNumber_test_description"
+        titleKey="merchantSerialNumber_test.title"
+        labelKey="merchantSerialNumber_test.description"
       />
 
       {/* Renders an input field for the TEST client ID */}
-      <InputFormField asterisk name="clientId_test" titleKey="clientId_test_title" labelKey="clientId_test_description" />
+      <InputFormField asterisk name="clientId_test" titleKey="clientId_test.title" labelKey="clientId_test.description" />
 
       {/* Renders an input field for the TEST client secret */}
-      <InputFormField asterisk name="secret_test" titleKey="secret_test_title" labelKey="secret_test_description" />
+      <InputFormField asterisk name="secret_test" titleKey="secret_test.title" labelKey="secret_test.description" />
 
       {/* Renders an input field for the TEST subscription key */}
       <InputFormField
         asterisk
         name="Ocp_Apim_Key_eCommerce_test"
-        titleKey="Ocp_Apim_Key_eCommerce_test_title"
-        labelKey="Ocp_Apim_Key_eCommerce_test_description"
+        titleKey="Ocp_Apim_Key_eCommerce_test.title"
+        labelKey="Ocp_Apim_Key_eCommerce_test.description"
       />
     </div>
   );

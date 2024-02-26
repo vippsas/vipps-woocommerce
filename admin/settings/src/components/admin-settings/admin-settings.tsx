@@ -26,15 +26,15 @@ export function AdminSettings(): JSX.Element {
   const { submitChanges, getOption, setOptions } = useWP();
   // The tabs to render on the admin settings page.
   const TAB_IDS = [
-    gettext('main_options_title'),
-    gettext('express_options_title'),
-    gettext('checkout_options_title'),
-    gettext('advanced_options_title')
+    gettext('main_options.title'),
+    gettext('express_options.title'),
+    gettext('checkout_options.title'),
+    gettext('advanced_options.title')
   ];
   // If the developer mode is enabled, the developer options tab is shown.
   const canShowDeveloperOptions = getOption('developermode') === 'yes';
   if (canShowDeveloperOptions) {
-    TAB_IDS.push(gettext('developer_options_title'));
+    TAB_IDS.push(gettext('developertitle.title'));
   }
 
   // Get the active tab from the URL hash.

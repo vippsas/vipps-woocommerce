@@ -12,47 +12,44 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
       <p className="vipps-mobilepay-react-tab-description"></p>
 
       {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
-      <CheckboxFormField name="enabled" titleKey="enabled_title" labelKey="enabled_label" />
+      <CheckboxFormField name="enabled" titleKey="enabled.title" labelKey="enabled.label" />
 
       {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
       <SelectFormField
         name="payment_method_name"
-        titleKey="payment_method_name_title"
-        descriptionKey="payment_method_name_label"
-        options={[gettext('payment_method_name_options_vipps'), gettext('payment_method_name_options_mobilepay')]}
+        titleKey="payment_method_name.title"
+        descriptionKey="payment_method_name.description"
+        options={[gettext('payment_method_name.options.Vipps'), gettext('payment_method_name.options.MobilePay')]}
       />
 
       {/* Renders an input field for the order prefix */}
-      <InputFormField name="orderprefix" titleKey="orderprefix_title" labelKey="orderprefix_label" pattern="[a-zA-Z0-9-]+" required />
+      <InputFormField name="orderprefix" titleKey="orderprefix.title" descriptionKey='orderprefix.description' pattern="[a-zA-Z0-9-]+" required />
 
       {/* Renders an input field for the merchant serial number */}
-      <InputFormField asterisk name="merchantSerialNumber" titleKey="merchantSerialNumber_title" labelKey="merchantSerialNumber_label" />
+      <InputFormField asterisk name="merchantSerialNumber" titleKey="merchantSerialNumber.title" descriptionKey="merchantSerialNumber.description" />
 
       {/* Renders an input field for the VippsMobilePay client ID */}
-      <InputFormField asterisk name="clientId" titleKey="clientId_title" labelKey="clientId_label" />
+      <InputFormField asterisk name="clientId" titleKey="clientId.title" descriptionKey="clientId.description" />
 
       {/* Renders an input field for the VippsMobilePay secret */}
-      <InputFormField asterisk name="secret" titleKey="secret_title" labelKey="secret_label" />
+      <InputFormField asterisk name="secret" titleKey="secret.title" descriptionKey="secret.description" />
 
       {/* Renders an input field for the VippsMobilePay Ocp_Apim_Key_eCommerce */}
-      <InputFormField asterisk name="Ocp_Apim_Key_eCommerce" titleKey="Ocp_Apim_Key_eCommerce_title" labelKey="Ocp_Apim_Key_eCommerce_label" />
+      <InputFormField asterisk name="Ocp_Apim_Key_eCommerce" titleKey="Ocp_Apim_Key_eCommerce.title" descriptionKey="Ocp_Apim_Key_eCommerce.description" />
 
       {/* Renders a select field for the result status (On-Hold or Processing) */}
       <SelectFormField
         name="result_status"
-        titleKey="result_status_title"
-        descriptionKey="result_status_description"
-        options={[gettext('result_status_options_on-hold'), gettext('result_status_options_processing')]}
+        titleKey="result_status.title"
+        descriptionKey="result_status.description"
+        options={[gettext('result_status.options.on-hold'), gettext('result_status.options.processing')]}
       />
 
-      {/* Renders an input field for the title */}
-      <InputFormField name="title" titleKey="title_title" labelKey="title_description" />
-
       {/* Renders a textarea field for the description */}
-      <TextareaFormField name="description" titleKey="description_title" labelKey="description_description" rows={5} />
+      <TextareaFormField name="description" titleKey="description.title" descriptionKey="description.description" rows={5} />
 
       {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
-      <CheckboxFormField name="vippsdefault" titleKey="vippsdefault_title" labelKey="vippsdefault_label" />
+      <CheckboxFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
     </div>
   );
 }
