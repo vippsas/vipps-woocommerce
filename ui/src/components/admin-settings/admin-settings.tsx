@@ -101,7 +101,7 @@ export function AdminSettings(): JSX.Element {
       <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
       <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings vippsWizard">
        <AdminSettingsWizardScreenOptions />
-       <WPButton variant="primary" disabled={isLoading}>
+       <WPButton variant="primary" isLoading={isLoading}>
           {gettext('save_changes')} 1.4
        </WPButton>
       </WPForm>
@@ -130,7 +130,7 @@ export function AdminSettings(): JSX.Element {
         {/* Renders the developer options form fields */}
         {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
 
-        <WPButton variant="primary" disabled={isLoading}>
+        <WPButton variant="primary" isLoading={isLoading}>
           {gettext('save_changes')}
         </WPButton>
       </WPForm>

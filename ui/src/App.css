@@ -3,6 +3,42 @@
   font-family: 'Vipps Text', Roboto, Helvetica, Arial, sans-serif;
 }
 
+.vipps-mobilepay-react-loading {
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+.vipps-mobilepay-react-loading div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: 2px;
+  border: 2px solid #666;
+  border-radius: 50%;
+  animation: vipps-mobilepay-react-loading 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #666 transparent transparent transparent;
+}
+.vipps-mobilepay-react-loading div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.vipps-mobilepay-react-loading div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.vipps-mobilepay-react-loading div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes vipps-mobilepay-react-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .vipps-mobilepay-react-form-field {
   margin-bottom: 2rem;
   display: flex;
