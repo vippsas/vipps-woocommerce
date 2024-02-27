@@ -2,6 +2,7 @@
 ---
 title: Vipps/MobilePay recurring payments
 sidebar_position: 1
+description: Provide Vipps recurring payments for WooCommerce.
 pagination_next: null
 pagination_prev: null
 ---
