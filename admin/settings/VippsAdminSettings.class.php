@@ -86,20 +86,29 @@ class VippsAdminSettings
         $this->gateway()->set_post_data($admin_options);
         $this->gateway()->process_admin_options();
         //        $this->gateway()->add_error("Jaboloko!");  // Also add_warning, add_notice plz
-        $errorlist = $this->gateway()->get_errors();
-        $msg .= join("<br>", $errorlist);
+        $form_errors = $this->gateway()->get_errors();
+        $form_ok = empty($form_errors);
         // end use of process_admin_options IOK 2024-01-03
 
+        $connection_msg = "";
         // Verify the connection to Vipps
-        list($ok, $error_message) = $this->gateway()->check_connection();
-        if ($ok) {
-            $msg .= sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName());
+        list($connection_ok, $error_message) = $this->gateway()->check_connection();
+        if ($connection_ok) {
+            $connection_msg .= sprintf(__("Connection to %1\$s is OK", 'woo-vipps'), Vipps::CompanyName());
         } else {
-            $msg .= sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
+            $connection_msg .= sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
         }
-        // OK is still true here, because we will only say ok is false for *errors*, not *wrong input*. But we may want to
-        // add another value to signify that as well. IOK 2023-01-03
-        echo json_encode(array("ok" => true, "msg" => $msg, 'options' => get_option('woocommerce_vipps_settings')));
+
+        // Return the result, sending the new options, the connection status/message and the form status/errors
+        echo json_encode(
+            array(
+                'connection_ok' => $connection_ok, // Whether the connection to the Vipps servers is OK.
+                'connection_msg' => $connection_msg, // The connection message, whether the connection is OK or not.
+                'form_ok' => $form_ok, // Whether the form fields are OK.
+                'form_errors' => $form_errors, // The form field errors, if any.
+                'options' => get_option('woocommerce_vipps_settings') // The new options.
+            )
+        );
         exit();
     }
 
@@ -129,7 +138,7 @@ class VippsAdminSettings
             'admin_url' => admin_url('admin-ajax.php'),
             'page' => 'admin_settings_page',
         );
-        // add some extra common translations only used by the React UI
+        // Add some extra common translations only used by the React UI
         $commonTranslations = array(
             'save_changes' => __('Save changes', 'woo-vipps'),
             'initial_settings' => __('Initial settings', 'woo-vipps'),

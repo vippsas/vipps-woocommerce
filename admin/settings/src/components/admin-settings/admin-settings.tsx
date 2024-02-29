@@ -53,20 +53,22 @@ export function AdminSettings(): JSX.Element {
 
     try {
       const data = await submitChanges({ forceEnable: showWizardScreen });
-      console.log(data);
-      // Catch early errors, so we can process them in the catch block
-      if (!data.connection_ok) {
-        throw new Error(data.connection_msg);
-      } else if (!data.form_ok) {
-        throw new Error(data.form_errors.join('\n'));
+
+      // Handle the error messages for connection and form errors
+      if (!data.connection_ok || !data.form_ok) {
+        setBanner({
+          text: data.connection_msg || data.form_errors,
+          variant: 'error'
+        });
+      } else {
+        // If the connection is ok, show a success message
+        setBanner({
+          text: data.connection_msg,
+          variant: 'success'
+        });
+        // Ensure we have the new options, then reload the screens using the new values
+        setOptions(data.options).then(() => setShowWizardScreen(showWizardp()));
       }
-      
-      setBanner({
-        text: data.connection_msg,
-        variant: 'success'
-      });
-      // Ensure we have the new options, then reload the screens using the new values
-      setOptions(data.options).then(() => setShowWizardScreen(showWizardp()));
     } catch (err) {
       setBanner({
         text: (err as Error).message,
