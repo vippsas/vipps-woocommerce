@@ -10,7 +10,7 @@ import { WPButton, WPForm } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { useState } from 'react';
 import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
-import { NotificationBanner } from '../notification-banner';
+import { NotificationBanner, type NotificationBannerProps } from '../notification-banner';
 
 // Development option to force the wizard screen to be shown. This is useful for testing the wizard screen.
 const __DEV_FORCE_WIZARD_SCREEN = false;
@@ -22,7 +22,7 @@ const __DEV_FORCE_WIZARD_SCREEN = false;
  */
 export function AdminSettings(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [banner, setBanner] = useState<NotificationBannerProps | null>();
   const { submitChanges, getOption, setOptions } = useWP();
   // The tabs to render on the admin settings page.
   const TAB_IDS = [
@@ -49,24 +49,29 @@ export function AdminSettings(): JSX.Element {
   // This calls the submitChanges function from the WPOptionsProvider, which sends a request to the WordPress REST API to save the settings.
   async function handleSaveSettings(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    console.log('Handling save settings for %j', event.target);
     setIsLoading(true);
 
     try {
       const data = await submitChanges({ forceEnable: showWizardScreen });
-      // IOK FIXME Must separate notices and errors here 2024-01-03
-      if (data.msg) {
-        setError(data.msg);
+      console.log(data);
+      // Catch early errors, so we can process them in the catch block
+      if (!data.connection_ok) {
+        throw new Error(data.connection_msg);
+      } else if (!data.form_ok) {
+        throw new Error(data.form_errors.join('\n'));
       }
-      if (!data.ok) {
-        setError(data.msg + '<br>Unsuccessful'); // IOK FIXME
-      } else {
-        // Ensure we have the new options, then reload the screens using the new values
-        setOptions(data.options).then(() => setShowWizardScreen(showWizardp()));
-      }
+      
+      setBanner({
+        text: data.connection_msg,
+        variant: 'success'
+      });
+      // Ensure we have the new options, then reload the screens using the new values
+      setOptions(data.options).then(() => setShowWizardScreen(showWizardp()));
     } catch (err) {
-      console.log('An error happened');
-      setError((err as Error).message);
+      setBanner({
+        text: (err as Error).message,
+        variant: 'error'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +95,7 @@ export function AdminSettings(): JSX.Element {
 
   return (
     <>
-      {error && <NotificationBanner variant="error">{error}</NotificationBanner>}
+      {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
 
       <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings">
         {showWizardScreen ? (

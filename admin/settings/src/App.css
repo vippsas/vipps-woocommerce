@@ -79,23 +79,29 @@
 
 /* Notification banner */
 .vipps-mobilepay-react-notification-banner {
-  padding: 4rem 2rem;
+  padding: 1rem;
   min-height: 40px;
   font-size: 1rem;
   display: flex;
   align-items: center;
 }
-.vipps-mobilepay-react-notification-banner.error {
+
+/* Notification banner for error variant */
+.vipps-mobilepay-react-notification-banner-error {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
 }
-.vipps-mobilepay-react-notification-banner.warning {
+
+/* Notification banner for warning variant */
+.vipps-mobilepay-react-notification-banner-warning {
   background-color: #fff3cd;
   color: #856404;
   border: 1px solid #ffeeba;
 }
-.vipps-mobilepay-react-notification-banner.success {
+
+/* Notification banner for success variant */
+.vipps-mobilepay-react-notification-banner-success {
   background-color: #d4edda;
   color: #155724;
   border: 1px solid #c3e6cb;
