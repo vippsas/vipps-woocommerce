@@ -1861,6 +1861,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->init_form_fields();
 
 			if ( $this->get_option( 'enabled' ) === "yes" ) {
+				$this->webhook_initialize();
+
 				try {
 					$this->api->get_access_token( true );
 					update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 1, true );
@@ -1873,8 +1875,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps/MobilePay API: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $e->getMessage() ) );
 				}
 			}
-
-			$this->webhook_initialize();
 
 			return $saved;
 		}
