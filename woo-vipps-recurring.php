@@ -65,6 +65,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 		return;
 	}
 
+	register_deactivation_hook( __FILE__, [ 'WC_Vipps_Recurring', 'deactivate' ] );
+
 	if ( ! class_exists( 'WC_Vipps_Recurring' ) ) {
 		/*
 		 * Required minimums and constants
@@ -141,6 +143,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 			private function __construct() {
 				add_action( 'admin_init', [ $this, 'install' ] );
 				$this->init();
+			}
+
+			public static function deactivate() {
+				self::get_instance()->gateway->webhook_teardown();
 			}
 
 			/**
@@ -275,6 +281,20 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				if ( isset( $_REQUEST['statuses_checked'] ) ) {
 					$this->notices->success( __( 'Successfully checked the status of these charges', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+				}
+
+				// Initialize webhooks if we haven't already
+				if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+					if ( WC_Vipps_Recurring_Helper::is_connected() ) {
+						if ( empty( get_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS ) ) ) {
+							$this->gateway->webhook_initialize();
+						} else {
+							$ok = $this->gateway->webhook_ensure_this_site();
+							if ( ! $ok ) {
+								$this->gateway->webhook_initialize();
+							}
+						}
+					}
 				}
 
 				// Show Vipps Login notice for a maximum of 10 days

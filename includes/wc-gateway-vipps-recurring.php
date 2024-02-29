@@ -1863,9 +1863,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			if ( $this->get_option( 'enabled' ) === "yes" ) {
 				try {
 					$this->api->get_access_token( true );
+					update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 1, true );
 
 					$this->admin_notify( __( 'Successfully authenticated with the Vipps/MobilePay API', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 				} catch ( Exception $e ) {
+					update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 0, true );
+
 					/* translators: %s: the error message returned from Vipps/MobilePay */
 					$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps/MobilePay API: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $e->getMessage() ) );
 				}
@@ -2174,7 +2177,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				$webhook_initialized = true;
 			}
 
-			// Create webhook and save it to _woo_vipps_recurring_webhooks
+			// Create webhook and save it to WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS
 			if ( ! $webhook_initialized ) {
 				$response = $this->api->register_webhook();
 
@@ -2196,7 +2199,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				}
 			}
 
-			update_option( '_woo_vipps_recurring_webhooks', $local_webhooks );
+			update_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS, $local_webhooks );
 		}
 
 		/**
@@ -2207,12 +2210,12 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @throws WC_Vipps_Recurring_Temporary_Exception
 		 * @throws WC_Vipps_Recurring_Config_Exception
 		 */
-		public function webhook_ensure_this_site() {
+		public function webhook_ensure_this_site(): bool {
 			$msn = $this->get_option( 'merchant_serial_number' );
 
 			// We cannot use webhooks without the MSN being set.
 			if ( empty( $msn ) ) {
-				return;
+				return false;
 			}
 
 			$local_webhooks    = $this->webhook_get_local();
@@ -2220,26 +2223,81 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$callback_url_base = strtok( $callback_url, "?" );
 
 			if ( empty( $local_webhooks[ $msn ] ) ) {
-				return;
+				return false;
 			}
 
-			foreach ( $local_webhooks[ $msn ] as $webhookId => $webhook ) {
+			$remote_webhooks = $this->api->get_webhooks();
+
+			$ok = true;
+			foreach ( $local_webhooks[ $msn ] as $webhook_id => $webhook ) {
 				$webhook_base_url = strtok( $webhook['url'], "?" );
 
 				if ( $webhook_base_url === $callback_url_base ) {
 					continue;
 				}
 
-				$this->api->delete_webhook( $webhookId );
+				// Check that this webhookId indeed exists in $remote_webhooks before we attempt to delete it
+				$webhook_exists = ! empty( array_filter( $remote_webhooks['webhooks'], function ( $remote_webhook ) use ( $webhook_id ) {
+					return $remote_webhook['id'] === $webhook_id;
+				} ) );
 
-				unset( $local_webhooks[ $msn ][ $webhookId ] );
+				if ( $webhook_exists ) {
+					$this->api->delete_webhook( $webhook_id );
+				}
+
+				unset( $local_webhooks[ $msn ][ $webhook_id ] );
+
+				$ok = false;
 			}
 
-			update_option( '_woo_vipps_recurring_webhooks', $local_webhooks );
+			update_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS, $local_webhooks );
+
+			return $ok;
+		}
+
+		/**
+		 * Delete all webhooks during uninstall for this MSN
+		 *
+		 * @throws WC_Vipps_Recurring_Exception
+		 * @throws WC_Vipps_Recurring_Temporary_Exception
+		 * @throws WC_Vipps_Recurring_Config_Exception
+		 */
+		public function webhook_teardown() {
+			$msn = $this->get_option( 'merchant_serial_number' );
+
+			if ( empty( $msn ) ) {
+				return;
+			}
+
+			$local_webhooks = $this->webhook_get_local();
+
+			if ( empty( $local_webhooks[ $msn ] ) ) {
+				return;
+			}
+
+			$remote_webhooks = $this->api->get_webhooks();
+
+			// We can have multiple MSNs, hence the nested loop
+			foreach ( $local_webhooks as $webhooks ) {
+				foreach ( $webhooks as $webhook_id => $webhook ) {
+					// Check that this webhookId indeed exists in $remote_webhooks before we attempt to delete it
+					$webhook_exists = ! empty( array_filter( $remote_webhooks['webhooks'], function ( $remote_webhook ) use ( $webhook_id ) {
+						return $remote_webhook['id'] === $webhook_id;
+					} ) );
+
+					if ( ! $webhook_exists ) {
+						continue;
+					}
+
+					$this->api->delete_webhook( $webhook_id );
+				}
+			}
+
+			delete_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS );
 		}
 
 		public function webhook_get_local(): array {
-			return get_option( '_woo_vipps_recurring_webhooks', [ $this->get_option( 'merchant_serial_number' ) => [] ] );
+			return get_option( WC_Vipps_Recurring_Helper::OPTION_WEBHOOKS, [ $this->get_option( 'merchant_serial_number' ) => [] ] );
 		}
 
 		public function webhook_initialize() {

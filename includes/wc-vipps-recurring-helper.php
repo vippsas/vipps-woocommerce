@@ -58,6 +58,19 @@ class WC_Vipps_Recurring_Helper {
 	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
 	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
 
+	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
+
+	public const OPTION_WEBHOOKS = '_woo_vipps_recurring_webhooks';
+
+	/**
+	 * Whether we are successfully connected to the Vipps/MobilePay API
+	 *
+	 * @return bool
+	 */
+	public static function is_connected(): bool {
+		return intval( get_option( self::OPTION_CONFIGURED, 0 ) ) === 1;
+	}
+
 	/**
 	 * Get Vipps/MobilePay amount to pay
 	 *
