@@ -70,7 +70,6 @@ class VippsAdminSettings
             echo json_encode(array('ok' => 0, 'options' => [], 'msg' => __('You don\'t have sufficient rights to edit these settings', 'woo-vipps')));
             exit();
         }
-        $msg = ""; // Message for the user.
 
         // Decode the settings from the values sents, then save them to "woocommerce_vipps_settings"
         $new_settings = $_POST['values'];
@@ -81,7 +80,12 @@ class VippsAdminSettings
         // update_option('woocommerce_vipps_settings', $new_settings); // After sanitation etc
         $admin_options = [];
         foreach ($new_settings as $key => $value) {
-            $admin_options['woocommerce_vipps_' . $key] = $value;
+            // Checkbox settings (yes/no) can't be passed directly to set_post_data, because *any* value will be interpreted as "yes"
+            // because of this, checkbox settings with the value "no" will be completely ignored
+            if($value !== 'no') {
+                // Because settings are processed manually, their keys need to prefixed with "woocommerce_vipps_"
+                $admin_options['woocommerce_vipps_' . $key] = $value;
+            }
         }
         $this->gateway()->set_post_data($admin_options);
         $this->gateway()->process_admin_options();
