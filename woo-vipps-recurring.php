@@ -7,8 +7,8 @@
  * Author URI: https://everyday.no
  * Version: 1.19.0
  * Requires at least: 4.4
- * Tested up to: 6.4
- * WC tested up to: 8.5
+ * Tested up to: 6.5
+ * WC tested up to: 8.6
  * Text Domain: vipps-recurring-payments-gateway-for-woocommerce
  * Domain Path: /languages
  */

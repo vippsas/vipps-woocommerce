@@ -2,7 +2,7 @@
 Contributors: Vipps MobilePay, EverydayAS
 Tags: vipps, mobilepay, vippsmobilepay, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.5
 Stable tag: trunk
 Requires PHP: 7.4
 License: AGPLv3.0 or later
