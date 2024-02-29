@@ -48,17 +48,21 @@ if (!wpWindow.VippsMobilePayReactMetadata) {
  * @returns The translated string or the original message ID.
  */
 export function gettext(msgid: string): string {
-  const translationKey = msgid.split('.');
+  // Keep track of the current translation object.
   let translation: unknown = wpWindow.VippsMobilePayReactTranslations;
 
+  // Since javascript generally uses the dot notation for object properties, e.g. foo.bar.baz, for simplicity we'll use the dot notation for the message IDs.
+  // This is useful in case we get a nested object as the translation object (which in php would be an associative array with string keys, but in javascript would be an object with string keys)
+  const translationKey = msgid.split('.');
   for (const key of translationKey) {
     if (typeof translation === 'object' && translation !== null) {
+      // If the key exists in the translation object, we'll update the translation object to the value of the key, effectively traversing the object.
       translation = (translation as Record<string, unknown>)[key];
     } else {
       break;
     }
   }
-
+  // If the translation is found within the nested paths, we'll return it, otherwise we'll return the original message ID.
   return translation !== undefined ? (translation as string) : msgid;
 }
 
