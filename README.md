@@ -2,6 +2,7 @@
 ---
 title: "Vipps/MobilePay for WooCommerce plugin"
 sidebar_position: 1
+description: Provide Vipps payments for WooCommerce.
 pagination_next: null
 pagination_prev: null
 ---
@@ -21,13 +22,13 @@ END_METADATA -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/). 💥
 <!-- END_COMMENT -->
 
-*Official Vipps/MobilePay payment plugin for WooCommerce.* 
+*Official Vipps/MobilePay payment plugin for WooCommerce.*
 
-*Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway. One platform gathering more than 11 million users and more than 400.000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.*
+*Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.*
 
 This is the official Vipps/MobilePay plugin for payments, a complete Checkout and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
-You can do important backoffice tasks such as capture and refund directly from WooCommerce.
+You can do important back-office tasks, such as capture and refund directly from WooCommerce.
 
 For more information, see:
 
@@ -50,12 +51,13 @@ When you enable Express Checkout, your customers can choose between the regular 
 Since Vipps knows who the customers are, they don’t have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
 
 The express checkout can be done in the following ways:
+
 * From the cart
 * From the category pages
 * From the product page
-* From shareable links distributed by email, banners etc
+* From shareable links distributed by email, banners, etc.
 * From QR codes distributed digitally or in print
-	
+
 Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
@@ -106,7 +108,14 @@ Enter your Vipps account keys and configure the plugin
 You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
 
 ### In which countries can I use MobilePay?
+
 You can only get paid by users who have MobilePay. At the moment plugin is only supporting MobilePay users in Finland. Support for MobilePay in Denmark coming later in Q1 2024.
+
+### For how long is an order reserved?
+
+When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 7 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+
+If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to “Completed” as is the standard WooCommerce rule.
 
 ### Does Vipps MobilePay offer a test environment for the plugin?
 
