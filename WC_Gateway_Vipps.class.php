@@ -1227,7 +1227,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
-                'title' => __('Enable test mode', 'woo-vipps'),
+                'label' => __('Enable test mode', 'woo-vipps'),
                 'type'  => 'checkbox',
                 'description' => sprintf(__('If you enable this, transactions will be made towards the %1$s Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
                     accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular %1$s app). Contact %1$s\'s technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'), Vipps::CompanyName()),

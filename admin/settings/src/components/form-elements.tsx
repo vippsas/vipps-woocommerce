@@ -1,4 +1,5 @@
 import { ComponentProps, PropsWithChildren } from 'react';
+import { LoadingSpinner } from './loading-spinner';
 
 /**
  * Renders an input element with custom styling.
@@ -48,15 +49,20 @@ interface WPButton extends ComponentProps<'button'> {
    * The variant of the button, these follow WordPress's default styles.
    */
   variant?: 'primary' | 'secondary' | 'link';
+
+  isLoading?: boolean;
 }
 /**
  * Renders a custom button component for the WPButton.
  * @returns The rendered button component.
  */
-export function WPButton({ variant, ...restProps }: WPButton): JSX.Element {
+export function WPButton({ variant, isLoading, disabled, ...restProps }: WPButton): JSX.Element {
   return (
-    <button {...restProps} className={[`button-${variant}`, restProps.className ?? ''].join(' ')}>
-      {restProps.children}
+    <button {...restProps} disabled={isLoading || disabled} className={[`button-${variant}`, restProps.className ?? ''].join(' ')}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {isLoading && <LoadingSpinner />}
+        <span>{restProps.children}</span>
+      </div>
     </button>
   );
 }

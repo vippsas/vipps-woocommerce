@@ -1,6 +1,7 @@
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { CheckboxFormField, InputFormField } from '../options-form-fields';
+import { UnsafeHtmlText } from '../unsafe-html-text';
 
 /**
  * A React component that renders the checkout options tab for the admin settings page.
@@ -16,81 +17,83 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
 
   return (
     <div>
-      <p className="vipps-mobilepay-react-tab-description">{gettext('checkout_options_description')}</p>
+      <p className="vipps-mobilepay-react-tab-description">
+        <UnsafeHtmlText htmlString={gettext('checkout_options.description')} />
+      </p>
 
       {/* Renders a checkbox to enable the Alternative screen  */}
       <CheckboxFormField
         name="vipps_checkout_enabled"
-        titleKey="vipps_checkout_enabled_title"
-        labelKey="vipps_checkout_enabled_label"
-        descriptionKey="vipps_checkout_enabled_description"
+        titleKey="vipps_checkout_enabled.title"
+        labelKey="vipps_checkout_enabled.label"
+        descriptionKey="vipps_checkout_enabled.description"
       />
 
       {/* Renders a checkbox to enable the creation of new customers on Checkout */}
       <CheckboxFormField
         name="checkoutcreateuser"
-        titleKey="checkoutcreateuser_title"
-        labelKey="checkoutcreateuser_label"
-        descriptionKey="checkoutcreateuser_description"
+        titleKey="checkoutcreateuser.title"
+        labelKey="checkoutcreateuser.label"
+        descriptionKey="checkoutcreateuser.description"
       />
 
       {/* Renders a checkbox to enable static shipping */}
       <CheckboxFormField
         name="enablestaticshipping_checkout"
-        titleKey="enablestaticshipping_checkout_title"
-        labelKey="enablestaticshipping_checkout_label"
-        descriptionKey="enablestaticshipping_checkout_description"
+        titleKey="enablestaticshipping_checkout.title"
+        labelKey="enablestaticshipping_checkout.label"
+        descriptionKey="enablestaticshipping_checkout.description"
       />
 
       {/* Renders a checkbox to enable the sharing of user information */}
       <CheckboxFormField
         name="requireUserInfo_checkout"
-        titleKey="requireUserInfo_checkout_title"
-        labelKey="requireUserInfo_checkout_label"
-        descriptionKey="requireUserInfo_checkout_description"
+        titleKey="requireUserInfo_checkout.title"
+        labelKey="requireUserInfo_checkout.label"
+        descriptionKey="requireUserInfo_checkout.description"
       />
 
       {/* Renders a checkbox to enable the dropping of address fields */}
       <CheckboxFormField
         name="noAddressFields"
-        titleKey="noAddressFields_title"
-        labelKey="noAddressFields_label"
-        descriptionKey="noAddressFields_description"
+        titleKey="noAddressFields.title"
+        labelKey="noAddressFields.label"
+        descriptionKey="noAddressFields.description"
       />
 
       {/* Renders a checkbox to enable the dropping of contact fields */}
       <CheckboxFormField
         name="noContactFields"
-        titleKey="noContactFields_title"
-        labelKey="noContactFields_label"
-        descriptionKey="noContactFields_description"
+        titleKey="noContactFields.title"
+        labelKey="noContactFields.label"
+        descriptionKey="noContactFields.description"
       />
 
-      <h3 className="vipps-mobilepay-react-tab-description">{gettext('checkout_shipping_title')}</h3>
-      <p>{gettext('checkout_shipping_description')}</p>
+      <h3 className="vipps-mobilepay-react-tab-description">{gettext('checkout_shipping.title')}</h3>
+      <p>{gettext('checkout_shipping.description')}</p>
 
       {/* Renders a checkbox to enable Posten Norge  */}
       <CheckboxFormField
         name="vcs_posten"
-        titleKey="vcs_posten_title"
-        descriptionKey="vcs_posten_description"
-        labelKey="vcs_posten_label"
+        titleKey="vcs_posten.title"
+        descriptionKey="vcs_posten.description"
+        labelKey="vcs_posten.label"
       />
 
       {/* Renders a checkbox to enable Posten Nord */}
       <CheckboxFormField
         name="vcs_postnord"
-        titleKey="vcs_postnord_title"
-        descriptionKey="vcs_postnord_description"
-        labelKey="vcs_postnord_label"
+        titleKey="vcs_postnord.title"
+        descriptionKey="vcs_postnord.description"
+        labelKey="vcs_postnord.label"
       />
 
       {/* Render a checkbox to enable Porterbuddy */}
       <CheckboxFormField
         name="vcs_porterbuddy"
-        titleKey="vcs_porterbuddy_title"
-        descriptionKey="vcs_porterbuddy_description"
-        labelKey="vcs_porterbuddy_label"
+        titleKey="vcs_porterbuddy.title"
+        descriptionKey="vcs_porterbuddy.description"
+        labelKey="vcs_porterbuddy.label"
       />
 
       {/* Display Porterbuddy input fields if Porterbuddy is enabled */}
@@ -100,23 +103,23 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           <InputFormField
             asterisk
             name="vcs_porterbuddy_publicToken"
-            titleKey="vcs_porterbuddy_publicToken_title"
-            descriptionKey="vcs_porterbuddy_publicToken_description"
+            titleKey="vcs_porterbuddy_publicToken.title"
+            descriptionKey="vcs_porterbuddy_publicToken.description"
           />
 
           {/* Renders a text input field for the Porterbuddy API key */}
           <InputFormField
             asterisk
             name="vcs_porterbuddy_apiKey"
-            titleKey="vcs_porterbuddy_apiKey_title"
-            descriptionKey="vcs_porterbuddy_apiKey_description"
+            titleKey="vcs_porterbuddy_apiKey.title"
+            descriptionKey="vcs_porterbuddy_apiKey.description"
           />
 
           {/* Renders a text input field for the Porterbuddy phone number */}
           <InputFormField
             name="vcs_porterbuddy_phoneNumber"
-            titleKey="vcs_porterbuddy_phoneNumber_title"
-            descriptionKey="vcs_porterbuddy_phoneNumber_description"
+            titleKey="vcs_porterbuddy_phoneNumber.title"
+            descriptionKey="vcs_porterbuddy_phoneNumber.description"
           />
         </>
       )}
@@ -124,9 +127,9 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       {/* Renders a checkbox to enable Instabox */}
       <CheckboxFormField
         name="vcs_instabox"
-        titleKey="vcs_instabox_title"
-        descriptionKey="vcs_instabox_description"
-        labelKey="vcs_instabox_label"
+        titleKey="vcs_instabox.title"
+        descriptionKey="vcs_instabox.description"
+        labelKey="vcs_instabox.label"
       />
 
       {/* Display Instabox input fields if Instabox is enabled */}
@@ -136,16 +139,16 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           <InputFormField
             asterisk
             name="vcs_instabox_clientId"
-            titleKey="vcs_instabox_clientId_title"
-            descriptionKey="vcs_instabox_clientId_description"
+            titleKey="vcs_instabox_clientId.title"
+            descriptionKey="vcs_instabox_clientId.description"
           />
 
           {/* Renders a text input field for the Instabox Client Secret */}
           <InputFormField
             asterisk
             name="vcs_instabox_clientSecret"
-            titleKey="vcs_instabox_clientSecret_title"
-            descriptionKey="vcs_instabox_clientSecret_description"
+            titleKey="vcs_instabox_clientSecret.title"
+            descriptionKey="vcs_instabox_clientSecret.description"
           />
         </>
       )}
@@ -153,9 +156,9 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       {/* Renders a checkbox to enable Helthjem */}
       <CheckboxFormField
         name="vcs_helthjem"
-        titleKey="vcs_helthjem_title"
-        descriptionKey="vcs_helthjem_description"
-        labelKey="vcs_helthjem_label"
+        titleKey="vcs_helthjem.title"
+        descriptionKey="vcs_helthjem.description"
+        labelKey="vcs_helthjem.label"
       />
 
       {/* Display Helthjem input fields if Helthjem is enabled */}
@@ -165,23 +168,23 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           <InputFormField
             type="number"
             name="vcs_helthjem_shopId"
-            titleKey="vcs_helthjem_shopId_title"
-            descriptionKey="vcs_helthjem_shopId_description"
+            titleKey="vcs_helthjem_shopId.title"
+            descriptionKey="vcs_helthjem_shopId.description"
           />
 
           {/* Renders a text input field for the Helthjem Username */}
           <InputFormField
             name="vcs_helthjem_username"
-            titleKey="vcs_helthjem_username_title"
-            descriptionKey="vcs_helthjem_username_description"
+            titleKey="vcs_helthjem_username.title"
+            descriptionKey="vcs_helthjem_username.description"
           />
 
           {/* Renders a text input field for the Helthjem Password */}
           <InputFormField
             asterisk
             name="vcs_helthjem_password"
-            titleKey="vcs_helthjem_password_title"
-            descriptionKey="vcs_helthjem_password_description"
+            titleKey="vcs_helthjem_password.title"
+            descriptionKey="vcs_helthjem_password.description"
           />
         </>
       )}

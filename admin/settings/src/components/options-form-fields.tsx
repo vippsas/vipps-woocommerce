@@ -75,6 +75,11 @@ interface SelectFormFieldProps {
   descriptionKey: string;
 
   /**
+   * The key for the label of the form field.
+   */
+  labelKey?: string;
+
+  /**
    * The options for the select form field.
    */
   options: string[];
@@ -86,7 +91,7 @@ interface SelectFormFieldProps {
  * Reads and updates the WP data available in the WPOptionsProvider.
  * @returns A select form field component.
  */
-export function SelectFormField({ name, titleKey, descriptionKey, options }: SelectFormFieldProps): JSX.Element {
+export function SelectFormField({ name, titleKey, labelKey, descriptionKey, options }: SelectFormFieldProps): JSX.Element {
   const { getOption, setOption } = useWP();
 
   return (
@@ -100,6 +105,7 @@ export function SelectFormField({ name, titleKey, descriptionKey, options }: Sel
             </WPOption>
           ))}
         </WPSelect>
+        <div>{labelKey && <UnsafeHtmlText htmlString={gettext(labelKey)} />}</div>
         {descriptionKey && <UnsafeHtmlText className="vipps-mobilepay-react-field-description" htmlString={gettext(descriptionKey)} />}
       </div>
     </WPFormField>
