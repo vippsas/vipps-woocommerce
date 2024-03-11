@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.6
-Stable tag: 2.0.6
+Version: 2.0.7
+Stable tag: 2.0.7
 Requires at least: 4.7
-Tested up to: 6.4.2
+Tested up to: 6.4.3
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.6.0
+WC tested up to: 8.7.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -233,6 +233,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-02-19 version 2.0.7 =
+Minor updates and language
 
 = 2024-02-19 version 2.0.6 =
 Made sure the filters for the_title on the checkout page works even with too few arguments
