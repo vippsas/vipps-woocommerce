@@ -340,7 +340,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
       $newstatus = apply_filters('woo_vipps_after_vipps_order_status', $chosen, $order);
 
       if (in_array($newstatus, $this->captured_statuses)){
-             error_log("not using $newstatus because it is one of the captured statuses");
              $this->log(sprintf(__("Cannot use %1\$s as status for non-autocapturable orders: payment is captured on this status. See the woo_vipps_captured_statuses-filter.",'woo-vipps'), $newstatus),'debug');
              return  $defaultstatus;
       }
@@ -1641,9 +1640,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it - and also, we don't really support partial capture yet.) IOK 2018-05-07
         $requestidnr = intval($order->get_meta('_vipps_capture_transid'));
+        // IOK 2023-03-13 keep track of failed captures; because some stores automate capturing without paying attention to the result.
+        //  some reservations are for only 7 days (or 30 days or 180 days) so some orders will be uncapturable. This will be reset by the
+        //  'Show full transaction details' metabox.
+        $failures = intval($order->get_meta('_vipps_capture_failures'));
+        $failurelimit = 10;
         try {
+
+            // Assume we cannot capture if we have gotten errors 10 times from the API
+            if ($failures >= $failurelimit) {
+                  throw new Exception(__("More than %1\$d API exceptions trying to capture order - this order cannot be captured.", 'woo-vipps'));
+            }
+
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $api = $order->get_meta('_vipps_api');
+
+
             if ($api == 'banktransfer') {
                 // This is an error - we should not ever get to the 'capture' branch if we are a banktransfer payment.
                 // IOK 2024-01-09
@@ -1658,6 +1670,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . "\n" . $e->getMessage());
             return false;
         } catch (Exception $e) {
+            // Keep track of API failures up to a point. IOK 2024-03-13
+            if ($failures < $failurelimit) { 
+                $order->update_meta_data('_vipps_capture_failures', $failures + 1);
+                $order->save();
+            }
+
             $msg = sprintf(__('Could not capture %1$s payment for order_id:','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" . $e->getMessage();
             $this->log($msg,'error');
             $this->adminerr($msg);
