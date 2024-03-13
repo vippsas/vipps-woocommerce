@@ -2,8 +2,8 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.7
-Stable tag: 2.0.7
+Version: 2.0.8
+Stable tag: 2.0.8
 Requires at least: 4.7
 Tested up to: 6.4.3
 Requires PHP: 5.6
@@ -234,7 +234,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-02-19 version 2.0.7 =
+= 2024-0x-xx version 2.0.8 =
+Create a limit of 10 attempts to capture an order; do not call API after this. The order will be uncapturable. It is possible to reset this by pressing "Get complete transaction details" in the Vipps metabox for the order.
+
+= 2024-03-11 version 2.0.7 =
 Minor updates and language
 
 = 2024-02-19 version 2.0.6 =
