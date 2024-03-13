@@ -1649,7 +1649,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Assume we cannot capture if we have gotten errors 10 times from the API
             if ($failures >= $failurelimit) {
-                  throw new Exception(__("More than %1\$d API exceptions trying to capture order - this order cannot be captured.", 'woo-vipps'));
+                  throw new Exception(sprintf(__("More than %1\$d API exceptions trying to capture order - this order cannot be captured.", 'woo-vipps'), $failures));
             }
 
             $requestid = $requestidnr . ":" . $order->get_order_key();
