@@ -147,7 +147,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->title                            = $this->get_form_fields()['brand']['options'][ $this->brand ];
 			$this->description                      = str_replace( '{brand}', $this->title, $this->get_option( 'description' ) );
 			$this->enabled                          = $this->get_option( 'enabled' );
-			$this->test_mode                        = WC_VIPPS_RECURRING_TEST_MODE;
+			$this->test_mode                        = $this->get_option( 'test_mode' );
 			$this->merchant_serial_number           = $this->get_option( 'merchant_serial_number' );
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
@@ -159,6 +159,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 			$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
+
+			if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+				$this->test_mode = true;
+			}
 
 			// translators: %s: brand name, Vipps or MobilePay
 			$this->order_button_text = sprintf( __( 'Pay with %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title );
@@ -1811,14 +1815,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Initialise Gateway Settings Form Fields
 		 */
 		public function init_form_fields(): void {
-			// Set some options and default values
-			add_filter( 'wc_vipps_recurring_settings', function ( $settings ) {
-				$settings['brand']['default'] = $this->detect_default_brand();
-
-				return $settings;
-			} );
-
 			$this->form_fields = require( __DIR__ . '/admin/vipps-recurring-settings.php' );
+
+			// Set some options and default values
+			$this->form_fields['brand']['default'] = $this->detect_default_brand();
 		}
 
 		public function detect_default_brand(): string {

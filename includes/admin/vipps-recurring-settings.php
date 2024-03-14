@@ -119,5 +119,14 @@ return apply_filters(
 			'description' => __( 'Save debug messages to the WooCommerce System Status log.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'default'     => 'yes',
 		],
+		'test_mode'                        => [
+			'title'       => __( 'Test mode', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'label'       => __( 'Enable test mode', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Enabling this will route all API requests to the Vipps MobilePay test API.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'default'     => 'no',
+			'disabled'    => WC_VIPPS_RECURRING_TEST_MODE,
+			'desc_tip'    => WC_VIPPS_RECURRING_TEST_MODE ? __( 'This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE.', 'vipps-recurring-payments-gateway-for-woocommerce' ) : null,
+		],
 	]
 );
