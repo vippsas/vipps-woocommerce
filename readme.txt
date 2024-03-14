@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fix for sites where it is not possible to delete webhooks
 Compatibility for users of the filter the_title, notices about the length of reservations in MobilePay
 
 == Frequently Asked Questions ==
@@ -236,6 +237,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 = 2024-0x-xx version 2.0.8 =
 Create a limit of 10 attempts to capture an order; do not call API after this. The order will be uncapturable. It is possible to reset this by pressing "Get complete transaction details" in the Vipps metabox for the order.
+Fix in the logic for deleting webhooks
 
 = 2024-03-11 version 2.0.7 =
 Minor updates and language

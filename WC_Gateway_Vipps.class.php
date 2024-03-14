@@ -3618,12 +3618,17 @@ function activate_vipps_checkout(yesno) {
         $callback = $this->webhook_callback_url();
         $callback_compare = strtok($callback, '?');
         $problems = false;
+
         if (!$local_hooks) return false;
         foreach($local_hooks as $msn => $hooks) {
            foreach ($hooks as $id => $hook) {
                $noargs = strtok($hook['url'], '?');
                if ($noargs == $callback_compare) continue; // This hook is good, probably, unless somebody has deleted it
-               $this->api->delete_webhook($msn, $hook['id']); // This isn't - it's pointed the wrong way, which means we have changed name of the site or something
+               try {
+                   $this->api->delete_webhook($msn, $hook['id']); // This isn't - it's pointed the wrong way, which means we have changed name of the site or something
+               } catch (Exception $e) {
+                   $this->log(sprintf(__("Could not delete webhook for this site with url '%2\$s' : %1\$s", 'woo-vipps'), $e->getMessage(), $noargs), 'error');
+               }
                $problems = true;
            }
         }
