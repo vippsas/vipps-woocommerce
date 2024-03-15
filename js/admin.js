@@ -219,7 +219,6 @@ SOFTWARE.
                 }
             };
 
-            console.log("Adding logic");
             jQuery('#woocommerce_vipps_payment_method_name').change(function () {
                warnReservations(jQuery(this));
              });
