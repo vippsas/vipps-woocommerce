@@ -1619,6 +1619,7 @@ else:
 
         $paymentdetailsnonce=wp_create_nonce('paymentdetails');
 
+        $failures = intval($order->get_meta('_vipps_capture_failures'));
 
         print "<table border=0><thead></thead><tbody>";
         print "<tr><td colspan=2>"; print $order->get_payment_method_title();print "</td></tr>";
@@ -1627,6 +1628,10 @@ else:
         print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
         print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print "NOK"; print "</td></tr>";
         print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
+
+        if ($failures) {
+          print("<tr><td>Capture attempts</td><td align=right>$failures</td></tr>");
+        }
 
         print "<tr><td>Vipps initiated</td><td align=right>";if ($init) print date('Y-m-d H:i:s',$init); print "</td></tr>";
         print "<tr><td>Vipps response </td><td align=right>";if ($callback) print date('Y-m-d H:i:s',$callback); print "</td></tr>";
@@ -1683,6 +1688,7 @@ else:
                    $this->log("Could not get transaction log for " . $order->get_id() . " : " . $e->getMessage(), 'error');
                }
             }
+            $order->update_meta_data('_vipps_capture_failures', 0); // Reset this if getting full data
             $order =   $gw->update_vipps_payment_details($order, $details);
         } catch (Exception $e) {
             print "<p>"; 
