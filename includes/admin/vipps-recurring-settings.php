@@ -64,12 +64,6 @@ return apply_filters(
 			'default'     => '',
 			'desc_tip'    => true,
 		],
-		'special_actions_page_id'          => [
-			'type'             => 'page_dropdown',
-			'title'            => __( 'Special actions page', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'description'      => __( 'The page to use for special pages, like a cancelled purchase.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'show_option_none' => __( 'Create a new page', 'vipps-recurring-payments-gateway-for-woocommerce' )
-		],
 		'default_reserved_charge_status'   => [
 			'type'        => 'select',
 			'title'       => __( 'Default status to give orders with a reserved charge', 'vipps-recurring-payments-gateway-for-woocommerce' ),
