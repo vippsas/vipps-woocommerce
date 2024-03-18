@@ -246,6 +246,7 @@ class Vipps {
     }
 
     public function admin_init () {
+
         $gw = $this->gateway();
         require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
         $adminSettings = VippsAdminSettings::instance();
@@ -260,6 +261,20 @@ class Vipps {
 
         // Scripts
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
+
+        // Redirect the default WooCommerce settings page to our own
+        add_action( 'woocommerce_settings_start', function () {
+                add_filter('admin_url', function ($url, $path) {
+                        if (strpos($path, "tab=checkout&section=vipps") === false) return $url;
+                        $qs = parse_url($path, PHP_URL_QUERY);
+                        if (!$qs) return $url;
+                        $args = [];
+                        parse_str($qs, $args);
+                        $ok = (($args['page']??false) == 'wc-settings') && (($args['tab']??false) == 'checkout') && (($args['section']??false) == 'vipps');
+                        if (!$ok) return $url;
+                        return admin_url("/admin.php?page=vipps_settings_menu");
+                        }, 10, 2);
+        });
 
         // Custom product properties
         // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps - FIXME
@@ -846,7 +861,7 @@ jQuery('a.webhook-adder').click(function (e) {
         }
 
         $recurringsettings = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring');
-        $checkoutsettings  = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps');
+        $checkoutsettings  = admin_url('/admin.php?page=vipps_settings_menu');
         $loginsettings = admin_url('/options-general.php?page=vipps_login_options');
 
         $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
@@ -1029,7 +1044,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // Add a link to the settings page from the plugin list
     public function plugin_action_links ($links) {
-        $link = '<a href="'.esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')). '">'.__('Settings', 'woo-vipps').'</a>';
+        $link = '<a href="'.esc_attr(admin_url('/admin.php?page=vipps_settings_menu')). '">'.__('Settings', 'woo-vipps').'</a>';
         array_unshift( $links, $link);
         return $links;
     }
@@ -1072,7 +1087,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
                         $logo = plugins_url('img/vmp-logo.png',__FILE__);
                         $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
-                        $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
+                        $message = sprintf($text, admin_url('/admin.php?page=vipps_settings_menu'));
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
@@ -1419,7 +1434,7 @@ jQuery('a.webhook-adder').click(function (e) {
           } 
           echo "</p>";
         } else {
-         $settings = esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
+         $settings = esc_attr(admin_url('/admin.php?page=vipps_settings_menu'));
           echo "<p>";
           echo sprintf(__("The %1\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), Vipps::CompanyName());
           echo "</p>";
