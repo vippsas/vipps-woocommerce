@@ -1,6 +1,6 @@
 === Vipps/MobilePay recurring payments for WooCommerce ===
-Contributors: Vipps MobilePay, EverydayAS
-Tags: vipps, mobilepay, vippsmobilepay, recurring payments, subscriptions, woocommerce, woocommerce subscriptions
+Contributors: EverydayAS
+Tags: vipps, mobilepay, recurring payments, subscriptions, woocommerce subscriptions
 Requires at least: 5.0
 Tested up to: 6.5
 Stable tag: trunk
