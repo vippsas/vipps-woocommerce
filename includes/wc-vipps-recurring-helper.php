@@ -458,4 +458,11 @@ class WC_Vipps_Recurring_Helper {
 			? $order->reduce_order_stock()
 			: wc_reduce_stock_levels( self::get_id( $order ) );
 	}
+
+	public static function get_payment_redirect_url( WC_Order $order ): string {
+		$order_id  = self::get_id( $order );
+		$order_key = $order->get_order_key();
+
+		return home_url() . "/vipps-mobilepay-recurring-payment?order_id=$order_id&key=$order_key";
+	}
 }

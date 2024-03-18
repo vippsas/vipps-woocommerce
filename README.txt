@@ -168,6 +168,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Added: Better handling of our special action pages.
 * Fixed: Admin notice styling is now a bit better.
 * Added: A setting to automatically capture MobilePay payments now even when they are physical products in order to prevent the payment reservation from getting cancelled after 7 days.
+* Added: A landing page for payments. This allows us to check the status of a payment before we redirect to the order received/receipt page.
 
 = 1.19.0 =
 * Added: Support for paying with MobilePay in Finland, and later Denmark.

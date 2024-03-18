@@ -1451,8 +1451,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$agreement_url = get_home_url();
 				}
 
-				// todo: point to our new page for payment redirection
-				$redirect_url = $this->get_return_url( $order );
+				$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url($order);
 
 				// total no longer returns the order amount when gateway is being changed
 				$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();

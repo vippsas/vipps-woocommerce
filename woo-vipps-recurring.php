@@ -6,7 +6,7 @@
  * Author: Everyday AS
  * Author URI: https://everyday.no
  * Version: 1.19.0
- * Requires at least: 4.4
+ * Requires at least: 6.1
  * Tested up to: 6.5
  * WC tested up to: 8.6
  * Text Domain: vipps-recurring-payments-gateway-for-woocommerce
@@ -823,6 +823,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			public function wp_enqueue_scripts() {
 				wp_enqueue_style(
 					'woo-vipps-recurring',
+
 					WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/build/index.css', [],
 					filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . '/assets/build/index.css' )
 				);
@@ -837,7 +838,11 @@ function woocommerce_gateway_vipps_recurring_init() {
 					true
 				);
 
-				wp_set_script_translations( 'woo-vipps-recurring', 'mediebank', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages' );
+				wp_localize_script( 'woo-vipps-recurring', 'VippsMobilePaySettings', [
+					'logo' => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/' . $this->gateway->brand . '-logo.svg'
+				] );
+
+				wp_set_script_translations( 'woo-vipps-recurring', 'vipps-recurring-payments-gateway-for-woocommerce', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages' );
 			}
 
 			/**

@@ -32,9 +32,7 @@ class WC_Vipps_Recurring_Rest_Api {
 		register_rest_route( $this->api_namespace, '/orders/status/(?P<order_id>[0-9]+)', [
 			'methods'             => 'GET',
 			'callback'            => [ $this, 'order_status' ],
-			'permission_callback' => function () {
-				return current_user_can( '__return_true' );
-			}
+			'permission_callback' => '__return_true'
 		] );
 	}
 
@@ -48,6 +46,7 @@ class WC_Vipps_Recurring_Rest_Api {
 		$order_key = $request->get_param( 'key' );
 
 		$order = wc_get_order( $order_id );
+
 		if ( ! $order || $order_key !== $order->get_order_key() ) {
 			return new WP_Error(
 				'not_found',
@@ -57,10 +56,12 @@ class WC_Vipps_Recurring_Rest_Api {
 		}
 
 		$this->gateway->check_charge_status( $order_id );
-		$order = wc_get_order( $order_id );
+
+		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+		$agreement    = WC_Gateway_Vipps_Recurring::get_instance()->api->get_agreement( $agreement_id );
 
 		return [
-			'status'       => $order->get_status(),
+			'status'       => $agreement->status,
 			'redirect_url' => $order->get_checkout_order_received_url()
 		];
 	}
