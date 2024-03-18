@@ -6,7 +6,7 @@
  * Author: Everyday AS
  * Author URI: https://everyday.no
  * Version: 1.19.0
- * Requires at least: 4.4
+ * Requires at least: 6.1
  * Tested up to: 6.5
  * WC tested up to: 8.6
  * Text Domain: vipps-recurring-payments-gateway-for-woocommerce
@@ -103,8 +103,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 			public array $ajax_config = [];
 
-			public array $special_pages = [];
-
 			/**
 			 * Returns the *Singleton* instance of this class.
 			 *
@@ -160,19 +158,13 @@ function woocommerce_gateway_vipps_recurring_init() {
 				require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
 				require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
 				require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+				require_once __DIR__ . '/includes/wc-vipps-recurring-rest-api.php';
 
 				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 				$this->notices = WC_Vipps_Recurring_Admin_Notices::get_instance( __FILE__ );
 				$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
-
-				$this->special_pages = [
-					'cancelled_payment' => [
-						'title'   => __( 'Cancelled payment', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-						// translators: %s: brand (Vipps or MobilePay)
-						'content' => sprintf( __( 'It looks like you cancelled your order in %s. If this was a mistake you can try again by checking out again :)', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->gateway->title )
-					]
-				];
+				WC_Vipps_Recurring_Rest_Api::get_instance();
 
 				add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 
@@ -242,11 +234,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 					'order_handle_vipps_recurring_action'
 				] );
 
-				// Add a filter to control the content on our special action pages
-				add_filter( 'the_content', [ $this, 'special_action_page_content' ] );
-				add_filter( 'the_title', [ $this, 'special_action_page_title' ], 10, 2 );
-
 				add_action( 'woocommerce_api_wc_gateway_vipps_recurring', [ $this, 'handle_webhook_callback' ] );
+
+				// Custom actions
+				add_filter( 'generate_rewrite_rules', [ $this, 'custom_action_endpoints' ] );
+				add_filter( 'query_vars', [ $this, 'custom_action_query_vars' ] );
+				add_filter( 'template_include', [ $this, 'custom_action_page_template' ] );
 			}
 
 			/**
@@ -540,6 +533,32 @@ function woocommerce_gateway_vipps_recurring_init() {
 				include __DIR__ . '/includes/pages/admin/vipps-recurring-admin-menu-page.php';
 			}
 
+			public function custom_action_endpoints( $rewrites ) {
+				$rewrites->rules = array_merge(
+					[ 'vipps-mobilepay-recurring-payment/?$' => 'index.php?vipps_recurring_action=payment-redirect' ],
+					$rewrites->rules
+				);
+
+				return $rewrites;
+			}
+
+			public function custom_action_query_vars( $query_vars ) {
+				$query_vars[] = 'vipps_recurring_action';
+
+				return $query_vars;
+			}
+
+			public function custom_action_page_template( $original_template ) {
+				$custom_action = get_query_var( 'vipps_recurring_action' );
+
+				if ( ! empty ( $custom_action ) ) {
+					include WC_VIPPS_RECURRING_PLUGIN_PATH . '/includes/pages/payment-redirect-page.php';
+					die;
+				}
+
+				return $original_template;
+			}
+
 			/**
 			 * Force check status of all pending charges
 			 */
@@ -778,7 +797,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @version 3.1.0
 			 */
 			public function install() {
-				$this->gateway->ensure_special_actions_page();
 				$this->upgrade();
 			}
 
@@ -803,8 +821,28 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Enqueue our CSS and other assets.
 			 */
 			public function wp_enqueue_scripts() {
-				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring.css', __FILE__ ), [],
-					filemtime( __DIR__ . '/assets/css/vipps-recurring.css' ) );
+				wp_enqueue_style(
+					'woo-vipps-recurring',
+
+					WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/build/index.css', [],
+					filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . '/assets/build/index.css' )
+				);
+
+				$asset = require WC_VIPPS_RECURRING_PLUGIN_PATH . '/assets/build/index.asset.php';
+
+				wp_enqueue_script(
+					'woo-vipps-recurring',
+					WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/build/index.js',
+					$asset['dependencies'],
+					filemtime( WC_VIPPS_RECURRING_PLUGIN_PATH . '/assets/build/index.js' ),
+					true
+				);
+
+				wp_localize_script( 'woo-vipps-recurring', 'VippsMobilePaySettings', [
+					'logo' => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/' . $this->gateway->brand . '-logo.svg'
+				] );
+
+				wp_set_script_translations( 'woo-vipps-recurring', 'vipps-recurring-payments-gateway-for-woocommerce', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages' );
 			}
 
 			/**
@@ -852,35 +890,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 				$wp_textdomain_registry->set_custom_path( $domain, $path );
 
 				return load_textdomain( $domain, $path . '/' . $mo_file, $locale );
-			}
-
-			public function get_special_page_text( string $value, string $part ): string {
-				$action = $_GET['vipps_recurring_page'] ?? '';
-				if ( ! isset( $this->special_pages[ $action ] ) ) {
-					return $value;
-				}
-
-				return $this->special_pages[ $action ][ $part ];
-			}
-
-			public function special_action_page_title( $title, $post_id ): string {
-				// If this is not our special actions page, do not override anything
-				if ( $post_id !== (int) $this->gateway->get_option( 'special_actions_page_id' ) ) {
-					return $title;
-				}
-
-				return $this->get_special_page_text( $title, 'title' );
-			}
-
-			public function special_action_page_content( $content ): string {
-				global $post;
-
-				// If this is not our special actions page, do not override anything
-				if ( $post->ID !== (int) $this->gateway->get_option( 'special_actions_page_id' ) ) {
-					return $content;
-				}
-
-				return $this->get_special_page_text( $content, 'content' );
 			}
 
 			public function handle_webhook_callback() {

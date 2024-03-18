@@ -48,11 +48,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public string $api_url;
 
 		/**
-		 * The page to redirect to for cancelled orders
-		 */
-		public int $special_actions_page_id;
-
-		/**
 		 * The default status to give pending renewals
 		 */
 		public string $default_renewal_status;
@@ -147,18 +142,21 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->title                            = $this->get_form_fields()['brand']['options'][ $this->brand ];
 			$this->description                      = str_replace( '{brand}', $this->title, $this->get_option( 'description' ) );
 			$this->enabled                          = $this->get_option( 'enabled' );
-			$this->test_mode                        = WC_VIPPS_RECURRING_TEST_MODE;
+			$this->test_mode                        = $this->get_option( 'test_mode' );
 			$this->merchant_serial_number           = $this->get_option( 'merchant_serial_number' );
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
-			$this->special_actions_page_id          = (int) $this->get_option( 'special_actions_page_id' );
 			$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 			$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
 			$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 			$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
+
+			if ( WC_VIPPS_RECURRING_TEST_MODE ) {
+				$this->test_mode = true;
+			}
 
 			// translators: %s: brand name, Vipps or MobilePay
 			$this->order_button_text = sprintf( __( 'Pay with %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title );
@@ -340,77 +338,6 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$status = $this->check_charge_status( $order_id );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] process_redirect_payment: charge status is: %s", $order_id, $status ) );
-
-			$this->maybe_redirect_to_cancelled_order_page( $status );
-		}
-
-		/**
-		 * @param $status
-		 */
-		public function maybe_redirect_to_cancelled_order_page( $status ): void {
-			if ( $status !== 'CANCELLED' ) {
-				return;
-			}
-
-			// redirect to check out, or cancelled page?
-			$page = $this->ensure_special_actions_page();
-			wp_redirect( $page->guid . '?vipps_recurring_page=cancelled_payment' );
-
-			exit;
-		}
-
-		/**
-		 * @return array|WC_Vipps_Recurring_Exception|WP_Post|null
-		 */
-		public function ensure_special_actions_page() {
-			if ( $this->special_actions_page_id ) {
-				$page = get_post( $this->special_actions_page_id );
-
-				if ( $page ) {
-					return $page;
-				}
-
-				$this->update_option( 'special_actions_page_id', 0 );
-			}
-
-			// Determine what author to use by the currently logged-in user
-			$author = null;
-			if ( current_user_can( 'manage_options' ) ) {
-				$author = wp_get_current_user();
-			}
-
-			// If author is null it means it was not installed through the UI, wp-cli maybe
-			// Set author to random administrator
-			if ( ! $author ) {
-				$all_admins = get_users( [
-					'role' => 'administrator'
-				] );
-
-				if ( $all_admins ) {
-					$all_admins = array_reverse( $all_admins );
-					$author     = $all_admins[0];
-				}
-			}
-
-			$author_id = $author->ID ?? 0;
-
-			$page_data = [
-				'post_title'   => __( 'Vipps/MobilePay Recurring Payments specials', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-				'post_status'  => 'publish',
-				'post_author'  => $author_id,
-				'post_type'    => 'page',
-				'post_content' => ''
-			];
-
-			$post_id = wp_insert_post( $page_data );
-
-			if ( is_wp_error( $post_id ) ) {
-				return new WC_Vipps_Recurring_Exception( __( 'Could not create or find the "Vipps/MobilePay Recurring Payments specials" page', 'vipps-recurring-payments-gateway-for-woocommerce' ) . ": " . $post_id->get_error_message() );
-			}
-
-			$this->update_option( 'special_actions_page_id', $post_id );
-
-			return get_post( $post_id );
 		}
 
 		/**
@@ -1524,7 +1451,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$agreement_url = get_home_url();
 				}
 
-				$redirect_url = $this->get_return_url( $order );
+				$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url($order);
 
 				// total no longer returns the order amount when gateway is being changed
 				$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
@@ -1811,14 +1738,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Initialise Gateway Settings Form Fields
 		 */
 		public function init_form_fields(): void {
-			// Set some options and default values
-			add_filter( 'wc_vipps_recurring_settings', function ( $settings ) {
-				$settings['brand']['default'] = $this->detect_default_brand();
-
-				return $settings;
-			} );
-
 			$this->form_fields = require( __DIR__ . '/admin/vipps-recurring-settings.php' );
+
+			// Set some options and default values
+			$this->form_fields['brand']['default'] = $this->detect_default_brand();
 		}
 
 		public function detect_default_brand(): string {

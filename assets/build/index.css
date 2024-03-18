@@ -1,0 +1,62 @@
+/*!**************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/main.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************/
+.vipps-recurring-icon {
+  width: 70px;
+}
+
+.vipps-recurring-payment-redirect-page {
+  z-index: 100000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #FFF;
+  color: #161225;
+}
+.vipps-recurring-payment-redirect-page__container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+}
+.vipps-recurring-payment-redirect-page__container__content__logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.vipps-recurring-payment-redirect-page__container__content__logo img {
+  height: 100%;
+  width: 150px;
+}
+.vipps-recurring-payment-redirect-page__container__content__loading {
+  display: flex;
+  justify-content: center;
+}
+.vipps-recurring-payment-redirect-page__container__content__loading__spinner {
+  display: inline-block;
+  margin: 20px 0;
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: #161225;
+  animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.vipps-recurring-payment-redirect-page__container__content__text {
+  font-size: 1.2rem;
+  text-align: center;
+}
+.vipps-recurring-payment-redirect-page__container__content__text p {
+  padding: 0;
+  margin: 0;
+}
+
+/*# sourceMappingURL=index.css.map*/

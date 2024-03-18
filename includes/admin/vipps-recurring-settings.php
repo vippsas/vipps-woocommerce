@@ -64,12 +64,6 @@ return apply_filters(
 			'default'     => '',
 			'desc_tip'    => true,
 		],
-		'special_actions_page_id'          => [
-			'type'             => 'page_dropdown',
-			'title'            => __( 'Special actions page', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'description'      => __( 'The page to use for special pages, like a cancelled purchase.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'show_option_none' => __( 'Create a new page', 'vipps-recurring-payments-gateway-for-woocommerce' )
-		],
 		'default_reserved_charge_status'   => [
 			'type'        => 'select',
 			'title'       => __( 'Default status to give orders with a reserved charge', 'vipps-recurring-payments-gateway-for-woocommerce' ),
@@ -118,6 +112,15 @@ return apply_filters(
 			'type'        => 'checkbox',
 			'description' => __( 'Save debug messages to the WooCommerce System Status log.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'default'     => 'yes',
+		],
+		'test_mode'                        => [
+			'title'       => __( 'Test mode', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'label'       => __( 'Enable test mode', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'type'        => 'checkbox',
+			'description' => __( 'Enabling this will route all API requests to the Vipps MobilePay test API.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'default'     => 'no',
+			'disabled'    => WC_VIPPS_RECURRING_TEST_MODE,
+			'desc_tip'    => WC_VIPPS_RECURRING_TEST_MODE ? __( 'This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE.', 'vipps-recurring-payments-gateway-for-woocommerce' ) : null,
 		],
 	]
 );
