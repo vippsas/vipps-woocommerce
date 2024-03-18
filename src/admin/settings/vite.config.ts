@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        dir: 'dist',
+        dir: '../../../admin/settings/dist',
         // Necessary to have a consistent output path, so it's easy to reference it when we call wp_enqueue_script().
         entryFileNames: 'plugin.js',
         // Necessary to have a consistent output path, so it's easy to reference it when we call wp_enqueue_style().
