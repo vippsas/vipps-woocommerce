@@ -235,7 +235,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-0x-xx version 2.0.8 =
+= 2024-03-18 version 2.0.8 =
 Create a limit of 10 attempts to capture an order; do not call API after this. The order will be uncapturable. It is possible to reset this by pressing "Get complete transaction details" in the Vipps metabox for the order.
 Fix in the logic for deleting webhooks
 
