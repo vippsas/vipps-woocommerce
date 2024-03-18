@@ -6,23 +6,23 @@ export default function PaymentRedirectPage () {
 	const { logo } = window.VippsMobilePaySettings
 	const searchParams = new URLSearchParams(window.location.search)
 
-	// const [response, setResponse] = useState(null)
-	//
-	// const intervalHandler = setInterval(() => {
-	// 	apiFetch({
-	// 		path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get(
-	// 			'order_id')}?key=${searchParams.get('key')}`, method: 'GET',
-	// 	}).then(response => setResponse(response))
-	// }, 1000)
-	//
-	// useEffect(() => {
-	// 	if (!response || response.status === 'PENDING') {
-	// 		return
-	// 	}
-	//
-	// 	clearInterval(intervalHandler)
-	// 	window.location.href = response.redirect_url
-	// }, [response])
+	const [response, setResponse] = useState(null)
+
+	const intervalHandler = setInterval(() => {
+		apiFetch({
+			path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get(
+				'order_id')}?key=${searchParams.get('key')}`, method: 'GET',
+		}).then(response => setResponse(response))
+	}, 1000)
+
+	useEffect(() => {
+		if (!response || response.status === 'PENDING') {
+			return
+		}
+
+		clearInterval(intervalHandler)
+		window.location.href = response.redirect_url
+	}, [response])
 
 	return (<div className={'vipps-recurring-payment-redirect-page'}>
 			<div className={'vipps-recurring-payment-redirect-page__container'}>

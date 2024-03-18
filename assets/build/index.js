@@ -53,25 +53,20 @@ function PaymentRedirectPage() {
     logo
   } = window.VippsMobilePaySettings;
   const searchParams = new URLSearchParams(window.location.search);
-
-  // const [response, setResponse] = useState(null)
-  //
-  // const intervalHandler = setInterval(() => {
-  // 	apiFetch({
-  // 		path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get(
-  // 			'order_id')}?key=${searchParams.get('key')}`, method: 'GET',
-  // 	}).then(response => setResponse(response))
-  // }, 1000)
-  //
-  // useEffect(() => {
-  // 	if (!response || response.status === 'PENDING') {
-  // 		return
-  // 	}
-  //
-  // 	clearInterval(intervalHandler)
-  // 	window.location.href = response.redirect_url
-  // }, [response])
-
+  const [response, setResponse] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useState)(null);
+  const intervalHandler = setInterval(() => {
+    _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_2___default()({
+      path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get('order_id')}?key=${searchParams.get('key')}`,
+      method: 'GET'
+    }).then(response => setResponse(response));
+  }, 1000);
+  (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_1__.useEffect)(() => {
+    if (!response || response.status === 'PENDING') {
+      return;
+    }
+    clearInterval(intervalHandler);
+    window.location.href = response.redirect_url;
+  }, [response]);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: 'vipps-recurring-payment-redirect-page'
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {

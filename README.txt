@@ -161,6 +161,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 1.20.1 =
+* Fixed: Frontend scripts were not properly loaded.
+
 = 1.20.0 =
 * Added: Webhooks. To enable webhooks you just need to save your settings one more time. A webhook will be automatically set-up.
 * Added: Try to detect whether to use Vipps or MobilePay branding.

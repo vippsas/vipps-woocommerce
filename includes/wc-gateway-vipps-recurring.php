@@ -142,7 +142,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->title                            = $this->get_form_fields()['brand']['options'][ $this->brand ];
 			$this->description                      = str_replace( '{brand}', $this->title, $this->get_option( 'description' ) );
 			$this->enabled                          = $this->get_option( 'enabled' );
-			$this->test_mode                        = $this->get_option( 'test_mode' );
+			$this->test_mode                        = $this->get_option( 'test_mode' ) === "yes";
 			$this->merchant_serial_number           = $this->get_option( 'merchant_serial_number' );
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
