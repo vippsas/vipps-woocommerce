@@ -1,4 +1,4 @@
-const {__} = wp.i18n;
+const {__, sprintf} = wp.i18n;
 
 jQuery(document).ready(function ($) {
   $('#check_charge_statuses_now').on('click', function () {
@@ -35,7 +35,7 @@ jQuery(document).ready(function ($) {
       button.attr('disabled', 'disabled');
       button.addClass('disabled');
 
-      const nonce = VippsRecurringConfig['nonce'];
+      const { nonce } = VippsRecurringConfig;
       const orderId = button.data('order-id')
 
       const data = {
@@ -65,6 +65,8 @@ jQuery(document).ready(function ($) {
   }
 
   if (pagenow === 'woocommerce_page_wc-settings') {
+    const {currency} = window.VippsRecurringConfig
+
     function vippsRecurringToggleInputRow(input, currentValue, showIfValue) {
       if (currentValue !== showIfValue) {
         input.closest('tr').hide();
@@ -86,12 +88,27 @@ jQuery(document).ready(function ($) {
       }
     }
 
+    function toggleVippsCurrencyWarning(brand, currency) {
+      // translators: %s is the current store currency code
+      const note = sprintf(__('Note: Vipps is only available with the NOK currency. Your store currency is set to %s', 'vipps-recurring-payments-gateway-for-woocommerce'), currency);
+
+      const brandInput = $('#woocommerce_vipps_recurring_brand');
+      const fieldset = brandInput.parent();
+
+      if (brand !== 'vipps' || currency === 'NOK') {
+        fieldset.find('.vipps-currency-warning').remove();
+      } else {
+        fieldset.append('<div class="ui message warning notice notice-warning vipps-currency-warning" style="margin-bottom: 0;"><p>' + note + '</p></div>');
+      }
+    }
+
     const brandInput = $('#woocommerce_vipps_recurring_brand');
     const autoCaptureMobilePayInput = $('#woocommerce_vipps_recurring_auto_capture_mobilepay');
 
     brandInput.on('change', function (event) {
       vippsRecurringToggleInputRow(autoCaptureMobilePayInput, event.target.value, 'mobilepay');
       toggleMobilePayReservationsWarning(event.target.value, autoCaptureMobilePayInput.is(':checked'));
+      toggleVippsCurrencyWarning(event.target.value, currency)
     }).trigger('change');
 
     autoCaptureMobilePayInput.on('change', function (event) {

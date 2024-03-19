@@ -852,7 +852,8 @@ function woocommerce_gateway_vipps_recurring_init() {
 				wp_enqueue_style( 'woo-vipps-recurring', plugins_url( 'assets/css/vipps-recurring-admin.css', __FILE__ ), [],
 					filemtime( __DIR__ . '/assets/css/vipps-recurring-admin.css' ) );
 
-				$this->ajax_config['nonce'] = wp_create_nonce( 'vipps_recurring_ajax_nonce' );
+				$this->ajax_config['nonce']    = wp_create_nonce( 'vipps_recurring_ajax_nonce' );
+				$this->ajax_config['currency'] = get_woocommerce_currency();
 
 				wp_enqueue_script(
 					'woo-vipps-recurring-admin',

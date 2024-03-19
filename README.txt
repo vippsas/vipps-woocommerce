@@ -161,6 +161,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= Not released yet =
+* Added: A warning for when you select Vipps as your brand when your currency is not set to NOK.
+* Fixed: Frontend admin localization.
+
 = 1.20.1 =
 * Fixed: Frontend scripts were not properly loaded.
 
