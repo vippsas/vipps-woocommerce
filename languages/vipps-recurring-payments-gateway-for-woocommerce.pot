@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Vipps/MobilePay recurring payments for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Vipps/MobilePay recurring payments for WooCommerce 1.19.0\n"
+"Project-Id-Version: Vipps/MobilePay recurring payments for WooCommerce 1.20.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vipps-recurring-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-03-18T09:23:50+00:00\n"
+"POT-Creation-Date: 2024-03-19T10:56:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
 "X-Domain: vipps-recurring-payments-gateway-for-woocommerce\n"
@@ -407,49 +407,49 @@ msgid "Different subscription products can not be purchased at the same time usi
 msgstr ""
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1583
+#: includes/wc-gateway-vipps-recurring.php:1582
 msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
 msgstr ""
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1612
+#: includes/wc-gateway-vipps-recurring.php:1611
 msgid "Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1794
+#: includes/wc-gateway-vipps-recurring.php:1793
 msgid "Successfully authenticated with the Vipps/MobilePay API"
 msgstr ""
 
 #. translators: %s: the error message returned from Vipps/MobilePay
-#: includes/wc-gateway-vipps-recurring.php:1799
+#: includes/wc-gateway-vipps-recurring.php:1798
 msgid "Could not authenticate with the Vipps/MobilePay API: %s"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1832
+#: includes/wc-gateway-vipps-recurring.php:1831
 msgid "Vipps/MobilePay Agreement ID"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1856
+#: includes/wc-gateway-vipps-recurring.php:1855
 msgid "This Vipps/MobilePay agreement ID is invalid."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1892
+#: includes/wc-gateway-vipps-recurring.php:1891
 msgid "Pending cancellation"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1903
+#: includes/wc-gateway-vipps-recurring.php:1902
 msgid "Cancelled"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1914
+#: includes/wc-gateway-vipps-recurring.php:1913
 msgid "On hold"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1985
+#: includes/wc-gateway-vipps-recurring.php:1984
 msgid "Cancelled due charge in Vipps/MobilePay."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1989
+#: includes/wc-gateway-vipps-recurring.php:1988
 msgid "Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!"
 msgstr ""
 
@@ -544,10 +544,24 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: src/pages/PaymentRedirectPage.jsx:36
+#: assets/js/vipps-recurring-admin.js:77
+msgid "Note: Reservations in MobilePay will be cancelled after 7 days. Remember to ship and fulfill your orders."
+msgstr ""
+
+#. translators: %s is the current store currency code
+#: assets/js/vipps-recurring-admin.js:91
+msgid "Note: Vipps is only available with the NOK currency. Your store currency is set to %s"
+msgstr ""
+
+#. translators: %s: brand name, Vipps or MobilePay
+#: assets/js/vipps-recurring-payment-method-block.js:49
+msgid "Continue with %s"
+msgstr ""
+
+#: src/pages/PaymentRedirectPage.jsx:43
 msgid "Verifying your payment. Please wait."
 msgstr ""
 
-#: src/pages/PaymentRedirectPage.jsx:40
+#: src/pages/PaymentRedirectPage.jsx:48
 msgid "You will be redirected shortly."
 msgstr ""

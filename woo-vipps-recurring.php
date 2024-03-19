@@ -854,9 +854,16 @@ function woocommerce_gateway_vipps_recurring_init() {
 
 				$this->ajax_config['nonce'] = wp_create_nonce( 'vipps_recurring_ajax_nonce' );
 
-				wp_register_script( 'woo-vipps-recurring-admin', plugins_url( 'assets/js/vipps-recurring-admin.js', __FILE__ ), [], filemtime( dirname( __FILE__ ) . "/assets/js/vipps-recurring-admin.js" ), true );
+				wp_enqueue_script(
+					'woo-vipps-recurring-admin',
+					plugins_url( 'assets/js/vipps-recurring-admin.js', __FILE__ ),
+					[ 'wp-i18n' ],
+					filemtime( dirname( __FILE__ ) . "/assets/js/vipps-recurring-admin.js" ),
+					true
+				);
+
 				wp_localize_script( 'woo-vipps-recurring-admin', 'VippsRecurringConfig', $this->ajax_config );
-				wp_enqueue_script( 'woo-vipps-recurring-admin' );
+				wp_set_script_translations( 'woo-vipps-recurring-admin', 'vipps-recurring-payments-gateway-for-woocommerce', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages' );
 			}
 
 			/**
