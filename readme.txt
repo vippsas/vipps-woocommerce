@@ -2,10 +2,10 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.8
-Stable tag: 2.0.8
+Version: 2.0.9
+Stable tag: 2.0.9
 Requires at least: 4.7
-Tested up to: 6.4.3
+Tested up to: 6.5.0
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 8.7.0
@@ -94,8 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Fix for sites where it is not possible to delete webhooks
-Compatibility for users of the filter the_title, notices about the length of reservations in MobilePay
+Fixed some places where NOK were hard-coded in as currency.
 
 == Frequently Asked Questions ==
 
@@ -234,6 +233,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-03-xx version 2.0.9 =
+Fixed some places where NOK were hard-coded in as currency.
 
 = 2024-03-18 version 2.0.8 =
 Create a limit of 10 attempts to capture an order; do not call API after this. The order will be uncapturable. It is possible to reset this by pressing "Get complete transaction details" in the Vipps metabox for the order.

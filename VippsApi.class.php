@@ -235,7 +235,7 @@ class VippsApi {
         $receiptdata =  [];
         try {
             $orderlines = [];
-            $bottomline = ['currency'=>'NOK',  'tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
+            $bottomline = ['tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
             $bottomline['currency'] = $order->get_currency();
             $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
             $tipamount = apply_filters('woo_vipps_order_tip_amount', 0, $order);

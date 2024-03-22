@@ -1616,13 +1616,15 @@ else:
 
         $failures = intval($order->get_meta('_vipps_capture_failures'));
 
+        $currency = $order->get_currency();
+
         print "<table border=0><thead></thead><tbody>";
         print "<tr><td colspan=2>"; print $order->get_payment_method_title();print "</td></tr>";
         print "<tr><td>Status</td>";
         print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";
-        print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
-        print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print "NOK"; print "</td></tr>";
-        print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
+        print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print $currency; print "</td></tr>";
+        print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print $currency; print "</td></tr>";
+        print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print $currency; print "</td></tr>";
 
         if ($failures) {
           print("<tr><td>Capture attempts</td><td align=right>$failures</td></tr>");
@@ -1702,8 +1704,6 @@ else:
             print __("Payment method", 'woo-vipps') . ": Vipps <br>";
         }
         print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
-        print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
-
 
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
