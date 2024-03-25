@@ -234,7 +234,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-03-xx version 2.0.9 =
+= 2024-03-25 version 2.0.9 =
 Fixed some places where NOK were hard-coded in as currency.
 
 = 2024-03-18 version 2.0.8 =
