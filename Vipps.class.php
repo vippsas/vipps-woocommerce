@@ -2334,7 +2334,7 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        wc_nocache_headers();
+	Vipps::nocache();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
@@ -2665,7 +2665,7 @@ EOF;
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
-        wc_nocache_headers();
+	Vipps::nocache();
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
@@ -3019,11 +3019,16 @@ EOF;
         return $return;
     }
 
+    public static function nocache() {
+        wc_nocache_headers();
+        header("X-Accel-Expires: 0"); 
+    }
+
 
 
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {
-	    wc_nocache_headers();
+	    Vipps::nocache();
             // Currently, no such requests will be posted, and as this code isn't sufficiently tested,we'll just have 
             // to escape here when the API is changed. IOK 2020-10-14
             $this->log("Consent removal is non-functional pending API changes as of 2020-10-14"); print "1"; exit();
@@ -3410,7 +3415,7 @@ EOF;
 
 
     public function ajax_vipps_buy_single_product () {
-        wc_nocache_headers();
+	Vipps::nocache();
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         $session = WC()->session;
@@ -3430,7 +3435,7 @@ EOF;
 
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
-        wc_nocache_headers();
+	Vipps::nocache();
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -3498,7 +3503,7 @@ EOF;
     // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
-        wc_nocache_headers();
+	Vipps::nocache();
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
 
@@ -3669,7 +3674,7 @@ EOF;
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
-        wc_nocache_headers();
+	Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
         $transaction = sanitize_text_field(@$_POST['transaction']);
@@ -3975,7 +3980,7 @@ EOF;
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
         status_header(200,'OK');
-        wc_nocache_headers();
+	Vipps::nocache();
 
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
@@ -4038,7 +4043,7 @@ EOF;
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
     public function vipps_express_checkout() {
         status_header(200,'OK');
-        wc_nocache_headers();
+	Vipps::nocache();
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
@@ -4268,7 +4273,7 @@ EOF;
 
     public function vipps_wait_for_payment() {
         status_header(200,'OK');
-        wc_nocache_headers();
+	Vipps::nocache();
 
         $orderid = WC()->session->get('_vipps_pending_order');
 
