@@ -1812,7 +1812,7 @@ else:
     public function callbackSignal($order) {
         $dir = $this->callbackDir();
         if (!$dir) return null;
-        $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
+        $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction')) . ".txt";
         return $dir . DIRECTORY_SEPARATOR . $fname;
     }
     // URL of the above product thing
@@ -3172,15 +3172,20 @@ EOF;
         clean_post_cache($order->get_id());  // Get a fresh copy
         $order = wc_get_order($order->get_id());
         $order_status = $order->get_status();
+
         if ($order_status != 'pending') return $order_status;
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
+
+
             $now = time();
             $then= $order->get_meta('_vipps_init_timestamp');
-            if ($then + (1 * 60) < $now) { // more than a minute? Start checking at Vipps
+
+            if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
                 return $order_status;
             }
         }
+
         $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
         return $this->check_status_of_pending_order($order);
     }
@@ -3689,7 +3694,6 @@ EOF;
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
             return false;
         }
-
 
         // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
         $order = wc_get_order($orderid); // Reload
