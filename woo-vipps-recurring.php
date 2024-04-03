@@ -6,7 +6,7 @@
  * Author: Everyday AS
  * Author URI: https://everyday.no
  * Version: 1.20.2
- * Requires Plugins: woocommerce, woocommerce-subscriptions
+ * Requires Plugins: woocommerce
  * Requires at least: 6.1
  * Tested up to: 6.5
  * WC tested up to: 8.6
