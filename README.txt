@@ -165,6 +165,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Added: A warning for when you select Vipps as your brand when your currency is not set to NOK.
 * Fixed: Frontend admin localization.
 * Fixed: A fatal error that could occur when calling `get_agreement_id_from_order` when handling renewals. Reported and diagnosed by magnuskl on GitHub.
+* Fixed: 404 page that could occur after payments are cancelled or paid.
 
 = 1.20.1 =
 * Fixed: Frontend scripts were not properly loaded.

@@ -48,6 +48,9 @@ if ( ! function_exists( 'array_key_last' ) ) {
 register_activation_hook( __FILE__, 'woocommerce_gateway_vipps_recurring_activate' );
 
 function woocommerce_gateway_vipps_recurring_activate() {
+	global $wp_rewrite;
+
+	$wp_rewrite->flush_rules();
 	add_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
 }
 
@@ -313,7 +316,7 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * Upgrade routines
 			 */
 			public function upgrade() {
-				global $wpdb;
+				global $wpdb, $wp_rewrite;
 
 				$version = get_option( 'woo-vipps-recurring-version' );
 
@@ -380,22 +383,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 					}
 				}
 
-//				if ( version_compare( $version, '1.13.0', '<' ) ) {
-//					$subscriptions = wcs_get_subscriptions( [
-//						'payment_method' => 'kco'
-//					] );
-//
-//					WC_Vipps_Recurring_Logger::log( sprintf( 'Running 1.13.0 update, affecting subscriptions with IDs: %s', implode( ',', array_map( function ( $item ) {
-//						return $item->get_id();
-//					}, $subscriptions ) ) ) );
-//
-//					foreach ( $subscriptions as $subscription ) {
-//						if ( $subscription->get_payment_method() === 'kco' && ! empty( WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ) ) ) {
-//							$subscription->set_payment_method( 'vipps_recurring' );
-//							$subscription->save();
-//						}
-//					}
-//				}
+				// Flush permalinks when updating to version 1.20.2
+				if ( version_compare( $version, '1.20.2', '<' ) ) {
+					$wp_rewrite->flush_rules();
+				}
 
 				if ( $version !== WC_VIPPS_RECURRING_VERSION ) {
 					update_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
