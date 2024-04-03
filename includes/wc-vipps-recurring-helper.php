@@ -225,7 +225,7 @@ class WC_Vipps_Recurring_Helper {
 			return $agreement_id;
 		}
 
-		$subscriptions = wcs_get_subscriptions_for_order( $order );
+		$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'any' ] );
 		$subscription  = array_shift( $subscriptions );
 
 		return self::get_meta( $subscription, self::META_AGREEMENT_ID );
