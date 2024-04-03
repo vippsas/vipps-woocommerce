@@ -161,7 +161,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-= Not released yet =
+= 1.20.2 =
 * Added: A warning for when you select Vipps as your brand when your currency is not set to NOK.
 * Fixed: Frontend admin localization.
 * Fixed: A fatal error that could occur when calling `get_agreement_id_from_order` when handling renewals. Reported and diagnosed by magnuskl on GitHub.
