@@ -2609,6 +2609,8 @@ EOF;
                 $session_data = array_merge($values, array( 'data' => $product));
                 $newcart[$key] = apply_filters( 'woocommerce_get_cart_item_from_session', $session_data, $values, $key );
             }
+        } else {
+            $this->log(sprintf(__("Could not restore cart from session of order %1\$d", 'woo-vipps'), $orderid));
         }
         if (WC()->cart) {
             WC()->cart->set_totals( WC()->session->get( 'cart_totals', null ) );
@@ -2799,6 +2801,13 @@ EOF;
         // and anyway, some plugins override the class of the cart, so just using WC_Cart will sometimes break.
         //  Now however, the session is stored in the order, and the cart will not have been deleted, so we should
         // now be able to calculate shipping for the actual cart with no further manipulation. IOK 2020-04-08
+        
+        // Turns out it is possible for the session - and the cart - to have been deleted at this point, for whatever reason.
+        // Login will do it, probably some other plugins as well. So if we have no cart at this point, we will ressurect the
+        // probable cart based on the order. This is only neccessary because Woo will not let us calculate shipping for an *order*.
+        // IOK 2024-04-09
+        $cart_is_reconstructed = $this->maybe_reconstruct_cart($order->get_id());
+       
         WC()->cart->calculate_totals();
         $acart = WC()->cart;
 
@@ -2883,6 +2892,12 @@ EOF;
         }
         $methods = apply_filters('woo_vipps_express_checkout_shipping_rates', $methods, $order, $acart);
 
+        // Just to be sure, if the current cart was reconstructed from an order, we will delete it now after 
+        // last use of $acart
+        if ($cart_is_reconstructed) {
+            WC()->cart->empty_cart();
+        }
+
         $vippsmethods = array();
         $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
         if (!$storedmethods) $storedmethods= array();
@@ -2943,6 +2958,63 @@ EOF;
         }
 
         return $return;
+    }
+
+
+    // In certain situations the session may have no cart, which among other things makes it impossible for us to calculate shipping.
+    // We must therefore reconstruct the cart as close to what it were before calculating shipping; and we must delete it afterwards
+    // because it may not be correct wrt meta values and so forth. Based on cart-sessions "populate_cart_from_order" used in the "order again" path.
+    // Returns "true" if cart is reconstructed from the order, else false.
+    // IOK 2024-04-08
+    private function maybe_reconstruct_cart($order_id) {
+        if (!WC()->cart->is_empty()) return false;
+        $this->log(sprintf(__("No cart, so will try to calculate shipping based on order contents for order %1\$d", 'woo-vipps'),   $order_id), 'error');
+        try {
+            $order = wc_get_order( $order_id );
+            $cart = array();
+            $inital_cart_size = 0;
+            $order_items = $order->get_items();
+            foreach ( $order_items as $item ) {
+                $product_id     = (int) $item->get_product_id();
+                $quantity       = $item->get_quantity();
+                $variation_id   = (int) $item->get_variation_id();
+                $variations     = array();
+                $cart_item_data = array();
+                $product        = $item->get_product();
+                if ( ! $product ) {
+                    continue;
+                }
+                if ( ! $variation_id && $product->is_type( 'variable' ) )  continue;
+                // We ignore the out-of-stock rule here, it doesn't matter for shipping
+                foreach ( $item->get_meta_data() as $meta ) {
+                    if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
+                        $variations[ $meta->key ] = $meta->value;
+                    }
+                }
+                $cart_id          = WC()->cart->generate_cart_id( $product_id, $variation_id, $variations, $cart_item_data );
+                $product_data     = wc_get_product( $variation_id ? $variation_id : $product_id );
+                $cart[ $cart_id ] = array_merge(
+                    $cart_item_data,
+                    array(
+                        'key'          => $cart_id,
+                        'product_id'   => $product_id,
+                        'variation_id' => $variation_id,
+                        'variation'    => $variations,
+                        'quantity'     => $quantity,
+                        'data'         => $product_data,
+                        'data_hash'    => wc_get_cart_item_data_hash( $product_data ),
+                    )
+                );
+
+            }
+            WC()->cart->set_cart_contents($cart);
+            WC()->cart->calculate_totals();
+            WC()->cart->set_session();
+            return true;
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Error regenerating cart from order %1\$d:  %1\$s", 'woo-vipps'), $order_id,   $e->get_message()), 'error');
+            return false;
+        }
     }
 
 
