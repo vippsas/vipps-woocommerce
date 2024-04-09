@@ -1636,13 +1636,15 @@ else:
 
         $failures = intval($order->get_meta('_vipps_capture_failures'));
 
+        $currency = $order->get_currency();
+
         print "<table border=0><thead></thead><tbody>";
         print "<tr><td colspan=2>"; print $order->get_payment_method_title();print "</td></tr>";
         print "<tr><td>Status</td>";
         print "<td align=right>" . htmlspecialchars($status);print "</td></tr>";
-        print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print "NOK"; print "</td></tr>";
-        print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print "NOK"; print "</td></tr>";
-        print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print "NOK"; print "</td></tr>";
+        print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print $currency; print "</td></tr>";
+        print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print $currency; print "</td></tr>";
+        print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print $currency; print "</td></tr>";
 
         if ($failures) {
           print("<tr><td>Capture attempts</td><td align=right>$failures</td></tr>");
@@ -1722,8 +1724,6 @@ else:
             print __("Payment method", 'woo-vipps') . ": Vipps <br>";
         }
         print __("API", 'woo-vipps') .": " . esc_html($order->get_meta('_vipps_api')) . "</br>";
-        print  __('All values in ører (1/100 NOK)', 'woo-vipps') . "<br>";
-
 
         if (!empty(@$details['transactionSummary'])) {
             $ts = $details['transactionSummary'];
@@ -1832,7 +1832,7 @@ else:
     public function callbackSignal($order) {
         $dir = $this->callbackDir();
         if (!$dir) return null;
-        $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction'));
+        $fname = 'vipps-'.md5($order->get_order_key() . $order->get_meta('_vipps_transaction')) . ".txt";
         return $dir . DIRECTORY_SEPARATOR . $fname;
     }
     // URL of the above product thing
@@ -2354,7 +2354,7 @@ EOF;
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
-        wc_nocache_headers();
+	Vipps::nocache();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
@@ -2663,6 +2663,8 @@ EOF;
                 $session_data = array_merge($values, array( 'data' => $product));
                 $newcart[$key] = apply_filters( 'woocommerce_get_cart_item_from_session', $session_data, $values, $key );
             }
+        } else {
+            $this->log(sprintf(__("Could not restore cart from session of order %1\$d", 'woo-vipps'), $orderid));
         }
         if (WC()->cart) {
             WC()->cart->set_totals( WC()->session->get( 'cart_totals', null ) );
@@ -2719,7 +2721,7 @@ EOF;
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
-        wc_nocache_headers();
+	Vipps::nocache();
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
@@ -2853,6 +2855,13 @@ EOF;
         // and anyway, some plugins override the class of the cart, so just using WC_Cart will sometimes break.
         //  Now however, the session is stored in the order, and the cart will not have been deleted, so we should
         // now be able to calculate shipping for the actual cart with no further manipulation. IOK 2020-04-08
+        
+        // Turns out it is possible for the session - and the cart - to have been deleted at this point, for whatever reason.
+        // Login will do it, probably some other plugins as well. So if we have no cart at this point, we will ressurect the
+        // probable cart based on the order. This is only neccessary because Woo will not let us calculate shipping for an *order*.
+        // IOK 2024-04-09
+        $cart_is_reconstructed = $this->maybe_reconstruct_cart($order->get_id());
+       
         WC()->cart->calculate_totals();
         $acart = WC()->cart;
 
@@ -2937,6 +2946,12 @@ EOF;
         }
         $methods = apply_filters('woo_vipps_express_checkout_shipping_rates', $methods, $order, $acart);
 
+        // Just to be sure, if the current cart was reconstructed from an order, we will delete it now after 
+        // last use of $acart
+        if ($cart_is_reconstructed) {
+            WC()->cart->empty_cart();
+        }
+
         $vippsmethods = array();
         $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
         if (!$storedmethods) $storedmethods= array();
@@ -2997,6 +3012,63 @@ EOF;
         }
 
         return $return;
+    }
+
+
+    // In certain situations the session may have no cart, which among other things makes it impossible for us to calculate shipping.
+    // We must therefore reconstruct the cart as close to what it were before calculating shipping; and we must delete it afterwards
+    // because it may not be correct wrt meta values and so forth. Based on cart-sessions "populate_cart_from_order" used in the "order again" path.
+    // Returns "true" if cart is reconstructed from the order, else false.
+    // IOK 2024-04-08
+    private function maybe_reconstruct_cart($order_id) {
+        if (!WC()->cart->is_empty()) return false;
+        $this->log(sprintf(__("No cart, so will try to calculate shipping based on order contents for order %1\$d", 'woo-vipps'),   $order_id), 'error');
+        try {
+            $order = wc_get_order( $order_id );
+            $cart = array();
+            $inital_cart_size = 0;
+            $order_items = $order->get_items();
+            foreach ( $order_items as $item ) {
+                $product_id     = (int) $item->get_product_id();
+                $quantity       = $item->get_quantity();
+                $variation_id   = (int) $item->get_variation_id();
+                $variations     = array();
+                $cart_item_data = array();
+                $product        = $item->get_product();
+                if ( ! $product ) {
+                    continue;
+                }
+                if ( ! $variation_id && $product->is_type( 'variable' ) )  continue;
+                // We ignore the out-of-stock rule here, it doesn't matter for shipping
+                foreach ( $item->get_meta_data() as $meta ) {
+                    if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
+                        $variations[ $meta->key ] = $meta->value;
+                    }
+                }
+                $cart_id          = WC()->cart->generate_cart_id( $product_id, $variation_id, $variations, $cart_item_data );
+                $product_data     = wc_get_product( $variation_id ? $variation_id : $product_id );
+                $cart[ $cart_id ] = array_merge(
+                    $cart_item_data,
+                    array(
+                        'key'          => $cart_id,
+                        'product_id'   => $product_id,
+                        'variation_id' => $variation_id,
+                        'variation'    => $variations,
+                        'quantity'     => $quantity,
+                        'data'         => $product_data,
+                        'data_hash'    => wc_get_cart_item_data_hash( $product_data ),
+                    )
+                );
+
+            }
+            WC()->cart->set_cart_contents($cart);
+            WC()->cart->calculate_totals();
+            WC()->cart->set_session();
+            return true;
+        } catch (Exception $e) {
+            $this->log(sprintf(__("Error regenerating cart from order %1\$d:  %1\$s", 'woo-vipps'), $order_id,   $e->get_message()), 'error');
+            return false;
+        }
     }
 
 
@@ -3073,11 +3145,16 @@ EOF;
         return $return;
     }
 
+    public static function nocache() {
+        wc_nocache_headers();
+        header("X-Accel-Expires: 0"); 
+    }
+
 
 
     // Handle DELETE on a vipps consent removal callback
     public function vipps_consent_removal_callback ($callback) {
-	    wc_nocache_headers();
+	    Vipps::nocache();
             // Currently, no such requests will be posted, and as this code isn't sufficiently tested,we'll just have 
             // to escape here when the API is changed. IOK 2020-10-14
             $this->log("Consent removal is non-functional pending API changes as of 2020-10-14"); print "1"; exit();
@@ -3226,15 +3303,20 @@ EOF;
         clean_post_cache($order->get_id());  // Get a fresh copy
         $order = wc_get_order($order->get_id());
         $order_status = $order->get_status();
+
         if ($order_status != 'pending') return $order_status;
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
+
+
             $now = time();
             $then= $order->get_meta('_vipps_init_timestamp');
-            if ($then + (1 * 60) < $now) { // more than a minute? Start checking at Vipps
+
+            if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
                 return $order_status;
             }
         }
+
         $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
         return $this->check_status_of_pending_order($order);
     }
@@ -3459,7 +3541,7 @@ EOF;
 
 
     public function ajax_vipps_buy_single_product () {
-        wc_nocache_headers();
+	Vipps::nocache();
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         $session = WC()->session;
@@ -3479,7 +3561,7 @@ EOF;
 
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
-        wc_nocache_headers();
+	Vipps::nocache();
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -3547,7 +3629,7 @@ EOF;
     // Same as ajax_do_express_checkout, but for a single product/variation. Duplicate code because we want to manipulate the cart differently here. IOK 2018-09-25
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
-        wc_nocache_headers();
+	Vipps::nocache();
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
 
@@ -3718,7 +3800,7 @@ EOF;
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
-        wc_nocache_headers();
+	Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
         $transaction = sanitize_text_field(@$_POST['transaction']);
@@ -3743,7 +3825,6 @@ EOF;
             wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
             return false;
         }
-
 
         // Order status isn't pending anymore, but there can be custom statuses, so check the payment status instead.
         $order = wc_get_order($orderid); // Reload
@@ -4025,7 +4106,7 @@ EOF;
     // the buying thru Vipps Express Checkout of a single product linked to in for instance banners. IOK 2018-09-24
     public function vipps_buy_product() {
         status_header(200,'OK');
-        wc_nocache_headers();
+	Vipps::nocache();
 
         add_filter('body_class', function ($classes) {
             $classes[] = 'vipps-express-checkout';
@@ -4088,7 +4169,7 @@ EOF;
     //  This is a landing page for the express checkout of then normal cart - it is done like this because this could take time on slower hosts.
     public function vipps_express_checkout() {
         status_header(200,'OK');
-        wc_nocache_headers();
+	Vipps::nocache();
         // We need a nonce to get here, but we should only get here when we have a cart, so this will not be cached.
         // IOK 2018-05-28
         $ok = isset($_REQUEST['sec']) && wp_verify_nonce($_REQUEST['sec'],'express');
@@ -4318,7 +4399,7 @@ EOF;
 
     public function vipps_wait_for_payment() {
         status_header(200,'OK');
-        wc_nocache_headers();
+	Vipps::nocache();
 
         $orderid = WC()->session->get('_vipps_pending_order');
 

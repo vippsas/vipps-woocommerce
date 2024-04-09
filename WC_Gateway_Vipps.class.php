@@ -644,6 +644,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function process_refund($orderid,$amount=null,$reason='') {
         $order = wc_get_order($orderid);
 
+        $currency = $order->get_currency();
+
         try {
                 $order = $this->update_vipps_payment_details($order); 
         } catch (Exception $e) {
@@ -664,7 +666,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
         if (is_numeric($amount) && $amount == 0) {
-            $order->add_order_note($amount . ' ' . 'NOK' . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+            $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
             return true;
         }
 
@@ -681,7 +683,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if ($ok) {
-            $order->add_order_note($amount . ' ' . 'NOK' . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+            $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
         } 
         return $ok;
     }
@@ -1682,17 +1684,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
+        $currency = $order->get_currency();
+
         if (!empty($content) && isset($content['transactionInfo'])) {
            // Store amount captured, amount refunded etc and increase the capture-key if there is more to capture 
            // status 'captured'
            $transactionInfo = $content['transactionInfo'];
            $transactionSummary= $content['transactionSummary'];
+
            $order->update_meta_data('_vipps_capture_timestamp',strtotime($transactionInfo['timeStamp']));
            $order->update_meta_data('_vipps_captured',$transactionSummary['capturedAmount']);
            $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
            $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
            $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . 'NOK');
+           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$transactionSummary['capturedAmount']/100) . ' ' . $currency);
         } else {
            //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
            // the fact. 
@@ -1704,7 +1709,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $order->update_meta_data('_vipps_capture_remaining', $remaining);
            $order->update_meta_data('_vipps_refund_remaining', $refundable);
            $order->update_meta_data('_vipps_capture_timestamp', time());
-           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$captured/100) . ' ' . 'NOK');
+           $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$captured/100) . ' ' . $currency);
         }
 
         // Since we succeeded, the next time we'll start a new transaction.
@@ -1755,6 +1760,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $reason = __("The value of the order is less than the amount captured.", "woo-vipps");
 
         $ok = 0;
+        $currency = $order->get_currency();
         try {
             $ok = $this->refund_payment($order,$refundvalue,'cents');
         } catch (TemporaryVippsApiException $e) {
@@ -1768,7 +1774,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         if ($ok) {
-            $order->add_order_note($refundvalue/100 . ' ' . 'NOK' . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $reason);
+            $order->add_order_note($refundvalue/100 . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $reason);
         } 
         return $ok;
     }
@@ -1884,6 +1890,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $content =  $this->api->refund_payment($order,$requestid,$amount,$cents);
         }
 
+        $currency = $order->get_currency();
+
         if (!empty($content)  && isset($content['transactionInfo'])) {
             // Store amount captured, amount refunded etc and increase the refund-key if there is more to capture 
             $transactionInfo = $content['transaction']; // NB! Completely different name here as compared to the other calls. IOK 2018-05-11
@@ -1893,7 +1901,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_refunded',$transactionSummary['refundedAmount']);
             $order->update_meta_data('_vipps_capture_remaining',$transactionSummary['remainingAmountToCapture']);
             $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
-            $order->add_order_note(sprintf(__('%1$s payment refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . 'NOK');
+            $order->add_order_note(sprintf(__('%1$s payment refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$transactionSummary['refundedAmount']/100) . ' ' . $currency);
         } else {
            //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
            // the fact. 
@@ -1914,7 +1922,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            $order->update_meta_data('_vipps_refunded', $refunded);
            $order->update_meta_data('_vipps_refund_remaining', $remaining);
            $order->update_meta_data('_vipps_refund_timestamp', time());
-           $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . 'NOK');
+           $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . $currency );
         }
             // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
@@ -2083,7 +2091,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
                 $order->update_meta_data('_vipps_amount',$vippsamount);
-                $order->update_meta_data('_vipps_currency', 'NOK');
+                $order->update_meta_data('_vipps_currency', $order->get_currency());
             } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
                 // IOK 2022-01-20 the epayment API does it differently
                 $vippsstamp = time();
@@ -2296,6 +2304,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 $transactionSummary = array();
                 // Always NOK at this point, but we also don't care because the order has the currency
+                // IOK 2024-03-22 Now supports other currencies, but we still don't care.
                 $transactionSummary['capturedAmount'] = isset($aggregate['capturedAmount']) ?   $aggregate['capturedAmount']['value'] : 0;
                 $transactionSummary['refundedAmount'] = isset($aggregate['refundedAmount']) ? $aggregate['refundedAmount']['value'] : 0; 
                 $transactionSummary['cancelledAmount'] =isset($aggregate['cancelledAmount']) ? $aggregate['cancelledAmount']['value'] : 0; 
@@ -3025,7 +3034,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $transaction = array();
         if (isset($result['transactionInfo'])) {
             $transaction = $result['transactionInfo'];
-            $transaction['currency'] = 'NOK';
+            $transaction['currency'] = $order->get_currency();
         } else if (isset($result['paymentDetails'])) {
             // This is a Vipps Checkout callback. We must first normalize the result
             // so that we always get a state/status and aggregate values - which we do not get if for instance Bank Transfer is used. IOK 2024-01-09

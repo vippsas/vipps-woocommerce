@@ -46,6 +46,9 @@ jQuery(document).ready(function () {
      var url = fkey + "?v="+iterate;
      jQuery.ajax(url,
       {"cache":false,
+       "headers": {
+          'Cache-Control': 'max-age=0, must-revalidate, no-cache, no-store' 
+       },
        "dataType":"json",
        "error": function (xhr, statustext, error) {
          console.log("Error checking status: " + statustext + " : "  + error);
@@ -57,7 +60,7 @@ jQuery(document).ready(function () {
          statusok= true;
          setTimeout(checkStatus,500);
        }, 
-       "method": "POST", // We realy don"t want this cached
+       "method": "GET", // We must use GET because nginx will return 405 for POST to static files
        "success": function (result,statustext, xhr) {
          statusok=result*1;
          if (!statusok) {
