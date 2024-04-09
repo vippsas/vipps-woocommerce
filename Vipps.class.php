@@ -2985,7 +2985,7 @@ EOF;
                     continue;
                 }
                 if ( ! $variation_id && $product->is_type( 'variable' ) )  continue;
-                // We ignore the out-of-stock rule here, it doesn't matter for shipping
+                // We ignore the out-of-stock rule here, it doesn't matter for shipping in this case IOK 2024-04-09
                 foreach ( $item->get_meta_data() as $meta ) {
                     if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
                         $variations[ $meta->key ] = $meta->value;
