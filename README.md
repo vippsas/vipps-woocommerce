@@ -23,7 +23,7 @@ END_METADATA -->
 <!-- END_COMMENT -->
 
 This is the official
-[Vipps/MobilePay recurring payments](https://www.vipps.no/produkter-og-tjenester/bedrift/faste-betalinger/faste-betalinger/#kom-i-gang)
+[Vipps/MobilePay recurring payments](https://vippsmobilepay.com/no/online/billing-recurring#kom-i-gang)
 plugin for
 [WooCommerce](https://woocommerce.com).
 It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
