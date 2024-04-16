@@ -155,6 +155,8 @@ class Vipps {
     }
 
     public function init () {
+        // Register certain scripts in wp_loaded because they will be added to the backend as well - the gutenberg checkout block
+        // needs these to be defined in the backend. IOK 2024-04-16
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
