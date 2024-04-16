@@ -155,7 +155,6 @@ class Vipps {
     }
 
     public function init () {
-        add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
         // Remove the possibility of restarting failed orders etc. This will be fixed in the future. IOK 2023-05-26
@@ -1215,7 +1214,7 @@ jQuery('a.webhook-adder').click(function (e) {
         }
     }
 
-    public function wp_register_scripts () {
+    public function wp_enqueue_scripts() {
         //  We are going to use the 'hooks' library introduced by WP 5.1, but we still support WP 4.7. So if this isn't enqueues 
         //  (which it only is if Gutenberg is active) or not provided at all, add it now.
         if (!wp_script_is( 'wp-hooks', 'registered')) {
@@ -1226,9 +1225,6 @@ jQuery('a.webhook-adder').click(function (e) {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
         $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()));
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
-    }
-
-    public function wp_enqueue_scripts() {
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
         wp_register_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
