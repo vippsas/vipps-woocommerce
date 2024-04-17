@@ -155,6 +155,8 @@ class Vipps {
     }
 
     public function init () {
+        // Register certain scripts in wp_loaded because they will be added to the backend as well - the gutenberg checkout block
+        // needs these to be defined in the backend. IOK 2024-04-16
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'wp_enqueue_scripts'));
 
@@ -3039,7 +3041,7 @@ EOF;
                     continue;
                 }
                 if ( ! $variation_id && $product->is_type( 'variable' ) )  continue;
-                // We ignore the out-of-stock rule here, it doesn't matter for shipping
+                // We ignore the out-of-stock rule here, it doesn't matter for shipping in this case IOK 2024-04-09
                 foreach ( $item->get_meta_data() as $meta ) {
                     if ( taxonomy_is_product_attribute( $meta->key ) || meta_is_product_attribute( $meta->key, $meta->value, $product_id ) ) {
                         $variations[ $meta->key ] = $meta->value;
@@ -3215,6 +3217,13 @@ EOF;
             if (! $then) continue; # Race condition! We may not have set the timestamp yet. IOK 2022-03-24
             if (!$o->get_meta('_vipps_orderid')) continue; # ditto
             if ($then > $eightminutesago) continue;
+
+            $vippstatus = $o->get_meta('_vipps_status');
+            $currentstatus = $this->gateway()->interpret_vipps_order_status($vippstatus);
+            if ($currentstatus != 'initiated') {
+                $this->log(sprintf(__("Order %2\$d is 'pending' but its %1\$s Order Status is %3\$s  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further. Please check status of order at Vipps and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), $currentstatus), 'debug');
+                return;
+            }
             $this->check_status_of_pending_order($o, false);
         }
     }
@@ -3224,11 +3233,13 @@ EOF;
     // Stop restoring session in wp-cron too. IOK 2021-08-23
     public function check_status_of_pending_order($order, $maybe_restore_session=0) {
         $express = $order->get_meta('_vipps_express_checkout'); 
+        $vippstatus = $order->get_meta('_vipps_status');
         if ($express && $maybe_restore_session) {
            $this->log(sprintf(__("Restoring session of order %1\$d", 'woo-vipps'), $order->get_id()), 'debug'); 
            $this->callback_restore_session($order->get_id());
         }
         $gw = $this->gateway();
+
         $order_status = null;
         try {
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
