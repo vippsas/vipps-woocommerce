@@ -100,13 +100,15 @@ See:
 
 ## Screenshots
 
-Enable Vipps as a payment method
+Enable Vipps as a payment method.
+
 ![Enable Vipps as a payment method](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-1.png?raw=true "Enable Vipps as a payment method.")
 
-Enter your Vipps account keys and configure the plugin
+Enter your Vipps account keys and configure the plugin.
+
 ![Enter your Vipps account keys and configure the plugin](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-2.png?raw=true "Enter your Vipps account keys and configure the plugin")
 
-Enable Checkout, replacing the standard WooCommerce checkout (optional, but recommended).
+(Optional, but recommended) Enable Checkout, replacing the standard WooCommerce checkout.
 
 ![Enable Checkout](./docs/images/turn-on-checkout.png)
 
