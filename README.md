@@ -2,7 +2,7 @@
 ---
 title: "Vipps/MobilePay for WooCommerce plugin"
 sidebar_position: 1
-description: Provide Vipps payments for WooCommerce.
+description: Provide Vipps, MobilePay and card payments for WooCommerce.
 pagination_next: null
 pagination_prev: null
 ---
@@ -36,19 +36,16 @@ You can do important back-office tasks, such as capture and refund directly from
 
 For more information, see:
 
-* [How Checkout works for WooCommerce](https://developer.vippsmobilepay.com/docs/APIs/checkout-api/checkout-how-it-works-woocommerce/)
 * [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
 ## Checkout
 
-*Checkout is still in beta mode in Finland, bank transfer has limited availability.*
-
 With Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed and run by Vipps MobilePay.
 Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
-For Finland, it is also possible to activate bank transfer as a payment method, with some restrictions.
+For Finland, it is also possible to activate bank transfer (during product ordering) as a payment method, with some restrictions.
 VISA/MasterCard payments will be coming soon for MobilePay.
 
-## Vipps Express Checkout
+## Express Checkout
 
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps app.
 
@@ -69,11 +66,14 @@ Express checkout buttons is only available with Vipps. Coming later 2024 for Mob
 
 ## Single Payments
 
-When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the checkout. There is no need to go via a third party payment method. When choosing Vipps/MobilePay, user fills in name and address and is then asked to enter phone number in the Vipps/MobilePay landing page. User confirms the payment in the Vipps or MobilePay app.
+When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the standard WooCommerce checkout.
+There is no need to go via a third party payment method.
+When choosing Vipps/MobilePay, the customer fills in the name and address and is then asked to enter phone number on the Vipps/MobilePay landing page.
+They then confirm the payment in the Vipps or MobilePay app.
 
 ## How to get started
 
-* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
+* Sign up to use [*Checkout*](https://vippsmobilepay.com/online/checkout) or [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 * After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
@@ -83,8 +83,9 @@ When you enable this plugin, your customers will be able to choose Vipps or Mobi
 1. Install the plugin using the WordPress [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins).
    The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the *Plugins* screen on WordPress.
-3. Go to the *WooCommerce Settings* page, choose *Payment Gateways* (*Betalinger*), and enable Vipps.
+3. Go to the *WooCommerce Settings* page, choose *Payments* (*Betalinger*), and enable Vipps MobilePay.
 4. Go the *Settings* page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Merchant Portal. For information, see [How to get account keys from Merchant Portal](#how-to-get-account-keys-from-merchant-portal).
+5. (Optional, but recommended) Activate *Checkout* by clicking on the *Checkout* tab and selecting the *Enable Alternative Vipps Checkout screen, replacing the standard checkout page* option.
 
 ## How to get account keys from Merchant Portal
 
@@ -99,11 +100,17 @@ See:
 
 ## Screenshots
 
-Enable Vipps as a payment method
+Enable Vipps as a payment method.
+
 ![Enable Vipps as a payment method](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-1.png?raw=true "Enable Vipps as a payment method.")
 
-Enter your Vipps account keys and configure the plugin
+Enter your Vipps account keys and configure the plugin.
+
 ![Enter your Vipps account keys and configure the plugin](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-2.png?raw=true "Enter your Vipps account keys and configure the plugin")
+
+(Optional, but recommended) Enable Checkout, replacing the standard WooCommerce checkout.
+
+![Enable Checkout](./docs/images/turn-on-checkout.png)
 
 ## Frequently Asked Questions
 

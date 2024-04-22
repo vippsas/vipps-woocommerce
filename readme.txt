@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.9
-Stable tag: 2.0.9
+Version: 2.0.10
+Stable tag: 2.0.10
 Requires at least: 4.7
 Tested up to: 6.5.0
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.7.0
+WC tested up to: 8.8.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 
@@ -95,6 +95,9 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Fixed some places where NOK were hard-coded in as currency.
+Fixed an issue that could impact sites where the callback from Vipps was blocked delaying order confirmations
+Added failsafe for certain situations where the session could be lost while computing shipping
+Added nocache-headers for nginx
 
 == Frequently Asked Questions ==
 
@@ -233,6 +236,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-04-xx version 2.0.10 =
+Added nocache-headers for nginx
+Fixed an issue that could delay order confirmations in rare situations
+Added a failsafe for certain situations that could destroy sessions in shipping computation
 
 = 2024-03-25 version 2.0.9 =
 Fixed some places where NOK were hard-coded in as currency.

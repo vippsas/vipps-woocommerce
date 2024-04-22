@@ -70,7 +70,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     public function add_image_upload_setting_widget () {
         add_action('admin_enqueue_scripts', function ($suff) {
-            if ($suff  == 'woocommerce_page_wc-settings' && @$_REQUEST['section'] == 'vipps') {
+            if ($suff  == 'woocommerce_page_wc-settings' && (($_REQUEST['section'] ?? false) == 'vipps')) {
                if (!did_action('wp_enqueue_media')) {
 		wp_enqueue_media();
 	       }

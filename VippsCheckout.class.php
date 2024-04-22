@@ -82,7 +82,7 @@ class VippsCheckout {
                     }
                     return $title;
                     }, 10, 2);
-            wc_nocache_headers();
+            Vipps::nocache();
         }
     }
 

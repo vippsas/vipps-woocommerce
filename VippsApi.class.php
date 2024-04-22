@@ -96,7 +96,7 @@ class VippsApi {
 
     // List all webhooks registered for the given MSN IOK 2023-12-19
     public function get_webhooks($msn="") {
-        $command = "/webhooks/v1/webhooks";
+        $command = "webhooks/v1/webhooks";
         if (!$msn) $msn = $this->get_merchant_serial(); 
         $headers = $this->get_headers($msn);
         $args = [];
@@ -110,7 +110,7 @@ class VippsApi {
     }
     // Try to register a webhook for the site and the MSN passed
     public function register_webhook($msn, $callback, $events=null) {
-        $command = "/webhooks/v1/webhooks";
+        $command = "webhooks/v1/webhooks";
         if (!$msn) $msn = $this->get_merchant_serial();
         $headers = $this->get_headers($msn);
         // We want the authorized event, and all the "no longer relevant" events. IOK 2023-12-19
@@ -128,7 +128,7 @@ class VippsApi {
     }
     // Delete a webhook with the given id
     public function delete_webhook($msn, $id) {
-        $command = "/webhooks/v1/webhooks/" . $id;
+        $command = "webhooks/v1/webhooks/" . $id;
         if (!$msn) $msn = $this->get_merchant_serial();
         $headers = $this->get_headers($msn);
         $args = [];
@@ -589,6 +589,7 @@ class VippsApi {
         $command = 'Ecomm/v2/payments';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
+
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
@@ -621,6 +622,7 @@ class VippsApi {
         $order->save();
 
         $headers = $this->get_headers($msn);
+
         $headers['X-Request-Id'] = $requestid;
 
         $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
