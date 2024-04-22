@@ -237,7 +237,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-04-xx version 2.0.10 =
+= 2024-04-22 version 2.0.10 =
 Added nocache-headers for nginx
 Fixed an issue that could delay order confirmations in rare situations
 Added a failsafe for certain situations that could destroy sessions in shipping computation
