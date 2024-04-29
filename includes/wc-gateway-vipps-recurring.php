@@ -38,6 +38,11 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		public string $subscription_key;
 
 		/**
+		 * Whether Vipps MobilePay Checkout is enabled
+		 */
+		public bool $checkout_enabled;
+
+		/**
 		 * Is test mode active?
 		 */
 		public bool $test_mode;
@@ -66,7 +71,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * Transition the order status to 'completed' when a renewal order has been charged successfully
 		 * regardless of previous status
 		 */
-		public string $transition_renewals_to_completed;
+		public bool $transition_renewals_to_completed;
 
 		/**
 		 * The amount of charges to check in wp-cron at a time
@@ -147,9 +152,10 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->secret_key                       = $this->get_option( 'secret_key' );
 			$this->client_id                        = $this->get_option( 'client_id' );
 			$this->subscription_key                 = $this->get_option( 'subscription_key' );
+			$this->checkout_enabled                 = $this->get_option( 'checkout_enabled' ) === "yes";
 			$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 			$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
-			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' );
+			$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' ) === "yes";
 			$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 			$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
@@ -631,7 +637,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 			// Controlled by the `transition_renewals_to_completed` setting
 			// Only applicable to renewal orders
-			if ( $this->transition_renewals_to_completed === "yes" && wcs_order_contains_renewal( $order ) ) {
+			if ( $this->transition_renewals_to_completed && wcs_order_contains_renewal( $order ) ) {
 				$order->update_status( 'completed' );
 			}
 
@@ -1798,6 +1804,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 					$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps/MobilePay API: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $e->getMessage() ) );
 				}
 			}
+
+			update_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, $this->get_option( 'checkout_enabled' ) === "yes", true );
 
 			return $saved;
 		}

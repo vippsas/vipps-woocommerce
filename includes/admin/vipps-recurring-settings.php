@@ -12,6 +12,10 @@ return apply_filters(
 			'description' => '',
 			'default'     => 'no',
 		],
+		'title_brand'                      => [
+			'type'  => 'title',
+			'title' => __( 'Brand settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+		],
 		'brand'                            => [
 			'title'       => __( 'Brand', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'type'        => 'select',
@@ -35,6 +39,22 @@ return apply_filters(
 			'description' => __( 'This controls the description which the user sees during checkout. {brand} is substituted with either Vipps or MobilePay.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			// translators: {brand}: brand title (Vipps or MobilePay)
 			'default'     => __( 'Pay with {brand}.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+		],
+		'title_checkout'                   => [
+			'type'        => 'title',
+			'title'       => __( 'Checkout settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an easier and more seamless checkout that allows you to pay with Vipps MobilePay or a credit card. Your customers will be able to provide their billing/shipping details directly from the Vipps MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+		],
+		'checkout_enabled'                 => [
+			'title'   => __( 'Enable/Disable', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'label'   => __( 'Enable Vipps/MobilePay Checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'type'    => 'checkbox',
+			'default' => 'no',
+		],
+		'title_api'                        => [
+			'type'        => 'title',
+			'title'       => __( 'API settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'These settings control the connection between your store and Vipps MobilePay.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 		],
 		'merchant_serial_number'           => [
 			'title'       => __( 'Merchant Serial Number (MSN)', 'vipps-recurring-payments-gateway-for-woocommerce' ),
@@ -64,6 +84,11 @@ return apply_filters(
 			'default'     => '',
 			'desc_tip'    => true,
 		],
+		'title_orders'                     => [
+			'type'        => 'title',
+			'title'       => __( 'Order settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Orders, renewals and status settings.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+		],
 		'default_reserved_charge_status'   => [
 			'type'        => 'select',
 			'title'       => __( 'Default status to give orders with a reserved charge', 'vipps-recurring-payments-gateway-for-woocommerce' ),
@@ -89,6 +114,11 @@ return apply_filters(
 			'description' => __( 'This option will make sure order statuses always transition to "completed" when the renewal charge is completed in Vipps/MobilePay.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'default'     => 'no',
 		],
+		'title_cron'                       => [
+			'type'        => 'title',
+			'title'       => __( 'Cron settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'We use webhooks in most instances, but they are not guaranteed to be reliable. In those cases we rely on cron.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+		],
 		'check_charges_amount'             => [
 			'type'        => 'number',
 			'title'       => __( 'Amount of charges to check per status check', 'vipps-recurring-payments-gateway-for-woocommerce' ),
@@ -105,6 +135,11 @@ return apply_filters(
 				'asc'  => __( 'Oldest first', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 				'desc' => __( 'Newest first', 'vipps-recurring-payments-gateway-for-woocommerce' )
 			]
+		],
+		'title_developer'                  => [
+			'type'        => 'title',
+			'title'       => __( 'Developer settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Developer, test, and debugging options.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 		],
 		'logging'                          => [
 			'title'       => __( 'Logging', 'vipps-recurring-payments-gateway-for-woocommerce' ),

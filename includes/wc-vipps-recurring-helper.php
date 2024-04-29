@@ -59,7 +59,7 @@ class WC_Vipps_Recurring_Helper {
 	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
 
 	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
-
+	public const OPTION_CHECKOUT_ENABLED = '_woo_vipps_recurring_checkout_enabled';
 	public const OPTION_WEBHOOKS = '_woo_vipps_recurring_webhooks';
 
 	/**

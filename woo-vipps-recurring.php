@@ -72,6 +72,12 @@ function woocommerce_gateway_vipps_recurring_init() {
 	register_deactivation_hook( __FILE__, [ 'WC_Vipps_Recurring', 'deactivate' ] );
 
 	if ( ! class_exists( 'WC_Vipps_Recurring' ) ) {
+		require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
+		require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
+		require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
+		require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
+		require_once __DIR__ . '/includes/wc-vipps-recurring-rest-api.php';
+
 		/*
 		 * Required minimums and constants
 		 */
@@ -93,6 +99,11 @@ function woocommerce_gateway_vipps_recurring_init() {
 		 */
 		if ( ! defined( 'WC_VIPPS_RECURRING_TEST_MODE' ) ) {
 			define( 'WC_VIPPS_RECURRING_TEST_MODE', false );
+		}
+
+		if ( get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false ) ) {
+			require_once __DIR__ . '/includes/wc-vipps-recurring-checkout.php';
+			WC_Vipps_Recurring_Checkout::register_hooks();
 		}
 
 		class WC_Vipps_Recurring {
@@ -158,12 +169,6 @@ function woocommerce_gateway_vipps_recurring_init() {
 			 * @version 4.0.0
 			 */
 			public function init() {
-				require_once __DIR__ . '/includes/wc-vipps-recurring-helper.php';
-				require_once __DIR__ . '/includes/wc-vipps-recurring-logger.php';
-				require_once __DIR__ . '/includes/wc-gateway-vipps-recurring.php';
-				require_once __DIR__ . '/includes/wc-vipps-recurring-admin-notices.php';
-				require_once __DIR__ . '/includes/wc-vipps-recurring-rest-api.php';
-
 				self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 				$this->notices = WC_Vipps_Recurring_Admin_Notices::get_instance( __FILE__ );
