@@ -1,9 +1,10 @@
-import { useEffect, useState } from '@wordpress/element'
+import {useEffect, useMemo, useState} from '@wordpress/element'
 import apiFetch from '@wordpress/api-fetch'
-import { __ } from '@wordpress/i18n'
+import PaymentRedirect from "../components/PaymentRedirectPage/PaymentRedirect";
+import PaymentCancelled from "../components/PaymentRedirectPage/PaymentCancelled";
 
 export default function PaymentRedirectPage () {
-	const { logo } = window.VippsMobilePaySettings
+	const { logo, homeUrl } = window.VippsMobilePaySettings
 	const searchParams = new URLSearchParams(window.location.search)
 
 	const [response, setResponse] = useState(null)
@@ -16,7 +17,7 @@ export default function PaymentRedirectPage () {
 	}, 1000)
 
 	useEffect(() => {
-		if (!response || response.status === 'PENDING') {
+		if (!response || response.status === 'PENDING' || cancelled) {
 			return
 		}
 
@@ -24,32 +25,13 @@ export default function PaymentRedirectPage () {
 		window.location.href = response.redirect_url
 	}, [response])
 
-	return (<div className={'vipps-recurring-payment-redirect-page'}>
-			<div className={'vipps-recurring-payment-redirect-page__container'}>
-				<div
-					className={'vipps-recurring-payment-redirect-page__container__content'}>
-					<div
-						className={'vipps-recurring-payment-redirect-page__container__content__logo'}>
-						<img src={logo} alt="Logo"/>
-					</div>
-					<div
-						className={'vipps-recurring-payment-redirect-page__container__content__loading'}>
-						<div
-							className={'vipps-recurring-payment-redirect-page__container__content__loading__spinner'}/>
-					</div>
-					<div
-						className={'vipps-recurring-payment-redirect-page__container__content__text'}>
-						<p>
-							{__('Verifying your payment. Please wait.',
-								'vipps-recurring-payments-gateway-for-woocommerce')}
-						</p>
+	const cancelled = useMemo(() => {
+		if (!response) {
+			return false;
+		}
 
-						<p>
-							{__('You will be redirected shortly.',
-								'vipps-recurring-payments-gateway-for-woocommerce')}
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>)
+		return ['EXPIRED', 'STOPPED'].includes(response.status)
+	}, [response])
+
+	return (!cancelled ? <PaymentRedirect logo={logo} /> : <PaymentCancelled logo={logo} homeUrl={homeUrl} />)
 }
