@@ -1968,7 +1968,13 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 		 * @param $order_id
 		 */
 		public function maybe_cancel_due_charge( $order_id ): void {
-			$order        = wc_get_order( $order_id );
+			$order = wc_get_order( $order_id );
+
+			$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $order );
+			if ( $this->id !== $payment_method ) {
+				return;
+			}
+
 			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 			$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
 
