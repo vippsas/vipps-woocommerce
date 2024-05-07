@@ -66,6 +66,16 @@
 					padding: 0;
 					margin: 0;
 				}
+
+				&__heading {
+					font-size: 1.5rem;
+					font-weight: 600;
+					margin-top: 15px;
+				}
+
+				&__action {
+					margin-top: 30px;
+				}
 			}
 		}
 	}
