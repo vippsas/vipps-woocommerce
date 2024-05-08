@@ -89,6 +89,12 @@ return apply_filters(
 			'title'       => __( 'Order settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'description' => __( 'Orders, renewals and status settings.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 		],
+		'continue_shopping_link_page'      => [
+			'type'             => 'page_dropdown',
+			'title'            => __( '"Continue shopping" link', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description'      => __( 'The page to redirect customers to when they click "Continue shopping" after a cancelled payment.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'show_option_none' => __( '[Default] Shop or homepage', 'vipps-recurring-payments-gateway-for-woocommerce' )
+		],
 		'default_reserved_charge_status'   => [
 			'type'        => 'select',
 			'title'       => __( 'Default status to give orders with a reserved charge', 'vipps-recurring-payments-gateway-for-woocommerce' ),

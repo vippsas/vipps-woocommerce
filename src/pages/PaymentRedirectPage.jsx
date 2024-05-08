@@ -4,7 +4,7 @@ import PaymentRedirect from "../components/PaymentRedirectPage/PaymentRedirect";
 import PaymentCancelled from "../components/PaymentRedirectPage/PaymentCancelled";
 
 export default function PaymentRedirectPage () {
-	const { logo, homeUrl } = window.VippsMobilePaySettings
+	const { logo, continueShoppingUrl } = window.VippsMobilePaySettings
 	const searchParams = new URLSearchParams(window.location.search)
 
 	const [response, setResponse] = useState(null)
@@ -33,5 +33,5 @@ export default function PaymentRedirectPage () {
 		return ['EXPIRED', 'STOPPED'].includes(response.status)
 	}, [response])
 
-	return (!cancelled ? <PaymentRedirect logo={logo} /> : <PaymentCancelled logo={logo} homeUrl={homeUrl} />)
+	return (!cancelled ? <PaymentRedirect logo={logo} /> : <PaymentCancelled logo={logo} continueShoppingUrl={continueShoppingUrl} />)
 }

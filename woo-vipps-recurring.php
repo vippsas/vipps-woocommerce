@@ -835,9 +835,15 @@ function woocommerce_gateway_vipps_recurring_init() {
 					true
 				);
 
+				$continue_shopping_link_page = $this->gateway->continue_shopping_link_page;
+				$continue_shopping_url = home_url();
+				if ($continue_shopping_link_page) {
+					$continue_shopping_url = get_permalink($continue_shopping_link_page);
+				}
+
 				wp_localize_script( 'woo-vipps-recurring', 'VippsMobilePaySettings', [
 					'logo' => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/' . $this->gateway->brand . '-logo.svg',
-					'homeUrl' => home_url()
+					'continueShoppingUrl' => $continue_shopping_url
 				] );
 
 				wp_set_script_translations( 'woo-vipps-recurring', 'vipps-recurring-payments-gateway-for-woocommerce', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages' );
