@@ -164,6 +164,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 = 1.20.3 (Unreleased) =
 * Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).
 * Fixed: Implemented proper "order cancelled" handling.
+* Added: An option to select which page "Continue shopping" should redirect a user to after a failed payment.
+* Fixed: An odd error that might occur when our special options screen is being called before we initialize our custom tables.
 
 = 1.20.2 =
 * Added: A warning for when you select Vipps as your brand when your currency is not set to NOK.
