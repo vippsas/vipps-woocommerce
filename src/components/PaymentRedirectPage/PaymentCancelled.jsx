@@ -1,6 +1,6 @@
 import {__} from "@wordpress/i18n";
 
-export default function PaymentCancelled ({ homeUrl, logo }) {
+export default function PaymentCancelled ({ continueShoppingUrl, logo }) {
 	return <div className={'vipps-recurring-payment-redirect-page'}>
 		<div className={'vipps-recurring-payment-redirect-page__container'}>
 			<div
@@ -24,7 +24,7 @@ export default function PaymentCancelled ({ homeUrl, logo }) {
 					</p>
 
 					<p>
-						<a href={homeUrl} className={"btn button vipps-recurring-payment-redirect-page__container__content__text__action"}>
+						<a href={continueShoppingUrl} className={"btn button vipps-recurring-payment-redirect-page__container__content__text__action"}>
 						{__('Continue shopping',
 							'vipps-recurring-payments-gateway-for-woocommerce')}
 						</a>

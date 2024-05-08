@@ -89,6 +89,8 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 
 		public bool $auto_capture_mobilepay = false;
 
+		public ?int $continue_shopping_link_page = null;
+
 		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
@@ -153,6 +155,7 @@ if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			$this->check_charges_amount             = $this->get_option( 'check_charges_amount' );
 			$this->check_charges_sort_order         = $this->get_option( 'check_charges_sort_order' );
 			$this->auto_capture_mobilepay           = $this->get_option( 'auto_capture_mobilepay' ) === "yes";
+			$this->continue_shopping_link_page      = $this->get_option( 'continue_shopping_link_page', wc_get_page_id('shop') );
 
 			if ( WC_VIPPS_RECURRING_TEST_MODE ) {
 				$this->test_mode = true;
