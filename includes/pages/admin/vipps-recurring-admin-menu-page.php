@@ -37,8 +37,11 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php
 		global $wc_vipps_recurring_list_table_pending_charges;
-		$wc_vipps_recurring_list_table_pending_charges->prepare_items();
-		echo $wc_vipps_recurring_list_table_pending_charges->display();
+
+		if ( $wc_vipps_recurring_list_table_pending_charges ) {
+			$wc_vipps_recurring_list_table_pending_charges->prepare_items();
+			echo $wc_vipps_recurring_list_table_pending_charges->display();
+		}
 		?>
 	</form>
 
@@ -64,8 +67,11 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php
 		global $wc_vipps_recurring_list_table_failed_charges;
-		$wc_vipps_recurring_list_table_failed_charges->prepare_items();
-		echo $wc_vipps_recurring_list_table_failed_charges->display();
+
+		if ( $wc_vipps_recurring_list_table_failed_charges ) {
+			$wc_vipps_recurring_list_table_failed_charges->prepare_items();
+			echo $wc_vipps_recurring_list_table_failed_charges->display();
+		}
 		?>
 	</form>
 </div>
