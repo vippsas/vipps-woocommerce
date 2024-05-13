@@ -907,6 +907,14 @@ class VippsApi {
        
         }
 
+        // External payment methods IOK 2024-05-13 FIXME 
+        if (true) {
+            $chooseanother = ['action'=>'vipps_gw', 'o'=>$orderid];
+            $chooseanother['gw'] = 'kco'; // or klarna_payments FIXME
+            $chooseanother['cb'] = wp_create_nonce('vipps_gw');
+            $configuration['externalPaymentMethods'] =  [[ 'paymentMethod' => "klarna", 'redirectUrl' => add_query_arg($chooseanother,admin_url("admin-post.php")) ]];
+        }
+
         // Custom consent checkbox, for integration with Mailchimp etc . 
         $customconsenttext = apply_filters('woo_vipps_checkout_consent_query', "");
         $customconsentrequired = apply_filters('woo_vipps_checkout_consent_required', false);

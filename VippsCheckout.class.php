@@ -60,6 +60,65 @@ class VippsCheckout {
         add_action( 'plugins_loaded', array($VippsCheckout,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($VippsCheckout,'woocommerce_loaded'));
         add_action( 'template_redirect', array($VippsCheckout,'template_redirect'));
+        add_action( 'admin_post_nopriv_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
+        add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
+    }
+
+    public function choose_other_gw () {
+        // IOK FIXME DO THE NONCE
+        $orderid = intval($_GET['o']);
+        $gw = trim(sanitize_title($_GET['gw']));
+        $nonce = $_GET['cb'];
+        $ok = wp_verify_nonce($nonce, 'vipps_gw');
+        if (!$ok) {
+            print("NO"); exit();
+        }
+        $order = wc_get_order($orderid);
+        if (!$order || $order->get_payment_method() != 'vipps' || $order->get_status() != 'pending') {
+            print("Absolutely not"); exit();
+        }
+
+        // Load session from cookies
+        WC()->initialize_session();
+
+        if (WC()->session) { 
+            if (! WC()->session->has_session()) {
+                WC()->session->set_customer_session_cookie( true );
+            }
+            if ($gw) {
+                WC()->session->set('chosen_payment_method', $gw); 
+            }
+
+            $addressdata = [];
+            $addressdata["billing_email"] =  $order->get_billing_email();
+            $addressdata["billing_address_1"] =  $order->get_billing_address_1();
+            $addressdata["billing_address_2"] =  $order->get_billing_address_2();
+            $addressdata["billing_postcode"] =  $order->get_billing_postcode();
+            $addressdata["billing_city"] =  $order->get_billing_city();
+            $addressdata["billing_country"] =  $order->get_billing_country();
+            $addressdata["billing_first_name"] =  $order->get_billing_first_name();
+            $addressdata["billing_last_name"] =  $order->get_billing_last_name();
+            $addressdata["billing_phone"] =  $order->get_billing_phone();
+            $addressdata["billing_city"] =  $order->get_billing_city();
+            $addressdata["shipping_address_1"] =  $order->get_shipping_address_1();
+            $addressdata["shipping_address_2"] =  $order->get_shipping_address_2();
+            $addressdata["shipping_city"] =  $order->get_shipping_city();
+            $addressdata["shipping_postcode"] =  $order->get_shipping_postcode();
+            $addressdata["shipping_country"] =  $order->get_shipping_country();
+            $addressdata["shipping_first_name"] =  $order->get_shipping_first_name();
+            $addressdata["shipping_last_name"] =  $order->get_shipping_last_name();
+            $addressdata["shipping_phone"] =  $order->get_shipping_phone();
+            $addressdata["shipping_city"] =  $order->get_shipping_city();
+            WC()->session->set('vc_address', $addressdata);
+            WC()->session->save_data();
+        } else {
+            error_log("No session");
+        }
+
+
+//        $this->abandonVippsCheckoutOrder($order); // IOK FIXME
+        wp_redirect(get_permalink(wc_get_page_id('checkout')));
+        exit();
     }
 
     public function template_redirect () {
@@ -487,6 +546,7 @@ class VippsCheckout {
     }
 
     function vipps_checkout_shortcode ($atts, $content) {
+error_log("iverok Zero");
         // No point in expanding this unless we are actually doing the checkout. IOK 2021-09-03
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
@@ -505,10 +565,19 @@ class VippsCheckout {
             wc_get_template( 'cart/cart-empty.php' );
             return ob_get_clean();
         }
+
+error_log("iverok A");
+
+        WC()->session->set( 'chosen_payment_method', 'vipps'); // This is to stop KCO from trying to replace Vipps Checkout with KCO and failing. IOK 2024-05-13
+
         // Previously registered, now enqueue this script which should then appear in the footer.
         wp_enqueue_script('vipps-checkout');
 
+error_log("iverok B");
+
         do_action('vipps_checkout_before_get_session');
+
+error_log("iverok C");
 
         // We need to be able to check if we still have a live, good session, in which case
         // we can open the iframe directly. Otherwise, the form we are going to output will 
@@ -519,12 +588,16 @@ class VippsCheckout {
         // This is the current pending order id, if it exists. Will be used to restart orders etc . IOK 2023-08-15 FIXME
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
 
+error_log("iverok D");
+
         if ($sessioninfo['redirect']) {
            // This is always either the thankyou page or home_url()  IOK 2021-09-03
            $redir = json_encode($sessioninfo['redirect']);
            $out .= "<script>window.location.replace($redir);</script>";
            return $out;
         }
+
+error_log("iverok E");
 
         // Now the normal case.
         $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'));
@@ -533,20 +606,27 @@ class VippsCheckout {
         $out .= Vipps::instance()->spinner();
 
         if (!$sessioninfo['session']) {
+           error_log("iverok got no session ");
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
            $out .= "<h2>" . sprintf(__('Press the button to complete your order with %1$s!', 'woo-vipps'), Vipps::instance()->get_payment_method_name()) . "</h2>";
            $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . sprintf(__('%1$s', 'woo-vipps'), Vipps::CheckoutName()) . '</button></div>';
            $out .= "</div>";
         }
 
+error_log("iverok F");
+
         // If we have an actual live session right now, add it to the page on load. Otherwise, the session will be started using ajax after the page loads (and is visible)
         if ($sessioninfo['session']) {
+            error_log("Got session");
             $token = $sessioninfo['session']['token'];      // From Vipps
             $src = $sessioninfo['session']['checkoutFrontendUrl'];  // From Vipps
             $out .= "<script>VippsSessionState = " . json_encode(array('token'=>$token, 'checkoutFrontendUrl'=>$src)) . ";</script>\n";
         } else {
+            error_log("Got no  session II");
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
+
+error_log("iverok G");
 
         // Check that these exist etc
         $out .= "<div id='vippscheckoutframe'>";
@@ -568,6 +648,8 @@ class VippsCheckout {
         }
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "</form>";
+
+error_log("iverok H");
 
         return $out;
     }
@@ -649,6 +731,29 @@ class VippsCheckout {
 
                 return $id;
         },10, 1);
+
+
+        // This is for the 'other payment method' thing in Vipps Checkout - we store address info
+        // in session. IOK 2024-05-13
+        add_filter('woocommerce_checkout_fields', function ($fields) {
+            $possibly_address =  WC()->session->get('vc_address');
+            if (!$possibly_address) return $fields;
+            WC()->session->set('vc_address', null);
+
+            foreach($fields['billing'] as $key => &$bdata) {
+                $v = trim($possibly_address[$key] ?? "");
+                if ($v) {
+                    $bdata['default'] = $v;
+                }
+            }
+            foreach($fields['shipping'] as $key => &$sdata) {
+                $v = trim($possibly_address[$key] ?? "");
+                if ($v) {
+                    $sdata['default'] = $v;
+                }
+            }
+            return $fields;
+        });
 
     }
 
