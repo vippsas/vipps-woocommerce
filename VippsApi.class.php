@@ -287,6 +287,27 @@ class VippsApi {
                 $orderlines[] = $orderline;
             }
 
+            foreach($order->get_items('fee') as $key=>$order_item) {
+                $orderline = [];
+                $totalNoTax = $order_item->get_total();
+                $tax = $order_item->get_total_tax();
+                $total = $tax+$totalNoTax;
+                $quantity = 1;
+                $taxpercentage = (($total - $totalNoTax) / $totalNoTax)*100;
+                $taxpercentage = round($taxpercentage);
+                $unitInfo = [];
+                $orderline['name'] = $order_item->get_name();
+                $orderline['id'] = substr(sanitize_title($orderline['name']), 0, 254);
+                $orderline['totalAmount'] = round($total*100);
+                $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
+                $orderline['totalTaxAmount'] = round($tax*100);
+                $orderline['discount'] = 0;
+
+                $orderline['taxPercentage'] = $taxpercentage;
+                $orderlines[] = $orderline;
+            }
+
+
             // Handle shipping
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                 $shippingline =  [];
