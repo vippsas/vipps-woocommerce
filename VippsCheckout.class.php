@@ -65,7 +65,6 @@ class VippsCheckout {
     }
 
     public function choose_other_gw () {
-        // IOK FIXME DO THE NONCE
         $orderid = intval($_GET['o']);
         $gw = trim(sanitize_title($_GET['gw']));
         $nonce = $_GET['cb'];
@@ -74,7 +73,7 @@ class VippsCheckout {
             print("NO"); exit();
         }
         $order = wc_get_order($orderid);
-        if (!$order || $order->get_payment_method() != 'vipps' || $order->get_status() != 'pending') {
+        if (!$order || $order->get_status() != 'pending') {
             print("Absolutely not"); exit();
         }
 
@@ -116,8 +115,24 @@ class VippsCheckout {
         }
 
 
+        # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
+        $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+        $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
+        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
+        $order->set_payment_method($gw);
+        $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
+
+        $order->save();
+
+        $url = get_permalink(wc_get_page_id('checkout'));
+        $url = $order->get_checkout_payment_url();
+
+        $url .= "&payment_method=kco";
+
+error_log("url is $url");
+
 //        $this->abandonVippsCheckoutOrder($order); // IOK FIXME
-        wp_redirect(get_permalink(wc_get_page_id('checkout')));
+        wp_redirect($url);
         exit();
     }
 
@@ -546,7 +561,6 @@ class VippsCheckout {
     }
 
     function vipps_checkout_shortcode ($atts, $content) {
-error_log("iverok Zero");
         // No point in expanding this unless we are actually doing the checkout. IOK 2021-09-03
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
@@ -566,18 +580,12 @@ error_log("iverok Zero");
             return ob_get_clean();
         }
 
-error_log("iverok A");
-
         WC()->session->set( 'chosen_payment_method', 'vipps'); // This is to stop KCO from trying to replace Vipps Checkout with KCO and failing. IOK 2024-05-13
 
         // Previously registered, now enqueue this script which should then appear in the footer.
         wp_enqueue_script('vipps-checkout');
 
-error_log("iverok B");
-
         do_action('vipps_checkout_before_get_session');
-
-error_log("iverok C");
 
         // We need to be able to check if we still have a live, good session, in which case
         // we can open the iframe directly. Otherwise, the form we are going to output will 
@@ -588,16 +596,12 @@ error_log("iverok C");
         // This is the current pending order id, if it exists. Will be used to restart orders etc . IOK 2023-08-15 FIXME
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
 
-error_log("iverok D");
-
         if ($sessioninfo['redirect']) {
            // This is always either the thankyou page or home_url()  IOK 2021-09-03
            $redir = json_encode($sessioninfo['redirect']);
            $out .= "<script>window.location.replace($redir);</script>";
            return $out;
         }
-
-error_log("iverok E");
 
         // Now the normal case.
         $errortext = apply_filters('woo_vipps_checkout_error', __('An error has occured - please reload the page to restart your transaction, or return to the shop', 'woo-vipps'));
@@ -606,14 +610,11 @@ error_log("iverok E");
         $out .= Vipps::instance()->spinner();
 
         if (!$sessioninfo['session']) {
-           error_log("iverok got no session ");
            $out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
            $out .= "<h2>" . sprintf(__('Press the button to complete your order with %1$s!', 'woo-vipps'), Vipps::instance()->get_payment_method_name()) . "</h2>";
            $out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . sprintf(__('%1$s', 'woo-vipps'), Vipps::CheckoutName()) . '</button></div>';
            $out .= "</div>";
         }
-
-error_log("iverok F");
 
         // If we have an actual live session right now, add it to the page on load. Otherwise, the session will be started using ajax after the page loads (and is visible)
         if ($sessioninfo['session']) {
@@ -625,8 +626,6 @@ error_log("iverok F");
             error_log("Got no  session II");
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
-
-error_log("iverok G");
 
         // Check that these exist etc
         $out .= "<div id='vippscheckoutframe'>";
@@ -648,8 +647,6 @@ error_log("iverok G");
         }
         $out .= wp_nonce_field('do_vipps_checkout','vipps_checkout_sec',1,false); 
         $out .= "</form>";
-
-error_log("iverok H");
 
         return $out;
     }
