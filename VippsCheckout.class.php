@@ -62,7 +62,19 @@ class VippsCheckout {
         add_action( 'template_redirect', array($VippsCheckout,'template_redirect'));
         add_action( 'admin_post_nopriv_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
         add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
+        add_filter( 'woocommerce_order_email_verification_required', array($VippsCheckout, 'allow_other_payment_method_email'), 10, 3);
         add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
+    }
+
+    public function allow_other_payment_method_email ($email_verification_required, $order, $context ) {
+        if (is_checkout_pay_page()) {
+            $proceed = $order->get_meta('_vc_proceed');
+            if ($proceed) {
+               // Maybe do a timestamp check here FIXME
+               return false;
+            }
+        }
+        return $email_verification_required;
     }
 
     # For "Choose other payment method" in Vipps Checkout, we will decorate the order with the chosen gw
@@ -73,9 +85,10 @@ class VippsCheckout {
             $orderid = absint(get_query_var( 'order-pay'));
             $order = $orderid ? wc_get_order($orderid) : null;
             $proceed = sanitize_title(trim(is_a($order, 'WC_Order') ? $order->get_meta('_vc_proceed') : false));
-            $order->delete_meta_data('_vc_proceed');
+            $order->update_meta_data('_vc_proceed', 'any');
             $order->save();
-      
+     
+            if ($proceed != 'any'): 
 ?>
 <script>
 jQuery(document).ready(function () {
@@ -88,6 +101,7 @@ jQuery(document).ready(function () {
         });
 </script>
 <?php
+          endif;
         }
     }
 
@@ -155,14 +169,9 @@ jQuery(document).ready(function () {
         $assignuser = is_user_logged_in();
         WC_Gateway_Vipps::instance()->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
 
-        # Before changing the payment method, maybe set customers' session email
-        if (! is_user_logged_in()) {
-            Vipps::instance()->maybe_set_session_customer_email($order) ;
-        }
-
         # Now reset payment gateway and clear out the VC session
         $order->set_payment_method($gw);
-        $order->update_meta_data('_vc_proceed', $gw);
+        $order->update_meta_data('_vc_proceed', ($gw ? $gw : 'any'));
         $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
         $order->save();
 
