@@ -62,6 +62,33 @@ class VippsCheckout {
         add_action( 'template_redirect', array($VippsCheckout,'template_redirect'));
         add_action( 'admin_post_nopriv_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
         add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
+        add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
+    }
+
+    # For "Choose other payment method" in Vipps Checkout, we will decorate the order with the chosen gw
+    # and use javascript to go directly to that method. This is partly because we can't set default gateway to
+    # kco on the order pay screen. IOK 2024-05-15
+    public function maybe_proceed_to_payment() {
+        if (is_checkout_pay_page()) {
+            $orderid = absint(get_query_var( 'order-pay'));
+            $order = $orderid ? wc_get_order($orderid) : null;
+            $proceed = sanitize_title(trim(is_a($order, 'WC_Order') ? $order->get_meta('_vc_proceed') : false));
+            $order->delete_meta_data('_vc_proceed');
+            $order->save();
+      
+?>
+<script>
+jQuery(document).ready(function () {
+        let selected = jQuery('input#payment_method_<?php echo $proceed; ?>[name="payment_method"]');
+        if (selected.length > 0) {
+            jQuery('input#terms[type="checkbox"]').prop('checked', true).trigger('change');
+            selected.prop('checked', true).trigger('change');
+            jQuery('button#place_order').click();
+        }
+        });
+</script>
+<?php
+        }
     }
 
 
@@ -89,7 +116,9 @@ class VippsCheckout {
             }
             # There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. Try to stop that.. IOK 2024-05-15
             if ($gw && $gw != 'kco') {
-                WC()->session->set('chosen_payment_method', $gw); 
+                if ($gw != 'kco') {
+                    WC()->session->set('chosen_payment_method', $gw); 
+                }
             }
 
             $addressdata = [];
@@ -133,14 +162,12 @@ class VippsCheckout {
 
         # Now reset payment gateway and clear out the VC session
         $order->set_payment_method($gw);
+        $order->update_meta_data('_vc_proceed', $gw);
         $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
-
         $order->save();
 
         $url = get_permalink(wc_get_page_id('checkout'));
         $url = $order->get_checkout_payment_url();
-
-#        $url .= "&payment_method=kco"; ## THIS would be used to check certain javascript thingies.
 
         // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
         $this->abandonVippsCheckoutOrder(false);
