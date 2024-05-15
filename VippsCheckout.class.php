@@ -118,7 +118,16 @@ class VippsCheckout {
         # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
         $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
         $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
-        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
+        # Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
+        $assignuser = is_user_logged_in();
+        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
+
+        # Before changing the payment method, maybe set customers' session email
+        if (! is_user_logged_in()) {
+            Vipps::instance()->maybe_set_session_customer_email($order) ;
+        }
+
+        # Now reset payment gateway and clear out the VC session
         $order->set_payment_method($gw);
         $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
 
@@ -127,7 +136,7 @@ class VippsCheckout {
         $url = get_permalink(wc_get_page_id('checkout'));
         $url = $order->get_checkout_payment_url();
 
-        $url .= "&payment_method=kco";
+#        $url .= "&payment_method=kco";
 
 error_log("url is $url");
 
