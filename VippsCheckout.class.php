@@ -64,16 +64,19 @@ class VippsCheckout {
         add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
     }
 
+
     public function choose_other_gw () {
         $orderid = intval($_GET['o']);
         $gw = trim(sanitize_title($_GET['gw']));
         $nonce = $_GET['cb'];
         $ok = wp_verify_nonce($nonce, 'vipps_gw');
         if (!$ok) {
+            $this->abandonVippsCheckoutOrder(false);
             print("NO"); exit();
         }
         $order = wc_get_order($orderid);
         if (!$order || $order->get_status() != 'pending') {
+            $this->abandonVippsCheckoutOrder(false);
             print("Absolutely not"); exit();
         }
 
@@ -84,7 +87,8 @@ class VippsCheckout {
             if (! WC()->session->has_session()) {
                 WC()->session->set_customer_session_cookie( true );
             }
-            if ($gw) {
+            # There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. Try to stop that.. IOK 2024-05-15
+            if ($gw && $gw != 'kco') {
                 WC()->session->set('chosen_payment_method', $gw); 
             }
 
@@ -136,11 +140,10 @@ class VippsCheckout {
         $url = get_permalink(wc_get_page_id('checkout'));
         $url = $order->get_checkout_payment_url();
 
-#        $url .= "&payment_method=kco";
+#        $url .= "&payment_method=kco"; ## THIS would be used to check certain javascript thingies.
 
-error_log("url is $url");
-
-//        $this->abandonVippsCheckoutOrder($order); // IOK FIXME
+        // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
+        $this->abandonVippsCheckoutOrder(false);
         wp_redirect($url);
         exit();
     }
@@ -627,12 +630,10 @@ error_log("url is $url");
 
         // If we have an actual live session right now, add it to the page on load. Otherwise, the session will be started using ajax after the page loads (and is visible)
         if ($sessioninfo['session']) {
-            error_log("Got session");
             $token = $sessioninfo['session']['token'];      // From Vipps
             $src = $sessioninfo['session']['checkoutFrontendUrl'];  // From Vipps
             $out .= "<script>VippsSessionState = " . json_encode(array('token'=>$token, 'checkoutFrontendUrl'=>$src)) . ";</script>\n";
         } else {
-            error_log("Got no  session II");
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
 
