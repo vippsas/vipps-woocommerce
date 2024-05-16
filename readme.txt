@@ -36,8 +36,8 @@ With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete che
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
 
-=== Mobilepay Reservations are currently for 7 days ===
-When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 7 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+=== Mobilepay Reservations are currently for 14 days ===
+When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 14 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
 For details, please read the [developer FAQ](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#reserve-and-capture-faq).
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to "Completed" as is the standard WooCommerce rule.
@@ -253,7 +253,7 @@ Minor updates and language
 
 = 2024-02-19 version 2.0.6 =
 Made sure the filters for the_title on the checkout page works even with too few arguments
-Added notice and warning for MobilePay that capture must be done within 7 days
+Added notice and warning for MobilePay that capture must be done within 14 days
 
 = 2024-01-25 version 2.0.5 =
 Add workaround for Orderline issue with Checkout
