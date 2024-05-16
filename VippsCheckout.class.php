@@ -106,35 +106,37 @@ jQuery(document).ready(function () {
     }
 
 
+    # Called in admin-post and will finalize a Vipps Checkout order + send the customer to the payment page.
     public function choose_other_gw () {
         $orderid = intval($_GET['o']);
         $gw = trim(sanitize_title($_GET['gw']));
+        if ($gw == 'any') $gw = "";
         $nonce = $_GET['cb'];
         $ok = wp_verify_nonce($nonce, 'vipps_gw');
         if (!$ok) {
             $this->abandonVippsCheckoutOrder(false);
-            print("NO"); exit();
+            $this->log(sprintf(__("Orderid %1\$s: Wrong nonce when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
+            wp_redirect(home_url());
         }
         $order = wc_get_order($orderid);
         if (!$order || $order->get_status() != 'pending') {
             $this->abandonVippsCheckoutOrder(false);
-            print("Absolutely not"); exit();
+            $this->log(sprintf(__("Orderid %1\$s is not pending when choosing another payment method from Vipps Checkout", 'woo-vipps'), $orderid), 'error');
+            wp_redirect(home_url());
         }
 
-        // Load session from cookies
+        // Load session from cookies - it will not get loaded on admin-post.
         WC()->initialize_session();
 
         if (WC()->session) { 
             if (! WC()->session->has_session()) {
                 WC()->session->set_customer_session_cookie( true );
             }
-            # There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. Try to stop that.. IOK 2024-05-15
-            if ($gw && $gw != 'kco') {
-                if ($gw != 'kco') {
+            # There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. 
+            #Try to stop that.. IOK 2024-05-15
+            if ($gw != 'kco') {
                     WC()->session->set('chosen_payment_method', $gw); 
-                }
             }
-
             $addressdata = [];
             $addressdata["billing_email"] =  $order->get_billing_email();
             $addressdata["billing_address_1"] =  $order->get_billing_address_1();
@@ -158,7 +160,7 @@ jQuery(document).ready(function () {
             WC()->session->set('vc_address', $addressdata);
             WC()->session->save_data();
         } else {
-            error_log("No session");
+            $this->log(__("No session choosing other gateway from Vipps Checkout", 'woo-vipps'), 'error');
         }
 
 
