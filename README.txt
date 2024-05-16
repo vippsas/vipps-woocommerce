@@ -7,6 +7,7 @@ Stable tag: 1.20.3
 Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
+Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
 == Description ==
 
