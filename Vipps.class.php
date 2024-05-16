@@ -105,8 +105,21 @@ class Vipps {
         add_action('init',array($Vipps,'init'));
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
+        add_action( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
     }
 
+    // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
+    public function payment_gateway_filter ($gateways) {
+        if (is_checkout_pay_page()) {
+            $orderid = absint(get_query_var( 'order-pay')); 
+            $order = $orderid ? wc_get_order($orderid) : null;
+            if (is_a($order, 'WC_Order')) {
+               $isavipps = $order->get_meta('_vipps_init_timestamp');
+               if ($isavipps) unset($gateways['vipps']);
+            }
+        }
+        return $gateways;
+    } 
 
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {

@@ -2760,7 +2760,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $address;
     }
 
-    public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null) {
+    public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
@@ -2952,7 +2952,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // If we have the 'expresscreateuser' thing set to true, we will create or assign the order here, as it is the first-ish place where we can.
         // If possible and safe, user will be logged in before being sent to the thankyou screen.  IOK 2020-10-09
         // Same thing for Vipps Checkout, mutatis mutandis. The function below returns false if no customer exists or gets created.
-        $customer = Vipps::instance()->express_checkout_get_vipps_customer($order);
+        $customer = false;
+        if ($assigncustomer) {
+            $customer = Vipps::instance()->express_checkout_get_vipps_customer($order);
+        }
         if ($customer) {
             // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
             // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09

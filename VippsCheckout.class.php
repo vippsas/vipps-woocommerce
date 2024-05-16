@@ -60,6 +60,130 @@ class VippsCheckout {
         add_action( 'plugins_loaded', array($VippsCheckout,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($VippsCheckout,'woocommerce_loaded'));
         add_action( 'template_redirect', array($VippsCheckout,'template_redirect'));
+        add_action( 'admin_post_nopriv_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
+        add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
+        add_filter( 'woocommerce_order_email_verification_required', array($VippsCheckout, 'allow_other_payment_method_email'), 10, 3);
+        add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
+    }
+
+    public function allow_other_payment_method_email ($email_verification_required, $order, $context ) {
+        if (is_checkout_pay_page()) {
+            $proceed = $order->get_meta('_vc_proceed');
+            if ($proceed) {
+               // Maybe do a timestamp check here FIXME
+               return false;
+            }
+        }
+        return $email_verification_required;
+    }
+
+    # For "Choose other payment method" in Vipps Checkout, we will decorate the order with the chosen gw
+    # and use javascript to go directly to that method. This is partly because we can't set default gateway to
+    # kco on the order pay screen. IOK 2024-05-15
+    public function maybe_proceed_to_payment() {
+        if (is_checkout_pay_page()) {
+            $orderid = absint(get_query_var( 'order-pay'));
+            $order = $orderid ? wc_get_order($orderid) : null;
+            $proceed = sanitize_title(trim(is_a($order, 'WC_Order') ? $order->get_meta('_vc_proceed') : false));
+            $order->update_meta_data('_vc_proceed', 'any');
+            $order->save();
+     
+            if ($proceed != 'any'): 
+?>
+<script>
+jQuery(document).ready(function () {
+        let selected = jQuery('input#payment_method_<?php echo $proceed; ?>[name="payment_method"]');
+        if (selected.length > 0) {
+            jQuery('input#terms[type="checkbox"]').prop('checked', true).trigger('change');
+            selected.prop('checked', true).trigger('change');
+            jQuery('button#place_order').click();
+        }
+        });
+</script>
+<?php
+          endif;
+        }
+    }
+
+
+    # Called in admin-post and will finalize a Vipps Checkout order + send the customer to the payment page.
+    public function choose_other_gw () {
+        $orderid = intval($_GET['o']);
+        $gw = trim(sanitize_title($_GET['gw']));
+        if ($gw == 'any') $gw = "";
+        $nonce = $_GET['cb'];
+        $ok = wp_verify_nonce($nonce, 'vipps_gw');
+        if (!$ok) {
+            $this->abandonVippsCheckoutOrder(false);
+            $this->log(sprintf(__("Orderid %1\$s: Wrong nonce when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
+            wp_redirect(home_url());
+        }
+        $order = wc_get_order($orderid);
+        if (!$order || $order->get_status() != 'pending') {
+            $this->abandonVippsCheckoutOrder(false);
+            $this->log(sprintf(__("Orderid %1\$s is not pending when choosing another payment method from Vipps Checkout", 'woo-vipps'), $orderid), 'error');
+            wp_redirect(home_url());
+        }
+
+        // Load session from cookies - it will not get loaded on admin-post.
+        WC()->initialize_session();
+
+        if (WC()->session) { 
+            if (! WC()->session->has_session()) {
+                WC()->session->set_customer_session_cookie( true );
+            }
+            # There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. 
+            #Try to stop that.. IOK 2024-05-15
+            if ($gw != 'kco') {
+                    WC()->session->set('chosen_payment_method', $gw); 
+            }
+            $addressdata = [];
+            $addressdata["billing_email"] =  $order->get_billing_email();
+            $addressdata["billing_address_1"] =  $order->get_billing_address_1();
+            $addressdata["billing_address_2"] =  $order->get_billing_address_2();
+            $addressdata["billing_postcode"] =  $order->get_billing_postcode();
+            $addressdata["billing_city"] =  $order->get_billing_city();
+            $addressdata["billing_country"] =  $order->get_billing_country();
+            $addressdata["billing_first_name"] =  $order->get_billing_first_name();
+            $addressdata["billing_last_name"] =  $order->get_billing_last_name();
+            $addressdata["billing_phone"] =  $order->get_billing_phone();
+            $addressdata["billing_city"] =  $order->get_billing_city();
+            $addressdata["shipping_address_1"] =  $order->get_shipping_address_1();
+            $addressdata["shipping_address_2"] =  $order->get_shipping_address_2();
+            $addressdata["shipping_city"] =  $order->get_shipping_city();
+            $addressdata["shipping_postcode"] =  $order->get_shipping_postcode();
+            $addressdata["shipping_country"] =  $order->get_shipping_country();
+            $addressdata["shipping_first_name"] =  $order->get_shipping_first_name();
+            $addressdata["shipping_last_name"] =  $order->get_shipping_last_name();
+            $addressdata["shipping_phone"] =  $order->get_shipping_phone();
+            $addressdata["shipping_city"] =  $order->get_shipping_city();
+            WC()->session->set('vc_address', $addressdata);
+            WC()->session->save_data();
+        } else {
+            $this->log(__("No session choosing other gateway from Vipps Checkout", 'woo-vipps'), 'error');
+        }
+
+
+        # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
+        $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+        $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
+        # Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
+        $assignuser = is_user_logged_in();
+        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
+
+        # Now reset payment gateway and clear out the VC session
+        $order->set_payment_method($gw);
+        $order->update_meta_data('_vc_proceed', ($gw ? $gw : 'any'));
+        $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
+        $order->save();
+
+        $url = get_permalink(wc_get_page_id('checkout'));
+        $url = $order->get_checkout_payment_url();
+
+        // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
+        $this->abandonVippsCheckoutOrder(false);
+        wp_redirect($url);
+        exit();
     }
 
     public function template_redirect () {
@@ -505,6 +629,9 @@ class VippsCheckout {
             wc_get_template( 'cart/cart-empty.php' );
             return ob_get_clean();
         }
+
+        WC()->session->set( 'chosen_payment_method', 'vipps'); // This is to stop KCO from trying to replace Vipps Checkout with KCO and failing. IOK 2024-05-13
+
         // Previously registered, now enqueue this script which should then appear in the footer.
         wp_enqueue_script('vipps-checkout');
 
@@ -649,6 +776,29 @@ class VippsCheckout {
 
                 return $id;
         },10, 1);
+
+
+        // This is for the 'other payment method' thing in Vipps Checkout - we store address info
+        // in session. IOK 2024-05-13
+        add_filter('woocommerce_checkout_fields', function ($fields) {
+            $possibly_address =  WC()->session->get('vc_address');
+            if (!$possibly_address) return $fields;
+            WC()->session->set('vc_address', null);
+
+            foreach($fields['billing'] as $key => &$bdata) {
+                $v = trim($possibly_address[$key] ?? "");
+                if ($v) {
+                    $bdata['default'] = $v;
+                }
+            }
+            foreach($fields['shipping'] as $key => &$sdata) {
+                $v = trim($possibly_address[$key] ?? "");
+                if ($v) {
+                    $sdata['default'] = $v;
+                }
+            }
+            return $fields;
+        });
 
     }
 

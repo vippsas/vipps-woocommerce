@@ -287,6 +287,27 @@ class VippsApi {
                 $orderlines[] = $orderline;
             }
 
+            foreach($order->get_items('fee') as $key=>$order_item) {
+                $orderline = [];
+                $totalNoTax = $order_item->get_total();
+                $tax = $order_item->get_total_tax();
+                $total = $tax+$totalNoTax;
+                $quantity = 1;
+                $taxpercentage = (($total - $totalNoTax) / $totalNoTax)*100;
+                $taxpercentage = round($taxpercentage);
+                $unitInfo = [];
+                $orderline['name'] = $order_item->get_name();
+                $orderline['id'] = substr(sanitize_title($orderline['name']), 0, 254);
+                $orderline['totalAmount'] = round($total*100);
+                $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
+                $orderline['totalTaxAmount'] = round($tax*100);
+                $orderline['discount'] = 0;
+
+                $orderline['taxPercentage'] = $taxpercentage;
+                $orderlines[] = $orderline;
+            }
+
+
             // Handle shipping
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                 $shippingline =  [];
@@ -905,6 +926,22 @@ class VippsApi {
             $configuration['countries'] = ['supported' => $allowed_countries ];
         } else {
        
+        }
+
+        // External payment methods IOK 2024-05-13 
+        // Should return a map from other_method => ['gw'=>'gateway key or any or empty string]
+        $other_payment_methods = apply_filters('woo_vipps_checkout_external_payment_methods', [], $order);
+        if (!empty($other_payment_methods)) {
+            $others = [];
+            foreach ($other_payment_methods as $methodkey => $methoddata) {
+                $chooseanother = ['action'=>'vipps_gw', 'o'=>$orderid];
+                $chooseanother['cb'] = wp_create_nonce('vipps_gw');
+                $chooseanother['gw'] = ($methoddata['gw'] ?? "");
+                $others[] = ['paymentMethod' => $key, 'redirectUrl'=> add_query_arg($chooseanother,admin_url("admin-post.php")) ];
+            }
+            if (!empty($others)) {
+                $configuration['externalPaymentMethods'] =  [[ 'paymentMethod' => "klarna", 'redirectUrl' => add_query_arg($chooseanother,admin_url("admin-post.php")) ]];
+            }
         }
 
         // Custom consent checkbox, for integration with Mailchimp etc . 
