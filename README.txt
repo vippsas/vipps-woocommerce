@@ -3,7 +3,7 @@ Contributors: EverydayAS
 Tags: vipps, mobilepay, recurring payments, subscriptions, woocommerce subscriptions
 Requires at least: 5.0
 Tested up to: 6.5
-Stable tag: 1.20.2
+Stable tag: 1.20.3
 Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
@@ -161,7 +161,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-= 1.20.3 (Unreleased) =
+= 1.20.3 =
 * Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).
 * Fixed: Implemented proper "order cancelled" handling.
 * Added: An option to select which page "Continue shopping" should redirect a user to after a failed payment.
