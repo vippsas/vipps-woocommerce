@@ -456,5 +456,3 @@ that look like this: `HTTP Response Error: (recurring/v2/agreements/:id/charges)
 * Fix: Refunding a reversed charge now works, just like pending charges in version 1.3.9.
 * Change: "Default status to give pending renewal orders" default is now "processing" instead of "on hold"
 * Change: Removed "completed" as a possible default status for the "Default status to give pending renewal orders" setting as this status is conventionally used for orders that are completely finished.
-
-==== End Log ====
