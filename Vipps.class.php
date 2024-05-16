@@ -3345,7 +3345,6 @@ EOF;
         if ($order->get_meta('_vipps_express_checkout')) {
             $email = $order->get_billing_email();
             if ($email && WC()->customer) {
-error_log("Setting customer email for guest cust");
                 WC()->customer->set_email($email);
                 WC()->customer->set_billing_email($email);
                 WC()->customer->save();
