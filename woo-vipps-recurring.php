@@ -830,7 +830,10 @@ function woocommerce_gateway_vipps_recurring_init() {
 					true
 				);
 
-				$continue_shopping_link_page = $this->gateway->continue_shopping_link_page;
+				$continue_shopping_link_page = !empty($this->gateway->continue_shopping_link_page)
+					? $this->gateway->continue_shopping_link_page
+					: wc_get_page_id('shop');
+
 				$continue_shopping_url = home_url();
 				if ($continue_shopping_link_page) {
 					$continue_shopping_url = get_permalink($continue_shopping_link_page);
