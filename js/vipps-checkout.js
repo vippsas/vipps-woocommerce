@@ -68,6 +68,7 @@ jQuery( document ).ready( function() {
                      token:  VippsSessionState['token'],
                      iFrameContainerId: "vippscheckoutframe",
                      language: VippsConfig['vippslanguage']
+             /* IOK 2024-04-10 future improvements of order management coming 
                      ,on: {
                          shipping_option_selected: function (data) { console.log("shipping %j", data); },
                          total_amount_changed: function (data) { console.log("money %j", data); },
@@ -75,6 +76,7 @@ jQuery( document ).ready( function() {
                          shipping_address_changed: function (data) { console.log("shipping address: %j", data); },
                          customer_information_changed: function (data) { console.log("customer info changed: %j", data); }
                      }
+                     */
          };
          let vippsCheckout = VippsCheckout(args);
          jQuery("body").css("cursor", "default");
@@ -135,7 +137,6 @@ jQuery( document ).ready( function() {
                                 return;
                             }
                             if (result['data']['redirect']) {
-                                console.log("Redir to " + result['redirect']);
                                 window.location.replace(result['redirect']);
                                 return;
                             }
@@ -217,7 +218,6 @@ jQuery( document ).ready( function() {
                         }
                         if (result['data']['url']) {
                             pollingdone = 1;
-                            console.log("Redir to  URL" + result['redirect']);
                             window.location.replace(result['data']['url']);
                         }
                     },
