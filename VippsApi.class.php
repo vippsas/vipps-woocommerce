@@ -928,12 +928,20 @@ class VippsApi {
        
         }
 
-        // External payment methods IOK 2024-05-13 FIXME 
-        if (true) {
-            $chooseanother = ['action'=>'vipps_gw', 'o'=>$orderid];
-            $chooseanother['gw'] = 'kco'; // or klarna_payments FIXME
-            $chooseanother['cb'] = wp_create_nonce('vipps_gw');
-            $configuration['externalPaymentMethods'] =  [[ 'paymentMethod' => "klarna", 'redirectUrl' => add_query_arg($chooseanother,admin_url("admin-post.php")) ]];
+        // External payment methods IOK 2024-05-13 
+        // Should return a map from other_method => ['gw'=>'gateway key or any or empty string]
+        $other_payment_methods = apply_filters('woo_vipps_checkout_external_payment_methods', [], $order);
+        if (!empty($other_payment_methods)) {
+            $others = [];
+            foreach ($other_payment_methods as $methodkey => $methoddata) {
+                $chooseanother = ['action'=>'vipps_gw', 'o'=>$orderid];
+                $chooseanother['cb'] = wp_create_nonce('vipps_gw');
+                $chooseanother['gw'] = ($methoddata['gw'] ?? "");
+                $others[] = ['paymentMethod' => $key, 'redirectUrl'=> add_query_arg($chooseanother,admin_url("admin-post.php")) ];
+            }
+            if (!empty($others)) {
+                $configuration['externalPaymentMethods'] =  [[ 'paymentMethod' => "klarna", 'redirectUrl' => add_query_arg($chooseanother,admin_url("admin-post.php")) ]];
+            }
         }
 
         // Custom consent checkbox, for integration with Mailchimp etc . 
