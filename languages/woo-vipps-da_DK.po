@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: Plugins - Pay with Vipps and MobilePay for WooCommerce - Stable (latest release)\n"
 
 #: Vipps.class.php:1152 Vipps.class.php:1210
-msgid "Note: Reservations will be cancelled after 7 days. Remember to ship and fulfill your orders."
-msgstr "Bemærk: Reservationer vil blive annulleret efter 7 dage. Husk at sende og opfylde dine ordrer."
+msgid "Note: Reservations will be cancelled after 14 days. Remember to ship and fulfill your orders."
+msgstr "Bemærk: Reservationer vil blive annulleret efter 14 dage. Husk at sende og opfylde dine ordrer."
 
 #: WC_Gateway_Vipps.class.php:3661
 msgid "Could not initialize webhooks for this site: %1$s"

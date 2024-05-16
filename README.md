@@ -17,7 +17,7 @@ END_METADATA -->
 ![MobilePay](./docs/images/mp.png) *Available for MobilePay in Finland and Denmark.*
 
 :::note
-You must capture within 7 days (MobilePay) or 180 days (Vipps) or the payment will be cancelled.
+You must capture within 14 days (MobilePay) or 180 days (Vipps) or the payment will be cancelled.
 :::
 
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [Wordpress plugin site](https://wordpress.org/plugins/woo-vipps/) .*
@@ -124,7 +124,7 @@ You can only get paid by users who have MobilePay. At the moment plugin is only 
 
 ### For how long is an order reserved?
 
-When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 7 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 14 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to “Completed” as is the standard WooCommerce rule.
 
