@@ -2660,8 +2660,7 @@ EOF;
              $defaultdata['postalCode'] = $countries->get_base_postcode();
              $defaultdata['postCode'] =   $countries->get_base_postcode();
              $defaultdata['addressLine1'] = $countries->get_base_address();
-             // Not normally used, but certain stores may use it for whatever reason IOK 2023-10-10
-             $defaultdata['addressLine2'] = $countries->get_base_address_2();
+             // We do not use addressLine2 in default addreses, since it is not used for shipping calculations. IOK 2024-05-21
              $addressok=true;
          }
          return $defaultdata;
