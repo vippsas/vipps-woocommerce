@@ -324,7 +324,7 @@ class VippsQRCodeController {
             <label><?php echo esc_html__( 'QR-id', 'woo-vipps' ); ?>: <?php echo esc_html($id); ?></label><br>
 
 <div class="url-section">
-  <label><?php echo esc_html('Select link type', 'woo-vipps'); ?></label>
+  <label><?php echo esc_html__('Select link type', 'woo-vipps'); ?></label>
     <div class="link-selector">
        <label for="pageidtab"><?php _e("Page", 'woo-vipps'); ?>
         <input type=radio class="vipps_urltype" id=pageidtab value="pageid" name="_vipps_qr_urltype" <?php if ($urltype=='pageid') echo " checked "; ?>>
@@ -372,8 +372,8 @@ endif; ?>
 <div class="qrimageholder" style="padding-top:1rem; padding-bottom: 1rem; display:flex; justify-content: space-between">
    <?php if ($qr): ?> 
      <div class="qrimagedownloadbuttons" style="display:flex;flex-direction:column;">
-       <a class="button downloadsvg" style="margin-top: .7rem">Download as SVG</a>
-       <a class="button downloadpng" style="margin-top: .7rem">Download as PNG</a>
+       <a class="button downloadsvg" style="margin-top: .7rem"><?php echo esc_html__("Download as SVG", 'woo-vipps'); ?></a>
+       <a class="button downloadpng" style="margin-top: .7rem"><?php echo esc_html__("Download as PNG", 'woo-vipps'); ?></a>
      </div>
      <div id='qrimage' class='qrimage' style='width:25%'><?php echo $qr ?></div> 
    <?php endif; ?> 
