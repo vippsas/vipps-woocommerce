@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.10
-Stable tag: 2.0.10
+Version: 2.0.11
+Stable tag: 2.0.11
 Requires at least: 4.7
-Tested up to: 6.5.0
+Tested up to: 6.5.3
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.8.2
+WC tested up to: 8.9.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -93,6 +93,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fixed some untranslatable strings and updated information about reservation times
 Fixed some places where NOK were hard-coded in as currency.
 Fixed an issue that could impact sites where the callback from Vipps was blocked delaying order confirmations
 Added failsafe for certain situations where the session could be lost while computing shipping
@@ -236,6 +237,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2024-05-21 version 2.0.11 =
+Fixed some utranslatable strings and changed MobilePay reservation time notices to 14 days
+
 = 2024-04-22 version 2.0.10 =
 Added nocache-headers for nginx
 Fixed an issue that could delay order confirmations in rare situations
@@ -253,7 +257,7 @@ Minor updates and language
 
 = 2024-02-19 version 2.0.6 =
 Made sure the filters for the_title on the checkout page works even with too few arguments
-Added notice and warning for MobilePay that capture must be done within 7 days
+Added notice and warning for MobilePay that capture must be done within 14 days
 
 = 2024-01-25 version 2.0.5 =
 Add workaround for Orderline issue with Checkout
