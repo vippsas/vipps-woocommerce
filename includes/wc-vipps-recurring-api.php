@@ -372,18 +372,52 @@ class WC_Vipps_Recurring_Api {
 	}
 
 	/**
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function checkout_poll( string $endpoint ) {
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		return $this->http_call( $endpoint, 'GET', [], $headers );
+	}
+
+	private function get_base_url(): string {
+		if ( $this->get_test_mode() ) {
+			return 'https://apitest.vipps.no';
+		}
+
+		return 'https://api.vipps.no';
+	}
+
+	private function get_test_mode(): bool {
+		return $this->gateway->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE;
+	}
+
+	/**
 	 * @return mixed|string|null
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [] ) {
-		$url = $this->gateway->api_url . '/' . $endpoint;
+		$url = $this->get_base_url() . '/' . $endpoint;
 
 		$client_id              = $this->gateway->get_option( "client_id" );
 		$secret_key             = $this->gateway->get_option( "secret_key" );
 		$subscription_key       = $this->gateway->get_option( "subscription_key" );
 		$merchant_serial_number = $this->gateway->get_option( "merchant_serial_number" );
+
+		if ( $this->get_test_mode() ) {
+			$client_id              = $this->gateway->get_option( "test_client_id" );
+			$secret_key             = $this->gateway->get_option( "test_secret_key" );
+			$subscription_key       = $this->gateway->get_option( "test_subscription_key" );
+			$merchant_serial_number = $this->gateway->get_option( "test_merchant_serial_number" );
+		}
 
 		if ( ! $subscription_key || ! $secret_key || ! $client_id ) {
 			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );

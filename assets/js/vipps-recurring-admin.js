@@ -113,6 +113,6 @@ jQuery(document).ready(function ($) {
 
     autoCaptureMobilePayInput.on('change', function (event) {
       toggleMobilePayReservationsWarning(brandInput.val(), event.target.checked);
-    }).trigger('change');
+    });
   }
 });

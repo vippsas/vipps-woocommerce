@@ -75,7 +75,7 @@ class WC_Vipps_Recurring_Admin_Notices {
 					'vipps_recurring_dismiss' => sanitize_title( $admin_notice->dismiss_name )
 				], admin_url() );
 
-				$gateway = WC_Gateway_Vipps_Recurring::get_instance();
+				$gateway = WC_Vipps_Recurring::get_instance()->gateway();
 
 				$logo_url = $admin_notice->logo ?? 'assets/images/vipps-mobilepay-logo.png';
 				$logo     = plugins_url( $logo_url, $this->plugin_path );

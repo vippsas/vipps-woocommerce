@@ -164,6 +164,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 = UNRELEASED =
 * Fixed: "Continue shopping" link default value is now correct.
+* Added: New fields in the settings area to separate test API credentials.
+* Fixed: A bug where the "Reservations in MobilePay" warning would display twice.
 
 = 1.20.3 =
 * Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).

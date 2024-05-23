@@ -7,8 +7,6 @@ class WC_Vipps_Recurring_Rest_Api {
 
 	private static ?WC_Vipps_Recurring_Rest_Api $instance = null;
 
-	private ?WC_Gateway_Vipps_Recurring $gateway = null;
-
 	/**
 	 * Returns the *Singleton* instance of this class.
 	 *
@@ -23,8 +21,6 @@ class WC_Vipps_Recurring_Rest_Api {
 	}
 
 	public function __construct() {
-		$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
-
 		add_action( 'rest_api_init', [ $this, 'init' ] );
 	}
 
@@ -55,10 +51,11 @@ class WC_Vipps_Recurring_Rest_Api {
 			);
 		}
 
-		$this->gateway->check_charge_status( $order_id );
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
+		$gateway->check_charge_status( $order_id );
 
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-		$agreement    = WC_Gateway_Vipps_Recurring::get_instance()->api->get_agreement( $agreement_id );
+		$agreement    = $gateway->api->get_agreement( $agreement_id );
 
 		return [
 			'status'       => $agreement->status,
