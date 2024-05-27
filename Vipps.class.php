@@ -37,9 +37,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {
+    private static $instance = null;
+
+    /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
+    public static $installed_gateways = [];
+
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
-    private static $instance = null;
     private $countrymap = null;
     // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
     public $callbackorder = 0;
@@ -105,7 +109,7 @@ class Vipps {
         add_action('init',array($Vipps,'init'));
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
-        add_action( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
+        add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
     }
 
     // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
@@ -2156,6 +2160,13 @@ EOF;
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
+        /* Try to get a list of all installed gateways *before* we instantiate ourselves IOK 2024-05-27 */
+        add_filter( 'woocommerce_payment_gateways', function ($gws) {
+           if (!empty(Vipps::$installed_gateways)) return Vipps::$installed_gateways;
+           Vipps::$installed_gateways = $gws;
+           return $gws;
+        }, 99999);
+
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
@@ -3122,7 +3133,7 @@ EOF;
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $methods[] = WC_Gateway_Vipps::instance();
+        $methods[] = 'WC_Gateway_Vipps';
         return $methods;
     }
 

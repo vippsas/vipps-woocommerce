@@ -13,7 +13,6 @@ add_action( 'woocommerce_shipping_init', function () {
       if ("yes" == $gw->get_option('vcs_postnord'))   $methods['vipps_checkout_postnord'] = 'VippsCheckout_Shipping_Method_Postnord';
       if ("yes" == $gw->get_option('vcs_helthjem'))   $methods['vipps_checkout_helthjem'] = 'VippsCheckout_Shipping_Method_Helthjem';
       if ("yes" == $gw->get_option('vcs_porterbuddy'))$methods['vipps_checkout_porterbuddy'] = 'VippsCheckout_Shipping_Method_Porterbuddy';
-      if ("yes" == $gw->get_option('vcs_instabox'))   $methods['vipps_checkout_instabox'] = 'VippsCheckout_Shipping_Method_Instabox';
       if ("yes" == $gw->get_option('vcs_posti'))   $methods['vipps_checkout_posti'] = 'VippsCheckout_Shipping_Method_Posti';
 
       return $methods;
@@ -552,29 +551,6 @@ class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_M
 
 
 }
-
-class VippsCheckout_Shipping_Method_Instabox extends VippsCheckout_Shipping_Method {
-    public $id = 'vipps_checkout_instabox';
-    public $delivery_types = ['HOME_DELIVERY','PICKUP_POINT'];
-    public $brand = "INSTABOX";
-    public $no_type_needed = false;
-    public $default_delivery_method = 'HOME_DELIVERY';
-
-    // Only useable by Vipps Checkout
-    public function is_extended() {
-       return true;
-    }
-
-    // Called by the parent constructor before loading settings
-    function preinit() {
-        $this->defaulttitle = __( 'Instabox', 'woo-vipps' );
-        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
-        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
-    }
-
-
-}
-
 
 
 

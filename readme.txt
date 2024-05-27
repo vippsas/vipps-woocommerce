@@ -93,11 +93,10 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Removed support for Instabox in Vipps Checkout Shipping
+Fix an issue with addressline 2 for express checkout when using static shipping
 Fixed some untranslatable strings and updated information about reservation times
 Fixed some places where NOK were hard-coded in as currency.
-Fixed an issue that could impact sites where the callback from Vipps was blocked delaying order confirmations
-Added failsafe for certain situations where the session could be lost while computing shipping
-Added nocache-headers for nginx
 
 == Frequently Asked Questions ==
 
@@ -236,6 +235,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-05-27 version 2.0.12 =
+Removed support for Instabox in Vipps Checkout Shipping
 
 = 2024-05-21 version 2.0.11 =
 Fixed some utranslatable strings and changed MobilePay reservation time notices to 14 days

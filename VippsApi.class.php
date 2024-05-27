@@ -849,12 +849,6 @@ class VippsApi {
                $porterbuddy['origin'] = apply_filters('woo_vipps_porterbuddy_origin', $origin);
                $integrations['porterbuddy'] = $porterbuddy;
             }
-            if ($gw->get_option('vcs_instabox') == 'yes') {
-               $instabox = array();
-               $instabox['clientId'] = $gw->get_option('vcs_instabox_clientId');
-               $instabox['clientSecret'] = $gw->get_option('vcs_instabox_clientId');
-               $integrations['instabox'] = $instabox;
-            }
 
             if ($gw->get_option('vcs_helthjem') == 'yes') {
                $helthjem = array();

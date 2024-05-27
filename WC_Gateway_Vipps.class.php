@@ -748,16 +748,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
         $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
 
-        // Disclaimer for Vipps Checkout at release, IOK 2024-01-23
-        $disclaimer = ($payment_method_name == 'Vipps') ? "" : 
-             '<br><br><strong>' . __("NB! Checkout for MobilePay is currently in beta mode; Bank Transfer has limited availability", 'woo-vipps') . '</strong>';
-
         $checkoutfields = array(
                 'checkout_options' => array(
                     'title' => sprintf(__('Checkout', 'woo-vipps'), Vipps::CompanyName()),
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()) . $disclaimer,
+                    'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     ),
 
                 'vipps_checkout_enabled' => array(
@@ -882,30 +878,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 // Vipps checkout *shipping options* - extra shipping options that only work with Vipps Checkout
-                'vcs_instabox' => array(
-                        'title'       => __('Instabox', 'woo-vipps'),
-                        'label'       => sprintf(__('Support Instabox as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                        'class' => 'vcs_instabox vcs_main',
-                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_instabox'),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Instabox as a %1$s Shipping method.' ,'woo-vipps'), Vipps::CheckoutName()),
-                        'default'     => 'no'
-                    ),
-                'vcs_instabox_clientId' => array(
-                        'title' => __('Instabox Client Id', 'woo-vipps'),
-                        'class' => 'vippspw vcs_instabox vcs_depend',
-                        'type'        => 'password',
-                        'description' => __('The client id provided to you by Instabox','woo-vipps'),
-                        'default'     => '',
-                        ),
-                'vcs_instabox_clientSecret' => array(
-                        'title' => __('Instabox Client Secret', 'woo-vipps'),
-                        'class' => 'vippspw vcs_instabox vcs_depend',
-                        'type'        => 'password',
-                        'description' => __('Client secret provided to you by Instabox','woo-vipps'),
-                        'default'     => '',
-                        ),
-
                 'vcs_helthjem' => array(
                         'title'       => __('Helthjem', 'woo-vipps'),
                         'label'       => sprintf(__('Support Helthjem as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
@@ -941,6 +913,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
                 );
+
+       /* Support for *certain* external payment methods in Vipps Checkout. IOK 2024-05-27  */
+       $externals = [];
+       if (in_array('KCO_Gateway', Vipps::$installed_gateways) || in_array('WC_Gateway_Klarna_Payments', Vipps::$installed_gateways)) {
+           $externals['checkout_external_payments_klarna'] = array(
+                   'title' => __('Klarna', 'woo-vipps'),
+                   'label'       => __('Klarna', 'woo-vipps'),
+                   'type'        => 'checkbox',
+                   'class' => 'external_payments klarna',
+                   'description' => sprintf(__("Allow Klarna as an external payment method in %1\$s",'woo-vipps'), Vipps::CheckoutName()),
+                   'default'     => 'no',
+                   );
+       }
+       if (!empty($externals)) {
+           $external_payment_fields = [
+               'checkout_external_payment_title' => array(
+                       'title' => sprintf(__('External Payment Methods', 'woo-vipps'), Vipps::CheckoutName()),
+                       'type'  => 'title',
+                       'description' => sprintf(__("Allow certain external payment methods in %1\$s, returning control to WooCommerce for the order", 'woo-vipps'), Vipps::CheckoutName())
+                       )
+           ];
+           foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
+       }
      
 
         $mainfields = array(
@@ -1278,6 +1273,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        foreach($checkoutfields as $key=>$field) {
                $this->form_fields[$key] = $field;
        }
+
+
+       foreach($external_payment_fields as $key=>$field) {
+               $this->form_fields[$key] = $field;
+       }
+
+
+
        foreach($vipps_checkout_shipping_fields as $key=>$field) {
                $this->form_fields[$key] = $field;
        }
@@ -2866,11 +2869,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                     $shipping_rate->add_meta_data('Pickup Point', $pp['id']);
                     $shipping_rate->add_meta_data('Pickup Point Address', join(", ", $addr));
-                    if (isset($pp['instabox'])) {
-                       foreach(['serviceType', 'sortCode', 'availabilityToken'] as $key) {
-                           $shipping_rate->add_meta_data('Instabox ' . $key, $pp['instabox'][$key]);
-                       }
-                    }
                 }
             }
 
