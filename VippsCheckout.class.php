@@ -105,6 +105,23 @@ jQuery(document).ready(function () {
         }
     }
 
+    // Returns list of external payment methods - from Vipps id to gateway id. 
+    public function external_payment_methods() {
+       $available = array_keys(WC()->payment_gateways->get_available_payment_gateways());
+       $gw = WC_Gateway_Vipps::instance();
+       $ok = $gw->allow_external_payments_in_checkout();
+       if (!$ok) return [];
+       $possible = ['klarna' => ['kco', 'klarna_payments']]; // Only defined value at this point - klarna means either of these gateways (IOK 2024-05-28)
+       $externals = [];
+       foreach ($possible as $key => $gws) {
+         $on = $gw->get_option('checkout_external_payments_' . $key);
+         $active = array_intersect($gws, $available);
+         if ($on && !empty($active)) {
+           $externals[$key] = ['gw' => array_values($active)[0]];
+         }
+       }
+       return $externals;
+    }
 
     # Called in admin-post and will finalize a Vipps Checkout order + send the customer to the payment page.
     public function choose_other_gw () {
@@ -169,7 +186,8 @@ jQuery(document).ready(function () {
         $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
         # Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
         $assignuser = is_user_logged_in();
-        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
+
+        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,($paymentdetails['shippingDetails'] ?? []), $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
 
         # Now reset payment gateway and clear out the VC session
         $order->set_payment_method($gw);
@@ -230,7 +248,6 @@ jQuery(document).ready(function () {
             WC()->session->set('vipps_checkout_current_pending',false);
             WC()->session->set('vipps_address_hash', false);
         });
-
 
         // For Vipps Checkout - we need to know any time and as soon as the cart changes, so fold all the events into a single one. IOK 2021-08-24
         add_action( 'woocommerce_add_to_cart', function ($cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {

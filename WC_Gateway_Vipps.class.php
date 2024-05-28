@@ -707,6 +707,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $default_payment_method_name;
     }
 
+    // Returns true iff this is a store where Vipps will allow external payment methods.
+    // Currently this is only Finland, and only Klarna is supported. We need to call this like so because
+    // most of woocommerce will not be initialized when we need this info. IOK 2024-05-28
+    public function allow_external_payments_in_checkout() {
+        $store_location=  wc_get_base_location();
+        $store_country = $store_location['country'] ?? '';
+        return apply_filters('woo_vipps_allow_external_payment_methods', (get_woocommerce_currency() == "EUR" && $store_country == "FI"));
+    }
+
     public function init_form_fields() { 
         global $Vipps;
 
@@ -916,25 +925,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
        /* Support for *certain* external payment methods in Vipps Checkout. IOK 2024-05-27  */
        $externals = [];
-       if (in_array('KCO_Gateway', Vipps::$installed_gateways) || in_array('WC_Gateway_Klarna_Payments', Vipps::$installed_gateways)) {
-           $externals['checkout_external_payments_klarna'] = array(
-                   'title' => __('Klarna', 'woo-vipps'),
-                   'label'       => __('Klarna', 'woo-vipps'),
-                   'type'        => 'checkbox',
-                   'class' => 'external_payments klarna',
-                   'description' => sprintf(__("Allow Klarna as an external payment method in %1\$s",'woo-vipps'), Vipps::CheckoutName()),
-                   'default'     => 'no',
-                   );
-       }
-       if (!empty($externals)) {
-           $external_payment_fields = [
-               'checkout_external_payment_title' => array(
-                       'title' => sprintf(__('External Payment Methods', 'woo-vipps'), Vipps::CheckoutName()),
-                       'type'  => 'title',
-                       'description' => sprintf(__("Allow certain external payment methods in %1\$s, returning control to WooCommerce for the order", 'woo-vipps'), Vipps::CheckoutName())
-                       )
-           ];
-           foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
+       $external_payment_fields = [];
+       $allow_external_payments = $this->allow_external_payments_in_checkout();
+       if ($allow_external_payments) {
+           if (in_array('KCO_Gateway', Vipps::$installed_gateways) || in_array('WC_Gateway_Klarna_Payments', Vipps::$installed_gateways)) {
+               $externals['checkout_external_payments_klarna'] = array(
+                       'title' => __('Klarna', 'woo-vipps'),
+                       'label'       => __('Klarna', 'woo-vipps'),
+                       'type'        => 'checkbox',
+                       'class' => 'external_payments klarna',
+                       'description' => sprintf(__("Allow Klarna as an external payment method in %1\$s",'woo-vipps'), Vipps::CheckoutName()),
+                       'default'     => 'no',
+                       );
+           }
+           if (!empty($externals)) {
+               $external_payment_fields = [
+                   'checkout_external_payment_title' => array(
+                           'title' => sprintf(__('External Payment Methods', 'woo-vipps'), Vipps::CheckoutName()),
+                           'type'  => 'title',
+                           'description' => sprintf(__("Allow certain external payment methods in %1\$s, returning control to WooCommerce for the order", 'woo-vipps'), Vipps::CheckoutName())
+                           )
+               ];
+               foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
+           }
        }
      
 

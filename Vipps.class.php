@@ -227,7 +227,7 @@ class Vipps {
         // because it is self-updating or because it has been deactivated just now or something, we won't have access to it.
         // Therefore test it first. IOK 2022-12-08
         $gw = $this->gateway();
- 
+
         // This is a developer-mode level feature because flock() is not portable. This ensures callbacks and shopreturns do not
         // simultaneously update the orders, in particular not the express checkout order lines wrt shipping. IOK 2020-05-19
         if ($gw && $gw->get_option('use_flock') == 'yes') {
@@ -2160,7 +2160,7 @@ EOF;
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
-        /* Try to get a list of all installed gateways *before* we instantiate ourselves IOK 2024-05-27 */
+        /* Try to get a list of all installed gateways *before* we instantiate our own IOK 2024-05-27 */
         add_filter( 'woocommerce_payment_gateways', function ($gws) {
            if (!empty(Vipps::$installed_gateways)) return Vipps::$installed_gateways;
            Vipps::$installed_gateways = $gws;
