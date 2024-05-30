@@ -76,7 +76,7 @@ jQuery(document).ready(function ($) {
     }
 
     function toggleMobilePayReservationsWarning(brand, checked) {
-      const note = __('Note: Reservations in MobilePay will be cancelled after 7 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce');
+      const note = __('Note: Reservations in MobilePay will be cancelled after 14 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce');
 
       const brandInput = $('#woocommerce_vipps_recurring_brand');
       const fieldset = brandInput.parent();
