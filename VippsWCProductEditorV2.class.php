@@ -161,7 +161,87 @@ class VippsWCProductEditorV2
             ]
         );
 
-      
+        // Buy now section
+        $buy_now_section = $gr->add_section(
+            [
+                'id' => 'woo-vipps-buy-now-section',
+                'order' => 2,
+                'attributes' => [
+                    'title' => __("Buy Now Button", 'woo-vipps'),
+                ],
+            ]
+        );
+        // This block is shown if the product supports express checkout and the global setting is set to 'some'
+        $buy_now_section->add_block(
+            [
+                'id' => 'woo-vipps-buy-now-button-some',
+                'blockName' => 'woocommerce/product-checkbox-field',
+                'order' => 1,
+                'hideConditions' => array(
+                    array(
+                        'expression' => 'editedProduct.vipps_global_singleproductexpress !== "some"',
+                    ),
+                ),
+                'attributes' => [
+                    'label' => sprintf(__('Add %1$s Buy Now Button', 'woo-vipps'), $payment_method_name),
+                    'property' => 'meta_data._vipps_buy_now_button',
+                    'help' => __('Add a Buy Now button to this product', 'woo-vipps'),
+                    'disabled' => false,
+                    'tooltip' => sprintf(__('Add a \'Buy now with %1$s\'-button to this product', 'woo-vipps'), $payment_method_name),
+                ],
+            ]
+        );
+
+        // This block is shown if the global setting is set to 'all' and the product supports express checkout
+        $buy_now_section->add_block(
+            [
+                'id' => 'woo-vipps-buy-now-button-all-not-supported',
+                'blockName' => 'woocommerce/product-section-description',
+                'order' => 1,
+                'hideConditions' => array(
+                    array(
+                        'expression' => 'editedProduct.vipps_global_singleproductexpress !== "all" || editedProduct.vipps_product_can_be_bought_with_express_checkout === true',
+                    ),
+                ),
+                'attributes' => [
+                    'content' => sprintf(__("The %1\$s settings are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $payment_method_name) . ' ' . __("This product does not support express checkout, and so will not have a Buy Now button.", 'woo-vipps')
+                ],
+            ]
+        );
+        // This block is shown if the global setting is set to 'all' and the product supports express checkout
+        $buy_now_section->add_block(
+            [
+                'id' => 'woo-vipps-buy-now-button-all-supported',
+                'blockName' => 'woocommerce/product-section-description',
+                'order' => 1,
+                'hideConditions' => array(
+                    array(
+                        'expression' => 'editedProduct.vipps_global_singleproductexpress !== "all" || editedProduct.vipps_product_can_be_bought_with_express_checkout === false',
+                    ),
+                ),
+                'attributes' => [
+                    'content' => sprintf(__("The %1\$s settings are currently set up so all products that can be bought with Express Checkout will have a Buy Now button.", 'woo-vipps'), $payment_method_name) . ' ' . __("This product supports express checkout, and so will have a Buy Now button.", 'woo-vipps')
+                ],
+            ]
+        );
+
+        // This block is hidden if the product does not support express checkout
+        $buy_now_section->add_block(
+            [
+                'id' => 'woo-vipps-buy-now-button-none',
+                'blockName' => 'woocommerce/product-section-description',
+                'order' => 1,
+                'hideConditions' => array(
+                    array(
+                        'expression' => 'editedProduct.vipps_global_singleproductexpress !== "none"',
+                    ),
+                ),
+                'attributes' => [
+                    'content' => sprintf(__("The %1\$s settings are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), $payment_method_name),
+                ],
+            ]
+        );
+
 
     }
 
