@@ -98,6 +98,11 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
         if($is_version_supported && $is_product_editor_v2_enabled) {
             // Load the new blocks
             require_once(dirname(__FILE__) .  '/admin/blocks/register-woo-blocks.php');
+
+            // Load the V2 product editor
+            require_once(dirname(__FILE__) .  '/VippsWCProductEditorV2.class.php');
+            VippsWCProductEditorV2::register_hooks();
+
         }
     });
 }
