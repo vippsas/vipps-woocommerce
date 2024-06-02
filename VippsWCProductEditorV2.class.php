@@ -69,7 +69,7 @@ class VippsWCProductEditorV2
             // Inject some extra data to the product object when it is returned from the REST API.
             // This is useful for the product editor blocks, especially when we want to show/hide blocks based on the product's properties and/or the global settings.
             add_filter('woocommerce_rest_prepare_product_object', function ($response, $product) {
-                if (empty ($response->data)) {
+                if (empty($response->data)) {
                     return $response;
                 }
                 $gw = $this->gateway();
@@ -85,7 +85,7 @@ class VippsWCProductEditorV2
 
             // Initialize the Vipps product tab
             add_action('rest_api_init', function () {
-                add_action('woocommerce_block_template_area_product-form_after_add_block_inventory', array ($this, 'init_woo_vipps_product_tab'));
+                add_action('woocommerce_block_template_area_product-form_after_add_block_inventory', array($this, 'init_woo_vipps_product_tab'));
             });
         }
     }
@@ -108,7 +108,61 @@ class VippsWCProductEditorV2
             ]
         );
 
-    
+        // Badges section
+        $badges_section = $gr->add_section(
+            [
+                'id' => 'woo-vipps-badges-section',
+                'order' => 1,
+                'attributes' => [
+                    'title' => __("On-site messaging badge", 'woo-vipps'),
+                    'description' => __("On-site messaging badges are small badges that can be added to your product pages to show that you accept Vipps payments.", 'woo-vipps'),
+                ],
+            ]
+        );
+        $badges_section->add_block(
+            [
+                'id' => 'woo-vipps-show-badge',
+                'blockName' => 'woocommerce/product-select-field',
+                'order' => 2,
+                'attributes' => [
+                    'label' => __('Override default settings', 'woo-vipps'),
+                    'property' => 'meta_data._vipps_show_badge',
+                    'autoFocus' => false,
+                    'help' => __('Choose a badge to show on this product', 'woo-vipps'),
+                    'options' => array(
+                        ['value' => '', 'label' => __('Default setting', 'woo-vipps')],
+                        ['value' => 'none', 'label' => __('No badge', 'woo-vipps')],
+                        ['value' => 'white', 'label' => __('White', 'woo-vipps')],
+                        ['value' => 'grey', 'label' => __('Grey', 'woo-vipps')],
+                        ['value' => 'orange', 'label' => __('Orange', 'woo-vipps')],
+                        ['value' => 'light-orange', 'label' => __('Light Orange', 'woo-vipps')],
+                        ['value' => 'purple', 'label' => __('Purple', 'woo-vipps')],
+                    ),
+                ],
+            ]
+        );
+
+        $badges_section->add_block(
+            [
+                'id' => 'woo-vipps-overrides-later',
+                'blockName' => 'woocommerce/product-select-field',
+                'order' => 3,
+                'attributes' => [
+                    'label' => sprintf(__('Override %1$s Later', 'woo-vipps'), $payment_method_name),
+                    'property' => 'meta_data._vipps_badge_pay_later',
+                    'autoFocus' => false,
+                    'help' => __('Choose if this product should use Vipps Later', 'woo-vipps'),
+                    'options' => array(
+                        ['value' => '', 'label' => __('Default setting', 'woo-vipps')],
+                        ['value' => 'later', 'label' => sprintf(__('Use %1$s Later', 'woo-vipps'), $payment_method_name)],
+                        ['value' => 'no', 'label' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), $payment_method_name)],
+                    ),
+                ],
+            ]
+        );
+
+      
+
     }
 
 
