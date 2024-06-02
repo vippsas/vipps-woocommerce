@@ -242,9 +242,30 @@ class VippsWCProductEditorV2
             ]
         );
 
+        // Shareable links section
+        $qradmin = admin_url("/edit.php?post_type=vipps_qr_code");
+        $shareables_section = $gr->add_section(
+            [
+                'id' => 'woo-vipps-shareable-links-section',
+                'order' => 3,
+                'attributes' => [
+                    'title' => __("Shareable links", 'woo-vipps'),
+                    'description' => sprintf(__('Shareable links are links you can share externally on banners or other places that when followed will start %1$s of this product immediately. Maintain these links here for this product.', 'woo-vipps'), $payment_method_name),
+                ],
+            ]
+        );
+        $shareables_section->add_block(
+            [
+                'id' => 'woo-vipps-shareable-links',
+                'blockName' => 'woo-vipps/product-shareable-link',
+                'order' => 1,
+                'attributes' => [
+                    'property' => 'meta_data._vipps_shareable_links',
+                    'title' => sprintf(__('Shareable links are links you can share externally on banners or other places that when followed will start %1$s of this product immediately. Maintain these links here for this product.', 'woo-vipps'), Vipps::ExpressCheckoutName()),
+                    'message' => sprintf(__("To create a QR code for your shareable link, we recommend copying the URL and then using the <a href='%2\$s'>%1\$s QR Api</a>", 'woo-vipps'), "Vipps", $qradmin),
+                ],
+            ]
+        );
 
     }
-
-
-
 }
