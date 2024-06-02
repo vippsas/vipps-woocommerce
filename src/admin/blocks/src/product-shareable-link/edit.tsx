@@ -52,6 +52,7 @@ export function Edit( {
 	// Get variations
 	const [ variations = [] ] =
 		useProductEntityProp< number[] >( 'variations' );
+	const shouldEnableVariations = variations.length > 0;
 	const [ productId ] = useProductEntityProp< string >( 'id' );
 	const blockProps = useWooBlockProps( attributes );
 	const [ metadata = [], setMetadata ] =
@@ -60,8 +61,12 @@ export function Edit( {
 		useProductEntityProp< string >( 'share_link_nonce' );
 
 	// Because of they way meta_data is stored, we need to filter any metadata that starts with _vipps_shareable_links
-	const links: MetadataShareableLink[] = metadata.filter( ( meta ) =>
-		meta.key.startsWith( '_vipps_shareable_links' )
+	const links: MetadataShareableLink[] = metadata.filter(
+		( meta ) =>
+			// Keep only the metadata that starts with _vipps_shareable_links
+			meta.key.startsWith( '_vipps_shareable_links' ) &&
+			// Keep only the metadata that has a value, if the value is undefined, it means it was just deleted
+			meta.value !== undefined
 	);
 
 	// Some state to manage the "loading/copying" state of the copy button, this is initialized as null, and set to the URL being copied when the button is clicked
@@ -129,7 +134,6 @@ export function Edit( {
 				msg: string;
 			};
 			// Append this new shareable link to the list of existing links
-			console.log( result );
 			if ( result.ok ) {
 				setMetadata( [
 					...metadata,
@@ -142,7 +146,7 @@ export function Edit( {
 							url: result.url,
 							variant: result.variant,
 						},
-						id: null,
+						id: -1,
 					},
 				] );
 			} else {
@@ -161,12 +165,37 @@ export function Edit( {
 		}
 	}
 
+	/**
+	 * Removes a shareable link from the metadata.
+	 *
+	 * @param key - The key of the shareable link to remove.
+	 */
 	function removeShareableLink( key: string ) {
-		const newMetadata = metadata.filter( ( meta ) => {
-			return (
-				( meta.value as Metadata | MetadataShareableLink ).key !== key
-			);
-		} );
+		const newMetadata = metadata.map(
+			( meta: Metadata | MetadataShareableLink ) => {
+				// Since we keep 2 separate keys for every 1 shareable link, we need to check for both and remove them
+				// Key 1
+				const isShareableLinksMeta =
+					meta.key.startsWith( '_vipps_shareable_links' ) &&
+					meta.value?.key == key;
+
+				// Key 2
+				const isShareableLinkSpecificKeyMeta =
+					meta.key === '_vipps_shareable_links' &&
+					meta?.value?.key == key;
+
+				// Remove the value if it matches the key, this will cause the meta to be deleted
+				if ( isShareableLinksMeta || isShareableLinkSpecificKeyMeta ) {
+					return {
+						...meta,
+						value: undefined,
+					};
+				}
+
+				return meta;
+			}
+		);
+		// Update the metadata
 		setMetadata( newMetadata );
 	}
 
@@ -175,9 +204,9 @@ export function Edit( {
 			<span>{ attributes.title }</span>
 			<div>
 				<div className="create-link-section">
-					{ variations.length > 0 && (
+					{ shouldEnableVariations && (
 						<SelectControl
-							className='vipps-sharelink-variant'
+							className="vipps-sharelink-variant"
 							value={ variant?.toString() }
 							onChange={ ( value ) =>
 								setVariant( parseInt( value, 10 ) )
@@ -208,7 +237,7 @@ export function Edit( {
 						{
 							key: 'variant',
 							label: __( 'Variation', 'woo-vipps' ),
-							visible: variations.length > 0,
+							visible: shouldEnableVariations,
 						},
 						{
 							key: 'link',
@@ -217,13 +246,15 @@ export function Edit( {
 						{
 							key: 'actions',
 							label: __( 'Actions', 'woo-vipps' ),
+							cellClassName: 'table-actions-col',
 						},
-					] }
+					].filter( ( header ) => header.visible !== false ) } // Filter out any headers that are not visible
 					rows={ links.map( ( item ) => {
 						return [
 							{
 								key: 'variant',
 								display: item.value.variant,
+								visible: shouldEnableVariations,
 							},
 							{
 								key: 'link',
@@ -270,7 +301,7 @@ export function Edit( {
 									</div>
 								),
 							},
-						];
+						].filter(row => row.visible !== false); // Filter out any rows that are not visible
 					} ) }
 				/>
 			</div>
