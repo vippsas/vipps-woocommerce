@@ -64,6 +64,7 @@ class VippsWCProductEditorV2
 
     public function init()
     {
+        add_action('wp_ajax_vipps_generate_unused_shareable_meta_key', array($this, 'ajax_vipps_generate_unused_shareable_meta_key'));
         // Only enable the product editor extensions when the payment method is Vipps, since MobilePay is not supported as of now.
         if (Vipps::instance()->get_payment_method_name() == "Vipps") {
             // Inject some extra data to the product object when it is returned from the REST API.
@@ -79,7 +80,7 @@ class VippsWCProductEditorV2
                 // Check if express checkout is enabled at all
                 $response->data['vipps_global_singleproductexpress'] = $gw->get_option('singleproductexpress');
                 // Inject a nonce for product editor's shareable links
-                $response->data['share_link_nonce'] = wp_create_nonce('share_link_nonce');
+                $response->data['vipps_share_link_nonce'] = wp_create_nonce('vipps_share_link_nonce');
                 return $response;
             }, 10, 2);
 
@@ -88,6 +89,52 @@ class VippsWCProductEditorV2
                 add_action('woocommerce_block_template_area_product-form_after_add_block_inventory', array($this, 'init_woo_vipps_product_tab'));
             });
         }
+    }
+
+    // This creates and returns an URL and a key that can be used to buy a product directly. The metadata key is stored in the product's metadata by the product editor.
+    // Only products with these links can be bought like this; both to avoid having to create spurious orders from griefers and to ensure
+    // that a link can be retracted if it has been printed or shared in emails with a specific price. IOK 2018-10-03
+    public function ajax_vipps_generate_unused_shareable_meta_key()
+    {
+        check_ajax_referer('vipps_share_link_nonce', 'vipps_share_shareable_link_nonce');
+        if (!current_user_can('manage_woocommerce')) {
+            echo json_encode(array('ok' => 0, 'msg' => __('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
+            wp_die();
+        }
+        $prodid = intval($_POST['prodid']);
+        $varid = intval($_POST['varid']);
+
+        $product = '';
+        $variant = '';
+        $varname = '';
+        try {
+            $product = wc_get_product($prodid);
+            $variant = $varid ? wc_get_product($varid) : null;
+            $varname = $variant ? $variant->get_id() : '';
+            if ($variant && $variant->get_sku()) {
+                $varname .= ":" . sanitize_text_field($variant->get_sku());
+            }
+        } catch (Exception $e) {
+            echo json_encode(array('ok' => 0, 'msg' => $e->getMessage()));
+            wp_die();
+        }
+        if (!$product) {
+            echo json_encode(array('ok' => 0, 'msg' => __('The product doesn\'t exist', 'woo-vipps')));
+            wp_die();
+        }
+
+        // Find a free shareable link by generating a hash and testing it. Normally there won't be any collisions at all.
+        $key = '';
+        while (!$key) {
+            global $wpdb;
+            $key = substr(sha1(mt_rand() . ":" . $prodid . ":" . $varid), 0, 8);
+            $existing = $wpdb->get_row("SELECT post_id from {$wpdb->prefix}postmeta where meta_key='_vipps_shareable_link_$key' limit 1", 'ARRAY_A');
+            if (!empty($existing))
+                $key = '';
+        }
+        $url = add_query_arg('pr', $key, Vipps::instance()->buy_product_url());
+        echo json_encode(array('ok' => 1, 'msg' => 'ok', 'product_id' => $prodid, 'variant' => $varname, 'key' => $key, 'url' => $url));
+        wp_die();
     }
 
 

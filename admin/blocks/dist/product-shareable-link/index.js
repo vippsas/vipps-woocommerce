@@ -49,11 +49,13 @@ function Edit({
 }) {
   // Get variations
   const [variations = []] = (0,_woocommerce_product_editor__WEBPACK_IMPORTED_MODULE_5__.__experimentalUseProductEntityProp)('variations');
+  // Add an empty value to the variations array to represent the "None" option
+  const variationsWithEmptyValue = ['', ...variations];
   const shouldEnableVariations = variations.length > 0;
   const [productId] = (0,_woocommerce_product_editor__WEBPACK_IMPORTED_MODULE_5__.__experimentalUseProductEntityProp)('id');
   const blockProps = (0,_woocommerce_block_templates__WEBPACK_IMPORTED_MODULE_1__.useWooBlockProps)(attributes);
   const [metadata = [], setMetadata] = (0,_woocommerce_product_editor__WEBPACK_IMPORTED_MODULE_5__.__experimentalUseProductEntityProp)('meta_data');
-  const [shareLinkNonce] = (0,_woocommerce_product_editor__WEBPACK_IMPORTED_MODULE_5__.__experimentalUseProductEntityProp)('share_link_nonce');
+  const [shareLinkNonce] = (0,_woocommerce_product_editor__WEBPACK_IMPORTED_MODULE_5__.__experimentalUseProductEntityProp)('vipps_share_link_nonce');
 
   // Because of they way meta_data is stored, we need to filter any metadata that starts with _vipps_shareable_links
   const links = metadata.filter(meta =>
@@ -92,12 +94,17 @@ function Edit({
     await new Promise(resolve => setTimeout(resolve, 2500));
     setIsCopyingURLValue(null);
   }
+
+  /**
+   * Creates a new shareable link for the current product and variant.
+   * This function only retrieves a new shareable link from the server, and then appends the shareable link to the metadata.
+   */
   async function createShareableLink() {
     try {
       setIsLoading(true);
       const params = new URLSearchParams({
-        action: 'vipps_create_shareable_link',
-        vipps_share_sec: shareLinkNonce,
+        action: 'vipps_generate_unused_shareable_meta_key',
+        vipps_share_shareable_link_nonce: shareLinkNonce,
         prodid: productId,
         varid: variant?.toString() || '0'
       });
@@ -118,16 +125,26 @@ function Edit({
       const result = await response.json();
       // Append this new shareable link to the list of existing links
       if (result.ok) {
-        setMetadata([...metadata, {
+        setMetadata([...metadata,
+        // Add 2 separate keys for the same shareable link, one contatains the url, and the other contains the key
+        {
           key: '_vipps_shareable_links',
           value: {
             product_id: productId,
-            variation_id: variant,
+            variation_id: result.variation_id,
             key: result.key,
             url: result.url,
             variant: result.variant
           },
-          id: -1
+          id: -1 // This is a new meta, so it doesn't have an ID yet; WP will assign one when saved
+        }, {
+          key: '_vipps_shareable_link_' + result.key,
+          value: {
+            product_id: productId,
+            variation_id: result.variation_id,
+            key: result.key
+          },
+          id: -1 // This is a new meta, so it doesn't have an ID yet; WP will assign one when saved
         }]);
       } else {
         throw new Error(result.msg);
@@ -175,9 +192,12 @@ function Edit({
   }, shouldEnableVariations && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_3__.SelectControl, {
     className: "vipps-sharelink-variant",
     value: variant?.toString(),
-    onChange: value => setVariant(parseInt(value, 10)),
+    onChange: value => {
+      var _parseInt;
+      return setVariant((_parseInt = parseInt(value, 10)) !== null && _parseInt !== void 0 ? _parseInt : null);
+    },
     label: (0,_wordpress_i18n__WEBPACK_IMPORTED_MODULE_4__.__)('Variation', 'woo-vipps'),
-    options: variations.map(variation => {
+    options: variationsWithEmptyValue.map(variation => {
       return {
         label: variation.toString(),
         value: variation.toString()
