@@ -82,7 +82,7 @@ interface SelectFormFieldProps {
   /**
    * The options for the select form field.
    */
-  options: string[];
+  options: { label: string; value: string }[];
 }
 
 /**
@@ -100,8 +100,8 @@ export function SelectFormField({ name, titleKey, labelKey, descriptionKey, opti
       <div className="vipps-mobilepay-react-col">
         <WPSelect id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} required>
           {options.map((option) => (
-            <WPOption key={option} value={option}>
-              {option}
+            <WPOption key={option.value} value={option.value}>
+              {option.label}
             </WPOption>
           ))}
         </WPSelect>
