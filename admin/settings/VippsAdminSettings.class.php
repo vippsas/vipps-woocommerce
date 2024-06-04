@@ -151,8 +151,20 @@ class VippsAdminSettings
             'next_step' => __('Next step', 'woo-vipps'),
             'previous_step' => __('Previous step', 'woo-vipps'),
         );
+
+        /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
+        /* Also we need to run init_form_fields here, because for whatever reason the
+         * first time it is called, it does wrong things in this context. IOK 2024-06-04 */
+        $gw->init_form_fields();
+        $settings = $gw->settings;
+        if (!$gw->allow_external_payments_in_checkout()) {
+           unset($settings['checkout_external_payments_klarna']);
+        } else {
+            // nop right now
+        }
+
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactTranslations', array_merge($gw->form_fields, $commonTranslations));
-        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $gw->settings);
+        wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactOptions', $settings);
         wp_localize_script('vipps-mobilepay-react-ui', 'VippsMobilePayReactMetadata', $metadata);
 
         echo "</div>";

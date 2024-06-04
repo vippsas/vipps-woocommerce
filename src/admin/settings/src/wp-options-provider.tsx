@@ -21,6 +21,13 @@ interface WPContext {
   getOption: (option: string) => string;
 
   /**
+   * Determines if a WordPress option exists
+   * @param option - The name of the option.
+   * @returns true iff the option exists
+   */
+  hasOption: (option: string) => boolean;
+
+  /**
    * Sets the values of all options
    * @param options - The options
    * @returns void
@@ -69,8 +76,26 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
     // retrieve the current value for this option key from the values
     const currentValue = values[key];
     // try to retrieve the default value for this option key from the translations
-    const defaultValue = gettext(key + '.default');
+    // IOK 2024-06-04 a bit hackish: The translations store the form fields from the gateway,
+    // one of these is the default value of the setting. If the setting doesn't exist, gettext
+    // will just return the key used to retrieve it. But this is encapsulated here, so nbd.
+    const defaultkey = key + '.default';
+    const defaultExists = gettext(defaultkey);
+    const defaultValue = (defaultExists != defaultkey) ? defaultExists : null;
     return currentValue ?? defaultValue ?? '';
+  }
+
+  // True if the option actually exists in the settings IOK 2024-06-04
+  function hasOption(key: string): boolean {
+      // This would be a setting actually stored by the user
+      let ok = values.hasOwnProperty(key); 
+      // see getOption to see what is going on here IOK 2024-06-04
+      if (!ok) {
+          const defaultkey = key + '.default';
+          const defaultExists = gettext(defaultkey);
+          return defaultExists != defaultkey;
+      }
+      return true;
   }
 
   // Set the value of an option in the context.
@@ -130,6 +155,7 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
       value={{
         setOption,
         getOption,
+        hasOption,
         setOptions,
         submitChanges
       }}

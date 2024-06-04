@@ -9,11 +9,12 @@ import { UnsafeHtmlText } from '../unsafe-html-text';
  * @returns The rendered checkout options tab.
  */
 export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
-  const { getOption } = useWP();
+  const { getOption, hasOption } = useWP();
 
   const showPorterbuddy = getOption('vcs_porterbuddy') === 'yes';
-  const showInstabox = getOption('vcs_instabox') === 'yes';
   const showHelthjem = getOption('vcs_helthjem') === 'yes';
+  const showExternalKlarna = hasOption('checkout_external_payments_klarna');
+  const showExternals = (showExternalKlarna);
 
   return (
     <div>
@@ -69,6 +70,21 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         descriptionKey="noContactFields.description"
       />
 
+      {showExternals && (
+        <>
+         <h3 className="vipps-mobilepay-react-trab-description">{gettext('checkout_external_payment_title.title')}</h3>
+         <p>{gettext('checkout_external_payment_title.description')}</p>
+         {showExternalKlarna && 
+           <CheckboxFormField
+             name="checkout_external_payments_klarna"
+             titleKey="checkout_external_payments_klarna.title"
+             labelKey="checkout_external_payments_klarna.label"
+             descriptionKey="checkout_external_payments_klarna.description"
+           />
+         }
+        </>
+       )}
+
       <h3 className="vipps-mobilepay-react-tab-description">{gettext('checkout_shipping.title')}</h3>
       <p>{gettext('checkout_shipping.description')}</p>
 
@@ -120,35 +136,6 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
             name="vcs_porterbuddy_phoneNumber"
             titleKey="vcs_porterbuddy_phoneNumber.title"
             descriptionKey="vcs_porterbuddy_phoneNumber.description"
-          />
-        </>
-      )}
-
-      {/* Renders a checkbox to enable Instabox */}
-      <CheckboxFormField
-        name="vcs_instabox"
-        titleKey="vcs_instabox.title"
-        descriptionKey="vcs_instabox.description"
-        labelKey="vcs_instabox.label"
-      />
-
-      {/* Display Instabox input fields if Instabox is enabled */}
-      {showInstabox && (
-        <>
-          {/* Renders a text input field for the Instabox Client Id */}
-          <InputFormField
-            asterisk
-            name="vcs_instabox_clientId"
-            titleKey="vcs_instabox_clientId.title"
-            descriptionKey="vcs_instabox_clientId.description"
-          />
-
-          {/* Renders a text input field for the Instabox Client Secret */}
-          <InputFormField
-            asterisk
-            name="vcs_instabox_clientSecret"
-            titleKey="vcs_instabox_clientSecret.title"
-            descriptionKey="vcs_instabox_clientSecret.description"
           />
         </>
       )}
