@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.10
-Stable tag: 2.0.10
+Version: 2.1.0
+Stable tag: 2.1.0
 Requires at least: 4.7
-Tested up to: 6.5.0
+Tested up to: 6.5.4
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.8.2
+WC tested up to: 8.9.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -36,8 +36,8 @@ With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete che
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
 
-=== Mobilepay Reservations are currently for 7 days ===
-When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 7 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+=== Mobilepay Reservations are currently for 14 days ===
+When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 14 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
 For details, please read the [developer FAQ](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#reserve-and-capture-faq).
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to "Completed" as is the standard WooCommerce rule.
@@ -93,10 +93,12 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Removed support for Instabox in Vipps Checkout Shipping
+Added support for external payment methods in some markets
+Fix an issue with addressline 2 for express checkout when using static shipping
+Fixed some untranslatable strings and updated information about reservation times
 Fixed some places where NOK were hard-coded in as currency.
-Fixed an issue that could impact sites where the callback from Vipps was blocked delaying order confirmations
-Added failsafe for certain situations where the session could be lost while computing shipping
-Added nocache-headers for nginx
+Changed gateway registering to use class name instead of instantiated objects to prevent unintended breakage
 
 == Frequently Asked Questions ==
 
@@ -236,6 +238,15 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
+= 2024-06-05 version 2.1.0 =
+Removed support for Instabox in Vipps Checkout Shipping
+Added support for external payment methods in some markets
+Changed gateway registering to use class name instead of instantiated objects to prevent unintended breakage
+
+
+= 2024-05-21 version 2.0.11 =
+Fixed some utranslatable strings and changed MobilePay reservation time notices to 14 days
+
 = 2024-04-22 version 2.0.10 =
 Added nocache-headers for nginx
 Fixed an issue that could delay order confirmations in rare situations
@@ -253,7 +264,7 @@ Minor updates and language
 
 = 2024-02-19 version 2.0.6 =
 Made sure the filters for the_title on the checkout page works even with too few arguments
-Added notice and warning for MobilePay that capture must be done within 7 days
+Added notice and warning for MobilePay that capture must be done within 14 days
 
 = 2024-01-25 version 2.0.5 =
 Add workaround for Orderline issue with Checkout

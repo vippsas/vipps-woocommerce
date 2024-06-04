@@ -37,9 +37,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {
+    private static $instance = null;
+
+    /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
+    public static $installed_gateways = [];
+
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
-    private static $instance = null;
     private $countrymap = null;
     // Used to provide the order in a callback to the session handler etc. IOK 2019-10-21
     public $callbackorder = 0;
@@ -105,8 +109,24 @@ class Vipps {
         add_action('init',array($Vipps,'init'));
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
+        add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
     }
 
+    // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
+    public function payment_gateway_filter ($gateways) {
+        if (is_checkout_pay_page()) {
+            $orderid = absint(get_query_var( 'order-pay')); 
+            $order = $orderid ? wc_get_order($orderid) : null;
+            if (is_a($order, 'WC_Order')) {
+               $isavipps = $order->get_meta('_vipps_init_timestamp');
+               // Existing override that allows repayment. IOK 2024-06-04
+               $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
+               $allow_repayment = $isavipps ? apply_filters('woo_vipps_allow_repayment', $allow_repayment, $order) : true;
+               if ($isavipps && !$allow_repayment) unset($gateways['vipps']);
+            }
+        }
+        return $gateways;
+    } 
 
     // Get the singleton WC_GatewayVipps instance
     public function gateway() {
@@ -210,7 +230,7 @@ class Vipps {
         // because it is self-updating or because it has been deactivated just now or something, we won't have access to it.
         // Therefore test it first. IOK 2022-12-08
         $gw = $this->gateway();
- 
+
         // This is a developer-mode level feature because flock() is not portable. This ensures callbacks and shopreturns do not
         // simultaneously update the orders, in particular not the express checkout order lines wrt shipping. IOK 2020-05-19
         if ($gw && $gw->get_option('use_flock') == 'yes') {
@@ -1169,7 +1189,7 @@ jQuery('a.webhook-adder').click(function (e) {
     public function admin_enqueue_scripts($hook) {
         wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
         $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-        $this->vippsJSConfig['reservationWarning'] = __("Note: Reservations will be cancelled after 7 days. Remember to ship and fulfill your orders.", 'woo-vipps');
+        $this->vippsJSConfig['reservationWarning'] = __("Note: Reservations will be cancelled after 14 days. Remember to ship and fulfill your orders.", 'woo-vipps');
 
         wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
         wp_enqueue_script('vipps-admin');
@@ -1229,7 +1249,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 if (in_array($order->get_status(), ['on-hold', 'processing'])) {
                     if (! $order->get_meta('_vipps_captured')) {
                         // IOK 2024-02-16 temporarily add notice about 7 day limit of reservations for Mobile Pay
-                        $this->add_vipps_admin_notice("<div class='woo-vipps-warning'>" . __("Note: Reservations will be cancelled after 7 days. Remember to ship and fulfill your orders.", 'woo-vipps') . "</div>",'warning', '', 'reserve-warning');
+                        $this->add_vipps_admin_notice("<div class='woo-vipps-warning'>" . __("Note: Reservations will be cancelled after 14 days. Remember to ship and fulfill your orders.", 'woo-vipps') . "</div>",'warning', '', 'reserve-warning');
                     }
                 }
             }
@@ -2163,6 +2183,13 @@ EOF;
         /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
         add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
 
+        /* Try to get a list of all installed gateways *before* we instantiate our own IOK 2024-05-27 */
+        add_filter( 'woocommerce_payment_gateways', function ($gws) {
+           if (!empty(Vipps::$installed_gateways)) return Vipps::$installed_gateways;
+           Vipps::$installed_gateways = $gws;
+           return $gws;
+        }, 99999);
+
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
         add_action( 'woocommerce_api_vipps_shipping_details', array($this,'vipps_shipping_details_callback'));
@@ -2714,8 +2741,7 @@ EOF;
              $defaultdata['postalCode'] = $countries->get_base_postcode();
              $defaultdata['postCode'] =   $countries->get_base_postcode();
              $defaultdata['addressLine1'] = $countries->get_base_address();
-             // Not normally used, but certain stores may use it for whatever reason IOK 2023-10-10
-             $defaultdata['addressLine2'] = $countries->get_base_address_2();
+             // We do not use addressLine2 in default addreses, since it is not used for shipping calculations. IOK 2024-05-21
              $addressok=true;
          }
          return $defaultdata;
@@ -3164,7 +3190,7 @@ EOF;
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $methods[] = WC_Gateway_Vipps::instance();
+        $methods[] = 'WC_Gateway_Vipps';
         return $methods;
     }
 

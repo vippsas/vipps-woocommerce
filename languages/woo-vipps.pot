@@ -2025,7 +2025,7 @@ msgstr ""
 
 #: Vipps.class.php:1152 Vipps.class.php:1210
 msgid ""
-"Note: Reservations will be cancelled after 7 days. Remember to ship and "
+"Note: Reservations will be cancelled after 14 days. Remember to ship and "
 "fulfill your orders."
 msgstr ""
 

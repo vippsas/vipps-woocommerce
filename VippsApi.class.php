@@ -268,7 +268,7 @@ class VippsApi {
                 } else {
                     $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
-                $taxpercentage = round($taxpercentage);
+                $taxpercentage = abs(round($taxpercentage));
                 $unitInfo = [];
                 $orderline['name'] = $order_item->get_name();
                 $orderline['id'] = strval($prodid);
@@ -286,6 +286,27 @@ class VippsApi {
                 $orderline['isShipping'] = false;
                 $orderlines[] = $orderline;
             }
+
+            foreach($order->get_items('fee') as $key=>$order_item) {
+                $orderline = [];
+                $totalNoTax = $order_item->get_total();
+                $tax = $order_item->get_total_tax();
+                $total = $tax+$totalNoTax;
+                $quantity = 1;
+                $taxpercentage = (($total - $totalNoTax) / $totalNoTax)*100;
+                $taxpercentage = abs(round($taxpercentage));
+                $unitInfo = [];
+                $orderline['name'] = $order_item->get_name();
+                $orderline['id'] = substr(sanitize_title($orderline['name']), 0, 254);
+                $orderline['totalAmount'] = round($total*100);
+                $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
+                $orderline['totalTaxAmount'] = round($tax*100);
+                $orderline['discount'] = 0;
+
+                $orderline['taxPercentage'] = $taxpercentage;
+                $orderlines[] = $orderline;
+            }
+
 
             // Handle shipping
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
@@ -308,7 +329,7 @@ class VippsApi {
                 }  else {
                     $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
-                $taxpercentage = round($taxpercentage);
+                $taxpercentage = abs(round($taxpercentage));
 
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
@@ -828,12 +849,6 @@ class VippsApi {
                $porterbuddy['origin'] = apply_filters('woo_vipps_porterbuddy_origin', $origin);
                $integrations['porterbuddy'] = $porterbuddy;
             }
-            if ($gw->get_option('vcs_instabox') == 'yes') {
-               $instabox = array();
-               $instabox['clientId'] = $gw->get_option('vcs_instabox_clientId');
-               $instabox['clientSecret'] = $gw->get_option('vcs_instabox_clientId');
-               $integrations['instabox'] = $instabox;
-            }
 
             if ($gw->get_option('vcs_helthjem') == 'yes') {
                $helthjem = array();
@@ -905,6 +920,22 @@ class VippsApi {
             $configuration['countries'] = ['supported' => $allowed_countries ];
         } else {
        
+        }
+
+        // External payment methods IOK 2024-05-13 
+        // Should return a map from other_method => ['gw'=>'gateway key or any or empty string]
+        $other_payment_methods = apply_filters('woo_vipps_checkout_external_payment_methods', VippsCheckout::instance()->external_payment_methods(), $order);
+        if (!empty($other_payment_methods)) {
+            $others = [];
+            foreach ($other_payment_methods as $methodkey => $methoddata) {
+                $chooseanother = ['action'=>'vipps_gw', 'o'=>$orderid];
+                $chooseanother['cb'] = wp_create_nonce('vipps_gw');
+                $chooseanother['gw'] = ($methoddata['gw'] ?? "");
+                $others[] = ['paymentMethod' => $methodkey, 'redirectUrl'=> add_query_arg($chooseanother,admin_url("admin-post.php")) ];
+            }
+            if (!empty($others)) {
+                $configuration['externalPaymentMethods'] =  $others;
+            }
         }
 
         // Custom consent checkbox, for integration with Mailchimp etc . 
