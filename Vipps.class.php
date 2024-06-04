@@ -119,7 +119,10 @@ class Vipps {
             $order = $orderid ? wc_get_order($orderid) : null;
             if (is_a($order, 'WC_Order')) {
                $isavipps = $order->get_meta('_vipps_init_timestamp');
-               if ($isavipps) unset($gateways['vipps']);
+               // Existing override that allows repayment. IOK 2024-06-04
+               $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
+               $allow_repayment = $isavipps ? apply_filters('woo_vipps_allow_repayment', $allow_repayment, $order) : true;
+               if ($isavipps && !$allow_repayment) unset($gateways['vipps']);
             }
         }
         return $gateways;

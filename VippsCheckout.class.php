@@ -180,6 +180,7 @@ jQuery(document).ready(function () {
             $this->log(__("No session choosing other gateway from Vipps Checkout", 'woo-vipps'), 'error');
         }
 
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
 
         # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
         $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
@@ -199,7 +200,8 @@ jQuery(document).ready(function () {
         $url = $order->get_checkout_payment_url();
 
         // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
-        $this->abandonVippsCheckoutOrder(false);
+        // Actually, don't do this because it will most likely just create more spurious orders while this remains unpayable. IOK 2024-06-04
+        // $this->abandonVippsCheckoutOrder(false);
         wp_redirect($url);
         exit();
     }
@@ -319,7 +321,9 @@ jQuery(document).ready(function () {
         $token = "";
 
         // First, check that we haven't already done this like in another window or something:
-        $session = $this->vipps_checkout_current_pending_session();
+        // IOK 2024-06-04 This also happens when using the back button! Sometimes!
+        $sessioninfo = $this->vipps_checkout_current_pending_session();
+
         if (isset($sessioninfo['redirect'])) {
             $redirect = $sessioninfo['redirect'];
         }
@@ -329,6 +333,7 @@ jQuery(document).ready(function () {
             $url = $src; 
         }
         // And if we do, just return what we have. NB: This *should not happen*.
+        // IOK 2025-05-04 what are you talking about IOK, this absolutely happens e.g. when using the backbutton to a page starting the orders.
         if ($url || $redir) {
             $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
             return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$current_pending));
@@ -658,6 +663,7 @@ jQuery(document).ready(function () {
         // we can open the iframe directly. Otherwise, the form we are going to output will 
         // create the iframe after a button press which will create a new order.
         $sessioninfo = $this->vipps_checkout_current_pending_session();
+
         $out = ""; // Start generating output already to make debugging easier
 
         // This is the current pending order id, if it exists. Will be used to restart orders etc . IOK 2023-08-15 FIXME
@@ -726,6 +732,7 @@ jQuery(document).ready(function () {
     } 
     
     public function abandonVippsCheckoutOrder($order) {
+
         if (WC()->session) {
             WC()->session->set('vipps_checkout_current_pending',0);
             WC()->session->set('vipps_address_hash', false);
