@@ -2,10 +2,10 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.0.11
-Stable tag: 2.0.11
+Version: 2.1.0
+Stable tag: 2.1.0
 Requires at least: 4.7
-Tested up to: 6.5.3
+Tested up to: 6.5.4
 Requires PHP: 5.6
 WC requires at least: 3.3.4
 WC tested up to: 8.9.1
@@ -94,9 +94,11 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Removed support for Instabox in Vipps Checkout Shipping
+Added support for external payment methods in some markets
 Fix an issue with addressline 2 for express checkout when using static shipping
 Fixed some untranslatable strings and updated information about reservation times
 Fixed some places where NOK were hard-coded in as currency.
+Changed gateway registering to use class name instead of instantiated objects to prevent unintended breakage
 
 == Frequently Asked Questions ==
 
@@ -236,8 +238,11 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-05-27 version 2.0.12 =
+= 2024-06-05 version 2.1.0 =
 Removed support for Instabox in Vipps Checkout Shipping
+Added support for external payment methods in some markets
+Changed gateway registering to use class name instead of instantiated objects to prevent unintended breakage
+
 
 = 2024-05-21 version 2.0.11 =
 Fixed some utranslatable strings and changed MobilePay reservation time notices to 14 days
