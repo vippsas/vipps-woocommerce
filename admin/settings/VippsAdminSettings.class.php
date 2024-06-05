@@ -50,7 +50,8 @@ class VippsAdminSettings
     {
         global $Vipps;
         if (class_exists('WC_Payment_Gateway')) {
-            require_once(dirname(dirname(dirname(__FILE__))) . "/WC_Gateway_Vipps.class.php");
+            // Try to load payment gateways first, we need that infrastructure. IOK 2024-06-05
+            $gateways = WC()->payment_gateways();
             return WC_Gateway_Vipps::instance();
         } else {
             $Vipps->log(__("Error: Cannot instantiate payment gateway, because WooCommerce is not loaded! This can happen when WooCommerce updates itself; but if it didn't, please activate WooCommerce again", 'woo-vipps'), 'error');
@@ -87,9 +88,12 @@ class VippsAdminSettings
                 $admin_options['woocommerce_vipps_' . $key] = $value;
             }
         }
+        // We need to initialize these again so "conditional" options are available
+        // IOK 2024-06-05
+        $this->gateway()->init_form_fields(); 
         $this->gateway()->set_post_data($admin_options);
         $this->gateway()->process_admin_options();
-        //        $this->gateway()->add_error("Jaboloko!");  // Also add_warning, add_notice plz
+//        $this->gateway()->add_error("Jaboloko!");  // Also add_warning, add_notice plz
         $form_errors = $this->gateway()->get_errors();
         $form_ok = empty($form_errors);
         // end use of process_admin_options IOK 2024-01-03

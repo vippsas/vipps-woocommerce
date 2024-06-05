@@ -87,15 +87,11 @@ export function WPOptionsProvider({ children }: PropsWithChildren) {
 
   // True if the option actually exists in the settings IOK 2024-06-04
   function hasOption(key: string): boolean {
-      // This would be a setting actually stored by the user
-      let ok = values.hasOwnProperty(key); 
       // see getOption to see what is going on here IOK 2024-06-04
-      if (!ok) {
-          const defaultkey = key + '.default';
-          const defaultExists = gettext(defaultkey);
-          return defaultExists != defaultkey;
-      }
-      return true;
+      // basically if an option has a default, it exists, otherwise not. IOK 2024-06-05
+      const defaultkey = key + '.default';
+      const defaultExists = gettext(defaultkey);
+      return defaultExists != defaultkey;
   }
 
   // Set the value of an option in the context.
