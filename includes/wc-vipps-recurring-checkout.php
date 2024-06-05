@@ -41,9 +41,63 @@ class WC_Vipps_Recurring_Checkout {
 		return $this->gateway;
 	}
 
+	public function maybe_load_cart() {
+		if ( version_compare( WC_VERSION, '3.6.0', '>=' ) && WC()->is_rest_api_request() ) {
+			if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+				return;
+			}
+
+			$rest_prefix = WC_Vipps_Recurring_Checkout_Rest_Api::$api_namespace;
+			$req_uri     = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+
+			$is_my_endpoint = ( false !== strpos( $req_uri, $rest_prefix ) );
+
+			if ( ! $is_my_endpoint ) {
+				return;
+			}
+
+			require_once WC_ABSPATH . 'includes/wc-cart-functions.php';
+			require_once WC_ABSPATH . 'includes/wc-notice-functions.php';
+
+			if ( null === WC()->session ) {
+				$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+				// Prefix session class with global namespace if not already namespaced
+				if ( false === strpos( $session_class, '\\' ) ) {
+					$session_class = '\\' . $session_class;
+				}
+
+				WC()->session = new $session_class();
+				WC()->session->init();
+			}
+
+			/**
+			 * For logged in customers, pull data from their account rather than the
+			 * session which may contain incomplete data.
+			 */
+			if ( is_null( WC()->customer ) ) {
+				if ( is_user_logged_in() ) {
+					WC()->customer = new WC_Customer( get_current_user_id() );
+				} else {
+					WC()->customer = new WC_Customer( get_current_user_id(), true );
+				}
+
+				// Customer should be saved during shutdown.
+				add_action( 'shutdown', array( WC()->customer, 'save' ), 10 );
+			}
+
+			// Load Cart.
+			if ( null === WC()->cart ) {
+				WC()->cart = new WC_Cart();
+			}
+		}
+	}
+
 	public function init() {
 		require_once __DIR__ . '/wc-vipps-recurring-checkout-rest-api.php';
 		WC_Vipps_Recurring_Checkout_Rest_Api::get_instance();
+
+		add_action( 'wp_loaded', [ $this, 'maybe_load_cart' ], 5 );
 
 		add_action( 'wp_loaded', [ $this, 'register_scripts' ] );
 
@@ -102,7 +156,6 @@ class WC_Vipps_Recurring_Checkout {
 
 	public function woocommerce_loaded() {
 		// Higher priority than the single payments Vipps plugin
-		// todo: Make sure we only enable this for known subscription products
 		add_filter( 'woocommerce_get_checkout_page_id', function ( $id ) {
 			$checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
 
@@ -211,18 +264,17 @@ class WC_Vipps_Recurring_Checkout {
 		// create the iframe after a button press which will create a new order.
 		$session = $this->current_pending_session();
 
-		// This is the current pending order id, if it exists. Will be used to restart orders etc . IOK 2023-08-15 FIXME
-		$pending_order_id = is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( 'vipps_recurring_checkout_pending_order_id' ) : false;
+		// This is the current pending order id, if it exists. Will be used to restart orders etc
+		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
 
 		// Localize script with variables we need to reveal to the frontend
 		$data = [
 			'pendingOrderId' => $pending_order_id,
-			'data' => $session
+			'data'           => $session
 		];
 
 		wp_add_inline_script( 'woo-vipps-recurring-checkout', 'window.VippsRecurringCheckout = ' . wp_json_encode( $data ), 'before' );
 
-		// todo: Rewrite the display logic in React from here on out
 		return '<div id="vipps-mobilepay-recurring-checkout"></div>';
 
 //		if ( $session_info['redirect'] ) {
@@ -285,16 +337,14 @@ class WC_Vipps_Recurring_Checkout {
 //		return $out;
 	}
 
-	// Retrieve the current pending Vipps Checkout session, if it exists, and do some cleanup
-	// if it isn't correct IOK 2021-09-03
 	/**
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	protected function current_pending_session(): array {
+	public function current_pending_session(): array {
 		// If this is set, this is a currently pending order which is maybe still valid
-		$pending_order_id = is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( 'vipps_recurring_checkout_pending_order_id' ) : false;
+		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
 		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
 
 		# If we do have an order, we need to check if it is 'pending', and if not, we have to check its payment status
@@ -303,14 +353,15 @@ class WC_Vipps_Recurring_Checkout {
 
 		if ( $order ) {
 			if ( $order->get_status() == 'pending' ) {
-				$payment_status = 'initiated'; // Just assume this for now
+				$payment_status = 'INITIATED'; // Just assume this for now
 			} else {
 				$payment_status = $this->gateway->check_charge_status( $pending_order_id ) ?? 'UNKNOWN';
 			}
 
-			$redirect = apply_filters( 'wc_vipps_recurring_merchant_redirect_url', WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order ) );
+			if ( $payment_status === 'SUCCESS' ) {
+				$redirect = apply_filters( 'wc_vipps_recurring_merchant_redirect_url', WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order ) );
+			}
 		}
-
 
 		if ( in_array( $payment_status, [ 'authorized', 'complete' ] ) ) {
 			$this->abandon_checkout_order( false );
@@ -327,7 +378,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// Now check the orders vipps session if it exist
-		$session = $order ? $order->get_meta( '_vipps_recurring_checkout_session' ) : false;
+		$session = $order ? $order->get_meta( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION ) : false;
 
 		// A single word or array containing session data, containing token and frontendFrameUrl
 		// ERROR EXPIRED FAILED
@@ -339,8 +390,8 @@ class WC_Vipps_Recurring_Checkout {
 			$this->abandon_checkout_order( $order );
 		}
 
-		// This will return either a valid vipps session, nothing, or  redirect.
-		return ( [ 'order' => $order ? $order->get_id() : false, 'session' => $session, 'redirect' => $redirect ] );
+		// This will return either a valid vipps session, nothing, or redirect.
+		return [ 'order' => $order ? $order->get_id() : false, 'session' => $session, 'redirect' => $redirect ];
 	}
 
 	/**
@@ -369,6 +420,7 @@ class WC_Vipps_Recurring_Checkout {
 			if ( WC_Vipps_Recurring_Helper::order_locked( $order ) ) {
 				return false;
 			}
+
 			// Get it again to ensure we have all the info, and check status again
 			clean_post_cache( $order->get_id() );
 			$order = wc_get_order( $order->get_id() );
@@ -376,8 +428,8 @@ class WC_Vipps_Recurring_Checkout {
 				return false;
 			}
 
-			// And to be extra sure, check status at vipps
-			$session       = $order->get_meta( '_vipps_recurring_checkout_session' );
+			// And to be extra sure, check status at Vipps/MobilePay
+			$session       = $order->get_meta( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
 			$poll_endpoint = ( $session && isset( $session['pollingUrl'] ) ) ? $session['pollingUrl'] : false;
 
 			if ( $poll_endpoint ) {
@@ -400,8 +452,10 @@ class WC_Vipps_Recurring_Checkout {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling Checkout order because order changed', $order->get_id() ) );
 			$order->set_status( 'cancelled', __( "Order specification changed - this order abandoned by customer in Checkout  ", 'vipps-recurring-payments-gateway-for-woocommerce' ), false );
 			// Also mark for deletion and remove stored session
-			$order->delete_meta_data( '_vipps_recurring_checkout_session' );
-			$order->update_meta_data( '_vipps_recurring_delendum', 1 );
+			$order->delete_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
+
+			// todo: make a cron that checks for this value
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
 			$order->save();
 		}
 	}

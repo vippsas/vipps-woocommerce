@@ -45,7 +45,14 @@ class WC_Vipps_Recurring_Helper {
 	public const META_ORDER_TRANSACTION_ID = '_transaction_id';
 	public const META_ORDER_INITIAL = '_vipps_recurring_initial';
 	public const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
+	public const META_ORDER_MARKED_FOR_DELETION = '_vipps_recurring_marked_for_deletion';
 	public const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
+	public const META_ORDER_CHECKOUT_SESSION = '_vipps_recurring_checkout_session';
+	public const META_ORDER_IS_CHECKOUT = '_vipps_recurring_is_checkout';
+	public const META_ORDER_IS_EXPRESS = '_vipps_recurring_is_express';
+	public const META_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_express_auth_token';
+	public const META_ORDER_NEEDS_SHIPPING = '_vipps_recurring_needs_shipping';
+	public const META_ORDER_SESSION_DATA = '_vipps_recurring_session_data';
 
 	/**
 	 * Subscription
@@ -61,6 +68,11 @@ class WC_Vipps_Recurring_Helper {
 	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
 	public const OPTION_CHECKOUT_ENABLED = '_woo_vipps_recurring_checkout_enabled';
 	public const OPTION_WEBHOOKS = '_woo_vipps_recurring_webhooks';
+
+	public const SESSION_CHECKOUT_PENDING_ORDER_ID = '_vipps_recurring_checkout_pending_order_id';
+	public const SESSION_ORDERS = '_vipps_recurring_session_orders';
+	public const SESSION_PENDING_ORDER_ID = '_vipps_recurring_session_pending_order_id';
+	public const SESSION_EXPRESS_CUSTOMER_ID = '_vipps_recurring_session_customer_id';
 
 	/**
 	 * Whether we are successfully connected to the Vipps/MobilePay API
@@ -137,6 +149,22 @@ class WC_Vipps_Recurring_Helper {
 	 */
 	public static function is_valid_phone_number( $phone_number ): bool {
 		return strlen( $phone_number ) >= 8 && strlen( $phone_number ) <= 16;
+	}
+
+	public static function normalize_phone_number( $phone_number, $country = '' ) {
+		$phone_number = preg_replace( "![^0-9]!", "", strval( $phone_number ) );
+		$phone_number = ltrim( $phone_number, "0" );
+
+		// Try to reconstruct phone numbers from information provided
+		if ( strlen( $phone_number ) == 8 && $country == 'NO' ) {
+			$phone_number = '47' . $phone_number;
+		}
+
+		if ( ! preg_match( "/^\d{10,15}$/", $phone_number ) ) {
+			$phone_number = false;
+		}
+
+		return $phone_number;
 	}
 
 	/**
@@ -464,5 +492,45 @@ class WC_Vipps_Recurring_Helper {
 		$order_key = $order->get_order_key();
 
 		return home_url() . "/vipps-mobilepay-recurring-payment?order_id=$order_id&key=$order_key";
+	}
+
+	public static function get_order_lock_name( $order ): string {
+		return 'order_lock_' . self::get_id( $order );
+	}
+
+	public static function lock_order( $order ): bool {
+		if ( get_transient( self::get_order_lock_name( $order ) ) ) {
+			return false;
+		}
+
+		set_transient( self::get_order_lock_name( $order ), uniqid( '', true ), 30 );
+
+		add_action( 'shutdown', function () use ( $order ) {
+			WC_Gateway_Vipps_Recurring::get_instance()->unlock_order( $order );
+		} );
+
+		return true;
+	}
+
+	public static function order_locked( $order ): bool {
+		return get_transient( self::get_order_lock_name( $order ) ) !== false;
+	}
+
+	public static function get_checkout_pending_order_id() {
+		return is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( self::SESSION_CHECKOUT_PENDING_ORDER_ID ) : false;
+	}
+
+	public static function generate_vipps_order_id( $order, $prefix ) {
+		$order_id       = self::get_id( $order );
+		$vipps_order_id = $prefix . $order_id;
+
+		$len = strlen( $vipps_order_id );
+		if ( $len < 8 ) {  # max is 50 so that would probably not be an issue
+			$pad_width      = 8 - strlen( $prefix );
+			$padded_id      = str_pad( "" . $order_id, $pad_width, "0", STR_PAD_LEFT );
+			$vipps_order_id = $prefix . $padded_id;
+		}
+
+		return apply_filters( 'woo_vipps_recurring_order_id', $vipps_order_id, $prefix, $order );
 	}
 }

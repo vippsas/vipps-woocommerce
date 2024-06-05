@@ -215,7 +215,7 @@ class WC_Vipps_Recurring {
 		] );
 
 		if ( $this->gateway()->test_mode ) {
-			$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable this in your wp_config when you are ready to go live!', 'vipps-recurring-payments-gateway-for-woocommerce' );
+			$notice = __( 'Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!', 'vipps-recurring-payments-gateway-for-woocommerce' );
 			$this->notices->warning( $notice );
 		}
 
@@ -504,7 +504,7 @@ class WC_Vipps_Recurring {
 		$custom_action = get_query_var( 'vipps_recurring_action' );
 
 		if ( ! empty ( $custom_action ) ) {
-			include WC_VIPPS_RECURRING_PLUGIN_PATH . '/pages/payment-redirect-page.php';
+			include WC_VIPPS_RECURRING_PLUGIN_PATH . '/includes/pages/payment-redirect-page.php';
 			die;
 		}
 
@@ -795,6 +795,8 @@ class WC_Vipps_Recurring {
 	 */
 	public function add_gateways( $methods ): array {
 		if ( function_exists( 'wcs_create_renewal_order' ) && class_exists( 'WC_Subscriptions_Order' ) ) {
+			require_once( dirname( __FILE__ ) . "/wc-gateway-vipps-recurring.php" );
+
 			$methods[] = WC_Gateway_Vipps_Recurring::get_instance();
 		}
 
@@ -826,9 +828,9 @@ class WC_Vipps_Recurring {
 			? $this->gateway()->continue_shopping_link_page
 			: wc_get_page_id( 'shop' );
 
-		$continue_shopping_url = home_url();
-		if ( $continue_shopping_link_page ) {
-			$continue_shopping_url = get_permalink( $continue_shopping_link_page );
+		$continue_shopping_url = $continue_shopping_link_page ? get_permalink( $continue_shopping_link_page ) : home_url();
+		if ( empty( $continue_shopping_link_page ) ) {
+			$continue_shopping_url = home_url();
 		}
 
 		wp_localize_script( 'woo-vipps-recurring', 'VippsMobilePaySettings', [
@@ -946,5 +948,40 @@ class WC_Vipps_Recurring {
 		$auth           = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature=$signature";
 
 		return ( $auth == $expected_auth );
+	}
+
+	public function generate_order_prefix(): string {
+		$parts = parse_url( site_url() );
+		if ( ! $parts ) {
+			return 'woo-';
+		}
+
+		$domain = explode( ".", $parts['host'] ?? '' );
+		if ( empty( $domain ) ) {
+			return 'woo-';
+		}
+
+		$first  = strtolower( $domain[0] );
+		$second = $domain[1] ?? '';
+
+		// Select first part of domain unless that has no content, otherwise second. Default to "woo-" again.
+		$key = $first;
+		if ( in_array( $first, [ 'www', 'test', 'dev', 'vdev' ] ) && ! empty( $second ) ) {
+			$key = $second;
+		}
+
+		// Use only 8 chars for the site. Try to make it so by dropping vowels, if that doesn't succeed, just chop it.
+		$key = sanitize_title( $key );
+		$len = strlen( $key );
+		if ( $len <= 8 ) {
+			return "woo-$key-";
+		}
+
+		$kzk = preg_replace( "/[aeiouæøåüö]/i", "", $key );
+		if ( strlen( $kzk ) <= 8 ) {
+			return "woo-$kzk-";
+		}
+
+		return "woo-" . substr( $key, 0, 8 ) . "-";
 	}
 }

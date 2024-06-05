@@ -28,7 +28,7 @@ abstract class WC_Vipps_Model {
 
 	abstract function to_array( bool $check_required = false ): array;
 
-	protected function set_value( $name, $value, $class = null ): self {
+	protected function _set_value( $name, $value, $class = null ): self {
 		if ( is_array( $value ) && $class ) {
 			$this->{$name} = new $class( $value );
 		} else {

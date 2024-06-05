@@ -26,6 +26,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public bool $checkout_enabled;
 
+	public string $order_prefix;
+
 	/**
 	 * Is test mode active?
 	 */
@@ -131,6 +133,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$this->test_mode                        = $this->get_option( 'test_mode' ) === "yes";
 		$this->merchant_serial_number           = $this->get_option( 'merchant_serial_number' );
 		$this->checkout_enabled                 = $this->get_option( 'checkout_enabled' ) === "yes";
+		$this->order_prefix                     = $this->get_option( 'order_prefix' );
 		$this->default_renewal_status           = $this->get_option( 'default_renewal_status' );
 		$this->default_reserved_charge_status   = $this->get_option( 'default_reserved_charge_status' );
 		$this->transition_renewals_to_completed = $this->get_option( 'transition_renewals_to_completed' ) === "yes";
@@ -491,6 +494,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order->save();
 
 		$agreement = $this->get_agreement_from_order( $order );
+		if ( $agreement ) {
+			return 'INVALID';
+		}
 
 		// logic for zero amounts when a charge does not exist
 		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) && ! wcs_order_contains_renewal( $order ) ) {
@@ -957,11 +963,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function process_subscription_payment( $amount, $renewal_order ): bool {
 		$renewal_order_id = WC_Vipps_Recurring_Helper::get_id( $renewal_order );
 
-		if ( get_transient( 'order_lock_' . $renewal_order_id ) ) {
+		if ( WC_Vipps_Recurring_Helper::order_locked( $renewal_order ) ) {
 			return true;
 		}
 
-		set_transient( 'order_lock_' . $renewal_order_id, uniqid( '', true ), 30 );
+		WC_Vipps_Recurring_Helper::lock_order( $renewal_order );
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] process_subscription_payment attempting to create charge', $renewal_order->get_id() ) );
 
@@ -1276,6 +1282,184 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * @param $order
+	 * @param $subscription
+	 * @param $is_gateway_change
+	 * @param bool $is_failed_renewal_order
+	 *
+	 * @return WC_Vipps_Agreement
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function create_vipps_agreement_from_order( $order, $subscription = null, bool $is_gateway_change = false ): WC_Vipps_Agreement {
+		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+
+		if ( ! $subscription ) {
+			$subscription = $order;
+		}
+
+		$subscription_period = $order->get_billing_period();
+
+		$subscription_interval = $order->get_billing_interval();
+
+		$items = array_reverse( $order->get_items() );
+
+		$has_more_products = count( $items ) > 1;
+
+		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
+		$subscription_items = array_filter( $items, static function ( $item ) {
+			return apply_filters( 'wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item );
+		} );
+
+		$item           = array_pop( $subscription_items );
+		$product        = $item->get_product();
+		$parent_product = wc_get_product( $item->get_product_id() );
+
+		$extra_initial_charge_description = '';
+
+		if ( $has_more_products ) {
+			$other_items = array_filter( $items, static function ( $other_item ) use ( $item ) {
+				return $item['product_id'] !== $other_item['product_id'];
+			} );
+
+			foreach ( $other_items as $product_item ) {
+				$extra_initial_charge_description .= WC_Vipps_Recurring_Helper::get_product_description( $product_item->get_product() ) . ', ';
+			}
+
+			$extra_initial_charge_description = rtrim( $extra_initial_charge_description, ', ' );
+		}
+
+		$is_virtual     = $product->is_virtual();
+		$direct_capture = $parent_product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
+
+		$agreement_url = filter_var( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ), FILTER_VALIDATE_URL )
+			? get_permalink( get_option( 'woocommerce_myaccount_page_id' ) )
+			: wc_get_account_endpoint_url( 'dashboard' );
+
+		if ( ! filter_var( $agreement_url, FILTER_VALIDATE_URL ) ) {
+			$agreement_url = get_home_url();
+		}
+
+		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
+
+		// total no longer returns the order amount when gateway is being changed
+		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
+
+		// when we're performing a variation switch we need some special logic in Vipps
+		$is_subscription_switch = wcs_order_contains_switch( $order );
+
+		if ( $is_subscription_switch ) {
+			$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );
+
+			if ( isset( $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'] ) ) {
+				$switches    = $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'];
+				$switch_data = $switches[ array_key_first( $switches ) ];
+				$direction   = $switch_data['switch_direction'];
+
+				if ( $direction === 'upgrade' ) {
+					$agreement_total += $order->get_total();
+				}
+			}
+		}
+
+		$agreement = ( new WC_Vipps_Agreement() )
+			->set_external_id( $order_id )
+			->set_pricing(
+				( new WC_Vipps_Agreement_Pricing() )
+					->set_type( WC_Vipps_Agreement_Pricing::TYPE_LEGACY )
+					->set_currency( $order->get_currency() )
+					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ) )
+			)
+			->set_interval(
+				( new WC_Vipps_Agreement_Interval() )
+					->set_unit( strtoupper( $subscription_period ) )
+					->set_count( (int) $subscription_interval )
+			)
+			->set_product_name( $item->get_name() )
+			->set_merchant_agreement_url( apply_filters( 'wc_vipps_recurring_merchant_agreement_url', $agreement_url ) )
+			->set_merchant_redirect_url( apply_filters( 'wc_vipps_recurring_merchant_redirect_url', $redirect_url ) );
+
+		$product_description = WC_Vipps_Recurring_Helper::get_product_description( $product );
+		if ( $product_description ) {
+			$agreement = $agreement->set_product_description( $product_description );
+		}
+
+		// validate phone number and only add it if it's up to Vipps' standard to avoid errors
+		if ( WC_Vipps_Recurring_Helper::is_valid_phone_number( $order->get_billing_phone() ) ) {
+			$agreement = $agreement->set_phone_number( $order->get_billing_phone() );
+		}
+
+		$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
+		$capture_immediately = $is_virtual || $direct_capture;
+		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
+		$has_trial           = (bool) WC_Subscriptions_Product::get_trial_length( $product );
+
+		$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
+		$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
+		$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
+
+		// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
+		// also not when the order total is the same as the agreement total
+		if ( $has_free_campaign && $has_synced_product && $order->get_total() === $agreement_total ) {
+			$has_campaign = false;
+		}
+
+		if ( ! $is_zero_amount ) {
+			$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
+			if ( ! empty( $extra_initial_charge_description ) ) {
+				$initial_charge_description .= ' + ' . $extra_initial_charge_description;
+
+				if ( $has_campaign ) {
+					$initial_charge_description = $extra_initial_charge_description;
+				}
+			}
+
+			$agreement = $agreement->set_initial_charge(
+				( new WC_Vipps_Agreement_Initial_Charge() )
+					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
+					->set_description( empty( $initial_charge_description ) ? $item->get_name() : $initial_charge_description )
+					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
+			);
+
+			if ( ! $capture_immediately ) {
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_reserved_capture', true );
+			}
+		}
+
+		if ( $has_campaign ) {
+//					$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
+			$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
+			$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
+
+			$campaign_price    = $has_free_campaign ? $sign_up_fee : $order->get_total();
+			$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
+
+			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
+			$campaign_period = null;
+
+			if ( $has_trial ) {
+				$campaign_type     = WC_Vipps_Agreement_Campaign::TYPE_PERIOD_CAMPAIGN;
+				$campaign_end_date = null;
+				$campaign_period   = ( new WC_Vipps_Agreement_Campaign_Period() )
+					->set_count( WC_Subscriptions_Product::get_trial_length( $product ) )
+					->set_unit( strtoupper( WC_Subscriptions_Product::get_trial_period( $product ) ) );
+			}
+
+			$agreement = $agreement->set_campaign(
+				( new WC_Vipps_Agreement_Campaign() )
+					->set_type( $campaign_type )
+					->set_price( WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ) )
+					->set_end( $campaign_end_date )
+					->set_period( $campaign_period )
+			);
+		};
+
+		return apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
+	}
+
+	/**
 	 * Process a payment when checking out in WooCommerce
 	 *
 	 * https://docs.woocommerce.com/document/subscriptions/develop/payment-gateway-integration/
@@ -1405,155 +1589,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
-			$subscription_items = array_filter( $items, static function ( $item ) {
-				return apply_filters( 'wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item );
-			} );
-
-			$item           = array_pop( $subscription_items );
-			$product        = $item->get_product();
-			$parent_product = wc_get_product( $item->get_product_id() );
-
-			$extra_initial_charge_description = '';
-
-			if ( $has_more_products ) {
-				$other_items = array_filter( $items, static function ( $other_item ) use ( $item ) {
-					return $item['product_id'] !== $other_item['product_id'];
-				} );
-
-				foreach ( $other_items as $product_item ) {
-					$extra_initial_charge_description .= WC_Vipps_Recurring_Helper::get_product_description( $product_item->get_product() ) . ', ';
-				}
-
-				$extra_initial_charge_description = rtrim( $extra_initial_charge_description, ', ' );
-			}
-
-			$is_virtual     = $product->is_virtual();
-			$direct_capture = $parent_product->get_meta( WC_Vipps_Recurring_Helper::META_PRODUCT_DIRECT_CAPTURE ) === 'yes';
-
-			$agreement_url = filter_var( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ), FILTER_VALIDATE_URL )
-				? get_permalink( get_option( 'woocommerce_myaccount_page_id' ) )
-				: wc_get_account_endpoint_url( 'dashboard' );
-
-			if ( ! filter_var( $agreement_url, FILTER_VALIDATE_URL ) ) {
-				$agreement_url = get_home_url();
-			}
-
-			$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
-
-			// total no longer returns the order amount when gateway is being changed
-			$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
-
-			// when we're performing a variation switch we need some special logic in Vipps
-			$is_subscription_switch = wcs_order_contains_switch( $order );
-
-			if ( $is_subscription_switch ) {
-				$subscription_switch_data = WC_Vipps_Recurring_Helper::get_meta( $order, '_subscription_switch_data' );
-
-				if ( isset( $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'] ) ) {
-					$switches    = $subscription_switch_data[ array_key_first( $subscription_switch_data ) ]['switches'];
-					$switch_data = $switches[ array_key_first( $switches ) ];
-					$direction   = $switch_data['switch_direction'];
-
-					if ( $direction === 'upgrade' ) {
-						$agreement_total += $order->get_total();
-					}
-				}
-			}
-
-			$agreement = ( new WC_Vipps_Agreement() )
-				->set_external_id( $order_id )
-				->set_pricing(
-					( new WC_Vipps_Agreement_Pricing() )
-						->set_type( WC_Vipps_Agreement_Pricing::TYPE_LEGACY )
-						->set_currency( $order->get_currency() )
-						->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ) )
-				)
-				->set_interval(
-					( new WC_Vipps_Agreement_Interval() )
-						->set_unit( strtoupper( $subscription_period ) )
-						->set_count( (int) $subscription_interval )
-				)
-				->set_product_name( $item->get_name() )
-				->set_merchant_agreement_url( apply_filters( 'wc_vipps_recurring_merchant_agreement_url', $agreement_url ) )
-				->set_merchant_redirect_url( apply_filters( 'wc_vipps_recurring_merchant_redirect_url', $redirect_url ) );
-
-			$product_description = WC_Vipps_Recurring_Helper::get_product_description( $product );
-			if ( $product_description ) {
-				$agreement = $agreement->set_product_description( $product_description );
-			}
-
-			// validate phone number and only add it if it's up to Vipps' standard to avoid errors
-			if ( WC_Vipps_Recurring_Helper::is_valid_phone_number( $order->get_billing_phone() ) ) {
-				$agreement = $agreement->set_phone_number( $order->get_billing_phone() );
-			}
-
-			$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
-			$capture_immediately = $is_virtual || $direct_capture;
-			$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
-			$has_trial           = (bool) WC_Subscriptions_Product::get_trial_length( $product );
-
-			$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
-			$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
-			$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
-
-			// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
-			// also not when the order total is the same as the agreement total
-			if ( $has_free_campaign && $has_synced_product && $order->get_total() === $agreement_total ) {
-				$has_campaign = false;
-			}
-
-			if ( ! $is_zero_amount ) {
-				$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
-				if ( ! empty( $extra_initial_charge_description ) ) {
-					$initial_charge_description .= ' + ' . $extra_initial_charge_description;
-
-					if ( $has_campaign ) {
-						$initial_charge_description = $extra_initial_charge_description;
-					}
-				}
-
-				$agreement = $agreement->set_initial_charge(
-					( new WC_Vipps_Agreement_Initial_Charge() )
-						->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
-						->set_description( empty( $initial_charge_description ) ? $item->get_name() : $initial_charge_description )
-						->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
-				);
-
-				if ( ! $capture_immediately ) {
-					WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_reserved_capture', true );
-				}
-			}
-
-			if ( $has_campaign ) {
-//					$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
-				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
-				$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
-
-				$campaign_price    = $has_free_campaign ? $sign_up_fee : $order->get_total();
-				$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
-
-				$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
-				$campaign_period = null;
-
-				if ( $has_trial ) {
-					$campaign_type     = WC_Vipps_Agreement_Campaign::TYPE_PERIOD_CAMPAIGN;
-					$campaign_end_date = null;
-					$campaign_period   = ( new WC_Vipps_Agreement_Campaign_Period() )
-						->set_count( WC_Subscriptions_Product::get_trial_length( $product ) )
-						->set_unit( strtoupper( WC_Subscriptions_Product::get_trial_period( $product ) ) );
-				}
-
-				$agreement = $agreement->set_campaign(
-					( new WC_Vipps_Agreement_Campaign() )
-						->set_type( $campaign_type )
-						->set_price( WC_Vipps_Recurring_Helper::get_vipps_amount( $campaign_price ) )
-						->set_end( $campaign_end_date )
-						->set_period( $campaign_period )
-				);
-			};
-
-			$agreement = apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
+			$agreement = $this->create_vipps_agreement_from_order( $order, $subscription, $is_gateway_change );
 
 			$idempotency_key = $this->get_idempotency_key( $order );
 			if ( $is_gateway_change ) {
@@ -1561,6 +1597,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			$response = $this->api->create_agreement( $agreement, $idempotency_key );
+
+			$is_subscription_switch = wcs_order_contains_switch( $order );
+			$is_zero_amount         = (int) $order->get_total() === 0 || $is_gateway_change;
 
 			// mark the old agreement for cancellation to leave no dangling agreements in Vipps
 			$should_cancel_old = $is_gateway_change || $is_subscription_switch || $is_failed_renewal_order;
@@ -1731,6 +1770,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Set some options and default values
 		$this->form_fields['brand']['default'] = $this->detect_default_brand();
 
+		$this->form_fields['order_prefix']['default'] = WC_Vipps_Recurring::get_instance()->generate_order_prefix();
+
 		if ( $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE ) {
 			$this->form_fields['title_test_api'] = [
 				'type'  => 'title',
@@ -1742,6 +1783,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->form_fields['test_secret_key']             = $this->form_fields['secret_key'];
 			$this->form_fields['test_subscription_key']       = $this->form_fields['subscription_key'];
 		}
+	}
+
+	function validate_text_field( $key, $value ) {
+		if ( $key !== 'order_prefix' ) {
+			return parent::validate_text_field( $key, $value );
+		}
+
+		return preg_replace( '![^a-zA-Z0-9\-]!', '', $value );
 	}
 
 	public function detect_default_brand(): string {
@@ -2336,6 +2385,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	public function checkout_is_available() {
+		// todo: Make sure we do not use Checkout when dealing with "early renewals", "failed renewal orders" or "gateway changes"
+
 		if ( ! $this->checkout_enabled
 			 || ! $this->is_available()
 			 || ! $this->cart_supports_checkout() ) {
@@ -2354,5 +2405,274 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		return apply_filters( 'woo_vipps_recurring_checkout_available', $checkout_id, $this );
+	}
+
+	// Creating a partial order & subscription
+	// Heavily based on the single payments plugins logic. The comments are also copied for readability.
+	/**
+	 * @throws WC_Data_Exception
+	 * @throws Exception
+	 */
+	public function create_partial_order_and_subscription( $checkout = false ): array {
+		// This is necessary for some plugins, like YITH Dynamic Pricing, that adds filters to get_price depending on whether is_checkout is true.
+		// so basically, since we are impersonating WC_Checkout here, we should define this constant too
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
+		// In *some* cases you may need to actually load classes and reload the cart, because some plugins do not load when DOING_AJAX.
+		do_action( 'woo_vipps_recurring_express_checkout_before_calculate_totals' );
+
+		WC()->cart->calculate_fees();
+		WC()->cart->calculate_totals();
+		do_action( 'woo_vipps_recurring_before_create_express_checkout_order', WC()->cart );
+
+		// We store this in the order, so we don't have to access the cart when initiating payment. This allows us to restart orders etc.
+		$needs_shipping = WC()->cart->needs_shipping();
+
+		$order = new WC_Order();
+		$order->set_status( 'pending' );
+		$order->set_payment_method( $this );
+
+		try {
+			if ( $checkout ) {
+				$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT, 1 );
+				$order->set_payment_method_title( 'Vipps/MobilePay Recurring Checkout' );
+			} else {
+				$order->set_payment_method_title( 'Vipps/MobilePay Recurring Express Checkout' );
+			}
+
+			// We use 'checkout' as the created_via key as per requests, but allow merchants to use their own.
+			$created_via = apply_filters( 'woo_vipps_recurring_express_checkout_created_via', 'checkout', $order, $checkout );
+			$order->set_created_via( $created_via );
+
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS, 1 );
+
+			# To help with address fields, scope etc in initiate payment
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_NEEDS_SHIPPING, $needs_shipping );
+
+			$order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+			$order->set_currency( get_woocommerce_currency() );
+			$order->set_prices_include_tax( 'yes' === get_option( 'woocommerce_prices_include_tax' ) );
+			$order->set_customer_ip_address( WC_Geolocation::get_ip_address() );
+			$order->set_customer_user_agent( wc_get_user_agent() );
+			$order->set_discount_total( WC()->cart->get_discount_total() );
+			$order->set_discount_tax( WC()->cart->get_discount_tax() );
+			$order->set_cart_tax( WC()->cart->get_cart_contents_tax() + WC()->cart->get_fee_tax() );
+
+			// Use these methods directly - they should be safe.
+			WC()->checkout->create_order_line_items( $order, WC()->cart );
+			WC()->checkout->create_order_fee_lines( $order, WC()->cart );
+			WC()->checkout->create_order_tax_lines( $order, WC()->cart );
+			WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
+			do_action( 'woo_vipps_recurring_before_calculate_totals_partial_order', $order );
+			$order->calculate_totals();
+
+			// Added to support third-party plugins that wants to do stuff with the order before it is saved.
+			do_action( 'woocommerce_checkout_create_order', $order, array() );
+
+			$order_id = $order->save();
+
+			do_action( 'woo_vipps_recurring_express_checkout_order_created', $order_id );
+
+			// Normally done by the WC_Checkout::create_order method, so call it here too.
+			do_action( 'woocommerce_checkout_update_order_meta', $order_id, array() );
+
+//			// It isn't possible to remove the javascript or 'after order notice' actions, because these are added as closures
+//			// before anything else is run. But we can disable the hook that saves data.
+//			if (WC_Gateway_Vipps::instance()->get_option('vippsorderattribution') != 'yes') {
+			remove_all_filters( 'woocommerce_order_save_attribution_data' );
+//			}
+
+			do_action( 'woocommerce_checkout_order_created', $order );
+		} catch ( Exception $exception ) {
+			if ( $order instanceof WC_Order ) {
+				$order->get_data_store()->release_held_coupons( $order );
+				do_action( 'woocommerce_checkout_order_exception', $order );
+			}
+
+			// Any errors gets passed upstream
+			throw $exception;
+		}
+
+		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
+		$subscriptions   = $this->create_partial_subscriptions_from_order( $order );
+		$subscription    = array_pop( $subscriptions );
+		$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
+
+		return [ $order_id, $subscription_id ];
+	}
+
+	// Based on WC_REST_Subscriptions_Controller::create_subscriptions_from_order
+
+	/**
+	 * @throws Exception
+	 */
+	public function create_partial_subscriptions_from_order( WC_Order $order ) {
+		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+
+		if ( ! $order->get_customer_id() ) {
+			return false;
+		}
+
+		if ( wcs_order_contains_subscription( $order, 'any' ) ) {
+			return false;
+		}
+
+		$subscription_groups = [];
+		$subscriptions       = [];
+
+		// Group the order items into subscription groups.
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+
+			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+				continue;
+			}
+
+			$subscription_groups[ wcs_get_subscription_item_grouping_key( $item ) ][] = $item;
+		}
+
+		// Return a 204 if there are no subscriptions to be created.
+		if ( empty( $subscription_groups ) ) {
+			$response = rest_ensure_response( $subscriptions );
+			$response->set_status( 204 );
+
+			return $response;
+		}
+
+		foreach ( $subscription_groups as $items ) {
+			// Get the first item in the group to use as the base for the subscription.
+			$product      = $items[0]->get_product();
+			$start_date   = wcs_get_datetime_utc_string( $order->get_date_created( 'edit' ) );
+			$subscription = wcs_create_subscription( [
+				'order_id'         => $order_id,
+				'created_via'      => 'rest-api',
+				'start_date'       => $start_date,
+				'status'           => $order->is_paid() ? 'active' : 'pending',
+				'billing_period'   => WC_Subscriptions_Product::get_period( $product ),
+				'billing_interval' => WC_Subscriptions_Product::get_interval( $product ),
+				'customer_note'    => $order->get_customer_note(),
+			] );
+
+			if ( is_wp_error( $subscription ) ) {
+				throw new Exception( $subscription->get_error_message() );
+			}
+
+			wcs_copy_order_address( $order, $subscription );
+
+			$subscription->update_dates(
+				array(
+					'trial_end'    => WC_Subscriptions_Product::get_trial_expiration_date( $product, $start_date ),
+					'next_payment' => WC_Subscriptions_Product::get_first_renewal_payment_date( $product, $start_date ),
+					'end'          => WC_Subscriptions_Product::get_expiration_date( $product, $start_date ),
+				)
+			);
+
+			$subscription->set_payment_method( $order->get_payment_method() );
+
+			wcs_copy_order_meta( $order, $subscription, 'subscription' );
+
+			// Add items.
+			$subscription_needs_shipping = false;
+			foreach ( $items as $item ) {
+				// Create order line item.
+				$item_id = wc_add_order_item(
+					$subscription->get_id(),
+					[
+						'order_item_name' => $item->get_name(),
+						'order_item_type' => $item->get_type(),
+					]
+				);
+
+				$subscription_item = $subscription->get_item( $item_id );
+
+				wcs_copy_order_item( $item, $subscription_item );
+				$subscription_item->save();
+
+				// Check if this subscription will need shipping.
+				if ( ! $subscription_needs_shipping ) {
+					$product = $item->get_product();
+
+					if ( $product ) {
+						$subscription_needs_shipping = $product->needs_shipping() && ! WC_Subscriptions_Product::needs_one_time_shipping( $product );
+					}
+				}
+			}
+
+			// Add coupons.
+			foreach ( $order->get_coupons() as $coupon_item ) {
+				$coupon = new WC_Coupon( $coupon_item->get_code() );
+
+				try {
+					// validate_subscription_coupon_for_order will throw an exception if the coupon cannot be applied to the subscription.
+					WC_Subscriptions_Coupon::validate_subscription_coupon_for_order( true, $coupon, $subscription );
+
+					$subscription->apply_coupon( $coupon->get_code() );
+				} catch ( Exception $e ) {
+					// Do nothing. The coupon will not be applied to the subscription.
+				}
+			}
+
+			// Add shipping.
+			if ( $subscription_needs_shipping ) {
+				foreach ( $order->get_shipping_methods() as $shipping_item ) {
+					$rate = new WC_Shipping_Rate( $shipping_item->get_method_id(), $shipping_item->get_method_title(), $shipping_item->get_total(), $shipping_item->get_taxes(), $shipping_item->get_instance_id() );
+
+					$item = new WC_Order_Item_Shipping();
+					$item->set_order_id( $subscription->get_id() );
+					$item->set_shipping_rate( $rate );
+
+					$subscription->add_item( $item );
+				}
+			}
+
+			// Add fees.
+			foreach ( $order->get_fees() as $fee_item ) {
+				if ( ! apply_filters( 'wcs_should_copy_fee_item_to_subscription', true, $fee_item, $subscription, $order ) ) {
+					continue;
+				}
+
+				$item = new WC_Order_Item_Fee();
+				$item->set_props(
+					array(
+						'name'      => $fee_item->get_name(),
+						'tax_class' => $fee_item->get_tax_class(),
+						'amount'    => $fee_item->get_amount(),
+						'total'     => $fee_item->get_total(),
+						'total_tax' => $fee_item->get_total_tax(),
+						'taxes'     => $fee_item->get_taxes(),
+					)
+				);
+
+				$subscription->add_item( $item );
+			}
+
+			$subscription->calculate_totals();
+			$subscription->save();
+
+			$subscriptions[] = wcs_get_subscription( $subscription->get_id() );
+		}
+
+		return $subscriptions;
+	}
+
+	public function save_session_in_order( $order ) {
+		// The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
+		// The Vipps class will restore the session from this on callbacks.
+		$session_cookie  = [];
+		$session_handler = WC()->session;
+
+		if ( $session_handler && is_a( $session_handler, 'WC_Session_Handler' ) ) {
+			// If customer is actually logged in, take note
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_EXPRESS_CUSTOMER_ID, get_current_user_id() );
+			WC()->session->save_data();
+
+			$session_cookie = $session_handler->get_session_cookie();
+		}
+
+		if ( ! empty( $session_cookie ) ) {
+			// Customer id, session expiration, session expiring and cookie-hash is the contents
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_SESSION_DATA, json_encode( $session_cookie ) );
+			$order->save();
+		}
 	}
 }

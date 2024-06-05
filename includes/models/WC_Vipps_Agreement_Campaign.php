@@ -5,6 +5,7 @@ defined( 'ABSPATH' ) || exit;
 class WC_Vipps_Agreement_Campaign extends WC_Vipps_Model {
 	public const TYPE_PRICE_CAMPAIGN = "PRICE_CAMPAIGN";
 	public const TYPE_PERIOD_CAMPAIGN = "PERIOD_CAMPAIGN";
+	public const TYPE_PERIOD_CAMPAIGN_V3 = "PeriodCampaignV3";
 	public const TYPE_EVENT_CAMPAIGN = "EVENT_CAMPAIGN";
 	public const TYPE_FULL_FLEX_CAMPAIGN = "FULL_FLEX_CAMPAIGN";
 	public const TYPE_LEGACY_CAMPAIGN = "LEGACY_CAMPAIGN";

@@ -302,7 +302,7 @@ class WC_Vipps_Recurring_Api {
 			'Authorization' => 'Bearer ' . $token,
 		];
 
-		$endpoint = str_replace( $this->gateway->api_url, '', $agreement->userinfo_url );
+		$endpoint = str_replace( $this->get_base_url(), '', $agreement->userinfo_url );
 
 		return $this->http_call( $endpoint, 'GET', [], $headers );
 	}
@@ -377,13 +377,25 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function checkout_poll( string $endpoint ) {
+		return $this->http_call( $endpoint, 'GET' );
+	}
+
+	/**
+	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function checkout_initiate( WC_Vipps_Checkout_Session $checkout_session ): WC_Vipps_Checkout_Session_Response {
 		$token = $this->get_access_token();
 
 		$headers = [
 			'Authorization' => 'Bearer ' . $token,
 		];
 
-		return $this->http_call( $endpoint, 'GET', [], $headers );
+		$response = $this->http_call( 'checkout/v3/session', 'POST', $checkout_session->to_array(), $headers );
+
+		return new WC_Vipps_Checkout_Session_Response( $response );
 	}
 
 	private function get_base_url(): string {
