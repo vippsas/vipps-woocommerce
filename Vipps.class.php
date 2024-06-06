@@ -2907,8 +2907,13 @@ EOF;
          }
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
+
         if (empty($shipping_methods)) {
-            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order will fail', 'woo-vipps', 'warning'), Vipps::ExpressCheckoutName()));
+            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order %2$d will fail', 'woo-vipps', 'warning'), Vipps::ExpressCheckoutName(), $order->get_id()), 'debug');
+            $this->log(sprintf(__('Address given for %1$s was %2$s', 'woo-vipps'), $order->get_id(), 
+              ($addressline1 . " " .  $addressline2 . " " .  $city . " " .  $postcode . " " .  $country)
+            ), 'debug');
+
         }
 
        
