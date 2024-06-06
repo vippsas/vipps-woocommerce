@@ -88,6 +88,23 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 
     // Helper code for specific plugins, themes etc
     require_once(dirname(__FILE__) .  '/woo-vipps-compatibility.php');
+
+    // Load code for the new WooCommerce product editor
+    add_action('woocommerce_init', function() {
+        // Only load if we're on a version of WooCommerce that supports all the blocks and features we're using.
+        $is_version_supported = version_compare(wc()->version, '8.6.0', '>=');
+        // Only load if the feature flag is enabled.
+        $is_product_editor_v2_enabled = get_option('woocommerce_feature_product_block_editor_enabled');
+        if($is_version_supported && $is_product_editor_v2_enabled) {
+            // Load the new blocks
+            require_once(dirname(__FILE__) .  '/admin/blocks/register-woo-blocks.php');
+
+            // Load the V2 product editor
+            require_once(dirname(__FILE__) .  '/VippsWCProductEditorV2.class.php');
+            VippsWCProductEditorV2::register_hooks();
+
+        }
+    });
 }
 
 add_action ('before_woocommerce_init', function () {

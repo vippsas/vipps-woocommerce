@@ -25,9 +25,9 @@ export function AdminSettingsExpressOptionsTab(): JSX.Element {
         titleKey="singleproductexpress.title"
         descriptionKey="singleproductexpress.description"
         options={[
-          gettext('singleproductexpress.options.none'),
-          gettext('singleproductexpress.options.some'),
-          gettext('singleproductexpress.options.all')
+          { value: 'none', label: gettext('singleproductexpress.options.none') },
+          { value: 'some', label: gettext('singleproductexpress.options.some') },
+          { value: 'all', label: gettext('singleproductexpress.options.all') }
         ]}
       />
 

@@ -22,13 +22,16 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
       <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
 
       {step === 'ESSENTIAL' && (
-        < >
+        <>
           {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
           <SelectFormField
             name="payment_method_name"
             titleKey="payment_method_name.title"
             descriptionKey="payment_method_name.description"
-            options={[gettext('payment_method_name.options.Vipps'), gettext('payment_method_name.options.MobilePay')]}
+            options={[
+              { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },
+              { label: gettext('payment_method_name.options.MobilePay'), value: 'MobilePay' }
+            ]}
           />
 
           {/* Renders an input field for the merchant serial number */}
