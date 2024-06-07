@@ -2583,13 +2583,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			wcs_copy_order_address( $order, $subscription );
 
-			$subscription->update_dates(
-				array(
-					'trial_end'    => WC_Subscriptions_Product::get_trial_expiration_date( $product, $start_date ),
-					'next_payment' => WC_Subscriptions_Product::get_first_renewal_payment_date( $product, $start_date ),
-					'end'          => WC_Subscriptions_Product::get_expiration_date( $product, $start_date ),
-				)
-			);
+			$subscription->update_dates( [
+				'trial_end'    => WC_Subscriptions_Product::get_trial_expiration_date( $product, $start_date ),
+				'next_payment' => WC_Subscriptions_Product::get_first_renewal_payment_date( $product, $start_date ),
+				'end'          => WC_Subscriptions_Product::get_expiration_date( $product, $start_date ),
+			] );
 
 			$subscription->set_payment_method( $order->get_payment_method() );
 

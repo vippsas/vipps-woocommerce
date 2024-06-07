@@ -647,12 +647,21 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws Exception
 	 */
 	public function handle_payment( WC_Order $order, array $session ) {
+		$order_id     = WC_Vipps_Recurring_Helper::get_id( $order );
 		$agreement_id = $session['subscriptionDetails']['agreementId'];
 		$status       = $session['sessionState'];
+
+		// This makes sure we are covered by all our normal cron checks as well
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $session['reference'] );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
+		$order->save();
 
 		// "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
 		if ( in_array( $status, [ 'SessionExpired', 'PaymentTerminated' ] ) ) {
 			$this->abandon_checkout_order( $order );
+
+			return;
 		}
 
 		if ( $status !== 'PaymentSuccessful' ) {
@@ -672,12 +681,8 @@ class WC_Vipps_Recurring_Checkout {
 				$password    = wp_generate_password( 24 );
 				$user_id     = wp_create_user( $username, $password, $email );
 
-				// Log the user in, as they cannot see the order without being logged in.
-				wp_signon( [
-					'user_login'    => $username,
-					'user_password' => $password,
-					'remember'      => true,
-				] );
+				$user = get_user_by_email( $email );
+				do_action( 'retrieve_password', $user->user_login );
 			}
 
 			$order->set_customer_id( $user_id );
@@ -686,22 +691,19 @@ class WC_Vipps_Recurring_Checkout {
 		$this->maybe_update_order_billing_and_shipping( $order, $session );
 		$order->save();
 
-		$charges = $this->gateway()->api->get_charges_for( $agreement_id );
-		$charge  = $charges[0];
-
 		// Create subscription
+		$order         = wc_get_order( $order_id );
 		$subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
 
+		// todo: investigate error here
 		/** @var WC_Subscription $subscription */
 		$subscription = array_pop( $subscriptions );
 		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
-		$subscription->set_payment_method( $this->gateway()->id );
-
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
-		$this->gateway()->complete_order( $order, $charge->id );
-
 		$subscription->save();
-		$order->save();
+
+		// todo: investigate whether we are hitting gw process_order_charge (reserved orders do not get the correct status)
+		// todo: investigate whether we are not auto capturing orders which should be auto captured
+		$this->gateway()->check_charge_status( $order_id );
 	}
 
 	/**

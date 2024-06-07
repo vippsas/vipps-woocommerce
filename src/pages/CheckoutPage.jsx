@@ -94,7 +94,7 @@ export default function CheckoutPage () {
 		return () => {
 			window.removeEventListener('message', listenToIframe)
 		}
-	}, [iframeRef.current])
+	}, [iframeRef.current, session.token])
 
 	return <form id="vippsdata" className="woocommerce-checkout">
 		<div className={'vipps-recurring-checkout-page'}>
