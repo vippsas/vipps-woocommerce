@@ -494,7 +494,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order->save();
 
 		$agreement = $this->get_agreement_from_order( $order );
-		if ( $agreement ) {
+		if ( ! $agreement ) {
 			return 'INVALID';
 		}
 
@@ -554,7 +554,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// If the brand is MobilePay, we should capture the payment now if it is not already captured.
 		// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
 		if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && ! $is_captured && $this->auto_capture_mobilepay ) {
-			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 7 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$this->maybe_capture_payment( $order_id );
+
+			return 'SUCCESS';
+		}
+
+		$is_direct_capture = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
+		if ( $is_direct_capture ) {
 			$this->maybe_capture_payment( $order_id );
 
 			return 'SUCCESS';
@@ -1436,9 +1443,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 			);
 
-			if ( ! $capture_immediately ) {
-				WC_Vipps_Recurring_Helper::update_meta_data( $order, '_vipps_recurring_reserved_capture', true );
-			}
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, $capture_immediately ? WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE : WC_Vipps_Recurring_Helper::META_ORDER_RESERVED_CAPTURE, true );
 		}
 
 		if ( $has_campaign ) {
@@ -1467,7 +1472,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					->set_end( $campaign_end_date )
 					->set_period( $campaign_period )
 			);
-		};
+		}
+
+		$order->save();
 
 		return apply_filters( 'wc_vipps_recurring_process_payment_agreement', $agreement, $subscription, $order );
 	}

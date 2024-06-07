@@ -315,8 +315,10 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 				);
 
 			if ( $agreement->initial_charge ) {
+				$reference = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $order_prefix );
+
 				$checkout_transaction = ( new WC_Vipps_Checkout_Session_Transaction() )
-					->set_reference( WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $order_prefix ) )
+					->set_reference( $reference )
 					->set_amount(
 						( new WC_Vipps_Checkout_Session_Amount() )
 							->set_value( $agreement->initial_charge->amount )
@@ -329,6 +331,8 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 				}
 
 				$checkout_session = $checkout_session->set_transaction( $checkout_transaction );
+
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $reference );
 			}
 
 //			die( json_encode( $checkout_session->to_array() ) );
@@ -338,7 +342,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			$session = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_initiate( $checkout_session );
 
 			$order = wc_get_order( $partial_order_id );
-			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION, $session->to_array() );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION, $session->to_array() );
 
 			$order->add_order_note( __( 'Vipps/MobilePay recurring checkout payment initiated', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 			$order->add_order_note( __( 'Customer passed to Vipps/MobilePay checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ) );

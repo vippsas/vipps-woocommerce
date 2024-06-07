@@ -53,6 +53,8 @@ class WC_Vipps_Recurring_Helper {
 	public const META_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_express_auth_token';
 	public const META_ORDER_NEEDS_SHIPPING = '_vipps_recurring_needs_shipping';
 	public const META_ORDER_SESSION_DATA = '_vipps_recurring_session_data';
+	public const META_ORDER_RESERVED_CAPTURE = '_vipps_recurring_reserved_capture';
+	public const META_ORDER_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
 
 	/**
 	 * Subscription

@@ -651,10 +651,24 @@ class WC_Vipps_Recurring_Checkout {
 		$agreement_id = $session['subscriptionDetails']['agreementId'];
 		$status       = $session['sessionState'];
 
+		// todo: we may need to move all of this code to somewhere further down the line if possible
+		// todo: because our cron still will not recover if it encounters a checkout payment that didn't receive
+		// todo: a callback, aka a payment that didn't hit this function
+		// todo: ideally that probably means we can get rid of this entire function
+
 		// This makes sure we are covered by all our normal cron checks as well
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $session['reference'] );
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
+
+		$order_charge_id = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
+		if ( empty( $order_charge_id ) ) {
+			$charges = $this->gateway()->api->get_charges_for( $agreement_id );
+			/** @var WC_Vipps_Charge $charge */
+			$charge = array_pop( $charges );
+
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
+		}
+
 		$order->save();
 
 		// "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
@@ -701,8 +715,6 @@ class WC_Vipps_Recurring_Checkout {
 		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
 		$subscription->save();
 
-		// todo: investigate whether we are hitting gw process_order_charge (reserved orders do not get the correct status)
-		// todo: investigate whether we are not auto capturing orders which should be auto captured
 		$this->gateway()->check_charge_status( $order_id );
 	}
 

@@ -241,6 +241,8 @@ class WC_Vipps_Recurring {
 			}
 		}
 
+//		$test = $this->gateway()->check_charge_status(931);
+
 		// Show Vipps Login notice for a maximum of 10 days
 		// 1636066799 = 04-11-2021 23:59:59 UTC
 //				if ( ! class_exists( 'VippsWooLogin' ) && time() < 1636066799 ) {
