@@ -805,7 +805,8 @@ jQuery(document).ready(function () {
         // This is for the 'other payment method' thing in Vipps Checkout - we store address info
         // in session. IOK 2024-05-13
         add_filter('woocommerce_checkout_fields', function ($fields) {
-            $possibly_address =  WC()->session->get('vc_address');
+            $possibly_address =  WC()->session?->get('vc_address');
+
             if (!$possibly_address) return $fields;
             WC()->session->set('vc_address', null);
 

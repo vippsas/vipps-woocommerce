@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.0
-Stable tag: 2.1.0
+Version: 2.1.1
+Stable tag: 2.1.1
 Requires at least: 4.7
 Tested up to: 6.5.4
 Requires PHP: 5.6
 WC requires at least: 3.3.4
-WC tested up to: 8.9.1
+WC tested up to: 8.9.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -93,6 +93,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fix issue when using Checkout and Stripe
 Removed support for Instabox in Vipps Checkout Shipping
 Added support for external payment methods in some markets
 Fix an issue with addressline 2 for express checkout when using static shipping
@@ -237,6 +238,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-06-07 version 2.1.1 =
+Fix issue where session was not active when computing checkout fields
 
 = 2024-06-05 version 2.1.0 =
 Removed support for Instabox in Vipps Checkout Shipping
