@@ -77,7 +77,7 @@ class WC_Vipps_Checkout_Session extends WC_Vipps_Model {
 			[
 				"type" => $this->type,
 			],
-			$this->conditional( "prefillCustomer", $this->prefill_customer ),
+			$this->conditional( "prefillCustomer", $this->prefill_customer, true ),
 			$this->conditional( "merchantInfo", $this->merchant_info ),
 			$this->conditional( "configuration", $this->configuration ),
 			$this->conditional( "subscription", $this->subscription ),

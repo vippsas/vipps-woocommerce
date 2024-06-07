@@ -28,8 +28,123 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 		register_rest_route( self::$api_namespace, '/session', [
 			'methods'             => 'POST',
 			'callback'            => [ $this, 'maybe_create_session' ],
-			'permission_callback' => '__return_true'
+			'permission_callback' => function () {
+				// This route does not work if we don't have a cart.
+				return ! empty( WC()->cart );
+			}
 		] );
+
+		register_rest_route( self::$api_namespace, '/session', [
+			'methods'             => 'GET',
+			'callback'            => [ $this, 'poll_session' ],
+			'permission_callback' => function () {
+				// This route does not work if we don't have a cart.
+				return ! empty( WC()->cart );
+			}
+		] );
+	}
+
+	/**
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Data_Exception
+	 */
+	public function poll_session( WP_REST_Request $request ): array {
+		$checkout = WC_Vipps_Recurring_Checkout::get_instance();
+
+		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
+		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
+		$return_url       = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
+
+		$payment_status = $order ? $checkout->gateway()->check_charge_status( $pending_order_id ) : 'UNKNOWN';
+		if ( in_array( $payment_status, [ 'authorized', 'complete' ] ) ) {
+			$checkout->abandon_checkout_order( false );
+
+			return [ 'status' => 'COMPLETED', 'redirect_url' => $return_url ];
+		}
+
+		if ( $payment_status == 'cancelled' ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %s cancelled (payment status)", $order->get_id() ) );
+			$checkout->abandon_checkout_order( $order );
+
+			return [ 'status' => 'FAILED', 'redirect_url' => $return_url ];
+		}
+
+		$session = $order ? $order->get_meta( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION ) : false;
+		if ( ! $session ) {
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ADDRESS_HASH, false );
+
+			return [ 'status' => 'EXPIRED', 'redirect_url' => false ];
+		}
+
+		add_filter( 'woo_vipps_recurring_is_vipps_checkout', '__return_true' );
+		$status = $checkout->get_checkout_status( $session );
+
+		$failed = $status === 'ERROR' || $status === 'EXPIRED' || $status === 'TERMINATED';
+
+		// Disallow sessions that go on for too long.
+		if ( is_a( $order, "WC_Order" ) ) {
+			$created = $order->get_date_created();
+			$now     = time();
+			try {
+				$timestamp = $created->getTimestamp();
+			} catch ( Exception $e ) {
+				// PHP 8 gives ValueError for certain older versions of WooCommerce here.
+				$timestamp = intval( $created->format( 'U' ) );
+
+			}
+			$passed  = $now - $timestamp;
+			$minutes = ( $passed / 60 );
+
+			// Expire after 50 minutes
+			if ( $minutes > 50 ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %s expired after %d minutes (limit 50)", $order->get_id(), $minutes ) );
+				$checkout->abandon_checkout_order( $order );
+
+				return [ 'status' => 'EXPIRED', 'redirect_url' => false ];
+			}
+		}
+
+		$ok = ! $failed;
+
+		// Since we checked the payment status at Vipps directly above, we don't actually have any extra information at this point.
+		// We do know that the session is live and ongoing, but that's it.
+
+		if ( $failed ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %2\$d failed with message %3\$s", $order->get_id(), $status ) );
+			$checkout->abandon_checkout_order( $order );
+
+			return [ 'status' => $status, 'redirect_url' => $return_url ];
+		}
+
+		// Errorhandling! If this happens we have an unknown status or something like it.
+		if ( ! $ok ) {
+			WC_Vipps_Recurring_Logger::log( "Unknown status on polling status: " . print_r( $status, true ) );
+			$checkout->abandon_checkout_order( $order );
+
+			return [ 'status' => 'ERROR', 'redirect_url' => false ];
+		}
+
+		// This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
+		$change             = false;
+		$vipps_address_hash = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ADDRESS_HASH );
+		if ( isset( $status['billingDetails'] ) || isset( $status['shippingDetails'] ) ) {
+			$serialized = sha1( json_encode( @$status['billingDetails'] ) . ':' . json_encode( @$status['shippingDetails'] ) );
+			if ( $serialized != $vipps_address_hash ) {
+				$change = true;
+				WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ADDRESS_HASH, $serialized );
+			}
+		}
+
+		if ( $change ) {
+			$checkout->maybe_update_order_billing_and_shipping( $order, $status );
+			$order->save();
+
+			return [ 'status' => 'ORDER_CHANGE', 'redirect_url' => false ];
+		}
+
+		return [ 'status' => 'NO_CHANGE', 'redirect_url' => false ];
 	}
 
 	/**
@@ -67,18 +182,13 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			];
 		}
 
-		// todo: logic for creating a new checkout session
-		// todo: need logic to create a partial order
-		// todo: on success we need to create a subcription as well, but deal with this in the code that handles payment success
+		// todo: on success we need to create a subscription as well, but deal with this in the code that handles payment success
 		// todo: static shipping
 		// todo: after we have partial order support we will also be able to do "express checkout" style payments with subscriptions
 		$session = null;
 
 		try {
-			[
-				$partial_order_id,
-				$partial_subscription_id
-			] = WC_Gateway_Vipps_Recurring::get_instance()->create_partial_order_and_subscription( true );
+			$partial_order_id = WC_Gateway_Vipps_Recurring::get_instance()->create_partial_order( true );
 
 			$order      = wc_get_order( $partial_order_id );
 			$auth_token = WC_Gateway_Vipps_Recurring::get_instance()->api->generate_idempotency_key();
@@ -108,10 +218,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			];
 		}
 
-		$order        = wc_get_order( $partial_order_id );
-		$subscription = wcs_get_subscription( $partial_subscription_id );
-
-		$request_id = 1;
+		$order = wc_get_order( $partial_order_id );
 
 		$session_orders = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ORDERS );
 		if ( ! $session_orders ) {
@@ -157,13 +264,15 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 				break;
 			}
 		}
-		$customer_info = apply_filters( 'wc_vipps_recurring_customer_info', $customer_info, $order, $subscription );
+		$customer_info = apply_filters( 'wc_vipps_recurring_customer_info', $customer_info, $order );
 
 		try {
-			$gateway      = WC_Gateway_Vipps_Recurring::get_instance();
+			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
+			$gateway  = $checkout->gateway();
+
 			$order_prefix = $gateway->order_prefix;
 
-			$agreement = $gateway->create_vipps_agreement_from_order( $subscription );
+			$agreement = $gateway->create_vipps_agreement_from_order( $order );
 
 			$checkout_subscription = ( new WC_Vipps_Checkout_Session_Subscription() )
 				->set_amount(
@@ -202,7 +311,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 						->set_customer_interaction( WC_Vipps_Checkout_Session_Configuration::CUSTOMER_INTERACTION_NOT_PRESENT )
 						->set_elements( WC_Vipps_Checkout_Session_Configuration::ELEMENTS_FULL )
 						->set_require_user_info( empty( $customer->email ) )
-//						->set_show_order_summary( true )
+						->set_show_order_summary( true )
 				);
 
 			if ( $agreement->initial_charge ) {
@@ -212,8 +321,8 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 						( new WC_Vipps_Checkout_Session_Amount() )
 							->set_value( $agreement->initial_charge->amount )
 							->set_currency( $agreement->pricing->currency )
-					)//						->set_order_summary()
-				;
+					)
+					->set_order_summary( $checkout->make_order_summary( $order ) );
 
 				if ( $agreement->initial_charge->description ) {
 					$checkout_transaction = $checkout_transaction->set_payment_description( $agreement->initial_charge->description );
@@ -224,7 +333,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 
 //			die( json_encode( $checkout_session->to_array() ) );
 
-			$checkout_session = apply_filters( 'wc_vipps_recurring_checkout_session', $checkout_session, $order, $subscription );
+			$checkout_session = apply_filters( 'wc_vipps_recurring_checkout_session', $checkout_session, $order );
 
 			$session = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_initiate( $checkout_session );
 

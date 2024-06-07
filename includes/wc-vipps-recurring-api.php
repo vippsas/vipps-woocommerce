@@ -377,7 +377,17 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function checkout_poll( string $endpoint ) {
-		return $this->http_call( $endpoint, 'GET' );
+		if ( ! str_starts_with( $endpoint, 'http' ) ) {
+			$endpoint = 'checkout/v3/session/' . $endpoint;
+		}
+
+		$token = $this->get_access_token();
+
+		$headers = [
+			'Authorization' => 'Bearer ' . $token,
+		];
+
+		return $this->http_call( $endpoint, 'GET', [], $headers );
 	}
 
 	/**
@@ -416,8 +426,11 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [] ) {
-		$url = $this->get_base_url() . '/' . $endpoint;
+	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [], $encoding = 'json' ) {
+		$url = $endpoint;
+		if ( ! str_starts_with( $endpoint, "http" ) ) {
+			$url = $this->get_base_url() . '/' . $endpoint;
+		}
 
 		$client_id              = $this->gateway->get_option( "client_id" );
 		$secret_key             = $this->gateway->get_option( "secret_key" );
@@ -439,7 +452,6 @@ class WC_Vipps_Recurring_Api {
 			'client_id'                   => $client_id,
 			'client_secret'               => $secret_key,
 			'Ocp-Apim-Subscription-Key'   => $subscription_key,
-			'Content-Type'                => 'application/json',
 			'Merchant-Serial-Number'      => $merchant_serial_number,
 			'Vipps-System-Name'           => 'woocommerce',
 			'Vipps-System-Version'        => get_bloginfo( 'version' ) . '/' . ( defined( 'WC_VERSION' ) ? WC_VERSION : '0.0.0' ),
@@ -447,26 +459,42 @@ class WC_Vipps_Recurring_Api {
 			'Vipps-System-Plugin-Version' => WC_VIPPS_RECURRING_VERSION
 		], $headers );
 
-		$body = $method === 'GET' ? $data : json_encode( $data );
+		if ( $encoding === 'url' || $method === 'GET' ) {
+			$data_encoded = http_build_query( $data );
+		} else {
+			$data_encoded = json_encode( $data );
+		}
 
-		$args = [
-			'method'  => $method,
-			'timeout' => 30,
-			'headers' => $headers,
-			'body'    => $body,
-		];
+		$data_len              = strlen( $data_encoded );
+		$headers['Connection'] = 'close';
 
-		$response = wp_remote_post( $url, $args );
+		if ( $method !== 'GET' ) {
+			$headers['Content-length'] = $data_len;
+			$headers['Content-type']   = $encoding === 'url' ? 'application/x-www-form-urlencoded' : 'application/json';
+		}
+
+		$args            = [];
+		$args['method']  = $method;
+		$args['headers'] = $headers;
+
+		if ( $method !== 'GET' ) {
+			$args['body'] = $data_encoded;
+		}
+
+		if ( $method === 'GET' && $data_encoded ) {
+			$url .= "?$data_encoded";
+		}
+
+		$response = wp_remote_request( $url, $args );
 
 		// throw WP error as a WC_Vipps_Recurring_Exception if response is not valid
 		$default_error = '';
-
 		if ( is_wp_error( $response ) ) {
 			$default_error = "500 " . $response->get_error_message();
 		}
 
 		// Parse the result, converting it to exceptions if necessary
-		return $this->handle_http_response( $response, $body, $endpoint, $default_error );
+		return $this->handle_http_response( $response, $args['body'] ?? "<empty>", $endpoint, $default_error );
 	}
 
 	/**

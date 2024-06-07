@@ -233,6 +233,7 @@ class WC_Vipps_Recurring {
 					$this->gateway()->webhook_initialize();
 				} else {
 					$ok = $this->gateway()->webhook_ensure_this_site();
+
 					if ( ! $ok ) {
 						$this->gateway()->webhook_initialize();
 					}
@@ -896,12 +897,25 @@ class WC_Vipps_Recurring {
 		return load_textdomain( $domain, $path . '/' . $mo_file, $locale );
 	}
 
+	/**
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 */
 	public function handle_webhook_callback() {
 		wc_nocache_headers();
 		status_header( 202, "Accepted" );
 
 		$raw_input = @file_get_contents( 'php://input' );
-		$result    = @json_decode( $raw_input, true );
+		$body      = @json_decode( $raw_input, true );
+
+		// If we have a sessionId, this indicates that we are dealing with a Checkout callback.
+		// Fire a hook and let Checkout deal with its own logic.
+		if ( isset( $body['sessionId'] ) ) {
+			$authorization_token = $_SERVER['HTTP_AUTHORIZATION'];
+
+			do_action( 'woo_vipps_recurring_checkout_callback', $body, $authorization_token );
+		}
 
 		$callback = $_REQUEST['callback'] ?? "";
 
@@ -909,7 +923,7 @@ class WC_Vipps_Recurring {
 			return;
 		}
 
-		if ( ! $result ) {
+		if ( ! $body ) {
 			$error = json_last_error_msg();
 			WC_Vipps_Recurring_Logger::log( sprintf( "Did not understand callback from Vipps/MobilePay with body: %s – error: %s", empty( $raw_input ) ? "(empty string)" : $raw_input, $error ) );
 
@@ -920,7 +934,7 @@ class WC_Vipps_Recurring {
 		$local_webhook  = array_pop( $local_webhooks );
 		$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
 
-		$orderId = $result['referenceId'];
+		$orderId = $body['referenceId'];
 
 		if ( ! $secret ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Cannot verify webhook callback for order %s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.", $orderId ) );
@@ -930,10 +944,10 @@ class WC_Vipps_Recurring {
 			return;
 		}
 
-		do_action( "woo_vipps_recurring_webhook_callback", $result, $raw_input );
+		do_action( "woo_vipps_recurring_webhook_callback", $body, $raw_input );
 
 		// We now have a validated webhook
-		$this->gateway()->handle_webhook_callback( $result );
+		$this->gateway()->handle_webhook_callback( $body );
 	}
 
 	public function verify_webhook( $serialized, $secret ): bool {

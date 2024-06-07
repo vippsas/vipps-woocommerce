@@ -30,8 +30,8 @@ class WC_Vipps_Checkout_Session_Transaction_Order_Summary extends WC_Vipps_Model
 		}
 
 		return [
-			"order_lines"       => $this->order_lines,
-			"order_bottom_line" => $this->order_bottom_line,
+			"orderLines"      => $this->order_lines,
+			"orderBottomLine" => $this->order_bottom_line,
 		];
 	}
 }

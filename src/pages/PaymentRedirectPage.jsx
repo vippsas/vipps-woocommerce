@@ -1,7 +1,8 @@
-import {useEffect, useMemo, useState} from '@wordpress/element'
+import { useEffect, useMemo, useState } from '@wordpress/element'
 import apiFetch from '@wordpress/api-fetch'
-import PaymentRedirect from "../components/PaymentRedirectPage/PaymentRedirect";
-import PaymentCancelled from "../components/PaymentRedirectPage/PaymentCancelled";
+import PaymentRedirect from '../components/PaymentRedirectPage/PaymentRedirect'
+import PaymentCancelled
+	from '../components/PaymentRedirectPage/PaymentCancelled'
 
 export default function PaymentRedirectPage () {
 	const { logo, continueShoppingUrl } = window.VippsMobilePaySettings
@@ -22,16 +23,20 @@ export default function PaymentRedirectPage () {
 		}
 
 		clearInterval(intervalHandler)
-		window.location.href = response.redirect_url
+
+		if (response.redirect_url) {
+			window.location.href = response.redirect_url
+		}
 	}, [response])
 
 	const cancelled = useMemo(() => {
 		if (!response) {
-			return false;
+			return false
 		}
 
 		return ['EXPIRED', 'STOPPED'].includes(response.status)
 	}, [response])
 
-	return (!cancelled ? <PaymentRedirect logo={logo} /> : <PaymentCancelled logo={logo} continueShoppingUrl={continueShoppingUrl} />)
+	return (!cancelled ? <PaymentRedirect logo={logo}/> : <PaymentCancelled
+		logo={logo} continueShoppingUrl={continueShoppingUrl}/>)
 }

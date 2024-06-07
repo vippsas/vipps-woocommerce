@@ -73,6 +73,7 @@ class WC_Vipps_Recurring_Helper {
 	public const SESSION_ORDERS = '_vipps_recurring_session_orders';
 	public const SESSION_PENDING_ORDER_ID = '_vipps_recurring_session_pending_order_id';
 	public const SESSION_EXPRESS_CUSTOMER_ID = '_vipps_recurring_session_customer_id';
+	public const SESSION_ADDRESS_HASH = '_vipps_recurring_address_hash';
 
 	/**
 	 * Whether we are successfully connected to the Vipps/MobilePay API
@@ -211,6 +212,10 @@ class WC_Vipps_Recurring_Helper {
 	 * @return mixed
 	 */
 	public static function get_meta( $resource, $meta_key ) {
+		if ( ! $resource ) {
+			return null;
+		}
+
 		return self::is_wc_lt( '2.6.0' )
 			? get_post_meta( self::get_id( $resource ), $meta_key, true )
 			: $resource->get_meta( $meta_key );

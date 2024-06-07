@@ -65,12 +65,16 @@ abstract class WC_Vipps_Model {
 		return $value;
 	}
 
-	protected function conditional( string $name, $value ): array {
+	protected function conditional( string $name, $value, $remove_if_empty = false ): array {
 		if ( ! $value ) {
 			return [];
 		}
 
 		$value = $this->serialize_value( $value );
+
+		if ( $remove_if_empty && empty( $value ) ) {
+			return [];
+		}
 
 		return [ $name => $value ];
 	}

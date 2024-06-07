@@ -846,7 +846,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		set_transient( 'cancel_subscription_lock' . $subscription_id, uniqid( '', true ), 30 );
 
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
-		$agreement    = $this->api->get_agreement( $agreement_id );
+		if ( $agreement_id === null ) {
+			return;
+		}
+
+		$agreement = $this->api->get_agreement( $agreement_id );
 
 		if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 			$this->maybe_handle_subscription_status_transitions( $subscription, $new_status, 'active' );
@@ -1300,9 +1304,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$subscription = $order;
 		}
 
-		$subscription_period = $order->get_billing_period();
+		// This supports not yet having a subscription, purely because of Express and Checkout orders
+		if ( is_a( $subscription, 'WC_Subscription' ) ) {
+			$subscription_period   = $subscription->get_billing_period();
+			$subscription_interval = $subscription->get_billing_interval();
+		} else {
+			$subscription_groups = $this->create_partial_subscription_groups_from_order( $order );
+			$items               = array_pop( $subscription_groups );
+			$product             = $items[0]->get_product();
 
-		$subscription_interval = $order->get_billing_interval();
+			$subscription_period   = WC_Subscriptions_Product::get_period( $product );
+			$subscription_interval = WC_Subscriptions_Product::get_interval( $product );
+		}
 
 		$items = array_reverse( $order->get_items() );
 
@@ -2207,6 +2220,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$callback_url      = $this->webhook_callback_url();
 		$callback_url_base = strtok( $callback_url, "?" );
 
+		// Make sure we don't do this more than once every 30 minutes, and only if the callback url base changes.
+		$webhook_transient = "vipps-recurring-webhooks-site";
+		if ( get_transient( $webhook_transient ) === $callback_url_base ) {
+			return true;
+		}
+
+		set_transient( $webhook_transient, $callback_url_base, 1800 );
+
 		if ( empty( $local_webhooks[ $msn ] ) ) {
 			return false;
 		}
@@ -2413,7 +2434,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Data_Exception
 	 * @throws Exception
 	 */
-	public function create_partial_order_and_subscription( $checkout = false ): array {
+	public function create_partial_order( $checkout = false ): int {
 		// This is necessary for some plugins, like YITH Dynamic Pricing, that adds filters to get_price depending on whether is_checkout is true.
 		// so basically, since we are impersonating WC_Checkout here, we should define this constant too
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
@@ -2494,16 +2515,34 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
-		$subscriptions   = $this->create_partial_subscriptions_from_order( $order );
-		$subscription    = array_pop( $subscriptions );
-		$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
+		// todo: move this to Express/Checkout payment completion handling
+//		$subscriptions   = $this->create_partial_subscriptions_from_order( $order );
+//		$subscription    = array_pop( $subscriptions );
+//		$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
-		return [ $order_id, $subscription_id ];
+		return $order_id;
 	}
 
-	// Based on WC_REST_Subscriptions_Controller::create_subscriptions_from_order
+	public function create_partial_subscription_groups_from_order( WC_Order $order ): array {
+		$subscription_groups = [];
+
+		// Group the order items into subscription groups.
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+
+			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+				continue;
+			}
+
+			$subscription_groups[ wcs_get_subscription_item_grouping_key( $item ) ][] = $item;
+		}
+
+		return $subscription_groups;
+	}
 
 	/**
+	 * Based on WC_REST_Subscriptions_Controller::create_subscriptions_from_order
+	 *
 	 * @throws Exception
 	 */
 	public function create_partial_subscriptions_from_order( WC_Order $order ) {
@@ -2517,26 +2556,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$subscription_groups = [];
 		$subscriptions       = [];
+		$subscription_groups = $this->create_partial_subscription_groups_from_order( $order );
 
-		// Group the order items into subscription groups.
-		foreach ( $order->get_items() as $item ) {
-			$product = $item->get_product();
-
-			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
-				continue;
-			}
-
-			$subscription_groups[ wcs_get_subscription_item_grouping_key( $item ) ][] = $item;
-		}
-
-		// Return a 204 if there are no subscriptions to be created.
 		if ( empty( $subscription_groups ) ) {
-			$response = rest_ensure_response( $subscriptions );
-			$response->set_status( 204 );
-
-			return $response;
+			return false;
 		}
 
 		foreach ( $subscription_groups as $items ) {
@@ -2545,7 +2569,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$start_date   = wcs_get_datetime_utc_string( $order->get_date_created( 'edit' ) );
 			$subscription = wcs_create_subscription( [
 				'order_id'         => $order_id,
-				'created_via'      => 'rest-api',
+				'created_via'      => $order->get_created_via( 'edit' ),
 				'start_date'       => $start_date,
 				'status'           => $order->is_paid() ? 'active' : 'pending',
 				'billing_period'   => WC_Subscriptions_Product::get_period( $product ),

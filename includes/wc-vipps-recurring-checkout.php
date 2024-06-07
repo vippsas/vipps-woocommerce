@@ -31,7 +31,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 	}
 
-	private function gateway(): ?WC_Gateway_Vipps_Recurring {
+	public function gateway(): ?WC_Gateway_Vipps_Recurring {
 		if ( $this->gateway ) {
 			return $this->gateway;
 		}
@@ -106,11 +106,60 @@ class WC_Vipps_Recurring_Checkout {
 
 		// The Vipps MobilePay Checkout feature which overrides the normal checkout process uses a shortcode
 		add_shortcode( 'vipps_recurring_checkout', [ $this, 'shortcode' ] );
+
+		// For Checkout, we need to know any time and as soon as the cart changes, so fold all the events into a single one
+		add_action( 'woocommerce_add_to_cart', function () {
+			do_action( 'vipps_recurring_cart_changed' );
+		}, 10, 0 );
+
+		// Cart emptied
+		add_action( 'woocommerce_cart_emptied', function () {
+			do_action( 'vipps_recurring_cart_changed' );
+		}, 10, 0 );
+
+		// After updating quantities
+		add_action( 'woocommerce_after_cart_item_quantity_update', function () {
+			do_action( 'vipps_recurring_cart_changed' );
+		}, 10, 0 );
+
+		// Blocks and ajax
+		add_action( 'woocommerce_cart_item_removed', function () {
+			do_action( 'vipps_recurring_cart_changed' );
+		}, 10, 0 );
+
+		// Restore deleted entry
+		add_action( 'woocommerce_cart_item_restored', function () {
+			do_action( 'vipps_recurring_cart_changed' );
+		}, 10, 0 );
+
+		// Normal cart form update
+		add_filter( 'woocommerce_update_cart_action_cart_updated', function ( $updated ) {
+			do_action( 'vipps_recurring_cart_changed' );
+
+			return $updated;
+		} );
+
+		// Then handle the actual cart change
+		add_action( 'vipps_recurring_cart_changed', [ $this, 'cart_changed' ] );
+
+		add_action( 'woo_vipps_recurring_checkout_callback', [ $this, 'handle_callback' ], 10, 2 );
 	}
 
 	public function admin_init() {
 		// Checkout page
 		add_filter( 'woocommerce_settings_pages', array( $this, 'woocommerce_settings_pages' ) );
+	}
+
+	public function cart_changed() {
+		$pending_order_id = is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID ) : false;
+		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
+
+		if ( ! $order ) {
+			return;
+		}
+
+		WC_Vipps_Recurring_Logger::log( sprintf( "Checkout cart changed while session %d in progress - now cancelled", $order->get_id() ) );
+		$this->abandon_checkout_order( $order );
 	}
 
 	public function woocommerce_settings_pages( $settings ) {
@@ -232,6 +281,11 @@ class WC_Vipps_Recurring_Checkout {
 		);
 	}
 
+	/**
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 */
 	public function shortcode() {
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 			return false;
@@ -276,65 +330,130 @@ class WC_Vipps_Recurring_Checkout {
 		wp_add_inline_script( 'woo-vipps-recurring-checkout', 'window.VippsRecurringCheckout = ' . wp_json_encode( $data ), 'before' );
 
 		return '<div id="vipps-mobilepay-recurring-checkout"></div>';
+	}
 
-//		if ( $session_info['redirect'] ) {
-//			// This is always either the thankyou page or home_url()  IOK 2021-09-03
-//			$redir = json_encode( $session_info['redirect'] );
-//			$out   .= "<script>window.location.replace($redir);</script>";
-//
-//			return $out;
-//		}
-//
-//		// Now the normal case.
-//		$error_text  = apply_filters( 'woo_vipps_recurring_checkout_error', __( 'An error has occured - please reload the page to restart your transaction, or return to the shop', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
-//		$expire_text = apply_filters( 'woo_vipps_recurring_checkout_error', __( 'Your session has expired - please reload the page to restart, or return to the shop', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
-//
-//		$out .= Vipps::instance()->spinner();
-//
-//		if ( ! $session_info['session'] ) {
-//			$out .= "<div style='visibility:hidden' class='vipps_checkout_startdiv'>";
-//
-//			// translators: %s is  Vipps or MobilePay depending on what brand we're using
-//			$out .= "<h2>" . sprintf( __( 'Press the button to complete your order with %s!', 'vipps-recurring-payments-gateway-for-woocommerce' ), WC_Gateway_Vipps_Recurring::get_instance()->get_method_title() ) . "</h2>";
-//
-//			// translators: %s is  Vipps or MobilePay depending on what brand we're using
-//			$out .= '<div class="vipps_checkout_button_wrapper" ><button type="submit" class="button vipps_checkout_button vippsorange" value="1">' . sprintf( __( '%s Checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ), WC_Gateway_Vipps_Recurring::get_instance()->get_method_title() ) . '</button></div>';
-//			$out .= "</div>";
-//		}
-//
-//		// If we have an actual live session right now, add it to the page on load. Otherwise, the session will be started using ajax after the page loads (and is visible)
-//		if ( $session_info['session'] ) {
-//			$token = $session_info['session']['token'];      // From Vipps
-//			$src   = $session_info['session']['checkoutFrontendUrl'];  // From Vipps
-//			$out   .= "<script>VippsSessionState = " . json_encode( array(
-//					'token'               => $token,
-//					'checkoutFrontendUrl' => $src
-//				) ) . ";</script>\n";
-//		} else {
-//			$out .= "<script>VippsSessionState = null;</script>\n";
-//		}
-//
-//		// Check that these exist etc
-//		$out .= "<div id='vippscheckoutframe'>";
-//
-//		$out .= "</div>";
-//		$out .= "<div style='display:none' id='vippscheckouterror'><p>$error_text</p></div>";
-//		$out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expire_text</p></div>";
-//
-//		// We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
-//		$out .= "<form id='vippsdata' class='woocommerce-checkout'>";
-//		$out .= "<input type='hidden' id='vippsorderid' name='_vippsorder' value='" . intval( $current_pending ) . "' />";
-////		// And this is for the order attribution feature of Woo 8.5 IOK 2024-01-09
-////		if ( WC_Gateway_Vipps::instance()->get_option( 'vippsorderattribution' ) == 'yes' ) {
-////			$out .= '<input type="hidden" id="vippsorderattribution" value="1" />';
-////			ob_start();
-////			do_action( 'woocommerce_after_order_notes' );
-////			$out .= ob_get_clean();
-////		}
-//		$out .= wp_nonce_field( 'do_vipps_recurring_checkout', 'vipps_recurring_checkout_sec', 1, false );
-//		$out .= "</form>";
-//
-//		return $out;
+	public function make_order_summary( $order ): WC_Vipps_Checkout_Session_Transaction_Order_Summary {
+		$order_lines = [];
+
+		$bottom_line = ( new WC_Vipps_Checkout_Session_Transaction_Order_Summary_Bottom_Line() )
+			->set_currency( $order->get_currency() )
+			->set_gift_card_amount( apply_filters( 'woo_vipps_recurring_order_gift_card_amount', 0, $order ) * 100 )
+			->set_tip_amount( apply_filters( 'woo_vipps_recurring_order_tip_amount', 0, $order ) * 100 )
+			->set_terminal_id( apply_filters( 'woo_vipps_recurring_order_terminal_id', 'woocommerce', $order ) )
+			->set_receipt_number( strval( WC_Vipps_Recurring_Helper::get_id( $order ) ) );
+
+		foreach ( $order->get_items() as $order_item ) {
+			$order_line      = [];
+			$product_id      = $order_item->get_product_id(); // sku can be tricky
+			$total_no_tax    = $order_item->get_total();
+			$tax             = $order_item->get_total_tax();
+			$total           = $tax + $total_no_tax;
+			$subtotal_no_tax = $order_item->get_subtotal();
+			$subtotal_tax    = $order_item->get_subtotal_tax();
+			$subtotal        = $subtotal_no_tax + $subtotal_tax;
+			$quantity        = $order_item->get_quantity();
+			$unit_price      = $subtotal / $quantity;
+
+			// Must do this to avoid rounding errors, since we get floats instead of money here :(
+			$discount = round( 100 * $subtotal ) - round( 100 * $total );
+			if ( $discount < 0 ) {
+				$discount = 0;
+			}
+
+			$product = wc_get_product( $product_id );
+			$url     = home_url( "/" );
+			if ( $product ) {
+				$url = get_permalink( $product_id );
+			}
+
+			if ( $subtotal_no_tax == 0 ) {
+				$tax_percentage = 0;
+			} else {
+				$tax_percentage = ( ( $subtotal - $subtotal_no_tax ) / $subtotal_no_tax ) * 100;
+			}
+			$tax_percentage = abs( round( $tax_percentage ) );
+
+			$unit_info                             = [];
+			$order_line['name']                    = $order_item->get_name();
+			$order_line['id']                      = strval( $product_id );
+			$order_line['totalAmount']             = round( $total * 100 );
+			$order_line['totalAmountExcludingTax'] = round( $total_no_tax * 100 );
+			$order_line['totalTaxAmount']          = round( $tax * 100 );
+
+			$order_line['taxPercentage'] = $tax_percentage;
+			$unit_info['unitPrice']      = round( $unit_price * 100 );
+			$unit_info['quantity']       = strval( $quantity );
+			$unit_info['quantityUnit']   = 'PCS';
+			$order_line['unitInfo']      = $unit_info;
+			$order_line['discount']      = $discount;
+			$order_line['productUrl']    = $url;
+			$order_line['isShipping']    = false;
+
+			$order_lines[] = $order_line;
+		}
+
+		foreach ( $order->get_items( 'fee' ) as $order_item ) {
+			$order_line                            = [];
+			$total_no_tax                          = $order_item->get_total();
+			$tax                                   = $order_item->get_total_tax();
+			$total                                 = $tax + $total_no_tax;
+			$tax_percentage                        = ( ( $total - $total_no_tax ) / $total_no_tax ) * 100;
+			$tax_percentage                        = abs( round( $tax_percentage ) );
+			$order_line['name']                    = $order_item->get_name();
+			$order_line['id']                      = substr( sanitize_title( $order_line['name'] ), 0, 254 );
+			$order_line['totalAmount']             = round( $total * 100 );
+			$order_line['totalAmountExcludingTax'] = round( $total_no_tax * 100 );
+			$order_line['totalTaxAmount']          = round( $tax * 100 );
+			$order_line['discount']                = 0;
+			$order_line['taxPercentage']           = $tax_percentage;
+
+			$order_lines[] = $order_line;
+		}
+
+		// Handle shipping
+		foreach ( $order->get_items( 'shipping' ) as $order_item ) {
+			$order_line         = [];
+			$order_line['name'] = $order_item->get_name();
+			$order_line['id']   = strval( $order_item->get_method_id() );
+			if ( method_exists( $order_item, 'get_instance_id' ) ) {
+				$order_line['id'] .= ":" . $order_item->get_instance_id();
+			}
+
+			$total_no_tax    = $order_item->get_total();
+			$tax             = $order_item->get_total_tax();
+			$total           = $tax + $total_no_tax;
+			$subtotal_no_tax = $total_no_tax;
+			$subtotal_tax    = $tax;
+			$subtotal        = $subtotal_no_tax + $subtotal_tax;
+
+			if ( $subtotal_no_tax == 0 ) {
+				$tax_percentage = 0;
+			} else {
+				$tax_percentage = ( ( $subtotal - $subtotal_no_tax ) / $subtotal_no_tax ) * 100;
+			}
+			$tax_percentage = abs( round( $tax_percentage ) );
+
+			$order_line['totalAmount']             = round( $total * 100 );
+			$order_line['totalAmountExcludingTax'] = round( $total_no_tax * 100 );
+			$order_line['totalTaxAmount']          = round( $tax * 100 );
+			$order_line['taxPercentage']           = $tax_percentage;
+
+			$unit_info                 = [];
+			$unit_info['unitPrice']    = round( $total * 100 );
+			$unit_info['quantity']     = strval( 1 );
+			$unit_info['quantityUnit'] = 'PCS';
+
+			$order_line['unitInfo']   = $unit_info;
+			$discount                 = 0;
+			$order_line['discount']   = $discount;
+			$order_line['isShipping'] = true;
+
+			$order_lines[] = $order_line;
+		}
+
+		return ( new WC_Vipps_Checkout_Session_Transaction_Order_Summary() )
+			->set_order_lines( $order_lines )
+			->set_order_bottom_line( $bottom_line );
 	}
 
 	/**
@@ -352,10 +471,10 @@ class WC_Vipps_Recurring_Checkout {
 		$redirect       = null;
 
 		if ( $order ) {
-			if ( $order->get_status() == 'pending' ) {
+			if ( $order->get_status() === 'pending' ) {
 				$payment_status = 'INITIATED'; // Just assume this for now
 			} else {
-				$payment_status = $this->gateway->check_charge_status( $pending_order_id ) ?? 'UNKNOWN';
+				$payment_status = $this->gateway()->check_charge_status( $pending_order_id ) ?? 'UNKNOWN';
 			}
 
 			if ( $payment_status === 'SUCCESS' ) {
@@ -391,17 +510,39 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// This will return either a valid vipps session, nothing, or redirect.
-		return [ 'order' => $order ? $order->get_id() : false, 'session' => $session, 'redirect' => $redirect ];
+		return [ 'order' => $order ? $order->get_id() : false, 'session' => $session, 'redirect_url' => $redirect ];
 	}
 
 	/**
-	 * @throws WC_Vipps_Recurring_Exception
-	 * @throws WC_Vipps_Recurring_Temporary_Exception
-	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @param $session
+	 *
+	 * @return string
 	 */
 	public function get_checkout_status( $session ): string {
 		if ( $session && isset( $session['token'] ) ) {
-			return $this->gateway->api->checkout_poll( $session['pollingUrl'] );
+			try {
+				$response = $this->gateway()->api->checkout_poll( $session['pollingUrl'] );
+
+				if ( ( $response['sessionState'] ?? "" ) == 'SessionExpired' ) {
+					return 'EXPIRED';
+				}
+
+				return 'SUCCESS';
+			} catch ( WC_Vipps_Recurring_Exception $e ) {
+				if ( $e->responsecode == 400 ) {
+					return 'INITIATED';
+				} else if ( $e->responsecode == 404 ) {
+					return 'EXPIRED';
+				} else {
+					WC_Vipps_Recurring_Logger::log( sprintf( "Error polling status - error message %s", $e->getMessage() ) );
+
+					return 'ERROR';
+				}
+			} catch ( Exception $e ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( "Error polling status - error message %s", $e->getMessage() ) );
+
+				return 'ERROR';
+			}
 		}
 
 		return "ERROR";
@@ -409,8 +550,8 @@ class WC_Vipps_Recurring_Checkout {
 
 	public function abandon_checkout_order( $order ) {
 		if ( WC()->session ) {
-			WC()->session->set( 'vipps_recurring_checkout_current_pending', 0 );
-			WC()->session->set( 'vipps_recurring_address_hash', false );
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID, 0 );
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ADDRESS_HASH, false );
 		}
 
 		if ( is_a( $order, 'WC_Order' ) && $order->get_status() === 'pending' ) {
@@ -424,7 +565,7 @@ class WC_Vipps_Recurring_Checkout {
 			// Get it again to ensure we have all the info, and check status again
 			clean_post_cache( $order->get_id() );
 			$order = wc_get_order( $order->get_id() );
-			if ( $order->get_status() != 'pending' ) {
+			if ( $order->get_status() !== 'pending' ) {
 				return false;
 			}
 
@@ -434,7 +575,7 @@ class WC_Vipps_Recurring_Checkout {
 
 			if ( $poll_endpoint ) {
 				try {
-					$poll_data     = $this->gateway->api->checkout_poll( $poll_endpoint );
+					$poll_data     = $this->gateway()->api->checkout_poll( $poll_endpoint );
 					$session_state = ( ! empty( $poll_data ) && is_array( $poll_data ) && isset( $poll_data['sessionState'] ) ) ? $poll_data['sessionState'] : "";
 					WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Checking Checkout status on cart/order change: %s", $order->get_id(), $session_state ) );
 					if ( $session_state === 'PaymentSuccessful' || $session_state === 'PaymentInitiated' ) {
@@ -450,13 +591,143 @@ class WC_Vipps_Recurring_Checkout {
 
 			// NB: This can *potentially* be revived by a callback!
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling Checkout order because order changed', $order->get_id() ) );
-			$order->set_status( 'cancelled', __( "Order specification changed - this order abandoned by customer in Checkout  ", 'vipps-recurring-payments-gateway-for-woocommerce' ), false );
+			$order->set_status( 'cancelled', __( "Order specification changed - order abandoned by customer in Checkout", 'vipps-recurring-payments-gateway-for-woocommerce' ), false );
+
 			// Also mark for deletion and remove stored session
 			$order->delete_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
 
 			// todo: make a cron that checks for this value
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
 			$order->save();
+		}
+	}
+
+	/**
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Data_Exception
+	 */
+	public function handle_callback( array $body, string $authorization_token ) {
+		/* todo: checkout callback
+		{"sessionId":"f0vCi83RLoOwBlfdDwYika","merchantSerialNumber":"211722","reference":"woo-marcus-l-915","sessionState":"PaymentSuccessful","paymentMethod":"Wallet","subscriptionDetails":{"state":"ACTIVE","agreementId":"agr_nD2ytL2"},"paymentDetails":{"type":"Wallet","amount":{"value":14900,"currency":"NOK"},"state":"AUTHORIZED"},"shippingDetails":{"firstName":"Czyuyr","lastName":"Vaebmr","email":"marcus.dahl@everyday.no","phoneNumber":"4748060136","streetAddress":"BOKS 6300, ETTERSTAD","postalCode":"0603","city":"OSLO","country":"NO"},"billingDetails":{"firstName":"Czyuyr","lastName":"Vaebmr","email":"marcus.dahl@everyday.no","phoneNumber":"4748060136","streetAddress":"BOKS 6300, ETTERSTAD","postalCode":"0603","city":"OSLO","country":"NO"}}
+		 */
+
+		// Get the order from the authorization token
+		WC_Vipps_Recurring_Logger::log( sprintf( "Handling Vipps Checkout callback: %s - authorization token: %s", json_encode( $body ), $authorization_token ) );
+
+		$order_ids = wc_get_orders( [
+			'meta_key'     => WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN,
+			'meta_value'   => wp_hash_password( $authorization_token ),
+			'meta_compare' => '=',
+			'return'       => 'ids'
+		] );
+
+		if ( empty( $order_ids ) ) {
+			// todo: log
+
+			return;
+		}
+
+		$order_id = array_pop( $order_ids );
+		$order    = wc_get_order( $order_id );
+
+		$this->handle_payment( $order, $body );
+	}
+
+	/**
+	 * @param WC_Order $order
+	 * @param array $session
+	 *
+	 * @return void
+	 * @throws WC_Data_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws Exception
+	 */
+	public function handle_payment( WC_Order $order, array $session ) {
+		$agreement_id = $session['subscriptionDetails']['agreementId'];
+		$status       = $session['sessionState'];
+
+		// "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
+		if ( in_array( $status, [ 'SessionExpired', 'PaymentTerminated' ] ) ) {
+			$this->abandon_checkout_order( $order );
+		}
+
+		if ( $status !== 'PaymentSuccessful' ) {
+			return;
+		}
+
+		// Create a subscription on success, and set all the required values like _charge_id, _agreement_id, and so on.
+		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
+		if ( ! $order->get_customer_id( 'edit' ) ) {
+			$email = $session['billingDetails']['email'];
+			$user  = get_user_by( 'email', $email );
+
+			$user_id = $user->ID;
+			if ( ! $user_id ) {
+				$email_parts = explode( '@', $email );
+				$username    = $email_parts[0] . wp_generate_password( 4 );
+				$password    = wp_generate_password( 24 );
+				$user_id     = wp_create_user( $username, $password, $email );
+
+				// Log the user in, as they cannot see the order without being logged in.
+				wp_signon( [
+					'user_login'    => $username,
+					'user_password' => $password,
+					'remember'      => true,
+				] );
+			}
+
+			$order->set_customer_id( $user_id );
+		}
+
+		$this->maybe_update_order_billing_and_shipping( $order, $session );
+		$order->save();
+
+		$charges = $this->gateway()->api->get_charges_for( $agreement_id );
+		$charge  = $charges[0];
+
+		// Create subscription
+		$subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
+
+		/** @var WC_Subscription $subscription */
+		$subscription = array_pop( $subscriptions );
+		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
+		$subscription->set_payment_method( $this->gateway()->id );
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge->id );
+		$this->gateway()->complete_order( $order, $charge->id );
+
+		$subscription->save();
+		$order->save();
+	}
+
+	/**
+	 * @throws WC_Data_Exception
+	 */
+	public function maybe_update_order_billing_and_shipping( WC_Order $order, $session ): void {
+		if ( isset( $session['billingDetails'] ) ) {
+			$contact = $session['billingDetails'];
+			$order->set_billing_email( $contact['email'] );
+			$order->set_billing_phone( $contact['phoneNumber'] );
+			$order->set_billing_first_name( $contact['firstName'] );
+			$order->set_billing_last_name( $contact['lastName'] );
+			$order->set_billing_address_1( $contact['streetAddress'] );
+			$order->set_billing_city( $contact['city'] );
+			$order->set_billing_postcode( $contact['postalCode'] );
+			$order->set_billing_country( $contact['country'] );
+		}
+
+		if ( isset( $session['shippingDetails'] ) ) {
+			$contact = $session['shippingDetails'];
+			$order->set_shipping_first_name( $contact['firstName'] );
+			$order->set_shipping_last_name( $contact['lastName'] );
+			$order->set_shipping_address_1( $contact['streetAddress'] );
+			$order->set_shipping_city( $contact['city'] );
+			$order->set_shipping_postcode( $contact['postalCode'] );
+			$order->set_shipping_country( $contact['country'] );
 		}
 	}
 }

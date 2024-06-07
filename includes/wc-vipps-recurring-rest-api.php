@@ -36,6 +36,7 @@ class WC_Vipps_Recurring_Rest_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Data_Exception
 	 */
 	public function order_status( WP_REST_Request $request ) {
 		$order_id  = $request->get_param( 'order_id' );
@@ -52,10 +53,22 @@ class WC_Vipps_Recurring_Rest_Api {
 		}
 
 		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
-		$gateway->check_charge_status( $order_id );
 
-		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-		$agreement    = $gateway->api->get_agreement( $agreement_id );
+		// Deal with checkout orders
+		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT ) ) {
+			$session = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
+			$session = $gateway->api->checkout_poll( $session['pollingUrl'] );
+
+			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
+			$checkout->handle_payment( $order, $session );
+
+			$agreement_id = $session['subscriptionDetails']['agreementId'];
+		} else {
+			$gateway->check_charge_status( $order_id );
+			$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+		}
+
+		$agreement = $gateway->api->get_agreement( $agreement_id );
 
 		return [
 			'status'       => $agreement->status,
