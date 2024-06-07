@@ -173,6 +173,6 @@ for more help with Vipps MobilePay eCommerce.
 ## Requirements
 
 * WooCommerce 3.3.4 or newer is required.
-* PHP 5.6 or higher is required.
+* PHP 7.0 or higher is required.
 * An SSL Certificate is required.
 * The port 443 must not be blocked for outward traffic.

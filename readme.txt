@@ -2,11 +2,11 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.1
-Stable tag: 2.1.1
+Version: 2.1.2
+Stable tag: 2.1.2
 Requires at least: 4.7
 Tested up to: 6.5.4
-Requires PHP: 5.6
+Requires PHP: 7.0
 WC requires at least: 3.3.4
 WC tested up to: 8.9.2
 License: MIT
@@ -157,7 +157,7 @@ If this isn't practical for your usage, we recommend that you "test in productio
 
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
-* PHP 5.6 or higher is required.
+* PHP 7.0 or higher is required.
 * An SSL Certificate is required.
 
 = Filters and Hooks for customization =
@@ -239,8 +239,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-06-07 version 2.1.1 =
+= 2024-06-07 version 2.1.1, 2.1.2 =
 Fix issue where session was not active when computing checkout fields
+Fix previous fix for older php versions
+Bump required php version to 7.0
 
 = 2024-06-05 version 2.1.0 =
 Removed support for Instabox in Vipps Checkout Shipping
