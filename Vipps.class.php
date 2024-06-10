@@ -4432,6 +4432,7 @@ EOF;
         if ($orderid && !$order) {
             // If this happens, we actually did have an order, but it has been deleted, which must mean that it was cancelled.
             // Concievably a hook on the 'cancel'-transition or in the callback handlers could clean that up before we get here. IOK 2019-09-26
+            $this->log(__("In order return: The order \$1%d  seems to be deleted", 'woo-vipps'), 'debug');
             $deleted_order=1;
         }
 
