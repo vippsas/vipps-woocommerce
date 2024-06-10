@@ -2,13 +2,13 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.0
-Stable tag: 2.1.0
+Version: 2.1.3
+Stable tag: 2.1.3
 Requires at least: 4.7
 Tested up to: 6.5.4
-Requires PHP: 5.6
+Requires PHP: 7.0
 WC requires at least: 3.3.4
-WC tested up to: 8.9.1
+WC tested up to: 8.9.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -93,6 +93,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fix "Unknown Order" issue
+Fix issue when using Checkout and Stripe
 Removed support for Instabox in Vipps Checkout Shipping
 Added support for external payment methods in some markets
 Fix an issue with addressline 2 for express checkout when using static shipping
@@ -156,7 +158,7 @@ If this isn't practical for your usage, we recommend that you "test in productio
 
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
-* PHP 5.6 or higher is required.
+* PHP 7.0 or higher is required.
 * An SSL Certificate is required.
 
 = Filters and Hooks for customization =
@@ -237,6 +239,14 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-06-10 version 2.1.3 =
+Fix annoying regression where VippsCheckout would trigger the "Unknown order" branch on the thank you page
+
+= 2024-06-07 version 2.1.1, 2.1.2 =
+Fix issue where session was not active when computing checkout fields
+Fix previous fix for older php versions
+Bump required php version to 7.0
 
 = 2024-06-05 version 2.1.0 =
 Removed support for Instabox in Vipps Checkout Shipping

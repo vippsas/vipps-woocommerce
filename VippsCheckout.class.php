@@ -380,7 +380,7 @@ jQuery(document).ready(function () {
         $order_id = $order->get_id();
         $requestid = 1;
         $returnurl = Vipps::instance()->payment_return_url();
-        $returnurl = add_query_arg('s',$limited_session,$returnurl);
+        $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
 
         $sessionorders= WC()->session->get('_vipps_session_orders');
@@ -805,7 +805,9 @@ jQuery(document).ready(function () {
         // This is for the 'other payment method' thing in Vipps Checkout - we store address info
         // in session. IOK 2024-05-13
         add_filter('woocommerce_checkout_fields', function ($fields) {
+            if (empty(WC()->session)) return $fields;
             $possibly_address =  WC()->session->get('vc_address');
+
             if (!$possibly_address) return $fields;
             WC()->session->set('vc_address', null);
 
