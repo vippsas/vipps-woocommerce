@@ -717,6 +717,11 @@ class WC_Vipps_Recurring {
 		$order_ids = wc_get_orders( $options );
 
 		foreach ( $order_ids as $order_id ) {
+			$order       = wc_get_order( $order_id );
+			$is_checkout = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT );
+
+			do_action( 'woo_vipps_recurring_checkout_check_order_status', $order_id );
+
 			// check charge status
 			$this->gateway()->check_charge_status( $order_id );
 		}

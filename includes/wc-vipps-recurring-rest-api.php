@@ -56,13 +56,7 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		// Deal with checkout orders
 		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT ) ) {
-			$session = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
-			$session = $gateway->api->checkout_poll( $session['pollingUrl'] );
-
-			// todo: Find out why this happens when we hit this endpoint initially:
-			// PHP Fatal error:  Uncaught TypeError: array_pop(): Argument #1 ($array) must be of type array, bool given in /var/www/html/wp-content/plugins/vipps-recurring-woocommerce/includes/wc-vipps-recurring-checkout.php:696
-			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
-			$checkout->handle_payment( $order, $session );
+			do_action('woo_vipps_recurring_checkout_check_order_status_rest_api', $order_id);
 		}
 
 		$gateway->check_charge_status( $order_id );

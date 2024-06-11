@@ -12,6 +12,7 @@ export default function CheckoutPage () {
 	const [loaded, setLoaded] = useState(!!initialData.session)
 	const [session, setSession] = useState(initialData.session)
 	const [sessionStatus, setSessionStatus] = useState(null)
+	const sessionPollHandler = useRef(null)
 
 	const iframeRef = useRef(null)
 
@@ -52,15 +53,25 @@ export default function CheckoutPage () {
 			return
 		}
 
-		const intervalId = setInterval(pollSessionStatus, 10_000)
+		sessionPollHandler.current = setInterval(pollSessionStatus, 10_000)
 
 		return () => {
-			clearInterval(intervalId)
+			clearInterval(sessionPollHandler.current)
 		}
 	}, [session])
 
 	useEffect(() => {
-		if (!sessionStatus || !sessionStatus.redirect_url) {
+		if (!sessionStatus) {
+			return
+		}
+
+		if (sessionStatus.status === "EXPIRED") {
+			clearInterval(sessionPollHandler.current)
+
+			return
+		}
+
+		if (!sessionStatus.redirect_url) {
 			return
 		}
 
@@ -72,8 +83,6 @@ export default function CheckoutPage () {
 		const origin = new URL(src).origin
 
 		if (e.origin !== origin) return
-
-		console.log(e.data)
 
 		if (e.data.type === 'resize') {
 			iframeRef.current.style.height = `${e.data.frameHeight}px`

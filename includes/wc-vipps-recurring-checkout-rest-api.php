@@ -55,16 +55,20 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 
 		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
 		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
-		$return_url       = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
+		$return_url       = null;
+
+		if ( $order ) {
+			$return_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
+		}
 
 		$payment_status = $order ? $checkout->gateway()->check_charge_status( $pending_order_id ) : 'UNKNOWN';
-		if ( in_array( $payment_status, [ 'authorized', 'complete' ] ) ) {
+		if ( $payment_status == 'SUCCESS' ) {
 			$checkout->abandon_checkout_order( false );
 
 			return [ 'status' => 'COMPLETED', 'redirect_url' => $return_url ];
 		}
 
-		if ( $payment_status == 'cancelled' ) {
+		if ( $payment_status == 'CANCELLED' ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %s cancelled (payment status)", $order->get_id() ) );
 			$checkout->abandon_checkout_order( $order );
 
@@ -118,7 +122,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			return [ 'status' => $status, 'redirect_url' => $return_url ];
 		}
 
-		// Errorhandling! If this happens we have an unknown status or something like it.
+		// Error handling! If this happens we have an unknown status or something like it.
 		if ( ! $ok ) {
 			WC_Vipps_Recurring_Logger::log( "Unknown status on polling status: " . print_r( $status, true ) );
 			$checkout->abandon_checkout_order( $order );
@@ -126,7 +130,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			return [ 'status' => 'ERROR', 'redirect_url' => false ];
 		}
 
-		// This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
+		// This handles address information data from the poll if present. It is not, currently.
 		$change             = false;
 		$vipps_address_hash = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ADDRESS_HASH );
 		if ( isset( $status['billingDetails'] ) || isset( $status['shippingDetails'] ) ) {
