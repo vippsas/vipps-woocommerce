@@ -168,6 +168,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Added: New fields in the settings area to separate test API credentials.
 * Fixed: A bug where the "Reservations in MobilePay" warning would display twice.
 * Fixed: A bug that could occur where the Vipps API would be hit a lot of times in a short period of time.
+* Fixed: Make sure to update the agreement in Vipps right away when the user performs a subscription switch.
 
 = 1.20.3 =
 * Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).

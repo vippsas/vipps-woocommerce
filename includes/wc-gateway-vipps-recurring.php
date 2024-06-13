@@ -231,7 +231,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		], 10, 2 );
 
 		// Handle subscription switches (free upgrades & downgrades)
-		add_action( 'woocommerce_subscriptions_switched_item', [ $this, 'handle_subscription_switches' ], 10, 1 );
+		add_action( 'woocommerce_subscriptions_switched_item', [ $this, 'handle_subscription_switch_completed' ] );
+		add_action( 'woocommerce_subscriptions_switch_completed', [ $this, 'handle_subscription_switch_completed' ] );
+
+		// If we are performing a subscription switch to Vipps Recurring we need to take a payment
+//		add_filter( 'woocommerce_cart_needs_payment', [ $this, 'cart_needs_payment' ], 100, 2 );
 
 		/*
 		 * Handle in app updates when a subscription status changes, typically when status transitions to
@@ -1295,14 +1299,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * @param $order
 	 * @param $subscription
-	 * @param $is_gateway_change
-	 * @param bool $is_failed_renewal_order
+	 * @param bool $is_gateway_change
 	 *
 	 * @return WC_Vipps_Agreement
-	 * @throws WC_Vipps_Recurring_Config_Exception
-	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
-	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function create_vipps_agreement_from_order( $order, $subscription = null, bool $is_gateway_change = false ): WC_Vipps_Agreement {
 		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
@@ -1932,17 +1932,43 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 	}
 
+//	public function cart_needs_payment( $needs_payment, $cart ) {
+//		$cart_switch_items = wcs_cart_contains_switches();
+//
+//		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && ! wcs_is_manual_renewal_required() ) {
+//			foreach ( $cart_switch_items as $cart_switch_details ) {
+//				$subscription = wcs_get_subscription( $cart_switch_details['subscription_id'] );
+//
+//				if ( $this->id === $subscription->get_payment_method() ) {
+//					$needs_payment = true;
+//					break;
+//				}
+//			}
+//		}
+//
+//		return $needs_payment;
+//	}
+
 	/**
 	 * @param $subscription
 	 */
-	public function handle_subscription_switches( $subscription ): void {
+	public function handle_subscription_switch_completed( $subscription ): void {
 		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
 		if ( $this->id !== $payment_method ) {
 			return;
 		}
 
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Subscription switch completed", WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
+
 		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, 1 );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
 		$subscription->save();
+
+		try {
+			$this->maybe_update_subscription_details_in_app( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
+		} catch (Exception $exception) {
+			// do nothing, we don't want to throw an error in the user's face
+		}
 	}
 
 	/**
