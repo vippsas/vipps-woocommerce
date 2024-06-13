@@ -377,6 +377,8 @@ class WC_Vipps_Recurring {
 		// Or if the cart does not contain a subscription product
 		$active = ! isset( $methods['vipps'] ) && WC_Subscriptions_Cart::cart_contains_subscription();
 
+		// todo: for subscription switches the cart does not actually contain a subscription :oooo
+
 		return apply_filters( 'wc_vipps_recurring_cart_has_subscription_product', $active, WC()->cart->get_cart_contents() );
 	}
 

@@ -11,8 +11,6 @@ class WC_Vipps_Checkout_Session_Subscription extends WC_Vipps_Model {
 		"merchant_agreement_url"
 	];
 
-	// todo: orderSummary?
-
 	public ?string $product_name = null;
 	public ?string $product_description = null;
 	public ?WC_Vipps_Checkout_Session_Amount $amount = null;

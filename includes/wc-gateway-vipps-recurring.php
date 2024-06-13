@@ -2543,12 +2543,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			throw $exception;
 		}
 
-		// we can only ever have one subscription as long as 'multiple_subscriptions' is disabled, so we can fetch the first subscription
-		// todo: move this to Express/Checkout payment completion handling
-//		$subscriptions   = $this->create_partial_subscriptions_from_order( $order );
-//		$subscription    = array_pop( $subscriptions );
-//		$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
-
 		return $order_id;
 	}
 

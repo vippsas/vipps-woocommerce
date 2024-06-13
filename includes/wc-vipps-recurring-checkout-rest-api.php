@@ -186,9 +186,6 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			];
 		}
 
-		// todo: on success we need to create a subscription as well, but deal with this in the code that handles payment success
-		// todo: static shipping
-		// todo: after we have partial order support we will also be able to do "express checkout" style payments with subscriptions
 		$session = null;
 
 		try {
