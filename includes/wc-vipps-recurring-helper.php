@@ -52,7 +52,6 @@ class WC_Vipps_Recurring_Helper {
 	public const META_ORDER_IS_EXPRESS = '_vipps_recurring_is_express';
 	public const META_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_express_auth_token';
 	public const META_ORDER_NEEDS_SHIPPING = '_vipps_recurring_needs_shipping';
-	public const META_ORDER_SESSION_DATA = '_vipps_recurring_session_data';
 	public const META_ORDER_RESERVED_CAPTURE = '_vipps_recurring_reserved_capture';
 	public const META_ORDER_DIRECT_CAPTURE = '_vipps_recurring_direct_capture';
 
@@ -74,7 +73,6 @@ class WC_Vipps_Recurring_Helper {
 	public const SESSION_CHECKOUT_PENDING_ORDER_ID = '_vipps_recurring_checkout_pending_order_id';
 	public const SESSION_ORDERS = '_vipps_recurring_session_orders';
 	public const SESSION_PENDING_ORDER_ID = '_vipps_recurring_session_pending_order_id';
-	public const SESSION_EXPRESS_CUSTOMER_ID = '_vipps_recurring_session_customer_id';
 	public const SESSION_ADDRESS_HASH = '_vipps_recurring_address_hash';
 
 	/**

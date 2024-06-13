@@ -209,8 +209,6 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 //				// In this case, we just have to continue.
 //				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Error calculating static shipping for order: %s", $order->get_id(), $e->getMessage() ) );
 //			}
-
-			WC_Gateway_Vipps_Recurring::get_instance()->save_session_in_order( $order );
 			do_action( 'woo_vipps_recurring_checkout_order_created', $order );
 		} catch ( Exception $exception ) {
 			return [

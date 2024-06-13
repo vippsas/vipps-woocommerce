@@ -696,10 +696,10 @@ class WC_Vipps_Recurring_Checkout {
 		// Create a subscription on success, and set all the required values like _charge_id, _agreement_id, and so on.
 		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
 		if ( ! $order->get_customer_id( 'edit' ) ) {
-			$email = $session['billingDetails']['email'];
-			$user  = get_user_by( 'email', $email );
-
+			$email   = $session['billingDetails']['email'];
+			$user    = get_user_by( 'email', $email );
 			$user_id = $user->ID;
+
 			if ( ! $user_id ) {
 				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout creating a new customer", $order_id ) );
 
@@ -709,7 +709,14 @@ class WC_Vipps_Recurring_Checkout {
 				$user_id     = wp_create_user( $username, $password, $email );
 
 				$user = get_user_by_email( $email );
+
+				// Send a password reset link right away.
 				do_action( 'retrieve_password', $user->user_login );
+
+				// Log the user in, if we have a valid session.
+				if ( WC()->session ) {
+					wc_set_customer_auth_cookie($user_id);
+				}
 			}
 
 			$order->set_customer_id( $user_id );

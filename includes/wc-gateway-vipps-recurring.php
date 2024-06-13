@@ -1574,10 +1574,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			$subscription_period = $subscription->get_billing_period();
-
-			$subscription_interval = $subscription->get_billing_interval();
-
 			$items = array_reverse( $order->get_items() );
 
 			/*
@@ -2708,26 +2704,5 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		return $subscriptions;
-	}
-
-	public function save_session_in_order( $order ) {
-		// The callbacks from Vipps carry no session cookie, so we must store this in the order and use a special session handler when in a callback.
-		// The Vipps class will restore the session from this on callbacks.
-		$session_cookie  = [];
-		$session_handler = WC()->session;
-
-		if ( $session_handler && is_a( $session_handler, 'WC_Session_Handler' ) ) {
-			// If customer is actually logged in, take note
-			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_EXPRESS_CUSTOMER_ID, get_current_user_id() );
-			WC()->session->save_data();
-
-			$session_cookie = $session_handler->get_session_cookie();
-		}
-
-		if ( ! empty( $session_cookie ) ) {
-			// Customer id, session expiration, session expiring and cookie-hash is the contents
-			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_SESSION_DATA, json_encode( $session_cookie ) );
-			$order->save();
-		}
 	}
 }
