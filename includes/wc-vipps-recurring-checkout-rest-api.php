@@ -61,7 +61,9 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			$return_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
 		}
 
-		$payment_status = $order ? $checkout->gateway()->check_charge_status( $pending_order_id ) : 'UNKNOWN';
+		// Skip the lock because we do not want the payment status to falsely be "SUCCESS".
+		$payment_status = $order ? $checkout->gateway()->check_charge_status( $pending_order_id, true ) : 'UNKNOWN';
+
 		if ( $payment_status == 'SUCCESS' ) {
 			$checkout->abandon_checkout_order( false );
 

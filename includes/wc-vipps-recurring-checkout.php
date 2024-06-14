@@ -496,7 +496,7 @@ class WC_Vipps_Recurring_Checkout {
 			if ( $order->get_status() === 'pending' ) {
 				$payment_status = 'INITIATED'; // Just assume this for now
 			} else {
-				$payment_status = $this->gateway()->check_charge_status( $pending_order_id ) ?? 'UNKNOWN';
+				$payment_status = $this->gateway()->check_charge_status( $pending_order_id, true ) ?? 'UNKNOWN';
 			}
 
 			if ( $payment_status === 'SUCCESS' ) {
@@ -747,7 +747,7 @@ class WC_Vipps_Recurring_Checkout {
 
 		// todo: check_charge_status doesn't do it's job properly initially!
 
-		$this->gateway()->check_charge_status( $order_id );
+		$this->gateway()->check_charge_status( $order_id, true );
 	}
 
 	/**

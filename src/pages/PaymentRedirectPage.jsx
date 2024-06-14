@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from '@wordpress/element'
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from '@wordpress/element'
 import apiFetch from '@wordpress/api-fetch'
 import PaymentRedirect from '../components/PaymentRedirectPage/PaymentRedirect'
 import PaymentCancelled
@@ -14,15 +20,18 @@ export default function PaymentRedirectPage () {
 	const [errorCounter, setErrorCounter] = useState(0)
 	const intervalHandlerRef = useRef(null)
 
+	const checkStatus = useCallback(() => {
+		apiFetch({
+			path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get(
+				'order_id')}?key=${searchParams.get('key')}`, method: 'GET',
+		}).then(response => setResponse(response)).catch(() => {
+			setErrorCounter((value) => value += 1)
+		})
+	}, [])
+
 	useEffect(() => {
-		intervalHandlerRef.current = setInterval(() => {
-			apiFetch({
-				path: `/vipps-mobilepay-recurring/v1/orders/status/${searchParams.get(
-					'order_id')}?key=${searchParams.get('key')}`, method: 'GET',
-			}).then(response => setResponse(response)).catch(() => {
-				setErrorCounter((value) => value += 1)
-			})
-		}, 2500)
+		checkStatus();
+		intervalHandlerRef.current = setInterval(checkStatus, 2500)
 
 		return () => clearInterval(intervalHandlerRef.current)
 	}, [])

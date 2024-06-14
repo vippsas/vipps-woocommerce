@@ -465,7 +465,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function check_charge_status( $order_id ): string {
+	public function check_charge_status( $order_id, $skip_lock = false ): string {
 		if ( empty( $order_id ) || absint( $order_id ) <= 0 ) {
 			return 'INVALID';
 		}
@@ -490,7 +490,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// hold on to the lock for 30 seconds
 		$lock = (int) WC_Vipps_Recurring_Helper::get_meta( $order, '_vipps_recurring_locked_for_update_time' );
-		if ( $lock && $lock > time() - 30 ) {
+		if ( ( $lock && $lock > time() - 30 ) && ! $skip_lock ) {
 			return 'SUCCESS';
 		}
 
@@ -1493,7 +1493,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function process_payment( $order_id, bool $retry = true, bool $previous_error = false ): array {
 		$is_gateway_change = wcs_is_subscription( $order_id );
 
-		$subscription      = null;
+		$subscription = null;
 
 		$order     = wc_get_order( $order_id );
 		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";

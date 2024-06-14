@@ -45,7 +45,10 @@ export default function CheckoutPage () {
 		apiFetch({
 			path: `/vipps-mobilepay-recurring/v1/checkout/session`,
 			method: 'GET',
-		}).then(response => setSessionStatus(response))
+		}).then(response => {
+			console.log("pollSessionStatus", response)
+			setSessionStatus(response)
+		})
 	}, [])
 
 	useEffect(() => {
