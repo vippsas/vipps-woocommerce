@@ -180,6 +180,16 @@ class WC_Vipps_Recurring {
 			'update_subscription_details_in_app'
 		] );
 
+		// Schedule cleaning up orders that are marked for deletion
+		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_orders_marked_for_deletion' ) ) {
+			wp_schedule_event( time(), 'hourly', 'woocommerce_vipps_recurring_check_orders_marked_for_deletion' );
+		}
+
+		add_action( 'woocommerce_vipps_recurring_check_orders_marked_for_deletion', [
+			$this,
+			'check_orders_marked_for_deletion'
+		] );
+
 		// Add our own ajax actions
 		add_action( 'wp_ajax_woo_vipps_recurring_order_action', [
 			$this,
@@ -375,9 +385,8 @@ class WC_Vipps_Recurring {
 	public function gateway_should_be_active( array $methods = [] ) {
 		// The only two reasons to not show our gateway is if the cart supports being purchased by the standard Vipps MobilePay gateway
 		// Or if the cart does not contain a subscription product
-		$active = ! isset( $methods['vipps'] ) && WC_Subscriptions_Cart::cart_contains_subscription();
-
-		// todo: for subscription switches the cart does not actually contain a subscription :oooo
+		$active = ! isset( $methods['vipps'] )
+				  && ( WC_Subscriptions_Cart::cart_contains_subscription() || wcs_cart_contains_switches() || isset( $_GET['change_payment_method'] ) );
 
 		return apply_filters( 'wc_vipps_recurring_cart_has_subscription_product', $active, WC()->cart->get_cart_contents() );
 	}
@@ -719,13 +728,11 @@ class WC_Vipps_Recurring {
 		$order_ids = wc_get_orders( $options );
 
 		foreach ( $order_ids as $order_id ) {
-			$order       = wc_get_order( $order_id );
-			$is_checkout = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT );
+			$order = wc_get_order( $order_id );
 
-			do_action( 'woo_vipps_recurring_checkout_check_order_status', $order_id );
-
-			// check charge status
+			do_action( 'woo_vipps_recurring_before_cron_check_order_status', $order_id );
 			$this->gateway()->check_charge_status( $order_id );
+			do_action( 'woo_vipps_recurring_after_cron_check_order_status', $order_id );
 		}
 
 		return $order_ids;
@@ -767,6 +774,36 @@ class WC_Vipps_Recurring {
 		foreach ( $posts as $post ) {
 			// check charge status
 			$this->gateway()->maybe_update_subscription_details_in_app( $post->ID );
+		}
+	}
+
+	public function check_orders_marked_for_deletion() {
+		$options = [
+			'limit'          => 25,
+			'type'           => 'shop_order',
+			'meta_key'       => WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION,
+			'meta_compare'   => '=',
+			'meta_value'     => 1,
+			'return'         => 'ids',
+			'payment_method' => $this->gateway()->id
+		];
+
+		foreach ( wc_get_orders( $options ) as $order_id ) {
+			$order = wc_get_order( $order_id );
+
+			// If this order has been manually updated in the mean-time, we no longer want to delete it.
+			if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) ) {
+				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION );
+
+				continue;
+			}
+
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			foreach ( $subscriptions as $subscription ) {
+				wp_delete_post( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
+			}
+
+			wp_delete_post( $order_id );
 		}
 	}
 

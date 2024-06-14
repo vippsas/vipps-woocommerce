@@ -107,8 +107,8 @@ class WC_Vipps_Recurring_Checkout {
 		// The Vipps MobilePay Checkout feature which overrides the normal checkout process uses a shortcode
 		add_shortcode( 'vipps_recurring_checkout', [ $this, 'shortcode' ] );
 
-		add_action( 'woo_vipps_recurring_checkout_check_order_status', [ $this, 'check_order_status' ] );
-		add_action( 'woo_vipps_recurring_checkout_check_order_status_rest_api', [ $this, 'check_order_status' ] );
+		add_action( 'woo_vipps_recurring_before_cron_check_order_status', [ $this, 'check_order_status' ] );
+		add_action( 'woo_vipps_recurring_before_rest_api_check_order_status', [ $this, 'check_order_status' ] );
 
 		// For Checkout, we need to know any time and as soon as the cart changes, so fold all the events into a single one
 		add_action( 'woocommerce_add_to_cart', function () {
@@ -173,6 +173,10 @@ class WC_Vipps_Recurring_Checkout {
 	 */
 	public function check_order_status( $order_id ) {
 		$order = wc_get_order( $order_id );
+
+		if ( ! WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT ) ) {
+			return;
+		}
 
 		$session = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
 		$session = $this->gateway()->api->checkout_poll( $session['pollingUrl'] );
@@ -614,7 +618,7 @@ class WC_Vipps_Recurring_Checkout {
 			// Also mark for deletion and remove stored session
 			$order->delete_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
 
-			// todo: make a cron that checks for this value
+			// This is dealt with by a cron schedule
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
 			$order->save();
 		}
@@ -715,7 +719,7 @@ class WC_Vipps_Recurring_Checkout {
 
 				// Log the user in, if we have a valid session.
 				if ( WC()->session ) {
-					wc_set_customer_auth_cookie($user_id);
+					wc_set_customer_auth_cookie( $user_id );
 				}
 			}
 
@@ -740,6 +744,8 @@ class WC_Vipps_Recurring_Checkout {
 
 			$subscription->save();
 		}
+
+		// todo: check_charge_status doesn't do it's job properly initially!
 
 		$this->gateway()->check_charge_status( $order_id );
 	}

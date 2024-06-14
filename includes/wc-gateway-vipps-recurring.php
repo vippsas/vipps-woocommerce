@@ -232,10 +232,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Handle subscription switches (free upgrades & downgrades)
 		add_action( 'woocommerce_subscriptions_switched_item', [ $this, 'handle_subscription_switch_completed' ] );
-		add_action( 'woocommerce_subscriptions_switch_completed', [ $this, 'handle_subscription_switch_completed' ] );
 
 		// If we are performing a subscription switch to Vipps Recurring we need to take a payment
-//		add_filter( 'woocommerce_cart_needs_payment', [ $this, 'cart_needs_payment' ], 100, 2 );
+		// todo: Figure out how to force a redirect to Vipps here. We do need to sign a new agreement in a lot of cases...
+		// todo: Vipps has a 10x multiplier limit for the agreement pricing.
+		add_filter( 'woocommerce_cart_needs_payment', [ $this, 'cart_needs_payment' ], 100, 2 );
 
 		/*
 		 * Handle in app updates when a subscription status changes, typically when status transitions to
@@ -636,7 +637,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Controlled by the `transition_renewals_to_completed` setting
 		// Only applicable to renewal orders
-		if ( $this->transition_renewals_to_completed && wcs_order_contains_renewal( $order ) ) {
+		if ( $this->transition_renewals_to_completed && wcs_order_contains_renewal( $order ) && $order->get_status() !== 'completed' ) {
 			$order->update_status( 'completed' );
 		}
 
@@ -1362,7 +1363,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement_url = get_home_url();
 		}
 
-		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
+		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order, $is_gateway_change );
 
 		// total no longer returns the order amount when gateway is being changed
 		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
@@ -1491,6 +1492,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id, bool $retry = true, bool $previous_error = false ): array {
 		$is_gateway_change = wcs_is_subscription( $order_id );
+
 		$subscription      = null;
 
 		$order     = wc_get_order( $order_id );
@@ -1659,6 +1661,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( isset( $response['chargeId'] ) ) {
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $response['chargeId'] );
 			}
+
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
 
 			// save meta
 			$order->save();
@@ -1928,22 +1935,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 	}
 
-//	public function cart_needs_payment( $needs_payment, $cart ) {
-//		$cart_switch_items = wcs_cart_contains_switches();
-//
-//		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && ! wcs_is_manual_renewal_required() ) {
-//			foreach ( $cart_switch_items as $cart_switch_details ) {
-//				$subscription = wcs_get_subscription( $cart_switch_details['subscription_id'] );
-//
-//				if ( $this->id === $subscription->get_payment_method() ) {
-//					$needs_payment = true;
-//					break;
-//				}
-//			}
-//		}
-//
-//		return $needs_payment;
-//	}
+	public function cart_needs_payment( $needs_payment, $cart ) {
+		$cart_switch_items = wcs_cart_contains_switches();
+
+		if ( false === $needs_payment && 0 == $cart->total && false !== $cart_switch_items && ! wcs_is_manual_renewal_required() ) {
+			foreach ( $cart_switch_items as $cart_switch_details ) {
+				$subscription = wcs_get_subscription( $cart_switch_details['subscription_id'] );
+
+				if ( $this->id === $subscription->get_payment_method() ) {
+					$needs_payment = true;
+					break;
+				}
+			}
+		}
+
+		return $needs_payment;
+	}
 
 	/**
 	 * @param $subscription
@@ -1962,7 +1969,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		try {
 			$this->maybe_update_subscription_details_in_app( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
-		} catch (Exception $exception) {
+		} catch ( Exception $exception ) {
 			// do nothing, we don't want to throw an error in the user's face
 		}
 	}
@@ -2424,7 +2431,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return true;
 		}
 
-		# Not supported by Vipps MobilePay
+		# Not supported by Vipps MobilePay Checkout
 		if ( $cart->cart_contents_total <= 0 ) {
 			return false;
 		}
@@ -2435,8 +2442,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	public function checkout_is_available() {
-		// todo: Make sure we do not use Checkout when dealing with "early renewals", "failed renewal orders" or "gateway changes"
-
 		if ( ! $this->checkout_enabled
 			 || ! $this->is_available()
 			 || ! $this->cart_supports_checkout() ) {

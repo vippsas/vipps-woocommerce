@@ -54,18 +54,19 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
 
-		// Deal with checkout orders
-		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT ) ) {
-			do_action('woo_vipps_recurring_checkout_check_order_status_rest_api', $order_id);
-		}
+		do_action( 'woo_vipps_recurring_before_rest_api_check_order_status', $order_id );
 
 		$gateway->check_charge_status( $order_id );
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-		$agreement = $gateway->api->get_agreement( $agreement_id );
+		$agreement    = $gateway->api->get_agreement( $agreement_id );
+
+		do_action( 'woo_vipps_recurring_after_rest_api_check_order_status', $order_id );
+
+		$return_url = $order->get_checkout_order_received_url();
 
 		return [
 			'status'       => $agreement->status,
-			'redirect_url' => $order->get_checkout_order_received_url()
+			'redirect_url' => $return_url
 		];
 	}
 }

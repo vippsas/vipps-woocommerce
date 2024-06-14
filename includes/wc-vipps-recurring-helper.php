@@ -492,7 +492,13 @@ class WC_Vipps_Recurring_Helper {
 			: wc_reduce_stock_levels( self::get_id( $order ) );
 	}
 
-	public static function get_payment_redirect_url( WC_Order $order ): string {
+	public static function get_payment_redirect_url( WC_Order $order, bool $is_gateway_change = false ): string {
+		if ( $is_gateway_change ) {
+			return filter_var( get_permalink( get_option( 'woocommerce_myaccount_page_id' ) ), FILTER_VALIDATE_URL )
+				? get_permalink( get_option( 'woocommerce_myaccount_page_id' ) )
+				: wc_get_account_endpoint_url( 'dashboard' );
+		}
+
 		$order_id  = self::get_id( $order );
 		$order_key = $order->get_order_key();
 
