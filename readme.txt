@@ -2,14 +2,14 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.3
-Stable tag: 2.1.3
+Version: 2.1.4
+Stable tag: 2.1.4
 Requires at least: 4.7
 Tested up to: 6.5.4
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 8.9.2
+WC tested up to: 9.0.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fix untranslateable string and wrong sprintf format
 Fix "Unknown Order" issue
 Fix issue when using Checkout and Stripe
 Removed support for Instabox in Vipps Checkout Shipping
@@ -240,6 +241,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-06-18 version 2.1.4 =
+Fix untranslateable string and a sprintf format string with a bug in it (Thanks Knut Sparhell for reporting)
 
 = 2024-06-10 version 2.1.3 =
 Fix annoying regression where VippsCheckout would trigger the "Unknown order" branch on the thank you page
