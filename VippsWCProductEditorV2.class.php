@@ -232,6 +232,7 @@ class VippsWCProductEditorV2
                 'attributes' => [
                     'label' => sprintf(__('Add %1$s Buy Now Button', 'woo-vipps'), $payment_method_name),
                     'property' => 'meta_data._vipps_buy_now_button',
+                    'checkedValue' => 'yes',
                     'help' => __('Add a Buy Now button to this product', 'woo-vipps'),
                     'disabled' => false,
                     'tooltip' => sprintf(__('Add a \'Buy now with %1$s\'-button to this product', 'woo-vipps'), $payment_method_name),
