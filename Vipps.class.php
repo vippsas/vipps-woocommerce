@@ -1189,7 +1189,6 @@ jQuery('a.webhook-adder').click(function (e) {
     public function admin_enqueue_scripts($hook) {
         wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
         $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-        $this->vippsJSConfig['reservationWarning'] = __("Note: Reservations will be cancelled after 14 days. Remember to ship and fulfill your orders.", 'woo-vipps');
 
         wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
         wp_enqueue_script('vipps-admin');
@@ -1245,14 +1244,6 @@ jQuery('a.webhook-adder').click(function (e) {
         }
 
         if ($vippsorder) {
-            if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "MobilePay") {
-                if (in_array($order->get_status(), ['on-hold', 'processing'])) {
-                    if (! $order->get_meta('_vipps_captured')) {
-                        // IOK 2024-02-16 temporarily add notice about 7 day limit of reservations for Mobile Pay
-                        $this->add_vipps_admin_notice("<div class='woo-vipps-warning'>" . __("Note: Reservations will be cancelled after 14 days. Remember to ship and fulfill your orders.", 'woo-vipps') . "</div>",'warning', '', 'reserve-warning');
-                    }
-                }
-            }
            add_meta_box( 'vippsdata', sprintf(__('%1$s','woo-vipps'), $this->get_payment_method_name()), array($this,'add_vipps_metabox'), $screen, 'side', 'core' );
         }
     }

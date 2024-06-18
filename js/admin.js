@@ -208,22 +208,6 @@ SOFTWARE.
 
             });
 
-
-            let thewarning = jQuery("<div class='woo-vipps-warning'>" + VippsConfig['reservationWarning'] + "</div>");
-            let warnReservations = function (where) {
-                let mp = where.val() == 'MobilePay';
-                if (!mp) {
-                    where.parent().children('.warning').remove();
-                } else {
-                  thewarning.insertAfter(where.siblings('p.description'));
-                }
-            };
-
-            jQuery('#woocommerce_vipps_payment_method_name').change(function () {
-               warnReservations(jQuery(this));
-             });
-             warnReservations(jQuery('#woocommerce_vipps_payment_method_name'));
-
         }
     }
     if  (pagenow == 'product') {
