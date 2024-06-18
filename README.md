@@ -16,9 +16,6 @@ END_METADATA -->
 
 ![MobilePay](./docs/images/mp.png) *Available for MobilePay in Finland and Denmark.*
 
-:::note
-You must capture within 14 days (MobilePay) or 180 days (Vipps) or the payment will be cancelled.
-:::
 
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [Wordpress plugin site](https://wordpress.org/plugins/woo-vipps/) .*
 
