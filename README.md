@@ -23,7 +23,7 @@ END_METADATA -->
 <!-- END_COMMENT -->
 
 This is the official
-[Vipps/MobilePay recurring payments](https://vippsmobilepay.com/no/online/billing-recurring#kom-i-gang)
+[Vipps/MobilePay recurring payment](https://vippsmobilepay.com/no/online/billing-recurring#kom-i-gang)
 plugin for
 [WooCommerce](https://woocommerce.com).
 It is owned by [Vipps MobilePay](https://vippsmobilepay.com) and maintained by [Everyday AS](https://everyday.no).
@@ -72,7 +72,7 @@ for an overview.
 ### Installation
 
 1. Download and activate the plugin from this GitHub repository or [Vipps/MobilePay recurring payments on wordpress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
-2. Enable the *Vipps/MobilePay recurring payments* payment method in WooCommerce: *Settings* > *Payments*.
+2. Enable the *Vipps/MobilePay recurring payment* payment method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
 4. Proceed to [Retrieving Vipps MobilePay API Keys](#retrieving-vipps-mobilepay-api-keys).
 
@@ -92,7 +92,7 @@ Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys
 
 ### Configuring products
 
-Configuring products for use with the *Vipps/MobilePay recurring payments* plugin is not any
+Configuring products for use with the *Vipps/MobilePay recurring payment* plugin is not any
 different from default WooCommerce, with one exception: The configuration for
 whether the product is virtual or physical is important to consider.
 
@@ -193,9 +193,9 @@ are able to work together for access to recurring memberships that unlock conten
 You can read about how *WooCommerce Subscriptions* and *WooCommerce Memberships* work together at
 [WooCommerce Memberships Subscriptions Integration](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
 
-###  Where can I use Vipps MobilePay?
+### Where can I use Vipps MobilePay?
 
-Vipps MobilePay is available in Norway, Denmark and Finland. Only users who have Vipps Mobilepay will be able to pay with Vipps MobilePay.
+Vipps MobilePay is available in Norway, Denmark and Finland. Only users who have Vipps MobilePay will be able to pay with Vipps MobilePay.
 
 ### How can I test that the plugin works correctly?
 
