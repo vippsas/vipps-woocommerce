@@ -63,16 +63,16 @@ export function Edit( {
 	const [ shareLinkNonce ] = useProductEntityProp< string >(
 		'vipps_share_link_nonce'
 	);
+
+    // Used to display the shareable urls IOK 2024-06-19
 	const [ vipps_buy_product_url ] = useProductEntityProp< string >(
 		'vipps_buy_product_url'
 	);
 
-
-
-	// Because of they way meta_data is stored, we need to filter any metadata that starts with _vipps_shareable_links
+	// Because of they way meta_data is stored, we need to filter any metadata that starts with _vipps_shareable_link_
 	const links: MetadataShareableLink[] = metadata.filter(
 		( meta ) =>
-			// Keep only the metadata that starts with _vipps_shareable_links
+			// Keep only the metadata that starts with _vipps_shareable_link_
 			meta.key.startsWith( '_vipps_shareable_link_' ) &&
 			// Keep only the metadata that has a value, if the value is undefined, it means it was just deleted
 			meta.value !== undefined
@@ -151,18 +151,8 @@ export function Edit( {
 			if ( result.ok ) {
 				setMetadata( [
 					...metadata,
-					// Add 2 separate keys for the same shareable link, one contatains the url, and the other contains the key
-					{
-						key: '_vipps_shareable_links',
-						value: {
-							product_id: productId,
-							variation_id: result.variation_id,
-							key: result.key,
-							url: result.url,
-							variant: result.variant,
-						},
-						id: -1, // This is a new meta, so it doesn't have an ID yet; WP will assign one when saved
-					},
+					// The shareable link is stored as a postmeta variable with the key included in the meta key. This is retrieved by
+					// the "vipps buy product" handler. IOK 2024-06-19
 					{
 						key: '_vipps_shareable_link_' + result.key,
 						value: {
@@ -198,18 +188,13 @@ export function Edit( {
 		const newMetadata = metadata.map(
 			( meta: Metadata | MetadataShareableLink ) => {
 				// Since we keep 2 separate keys for every 1 shareable link, we need to check for both and remove them
-				// Key 1
-				const isShareableLinksMeta =
-					meta.key.startsWith( '_vipps_shareable_links' ) &&
-					meta.value?.key == key;
-
 				// Key 2
 				const isShareableLinkSpecificKeyMeta =
-					meta.key === '_vipps_shareable_links' &&
+					meta.key === ('_vipps_shareable_link_' + key) &&
 					meta?.value?.key == key;
 
 				// Remove the value if it matches the key, this will cause the meta to be deleted
-				if ( isShareableLinksMeta || isShareableLinkSpecificKeyMeta ) {
+				if ( isShareableLinkSpecificKeyMeta ) {
 					return {
 						...meta,
 						value: undefined,
