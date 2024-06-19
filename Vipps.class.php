@@ -1385,13 +1385,8 @@ jQuery('a.webhook-adder').click(function (e) {
                 // This will delete the actual link
                 delete_post_meta($post->ID, '_vipps_shareable_link_'.$delendum);
             }
-            // This will delete the item from the list of links for the product
-            $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
-            foreach ($shareables as $shareable) {
-                if (in_array($shareable['key'], $delenda)) {
-                    delete_post_meta($post->ID,'_vipps_shareable_links', $shareable);
-                }
-            }
+            // Delete all legacy "shareable links" collections. IOK 2024-06-19
+            delete_post_meta($post->ID, '_vipps_shareable_links');
         }
     }
 
@@ -1498,9 +1493,24 @@ jQuery('a.webhook-adder').click(function (e) {
 
     public function product_options_vipps_shareable_link() {
         global $post;
+        global $wpdb;
         $product = wc_get_product($post->ID);
         $variable = ($product->get_type() == 'variable');
-        $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+
+        $buy_url = $this->buy_product_url();
+        $q = $wpdb->prepare("SELECT meta_key, meta_value FROM `{$wpdb->postmeta}` WHERE post_id = %d AND meta_key LIKE '_vipps_shareable_link@_%' escape '@'", $product->get_id());
+        $res = $wpdb->get_results($q, ARRAY_A);
+        $shareables = [];
+        if ($res) {
+            foreach($res as $entry) {
+                $shareable = maybe_unserialize($entry['meta_value']);
+                if (!$shareable || empty($shareable['key'])) continue;
+                $url = add_query_arg('pr',$shareable['key'],$this->buy_product_url());
+                $shareable['url'] = $url;
+                $shareables[] = $shareable;
+            }
+        }
+
         $qradmin = admin_url("/edit.php?post_type=vipps_qr_code");
         ?>
             <div class="options_group">
@@ -1617,7 +1627,6 @@ else:
 
         // This is used to find the link itself
         update_post_meta($prodid,'_vipps_shareable_link_'.$key, array('product_id'=>$prodid,'variation_id'=>$varid,'key'=>$key));
-        add_post_meta($prodid,'_vipps_shareable_links',$payload);
 
         echo json_encode(array('ok'=>1,'msg'=>'ok', 'url'=>$url, 'variant'=> $varname, 'key'=>$key));
         wp_die();
