@@ -81,6 +81,7 @@ class VippsWCProductEditorV2
                 $response->data['vipps_global_singleproductexpress'] = $gw->get_option('singleproductexpress');
                 // Inject a nonce for product editor's shareable links
                 $response->data['vipps_share_link_nonce'] = wp_create_nonce('vipps_share_link_nonce');
+                $response->data['vipps_buy_product_url'] = Vipps::instance()->buy_product_url();
                 return $response;
             }, 10, 2);
 

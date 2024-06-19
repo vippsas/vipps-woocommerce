@@ -63,12 +63,17 @@ export function Edit( {
 	const [ shareLinkNonce ] = useProductEntityProp< string >(
 		'vipps_share_link_nonce'
 	);
+	const [ vipps_buy_product_url ] = useProductEntityProp< string >(
+		'vipps_buy_product_url'
+	);
+
+
 
 	// Because of they way meta_data is stored, we need to filter any metadata that starts with _vipps_shareable_links
 	const links: MetadataShareableLink[] = metadata.filter(
 		( meta ) =>
 			// Keep only the metadata that starts with _vipps_shareable_links
-			meta.key.startsWith( '_vipps_shareable_links' ) &&
+			meta.key.startsWith( '_vipps_shareable_link_' ) &&
 			// Keep only the metadata that has a value, if the value is undefined, it means it was just deleted
 			meta.value !== undefined
 	);
@@ -269,6 +274,11 @@ export function Edit( {
 						},
 					].filter( ( header ) => header.visible !== false ) } // Filter out any headers that are not visible
 					rows={ links.map( ( item ) => {
+                                                console.log("Item %j", item);
+                                                let url =  new URL(vipps_buy_product_url);
+                                                url.searchParams.set('pr', item.value['key']);
+                                                item.value['url'] = url.toString();
+                           
 						return [
 							{
 								key: 'variant',
