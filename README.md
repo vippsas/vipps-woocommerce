@@ -109,13 +109,20 @@ Enter your Vipps account keys and configure the plugin.
 
 ## Frequently Asked Questions
 
-### In which countries can I use Vipps?
+### In which countries can I use Vipps MobilePay?
 
-You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
+You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
 
-### In which countries can I use MobilePay?
+### For how long is an order reserved?
 
-You can only get paid by users who have MobilePay. At the moment plugin is only supporting MobilePay users in Finland. Support for MobilePay in Denmark coming later in Q1 2024.
+:::note
+Payments initiated in Finland and Denmark have only 14 days to be captured; while
+payments in Norway have 180 days.
+If the payments aren't captured within this time, they will be automatically cancelled.
+
+Payments can only be captured up to 14 days (MobilePay) or 180 days (Vipps) after reservation.
+See [Reserve and capture](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/).
+:::
 
 ### For how long is an order reserved?
 
