@@ -2442,7 +2442,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$supports = WC_Vipps_Recurring::get_instance()->gateway_should_be_active();
 
-		return apply_filters( 'woo_vipps_recurring_cart_supports_checkout', $supports, $cart );
+		return apply_filters( 'wc_vipps_recurring_cart_supports_checkout', $supports, $cart );
 	}
 
 	public function checkout_is_available() {
@@ -2463,7 +2463,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		return apply_filters( 'woo_vipps_recurring_checkout_available', $checkout_id, $this );
+		return apply_filters( 'wc_vipps_recurring_checkout_available', $checkout_id, $this );
 	}
 
 	// Creating a partial order & subscription
@@ -2478,11 +2478,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 
 		// In *some* cases you may need to actually load classes and reload the cart, because some plugins do not load when DOING_AJAX.
-		do_action( 'woo_vipps_recurring_express_checkout_before_calculate_totals' );
+		do_action( 'wc_vipps_recurring_express_checkout_before_calculate_totals' );
 
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();
-		do_action( 'woo_vipps_recurring_before_create_express_checkout_order', WC()->cart );
+		do_action( 'wc_vipps_recurring_before_create_express_checkout_order', WC()->cart );
 
 		// We store this in the order, so we don't have to access the cart when initiating payment. This allows us to restart orders etc.
 		$needs_shipping = WC()->cart->needs_shipping();
@@ -2500,7 +2500,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			// We use 'checkout' as the created_via key as per requests, but allow merchants to use their own.
-			$created_via = apply_filters( 'woo_vipps_recurring_express_checkout_created_via', 'checkout', $order, $checkout );
+			$created_via = apply_filters( 'wc_vipps_recurring_express_checkout_created_via', 'checkout', $order, $checkout );
 			$order->set_created_via( $created_via );
 
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS, 1 );
@@ -2522,7 +2522,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC()->checkout->create_order_fee_lines( $order, WC()->cart );
 			WC()->checkout->create_order_tax_lines( $order, WC()->cart );
 			WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
-			do_action( 'woo_vipps_recurring_before_calculate_totals_partial_order', $order );
+			do_action( 'wc_vipps_recurring_before_calculate_totals_partial_order', $order );
 			$order->calculate_totals();
 
 			// Added to support third-party plugins that wants to do stuff with the order before it is saved.
@@ -2530,7 +2530,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$order_id = $order->save();
 
-			do_action( 'woo_vipps_recurring_express_checkout_order_created', $order_id );
+			do_action( 'wc_vipps_recurring_express_checkout_order_created', $order_id );
 
 			// Normally done by the WC_Checkout::create_order method, so call it here too.
 			do_action( 'woocommerce_checkout_update_order_meta', $order_id, array() );

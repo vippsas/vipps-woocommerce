@@ -84,7 +84,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			return [ 'status' => 'EXPIRED', 'redirect_url' => false ];
 		}
 
-		add_filter( 'woo_vipps_recurring_is_vipps_checkout', '__return_true' );
+		add_filter( 'wc_vipps_recurring_is_vipps_checkout', '__return_true' );
 		$status = $checkout->get_checkout_status( $session );
 
 		$failed = $status === 'ERROR' || $status === 'EXPIRED' || $status === 'TERMINATED';
@@ -208,7 +208,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 //				// In this case, we just have to continue.
 //				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Error calculating static shipping for order: %s", $order->get_id(), $e->getMessage() ) );
 //			}
-			do_action( 'woo_vipps_recurring_checkout_order_created', $order );
+			do_action( 'wc_vipps_recurring_checkout_order_created', $order );
 		} catch ( Exception $exception ) {
 			return [
 				'success'      => false,

@@ -73,7 +73,7 @@ final class WC_Vipps_Recurring_Blocks_Support extends AbstractPaymentMethodType 
 			'title'       => $this->gateway()->title,
 			'description' => $this->gateway()->description,
 			'logo'        => apply_filters(
-				'woo_vipps_recurring_checkout_logo_url',
+				'wc_vipps_recurring_checkout_logo_url',
 				WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/' . $this->gateway()->brand . '-mark.svg',
 				$this->gateway()->brand
 			),

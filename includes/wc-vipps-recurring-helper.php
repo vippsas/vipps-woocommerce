@@ -542,6 +542,6 @@ class WC_Vipps_Recurring_Helper {
 			$vipps_order_id = $prefix . $padded_id;
 		}
 
-		return apply_filters( 'woo_vipps_recurring_order_id', $vipps_order_id, $prefix, $order );
+		return apply_filters( 'wc_vipps_recurring_order_id', $vipps_order_id, $prefix, $order );
 	}
 }

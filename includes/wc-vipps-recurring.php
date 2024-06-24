@@ -730,9 +730,9 @@ class WC_Vipps_Recurring {
 		foreach ( $order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
 
-			do_action( 'woo_vipps_recurring_before_cron_check_order_status', $order_id );
+			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
 			$this->gateway()->check_charge_status( $order_id );
-			do_action( 'woo_vipps_recurring_after_cron_check_order_status', $order_id );
+			do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );
 		}
 
 		return $order_ids;
@@ -925,7 +925,7 @@ class WC_Vipps_Recurring {
 	}
 
 	public static function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ): bool {
-		$use_plugin_translations = apply_filters( 'woo_vipps_recurring_use_plugin_translations', false );
+		$use_plugin_translations = apply_filters( 'wc_vipps_recurring_use_plugin_translations', false );
 
 		// Use plugin translations if this is a WP installation older than 6.1.0
 		if ( $use_plugin_translations || WC_Vipps_Recurring_Helper::is_wp_lt( '6.1.0' ) ) {
@@ -960,7 +960,7 @@ class WC_Vipps_Recurring {
 		if ( isset( $body['sessionId'] ) ) {
 			$authorization_token = $_SERVER['HTTP_AUTHORIZATION'];
 
-			do_action( 'woo_vipps_recurring_checkout_callback', $body, $authorization_token );
+			do_action( 'wc_vipps_recurring_checkout_callback', $body, $authorization_token );
 
 			// Early return to avoid potential errors downstream.
 			return;
@@ -993,7 +993,7 @@ class WC_Vipps_Recurring {
 			return;
 		}
 
-		do_action( "woo_vipps_recurring_webhook_callback", $body, $raw_input );
+		do_action( "wc_vipps_recurring_webhook_callback", $body, $raw_input );
 
 		// We now have a validated webhook
 		$this->gateway()->handle_webhook_callback( $body );

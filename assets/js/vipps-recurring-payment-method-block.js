@@ -16,7 +16,7 @@ function registerVippsRecurringGateway() {
 
   const Content = () => {
     const content = React.createElement('div', null, decodeEntities(settings.description || ''));
-    return applyFilters('woo_vipps_recurring_checkout_description', content, settings);
+    return applyFilters('wc_vipps_recurring_checkout_description', content, settings);
   };
 
   const Label = props => {
@@ -33,11 +33,11 @@ function registerVippsRecurringGateway() {
       });
     }
 
-    return applyFilters('woo_vipps_recurring_checkout_label', label, settings);
+    return applyFilters('wc_vipps_recurring_checkout_label', label, settings);
   };
 
   const canMakePayment = () => {
-    return applyFilters('woo_vipps_recurring_checkout_show_gateway', true, settings);
+    return applyFilters('wc_vipps_recurring_checkout_show_gateway', true, settings);
   };
 
   /**

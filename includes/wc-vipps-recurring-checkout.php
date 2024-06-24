@@ -107,8 +107,8 @@ class WC_Vipps_Recurring_Checkout {
 		// The Vipps MobilePay Checkout feature which overrides the normal checkout process uses a shortcode
 		add_shortcode( 'vipps_recurring_checkout', [ $this, 'shortcode' ] );
 
-		add_action( 'woo_vipps_recurring_before_cron_check_order_status', [ $this, 'check_order_status' ] );
-		add_action( 'woo_vipps_recurring_before_rest_api_check_order_status', [ $this, 'check_order_status' ] );
+		add_action( 'wc_vipps_recurring_before_cron_check_order_status', [ $this, 'check_order_status' ] );
+		add_action( 'wc_vipps_recurring_before_rest_api_check_order_status', [ $this, 'check_order_status' ] );
 
 		// For Checkout, we need to know any time and as soon as the cart changes, so fold all the events into a single one
 		add_action( 'woocommerce_add_to_cart', function () {
@@ -145,7 +145,7 @@ class WC_Vipps_Recurring_Checkout {
 		// Then handle the actual cart change
 		add_action( 'vipps_recurring_cart_changed', [ $this, 'cart_changed' ] );
 
-		add_action( 'woo_vipps_recurring_checkout_callback', [ $this, 'handle_callback' ], 10, 2 );
+		add_action( 'wc_vipps_recurring_checkout_callback', [ $this, 'handle_callback' ], 10, 2 );
 	}
 
 	public function admin_init() {
@@ -253,7 +253,7 @@ class WC_Vipps_Recurring_Checkout {
 				$classes[] = 'vipps-recurring-checkout';
 				$classes[] = 'woocommerce-checkout'; // Required by Pixel Your Site
 
-				return apply_filters( 'woo_vipps_recurring_checkout_body_class', $classes );
+				return apply_filters( 'wc_vipps_recurring_checkout_body_class', $classes );
 			} );
 
 			// Suppress the title for this page
@@ -315,7 +315,7 @@ class WC_Vipps_Recurring_Checkout {
 
 		// No point in expanding this unless we are actually doing the checkout. IOK 2021-09-03
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-		add_filter( 'woo_vipps_recurring_is_vipps_checkout', '__return_true' );
+		add_filter( 'wc_vipps_recurring_is_vipps_checkout', '__return_true' );
 
 		// Defer to the normal code for endpoints IOK 2022-12-09
 		if ( is_wc_endpoint_url( 'order-pay' ) || is_wc_endpoint_url( 'order-received' ) ) {
@@ -359,9 +359,9 @@ class WC_Vipps_Recurring_Checkout {
 
 		$bottom_line = ( new WC_Vipps_Checkout_Session_Transaction_Order_Summary_Bottom_Line() )
 			->set_currency( $order->get_currency() )
-			->set_gift_card_amount( apply_filters( 'woo_vipps_recurring_order_gift_card_amount', 0, $order ) * 100 )
-			->set_tip_amount( apply_filters( 'woo_vipps_recurring_order_tip_amount', 0, $order ) * 100 )
-			->set_terminal_id( apply_filters( 'woo_vipps_recurring_order_terminal_id', 'woocommerce', $order ) )
+			->set_gift_card_amount( apply_filters( 'wc_vipps_recurring_order_gift_card_amount', 0, $order ) * 100 )
+			->set_tip_amount( apply_filters( 'wc_vipps_recurring_order_tip_amount', 0, $order ) * 100 )
+			->set_terminal_id( apply_filters( 'wc_vipps_recurring_order_terminal_id', 'woocommerce', $order ) )
 			->set_receipt_number( strval( WC_Vipps_Recurring_Helper::get_id( $order ) ) );
 
 		foreach ( $order->get_items() as $order_item ) {

@@ -54,13 +54,13 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
 
-		do_action( 'woo_vipps_recurring_before_rest_api_check_order_status', $order_id );
+		do_action( 'wc_vipps_recurring_before_rest_api_check_order_status', $order_id );
 
 		$gateway->check_charge_status( $order_id );
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 		$agreement    = $gateway->api->get_agreement( $agreement_id );
 
-		do_action( 'woo_vipps_recurring_after_rest_api_check_order_status', $order_id );
+		do_action( 'wc_vipps_recurring_after_rest_api_check_order_status', $order_id );
 
 		$return_url = $order->get_checkout_order_received_url();
 

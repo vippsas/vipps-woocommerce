@@ -39,7 +39,7 @@ jQuery(document).ready(function ($) {
       const orderId = button.data('order-id')
 
       const data = {
-        action: 'woo_vipps_recurring_order_action',
+        action: 'wc_vipps_recurring_order_action',
         do: 'capture_payment',
         orderId: orderId,
         nonce: nonce

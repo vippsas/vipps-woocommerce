@@ -128,13 +128,13 @@ Enables someone with access to Vipps/MobilePay developer keys to test the plugin
 
 ## Actions
 
-Available actions:
-
-`wc_vipps_recurring_after_payment_complete(WC_Order $order)`
+See the code for an up-to-date list of available actions. Search for `do_action`.
 
 ### Filters
 
-Available filters:
+See the code for an up-to-date list of available filters. Search for `apply_filters`.
+
+Some filters include:
 
 `wc_vipps_recurring_supported_currencies(array $currencies)` - Takes an array of supported currencies in ISO 4217 format (like NOK).
 
