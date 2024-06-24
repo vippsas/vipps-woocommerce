@@ -2382,25 +2382,29 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'recurring.charge-canceled.v1',
 			'recurring.charge-failed.v1',
 		] ) ) {
-			$charge_id = $webhook_data['chargeId'];
+			$order_id = $webhook_data['chargeExternalId'];
+
+			if ( empty( $order_id ) ) {
+				$charge_id = $webhook_data['chargeId'];
+
+				$options = [
+					'limit'          => 1,
+					'type'           => 'shop_order',
+					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
+					'meta_compare'   => '=',
+					'meta_value'     => $charge_id,
+					'return'         => 'ids',
+					'payment_method' => $this->id,
+					'order_by'       => 'post_date'
+				];
+
+				$order_ids = wc_get_orders( $options );
+				$order_id  = array_pop( $order_ids );
+			}
 
 			if ( empty( $charge_id ) ) {
 				return;
 			}
-
-			$options = [
-				'limit'          => 1,
-				'type'           => 'shop_order',
-				'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
-				'meta_compare'   => '=',
-				'meta_value'     => $charge_id,
-				'return'         => 'ids',
-				'payment_method' => $this->id,
-				'order_by'       => 'post_date'
-			];
-
-			$order_ids = wc_get_orders( $options );
-			$order_id  = array_pop( $order_ids );
 
 			$this->check_charge_status( $order_id );
 		}
@@ -2411,9 +2415,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'recurring.agreement-stopped.v1',
 			'recurring.agreement-expired.v1',
 		] ) ) {
-			$order_id = $webhook_data['chargeExternalId'];
+			$order_id = $webhook_data['agreementExternalId'];
 
-			// This order is old and does not have a chargeExternalId
+			// This order is old and does not have a agreementExternalId
 			if ( empty( $order_id ) ) {
 				return;
 			}

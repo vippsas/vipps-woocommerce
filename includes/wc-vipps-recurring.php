@@ -961,6 +961,9 @@ class WC_Vipps_Recurring {
 			$authorization_token = $_SERVER['HTTP_AUTHORIZATION'];
 
 			do_action( 'woo_vipps_recurring_checkout_callback', $body, $authorization_token );
+
+			// Early return to avoid potential errors downstream.
+			return;
 		}
 
 		$callback = $_REQUEST['callback'] ?? "";
@@ -980,10 +983,10 @@ class WC_Vipps_Recurring {
 		$local_webhook  = array_pop( $local_webhooks );
 		$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
 
-		$orderId = $body['referenceId'];
+		$order_id = $body['chargeExternalId'] ?? $body['agreementExternalId'];
 
 		if ( ! $secret ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "Cannot verify webhook callback for order %s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.", $orderId ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( "Cannot verify webhook callback for order %s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.", $order_id ) );
 		}
 
 		if ( ! $this->verify_webhook( $raw_input, $secret ) ) {
