@@ -162,8 +162,17 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-= UNRELEASED =
+= 1.21.0 =
+* Added: Support for Vipps/MobilePay Checkout. This includes the possibility of using card payments if they are enabled for your sales unit.
 * Fixed: "Continue shopping" link default value is now correct.
+* Added: New fields in the settings area to separate test API credentials.
+* Fixed: A bug where the "Reservations in MobilePay" warning would display twice.
+* Fixed: A bug that could occur where the Vipps API would be hit a lot of times in a short period of time.
+* Fixed: Make sure to update the agreement in Vipps right away when the user performs a subscription switch.
+* Fixed: Make sure we redirect the user to their account page when they perform a payment method update.
+* Fixed: Webhooks should no longer throw an error about referenceId not being set.
+* Fixed: Made webhook handling a little bit faster in some instances.
+* Fixed: Webhooks should now be handled properly for agreement events.
 
 = 1.20.3 =
 * Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).

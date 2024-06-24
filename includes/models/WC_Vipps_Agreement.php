@@ -112,14 +112,14 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	 * @param WC_Vipps_Agreement_Campaign|array $campaign
 	 */
 	public function set_campaign( $campaign ): self {
-		return $this->set_value( 'campaign', $campaign, WC_Vipps_Agreement_Campaign::class );
+		return $this->_set_value( 'campaign', $campaign, WC_Vipps_Agreement_Campaign::class );
 	}
 
 	/**
 	 * @param WC_Vipps_Agreement_Pricing|array $pricing
 	 */
 	public function set_pricing( $pricing ): self {
-		return $this->set_value( 'pricing', $pricing, WC_Vipps_Agreement_Pricing::class );
+		return $this->_set_value( 'pricing', $pricing, WC_Vipps_Agreement_Pricing::class );
 	}
 
 	public function set_phone_number( string $phone_number ): self {
@@ -132,14 +132,14 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	 * @param WC_Vipps_Agreement_Initial_Charge|array $initial_charge
 	 */
 	public function set_initial_charge( $initial_charge ): self {
-		return $this->set_value( 'initial_charge', $initial_charge, WC_Vipps_Agreement_Initial_Charge::class );
+		return $this->_set_value( 'initial_charge', $initial_charge, WC_Vipps_Agreement_Initial_Charge::class );
 	}
 
 	/**
 	 * @param WC_Vipps_Agreement_Interval|array $interval
 	 */
 	public function set_interval( $interval ): self {
-		return $this->set_value( 'interval', $interval, WC_Vipps_Agreement_Interval::class );
+		return $this->_set_value( 'interval', $interval, WC_Vipps_Agreement_Interval::class );
 	}
 
 	public function set_is_app( bool $is_app ): self {

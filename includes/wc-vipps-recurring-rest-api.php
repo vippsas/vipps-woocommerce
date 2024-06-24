@@ -7,8 +7,6 @@ class WC_Vipps_Recurring_Rest_Api {
 
 	private static ?WC_Vipps_Recurring_Rest_Api $instance = null;
 
-	private ?WC_Gateway_Vipps_Recurring $gateway = null;
-
 	/**
 	 * Returns the *Singleton* instance of this class.
 	 *
@@ -23,8 +21,6 @@ class WC_Vipps_Recurring_Rest_Api {
 	}
 
 	public function __construct() {
-		$this->gateway = WC_Gateway_Vipps_Recurring::get_instance();
-
 		add_action( 'rest_api_init', [ $this, 'init' ] );
 	}
 
@@ -40,6 +36,7 @@ class WC_Vipps_Recurring_Rest_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Data_Exception
 	 */
 	public function order_status( WP_REST_Request $request ) {
 		$order_id  = $request->get_param( 'order_id' );
@@ -55,14 +52,21 @@ class WC_Vipps_Recurring_Rest_Api {
 			);
 		}
 
-		$this->gateway->check_charge_status( $order_id );
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
 
+		do_action( 'woo_vipps_recurring_before_rest_api_check_order_status', $order_id );
+
+		$gateway->check_charge_status( $order_id );
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-		$agreement    = WC_Gateway_Vipps_Recurring::get_instance()->api->get_agreement( $agreement_id );
+		$agreement    = $gateway->api->get_agreement( $agreement_id );
+
+		do_action( 'woo_vipps_recurring_after_rest_api_check_order_status', $order_id );
+
+		$return_url = $order->get_checkout_order_received_url();
 
 		return [
 			'status'       => $agreement->status,
-			'redirect_url' => $order->get_checkout_order_received_url()
+			'redirect_url' => $return_url
 		];
 	}
 }

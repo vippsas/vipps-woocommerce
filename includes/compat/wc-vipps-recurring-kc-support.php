@@ -59,7 +59,7 @@ class WC_Vipps_Recurring_Kc_Support {
 	 * KCO 2.6.4, WooCommerce 6.2.0
 	 */
 	public static function fix_payment_method_on_subscription( $order ) {
-		$gateway = WC_Vipps_Recurring::get_instance()->gateway;
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
 
 		$subscriptions = $gateway->get_subscriptions_for_order( $order );
 		foreach ( $subscriptions as $subscription ) {
@@ -132,7 +132,7 @@ class WC_Vipps_Recurring_Kc_Support {
 			return $create;
 		}
 
-		$gateway = WC_Vipps_Recurring::get_instance()->gateway;
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
 
 		$image_url   = str_replace( '{brand}', $gateway->brand, $kco_settings['epm_vipps_recurring_img_url'] ?? '' );
 		$description = str_replace( '{brand}', $gateway->title, $kco_settings['epm_vipps_recurring_description'] ?? '' );
