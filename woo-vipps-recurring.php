@@ -5,7 +5,7 @@
  * Description: Offer recurring payments with Vipps MobilePay for WooCommerce Subscriptions
  * Author: Everyday AS
  * Author URI: https://everyday.no
- * Version: 1.21.0
+ * Version: 2.0.0
  * Requires Plugins: woocommerce
  * Requires at least: 6.1
  * Tested up to: 6.5
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 
 // phpcs:disable WordPress.Files.FileName
 
-define( 'WC_VIPPS_RECURRING_VERSION', '1.21.0' );
+define( 'WC_VIPPS_RECURRING_VERSION', '2.0.0' );
 
 /**
  * Polyfills

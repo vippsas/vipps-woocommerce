@@ -162,7 +162,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-= 1.21.0 =
+= 2.0.0 =
 * Added: Support for Vipps/MobilePay Checkout. This includes the possibility of using card payments if they are enabled for your sales unit.
 * Fixed: "Continue shopping" link default value is now correct.
 * Added: New fields in the settings area to separate test API credentials.
