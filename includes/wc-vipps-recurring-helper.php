@@ -48,6 +48,7 @@ class WC_Vipps_Recurring_Helper {
 	public const META_ORDER_MARKED_FOR_DELETION = '_vipps_recurring_marked_for_deletion';
 	public const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
 	public const META_ORDER_CHECKOUT_SESSION = '_vipps_recurring_checkout_session';
+	public const META_ORDER_CHECKOUT_SESSION_ID = '_vipps_recurring_checkout_session_id';
 	public const META_ORDER_IS_CHECKOUT = '_vipps_recurring_is_checkout';
 	public const META_ORDER_IS_EXPRESS = '_vipps_recurring_is_express';
 	public const META_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_express_auth_token';

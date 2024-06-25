@@ -527,7 +527,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$charge = $this->get_latest_charge_from_order( $order );
-
 		if ( ! $charge ) {
 			// we're being rate limited
 			return 'SUCCESS';
@@ -566,7 +565,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$is_direct_capture = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
-		if ( $is_direct_capture ) {
+		if ( $is_direct_capture && ! $is_captured ) {
 			$this->maybe_capture_payment( $order_id );
 
 			return 'SUCCESS';
@@ -1132,35 +1131,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @param WC_Vipps_Agreement $agreement
 	 * @param $order
 	 * @param string $idempotency_key
-	 *
-	 * @return false|WC_Vipps_Charge
 	 */
-	public function capture_reserved_charge( WC_Vipps_Charge $charge, WC_Vipps_Agreement $agreement, $order, string $idempotency_key ) {
+	public function capture_reserved_charge( WC_Vipps_Charge $charge, WC_Vipps_Agreement $agreement, $order, string $idempotency_key ): WC_Vipps_Charge {
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Attempting to capture reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 
-		// capture reserved charge
-		try {
-			$this->api->capture_reserved_charge( $agreement, $charge, $idempotency_key );
+		$this->api->capture_reserved_charge( $agreement, $charge, $idempotency_key );
 
-			// get charge
-			$charge = $this->api->get_charge( $agreement->id, $charge->id );
+		// get charge
+		$charge = $this->api->get_charge( $agreement->id, $charge->id );
 
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 
-			return $charge;
-		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error when capturing reserved payment in capture_reserved_charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
-			$this->admin_error( __( 'Vipps/MobilePay is temporarily unavailable.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
-
-			return false;
-		} catch ( Exception $e ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error when capturing reserved payment in capture_reserved_charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
-
-			/* translators: %s order id */
-			$this->admin_error( sprintf( __( 'Could not capture Vipps/MobilePay payment for order id: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), WC_Vipps_Recurring_Helper::get_id( $order ) ) );
-
-			return false;
-		}
+		return $charge;
 	}
 
 	/**
@@ -2699,6 +2681,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				$subscription->add_item( $item );
 			}
+
+			// Remove this action to avoid making an unnecessary API request
+			remove_action( 'woocommerce_order_after_calculate_totals', [
+				$this,
+				'update_agreement_price_in_app'
+			] );
 
 			$subscription->calculate_totals();
 			$subscription->save();

@@ -64,13 +64,14 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 		// Skip the lock because we do not want the payment status to falsely be "SUCCESS".
 		$payment_status = $order ? $checkout->gateway()->check_charge_status( $pending_order_id, true ) : 'UNKNOWN';
 
-		if ( $payment_status == 'SUCCESS' ) {
+		if ( $payment_status === 'SUCCESS' ) {
+			// Cancel the session, but do not cancel the order.
 			$checkout->abandon_checkout_order( false );
 
 			return [ 'status' => 'COMPLETED', 'redirect_url' => $return_url ];
 		}
 
-		if ( $payment_status == 'CANCELLED' ) {
+		if ( $payment_status === 'CANCELLED' ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %s cancelled (payment status)", $order->get_id() ) );
 			$checkout->abandon_checkout_order( $order );
 
@@ -159,7 +160,7 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Data_Exception
 	 */
-	public function maybe_create_session( WP_REST_Request $request ): array {
+	public function maybe_create_session(): array {
 		$redirect_url = null;
 		$token        = null;
 		$url          = null;
@@ -193,10 +194,11 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 		try {
 			$partial_order_id = WC_Gateway_Vipps_Recurring::get_instance()->create_partial_order( true );
 
-			$order      = wc_get_order( $partial_order_id );
-			$auth_token = WC_Gateway_Vipps_Recurring::get_instance()->api->generate_idempotency_key();
+			$order             = wc_get_order( $partial_order_id );
+			$auth_token        = WC_Gateway_Vipps_Recurring::get_instance()->api->generate_idempotency_key();
+			$hashed_auth_token = wp_hash_password( $auth_token );
 
-			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, wp_hash_password( $auth_token ) );
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, $hashed_auth_token );
 			$order->save();
 
 			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID, $partial_order_id );
@@ -336,14 +338,15 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $reference );
 			}
 
-//			die( json_encode( $checkout_session->to_array() ) );
-
 			$checkout_session = apply_filters( 'wc_vipps_recurring_checkout_session', $checkout_session, $order );
 
 			$session = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_initiate( $checkout_session );
 
 			$order = wc_get_order( $partial_order_id );
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION, $session->to_array() );
+
+			$session_poll = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_poll( $session->polling_url );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID, $session_poll['sessionId'] );
 
 			$order->add_order_note( __( 'Vipps/MobilePay recurring checkout payment initiated', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 			$order->add_order_note( __( 'Customer passed to Vipps/MobilePay checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ) );

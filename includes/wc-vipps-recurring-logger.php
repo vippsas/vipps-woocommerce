@@ -52,7 +52,7 @@ class WC_Vipps_Recurring_Logger {
 				$log_entry .= '# End Log ' . $formatted_end_time . ' (' . $elapsed_time . ')' . "\n\n";
 			} else {
 				$log_entry = "\n" . '==== Vipps/MobilePay Recurring Version: ' . WC_VIPPS_RECURRING_VERSION . ' ====' . "\n";
-				$log_entry .= '==== Start Log ====' . "\n" . $message . "\n" . '==== End Log ====' . "\n\n";
+				$log_entry .= $message . "\n\n";
 			}
 
 			WC_Vipps_Recurring_Helper::is_wc_lt( '3.0' )

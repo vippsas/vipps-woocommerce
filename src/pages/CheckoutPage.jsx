@@ -46,7 +46,6 @@ export default function CheckoutPage () {
 			path: `/vipps-mobilepay-recurring/v1/checkout/session`,
 			method: 'GET',
 		}).then(response => {
-			console.log("pollSessionStatus", response)
 			setSessionStatus(response)
 		})
 	}, [])

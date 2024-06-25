@@ -56,7 +56,8 @@ class WC_Vipps_Recurring_Rest_Api {
 
 		do_action( 'wc_vipps_recurring_before_rest_api_check_order_status', $order_id );
 
-		$gateway->check_charge_status( $order_id );
+		// Skip the lock here, otherwise we get a false result
+		$gateway->check_charge_status( $order_id, true );
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 		$agreement    = $gateway->api->get_agreement( $agreement_id );
 

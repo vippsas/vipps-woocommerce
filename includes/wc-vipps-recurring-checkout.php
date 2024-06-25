@@ -112,32 +112,32 @@ class WC_Vipps_Recurring_Checkout {
 
 		// For Checkout, we need to know any time and as soon as the cart changes, so fold all the events into a single one
 		add_action( 'woocommerce_add_to_cart', function () {
-			do_action( 'vipps_recurring_cart_changed' );
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_add_to_cart' );
 		}, 10, 0 );
 
 		// Cart emptied
 		add_action( 'woocommerce_cart_emptied', function () {
-			do_action( 'vipps_recurring_cart_changed' );
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_cart_emptied' );
 		}, 10, 0 );
 
 		// After updating quantities
 		add_action( 'woocommerce_after_cart_item_quantity_update', function () {
-			do_action( 'vipps_recurring_cart_changed' );
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_after_cart_item_quantity_update' );
 		}, 10, 0 );
 
 		// Blocks and ajax
 		add_action( 'woocommerce_cart_item_removed', function () {
-			do_action( 'vipps_recurring_cart_changed' );
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_cart_item_removed' );
 		}, 10, 0 );
 
 		// Restore deleted entry
 		add_action( 'woocommerce_cart_item_restored', function () {
-			do_action( 'vipps_recurring_cart_changed' );
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_cart_item_restored' );
 		}, 10, 0 );
 
 		// Normal cart form update
 		add_filter( 'woocommerce_update_cart_action_cart_updated', function ( $updated ) {
-			do_action( 'vipps_recurring_cart_changed' );
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_update_cart_action_cart_updated' );
 
 			return $updated;
 		} );
@@ -153,7 +153,7 @@ class WC_Vipps_Recurring_Checkout {
 		add_filter( 'woocommerce_settings_pages', array( $this, 'woocommerce_settings_pages' ) );
 	}
 
-	public function cart_changed() {
+	public function cart_changed( string $source ) {
 		$pending_order_id = is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID ) : false;
 		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
 
@@ -161,7 +161,7 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		WC_Vipps_Recurring_Logger::log( sprintf( "Checkout cart changed while session %d in progress, attempting to cancel", $order->get_id() ) );
+		WC_Vipps_Recurring_Logger::log( sprintf( "Checkout cart changed while session %d in progress, attempting to cancel. Source: %s", $order->get_id(), $source ) );
 		$this->abandon_checkout_order( $order );
 	}
 
@@ -179,6 +179,18 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		$session = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
+		if ( ! is_array( $session ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Session is not an array, got: %s", $order_id, $session ) );
+
+			return;
+		}
+
+//		$lock_key = 'checkout_check_order_status_' . $order_id;
+//		if ( get_transient( $lock_key ) ) {
+//			return;
+//		}
+//		set_transient( $lock_key, uniqid( '', true ), 5 );
+
 		$session = $this->gateway()->api->checkout_poll( $session['pollingUrl'] );
 
 		$this->handle_payment( $order, $session );
@@ -631,24 +643,31 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Data_Exception
 	 */
 	public function handle_callback( array $body, string $authorization_token ) {
-		// Get the order from the authorization token
-		WC_Vipps_Recurring_Logger::log( sprintf( "Handling Vipps/MobilePay Checkout callback: %s - authorization token: %s", json_encode( $body ), $authorization_token ) );
+		WC_Vipps_Recurring_Logger::log( sprintf( "Handling Vipps/MobilePay Checkout callback with body: %s", json_encode( $body ) ) );
 
 		$order_ids = wc_get_orders( [
-			'meta_key'     => WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN,
-			'meta_value'   => wp_hash_password( $authorization_token ),
+			'type'         => 'shop_order',
+			'meta_key'     => WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID,
+			'meta_value'   => $body['sessionId'],
 			'meta_compare' => '=',
 			'return'       => 'ids'
 		] );
 
 		if ( empty( $order_ids ) ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "Found no order ids in Vipps/MobilePay Checkout callback for authorization token: %s", $authorization_token ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( "Found no order ids in Vipps/MobilePay Checkout callback for session id: %s", $body['sessionId'] ) );
 
 			return;
 		}
 
 		$order_id = array_pop( $order_ids );
 		$order    = wc_get_order( $order_id );
+
+		$stored_authorization_token = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
+		if ( ! wp_check_password( $authorization_token, $stored_authorization_token ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Invalid authorization token for session id %s.", $order_id, $body['sessionId'] ) );
+
+			return;
+		}
 
 		$this->handle_payment( $order, $body );
 	}
@@ -669,9 +688,17 @@ class WC_Vipps_Recurring_Checkout {
 		$agreement_id = $session['subscriptionDetails']['agreementId'];
 		$status       = $session['sessionState'];
 
-		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout callback for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
+		$lock_key = 'checkout_handle_payment_lock_' . $order_id . '_' . $status;
+		if ( get_transient( $lock_key ) ) {
+			return;
+		}
+
+		set_transient( $lock_key, uniqid( '', true ), 30 );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
 
 		// This makes sure we are covered by all our normal cron checks as well
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL, true );
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
 
@@ -745,9 +772,8 @@ class WC_Vipps_Recurring_Checkout {
 			$subscription->save();
 		}
 
-		// todo: check_charge_status doesn't do it's job properly initially!
-
-		$this->gateway()->check_charge_status( $order_id, true );
+		// This is passed off to regular cron or API handling after this point
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 	}
 
 	/**
