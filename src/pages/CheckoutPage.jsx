@@ -55,7 +55,7 @@ export default function CheckoutPage () {
 			return
 		}
 
-		sessionPollHandler.current = setInterval(pollSessionStatus, 10_000)
+		sessionPollHandler.current = setInterval(pollSessionStatus, 20_000)
 
 		return () => {
 			clearInterval(sessionPollHandler.current)

@@ -31,7 +31,7 @@ export default function PaymentRedirectPage () {
 
 	useEffect(() => {
 		checkStatus();
-		intervalHandlerRef.current = setInterval(checkStatus, 2500)
+		intervalHandlerRef.current = setInterval(checkStatus, 10_000)
 
 		return () => clearInterval(intervalHandlerRef.current)
 	}, [])
