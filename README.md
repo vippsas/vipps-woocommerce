@@ -139,7 +139,7 @@ You will need an account for direct integration with the payment APIs, which can
 
 If you already have a Vipps or MobilePay account for WooCommerce and want to contribute to
 the development of the plugin, contact
-[customer service](https://vippsmobilepay.com/help)
+[customer service](https://vippsmobilepay.com/info/help)
 to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
