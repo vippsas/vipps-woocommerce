@@ -47,6 +47,8 @@ class WC_Vipps_Recurring {
 	public function activate() {
 		global $wp_rewrite;
 
+		$this->install();
+
 		$wp_rewrite->flush_rules();
 		add_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
 	}
@@ -355,7 +357,7 @@ class WC_Vipps_Recurring {
 		}
 
 		// Copy MSN, client id, client secret and subscription key to our new test fields if test mode is enabled.
-		if ( $this->gateway()->test_mode && version_compare( $version, '1.21.0', '<' ) ) {
+		if ( $this->gateway()->test_mode && version_compare( $version, '2.0.0', '<' ) ) {
 			$this->gateway()->update_option( 'test_merchant_serial_number', $this->gateway()->get_option( 'merchant_serial_number' ) );
 			$this->gateway()->update_option( 'test_client_id', $this->gateway()->get_option( 'client_id' ) );
 			$this->gateway()->update_option( 'test_secret_key', $this->gateway()->get_option( 'secret_key' ) );
