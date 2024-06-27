@@ -709,9 +709,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// status: DUE or PENDING
 		// when DUE, we need to check that it becomes another status in a cron
-		if ( ! $transaction_id && ( $charge->status === WC_Vipps_Charge::STATUS_DUE
-									|| ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
-										 && wcs_order_contains_renewal( $order ) ) ) ) {
+		$initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
+
+		if ( ! $initial && ! $transaction_id && ( $charge->status === WC_Vipps_Charge::STATUS_DUE
+												  || ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
+													   && wcs_order_contains_renewal( $order ) ) ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, true );
@@ -1078,8 +1080,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
 
 		try {
-			$agreement = $this->api->get_agreement( $agreement_id );
-			$charge    = $this->api->get_charge( $agreement_id, $charge_id );
+			$agreement = new WC_Vipps_Agreement( [
+				'id' => $agreement_id
+			] );
+
+			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Fetching charge to prepare for capture', WC_Vipps_Recurring_Helper::get_id( $order ) ) );
+			$charge = $this->api->get_charge( $agreement->id, $charge_id );
 
 			$idempotency_key = $this->get_idempotency_key( $order );
 
@@ -1137,8 +1143,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$this->api->capture_reserved_charge( $agreement, $charge, $idempotency_key );
 
-		// get charge
-		$charge = $this->api->get_charge( $agreement->id, $charge->id );
+		// Set the charge status manually as we can safely assume it was charged here. This avoids making another API request.
+		$charge->set_status( WC_Vipps_Charge::STATUS_CHARGED );
 
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Captured reserve charge: %s for agreement: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $agreement->id ) );
 

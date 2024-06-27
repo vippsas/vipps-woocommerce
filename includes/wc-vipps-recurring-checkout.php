@@ -172,6 +172,15 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function check_order_status( $order_id ) {
+		$lock_name = "vipps_recurring_checkout_check_order_status_$order_id";
+		$lock      = get_transient( $lock_name );
+
+		if ( $lock ) {
+			return;
+		}
+
+		set_transient( $lock_name, uniqid( '', true ), 5 );
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT ) ) {
@@ -185,12 +194,7 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-//		$lock_key = 'checkout_check_order_status_' . $order_id;
-//		if ( get_transient( $lock_key ) ) {
-//			return;
-//		}
-//		set_transient( $lock_key, uniqid( '', true ), 5 );
-
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Polling checkout from check_order_status", $order_id ) );
 		$session = $this->gateway()->api->checkout_poll( $session['pollingUrl'] );
 
 		$this->handle_payment( $order, $session );
@@ -555,18 +559,15 @@ class WC_Vipps_Recurring_Checkout {
 	public function get_checkout_status( $session ): string {
 		if ( $session && isset( $session['token'] ) ) {
 			try {
+				WC_Vipps_Recurring_Logger::log( "Polling checkout from get_checkout_status" );
 				$response = $this->gateway()->api->checkout_poll( $session['pollingUrl'] );
 
-				if ( ( $response['sessionState'] ?? "" ) == 'SessionExpired' ) {
-					return 'EXPIRED';
-				}
-
-				return 'SUCCESS';
+				return $response['sessionState'] ?? "PaymentInitiated";
 			} catch ( WC_Vipps_Recurring_Exception $e ) {
 				if ( $e->responsecode == 400 ) {
-					return 'INITIATED';
+					return 'PaymentInitiated';
 				} else if ( $e->responsecode == 404 ) {
-					return 'EXPIRED';
+					return 'SessionExpired';
 				} else {
 					WC_Vipps_Recurring_Logger::log( sprintf( "Error polling status - error message %s", $e->getMessage() ) );
 
@@ -609,6 +610,7 @@ class WC_Vipps_Recurring_Checkout {
 
 			if ( $poll_endpoint ) {
 				try {
+					WC_Vipps_Recurring_Logger::log( "Polling checkout from abandon_checkout_order" );
 					$poll_data     = $this->gateway()->api->checkout_poll( $poll_endpoint );
 					$session_state = ( ! empty( $poll_data ) && is_array( $poll_data ) && isset( $poll_data['sessionState'] ) ) ? $poll_data['sessionState'] : "";
 					WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Checking Checkout status on cart/order change: %s", $order->get_id(), $session_state ) );
@@ -688,18 +690,9 @@ class WC_Vipps_Recurring_Checkout {
 		$agreement_id = $session['subscriptionDetails']['agreementId'];
 		$status       = $session['sessionState'];
 
-		$lock_key = 'checkout_handle_payment_lock_' . $order_id . '_' . $status;
-		if ( get_transient( $lock_key ) ) {
-			return;
-		}
-
-		set_transient( $lock_key, uniqid( '', true ), 30 );
-
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
 
 		// This makes sure we are covered by all our normal cron checks as well
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL, true );
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
 
 		$order_charge_id = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID );

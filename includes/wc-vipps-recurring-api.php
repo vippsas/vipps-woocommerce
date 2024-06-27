@@ -427,6 +427,8 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	private function http_call( string $endpoint, string $method, array $data = [], array $headers = [], $encoding = 'json' ) {
+//		WC_Vipps_Recurring_Logger::log( sprintf( "Calling Vipps API endpoint: [%s] %s", $method, $endpoint ) );
+
 		$url = $endpoint;
 		if ( ! str_starts_with( $endpoint, "http" ) ) {
 			$url = $this->get_base_url() . '/' . $endpoint;

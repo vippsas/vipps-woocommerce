@@ -45,12 +45,10 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 	}
 
 	/**
-	 * @throws WC_Vipps_Recurring_Exception
-	 * @throws WC_Vipps_Recurring_Temporary_Exception
-	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @return array
 	 * @throws WC_Data_Exception
 	 */
-	public function poll_session( WP_REST_Request $request ): array {
+	public function poll_session(): array {
 		$checkout = WC_Vipps_Recurring_Checkout::get_instance();
 
 		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
@@ -59,23 +57,6 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 
 		if ( $order ) {
 			$return_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order );
-		}
-
-		// Skip the lock because we do not want the payment status to falsely be "SUCCESS".
-		$payment_status = $order ? $checkout->gateway()->check_charge_status( $pending_order_id, true ) : 'UNKNOWN';
-
-		if ( $payment_status === 'SUCCESS' ) {
-			// Cancel the session, but do not cancel the order.
-			$checkout->abandon_checkout_order( false );
-
-			return [ 'status' => 'COMPLETED', 'redirect_url' => $return_url ];
-		}
-
-		if ( $payment_status === 'CANCELLED' ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %s cancelled (payment status)", $order->get_id() ) );
-			$checkout->abandon_checkout_order( $order );
-
-			return [ 'status' => 'FAILED', 'redirect_url' => $return_url ];
 		}
 
 		$session = $order ? $order->get_meta( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION ) : false;
@@ -88,7 +69,20 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 		add_filter( 'wc_vipps_recurring_is_vipps_checkout', '__return_true' );
 		$status = $checkout->get_checkout_status( $session );
 
-		$failed = $status === 'ERROR' || $status === 'EXPIRED' || $status === 'TERMINATED';
+		$failed = $status === 'ERROR' || $status === 'SessionExpired' || $status === 'PaymentTerminated';
+		if ( $failed ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %d failed with message %s", $order->get_id(), $status ) );
+			$checkout->abandon_checkout_order( $order );
+
+			return [ 'status' => 'FAILED', 'redirect_url' => $return_url ];
+		}
+
+		if ( $status === 'PaymentSuccessful' ) {
+			// Cancel the session, but do not cancel the order.
+			$checkout->abandon_checkout_order( false );
+
+			return [ 'status' => 'COMPLETED', 'redirect_url' => $return_url ];
+		}
 
 		// Disallow sessions that go on for too long.
 		if ( is_a( $order, "WC_Order" ) ) {
@@ -111,26 +105,6 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 
 				return [ 'status' => 'EXPIRED', 'redirect_url' => false ];
 			}
-		}
-
-		$ok = ! $failed;
-
-		// Since we checked the payment status at Vipps directly above, we don't actually have any extra information at this point.
-		// We do know that the session is live and ongoing, but that's it.
-
-		if ( $failed ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "Checkout session %2\$d failed with message %3\$s", $order->get_id(), $status ) );
-			$checkout->abandon_checkout_order( $order );
-
-			return [ 'status' => $status, 'redirect_url' => $return_url ];
-		}
-
-		// Error handling! If this happens we have an unknown status or something like it.
-		if ( ! $ok ) {
-			WC_Vipps_Recurring_Logger::log( "Unknown status on polling status: " . print_r( $status, true ) );
-			$checkout->abandon_checkout_order( $order );
-
-			return [ 'status' => 'ERROR', 'redirect_url' => false ];
 		}
 
 		// This handles address information data from the poll if present. It is not, currently.
@@ -343,6 +317,8 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			$session = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_initiate( $checkout_session );
 
 			$order = wc_get_order( $partial_order_id );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL, true );
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION, $session->to_array() );
 
 			$session_poll = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_poll( $session->polling_url );
