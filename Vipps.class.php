@@ -2441,7 +2441,7 @@ EOF;
                             $orderid = $polldata['metadata']['orderid'];
                             if ($orderid) {
                                 $order = wc_get_order($orderid);
-                                if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+                                if (!$order || $vippsorderid != $order->get_meta('_vipps_orderid')) {
                                     $this->log(
                                         sprintf(__('The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order.', 'woo-vipps'),
                                         $vippsorderid, $orderid, $event), 'debug');
