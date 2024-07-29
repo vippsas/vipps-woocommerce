@@ -303,11 +303,14 @@ jQuery(document).ready(function () {
         wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
     }
 
-
     public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source'=>'woo-vipps');
-        $logger->log($type,$what,$context);
+        $logger = function_exists('wc_get_logger') ? wc_get_logger() : false;
+        if ($logger) {
+            $context = array('source'=>'woo-vipps');
+            $logger->log($type,$what,$context);
+        } else {
+            error_log("woo-vipps ($type): $what");
+        }
     }
 
 

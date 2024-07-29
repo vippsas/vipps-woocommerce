@@ -1258,9 +1258,13 @@ jQuery('a.webhook-adder').click(function (e) {
 
 
     public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source'=>'woo-vipps');
-        $logger->log($type,$what,$context);
+        $logger = function_exists('wc_get_logger') ? wc_get_logger() : false;
+        if ($logger) {
+            $context = array('source'=>'woo-vipps');
+            $logger->log($type,$what,$context);
+        } else {
+            error_log("woo-vipps ($type): $what");
+        }
     }
 
 

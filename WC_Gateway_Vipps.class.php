@@ -3793,9 +3793,13 @@ function activate_vipps_checkout(yesno) {
     } 
 
     public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source'=>'woo-vipps');
-        $logger->log($type,$what,$context);
+        $logger = function_exists('wc_get_logger') ? wc_get_logger() : false;
+        if ($logger) {
+            $context = array('source'=>'woo-vipps');
+            $logger->log($type,$what,$context);
+        } else {
+            error_log("woo-vipps ($type): $what");
+        }
     }
 
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12
