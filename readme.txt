@@ -2,14 +2,14 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.4
-Stable tag: 2.1.4
+Version: 2.1.5
+Stable tag: 2.1.5
 Requires at least: 4.7
-Tested up to: 6.5.4
+Tested up to: 6.6.1
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.0.0
+WC tested up to: 9.1.4
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -94,15 +94,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Fix untranslateable string and wrong sprintf format
-Fix "Unknown Order" issue
-Fix issue when using Checkout and Stripe
-Removed support for Instabox in Vipps Checkout Shipping
-Added support for external payment methods in some markets
-Fix an issue with addressline 2 for express checkout when using static shipping
-Fixed some untranslatable strings and updated information about reservation times
-Fixed some places where NOK were hard-coded in as currency.
-Changed gateway registering to use class name instead of instantiated objects to prevent unintended breakage
+Fix issue with webhook callbacks to unknown Vipps orders
+Fix issue where the woo log is called without woo having been loaded
 
 == Frequently Asked Questions ==
 
@@ -241,6 +234,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-07-29 version 2.1.5 =
+Fix error handling when receiving callbacks to unknown orders
+Fix trying to use Woos logger when woo hasn't been loaded yet
 
 = 2024-06-18 version 2.1.4 =
 Fix untranslateable string and a sprintf format string with a bug in it (Thanks Knut Sparhell for reporting)

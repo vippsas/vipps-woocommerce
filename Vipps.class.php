@@ -1278,9 +1278,13 @@ jQuery('a.webhook-adder').click(function (e) {
 
 
     public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source'=>'woo-vipps');
-        $logger->log($type,$what,$context);
+        $logger = function_exists('wc_get_logger') ? wc_get_logger() : false;
+        if ($logger) {
+            $context = array('source'=>'woo-vipps');
+            $logger->log($type,$what,$context);
+        } else {
+            error_log("woo-vipps ($type): $what");
+        }
     }
 
 
@@ -2461,7 +2465,7 @@ EOF;
                             $orderid = $polldata['metadata']['orderid'];
                             if ($orderid) {
                                 $order = wc_get_order($orderid);
-                                if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+                                if (!$order || $vippsorderid != $order->get_meta('_vipps_orderid')) {
                                     $this->log(
                                         sprintf(__('The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order.', 'woo-vipps'),
                                         $vippsorderid, $orderid, $event), 'debug');
