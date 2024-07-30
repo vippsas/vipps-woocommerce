@@ -89,8 +89,8 @@ They then confirm the payment in the Vipps or MobilePay app.
 
 See:
 
-* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/developer-resources/portal)
-* [How to find the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal#how-to-find-the-api-keys)
+* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/knowledge-base/portal)
+* [How to find the API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/portal#how-to-find-the-api-keys)
 
 ## Screenshots
 
@@ -141,12 +141,12 @@ to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
 through TestFlight. See
-[Test apps](https://developer.vippsmobilepay.com/docs/test-environment/#test-apps)
+[Test apps](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com), where you log in.
-See [Getting the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal/#how-to-find-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/portal/#how-to-find-the-api-keys)
 for more information.
 
 To use test mode in WooCommerce, switch *Developer mode* on. There you can input
