@@ -112,6 +112,10 @@ Enter your Vipps account keys and configure the plugin.
 
 You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
 
+## How do I set the default language?
+
+The plugin should use the website language. The default is always English, and it is translated to whatever the current locale is. It's possible to modify translations and add more translations by using [Loco Translate](https://wordpress.org/plugins/loco-translate/) or you could contribute translations on [translate.wordpress.org](https://translate.wordpress.org/).
+
 ### For how long is an order reserved?
 
 :::note
@@ -163,7 +167,7 @@ For issues with your WooCommerce installation you should use the
 [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
 For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact).
 
-### General FAQs
+### General questions
 
 See the
 [Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
