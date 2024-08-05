@@ -78,7 +78,7 @@ for an overview.
 
 ### Retrieving Vipps MobilePay API Keys
 
-Log-in to [portal.vipps.no](https://portal.vipps.no/) and get your test API keys, as described in
+Log-in to [portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
 
 ### Configuration of the plugin
