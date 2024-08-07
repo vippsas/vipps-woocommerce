@@ -450,6 +450,13 @@ class WC_Vipps_Recurring_Api {
 			throw new WC_Vipps_Recurring_Config_Exception( __( 'Your Vipps/MobilePay Recurring Payments gateway is not correctly configured.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 		}
 
+		$system_plugin_version = WC_VIPPS_RECURRING_VERSION;
+		$checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
+
+		if ($checkout_enabled) {
+			$system_plugin_version = $system_plugin_version . '/checkout';
+		}
+
 		$headers = array_merge( [
 			'client_id'                   => $client_id,
 			'client_secret'               => $secret_key,
@@ -458,7 +465,7 @@ class WC_Vipps_Recurring_Api {
 			'Vipps-System-Name'           => 'woocommerce',
 			'Vipps-System-Version'        => get_bloginfo( 'version' ) . '/' . ( defined( 'WC_VERSION' ) ? WC_VERSION : '0.0.0' ),
 			'Vipps-System-Plugin-Name'    => 'woo-vipps-recurring',
-			'Vipps-System-Plugin-Version' => WC_VIPPS_RECURRING_VERSION
+			'Vipps-System-Plugin-Version' => $system_plugin_version
 		], $headers );
 
 		if ( $encoding === 'url' || $method === 'GET' ) {

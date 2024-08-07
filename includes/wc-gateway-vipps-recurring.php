@@ -1322,15 +1322,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return apply_filters( 'wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item );
 		} );
 
-		$item           = array_pop( $subscription_items );
-		$product        = $item->get_product();
-		$parent_product = wc_get_product( $item->get_product_id() );
+		$subscription_item           = array_pop( $subscription_items );
+		$product        = $subscription_item->get_product();
+		$parent_product = wc_get_product( $subscription_item->get_product_id() );
 
 		$extra_initial_charge_description = '';
 
 		if ( $has_more_products ) {
-			$other_items = array_filter( $items, static function ( $other_item ) use ( $item ) {
-				return $item['product_id'] !== $other_item['product_id'];
+			$other_items = array_filter( $items, static function ( $other_item ) use ( $subscription_item ) {
+				return $subscription_item['product_id'] !== $other_item['product_id'];
 			} );
 
 			foreach ( $other_items as $product_item ) {
@@ -1373,6 +1373,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 		}
 
+		// If we have more products in our cart we know that the agreement total should just be the sum of the subscription total.
+		// We then create an initialCharge for the full initial sum, including the rest of the cart.
+		// We can safely ignore all of the above code regarding $agreement_total because this will never happen for a subscription switch.
+		if ( $has_more_products ) {
+			$agreement_total = $subscription_item->get_total() + $order->get_shipping_total();
+		}
+
 		$agreement = ( new WC_Vipps_Agreement() )
 			->set_external_id( $order_id )
 			->set_pricing(
@@ -1386,7 +1393,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					->set_unit( strtoupper( $subscription_period ) )
 					->set_count( (int) $subscription_interval )
 			)
-			->set_product_name( $item->get_name() )
+			->set_product_name( $subscription_item->get_name() )
 			->set_merchant_agreement_url( apply_filters( 'wc_vipps_recurring_merchant_agreement_url', $agreement_url ) )
 			->set_merchant_redirect_url( apply_filters( 'wc_vipps_recurring_merchant_redirect_url', $redirect_url ) );
 
@@ -1428,7 +1435,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement = $agreement->set_initial_charge(
 				( new WC_Vipps_Agreement_Initial_Charge() )
 					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
-					->set_description( empty( $initial_charge_description ) ? $item->get_name() : $initial_charge_description )
+					->set_description( empty( $initial_charge_description ) ? $subscription_item->get_name() : $initial_charge_description )
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 			);
 
@@ -2512,8 +2519,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC()->checkout->create_order_tax_lines( $order, WC()->cart );
 			WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
 
-			if ($needs_shipping) {
-				WC()->checkout->create_order_shipping_lines($order, WC()->session->get( 'chosen_shipping_methods' ), WC()->shipping->get_packages() );
+			if ( $needs_shipping ) {
+				WC()->checkout->create_order_shipping_lines( $order, WC()->session->get( 'chosen_shipping_methods' ), WC()->shipping->get_packages() );
 			}
 
 			do_action( 'wc_vipps_recurring_before_calculate_totals_partial_order', $order );
