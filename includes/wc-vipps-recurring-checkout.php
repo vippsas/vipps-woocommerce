@@ -762,6 +762,7 @@ class WC_Vipps_Recurring_Checkout {
 
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout created a new subscription: %s", $order_id, WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
 
+			$subscription->calculate_totals();
 			$subscription->save();
 		}
 
