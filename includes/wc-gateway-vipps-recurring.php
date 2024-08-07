@@ -1355,6 +1355,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// total no longer returns the order amount when gateway is being changed
 		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
+		$shipping_total = 0;
+
+		if (WC_Vipps_Recurring_Helper::get_meta($order, WC_Vipps_Recurring_Helper::META_ORDER_NEEDS_SHIPPING)) {
+			$shipping_total = $order->get_shipping_total('code');
+			$agreement_total += $shipping_total;
+		}
+
+		$order_total = $order->get_total() + $shipping_total;
 
 		// when we're performing a variation switch we need some special logic in Vipps
 		$is_subscription_switch = wcs_order_contains_switch( $order );
@@ -1368,7 +1376,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$direction   = $switch_data['switch_direction'];
 
 				if ( $direction === 'upgrade' ) {
-					$agreement_total += $order->get_total();
+					$agreement_total += $order_total;
 				}
 			}
 		}
@@ -1400,7 +1408,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement = $agreement->set_phone_number( $order->get_billing_phone() );
 		}
 
-		$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
+		$is_zero_amount      = (int) $order_total === 0 || $is_gateway_change;
 		$capture_immediately = $is_virtual || $direct_capture;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 		$has_trial           = (bool) WC_Subscriptions_Product::get_trial_length( $product );
@@ -1411,7 +1419,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
 		// also not when the order total is the same as the agreement total
-		if ( $has_free_campaign && $has_synced_product && $order->get_total() === $agreement_total ) {
+		if ( $has_free_campaign && $has_synced_product && $order_total === $agreement_total ) {
 			$has_campaign = false;
 		}
 
@@ -1427,7 +1435,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$agreement = $agreement->set_initial_charge(
 				( new WC_Vipps_Agreement_Initial_Charge() )
-					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
+					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order_total ) )
 					->set_description( empty( $initial_charge_description ) ? $item->get_name() : $initial_charge_description )
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 			);
@@ -1440,7 +1448,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
 			$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
 
-			$campaign_price    = $has_free_campaign ? $sign_up_fee : $order->get_total();
+			$campaign_price    = $has_free_campaign ? $sign_up_fee : $order_total;
 			$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
@@ -2469,6 +2477,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		do_action( 'wc_vipps_recurring_express_checkout_before_calculate_totals' );
 
 		WC()->cart->calculate_fees();
+		WC()->cart->calculate_shipping();
 		WC()->cart->calculate_totals();
 		do_action( 'wc_vipps_recurring_before_create_express_checkout_order', WC()->cart );
 
@@ -2512,6 +2521,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			WC()->checkout->create_order_coupon_lines( $order, WC()->cart );
 			do_action( 'wc_vipps_recurring_before_calculate_totals_partial_order', $order );
 			$order->calculate_totals();
+
+			// Do not calculate_totals after this, as it will recalculate shipping
+			if ($needs_shipping) {
+				$order->set_shipping_total( WC()->cart->get_shipping_total() );
+			}
 
 			// Added to support third-party plugins that wants to do stuff with the order before it is saved.
 			do_action( 'woocommerce_checkout_create_order', $order, array() );
