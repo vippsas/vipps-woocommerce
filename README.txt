@@ -2,7 +2,7 @@
 Contributors: EverydayAS
 Tags: vipps, mobilepay, recurring payments, subscriptions, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 6.5
+Tested up to: 6.6
 Stable tag: 1.20.3
 Requires PHP: 7.4
 License: AGPLv3.0 or later
