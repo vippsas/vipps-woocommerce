@@ -89,8 +89,8 @@ They then confirm the payment in the Vipps or MobilePay app.
 
 See:
 
-* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/developer-resources/portal)
-* [How to find the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal#how-to-find-the-api-keys)
+* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/knowledge-base/portal)
+* [How to find the API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/portal#how-to-find-the-api-keys)
 
 ## Screenshots
 
@@ -111,6 +111,10 @@ Enter your Vipps account keys and configure the plugin.
 ### In which countries can I use Vipps MobilePay?
 
 You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
+
+## How do I set the default language?
+
+The plugin should use the website language. The default is always English, and it is translated to whatever the current locale is. It's possible to modify translations and add more translations by using [Loco Translate](https://wordpress.org/plugins/loco-translate/) or you could contribute translations on [translate.wordpress.org](https://translate.wordpress.org/).
 
 ### For how long is an order reserved?
 
@@ -141,12 +145,12 @@ to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps app, available
 through TestFlight. See
-[Test apps](https://developer.vippsmobilepay.com/docs/test-environment/#test-apps)
+[Test apps](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com), where you log in.
-See [Getting the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal/#how-to-find-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/portal/#how-to-find-the-api-keys)
 for more information.
 
 To use test mode in WooCommerce, switch *Developer mode* on. There you can input
@@ -163,7 +167,7 @@ For issues with your WooCommerce installation you should use the
 [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
 For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact).
 
-### General FAQs
+### General questions
 
 See the
 [Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
