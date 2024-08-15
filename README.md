@@ -94,15 +94,15 @@ See:
 
 ## Screenshots
 
-Enable Vipps as a payment method.
+First, enable *Vipps MobilePay* as a payment method.
 
-![Enable Vipps as a payment method](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-1.png?raw=true "Enable Vipps as a payment method.")
+![Enable Vipps MobilePay as a payment method](./docs/images/enable-checkout.png)
 
-Enter your Vipps account keys and configure the plugin.
+Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
-![Enter your Vipps account keys and configure the plugin](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-2.png?raw=true "Enter your Vipps account keys and configure the plugin")
+![Enter your API keys and configure the plugin](./docs/images/add-secrets.png)
 
-(Optional, but recommended) Enable Checkout, replacing the standard WooCommerce checkout.
+Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with minimum hassle.
 
 ![Enable Checkout](./docs/images/turn-on-checkout.png)
 
@@ -143,7 +143,7 @@ the development of the plugin, contact
 [customer service](https://vippsmobilepay.com/info/help)
 to *upgrade* your account with access to the test environment.
 
-You will also need to install a special test version of the Vipps app, available
+You will also need to install a special test version of the Vipps MobilePay app, available
 through TestFlight. See
 [Test apps](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#test-apps)
 for more information.
