@@ -14,7 +14,7 @@ END_METADATA -->
 
 ![Vipps](./docs/images/vipps.png) ![MobilePay](./docs/images/mp.png) *Available for Vipps and MobilePay.*
 
-*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/) .*
+*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/). 💥
