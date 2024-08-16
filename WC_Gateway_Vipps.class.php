@@ -165,7 +165,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         foreach($captured_statuses as $capstatus) {
            add_action('woocommerce_order_status_' . $capstatus, array($this, 'maybe_capture_payment'));
         }
-        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_payment'));
+        // We will refund money on cancelled orders, but only if they are *relatively new*. This is to 
+        // avoid accidents and issues where old orders are *somehow* cancelled even though they are complete. IOK 2024-08-12
+        add_action('woocommerce_order_status_cancelled', array($this, 'order_status_cancelled_wrapper'));
         add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_payment'));
 
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
@@ -507,7 +509,40 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function show_login_with_vipps() {
         return false;
     }
+   
+    // Called when orders reach the 'cancelled'-status. When this happens, orders will be *refunded*
+    // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
+    public function order_status_cancelled_wrapper($order_id) {
+        $order = wc_get_order($order_id);
+        if ('vipps' != $order->get_payment_method()) return false;
 
+        $days_threshold = apply_filters('woo_vipps_cancel_refund_days_threshold', 30);
+        $order_date = $order->get_date_created();
+        $days_since_order = (time() - $order_date->getTimestamp()) / (60 * 60 * 24);
+
+        $captured = intval($order->get_meta('_vipps_captured'));
+
+        // This will just cancel the order, including at Vipps. No funds have been captured.
+        if ($captured == 0) {
+            return $this->maybe_cancel_payment($order_id);
+        }
+
+        // If this is true then the order is *too old to refund* which would happen on maybe_cancel_payment. 
+        // add a note instead.
+        if ($days_since_order > $days_threshold) {
+            $note = sprintf(__('Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required.', 'woo-vipps'), $days_threshold);
+            $order->add_order_note($note);
+            // Add an admin notice in case this is interactive
+            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
+            $this->adminerr(__('Order', 'woo-vipps') . " " . $order->get_id() . ": " . $note);
+            $order->save();
+            Vipps::instance()->store_admin_notices();
+            return false;
+        }
+
+        // If not, then the older is pretty new so we will cancel or refund it, as before
+        return $this->maybe_cancel_payment($order_id);
+    }
 
     public function maybe_cancel_payment($orderid) {
         $order = wc_get_order($orderid);
@@ -3797,9 +3832,13 @@ function activate_vipps_checkout(yesno) {
     } 
 
     public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source'=>'woo-vipps');
-        $logger->log($type,$what,$context);
+        $logger = function_exists('wc_get_logger') ? wc_get_logger() : false;
+        if ($logger) {
+            $context = array('source'=>'woo-vipps');
+            $logger->log($type,$what,$context);
+        } else {
+            error_log("woo-vipps ($type): $what");
+        }
     }
 
     // Ensure chosen name gets used in the checkout page IOK 2018-09-12

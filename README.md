@@ -12,12 +12,9 @@ END_METADATA -->
 
 ![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
-![Vipps](./docs/images/vipps.png) *Available for Vipps.*
+![Vipps](./docs/images/vipps.png) ![MobilePay](./docs/images/mp.png) *Available for Vipps and MobilePay.*
 
-![MobilePay](./docs/images/mp.png) *Available for MobilePay in Finland and Denmark.*
-
-
-*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [Wordpress plugin site](https://wordpress.org/plugins/woo-vipps/) .*
+*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/). 💥
@@ -37,7 +34,7 @@ For more information, see:
 
 ## Checkout
 
-With Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed and run by Vipps MobilePay.
+With Checkout enabled in the plugin, you will get a complete checkout in your web shop, designed and run by Vipps MobilePay.
 Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
 For Finland, it is also possible to activate bank transfer (during product ordering) as a payment method, with some restrictions.
 VISA/MasterCard payments will be coming soon for MobilePay.
@@ -80,7 +77,7 @@ They then confirm the payment in the Vipps or MobilePay app.
 1. Install the plugin using the WordPress [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins).
    The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the *Plugins* screen on WordPress.
-3. Go to the *WooCommerce Settings* page, choose *Payments* (*Betalinger*), and enable Vipps MobilePay.
+3. Go to the *WooCommerce Settings* page, choose *Payments*, and enable Vipps MobilePay.
 4. Go the *Settings* page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Merchant Portal. For information, see [How to get account keys from Merchant Portal](#how-to-get-account-keys-from-merchant-portal).
 5. (Optional, but recommended) Activate *Checkout* by clicking on the *Checkout* tab and selecting the *Enable Alternative Vipps Checkout screen, replacing the standard checkout page* option.
 
@@ -92,36 +89,45 @@ They then confirm the payment in the Vipps or MobilePay app.
 
 See:
 
-* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/developer-resources/portal)
-* [How to find the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal#how-to-find-the-api-keys)
+* [Logging in to the portal](https://developer.vippsmobilepay.com/docs/knowledge-base/portal)
+* [How to find the API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/portal#how-to-find-the-api-keys)
 
 ## Screenshots
 
-Enable Vipps as a payment method.
+First, enable *Vipps MobilePay* as a payment method.
 
-![Enable Vipps as a payment method](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-1.png?raw=true "Enable Vipps as a payment method.")
+![Enable Vipps MobilePay as a payment method](./docs/images/enable-checkout.png)
 
-Enter your Vipps account keys and configure the plugin.
+Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
-![Enter your Vipps account keys and configure the plugin](https://raw.github.com/vippsas/vipps-woocommerce/master/wp-org-assets/screenshot-2.png?raw=true "Enter your Vipps account keys and configure the plugin")
+![Enter your API keys and configure the plugin](./docs/images/add-secrets.png)
 
-(Optional, but recommended) Enable Checkout, replacing the standard WooCommerce checkout.
+Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with minimum hassle.
 
 ![Enable Checkout](./docs/images/turn-on-checkout.png)
 
 ## Frequently Asked Questions
 
-### In which countries can I use Vipps?
+### In which countries can I use Vipps MobilePay?
 
-You can only get paid by users who have Vipps. At the moment Vipps is only available in Norway.
+You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
 
-### In which countries can I use MobilePay?
+## How do I set the default language?
 
-You can only get paid by users who have MobilePay. At the moment plugin is only supporting MobilePay users in Finland. Support for MobilePay in Denmark coming later in Q1 2024.
+The plugin should use the website language. The default is always English, and it is translated to whatever the current locale is. It's possible to modify translations and add more translations by using [Loco Translate](https://wordpress.org/plugins/loco-translate/) or you could contribute translations on [translate.wordpress.org](https://translate.wordpress.org/).
 
 ### For how long is an order reserved?
 
-When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 14 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+:::note
+Payments initiated in Finland and Denmark have only 14 days to be captured; while
+payments in Norway have 180 days.
+If the payments aren't captured within this time, they will be automatically cancelled.
+
+Payments can only be captured up to 14 days (MobilePay) or 180 days (Vipps) after reservation.
+See [Reserve and capture](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/).
+:::
+
+When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to “Complete” or the money is captured manually. For MobilePay, this reservation period is 14 days, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. The reserved period for payments made by credit card in Vipps/MobilePay Checkout can be as short as 7 days.
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to “Completed” as is the standard WooCommerce rule.
 
@@ -134,17 +140,17 @@ You will need an account for direct integration with the payment APIs, which can
 
 If you already have a Vipps or MobilePay account for WooCommerce and want to contribute to
 the development of the plugin, contact
-[customer service](https://vippsmobilepay.com/help)
+[customer service](https://vippsmobilepay.com/info/help)
 to *upgrade* your account with access to the test environment.
 
-You will also need to install a special test version of the Vipps app, available
+You will also need to install a special test version of the Vipps MobilePay app, available
 through TestFlight. See
-[Test apps](https://developer.vippsmobilepay.com/docs/test-environment/#test-apps)
+[Test apps](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#test-apps)
 for more information.
 
 API keys for both the test and production environment are available on
 [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com), where you log in.
-See [Getting the API keys](https://developer.vippsmobilepay.com/docs/developer-resources/portal/#how-to-find-the-api-keys)
+See [Getting the API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/portal/#how-to-find-the-api-keys)
 for more information.
 
 To use test mode in WooCommerce, switch *Developer mode* on. There you can input
@@ -158,10 +164,10 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 ### How can I get help if I have any issues?
 
 For issues with your WooCommerce installation you should use the
-[support forum on wordpress.org](https://wordpress.org/support/plugin/woo-vipps).
+[support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
 For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact).
 
-### General FAQs
+### General questions
 
 See the
 [Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)

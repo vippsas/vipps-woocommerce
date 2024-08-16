@@ -779,7 +779,7 @@ jQuery('a.webhook-adder').click(function (e) {
            <p><?php echo sprintf(__('If you use Gutenberg, you should be able to add a %1$s Badge block wherever you need it. It is called %1$s On-Site Messaging Badge Block.', 'woo-vipps'), Vipps::CompanyName()); ?>
 
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
-           <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/design-guidelines/checkout-on-site-messaging/"); ?></p>
+           <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <p><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
               <pre>[vipps-badge variant={white|orange|light-orange|grey|purple}<br>             language={en|no}<br>             amount={amount in minor units}<br>             vipps-senere={false|true}]</pre><br>
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?>
@@ -1278,9 +1278,13 @@ jQuery('a.webhook-adder').click(function (e) {
 
 
     public function log ($what,$type='info') {
-        $logger = wc_get_logger();
-        $context = array('source'=>'woo-vipps');
-        $logger->log($type,$what,$context);
+        $logger = function_exists('wc_get_logger') ? wc_get_logger() : false;
+        if ($logger) {
+            $context = array('source'=>'woo-vipps');
+            $logger->log($type,$what,$context);
+        } else {
+            error_log("woo-vipps ($type): $what");
+        }
     }
 
 
@@ -2470,7 +2474,7 @@ EOF;
                             $orderid = $polldata['metadata']['orderid'];
                             if ($orderid) {
                                 $order = wc_get_order($orderid);
-                                if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+                                if (!$order || $vippsorderid != $order->get_meta('_vipps_orderid')) {
                                     $this->log(
                                         sprintf(__('The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order.', 'woo-vipps'),
                                         $vippsorderid, $orderid, $event), 'debug');
