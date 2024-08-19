@@ -748,7 +748,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function allow_external_payments_in_checkout() {
         $store_location=  wc_get_base_location();
         $store_country = $store_location['country'] ?? '';
-        return apply_filters('woo_vipps_allow_external_payment_methods', (get_woocommerce_currency() == "EUR" && $store_country == "FI"));
+        $finland = (get_woocommerce_currency() == "EUR" && $store_country == "FI");
+        $norway = (get_woocommerce_currency() == "NOK" && $store_country == "NO");
+        return apply_filters('woo_vipps_allow_external_payment_methods', ($finland || $norway));
     }
 
     public function init_form_fields() { 
