@@ -2575,7 +2575,6 @@ EOF;
     public function callback_destroy_session () {
            $this->callbackorder = null;
            remove_filter('woocommerce_session_handler', array('Vipps', 'getCallbackSessionClass'));
-           unset(WC()->session);
            if (version_compare(WC_VERSION, '3.6.4', '>=')) {
                // This will replace the old session with this one. IOK 2019-10-22
                WC()->initialize_session(); 
@@ -2591,7 +2590,6 @@ EOF;
     // or not - and for many others, wrong results are produced without the (correct) session. IOK 2019-10-22
    public function callback_restore_session ($orderid) {
         $this->callbackorder = $orderid;
-        unset(WC()->session);
         require_once(dirname(__FILE__) . "/VippsCallbackSessionHandler.class.php");
         add_filter('woocommerce_session_handler', array('Vipps', 'getCallbackSessionClass')); 
         // Support older versions of Woo by inlining initialize session IOK 2019-12-12
