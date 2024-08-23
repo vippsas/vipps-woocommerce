@@ -2,8 +2,8 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.7
-Stable tag: 2.1.7
+Version: 2.1.8
+Stable tag: 2.1.8
 Requires at least: 4.7
 Tested up to: 6.6.1
 Requires PHP: 7.0
@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 2.1.8 supports the upcoming Finnish VAT change
 Cancelling _completed_ orders will normally also refund these orders if the refund has been captured; but we now implement a cutoff for this so that this does not happen for orders older than 30 days (tunable by the 'woo_vipps_cancel_refund_days_threshold' filter). This is a safety measure to avoid accidental refunds of archived orders. You can still use the 'refund' status or refund the orders manually.
 Allow Klarna as an external payment method for norway
 Fix issue with webhook callbacks to unknown Vipps orders
@@ -237,6 +238,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-08-26 version 2.1.7 =
+Change API to use taxRate instead of taxPercent to allow for VAT change in Finland 1. sep 2024.
 
 = 2024-08-16 version 2.1.7 =
 Allow Klarna as external payment method in Checkout
