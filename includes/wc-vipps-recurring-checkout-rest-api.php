@@ -176,14 +176,8 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 			$order->save();
 
 			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID, $partial_order_id );
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, $auth_token );
 
-			// todo: impl static shipping
-//			try {
-//				WC_Vipps_Recurring::get_instance()->maybe_add_static_shipping( WC_Gateway_Vipps_Recurring::get_instance(), $order->get_id(), 'checkout' );
-//			} catch ( Exception $e ) {
-//				// In this case, we just have to continue.
-//				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Error calculating static shipping for order: %s", $order->get_id(), $e->getMessage() ) );
-//			}
 			do_action( 'wc_vipps_recurring_checkout_order_created', $order );
 		} catch ( Exception $exception ) {
 			return [

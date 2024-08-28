@@ -75,6 +75,7 @@ class WC_Vipps_Recurring_Helper {
 	public const SESSION_ORDERS = '_vipps_recurring_session_orders';
 	public const SESSION_PENDING_ORDER_ID = '_vipps_recurring_session_pending_order_id';
 	public const SESSION_ADDRESS_HASH = '_vipps_recurring_address_hash';
+	public const SESSION_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_order_express_auth_token';
 
 	/**
 	 * Whether we are successfully connected to the Vipps/MobilePay API
