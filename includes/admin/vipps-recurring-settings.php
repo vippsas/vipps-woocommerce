@@ -42,8 +42,9 @@ return apply_filters(
 		],
 		'title_checkout'                   => [
 			'type'        => 'title',
-			'title'       => "<span style='color: #ff9800;' title='Use at your own risk'>[BETA]</span> " . __( 'Checkout settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-			'description' => __( 'Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an easier and more seamless checkout that allows you to pay with Vipps MobilePay (and soon also a credit card). Your customers will be able to provide their billing/shipping details directly from the Vipps MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			// translators: %s "use at your own risk" title
+			'title'       =>  sprintf("<span style='color: #ff9800;' title='%s'>[BETA]</span>", __('Use at your own risk', 'vipps-recurring-payments-gateway-for-woocommerce')) . " " . __( 'Checkout settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an easier and more seamless checkout that allows you to pay with Vipps MobilePay (and soon also a credit card). Your customers will be able to provide their billing/shipping details directly from the Vipps MobilePay app. <br><br><strong>Important!</strong> Checkout for recurring payments <strong>only supports static shipping</strong> at the moment.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 		],
 		'checkout_enabled'                 => [
 			'title'   => __( 'Enable/Disable', 'vipps-recurring-payments-gateway-for-woocommerce' ),
