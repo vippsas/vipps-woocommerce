@@ -263,12 +263,14 @@ class VippsApi {
                 if ($product) {
                     $url = get_permalink($prodid);
                 }
+                $taxpercentageraw = 0;
                 if ($subtotalNoTax == 0) {
-                    $taxpercentage = 0;
+                    $taxpercentageraw = 0;
                 } else {
-                    $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                    $taxpercentageraw = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
-                $taxpercentage = abs(round($taxpercentage));
+                $taxrate = abs(round(100*$taxpercentageraw));
+                $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
                 $orderline['name'] = $order_item->get_name();
                 $orderline['id'] = strval($prodid);
@@ -276,7 +278,7 @@ class VippsApi {
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
                 $orderline['totalTaxAmount'] = round($tax*100);
 
-                $orderline['taxPercentage'] = $taxpercentage;
+                $orderline['taxRate'] = $taxrate;
                 $unitinfo['unitPrice'] = round($unitprice*100);
                 $unitinfo['quantity'] = strval($quantity);
                 $unitinfo['quantityUnit'] = 'PCS';
@@ -293,8 +295,9 @@ class VippsApi {
                 $tax = $order_item->get_total_tax();
                 $total = $tax+$totalNoTax;
                 $quantity = 1;
-                $taxpercentage = (($total - $totalNoTax) / $totalNoTax)*100;
-                $taxpercentage = abs(round($taxpercentage));
+                $taxpercentageraw = (($total - $totalNoTax) / $totalNoTax)*100;
+                $taxrate = abs(round(100*$taxpercentageraw));
+                $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
                 $orderline['name'] = $order_item->get_name();
                 $orderline['id'] = substr(sanitize_title($orderline['name']), 0, 254);
@@ -303,7 +306,7 @@ class VippsApi {
                 $orderline['totalTaxAmount'] = round($tax*100);
                 $orderline['discount'] = 0;
 
-                $orderline['taxPercentage'] = $taxpercentage;
+                $orderline['taxRate'] = $taxrate;
                 $orderlines[] = $orderline;
             }
 
@@ -324,17 +327,19 @@ class VippsApi {
                 $subtotalTax = $tax;
                 $subtotal = $subtotalNoTax + $subtotalTax;
 
+                $taxpercentageraw = 0;
                 if ($subtotalNoTax == 0) {
-                    $taxpercentage = 0;
+                    $taxpercentageraw = 0;
                 }  else {
-                    $taxpercentage = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
+                    $taxpercentageraw = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
-                $taxpercentage = abs(round($taxpercentage));
+                $taxpercentage = abs(round($taxpercentageraw));
+                $taxrate= abs(round($taxpercentageraw * 100));
 
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
                 $orderline['totalTaxAmount'] = round($tax*100);
-                $orderline['taxPercentage'] = $taxpercentage;
+                $orderline['taxRate'] = $taxrate;
 
                 $unitinfo  = [];
 
