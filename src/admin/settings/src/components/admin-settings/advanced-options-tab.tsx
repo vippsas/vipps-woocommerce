@@ -48,9 +48,9 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         name="vippsspecialpagetemplate"
         titleKey="vippsspecialpagetemplate.title"
         descriptionKey="vippsspecialpagetemplate.description"
-        options={Object.values(gettext('vippsspecialpagetemplate.options')).map((option) => ({
-          label: option,
-          value: option
+        options={Object.entries(gettext('vippsspecialpagetemplate.options')).map(([templateid,templatename]) => ({
+          label: templatename,
+          value:  templateid ? templateid : ""
         }))}
       />
 
@@ -59,11 +59,15 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         name="vippsspecialpageid"
         titleKey="vippsspecialpageid.title"
         descriptionKey="vippsspecialpageid.description"
-        options={Object.values(gettext('vippsspecialpageid.options')).map((option) => ({
-          label: option,
-          value: option
-        }))}
+        options={Object.entries(gettext('vippsspecialpageid.options')).map(([pageid,pagename]) => ({
+          label: pagename,
+          value: pageid ? pageid : ""
+        })
+
+       )}
       />
+
+
 
       {/* Renders a checkbox to enable the sending of receipts */}
       <CheckboxFormField

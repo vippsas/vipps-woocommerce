@@ -1217,7 +1217,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'type'        => 'select',
                      'options' =>  $page_templates,
                      'description' => sprintf(__('Use this template from your theme or child-theme to display all the special %1$s pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'), Vipps::CompanyName()),
-                     ),
+                     'default' => ''),
 
                  'vippsspecialpageid' =>  array(
                      'title' => sprintf(__('Use a real page ID for the special %1$s pages - neccessary for some themes', 'woo-vipps'), Vipps::CompanyName()),

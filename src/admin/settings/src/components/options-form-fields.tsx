@@ -98,7 +98,7 @@ export function SelectFormField({ name, titleKey, labelKey, descriptionKey, opti
     <WPFormField>
       <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
-        <WPSelect id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} required>
+        <WPSelect id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} >
           {options.map((option) => (
             <WPOption key={option.value} value={option.value}>
               {option.label}
