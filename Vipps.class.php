@@ -4605,15 +4605,19 @@ EOF;
         $specialid = $this->gateway()->get_option('vippsspecialpageid');
         $wp_post = null;
         if ($specialid) {
-          $wp_post = get_post($specialid);
-          $wp_post->post_title = $title;
-          $wp_post->post_content = $content;
-          // Normalize a bit
-          $wp_post->filter = 'raw'; // important
-          $wp_post->post_status = 'publish';
-          $wp_post->comment_status= 'closed';
-          $wp_post->ping_status= 'closed';
-	    }
+            $wp_post = get_post($specialid);
+            if ($wp_post) {
+                $wp_post->post_title = $title;
+                $wp_post->post_content = $content;
+                // Normalize a bit
+                $wp_post->filter = 'raw'; // important
+                $wp_post->post_status = 'publish';
+                $wp_post->comment_status= 'closed';
+                $wp_post->ping_status= 'closed';
+            } else {
+              $this->log(sprintf(__("Could not use special page with id %s - it seems not to exist.", 'woo-vipps'), $specialpageid), 'error');
+            }
+        }
         if (!$wp_post || is_wp_error($wp_post)) {
             $post = new stdClass();
             $post->ID = -99;
