@@ -48,7 +48,10 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         name="vippsspecialpagetemplate"
         titleKey="vippsspecialpagetemplate.title"
         descriptionKey="vippsspecialpagetemplate.description"
-        options={Object.values(gettext('vippsspecialpagetemplate.options'))}
+        options={Object.entries(gettext('vippsspecialpagetemplate.options')).map(([templateid,templatename]) => ({
+          label: templatename,
+          value:  templateid ? templateid : ""
+        }))}
       />
 
       {/* Renders a checkbox to use a real page ID for the special Vipps pages */}
@@ -56,8 +59,15 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
         name="vippsspecialpageid"
         titleKey="vippsspecialpageid.title"
         descriptionKey="vippsspecialpageid.description"
-        options={Object.values(gettext('vippsspecialpageid.options'))}
+        options={Object.entries(gettext('vippsspecialpageid.options')).map(([pageid,pagename]) => ({
+          label: pagename,
+          value: pageid ? pageid : ""
+        })
+
+       )}
       />
+
+
 
       {/* Renders a checkbox to enable the sending of receipts */}
       <CheckboxFormField
