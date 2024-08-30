@@ -381,8 +381,9 @@ class Vipps {
 
             $show = intval(@$badge_options['defaultall']);
             $forthis = $product->get_meta('_vipps_show_badge', true);
+            $dontshow = ($forthis  == 'none');
 
-            $doshow = $show || ($forthis &&  $forthis  != 'none');
+            $doshow = !$dontshow && ($show || ($forthis &&  $forthis  != 'none'));
 
             if (!apply_filters('woo_vipps_show_vipps_badge_for_product', $doshow, $product)) {
                 return;
