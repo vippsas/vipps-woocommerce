@@ -4613,7 +4613,7 @@ EOF;
                 $wp_post->comment_status= 'closed';
                 $wp_post->ping_status= 'closed';
             } else {
-              $this->log(sprintf(__("Could not use special page with id %s - it seems not to exist.", 'woo-vipps'), $specialpageid), 'error');
+              $this->log(sprintf(__("Could not use special page with id %s - it seems not to exist.", 'woo-vipps'), $specialid), 'error');
             }
         }
         if (!$wp_post || is_wp_error($wp_post)) {
