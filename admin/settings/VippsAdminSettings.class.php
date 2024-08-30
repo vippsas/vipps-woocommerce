@@ -140,7 +140,7 @@ class VippsAdminSettings
         // Loads the React UI
         $reactpath = "dist";
         wp_enqueue_script('vipps-mobilepay-react-ui', plugins_url($reactpath . '/plugin.js', __FILE__), array('wp-element'), filemtime(__DIR__ . "/$reactpath/plugin.js"), true);
-        wp_enqueue_style('vipps-mobilepay-react-ui', plugins_url($reactpath . '/plugin.css', __FILE__), array(), filemtime(__DIR__ . "/$reactpath/plugin.css"));
+//        wp_enqueue_style('vipps-mobilepay-react-ui', plugins_url($reactpath . '/plugin.css', __FILE__), array(), filemtime(__DIR__ . "/$reactpath/plugin.css"));
 
         $metadata = array(
             'admin_url' => admin_url('admin-ajax.php'),
