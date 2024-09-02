@@ -453,15 +453,15 @@ class WC_Vipps_Recurring_Checkout {
 			$order_line['totalAmount']             = round( $total * 100 );
 			$order_line['totalAmountExcludingTax'] = round( $total_no_tax * 100 );
 			$order_line['totalTaxAmount']          = round( $tax * 100 );
+			$order_line['taxRate']                 = round( $tax_percentage * 100 );
 
-			$order_line['taxPercentage'] = $tax_percentage;
-			$unit_info['unitPrice']      = round( $unit_price * 100 );
-			$unit_info['quantity']       = strval( $quantity );
-			$unit_info['quantityUnit']   = 'PCS';
-			$order_line['unitInfo']      = $unit_info;
-			$order_line['discount']      = $discount;
-			$order_line['productUrl']    = $url;
-			$order_line['isShipping']    = false;
+			$unit_info['unitPrice']    = round( $unit_price * 100 );
+			$unit_info['quantity']     = strval( $quantity );
+			$unit_info['quantityUnit'] = 'PCS';
+			$order_line['unitInfo']    = $unit_info;
+			$order_line['discount']    = $discount;
+			$order_line['productUrl']  = $url;
+			$order_line['isShipping']  = false;
 
 			$order_lines[] = $order_line;
 		}
@@ -479,7 +479,7 @@ class WC_Vipps_Recurring_Checkout {
 			$order_line['totalAmountExcludingTax'] = round( $total_no_tax * 100 );
 			$order_line['totalTaxAmount']          = round( $tax * 100 );
 			$order_line['discount']                = 0;
-			$order_line['taxPercentage']           = $tax_percentage;
+			$order_line['taxRate']                 = round( $tax_percentage * 100 );
 
 			$order_lines[] = $order_line;
 		}
@@ -510,7 +510,7 @@ class WC_Vipps_Recurring_Checkout {
 			$order_line['totalAmount']             = round( $total * 100 );
 			$order_line['totalAmountExcludingTax'] = round( $total_no_tax * 100 );
 			$order_line['totalTaxAmount']          = round( $tax * 100 );
-			$order_line['taxPercentage']           = $tax_percentage;
+			$order_line['taxRate']                 = round( $tax_percentage * 100 );
 
 			$unit_info                 = [];
 			$unit_info['unitPrice']    = round( $total * 100 );
