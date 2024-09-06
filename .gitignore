@@ -2,3 +2,5 @@
 \#.*
 *~
 ignored.txt
+
+node_modules
