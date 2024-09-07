@@ -49,17 +49,59 @@ jQuery( document ).ready( function() {
     }
 
 
+    // Initialize the Vipps Checkout process
     function initVippsCheckout () {
+      // Prevent multiple initializations
       if (initiating) return;
-      initiating=true;
+      initiating = true;
+
+      // Set visual indicators for processing state
       jQuery("body").css("cursor", "progress");
       jQuery("body").addClass('processing');
 
+      // Disable all Vipps checkout buttons
       jQuery('.vipps_checkout_button.button').each(function () {
            jQuery(this).addClass('disabled');
            jQuery(this).css("cursor", "progress");
       });
 
+      // Check cart total before proceeding with checkout NT-2024-09-07
+      checkCartTotal(function(error) {
+        if (error) {
+          // If there's an error, stop the process
+          return;
+        }
+        // If cart total is valid, proceed with checkout
+        proceedWithCheckout();
+      });
+    }
+
+    // Check if the cart total meets the minimum required amount NT-2024-09-07
+    function checkCartTotal(callback) {
+      jQuery.ajax(VippsConfig['vippsajaxurl'], {
+        cache: false,
+        dataType: 'json',
+        data: { 'action': 'vipps_checkout_check_cart_total' },
+        method: 'POST',
+        success: function(result) {
+          // If cart total is valid, proceed
+          if (result.success && result.data.total >= 1) {
+            callback(null);
+          } else {
+            // If cart total is invalid, show error and stop process
+            handleCheckoutError(result.data.message || 'Cart total is less than 1 NOK');
+            callback(new Error(result.data.message || 'Cart total is less than 1 NOK'));
+          }
+        },
+        error: function(xhr, statustext, error) {
+          // Handle any AJAX errors
+          handleCheckoutError('Error checking cart total: ' + statustext);
+          callback(new Error('Error checking cart total: ' + statustext));
+        }
+      });
+    }
+
+    function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
          if (!VippsSessionState) return false;
@@ -149,6 +191,17 @@ jQuery( document ).ready( function() {
         }
     }
 
+    // Function to handle errors during the Vipps checkout process NT-2024-09-07
+    function handleCheckoutError(errorMessage) {
+      console.error(errorMessage);
+      jQuery("body").css("cursor", "default");
+      jQuery('.vipps_checkout_button.button').css("cursor", "default");
+      jQuery('.vipps_checkout_startdiv').hide();
+      jQuery("body").removeClass('processing');
+      jQuery('#vippscheckouterror').hide();
+      jQuery('#vippscheckoutframe').html('<div class="woocommerce-error">' + errorMessage + '</div>');
+      initiating = false;
+    }
 
     function listenToFrame() {
         if (listening) return;

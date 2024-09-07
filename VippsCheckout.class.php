@@ -239,6 +239,11 @@ jQuery(document).ready(function () {
         add_action('wp_ajax_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
 
+        // Check cart total before initiating Vipps Checkout NT-2024-09-07
+        // This allows for real-time validation of the cart before proceeding with the checkout process
+        add_action('wp_ajax_vipps_checkout_check_cart_total', array($this, 'ajax_vipps_checkout_check_cart_total'));
+        add_action('wp_ajax_nopriv_vipps_checkout_check_cart_total', array($this, 'ajax_vipps_checkout_check_cart_total'));
+
         // Prevent previews and prefetches of the Vipps Checkout page starting and creating orders
         add_action('wp_head', array($this, 'wp_head'));
 
@@ -584,6 +589,21 @@ jQuery(document).ready(function () {
 
         // This should never happen.
         wp_send_json_success(array('msg'=>'unknown', 'url'=>''));
+    }
+
+    // Check cart total before initiating Vipps Checkout NT-2024-09-07
+    public function ajax_vipps_checkout_check_cart_total() {
+        $cart_total = WC()->cart->get_total('edit');
+        $minimum_amount = apply_filters('woo_vipps_minimum_checkout_amount', 1);
+        
+        if ($cart_total < $minimum_amount) {
+            wp_send_json_error(array(
+                'total' => $cart_total,
+                'message' => sprintf(__('Vipps Checkout cannot be used for orders less than %s NOK', 'woo-vipps'), $minimum_amount)
+            ));
+        } else {
+            wp_send_json_success(array('total' => $cart_total));
+        }
     }
 
     // Retrieve the current pending Vipps Checkout session, if it exists, and do some cleanup
