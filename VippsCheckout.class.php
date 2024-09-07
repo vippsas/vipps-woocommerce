@@ -594,12 +594,12 @@ jQuery(document).ready(function () {
     // Check cart total before initiating Vipps Checkout NT-2024-09-07
     public function ajax_vipps_checkout_check_cart_total() {
         $cart_total = WC()->cart->get_total('edit');
-        $minimum_amount = apply_filters('woo_vipps_minimum_checkout_amount', 1);
+        $minimum_amount = 1; // 1 in the store currency
         
         if ($cart_total < $minimum_amount) {
             wp_send_json_error(array(
                 'total' => $cart_total,
-                'message' => sprintf(__('Vipps Checkout cannot be used for orders less than %s NOK', 'woo-vipps'), $minimum_amount)
+                'message' => sprintf(__('Vipps Checkout cannot be used for orders less than %1$s %2$s', 'woo-vipps'), $minimum_amount, get_woocommerce_currency() )
             ));
         } else {
             wp_send_json_success(array('total' => $cart_total));

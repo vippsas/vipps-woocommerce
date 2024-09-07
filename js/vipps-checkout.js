@@ -89,8 +89,8 @@ jQuery( document ).ready( function() {
             callback(null);
           } else {
             // If cart total is invalid, show error and stop process
-            handleCheckoutError(result.data.message || 'Cart total is less than 1 NOK');
-            callback(new Error(result.data.message || 'Cart total is less than 1 NOK'));
+            handleCheckoutError(result.data.message || 'Cart total is less than 1');
+            callback(new Error(result.data.message || 'Cart total is less than 1'));
           }
         },
         error: function(xhr, statustext, error) {
