@@ -106,13 +106,17 @@ Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with min
 
 ![Enable Checkout](./docs/images/turn-on-checkout.png)
 
-## Frequently Asked Questions
+## Frequently asked questions
+
+See the
+[Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
+for more help with Vipps MobilePay eCommerce.
 
 ### In which countries can I use Vipps MobilePay?
 
 You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
 
-## How do I set the default language?
+### How do I set the default language?
 
 The plugin should use the website language. The default is always English, and it is translated to whatever the current locale is. It's possible to modify translations and add more translations by using [Loco Translate](https://wordpress.org/plugins/loco-translate/) or you could contribute translations on [translate.wordpress.org](https://translate.wordpress.org/).
 
@@ -161,17 +165,36 @@ If you have defined the constant `VIPPS_TEST_MODE` to true, test mode will be fo
 If this isn't practical for your usage, we recommend that you *test in production*
 with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
+### Can I use Checkout for recurring payments?
+
+Yes! With our [recurring plugin for WooCommerce](/docs/plugins-ext/recurring-woocommerce/), you can enable recurring payments in Vipps Checkout.
+
+### How do I activate recurring payments in Vipps Checkout on WooCommerce?
+
+1. If you don't have a customer relationship with Vipps, you need to register as a Vipps MobilePay merchant first.
+   Follow the [Getting Started guide](https://developer.vippsmobilepay.com/docs/getting-started/).
+2. Download our [recurring plugin](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/).
+3. Activate the plugin
+
+### Can I use this plugin for single payments as well?
+
+If you offer both recurring and single payments, we recommend using our recurring Checkout alongside our standard Checkout plugin.
+This plugin will allow you to process single payments and recurring payments in the same checkout, but you still need our standard Checkout plugin to process single payments when no recurring product is present in your shopping cart.
+
+### What shipping options are available for this checkout?
+
+For recurring payments, we only offer static shipping options at the moment. We do not support location based dynamic shipping, yet.
+
+### What payments methods are available for this checkout?
+
+At the moment, it only supports Vipps MobilePay. Card and Klarna are on the way, and will automatically become available when they are ready.
+
 ### How can I get help if I have any issues?
 
 For issues with your WooCommerce installation you should use the
 [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
 For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact/#contact-details).
 
-### General questions
-
-See the
-[Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
-for more help with Vipps MobilePay eCommerce.
 
 ## Requirements
 
