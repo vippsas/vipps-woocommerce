@@ -276,9 +276,12 @@ jQuery(document).ready(function () {
             do_action('vipps_cart_changed');
             return $updated;
         });
+        // Trigger cart_changed when a coupon is applied
+        add_action('woocommerce_applied_coupon', array($this, 'cart_changed'));
+        // Trigger cart_changed when a coupon is removed
+        add_action('woocommerce_removed_coupon', array($this, 'cart_changed'));
         // Then handle the actual cart change
         add_action('vipps_cart_changed', array($this, 'cart_changed'));
-
     }
 
     public function admin_init () {
