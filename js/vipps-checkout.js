@@ -66,37 +66,29 @@ jQuery( document ).ready( function() {
       });
 
       // Check cart total before proceeding with checkout NT-2024-09-07
-      checkCartTotal(function(error) {
-        if (error) {
-          // If there's an error, stop the process
-          return;
-        }
-        // If cart total is valid, proceed with checkout
-        proceedWithCheckout();
-      });
+      // handle any errors in handleCheckoutError IOK 2024-09-09
+      return validateCart(proceedWithCheckout, handleCheckoutError);
     }
 
     // Check if the cart total meets the minimum required amount NT-2024-09-07
-    function checkCartTotal(callback) {
+    function validateCart(success, failure) {
       jQuery.ajax(VippsConfig['vippsajaxurl'], {
         cache: false,
         dataType: 'json',
-        data: { 'action': 'vipps_checkout_check_cart_total' },
+        data: { 'action': 'vipps_checkout_validate_cart' },
         method: 'POST',
         success: function(result) {
           // If cart total is valid, proceed
-          if (result.success && result.data.total >= 1) {
-            callback(null);
+          if (result.success) {
+            success();
           } else {
-            // If cart total is invalid, show error and stop process
-            handleCheckoutError(result.data.message || 'Cart total is less than 1');
-            callback(new Error(result.data.message || 'Cart total is less than 1'));
+            failure(result.data.message)
           }
         },
         error: function(xhr, statustext, error) {
-          // Handle any AJAX errors
-          handleCheckoutError('Error checking cart total: ' + statustext);
-          callback(new Error('Error checking cart total: ' + statustext));
+           // Ignore any validation errors if ajax somehow breaks, but log the thing
+          console.log("Error validating cart: " + statustext);
+          success();
         }
       });
     }
