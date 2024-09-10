@@ -219,3 +219,24 @@ This is because when an order is charged in Vipps MobilePay, it takes 2 days bef
 After 2 days, it will move to the "Processing" status. You can however change the behavior of this by using the "Default status to give pending renewals" option in the plugin settings.
 
 Alternatively, you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of utmost importance.
+
+
+### How do I activate recurring payments in Vipps Checkout on WooCommerce?
+
+1. If you don't have a customer relationship with Vipps, you need to register as a Vipps MobilePay merchant first. Follow the [Getting Started guide](https://developer.vippsmobilepay.com/docs/getting-started/).
+2. Download our [recurring plugin](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/).
+3. Activate the plugin
+
+### Can I use this plugin for single payments as well?
+
+If you offer both recurring and single payments, we recommend using our [Recurring checkout](/docs/plugins-ext/recurring-woocommerce/) alongside our [standard checkout plugin](/docs/plugins-ext/woocommerce/).
+
+The [Recurring checkout](/docs/plugins-ext/recurring-woocommerce/) plugin will allow you to process single payments and recurring payments in the same checkout, but you still need our [standard checkout plugin](/docs/plugins-ext/woocommerce/) to process single payments when no recurring product is present in your shopping cart.
+
+### What shipping options are available for this checkout?
+
+For recurring payments, we only offer static shipping options at the moment. We do not support location based dynamic shipping, yet.
+
+### What payments methods are available for this checkout?
+
+At the moment, it only supports Vipps MobilePay.
