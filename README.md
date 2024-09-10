@@ -229,9 +229,9 @@ Alternatively, you could look into using WooCommerce "Early renewals": [https://
 
 ### Can I use this plugin for single payments as well?
 
-If you offer both recurring and single payments, we recommend using our [Recurring checkout](/docs/plugins-ext/recurring-woocommerce/) alongside our [standard checkout plugin](/docs/plugins-ext/woocommerce/).
+If you offer both recurring and single payments, we recommend using our Recurring checkout plugin alongside our [standard checkout plugin](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
 
-The [Recurring checkout](/docs/plugins-ext/recurring-woocommerce/) plugin will allow you to process single payments and recurring payments in the same checkout, but you still need our [standard checkout plugin](/docs/plugins-ext/woocommerce/) to process single payments when no recurring product is present in your shopping cart.
+The Recurring checkout plugin will allow you to process single payments and recurring payments in the same checkout, but you still need our standard checkout plugin to process single payments when no recurring product is present in your shopping cart.
 
 ### What shipping options are available for this checkout?
 
