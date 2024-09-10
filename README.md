@@ -112,7 +112,7 @@ Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with min
 
 You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
 
-## How do I set the default language?
+### How do I set the default language?
 
 The plugin should use the website language. The default is always English, and it is translated to whatever the current locale is. It's possible to modify translations and add more translations by using [Loco Translate](https://wordpress.org/plugins/loco-translate/) or you could contribute translations on [translate.wordpress.org](https://translate.wordpress.org/).
 
