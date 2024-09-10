@@ -170,9 +170,8 @@ class WC_Vipps_Recurring_Checkout_Rest_Api {
 
 			$order             = wc_get_order( $partial_order_id );
 			$auth_token        = WC_Gateway_Vipps_Recurring::get_instance()->api->generate_idempotency_key();
-			$hashed_auth_token = wp_hash_password( $auth_token );
 
-			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, $hashed_auth_token );
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, $auth_token );
 			$order->save();
 
 			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID, $partial_order_id );
