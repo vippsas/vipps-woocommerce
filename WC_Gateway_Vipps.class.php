@@ -1217,7 +1217,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                      'type'        => 'select',
                      'options' =>  $page_templates,
                      'description' => sprintf(__('Use this template from your theme or child-theme to display all the special %1$s pages. You will probably want a full-width template and it should call \'the_content()\' normally.', 'woo-vipps'), Vipps::CompanyName()),
-                     ),
+                     'default' => ''),
 
                  'vippsspecialpageid' =>  array(
                      'title' => sprintf(__('Use a real page ID for the special %1$s pages - neccessary for some themes', 'woo-vipps'), Vipps::CompanyName()),
@@ -1273,7 +1273,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             'testmode' => array(
                 'title' => __('Test mode', 'woo-vipps'),
-                'title' => __('Enable test mode', 'woo-vipps'),
+                'label' => __('Enable test mode', 'woo-vipps'),
                 'type'  => 'checkbox',
                 'description' => sprintf(__('If you enable this, transactions will be made towards the %1$s Test API instead of the live one. No real transactions will be performed. You will need to fill out your test
                     accounts keys below, and you will need to install a special test-mode app from Testflight on a device (which cannot run the regular %1$s app). Contact %1$s\'s technical support if you need this. If you turn this mode off, normal operation will resume. If you have the VIPPS_TEST_MODE defined in your wp-config file, this will override this value. ', 'woo-vipps'), Vipps::CompanyName()),
@@ -1338,11 +1338,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->form_fields[$key] = $field;
        }
 
+       // The react UI decides whether or not to show the developer fields, however we always have to send this data to the client
+       // because otherwise the react UI will not be able to show the correct translations, since they would be missing.
+       foreach($developerfields as $key=>$field) {
+          $this->form_fields[$key] = $field;
+       }
        // Developer mode settings: Only shown when active. IOK 2019-08-30
        if ($this->get_option('developermode') == 'yes' || VIPPS_TEST_MODE) {
-           foreach($developerfields as $key=>$field) {
-              $this->form_fields[$key] = $field;
-           }
            if (VIPPS_TEST_MODE) {
                $this->form_fields['developermode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced', 'woo-vipps') . "</b>";
                $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
@@ -3648,6 +3650,8 @@ function activate_vipps_checkout(yesno) {
         delete_transient('_vipps_keyset');
         $keyset = $this->get_keyset();
 
+        // IOK FIXME check if we are called using ajax for this; and if so add the notifications to a list of notifications 
+        // instead of doing the adminerr/adminnotify thing. IOK 2024-01-03
 
         list($ok,$msg)  = $this->check_connection();
         if ($ok) {

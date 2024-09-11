@@ -89,7 +89,7 @@ class VippsDismissibleAdminBanners {
         }
 
         $dont_advertise_checkout = $this->vipps_checkout_enabled; // if "yes" or "no", the user has interacted with Vipps Checkout
-      
+
         if ($dont_advertise_checkout) {
            if (!is_array($dismissed)) $dismissed = array();
            $dismissed['vippscheckout01'] = time();
@@ -100,9 +100,11 @@ class VippsDismissibleAdminBanners {
 
         add_action('admin_notices', function () {
             $logo = plugins_url('img/vipps-rgb-orange-neg.svg',__FILE__);
-            $settingsurl = admin_url("admin.php?page=wc-settings&tab=checkout&section=vipps");
+            $settingsurl = admin_url("/admin.php?page=vipps_settings_menu");
             $screen = get_current_screen();
-            if ($screen && $screen->id == 'woocommerce_page_wc-settings' && $_GET['tab'] == 'checkout') return;
+            if ($screen && $screen->id == 'woocommerce_page_wc-settings' && ($_GET['tab'] ?? false) == 'checkout') return;
+            if ($screen && $screen->id == 'toplevel_page_vipps_admin_menu') return;
+            if ($screen && $screen->id == 'vipps-mobilepay_page_vipps_settings_menu') return;
             ?>
             <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippscheckout01'>
             <a   href="<?php echo $settingsurl; ?>">
