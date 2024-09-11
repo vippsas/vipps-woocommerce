@@ -1322,9 +1322,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return apply_filters( 'wc_vipps_recurring_item_is_subscription', WC_Subscriptions_Product::is_subscription( $item['product_id'] ), $item );
 		} );
 
-		$subscription_item           = array_pop( $subscription_items );
-		$product        = $subscription_item->get_product();
-		$parent_product = wc_get_product( $subscription_item->get_product_id() );
+		$subscription_item = array_pop( $subscription_items );
+		$product           = $subscription_item->get_product();
+		$parent_product    = wc_get_product( $subscription_item->get_product_id() );
 
 		$extra_initial_charge_description = '';
 
@@ -2418,6 +2418,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			$this->check_charge_status( $order_id );
+		}
+
+		// Customers can soon cancel their agreements directly from the app.
+		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
+			$order_id = $webhook_data['agreementExternalId'];
+
+			// This order is old and does not have a agreementExternalId
+			if ( empty( $order_id ) ) {
+				return;
+			}
+
+			$subscription = wcs_get_subscription( $order_id );
+
+			if ( empty( $subscription ) ) {
+				return;
+			}
+
+			$this->cancel_subscription( $subscription );
 		}
 	}
 

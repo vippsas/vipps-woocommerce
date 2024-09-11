@@ -173,6 +173,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: Webhooks should no longer throw an error about referenceId not being set.
 * Fixed: Made webhook handling a little bit faster in some instances.
 * Fixed: Webhooks should now be handled properly for agreement events.
+* Added: Handle the `recurring.agreement-stopped.v1` webhook for when Vipps MobilePay enable cancellations directly from the app.
 
 = 1.20.3 =
 * Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).
