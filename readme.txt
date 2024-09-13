@@ -2,14 +2,14 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev, lassepladsen
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.9
-Stable tag: 2.1.9
+Version: 2.1.10
+Stable tag: 2.1.10
 Requires at least: 4.7
-Tested up to: 6.6.1
+Tested up to: 6.6.2
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.2.0
+WC tested up to: 9.3.1
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Fix CSS of QR-code edit page
 Ensure coupons added to the cart works with Vipps Checkout
 Version 2.1.8 supports the upcoming Finnish VAT change
 Cancelling _completed_ orders will normally also refund these orders if the refund has been captured; but we now implement a cutoff for this so that this does not happen for orders older than 30 days (tunable by the 'woo_vipps_cancel_refund_days_threshold' filter). This is a safety measure to avoid accidental refunds of archived orders. You can still use the 'refund' status or refund the orders manually.
@@ -239,6 +240,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-09-10 version 2.1.10 =
+Fix CSS on QR-code page
 
 = 2024-09-09 version 2.1.9 =
 Handle coupons for Vipps Checkout

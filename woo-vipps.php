@@ -7,14 +7,14 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 2.1.9
-   Stable tag: 2.1.9
+   Version: 2.1.10
+   Stable tag: 2.1.10
    Requires at least: 4.7
-   Tested up to: 6.6.1
+   Tested up to: 6.6.2
    Requires PHP: 7.0
    Requires Plugins: woocommerce
    WC requires at least: 3.3.4
-   WC tested up to: 9.1.4
+   WC tested up to: 9.3.1
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -49,7 +49,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '2.1.9');
+define('WOO_VIPPS_VERSION', '2.1.10');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
