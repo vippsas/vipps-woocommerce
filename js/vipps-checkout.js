@@ -49,17 +49,51 @@ jQuery( document ).ready( function() {
     }
 
 
+    // Initialize the Vipps Checkout process
     function initVippsCheckout () {
+      // Prevent multiple initializations
       if (initiating) return;
-      initiating=true;
+      initiating = true;
+
+      // Set visual indicators for processing state
       jQuery("body").css("cursor", "progress");
       jQuery("body").addClass('processing');
 
+      // Disable all Vipps checkout buttons
       jQuery('.vipps_checkout_button.button').each(function () {
            jQuery(this).addClass('disabled');
            jQuery(this).css("cursor", "progress");
       });
 
+      // Check cart total before proceeding with checkout NT-2024-09-07
+      // handle any errors in handleCheckoutError IOK 2024-09-09
+      return validateCart(proceedWithCheckout, handleCheckoutError);
+    }
+
+    // Check if the cart total meets the minimum required amount NT-2024-09-07
+    function validateCart(success, failure) {
+      jQuery.ajax(VippsConfig['vippsajaxurl'], {
+        cache: false,
+        dataType: 'json',
+        data: { 'action': 'vipps_checkout_validate_cart' },
+        method: 'POST',
+        success: function(result) {
+          // If cart total is valid, proceed
+          if (result.success) {
+            success();
+          } else {
+            failure(result.data.message)
+          }
+        },
+        error: function(xhr, statustext, error) {
+           // Ignore any validation errors if ajax somehow breaks, but log the thing
+          console.log("Error validating cart: " + statustext);
+          success();
+        }
+      });
+    }
+
+    function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
          if (!VippsSessionState) return false;
@@ -149,6 +183,17 @@ jQuery( document ).ready( function() {
         }
     }
 
+    // Function to handle errors during the Vipps checkout process NT-2024-09-07
+    function handleCheckoutError(errorMessage) {
+      console.error(errorMessage);
+      jQuery("body").css("cursor", "default");
+      jQuery('.vipps_checkout_button.button').css("cursor", "default");
+      jQuery('.vipps_checkout_startdiv').hide();
+      jQuery("body").removeClass('processing');
+      jQuery('#vippscheckouterror').hide();
+      jQuery('#vippscheckoutframe').html('<div class="woocommerce-error">' + errorMessage + '</div>');
+      initiating = false;
+    }
 
     function listenToFrame() {
         if (listening) return;

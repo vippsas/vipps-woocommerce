@@ -239,6 +239,11 @@ jQuery(document).ready(function () {
         add_action('wp_ajax_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
 
+        // Check cart total before initiating Vipps Checkout NT-2024-09-07
+        // This allows for real-time validation of the cart before proceeding with the checkout process
+        add_action('wp_ajax_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
+        add_action('wp_ajax_nopriv_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
+
         // Prevent previews and prefetches of the Vipps Checkout page starting and creating orders
         add_action('wp_head', array($this, 'wp_head'));
 
@@ -276,9 +281,12 @@ jQuery(document).ready(function () {
             do_action('vipps_cart_changed');
             return $updated;
         });
+        // Trigger cart_changed when a coupon is applied
+        add_action('woocommerce_applied_coupon', array($this, 'cart_changed'));
+        // Trigger cart_changed when a coupon is removed
+        add_action('woocommerce_removed_coupon', array($this, 'cart_changed'));
         // Then handle the actual cart change
         add_action('vipps_cart_changed', array($this, 'cart_changed'));
-
     }
 
     public function admin_init () {
@@ -584,6 +592,22 @@ jQuery(document).ready(function () {
 
         // This should never happen.
         wp_send_json_success(array('msg'=>'unknown', 'url'=>''));
+    }
+
+    // Check cart total before initiating Vipps Checkout NT-2024-09-07
+    // Also any other checks we might want to do in the future. This will validate the cart each time the
+    //  checkout page loads, even if a session is already in progress.  IOK 2024-09-09
+    public function ajax_vipps_checkout_validate_cart() {
+        $cart_total = WC()->cart->get_total('edit');
+        $minimum_amount = 1; // 1 in the store currency
+
+        if ($cart_total < $minimum_amount) {
+            wp_send_json_error(array(
+                'message' => sprintf(__('Vipps Checkout cannot be used for orders less than %1$s %2$s', 'woo-vipps'), $minimum_amount, get_woocommerce_currency() )
+            ));
+        } else {
+            wp_send_json_success(array('message', __("OK", 'woo-vipps')));
+        }
     }
 
     // Retrieve the current pending Vipps Checkout session, if it exists, and do some cleanup
