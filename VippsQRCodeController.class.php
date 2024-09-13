@@ -102,15 +102,18 @@ class VippsQRCodeController {
             }
         });
     }
- 
+
     public function admin_enqueue_scripts ($hook) {
-      wp_enqueue_script('wc-enhanced-select');
       $screen = get_current_screen();
       if ($screen && $screen->id == 'edit-vipps_qr_code') {
           wp_enqueue_script( 'jquery-ui-dialog' );
           wp_enqueue_style( 'wp-jquery-ui-dialog' );
       }
-    }
+      if ($screen && $screen->id == 'vipps_qr_code') {
+          wp_enqueue_script('wc-enhanced-select');
+          wp_enqueue_style('woocommerce_admin_styles');
+      }
+    } 
 
     // This also does some garbage collection/cleanup by deleting code-objects no longer present at Vipps. It is called on the QR code overview screen.
     public function get_all_qr_codes_at_vipps () {
