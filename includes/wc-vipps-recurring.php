@@ -193,7 +193,7 @@ class WC_Vipps_Recurring {
 		] );
 
 		// Add our own ajax actions
-		add_action( 'wp_ajax_woo_vipps_recurring_order_action', [
+		add_action( 'wp_ajax_wc_vipps_recurring_order_action', [
 			$this,
 			'order_handle_vipps_recurring_action'
 		] );
