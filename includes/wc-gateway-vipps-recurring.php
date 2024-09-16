@@ -1386,7 +1386,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				( new WC_Vipps_Agreement_Pricing() )
 					->set_type( WC_Vipps_Agreement_Pricing::TYPE_LEGACY )
 					->set_currency( $order->get_currency() )
-					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ) )
+					->set_amount( apply_filters( 'wc_vipps_recurring_agreement_pricing_amount', WC_Vipps_Recurring_Helper::get_vipps_amount( $agreement_total ), $order ) )
 			)
 			->set_interval(
 				( new WC_Vipps_Agreement_Interval() )
@@ -1434,7 +1434,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$agreement = $agreement->set_initial_charge(
 				( new WC_Vipps_Agreement_Initial_Charge() )
-					->set_amount( WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ) )
+					->set_amount(apply_filters( 'wc_vipps_recurring_agreement_initial_charge_amount', WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ), $order ) )
 					->set_description( empty( $initial_charge_description ) ? $subscription_item->get_name() : $initial_charge_description )
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 			);
