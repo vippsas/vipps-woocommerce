@@ -2,16 +2,16 @@
 # This file is distributed under the same license as the Vipps/MobilePay recurring payments for WooCommerce plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Vipps/MobilePay recurring payments for WooCommerce 1.21.0\n"
+"Project-Id-Version: Vipps/MobilePay recurring payments for WooCommerce 2.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/vipps-recurring-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-08-28T12:27:52+00:00\n"
+"POT-Creation-Date: 2024-09-16T09:02:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.8.1\n"
+"X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: vipps-recurring-payments-gateway-for-woocommerce\n"
 
 #. Plugin Name of the plugin
@@ -353,9 +353,9 @@ msgstr ""
 
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
 #: includes/wc-gateway-vipps-recurring.php:98
-#: includes/wc-vipps-recurring.php:483
-#: includes/wc-vipps-recurring.php:484
-#: includes/wc-vipps-recurring.php:581
+#: includes/wc-vipps-recurring.php:485
+#: includes/wc-vipps-recurring.php:486
+#: includes/wc-vipps-recurring.php:583
 msgid "Vipps/MobilePay Recurring Payments"
 msgstr ""
 
@@ -402,259 +402,257 @@ msgstr ""
 msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:562
+#: includes/wc-gateway-vipps-recurring.php:561
 msgid "MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:615
+#: includes/wc-gateway-vipps-recurring.php:614
 msgid "The agreement was cancelled or expired in Vipps/MobilePay"
 msgstr ""
 
 #. translators: Vipps/MobilePay Charge ID
-#: includes/wc-gateway-vipps-recurring.php:694
+#: includes/wc-gateway-vipps-recurring.php:693
 msgid "Charge completed (Charge ID: %s)"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:706
+#: includes/wc-gateway-vipps-recurring.php:705
 msgid "Waiting for you to capture the payment"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:727
+#: includes/wc-gateway-vipps-recurring.php:728
 msgid "Vipps/MobilePay payment cancelled."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:735
+#: includes/wc-gateway-vipps-recurring.php:736
 msgid "Vipps/MobilePay payment failed."
 msgstr ""
 
 #. translators: Error message
-#: includes/wc-gateway-vipps-recurring.php:823
+#: includes/wc-gateway-vipps-recurring.php:824
 msgid "Failed creating a charge: %s"
 msgstr ""
 
 #. translators: %s is the days as an integer since the order was created
-#: includes/wc-gateway-vipps-recurring.php:896
+#: includes/wc-gateway-vipps-recurring.php:897
 msgid "You cannot refund a charge that was made more than 365 days ago. This order was created %s days ago."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:912
+#: includes/wc-gateway-vipps-recurring.php:913
 msgid "A temporary error occurred when refunding a payment through Vipps MobilePay. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:932
+#: includes/wc-gateway-vipps-recurring.php:933
 msgid "You can not partially refund a pending or due charge. Please wait till the payment clears first or refund the full amount instead."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:936
+#: includes/wc-gateway-vipps-recurring.php:937
 msgid "An unexpected error occurred while refunding a payment in Vipps/MobilePay."
 msgstr ""
 
 #. translators: Vipps/MobilePay Charge ID, human diff timestamp
-#: includes/wc-gateway-vipps-recurring.php:1049
+#: includes/wc-gateway-vipps-recurring.php:1050
 msgid "Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s."
 msgstr ""
 
 #. translators: %s: The charge's status
-#: includes/wc-gateway-vipps-recurring.php:1096
+#: includes/wc-gateway-vipps-recurring.php:1101
 msgid "Could not capture charge because the status is not RESERVED or PARTIALLY_CAPTURED. Found status: %s"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1119
-#: includes/wc-gateway-vipps-recurring.php:1153
+#: includes/wc-gateway-vipps-recurring.php:1124
 msgid "Vipps/MobilePay is temporarily unavailable."
 msgstr ""
 
-#. translators: %s order id
-#: includes/wc-gateway-vipps-recurring.php:1160
-msgid "Could not capture Vipps/MobilePay payment for order id: %s"
-msgstr ""
-
-#: includes/wc-gateway-vipps-recurring.php:1213
+#: includes/wc-gateway-vipps-recurring.php:1201
 msgid "Payment gateway change request cancelled in Vipps/MobilePay"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1582
+#: includes/wc-gateway-vipps-recurring.php:1570
 msgid "This subscription is already active in Vipps/MobilePay. You can leave this page."
 msgstr ""
 
 #. translators: %s: brand (Vipps or MobilePay)
-#: includes/wc-gateway-vipps-recurring.php:1605
+#: includes/wc-gateway-vipps-recurring.php:1593
 msgid "Different subscription products can not be purchased at the same time using %s."
 msgstr ""
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1634
+#: includes/wc-gateway-vipps-recurring.php:1622
 msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
 msgstr ""
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1663
+#: includes/wc-gateway-vipps-recurring.php:1651
 msgid "Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1808
+#: includes/wc-gateway-vipps-recurring.php:1796
 msgid "Test API settings"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1872
+#: includes/wc-gateway-vipps-recurring.php:1860
 msgid "Successfully authenticated with the Vipps/MobilePay API"
 msgstr ""
 
 #. translators: %s: the error message returned from Vipps/MobilePay
-#: includes/wc-gateway-vipps-recurring.php:1877
+#: includes/wc-gateway-vipps-recurring.php:1865
 msgid "Could not authenticate with the Vipps/MobilePay API: %s"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1917
+#: includes/wc-gateway-vipps-recurring.php:1905
 msgid "Vipps/MobilePay Agreement ID"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1941
+#: includes/wc-gateway-vipps-recurring.php:1929
 msgid "This Vipps/MobilePay agreement ID is invalid."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2003
+#: includes/wc-gateway-vipps-recurring.php:1991
 msgid "Pending cancellation"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2014
+#: includes/wc-gateway-vipps-recurring.php:2002
 msgid "Cancelled"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2025
+#: includes/wc-gateway-vipps-recurring.php:2013
 msgid "On hold"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2102
+#: includes/wc-gateway-vipps-recurring.php:2090
 msgid "Cancelled due charge in Vipps/MobilePay."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2106
+#: includes/wc-gateway-vipps-recurring.php:2094
 msgid "Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!"
 msgstr ""
 
-#: includes/wc-vipps-recurring-api.php:448
+#: includes/wc-gateway-vipps-recurring.php:2440
+msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
+msgstr ""
+
+#: includes/wc-vipps-recurring-api.php:450
 msgid "Your Vipps/MobilePay Recurring Payments gateway is not correctly configured."
 msgstr ""
 
-#: includes/wc-vipps-recurring-api.php:520
+#: includes/wc-vipps-recurring-api.php:522
 msgid "No response from Vipps/MobilePay"
 msgstr ""
 
-#: includes/wc-vipps-recurring-api.php:540
+#: includes/wc-vipps-recurring-api.php:542
 msgid "We hit Vipps/MobilePay's rate limit, we will retry later."
 msgstr ""
 
 #. translators: Link to a GitHub readme about the error
-#: includes/wc-vipps-recurring-api.php:632
+#: includes/wc-vipps-recurring-api.php:634
 msgid "Recurring payments is not yet activated for this sale unit. Read more <a href=\"%s\" target=\"_blank\">here</a>"
 msgstr ""
 
-#: includes/wc-vipps-recurring-api.php:636
+#: includes/wc-vipps-recurring-api.php:638
 msgid "Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout-rest-api.php:348
+#: includes/wc-vipps-recurring-checkout-rest-api.php:320
 msgid "Vipps/MobilePay recurring checkout payment initiated"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout-rest-api.php:349
+#: includes/wc-vipps-recurring-checkout-rest-api.php:321
 msgid "Customer passed to Vipps/MobilePay checkout"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout-rest-api.php:380
+#: includes/wc-vipps-recurring-checkout-rest-api.php:352
 msgid "Could not start Vipps/MobilePay checkout session"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:206
+#: includes/wc-vipps-recurring-checkout.php:251
 msgid "Vipps/MobilePay Recurring Checkout Page"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:207
+#: includes/wc-vipps-recurring-checkout.php:252
 msgid "This page is used for the alternative Vipps/MobilePay checkout page, which you can choose to use instead of the normal WooCommerce checkout page. "
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:616
+#: includes/wc-vipps-recurring-checkout.php:666
 msgid "Order specification changed - order abandoned by customer in Checkout"
 msgstr ""
 
 #. translators: %s link to WooCommerce Subscription's purchase page
-#: includes/wc-vipps-recurring.php:215
+#: includes/wc-vipps-recurring.php:217
 msgid "Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here."
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:228
+#: includes/wc-vipps-recurring.php:230
 msgid "Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:236
+#: includes/wc-vipps-recurring.php:238
 msgid "Successfully checked the status of these charges"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:552
+#: includes/wc-vipps-recurring.php:554
 msgctxt "Page slug"
 msgid "vipps_recurring_checkout"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:553
+#: includes/wc-vipps-recurring.php:555
 msgctxt "Page title"
 msgid "Vipps MobilePay Recurring Checkout"
 msgstr ""
 
 #. translators: amount of orders checked
-#: includes/wc-vipps-recurring.php:566
+#: includes/wc-vipps-recurring.php:568
 msgid "Done. Checked the status of %s orders"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:568
+#: includes/wc-vipps-recurring.php:570
 msgid "Failed to finish checking the status of all orders. Please try again."
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:598
+#: includes/wc-vipps-recurring.php:600
 msgid "Capture payment instantly"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:599
+#: includes/wc-vipps-recurring.php:601
 msgid "Capture payment instantly even if the product is not virtual. Please make sure you are following the local jurisdiction in your country when using this option."
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:606
+#: includes/wc-vipps-recurring.php:608
 msgid "Description source"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:607
+#: includes/wc-vipps-recurring.php:609
 msgid "Where we should source the agreement description from. Displayed in the Vipps/MobilePay app."
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:610
+#: includes/wc-vipps-recurring.php:612
 msgid "None"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:611
+#: includes/wc-vipps-recurring.php:613
 msgid "Product short description"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:612
+#: includes/wc-vipps-recurring.php:614
 msgid "Custom"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:619
+#: includes/wc-vipps-recurring.php:621
 msgid "Custom description"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:620
+#: includes/wc-vipps-recurring.php:622
 msgid "If the description source is set to \"custom\" this text will be used."
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:621
+#: includes/wc-vipps-recurring.php:623
 msgid "Max 100 characters"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:673
+#: includes/wc-vipps-recurring.php:675
 msgid "Capture payment"
 msgstr ""
 
-#: includes/wc-vipps-recurring.php:818
+#: includes/wc-vipps-recurring.php:820
 msgid "Settings"
 msgstr ""
 
@@ -701,6 +699,6 @@ msgstr ""
 msgid "You will be redirected shortly."
 msgstr ""
 
-#: src/pages/CheckoutPage.jsx:127
+#: src/pages/CheckoutPage.jsx:126
 msgid "Checkout session expired. Please refresh to start a new session."
 msgstr ""
