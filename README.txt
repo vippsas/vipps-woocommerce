@@ -8,6 +8,7 @@ Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 Vipps/MobilePay recurring payments is perfect if you run a shop with subscription based services or products that would benefit from subscriptions.
+
 == Description ==
 
 _Official Vipps/MobilePay recurring payments plugin for WooCommerce. Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway. One platform gathering more than 11 million users and more than 400.000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience._
