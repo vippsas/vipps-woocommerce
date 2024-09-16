@@ -2,9 +2,9 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev, lassepladsen
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 2.1.10
-Stable tag: 2.1.10
-Requires at least: 4.7
+Version: 3.0.0
+Stable tag: 3.0.0
+Requires at least: 6.2
 Tested up to: 6.6.2
 Requires PHP: 7.0
 Requires Plugins: woocommerce
@@ -94,13 +94,12 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Fix CSS of QR-code edit page
-Ensure coupons added to the cart works with Vipps Checkout
-Version 2.1.8 supports the upcoming Finnish VAT change
-Cancelling _completed_ orders will normally also refund these orders if the refund has been captured; but we now implement a cutoff for this so that this does not happen for orders older than 30 days (tunable by the 'woo_vipps_cancel_refund_days_threshold' filter). This is a safety measure to avoid accidental refunds of archived orders. You can still use the 'refund' status or refund the orders manually.
-Allow Klarna as an external payment method for norway
-Fix issue with webhook callbacks to unknown Vipps orders
-Fix issue where the woo log is called without woo having been loaded
+In version 3.0.0  we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the co nfiguraton experience as the features improve and the settings grow more complicated.
+
+We also support the new block-based product editor from this version on.
+
+To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add e
+ssential and security fixes to this branch.
 
 == Frequently Asked Questions ==
 
@@ -240,6 +239,12 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-09-16 version 3.0.0 =
+In this version, we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the configuraton experience as the features improve and the settings grow more complicated.
+We also support the new block-based product editor from this version on.
+
+To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add essential and security fixes to this branch.
 
 = 2024-09-10 version 2.1.10 =
 Fix CSS on QR-code page

@@ -113,7 +113,7 @@ class VippsQRCodeController {
           wp_enqueue_script('wc-enhanced-select');
           wp_enqueue_style('woocommerce_admin_styles');
       }
-    } 
+    }
 
     // This also does some garbage collection/cleanup by deleting code-objects no longer present at Vipps. It is called on the QR code overview screen.
     public function get_all_qr_codes_at_vipps () {

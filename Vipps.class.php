@@ -268,7 +268,10 @@ class Vipps {
     }
 
     public function admin_init () {
+
         $gw = $this->gateway();
+        require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
+        $adminSettings = VippsAdminSettings::instance();
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
@@ -280,6 +283,20 @@ class Vipps {
 
         // Scripts
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
+
+        // Redirect the default WooCommerce settings page to our own
+        add_action( 'woocommerce_settings_start', function () {
+                add_filter('admin_url', function ($url, $path) {
+                        if (strpos($path, "tab=checkout&section=vipps") === false) return $url;
+                        $qs = parse_url($path, PHP_URL_QUERY);
+                        if (!$qs) return $url;
+                        $args = [];
+                        parse_str($qs, $args);
+                        $ok = (($args['page']??false) == 'wc-settings') && (($args['tab']??false) == 'checkout') && (($args['section']??false) == 'vipps');
+                        if (!$ok) return $url;
+                        return admin_url("/admin.php?page=vipps_settings_menu");
+                        }, 10, 2);
+        });
 
         // Custom product properties
         // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps - FIXME
@@ -297,6 +314,7 @@ class Vipps {
         // Ajax just for the backend
         add_action('wp_ajax_vipps_create_shareable_link', array($this, 'ajax_vipps_create_shareable_link'));
         add_action('wp_ajax_vipps_payment_details', array($this, 'ajax_vipps_payment_details'));
+        add_action('wp_ajax_vipps_update_admin_settings', array($adminSettings, 'ajax_vipps_update_admin_settings'));
 
         // POST actions for the backend
         add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
@@ -330,9 +348,9 @@ class Vipps {
                 list($ok, $msg) = $gw->check_connection();
                 if (!$ok){ 
                     if ($msg) {
-                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet correctly configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup:<br> %3\$s</p>", 'woo-vipps'), Vipps::CompanyName(), admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'), $msg));
+                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet correctly configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup:<br> %3\$s</p>", 'woo-vipps'), Vipps::CompanyName(), admin_url('/admin.php?page=vipps_settings_menu'), $msg));
                     } else {
-                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup!</p>", 'woo-vipps'), Vipps::CompanyName(), admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')));
+                        $this->add_vipps_admin_notice(sprintf(__("<p>%1\$s not yet configured:  please go to <a href='%2\$s'>the %1\$s settings</a> to complete your setup!</p>", 'woo-vipps'), Vipps::CompanyName(), admin_url('/admin.php?page=vipps_settings_menu')));
                     }
                 } 
 
@@ -363,8 +381,9 @@ class Vipps {
 
             $show = intval(@$badge_options['defaultall']);
             $forthis = $product->get_meta('_vipps_show_badge', true);
+            $dontshow = ($forthis  == 'none');
 
-            $doshow = $show || ($forthis &&  $forthis  != 'none');
+            $doshow = !$dontshow && ($show || ($forthis &&  $forthis  != 'none'));
 
             if (!apply_filters('woo_vipps_show_vipps_badge_for_product', $doshow, $product)) {
                 return;
@@ -865,7 +884,7 @@ jQuery('a.webhook-adder').click(function (e) {
         }
 
         $recurringsettings = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring');
-        $checkoutsettings  = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps');
+        $checkoutsettings  = admin_url('/admin.php?page=vipps_settings_menu');
         $loginsettings = admin_url('/options-general.php?page=vipps_login_options');
 
         $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
@@ -1048,7 +1067,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // Add a link to the settings page from the plugin list
     public function plugin_action_links ($links) {
-        $link = '<a href="'.esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps')). '">'.__('Settings', 'woo-vipps').'</a>';
+        $link = '<a href="'.esc_attr(admin_url('/admin.php?page=vipps_settings_menu')). '">'.__('Settings', 'woo-vipps').'</a>';
         array_unshift( $links, $link);
         return $links;
     }
@@ -1091,7 +1110,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
                         $logo = plugins_url('img/vmp-logo.png',__FILE__);
                         $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
-                        $message = sprintf($text, admin_url('admin.php?page=wc-settings&tab=checkout&section=vipps'));
+                        $message = sprintf($text, admin_url('/admin.php?page=vipps_settings_menu'));
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
@@ -1188,12 +1207,14 @@ jQuery('a.webhook-adder').click(function (e) {
         // IOK 2023-12-01 replace old Vipps smile in larger contexts
         // $logo= plugins_url('img/vipps-smile-orange.png',__FILE__);
         $logo = plugins_url('img/vmp-logo.png', __FILE__);
+        require_once(dirname(__FILE__) . "/admin/settings/VippsAdminSettings.class.php");
+        $adminSettings = VippsAdminSettings::instance();
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
-
+        add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 90);
         // IOK 2024-01-17 temporarily: Only Vipps supports Badges codes. FIXME
         if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "Vipps") {
-        add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
+            add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
         }
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
@@ -1369,13 +1390,8 @@ jQuery('a.webhook-adder').click(function (e) {
                 // This will delete the actual link
                 delete_post_meta($post->ID, '_vipps_shareable_link_'.$delendum);
             }
-            // This will delete the item from the list of links for the product
-            $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
-            foreach ($shareables as $shareable) {
-                if (in_array($shareable['key'], $delenda)) {
-                    delete_post_meta($post->ID,'_vipps_shareable_links', $shareable);
-                }
-            }
+            // Delete all legacy "shareable links" collections. IOK 2024-06-19
+            delete_post_meta($post->ID, '_vipps_shareable_links');
         }
     }
 
@@ -1431,7 +1447,7 @@ jQuery('a.webhook-adder').click(function (e) {
           } 
           echo "</p>";
         } else {
-         $settings = esc_attr(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps'));
+         $settings = esc_attr(admin_url('/admin.php?page=vipps_settings_menu'));
           echo "<p>";
           echo sprintf(__("The %1\$s settings</a> are configured so that no products will have a Buy Now button - including this.", 'woo-vipps'), Vipps::CompanyName());
           echo "</p>";
@@ -1482,9 +1498,24 @@ jQuery('a.webhook-adder').click(function (e) {
 
     public function product_options_vipps_shareable_link() {
         global $post;
+        global $wpdb;
         $product = wc_get_product($post->ID);
         $variable = ($product->get_type() == 'variable');
-        $shareables = get_post_meta($post->ID,'_vipps_shareable_links', false);
+
+        $buy_url = $this->buy_product_url();
+        $q = $wpdb->prepare("SELECT meta_key, meta_value FROM `{$wpdb->postmeta}` WHERE post_id = %d AND meta_key LIKE '_vipps_shareable_link@_%' escape '@'", $product->get_id());
+        $res = $wpdb->get_results($q, ARRAY_A);
+        $shareables = [];
+        if ($res) {
+            foreach($res as $entry) {
+                $shareable = maybe_unserialize($entry['meta_value']);
+                if (!$shareable || empty($shareable['key'])) continue;
+                $url = add_query_arg('pr',$shareable['key'],$this->buy_product_url());
+                $shareable['url'] = $url;
+                $shareables[] = $shareable;
+            }
+        }
+
         $qradmin = admin_url("/edit.php?post_type=vipps_qr_code");
         ?>
             <div class="options_group">
@@ -1601,7 +1632,6 @@ else:
 
         // This is used to find the link itself
         update_post_meta($prodid,'_vipps_shareable_link_'.$key, array('product_id'=>$prodid,'variation_id'=>$varid,'key'=>$key));
-        add_post_meta($prodid,'_vipps_shareable_links',$payload);
 
         echo json_encode(array('ok'=>1,'msg'=>'ok', 'url'=>$url, 'variant'=> $varname, 'key'=>$key));
         wp_die();
@@ -2533,22 +2563,56 @@ EOF;
         exit();
     }
 
-    // Returns true iff we can verify that the webhook we just got is valid and that we know its secret IOK 2023-12-21
-    public function verify_webhook($serialized,$secret) {
-            // Verify the callback.
-            $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
-            $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
+    // Returns true iff we can verify that the webhook we just received is valid and that we know its secret IOK 2023-12-21
+    public function verify_webhook($serialized, $secret) {
+        // Extract the necessary headers.
+        $expected_auth = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['HTTP_X_VIPPS_AUTHORIZATION'] ?? ""); 
+        $expected_date = $_SERVER['HTTP_X_MS_DATE'] ?? '';
 
-            // Check date here with some leeway, using strtotime. FIXME
-            $hashed_payload = base64_encode(hash('sha256', $serialized, true));
-            $path_and_query = $_SERVER['REQUEST_URI'];
-            $host = $_SERVER['HTTP_HOST'];
-            $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
-            $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
-            $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+        // Check if the date header is present and within an acceptable range (e.g., +/- 5 minutes) NT 2023-12-22
+        if (!$this->isDateValid($expected_date)) {
+            return false; // Date is not valid or not within the acceptable range
+        }
 
-            return ($auth == $expected_auth) ;
+        // Prepare the data for signing.
+        $hashed_payload = base64_encode(hash('sha256', $serialized, true));
+        $path_and_query = $_SERVER['REQUEST_URI'];
+        $host = $_SERVER['HTTP_HOST'];
+
+        // Construct the string to sign.
+        $toSign = "POST\n{$path_and_query}\n{$expected_date};{$host};{$hashed_payload}";
+
+        // Generate the HMAC signature.
+        $signature = base64_encode(hash_hmac('sha256', $toSign, $secret, true));
+
+        // Construct the authorization string.
+        $auth = "HMAC-SHA256 SignedHeaders=x-ms-date;host;x-ms-content-sha256&Signature={$signature}";
+
+        // Compare the generated auth string with the expected one. 
+        // Hash_equals is used to mitigate timing attacks NT 2023-12-22
+        return hash_equals($auth, $expected_auth);
     }
+
+    // Helper function to validate the date NT 2023-12-22
+    private function isDateValid($dateHeader) {
+        // Define the acceptable time leeway (e.g., 5 minutes)
+        $leewayInSeconds = 300;
+
+        // Convert the header date to a Unix timestamp
+        $headerTime = strtotime($dateHeader);
+
+        // Check if the date is valid
+        if ($headerTime === false) {
+            return false; // Invalid date
+        }
+
+        // Get the current time
+        $currentTime = time();
+
+        // Check if the date is within the acceptable range
+        return abs($currentTime - $headerTime) <= $leewayInSeconds;
+    }
+
 
     // Helper function to get ISO-3166 two-letter country codes from country names as supplied by Vipps
     // IOK 2021-11-22 Seems as if Vipps is now sending two-letter country codes at least some times
@@ -4540,15 +4604,19 @@ EOF;
         $specialid = $this->gateway()->get_option('vippsspecialpageid');
         $wp_post = null;
         if ($specialid) {
-          $wp_post = get_post($specialid);
-          $wp_post->post_title = $title;
-          $wp_post->post_content = $content;
-          // Normalize a bit
-          $wp_post->filter = 'raw'; // important
-          $wp_post->post_status = 'publish';
-          $wp_post->comment_status= 'closed';
-          $wp_post->ping_status= 'closed';
-	    }
+            $wp_post = get_post($specialid);
+            if ($wp_post) {
+                $wp_post->post_title = $title;
+                $wp_post->post_content = $content;
+                // Normalize a bit
+                $wp_post->filter = 'raw'; // important
+                $wp_post->post_status = 'publish';
+                $wp_post->comment_status= 'closed';
+                $wp_post->ping_status= 'closed';
+            } else {
+              $this->log(sprintf(__("Could not use special page with id %s - it seems not to exist.", 'woo-vipps'), $specialid), 'error');
+            }
+        }
         if (!$wp_post || is_wp_error($wp_post)) {
             $post = new stdClass();
             $post->ID = -99;
@@ -4607,5 +4675,4 @@ EOF;
         $wp->register_globals();
         return $wp_post;
     }
-
 }
