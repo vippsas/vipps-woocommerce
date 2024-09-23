@@ -3,8 +3,6 @@
 }());
 
 function registerVippsRecurringGateway() {
-  const {__, sprintf} = wp.i18n;
-
   const {decodeEntities} = window.wp.htmlEntities;
   const {getSetting} = window.wc.wcSettings;
   const {registerPaymentMethod} = window.wc.wcBlocksRegistry;
@@ -46,7 +44,7 @@ function registerVippsRecurringGateway() {
   const paymentMethod = {
     name: 'vipps_recurring',
     // translators: %s: brand name, Vipps or MobilePay
-    placeOrderButtonLabel: sprintf(__("Continue with %s", "vipps-recurring-payments-gateway-for-woocommerce"), settings.title),
+    placeOrderButtonLabel: wp.i18n.sprintf(wp.i18n.__("Continue with %s", "vipps-recurring-payments-gateway-for-woocommerce"), settings.title),
     supports: {
       features: settings.supports || []
     },
