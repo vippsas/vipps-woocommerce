@@ -162,6 +162,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= Unreleased =
+* Fixed: A conflict with some themes, like Salient, where this plugin would cause certain blocks to not load.
+
 = 2.0.0 =
 * Added: Support for Vipps/MobilePay Checkout. This includes the possibility of using card payments if they are enabled for your sales unit.
 * Fixed: "Continue shopping" link default value is now correct.
