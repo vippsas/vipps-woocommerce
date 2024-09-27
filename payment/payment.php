@@ -37,26 +37,26 @@ if ( ! defined('VIPPS_TEST_MODE' )) {
 }
 
 /* Instantiate the singleton, stash it in a global and add hooks. IOK 2018-02-07 */
-require_once(dirname(__FILE__) . '/payment/Vipps.class.php');
+require_once(dirname(__FILE__) . '/Vipps.class.php');
 global $Vipps;
 $Vipps = Vipps::instance();
 Vipps::register_hooks();
 
 /* The QR Code functionality is in its own class for modularity reasons. It is a singleton too. */
-require_once(dirname(__FILE__) . '/payment/VippsQRCodeController.class.php');
+require_once(dirname(__FILE__) . '/VippsQRCodeController.class.php');
 VippsQRCodeController::register_hooks();
 
 /* If Vipps Checkout is activated, load its support. It can still be turned on and off. */
 if (get_option('woo_vipps_checkout_activated', false)) {
-    require_once(dirname(__FILE__) . '/payment/VippsCheckout.class.php');
+    require_once(dirname(__FILE__) . '/VippsCheckout.class.php');
     VippsCheckout::register_hooks();
 }
 
 // Gutenberg block for on-site messaging badges, if Gutenberg is installed. IOK 2022-11-16
-require_once(dirname(__FILE__) . '/payment/Blocks/Badges/vipps-badge.php');
+require_once(dirname(__FILE__) . '/Blocks/Badges/vipps-badge.php');
 
 // Helper code for specific plugins, themes etc
-require_once(dirname(__FILE__) . '/payment/woo-vipps-compatibility.php');
+require_once(dirname(__FILE__) . '/woo-vipps-compatibility.php');
 
 // Load code for the new WooCommerce product editor
 add_action('woocommerce_init', function() {
@@ -66,10 +66,10 @@ add_action('woocommerce_init', function() {
         $is_product_editor_v2_enabled = get_option('woocommerce_feature_product_block_editor_enabled');
         if($is_version_supported && $is_product_editor_v2_enabled) {
         // Load the new blocks
-        require_once(dirname(__FILE__) . '/payment/admin/blocks/register-woo-blocks.php');
+        require_once(dirname(__FILE__) . '/admin/blocks/register-woo-blocks.php');
 
         // Load the V2 product editor
-        require_once(dirname(__FILE__) . '/payment/VippsWCProductEditorV2.class.php');
+        require_once(dirname(__FILE__) . '/VippsWCProductEditorV2.class.php');
         VippsWCProductEditorV2::register_hooks();
 
         }
@@ -100,7 +100,7 @@ add_action( 'before_woocommerce_init', function() {
 // Load the extra Vipps Checkout Shipping classes only when necessary
 add_action( 'woocommerce_shipping_init', function () {
     if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false)) {
-        require_once(dirname(__FILE__) . '/payment/VippsCheckoutShippingMethods.php');
+        require_once(dirname(__FILE__) . '/VippsCheckoutShippingMethods.php');
     }
 });
 
