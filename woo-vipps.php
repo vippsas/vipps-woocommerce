@@ -64,6 +64,6 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 
     /* Load support for recurring payments if the stand-alone plugin isn't active IOK 2024-09-27  */
     if (! in_array('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php', $activeplugins)) {
-        require_once(dirname(__FILE__) . "/recurring/woo-vipps-recurring.php");
+        require_once(dirname(__FILE__) . "/recurring/recurring.php");
     }
 }

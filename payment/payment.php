@@ -31,6 +31,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+// Report version externally
+define('WOO_VIPPS_VERSION', '3.0.0');
+
 // Legacy way of starting test mode - please use developer- and test-modes from now on. IOK 2019-08-30
 if ( ! defined('VIPPS_TEST_MODE' )) {
     define('VIPPS_TEST_MODE', false);
