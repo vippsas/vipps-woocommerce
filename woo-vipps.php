@@ -109,10 +109,7 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 
     /* Load recurring if the stand-alone plugin isn't active IOK 2024-09-27  */
     if (! in_array('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php', $activeplugins)) {
-        error_log("Standalone not loaded");
-        require_once(__DIRNAME__ . "/recurring/woo-vipps-recurring.php");
-    } else {
-        error_log("Standalone yes loaded");
+        require_once(dirname(__FILE__) . "/recurring/woo-vipps-recurring.php");
     }
 }
 
