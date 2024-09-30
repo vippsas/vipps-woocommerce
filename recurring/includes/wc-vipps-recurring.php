@@ -88,7 +88,7 @@ class WC_Vipps_Recurring {
 	}
 
 	public function plugins_loaded() {
-		self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
+		self::load_plugin_textdomain( 'vipps-recurring-payments-gateway-for-woocommerce', false, plugin_basename(dirname(WC_VIPPS_RECURRING_PLUGIN_PATH)) . '/languages');
 
 		add_filter( 'woocommerce_payment_gateways', [ $this, 'add_gateways' ] );
 
@@ -887,7 +887,7 @@ class WC_Vipps_Recurring {
 			'continueShoppingUrl' => $continue_shopping_url
 		] );
 
-		wp_set_script_translations( 'woo-vipps-recurring', 'vipps-recurring-payments-gateway-for-woocommerce', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages' );
+		wp_set_script_translations( 'woo-vipps-recurring', 'vipps-recurring-payments-gateway-for-woocommerce', dirname(WC_VIPPS_RECURRING_PLUGIN_PATH) . '/languages' );
 	}
 
 	/**

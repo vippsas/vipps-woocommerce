@@ -57,7 +57,7 @@ final class WC_Vipps_Recurring_Blocks_Support extends AbstractPaymentMethodType 
 		wp_register_script( $handle, $path, $dependencies, $version, true );
 
 		if ( function_exists( 'wp_set_script_translations' ) ) {
-			wp_set_script_translations( $handle, 'vipps-recurring-payments-gateway-for-woocommerce', WC_VIPPS_RECURRING_PLUGIN_PATH . '/languages/' );
+			wp_set_script_translations( $handle, 'vipps-recurring-payments-gateway-for-woocommerce', dirname(WC_VIPPS_RECURRING_PLUGIN_PATH) . '/languages/' );
 		}
 
 		return [ $handle ];
