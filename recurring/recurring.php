@@ -37,7 +37,8 @@ require_once __DIR__ . '/includes/wc-vipps-recurring.php';
 define( 'WC_VIPPS_RECURRING_MIN_PHP_VER', '7.4.0' );
 define( 'WC_VIPPS_RECURRING_MIN_WC_VER', '3.0.0' );
 define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
-define( 'WC_VIPPS_RECURRING_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
+#define( 'WC_VIPPS_RECURRING_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
+define( 'WC_VIPPS_RECURRING_PLUGIN_URL', plugins_url("", __FILE__));
 define( 'WC_VIPPS_RECURRING_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 
 /*
