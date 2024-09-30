@@ -402,6 +402,10 @@ class Vipps {
             if ($product && in_array($currency, $supported_currencies)) {
                 // Currently only supports NOK! 2022-11-11 IOK 
                 $price = $product->get_price();
+
+                // Only supports products with a price. LP 30.09.2024
+                if (!$price) return;
+
                 $price = round($price * 100);
                 $attr .= " amount ='". $price. "' ";
             }
