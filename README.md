@@ -14,7 +14,9 @@ END_METADATA -->
 
 ![Vipps](./docs/images/vipps.png) ![MobilePay](./docs/images/mp.png) *Available for Vipps and MobilePay.*
 
-*This plugin is built and maintained by [Everyday AS](https://everyday.no) and is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).*
+*This plugin is built and maintained by [Everyday AS](https://everyday.no)
+and is hosted on [GitHub](https://github.com/vippsas/vipps-recurring-woocommerce).
+For support, use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/recurring-woocommerce/). 💥
@@ -240,3 +242,7 @@ For recurring payments, we only offer static shipping options at the moment. We 
 ### What payments methods are available for this checkout?
 
 At the moment, it only supports Vipps MobilePay.
+
+## Support
+
+For issues with your plugin, use the [support forum on wordpress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/) or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
