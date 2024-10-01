@@ -218,8 +218,6 @@ class WC_Vipps_Recurring_Checkout {
 
 		$session = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
 		if ( ! is_array( $session ) ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Session is not an array, got: %s", $order_id, $session ) );
-
 			return;
 		}
 
@@ -791,6 +789,9 @@ class WC_Vipps_Recurring_Checkout {
 		if ( empty( $existing_subscriptions ) ) {
 			$order         = wc_get_order( $order_id );
 			$subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
+			if ( ! $subscriptions ) {
+				return;
+			}
 
 			/** @var WC_Subscription $subscription */
 			$subscription = array_pop( $subscriptions );

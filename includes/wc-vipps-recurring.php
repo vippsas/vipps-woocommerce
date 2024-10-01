@@ -202,6 +202,11 @@ class WC_Vipps_Recurring {
 		add_filter( 'generate_rewrite_rules', [ $this, 'custom_action_endpoints' ] );
 		add_filter( 'query_vars', [ $this, 'custom_action_query_vars' ] );
 		add_filter( 'template_include', [ $this, 'custom_action_page_template' ] );
+
+		add_action('wp_loaded', function() {
+			$order         = wc_get_order( 1171 );
+			$this->gateway()->create_partial_subscriptions_from_order( $order );
+		});
 	}
 
 	/**

@@ -1323,6 +1323,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} );
 
 		$subscription_item = array_pop( $subscription_items );
+		$quantity          = $subscription_item->get_quantity();
 		$product           = $subscription_item->get_product();
 		$parent_product    = wc_get_product( $subscription_item->get_product_id() );
 
@@ -1380,6 +1381,25 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement_total = $subscription_item->get_total() + $order->get_shipping_total();
 		}
 
+		$has_trial = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
+		if ( $has_trial ) {
+			$agreement_total = WC_Subscriptions_Product::get_regular_price( $product, 'code' ) * $quantity;
+		}
+
+		$is_zero_amount      = (int) $agreement_total === 0 || $is_gateway_change;
+		$capture_immediately = $is_virtual || $direct_capture;
+		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
+
+		$sign_up_fee       = WC_Subscriptions_Product::get_sign_up_fee( $product ) * $quantity;
+		$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
+		$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
+
+		// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
+		// also not when the order total is the same as the agreement total
+		if ( $has_free_campaign && $has_synced_product && $order->get_total() === $agreement_total ) {
+			$has_campaign = false;
+		}
+
 		$agreement = ( new WC_Vipps_Agreement() )
 			->set_external_id( $order_id )
 			->set_pricing(
@@ -1407,21 +1427,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement = $agreement->set_phone_number( $order->get_billing_phone() );
 		}
 
-		$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
-		$capture_immediately = $is_virtual || $direct_capture;
-		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
-		$has_trial           = (bool) WC_Subscriptions_Product::get_trial_length( $product );
-
-		$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
-		$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
-		$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
-
-		// when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)" we don't want to have a campaign
-		// also not when the order total is the same as the agreement total
-		if ( $has_free_campaign && $has_synced_product && $order->get_total() === $agreement_total ) {
-			$has_campaign = false;
-		}
-
 		if ( ! $is_zero_amount ) {
 			$initial_charge_description = WC_Vipps_Recurring_Helper::get_product_description( $parent_product );
 			if ( ! empty( $extra_initial_charge_description ) ) {
@@ -1434,7 +1439,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			$agreement = $agreement->set_initial_charge(
 				( new WC_Vipps_Agreement_Initial_Charge() )
-					->set_amount(apply_filters( 'wc_vipps_recurring_agreement_initial_charge_amount', WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ), $order ) )
+					->set_amount( apply_filters( 'wc_vipps_recurring_agreement_initial_charge_amount', WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ), $order ) )
 					->set_description( empty( $initial_charge_description ) ? $subscription_item->get_name() : $initial_charge_description )
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
 			);
@@ -1443,12 +1448,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $has_campaign ) {
-//					$start_date   = new DateTime( '@' . $subscription->get_time( 'start' ) );
-			$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
-			$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
-
-			$campaign_price    = $has_free_campaign ? $sign_up_fee : $order->get_total();
-			$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
+			$campaign_price = $has_free_campaign ? $sign_up_fee : $order->get_total();
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
 			$campaign_period = null;
@@ -1459,6 +1459,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$campaign_period   = ( new WC_Vipps_Agreement_Campaign_Period() )
 					->set_count( WC_Subscriptions_Product::get_trial_length( $product ) )
 					->set_unit( strtoupper( WC_Subscriptions_Product::get_trial_period( $product ) ) );
+			} else {
+				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
+				$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
+
+				$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
 			}
 
 			$agreement = $agreement->set_campaign(
@@ -2070,6 +2075,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
 		$charge_id    = WC_Vipps_Recurring_Helper::get_charge_id_from_order( $order );
 
+		if ( $agreement_id === null || $charge_id === null ) {
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
+
+			return;
+		}
+
 		$pending_charge = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 
 		if ( $pending_charge ) {
@@ -2438,7 +2449,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->cancel_subscription( $subscription );
 
 			$message = __( 'Subscription cancelled by the customer via the Vipps MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' );
-			$subscription->set_status('cancelled', $message);
+			$subscription->set_status( 'cancelled', $message );
 		}
 	}
 
@@ -2619,7 +2630,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		foreach ( $subscription_groups as $items ) {
 			// Get the first item in the group to use as the base for the subscription.
-			$product      = $items[0]->get_product();
+			$product  = $items[0]->get_product();
+			$quantity = $items[0]->get_quantity();
+
 			$start_date   = wcs_get_datetime_utc_string( $order->get_date_created( 'edit' ) );
 			$subscription = wcs_create_subscription( [
 				'order_id'         => $order_id,
@@ -2662,6 +2675,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$subscription_item = $subscription->get_item( $item_id );
 
 				wcs_copy_order_item( $item, $subscription_item );
+
+				$product   = wc_get_product( $subscription_item->get_product_id() );
+				$has_trial = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
+				if ( $has_trial ) {
+					$regular_price = WC_Subscriptions_Product::get_regular_price( $product, 'code' ) * $quantity;
+
+					$subscription_item->set_props( [
+						'subtotal' => $regular_price,
+						'total'    => $regular_price,
+					] );
+				}
+
 				$subscription_item->save();
 
 				// Check if this subscription will need shipping.

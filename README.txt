@@ -162,8 +162,10 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
-= Unreleased =
+= 2.0.1 =
 * Fixed: A conflict with some themes, like Salient, where this plugin would cause certain blocks to not load.
+* Fixed: Products with a trial period and a sign up fee were not correctly dealt with when using the new Checkout.
+* Fixed: Use `WC_Subscriptions_Product::get_sign_up_fee` instead of `WC_Subscriptions_Order::get_sign_up_fee` as we do not always have a subscription order.
 
 = 2.0.0 =
 * Added: Support for Vipps/MobilePay Checkout. This includes the possibility of using card payments if they are enabled for your sales unit.
