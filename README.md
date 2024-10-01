@@ -14,7 +14,10 @@ END_METADATA -->
 
 ![Vipps](./docs/images/vipps.png) ![MobilePay](./docs/images/mp.png) *Available for Vipps and MobilePay.*
 
-*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/) and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).*
+*This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/)
+and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).
+For support, contact the
+[support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/). 💥
@@ -165,7 +168,7 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 For issues with your WooCommerce installation you should use the
 [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
-For other issues, you should contact [Vipps MobilePay](https://developer.vippsmobilepay.com/docs/contact/#contact-details).
+For business-related issues, such as a deactivated sales unit, contact [Vipps MobilePay business support](https://vippsmobilepay.com/info/help).
 
 ### General questions
 
@@ -179,3 +182,8 @@ for more help with Vipps MobilePay eCommerce.
 * PHP 7.0 or higher is required.
 * An SSL Certificate is required.
 * The port 443 must not be blocked for outward traffic.
+
+## Support
+
+For issues with this plugin, contact the
+[support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
