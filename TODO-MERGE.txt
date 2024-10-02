@@ -1,0 +1,7 @@
+WC_VIPPS_RECURRING_MAIN_FILE pekte tidligere på hovedfila til recurring, og blir derfor brukt i en rekke hooks som peker på "hovedfila til pluginen". Dette gjelder ikke lenger, så sjekk ut all bruk.
+
+
+Ex. på problematisk bruk:
+	add_filter( 'plugin_action_links_' . plugin_basename( WC_VIPPS_RECURRING_MAIN_FILE ),
+recurring/includes/wc-vipps-recurring.php:		register_activation_hook( WC_VIPPS_RECURRING_MAIN_FILE, [ $instance, 'activate' ] );
+recurring/includes/wc-vipps-recurring.php:		register_deactivation_hook( WC_VIPPS_RECURRING_MAIN_FILE, [ $instance, 'deactivate' ] );

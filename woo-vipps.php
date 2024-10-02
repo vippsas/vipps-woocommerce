@@ -3,8 +3,8 @@
    Plugin Name: Pay with Vipps and MobilePay for WooCommerce
    Plugin URI: https://wordpress.org/plugins/woo-vipps/
    Description: Offer Vipps as a payment method for WooCommerce
-   Author: WP Hosting
-   Author URI: https://www.wp-hosting.no/
+   Author: WP Hosting, Everyday AS
+   Author URI: https://www.wp-hosting.no/, https://everyday.no
    Text-domain: woo-vipps
    Domain Path: /languages
    Version: 4.0.0
@@ -67,3 +67,10 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
         require_once(dirname(__FILE__) . "/recurring/recurring.php");
     }
 }
+
+// Declare our support for the HPOS feature IOK 2022-12-07
+add_action( 'before_woocommerce_init', function() {
+        if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        }
+});

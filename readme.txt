@@ -1,5 +1,5 @@
 === Pay with Vipps and MobilePay for WooCommerce ===
-Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev, lassepladsen
+Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lassepladsen
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
 Version: 3.0.0
