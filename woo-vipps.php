@@ -4,7 +4,7 @@
    Plugin URI: https://wordpress.org/plugins/woo-vipps/
    Description: Offer Vipps as a payment method for WooCommerce
    Author: WP Hosting, Everyday AS
-   Author URI: https://www.wp-hosting.no/, https://everyday.no
+   Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
    Version: 4.0.0
