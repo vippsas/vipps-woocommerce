@@ -101,7 +101,6 @@ We also support the new block-based product editor from this version on.
 To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add e
 ssential and security fixes to this branch.
 
-
 == Frequently Asked Questions ==
 
 = In which countries can I use Vipps/MobilePay? =
@@ -246,6 +245,9 @@ In this version, we are introducing an all-new settings screen reached from the 
 We also support the new block-based product editor from this version on.
 
 To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add essential and security fixes to this branch.
+
+= 2024-09-10 version 2.1.10 =
+Fix CSS on QR-code page
 
 = 2024-09-09 version 2.1.9 =
 Handle coupons for Vipps Checkout
