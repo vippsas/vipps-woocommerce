@@ -93,13 +93,6 @@ add_action ('before_woocommerce_init', function () {
  }
 },1);
 
-// Declare our support for the HPOS feature IOK 2022-12-07
-add_action( 'before_woocommerce_init', function() {
-	if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-	}
-});
-
 // Load the extra Vipps Checkout Shipping classes only when necessary
 add_action( 'woocommerce_shipping_init', function () {
     if (!class_exists('VippsCheckout_Shipping_Method') && get_option('woo_vipps_checkout_activated', false)) {

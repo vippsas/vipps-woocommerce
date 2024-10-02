@@ -105,13 +105,6 @@ class WC_Vipps_Recurring {
 		// Create a real page for Vipps Checkout
 		add_filter( 'woocommerce_create_pages', [ $this, 'woocommerce_create_pages' ], 50 );
 
-		// Declare compatibility with WooCommerce HPOS
-		add_action( 'before_woocommerce_init', function () {
-			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_VIPPS_RECURRING_MAIN_FILE );
-			}
-		} );
-
 		// Declare compatibility with the WooCommerce checkout block
 		add_action( 'woocommerce_blocks_loaded', function () {
 			if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
