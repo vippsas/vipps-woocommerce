@@ -97,9 +97,9 @@ class Vipps {
 
     public static function register_hooks() {
         $Vipps = static::instance();
-        register_activation_hook(dirname(__FILE__) . "/woo-vipps.php",array($Vipps,'activate'));
-        register_deactivation_hook(dirname(__FILE__) . "/woo-vipps.php",array('Vipps','deactivate'));
-        register_uninstall_hook(dirname(__FILE__) . "/woo-vipps.php", 'Vipps::uninstall');
+        register_activation_hook(WC_VIPPS_MAIN_FILE, array($Vipps,'activate'));
+        register_deactivation_hook(WC_VIPPS_MAIN_FILE,array('Vipps','deactivate'));
+        register_uninstall_hook(WC_VIPPS_MAIN_FILE, 'Vipps::uninstall');
         if (is_admin()) {
             add_action('admin_init',array($Vipps,'admin_init'));
             add_action('admin_menu',array($Vipps,'admin_menu'));
@@ -322,7 +322,7 @@ class Vipps {
         add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
 
         // Link to the settings page from the plugin list
-        add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
+        add_filter( 'plugin_action_links_'.plugin_basename(WC_VIPPS_MAIN_FILE ), array($this, 'plugin_action_links'));
 
         if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
             $what = sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), Vipps::CompanyName());

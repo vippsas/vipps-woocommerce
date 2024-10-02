@@ -28,8 +28,8 @@ class WC_Vipps_Recurring {
 	public static function register_hooks() {
 		$instance = WC_Vipps_Recurring::get_instance();
 
-		register_activation_hook( WC_VIPPS_RECURRING_MAIN_FILE, [ $instance, 'activate' ] );
-		register_deactivation_hook( WC_VIPPS_RECURRING_MAIN_FILE, [ $instance, 'deactivate' ] );
+		register_activation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'activate' ] );
+		register_deactivation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'deactivate' ] );
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', [ $instance, 'admin_init' ] );
@@ -134,7 +134,7 @@ class WC_Vipps_Recurring {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'wp_enqueue_scripts' ] );
 
-		add_filter( 'plugin_action_links_' . plugin_basename( WC_VIPPS_RECURRING_MAIN_FILE ), [
+		add_filter( 'plugin_action_links_' . plugin_basename( WC_VIPPS_MAIN_FILE ), [
 			$this,
 			'plugin_action_links'
 		] );

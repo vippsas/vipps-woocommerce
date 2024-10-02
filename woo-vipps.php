@@ -51,6 +51,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
+define( 'WC_VIPPS_MAIN_FILE', __FILE__ );
+
 // Only be active if Woocommerce is active, either on site or network activated IOK 2018-08-29
 $activeplugins =  apply_filters( 'active_plugins', get_option( 'active_plugins' ));
 $activesiteplugins = apply_filters('active_sitewide_plugins', get_site_option('active_sitewide_plugins'));
