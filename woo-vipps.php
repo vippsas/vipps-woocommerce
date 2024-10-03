@@ -60,12 +60,16 @@ if ($activesiteplugins) {
  $activeplugins = array_merge($activeplugins,array_keys($activesiteplugins));
 }
 
-if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
+$woo_active = in_array('woocommerce/woocommerce.php', $activeplugins);
+$recurring_active = in_array('vipps-recurring-woocommerce/woo-vipps-recurring.php', $activeplugins);
+$recurring_active = $recurring_active || in_array('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php', $activeplugins);
+
+if ($woo_active) {
     /* Load support for the basic payment plugin IOK 2024-09-27 */
     require_once(dirname(__FILE__) ."/payment/payment.php");
 
     /* Load support for recurring payments if the stand-alone plugin isn't active IOK 2024-09-27  */
-    if (! in_array('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php', $activeplugins)) {
+    if (!$recurring_active) {
         require_once(dirname(__FILE__) . "/recurring/recurring.php");
     }
 }
