@@ -73,6 +73,6 @@ if ( in_array( 'woocommerce/woocommerce.php', $activeplugins) ) {
 // Declare our support for the HPOS feature IOK 2022-12-07
 add_action( 'before_woocommerce_init', function() {
         if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_VIPPS_MAIN_FILE, true );
         }
 });
