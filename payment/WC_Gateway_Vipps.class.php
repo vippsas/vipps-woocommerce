@@ -1436,7 +1436,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2018-04-20 Initiate payment at Vipps and redirect to the Vipps payment terminal.
     public function process_payment ($order_id) {
         global $woocommerce, $Vipps;
-        if (!$order_id) return false;
+        if (!$order_id) return [];
 
         do_action('woo_vipps_before_process_payment',$order_id);
 
@@ -1449,7 +1449,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             $this->log(sprintf(__('Could not get access token when initiating %1$s payment for order id:','woo-vipps'), $this->get_payment_method_name()) . $order_id .":\n" . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return false;
+            return [];
         }
 
 
@@ -1471,7 +1471,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // No longer the case for V2 of the API
         if (false && !$phone) {
             wc_add_notice(sprintf(__('You need to enter your phone number to pay with %1$s','woo-vipps'), $this->get_payment_method_name()) ,'error');
-            return false;
+            return [];
         }
 
         $order = wc_get_order($order_id);
@@ -1481,7 +1481,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if (! $order->has_status('pending', 'failed')) {
              $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
              wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
-             return false;
+             return [];
         }
 
         // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
@@ -1498,7 +1498,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
               $this->log(sprintf(__("Order %2\$d was attempted restarted, but had no %1\$s session url stored. Cannot continue!", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'error');
               wc_add_notice(sprintf(__('Order session expired at %1$s, please try again!', 'woo-vipps'), Vipps::CompanyName()), 'error');
               $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-              return false;
+              return [];
            }
 
            $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
@@ -1546,7 +1546,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return false;
+            return [];
         } catch (Exception $e) {
 
             // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
@@ -1559,7 +1559,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is currently unavailable. Please choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
-            return false;
+            return [];
         }
 
         $url = $content['url'];
