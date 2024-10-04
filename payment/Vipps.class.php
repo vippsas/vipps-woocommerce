@@ -99,7 +99,6 @@ class Vipps {
         $Vipps = static::instance();
         register_activation_hook(WC_VIPPS_MAIN_FILE, array($Vipps,'activate'));
         register_deactivation_hook(WC_VIPPS_MAIN_FILE,array('Vipps','deactivate'));
-        register_uninstall_hook(WC_VIPPS_MAIN_FILE, 'Vipps::uninstall');
         if (is_admin()) {
             add_action('admin_init',array($Vipps,'admin_init'));
             add_action('admin_menu',array($Vipps,'admin_menu'));
@@ -3328,9 +3327,6 @@ EOF;
        WC_Gateway_Vipps::instance()->delete_all_webhooks();
     }
 
-    public static function uninstall() {
-       // Nothing yet
-    }
     public function footer() {
        // Nothing yet
     }
