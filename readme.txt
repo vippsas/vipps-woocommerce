@@ -2,14 +2,14 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev, lassepladsen
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 3.0.0
-Stable tag: 3.0.0
+Version: 3.0.1
+Stable tag: 3.0.1
 Requires at least: 6.2
 Tested up to: 6.6.2
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.3.1
+WC tested up to: 9.4.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 3.0.1 fixes an issue in the Gutenberg Checkout block where issues with Vipps/Mobilepay were turned into fatal errors.
 In version 3.0.0  we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the co nfiguraton experience as the features improve and the settings grow more complicated.
 
 We also support the new block-based product editor from this version on.
@@ -239,6 +240,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2024-10-07 version 3.0.1 =
+The Gutenberg Checkout block has changed it's treatment of the return value of Process Payment, which is now required to be an array (earlier documentation specified a NULL) even in case of errors. This caused problems with Vipps/Mobilpay to get turned into fatal errors; fixed in this version.
 
 = 2024-09-16 version 3.0.0 =
 In this version, we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the configuraton experience as the features improve and the settings grow more complicated.
