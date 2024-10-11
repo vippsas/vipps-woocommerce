@@ -47,6 +47,13 @@ SOFTWARE.
 
  */
 
+<<<<<<< HEAD
+=======
+
+// Report version externally
+define('WOO_VIPPS_VERSION', '3.0.2');
+
+>>>>>>> master
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
