@@ -84,19 +84,27 @@ class VippsCheckout {
         if (is_checkout_pay_page()) {
             $orderid = absint(get_query_var( 'order-pay'));
             $order = $orderid ? wc_get_order($orderid) : null;
-            $proceed = sanitize_title(trim(is_a($order, 'WC_Order') ? $order->get_meta('_vc_proceed') : false));
-            $order->update_meta_data('_vc_proceed', 'any');
+            $gateway = sanitize_title(trim(is_a($order, 'WC_Order') ? $order->get_meta('_vc_proceed') : false));
+            $method = $gateway;
+            // Choose invoice payment if Klarna payments is the gateway. IOK 2024-10-11
+            if ($gateway == 'klarna_payments') {
+               $method = 'klarna_payments_pay_later';
+            }
+            $method = apply_filters('woo_vipps_checkout_external_payment_method_selected', $method, $gateway, $order);
+            $order->update_meta_data('_vc_proceed', 'any'); // Just in case we return to the order-pay page
             $order->save();
      
-            if ($proceed != 'any'): 
+            if ($method != 'any'): 
 ?>
 <script>
 jQuery(document).ready(function () {
-        let selected = jQuery('input#payment_method_<?php echo $proceed; ?>[name="payment_method"]');
+        let selected = jQuery('input#payment_method_<?php echo sanitize_title($method); ?>[name="payment_method"]');
         if (selected.length > 0) {
             jQuery('input#terms[type="checkbox"]').prop('checked', true).trigger('change');
             selected.prop('checked', true).trigger('change');
-            jQuery('button#place_order').click();
+            // Neccessary for Klarna Payments
+            setTimeout(function () { 
+                jQuery('button#place_order').click(); }, 100);
         }
         });
 </script>
@@ -106,12 +114,15 @@ jQuery(document).ready(function () {
     }
 
     // Returns list of external payment methods - from Vipps id to gateway id. 
+    // IOK 2024-10-11 filterable by 'woo_vipps_checkout_external_payment_methods'
     public function external_payment_methods() {
        $available = array_keys(WC()->payment_gateways->get_available_payment_gateways());
        $gw = WC_Gateway_Vipps::instance();
        $ok = $gw->allow_external_payments_in_checkout();
        if (!$ok) return [];
-       $possible = ['klarna' => ['kco', 'klarna_payments']]; // Only defined value at this point - klarna means either of these gateways (IOK 2024-05-28)
+       // Only defined value at this point - klarna means either of these gateways (IOK 2024-05-28)
+       // Prioritize payments if present
+       $possible = ['klarna' => ['klarna_payments', 'kco']];
        $externals = [];
        foreach ($possible as $key => $gws) {
          $on = $gw->get_option('checkout_external_payments_' . $key);

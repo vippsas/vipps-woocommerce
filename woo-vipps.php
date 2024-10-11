@@ -7,8 +7,8 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 3.0.1
-   Stable tag: 3.0.1
+   Version: 3.0.2
+   Stable tag: 3.0.2
    Requires at least: 6.2
    Tested up to: 6.6.2
    Requires PHP: 7.0
@@ -49,7 +49,7 @@ SOFTWARE.
 
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '3.0.1');
+define('WOO_VIPPS_VERSION', '3.0.2');
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
