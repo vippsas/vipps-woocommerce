@@ -242,7 +242,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-10-07 version 3.0.2 =
+= 2024-11-14 version 3.0.2 =
 Fix support of Klarna Payments as an external payment method
 
 = 2024-10-07 version 3.0.1 =
