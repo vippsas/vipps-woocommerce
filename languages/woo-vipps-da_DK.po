@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Pay with Vipps and MobilePay for WooCommerce - Development (trunk) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2024-10-15 12:22+0000\n"
+"PO-Revision-Date: 2024-10-15 12:35+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -32,7 +32,11 @@ msgstr " refunderet via %1$s:"
 msgid "\"Buy now\" compatibility mode"
 msgstr "\"Køb nu\" kompatibilitetsmodus"
 
-#: payment/VippsCheckout.class.php:715 payment/VippsKCSupport.class.php:64
+#: payment/recurring-translations.php:47
+msgid "\"Continue shopping\" link"
+msgstr ""
+
+#: payment/VippsCheckout.class.php:726 payment/VippsKCSupport.class.php:64
 #: payment/Vipps.class.php:1016 payment/Vipps.class.php:1041
 #: payment/Vipps.class.php:1216 payment/Vipps.class.php:1216
 #: payment/Vipps.class.php:1251 payment/Vipps.class.php:1264
@@ -243,7 +247,7 @@ msgstr ""
 "%1$s Ordre uden ordrestatus, så sessionen blev aldrig afsluttet; indstiller "
 "status til annulleret"
 
-#: payment/VippsCheckout.class.php:875
+#: payment/VippsCheckout.class.php:886
 #, php-format
 msgid "%1$s Page"
 msgstr "%1$s Side"
@@ -259,7 +263,7 @@ msgstr "%1$s Betaling aflyst:"
 msgid "%1$s Payment captured:"
 msgstr "%1$s Betaling indfanget:"
 
-#: payment/WC_Gateway_Vipps.class.php:1586 payment/VippsCheckout.class.php:447
+#: payment/WC_Gateway_Vipps.class.php:1586 payment/VippsCheckout.class.php:458
 #, php-format
 msgid "%1$s payment initiated"
 msgstr "%1$s betaling igangsat"
@@ -309,27 +313,27 @@ msgstr ""
 msgid "%1$s senere"
 msgstr "%1$s senere"
 
-#: payment/VippsCheckout.class.php:478
+#: payment/VippsCheckout.class.php:489
 #, php-format
 msgid "%1$s session %2$d cancelled (payment status)"
 msgstr "%1$s session %2$d aflyst (betalingsstatus)"
 
-#: payment/VippsCheckout.class.php:635
+#: payment/VippsCheckout.class.php:646
 #, php-format
 msgid "%1$s session %2$d cancelled (pending session)"
 msgstr "%1$s session %2$d annulleret (afventende session)"
 
-#: payment/VippsCheckout.class.php:511
+#: payment/VippsCheckout.class.php:522
 #, php-format
 msgid "%1$s session %2$d expired after %3$d minutes (limit 50)"
 msgstr "%1$s session %2$d udløb efter %3$d minutter (begrænsning 50)"
 
-#: payment/VippsCheckout.class.php:524
+#: payment/VippsCheckout.class.php:535
 #, php-format
 msgid "%1$s session %2$d failed with message %3$s"
 msgstr "%1$s session %2$d mislykkedes med besked %3$s"
 
-#: payment/VippsCheckout.class.php:654
+#: payment/VippsCheckout.class.php:665
 #, php-format
 msgid "%1$s session %2$d is gone"
 msgstr "%1$s session %2$d er væk"
@@ -353,7 +357,7 @@ msgstr "%1$s understøttede valutaer: %2$s"
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
-#: payment/VippsCheckout.class.php:757
+#: payment/VippsCheckout.class.php:768
 #, php-format
 msgid "%1$s: cart changed while session %2$d in progress - now cancelled"
 msgstr "%1$s: indkøbskurven ændret mens session %2$d er igang - nu aflyst"
@@ -419,6 +423,22 @@ msgstr ""
 "<p>%1$s er endnu ikke korrekt konfigureret: gå venligst til <a href='%2$s'>"
 "%1$s indstillingerne</a> for at fuldføre din opsætning:<br> %3$s</p>"
 
+#: payment/recurring-translations.php:49
+msgid "[Default] Shop or homepage"
+msgstr ""
+
+#: payment/recurring-translations.php:89
+#, php-format
+msgid "A list of possible failure reasons and what they mean can be found %s"
+msgstr ""
+
+#: payment/recurring-translations.php:102
+msgid ""
+"A temporary error occurred when refunding a payment through Vipps MobilePay. "
+"Please ensure the order is refunded manually or reset the order to "
+"\"Processing\" and try again."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:2421
 msgid "Abandonded by customer"
 msgstr "Forladt af kunden"
@@ -431,7 +451,7 @@ msgstr "Afbrydes"
 msgid "Action"
 msgstr "Handling"
 
-#: payment/VippsKCSupport.class.php:55
+#: payment/VippsKCSupport.class.php:55 payment/recurring-translations.php:75
 msgid "Activate"
 msgstr "Aktiver"
 
@@ -479,6 +499,12 @@ msgstr "Aktiver dette for Posti som en %1$s forsendelsesmetode."
 #, php-format
 msgid "Activate this for PostNord as a %1$s Shipping method."
 msgstr "Aktiver dette for PostNord som en %1$s forsendelsesmetode."
+
+#: payment/recurring-translations.php:76
+msgid ""
+"Activate Vipps/MobilePay Recurring Payments as an external payment method "
+"for Klarna Checkout"
+msgstr ""
 
 #: payment/Vipps.class.php:1432
 #, php-format
@@ -567,9 +593,19 @@ msgstr "Avanceret"
 msgid "Agreement accepted"
 msgstr "Aftale accepteret"
 
+#: payment/recurring-translations.php:112
+#, php-format
+msgid ""
+"Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
+msgstr ""
+
 #: payment/Vipps.class.php:522
 msgid "Agreement expired"
 msgstr "Aftalen udløb"
+
+#: payment/recurring-translations.php:9
+msgid "Agreement ID"
+msgstr ""
 
 #: payment/Vipps.class.php:520
 msgid "Agreement rejected"
@@ -607,7 +643,7 @@ msgstr ""
 "Næsten færdig! Husk, der er ingen gebyrer ved at bruge %1$s når du handler "
 "online."
 
-#: payment/VippsCheckout.class.php:196
+#: payment/VippsCheckout.class.php:207
 #, php-format
 msgid ""
 "Alternative payment method \"%1$s\" chosen, customer returned from Checkout"
@@ -637,6 +673,16 @@ msgstr "Beløb"
 msgid "Amount in minor units"
 msgstr "Beløb i mindre enheder"
 
+#: payment/recurring-translations.php:58
+msgid "Amount of charges to check per status check"
+msgstr ""
+
+#: payment/recurring-translations.php:36
+msgid ""
+"An alphanumeric text string to use as a prefix on checkout orders from your "
+"shop, to avoid duplicate order ids."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1021
 msgid ""
 "An alphanumeric textstring to use as a prefix on orders from your shop, to "
@@ -645,7 +691,7 @@ msgstr ""
 "En alfanumerisk tekststreng, der skal bruges som et præfiks på ordrer fra "
 "din butik, for at undgå duplikerede ordre-id'er"
 
-#: payment/VippsCheckout.class.php:707
+#: payment/VippsCheckout.class.php:718
 msgid ""
 "An error has occured - please reload the page to restart your transaction, "
 "or return to the shop"
@@ -665,6 +711,19 @@ msgstr ""
 msgid "An error occured while creating a shareable link"
 msgstr "En fejl opstod under oprettelsen af et delbart link"
 
+#: payment/recurring-translations.php:160
+msgid "An error occurred"
+msgstr ""
+
+#: payment/recurring-translations.php:104
+msgid ""
+"An unexpected error occurred while refunding a payment in Vipps/MobilePay."
+msgstr ""
+
+#: payment/recurring-translations.php:161
+msgid "An unknown error has occurred."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:3115
 #, php-format
 msgid "Anomalous callback from %1$s, handle errors and clean up"
@@ -677,6 +736,10 @@ msgstr "Anonym kunde"
 #: payment/Vipps.class.php:1756
 msgid "API"
 msgstr "API"
+
+#: payment/recurring-translations.php:37
+msgid "API settings"
+msgstr ""
 
 #: payment/VippsQRCodeController.class.php:238 payment/Vipps.class.php:4372
 msgid "Are you sure?"
@@ -702,6 +765,10 @@ msgstr "Bed brugeren om at give samtykke til at dele brugerinformation."
 #: payment/Vipps.class.php:516
 msgid "Authorized"
 msgstr "Autoriseret"
+
+#: payment/recurring-translations.php:26
+msgid "Automatically capture payments made with MobilePay"
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1587
 #, php-format
@@ -734,6 +801,14 @@ msgstr ""
 #: payment/src/admin/blocks/src/product-shareable-link/block.json:1
 msgctxt "block title"
 msgid "Blocks"
+msgstr ""
+
+#: payment/recurring-translations.php:22
+msgid "Brand"
+msgstr ""
+
+#: payment/recurring-translations.php:21
+msgid "Brand settings"
 msgstr ""
 
 #: payment/VippsWCProductEditorV2.class.php:218
@@ -815,7 +890,7 @@ msgstr "Tilbagekaldelse var:"
 msgid "Callback: Payment cancelled at %1$s"
 msgstr "Tilbagekaldelse: Betaling annulleret hos %1$s"
 
-#: payment/Vipps.class.php:513
+#: payment/Vipps.class.php:513 payment/recurring-translations.php:119
 msgid "Cancelled"
 msgstr "Aflyst"
 
@@ -823,7 +898,11 @@ msgstr "Aflyst"
 msgid "Cancelled amount"
 msgstr "Annulleret beløb"
 
-#: payment/VippsCheckout.class.php:799
+#: payment/recurring-translations.php:121
+msgid "Cancelled due charge in Vipps/MobilePay."
+msgstr ""
+
+#: payment/VippsCheckout.class.php:810
 #, php-format
 msgid "Cancelling Checkout order because order changed: %1$s"
 msgstr "Annullerer kassen ordre, fordi ordren blev ændret: %1$s"
@@ -948,11 +1027,22 @@ msgstr ""
 "samme MSN på flere butikker, er dette callback sandsynligvis for en af de "
 "andre."
 
-#: payment/Vipps.class.php:2362
+#: payment/Vipps.class.php:2362 payment/recurring-translations.php:152
 msgid "Capture payment"
 msgstr "Opfang betaling"
 
-#: payment/Vipps.class.php:514
+#: payment/recurring-translations.php:142
+msgid "Capture payment instantly"
+msgstr ""
+
+#: payment/recurring-translations.php:143
+msgid ""
+"Capture payment instantly even if the product is not virtual. Please make "
+"sure you are following the local jurisdiction in your country when using "
+"this option."
+msgstr ""
+
+#: payment/Vipps.class.php:514 payment/recurring-translations.php:15
 msgid "Captured"
 msgstr "Fanget"
 
@@ -968,13 +1058,34 @@ msgstr "Opladning annulleret"
 msgid "Charge captured"
 msgstr "Opladning fanget"
 
+#: payment/recurring-translations.php:96
+#, php-format
+msgid "Charge completed (Charge ID: %s)"
+msgstr ""
+
 #: payment/Vipps.class.php:526
 msgid "Charge failed"
 msgstr "Betaling mislykkedes"
 
+#: payment/recurring-translations.php:10
+msgid "Charge ID"
+msgstr ""
+
+#: payment/recurring-translations.php:14
+msgid "Charge ID not available. Check the order's notes instead."
+msgstr ""
+
 #: payment/Vipps.class.php:523
 msgid "Charge reserved"
 msgstr "Reserveret gebyr"
+
+#: payment/recurring-translations.php:8
+msgid "Check Status"
+msgstr ""
+
+#: payment/recurring-translations.php:86
+msgid "Check status of all Vipps/MobilePay subscription orders now"
+msgstr ""
 
 #: payment/Vipps.class.php:767
 #, php-format
@@ -997,6 +1108,14 @@ msgid ""
 msgstr ""
 "Bestillingsordre ældre end 120 minutter uden ordrestatus - annulleret som "
 "forladt: %1$s"
+
+#: payment/recurring-translations.php:164
+msgid "Checkout session expired. Please refresh to start a new session."
+msgstr ""
+
+#: payment/recurring-translations.php:32
+msgid "Checkout settings"
+msgstr ""
 
 #: payment/VippsWCProductEditorV2.class.php:179
 msgid "Choose a badge to show on this product"
@@ -1067,6 +1186,14 @@ msgstr "Klient Id"
 msgid "Client Secret"
 msgstr "Klient Hemmelighed"
 
+#: payment/recurring-translations.php:41
+msgid "client_id"
+msgstr ""
+
+#: payment/recurring-translations.php:43
+msgid "client_secret"
+msgstr ""
+
 #: payment/Vipps.class.php:936 payment/Vipps.class.php:984
 #, php-format
 msgid ""
@@ -1091,7 +1218,7 @@ msgid "Continue"
 msgstr "Fortsæt"
 
 #: payment/Vipps.class.php:4542 payment/Vipps.class.php:4581
-#: payment/Vipps.class.php:4589
+#: payment/Vipps.class.php:4589 payment/recurring-translations.php:159
 msgid "Continue shopping"
 msgstr "Fortsæt indkøb"
 
@@ -1099,6 +1226,15 @@ msgstr "Fortsæt indkøb"
 #, php-format
 msgid "Continue with %1$s"
 msgstr "Fortsæt med %1$s"
+
+#: payment/recurring-translations.php:156
+#, php-format
+msgid "Continue with %s"
+msgstr ""
+
+#: payment/recurring-translations.php:23
+msgid "Controls the payment flow brand (Vipps or MobilePay)."
+msgstr ""
 
 #: payment/Vipps.class.php:1552 payment/Vipps.class.php:1580
 msgid "Copy"
@@ -1135,6 +1271,11 @@ msgstr ""
 "Kunne ikke tilføje nøgle %1$s til betalingsmetadata for ordre %2$s - nøgle "
 "eller værdi er for lang (henholdsvis 100, 500)"
 
+#: payment/recurring-translations.php:115
+#, php-format
+msgid "Could not authenticate with the Vipps/MobilePay API: %s"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:536
 #: payment/WC_Gateway_Vipps.class.php:578
 #, php-format
@@ -1150,6 +1291,12 @@ msgstr "Kunne ikke annullere %1$s betaling for ordre id:"
 #, php-format
 msgid "Could not cancel %1$s payment for order_id:"
 msgstr "Kunne ikke annullere %1$s betaling for ordre_id:"
+
+#: payment/recurring-translations.php:122
+msgid ""
+"Could not cancel charge in Vipps/MobilePay. Please manually check the status "
+"of this order if you plan to process a new renewal order!"
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1650
 #, php-format
@@ -1170,6 +1317,13 @@ msgstr "Kunne ikke fange %1$s betaling for order_id:"
 #, php-format
 msgid "Could not capture %1$s payment for this order!"
 msgstr "Kunne ikke fange %1$s betaling for denne ordre!"
+
+#: payment/recurring-translations.php:106
+#, php-format
+msgid ""
+"Could not capture charge because the status is not RESERVED or "
+"PARTIALLY_CAPTURED. Found status: %s"
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:3660
 #: payment/admin/settings/VippsAdminSettings.class.php:107
@@ -1242,7 +1396,7 @@ msgstr ""
 msgid "Could not get address info for order from %1$s"
 msgstr "Kunne ikke få adresseinfo for ordre fra %1$s"
 
-#: payment/VippsCheckout.class.php:794
+#: payment/VippsCheckout.class.php:805
 #, php-format
 msgid ""
 "Could not get Checkout status for order %1$s in progress while cancelling"
@@ -1318,7 +1472,7 @@ msgstr "Kunne ikke initialisere webhooks for dette site: %1$s"
 msgid "Could not initiate %1$s payment"
 msgstr "Kunne ikke starte %1$s betaling"
 
-#: payment/VippsCheckout.class.php:457
+#: payment/VippsCheckout.class.php:468
 #, php-format
 msgid "Could not initiate %1$s session: %2$s"
 msgstr "Kunne ikke initiere %1$s session: %2$s"
@@ -1374,6 +1528,10 @@ msgstr "Kunne ikke sende billede til Vipps: "
 msgid "Could not send receipt to Vipps: "
 msgstr "Kunne ikke sende kvittering til Vipps: "
 
+#: payment/recurring-translations.php:131
+msgid "Could not start Vipps/MobilePay checkout session"
+msgstr ""
+
 #: payment/Vipps.class.php:4617
 #, php-format
 msgid "Could not use special page with id %s - it seems not to exist."
@@ -1410,6 +1568,10 @@ msgstr "Opret delbar link"
 msgid "Created"
 msgstr "Oprettet"
 
+#: payment/recurring-translations.php:13
+msgid "Created At"
+msgstr ""
+
 #: payment/Vipps.class.php:499
 msgid "Created for this site"
 msgstr "Oprettet til dette sted"
@@ -1421,10 +1583,26 @@ msgstr "Oprettet til dette sted"
 msgid "Credit Card / %1$s"
 msgstr "Kreditkort / %1$s"
 
-#: payment/VippsCheckout.class.php:448
+#: payment/recurring-translations.php:56
+msgid "Cron settings"
+msgstr ""
+
+#: payment/recurring-translations.php:148
+msgid "Custom"
+msgstr ""
+
+#: payment/recurring-translations.php:149
+msgid "Custom description"
+msgstr ""
+
+#: payment/VippsCheckout.class.php:459
 #, php-format
 msgid "Customer passed to %1$s"
 msgstr "Kunden overført til %1$s"
+
+#: payment/recurring-translations.php:130
+msgid "Customer passed to Vipps/MobilePay checkout"
+msgstr ""
 
 #: payment/Blocks/Badges/vipps-badge.php:72
 msgid "Default"
@@ -1435,6 +1613,14 @@ msgstr "Standard"
 #: payment/Vipps.class.php:1491
 msgid "Default setting"
 msgstr "Standardindstilling"
+
+#: payment/recurring-translations.php:50
+msgid "Default status to give orders with a reserved charge"
+msgstr ""
+
+#: payment/recurring-translations.php:52
+msgid "Default status to give pending renewal orders"
+msgstr ""
 
 #: payment/Vipps.class.php:497 payment/Vipps.class.php:1553
 #: payment/Vipps.class.php:1581
@@ -1458,7 +1644,7 @@ msgstr "Lever til kundernes hjemmeadresse"
 msgid "Deliver to customers' mailbox"
 msgstr "Lever til kunders postkasse"
 
-#: payment/VippsKCSupport.class.php:67
+#: payment/VippsKCSupport.class.php:67 payment/recurring-translations.php:28
 #: payment/VippsCheckoutShippingMethods.php:116
 #: payment/VippsCheckoutShippingMethods.php:143
 msgid "Description"
@@ -1473,18 +1659,48 @@ msgstr ""
 "Beskrivelse for %1$s betalingsmetode. Dette styrer den beskrivelse, som "
 "brugeren ser i betalingsformularen."
 
+#: payment/recurring-translations.php:77
+msgid ""
+"Description for Vipps/MobilePay Recurring Payments method. This controls the "
+"description which the user sees in the checkout form."
+msgstr ""
+
+#: payment/recurring-translations.php:144
+msgid "Description source"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1268
 msgid "Developer mode"
 msgstr "Udviklertilstand"
+
+#: payment/recurring-translations.php:65
+msgid "Developer settings"
+msgstr ""
+
+#: payment/recurring-translations.php:66
+msgid "Developer, test, and debugging options."
+msgstr ""
 
 #: payment/Vipps.class.php:2427
 #, php-format
 msgid "Did not understand callback from %1$s:"
 msgstr "Forstod ikke callback fra %1$s:"
 
-#: payment/VippsKCSupport.class.php:79
+#: payment/recurring-translations.php:110
+#, php-format
+msgid ""
+"Different subscription products can not be purchased at the same time using "
+"%s."
+msgstr ""
+
+#: payment/VippsKCSupport.class.php:79 payment/recurring-translations.php:81
 msgid "Disable other gateway button"
 msgstr "Deaktiver anden gateway-knap"
+
+#: payment/recurring-translations.php:82
+msgid ""
+"Disables the \"Select another Payment method\" button in Klarna Checkout."
+msgstr ""
 
 #: payment/VippsKCSupport.class.php:81
 msgid ""
@@ -1508,6 +1724,11 @@ msgstr "Kræver ikke adressefelterne"
 #: payment/WC_Gateway_Vipps.class.php:848
 msgid "Don't require the contact fields"
 msgstr "Kræver ikke kontakt felterne"
+
+#: payment/recurring-translations.php:140
+#, php-format
+msgid "Done. Checked the status of %s orders"
+msgstr ""
 
 #: payment/VippsQRCodeController.class.php:379
 msgid "Download as PNG"
@@ -1586,6 +1807,7 @@ msgid "Enable static shipping for Express Checkout"
 msgstr "Aktivér statisk forsendelse til Express Checkout"
 
 #: payment/WC_Gateway_Vipps.class.php:1276
+#: payment/recurring-translations.php:71
 msgid "Enable test mode"
 msgstr "Aktivér testmodus"
 
@@ -1650,6 +1872,23 @@ msgstr ""
 "Aktiver dette for at bruge %1$s som standard betalingsmetode på "
 "betalingssiden, uanset ordre."
 
+#: payment/recurring-translations.php:34
+msgid "Enable Vipps/MobilePay Checkout"
+msgstr ""
+
+#: payment/recurring-translations.php:20
+msgid "Enable Vipps/MobilePay Recurring Payments"
+msgstr ""
+
+#: payment/recurring-translations.php:19
+msgid "Enable/Disable"
+msgstr ""
+
+#: payment/recurring-translations.php:72
+msgid ""
+"Enabling this will route all API requests to the Vipps MobilePay test API."
+msgstr ""
+
 #: payment/Blocks/Badges/vipps-badge.php:73
 msgid "English"
 msgstr "Engelsk"
@@ -1658,7 +1897,7 @@ msgstr "Engelsk"
 msgid "Error calculating static shipping"
 msgstr "Fejl ved beregning af statisk fragtpris"
 
-#: payment/VippsCheckout.class.php:374
+#: payment/VippsCheckout.class.php:385
 #, php-format
 msgid "Error calculating static shipping for order %1$s"
 msgstr "Fejl ved beregning af statisk fragt for ordre %1$s"
@@ -1773,6 +2012,10 @@ msgstr ""
 "Dette kan ske, når WooCommerce opdaterer sig selv; men hvis det ikke gjorde "
 "det, skal du aktivere WooCommerce igen."
 
+#: payment/recurring-translations.php:5
+msgid "Everyday AS"
+msgstr ""
+
 #: payment/Vipps.class.php:512
 msgid "Expired"
 msgstr "Udløbet"
@@ -1790,8 +2033,29 @@ msgstr "hurtigkasse"
 msgid "External Payment Method - %1$s"
 msgstr "Ekstern Betalingsmetode - %1$s"
 
+#: payment/recurring-translations.php:74
+msgid "External Payment Method - Vipps/MobilePay Recurring Payments"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:981
 msgid "External Payment Methods"
+msgstr ""
+
+#: payment/recurring-translations.php:88
+msgid "Failed Charges"
+msgstr ""
+
+#: payment/recurring-translations.php:100
+#, php-format
+msgid "Failed creating a charge: %s"
+msgstr ""
+
+#: payment/recurring-translations.php:141
+msgid "Failed to finish checking the status of all orders. Please try again."
+msgstr ""
+
+#: payment/recurring-translations.php:11
+msgid "Failure Reason"
 msgstr ""
 
 #: payment/VippsQRCodeController.class.php:626
@@ -1876,6 +2140,14 @@ msgstr "Fornavn"
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr "For ordre %2$d er ordrestatus på %1$s %3$s"
 
+#: payment/recurring-translations.php:42
+msgid "Get your API keys from your Vipps/MobilePay developer portal."
+msgstr ""
+
+#: payment/recurring-translations.php:40
+msgid "Get your Merchant Serial Number your Vipps/MobilePay developer portal."
+msgstr ""
+
 #: payment/VippsWCProductEditorV2.class.php:184 payment/Vipps.class.php:712
 #: payment/Vipps.class.php:1478 payment/Blocks/Badges/vipps-badge.php:53
 msgid "Grey"
@@ -1897,6 +2169,14 @@ msgstr "Helthjem Butik Id"
 #: payment/WC_Gateway_Vipps.class.php:947
 msgid "Helthjem Username"
 msgstr "Helthjem Brugernavn"
+
+#: payment/recurring-translations.php:90
+msgid "here"
+msgstr ""
+
+#: payment/recurring-translations.php:6
+msgid "https://everyday.no"
+msgstr ""
 
 #. URI of the plugin
 msgid "https://wordpress.org/plugins/woo-vipps/"
@@ -1958,6 +2238,10 @@ msgstr ""
 "Hvis den er indstillet, vil dette billede blive uploadet til %1$s og brugt "
 "til at profilere din butik i %1$s appen for links til ordrebekræftelse osv."
 
+#: payment/recurring-translations.php:150
+msgid "If the description source is set to \"custom\" this text will be used."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1142
 msgid ""
 "If the order contains only \"virtual\" products that do not need shipping, "
@@ -1977,6 +2261,12 @@ msgstr ""
 "Hvis dette er markeret, vil en kvittering blive sendt til %1$s, som vil "
 "kunne ses i brugernes app, der specificerer ordreelementer, forsendelse og "
 "så videre."
+
+#: payment/recurring-translations.php:27
+msgid ""
+"If this option is checked we will start automatically capturing MobilePay "
+"payments. This prevents reservations from being cancelled after 7 days."
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:834
 #, php-format
@@ -2030,6 +2320,13 @@ msgid ""
 msgstr ""
 "Hvis du oplever problemer eller uventede resultater, bedes du tjekke 'fatal-"
 "errors' og 'woo-vipps' logfilerne på <a href='%1$s'>WooCommerce logside</a>."
+
+#: payment/recurring-translations.php:85
+msgid ""
+"If you have a lot of Vipps/MobilePay subscription orders that are currently "
+"on-hold you might want to force check the status of all the orders instead "
+"of waiting for the cron-job to do it's job."
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1203
 msgid ""
@@ -2173,7 +2470,7 @@ msgstr ""
 "deres adresse som registreret i butikken blive brugt, så hvis dine kunder "
 "altid er logget ind, kan du muligvis også bruge dette."
 
-#: payment/VippsKCSupport.class.php:73
+#: payment/VippsKCSupport.class.php:73 payment/recurring-translations.php:79
 msgid "Image url"
 msgstr "Billede url"
 
@@ -2281,6 +2578,10 @@ msgstr "Sprog"
 msgid "Last Name"
 msgstr "Efternavn"
 
+#: payment/recurring-translations.php:12
+msgid "Latest API Status"
+msgstr ""
+
 #: payment/VippsWCProductEditorV2.class.php:186 payment/Vipps.class.php:713
 #: payment/Vipps.class.php:1480 payment/Blocks/Badges/vipps-badge.php:55
 msgid "Light Orange"
@@ -2297,6 +2598,14 @@ msgstr "Link udløbet, prøv venligst igen"
 #: payment/Vipps.class.php:1565
 msgid "Link(s) will be deleted when you save the product"
 msgstr "Link(s) vil blive slettet, når du gemmer produktet"
+
+#: payment/recurring-translations.php:68
+msgid "Log debug messages"
+msgstr ""
+
+#: payment/recurring-translations.php:67
+msgid "Logging"
+msgstr ""
 
 #: payment/Vipps.class.php:70
 msgid "Login with Vipps"
@@ -2319,6 +2628,10 @@ msgstr "Hovedindstillinger"
 msgid "Mark this link for deletion"
 msgstr "Marker dette link til sletning"
 
+#: payment/recurring-translations.php:151
+msgid "Max 100 characters"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1025
 #: payment/WC_Gateway_Vipps.class.php:1026
 #: payment/WC_Gateway_Vipps.class.php:1283
@@ -2330,6 +2643,10 @@ msgstr "Forhandler Serienummer"
 #, php-format
 msgid "Merchant Serial Number %1$s"
 msgstr "Handlende Serienummer %1$s"
+
+#: payment/recurring-translations.php:39
+msgid "Merchant Serial Number (MSN)"
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:3084
 #, php-format
@@ -2351,8 +2668,15 @@ msgid "Mobile Number"
 msgstr "Mobilnummer"
 
 #: payment/WC_Gateway_Vipps.class.php:1011
+#: payment/recurring-translations.php:25
 msgid "MobilePay"
 msgstr "MobilePay"
+
+#: payment/recurring-translations.php:94
+msgid ""
+"MobilePay payments are automatically captured to prevent the payment "
+"reservation from automatically getting cancelled after 14 days."
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1709
 #, php-format
@@ -2377,8 +2701,16 @@ msgstr ""
 msgid "New QR Code"
 msgstr "Ny QR-kode"
 
+#: payment/recurring-translations.php:64
+msgid "Newest first"
+msgstr ""
+
 #: payment/admin/settings/VippsAdminSettings.class.php:155
 msgid "Next step"
+msgstr ""
+
+#: payment/recurring-translations.php:18
+msgid "No"
 msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:2247
@@ -2405,6 +2737,10 @@ msgstr ""
 msgid "No delivery method specified"
 msgstr "Ingen leveringsmetode specificeret"
 
+#: payment/recurring-translations.php:7
+msgid "No failed charges found."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1116
 msgid "No products"
 msgstr "Ingen produkter"
@@ -2413,7 +2749,11 @@ msgstr "Ingen produkter"
 msgid "No response from Vipps"
 msgstr "Ingen respons fra Vipps"
 
-#: payment/VippsCheckout.class.php:180
+#: payment/recurring-translations.php:125
+msgid "No response from Vipps/MobilePay"
+msgstr ""
+
+#: payment/VippsCheckout.class.php:191
 msgid "No session choosing other gateway from Vipps Checkout"
 msgstr ""
 
@@ -2433,6 +2773,10 @@ msgstr "Nej, glem det"
 #: payment/WC_Gateway_Vipps.class.php:3583
 msgid "No, thank you not right now anyway"
 msgstr "Nej, tak ikke lige nu i hvert fald."
+
+#: payment/recurring-translations.php:146
+msgid "None"
+msgstr ""
 
 #: payment/VippsQRCodeController.class.php:348
 msgid "None chosen"
@@ -2454,6 +2798,28 @@ msgstr "Ikke fundet"
 msgid "Not found in Trash"
 msgstr "Ikke fundet i Papirkurven"
 
+#: payment/recurring-translations.php:154
+msgid ""
+"Note: Reservations in MobilePay will be cancelled after 14 days. Remember to "
+"ship and fulfill your orders."
+msgstr ""
+
+#: payment/recurring-translations.php:155
+#, php-format
+msgid ""
+"Note: Vipps is only available with the NOK currency. Your store currency is "
+"set to %s"
+msgstr ""
+
+#: payment/recurring-translations.php:44
+msgid "Ocp-Apim-Subscription-Key"
+msgstr ""
+
+#: payment/recurring-translations.php:4
+msgid ""
+"Offer recurring payments with Vipps MobilePay for WooCommerce Subscriptions"
+msgstr ""
+
 #. Description of the plugin
 msgid "Offer Vipps as a payment method for WooCommerce"
 msgstr "Tilbyd Vipps som betalingsmetode for WooCommerce"
@@ -2462,11 +2828,16 @@ msgstr "Tilbyd Vipps som betalingsmetode for WooCommerce"
 msgid "Offer Vipps or MobilePay as a payment method"
 msgstr "Tilbyd Vipps eller MobilePay som en betalingsmetode"
 
-#: payment/VippsCheckout.class.php:609
+#: payment/VippsCheckout.class.php:620
 msgid "OK"
 msgstr "OK"
 
+#: payment/recurring-translations.php:63
+msgid "Oldest first"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1062
+#: payment/recurring-translations.php:120
 msgid "On hold"
 msgstr "På vent"
 
@@ -2524,7 +2895,7 @@ msgid "Order cancel for order"
 msgstr "Annuller ordre for bestilling"
 
 #: payment/Vipps.class.php:4541 payment/Vipps.class.php:4544
-#: payment/Vipps.class.php:4588
+#: payment/Vipps.class.php:4588 payment/recurring-translations.php:157
 msgid "Order cancelled"
 msgstr "Ordre annulleret"
 
@@ -2567,7 +2938,15 @@ msgstr "Ordre ikke fuldført, kan ikke refundere overflødig indfangning"
 msgid "Order session expired at %1$s, please try again!"
 msgstr "Ordre session udløbet på %1$s, prøv venligst igen!"
 
-#: payment/VippsCheckout.class.php:800
+#: payment/recurring-translations.php:45
+msgid "Order settings"
+msgstr ""
+
+#: payment/recurring-translations.php:134
+msgid "Order specification changed - order abandoned by customer in Checkout"
+msgstr ""
+
+#: payment/VippsCheckout.class.php:811
 msgid ""
 "Order specification changed - this order abandoned by customer in Checkout  "
 msgstr ""
@@ -2594,16 +2973,24 @@ msgstr ""
 msgid "Order-id Prefix"
 msgstr "Ordre-id Præfiks"
 
-#: payment/VippsCheckout.class.php:141
+#: payment/VippsCheckout.class.php:152
 #, php-format
 msgid ""
 "Orderid %1$s is not pending when choosing another payment method from Vipps "
 "Checkout"
 msgstr ""
 
-#: payment/VippsCheckout.class.php:135
+#: payment/VippsCheckout.class.php:146
 #, php-format
 msgid "Orderid %1$s: Wrong nonce when trying to switch payment methods."
+msgstr ""
+
+#: payment/recurring-translations.php:35
+msgid "OrderId prefix"
+msgstr ""
+
+#: payment/recurring-translations.php:46
+msgid "Orders, renewals and status settings."
 msgstr ""
 
 #: payment/VippsWCProductEditorV2.class.php:199 payment/Vipps.class.php:1489
@@ -2647,9 +3034,18 @@ msgstr "Adgangskode leveret til dig af Helthjem"
 msgid "Pay with %1$s for WooCommerce"
 msgstr "Betal med %1$s til WooCommerce"
 
+#: payment/recurring-translations.php:92
+#, php-format
+msgid "Pay with %s"
+msgstr ""
+
 #. Name of the plugin
 msgid "Pay with Vipps and MobilePay for WooCommerce"
 msgstr "Betal med Vipps og MobilePay for WooCommerce"
+
+#: payment/recurring-translations.php:30
+msgid "Pay with {brand}."
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1684
 #: payment/WC_Gateway_Vipps.class.php:1692
@@ -2684,6 +3080,10 @@ msgstr ""
 "Betaling fuldført sæt status til \"%1$s\" - vil ikke fange betalinger "
 "automatisk"
 
+#: payment/recurring-translations.php:108
+msgid "Payment gateway change request cancelled in Vipps/MobilePay"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1006 payment/Vipps.class.php:1752
 #: payment/Vipps.class.php:1754
 msgid "Payment method"
@@ -2697,6 +3097,14 @@ msgid ""
 msgstr ""
 "Betalingsmetode nulstillet til %1$s - den havde været sat til KCO, mens "
 "ordren for %2$d blev fuldført."
+
+#: payment/recurring-translations.php:118
+msgid "Pending cancellation"
+msgstr ""
+
+#: payment/recurring-translations.php:87
+msgid "Pending Charges"
+msgstr ""
 
 #: payment/Vipps.class.php:1780
 msgid "Pickup Point"
@@ -2779,7 +3187,7 @@ msgstr "PostNord"
 msgid "Postnord"
 msgstr "Postnord"
 
-#: payment/VippsCheckout.class.php:714
+#: payment/VippsCheckout.class.php:725
 #, php-format
 msgid "Press the button to complete your order with %1$s!"
 msgstr "Tryk på knappen for at fuldføre din ordre med %1$s!"
@@ -2803,6 +3211,10 @@ msgstr "Produkt"
 #: payment/Vipps.class.php:4190
 msgid "Product is no longer available"
 msgstr "Produktet er ikke længere tilgængeligt"
+
+#: payment/recurring-translations.php:147
+msgid "Product short description"
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1240
 #, php-format
@@ -2833,6 +3245,10 @@ msgstr ""
 msgid "QR-id"
 msgstr "QR-id"
 
+#: payment/recurring-translations.php:62
+msgid "Random"
+msgstr ""
+
 #: payment/Vipps.class.php:2766
 msgid "Raw input was "
 msgstr "Ubehandlet input var "
@@ -2861,6 +3277,13 @@ msgid "Received webhook callback for order %1$d but this is no longer pending."
 msgstr ""
 "Modtog webhook callback for ordre %1$d, men denne er ikke længere i "
 "venteposition."
+
+#: payment/recurring-translations.php:127
+#, php-format
+msgid ""
+"Recurring payments is not yet activated for this sale unit. Read more <a "
+"href=\"%s\" target=\"_blank\">here</a>"
+msgstr ""
 
 #: payment/VippsApi.class.php:1123
 msgid "Refund for order"
@@ -2901,6 +3324,10 @@ msgstr ""
 " hvor du finder de nøgler, du har brug for, og hvor du skal registrere <em>"
 "retur url</em>, som du finder på indstillingsiden."
 
+#: payment/recurring-translations.php:78
+msgid "Remember: {brand} is always has no fees when paying businesses."
+msgstr ""
+
 #: payment/VippsQRCodeController.class.php:628
 msgid "Remove featured image"
 msgstr "Fjern fremhævet billede"
@@ -2915,6 +3342,11 @@ msgstr "Fjern billede"
 msgid "Request ID"
 msgstr "Anmodning ID"
 
+#: payment/recurring-translations.php:111
+#, php-format
+msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
+msgstr ""
+
 #: payment/Vipps.class.php:3275
 #, php-format
 msgid "Restoring session of order %1$d"
@@ -2922,6 +3354,10 @@ msgstr "Genopretter session af ordre %1$d"
 
 #: payment/admin/settings/VippsAdminSettings.class.php:151
 msgid "Save changes"
+msgstr ""
+
+#: payment/recurring-translations.php:69
+msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
 #: payment/VippsQRCodeController.class.php:623
@@ -2975,6 +3411,7 @@ msgstr "Indstiller ordrestatus til afventende for at starte betaling"
 
 #: payment/Vipps.class.php:728 payment/Vipps.class.php:1073
 #: payment/Vipps.class.php:1217 payment/Vipps.class.php:1217
+#: payment/recurring-translations.php:153
 msgid "Settings"
 msgstr "Indstillinger"
 
@@ -3109,6 +3546,14 @@ msgstr ""
 "På en eller anden måde er denne QR-kode forsvundet på %1$s. Gem den for at "
 "få den til at virke igen!"
 
+#: payment/recurring-translations.php:60
+msgid "Status checking sort order for charges"
+msgstr ""
+
+#: payment/recurring-translations.php:123
+msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1048
 #: payment/WC_Gateway_Vipps.class.php:1049
 #: payment/WC_Gateway_Vipps.class.php:1307
@@ -3119,6 +3564,14 @@ msgstr "Abonnement nøgle"
 #: payment/Vipps.class.php:1818 payment/Vipps.class.php:1836
 msgid "Success"
 msgstr "Succes"
+
+#: payment/recurring-translations.php:114
+msgid "Successfully authenticated with the Vipps/MobilePay API"
+msgstr ""
+
+#: payment/recurring-translations.php:137
+msgid "Successfully checked the status of these charges"
+msgstr ""
 
 #: payment/Vipps.class.php:765
 #, php-format
@@ -3169,7 +3622,12 @@ msgstr ""
 msgid "Terminated"
 msgstr "Afsluttet"
 
+#: payment/recurring-translations.php:113
+msgid "Test API settings"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1275 payment/Vipps.class.php:474
+#: payment/recurring-translations.php:70
 msgid "Test mode"
 msgstr "Testtilstand"
 
@@ -3203,6 +3661,17 @@ msgid ""
 msgstr ""
 "%1$s indstillingerne </a> er konfigureret således, at ingen produkter vil "
 "have en Køb Nu-knap - inklusive dette."
+
+#: payment/recurring-translations.php:95
+msgid "The agreement was cancelled or expired in Vipps/MobilePay"
+msgstr ""
+
+#: payment/recurring-translations.php:59
+msgid ""
+"The amount of charges to check the status for in wp-cron per scheduled event."
+" It is recommended to keep this between 5 and 100. The higher the value, the "
+"more performance issues you may run into."
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:915
 msgid "The API key provided to you by Porterbuddy"
@@ -3239,6 +3708,12 @@ msgstr ""
 msgid "The order is not a %1$s order"
 msgstr "Ordren er ikke en %1$s ordre"
 
+#: payment/recurring-translations.php:48
+msgid ""
+"The page to redirect customers to when they click \"Continue shopping\" "
+"after a cancelled payment."
+msgstr ""
+
 #: payment/Vipps.class.php:954 payment/Vipps.class.php:1002
 #, php-format
 msgid "The plugin is <b>active</b> - %1$s is available as a payment method."
@@ -3269,6 +3744,25 @@ msgstr "ButiksId leveret til dig af Helthjem"
 #: payment/Vipps.class.php:787
 msgid "The shortcode looks like this:"
 msgstr "Shortkoden ser sådan ud:"
+
+#: payment/recurring-translations.php:61
+msgid ""
+"The sort order we use when checking charges in wp-cron. Random sort order is "
+"the best for most use cases. Oldest first may be useful if you use "
+"synchronized renewals."
+msgstr ""
+
+#: payment/recurring-translations.php:51
+msgid ""
+"The status to give orders when the charge is reserved in Vipps/MobilePay (i."
+"e. tangible goods). Notice: This option only counts for newly signed "
+"agreements by the customer. Use the setting below to set the default status "
+"for renewal orders."
+msgstr ""
+
+#: payment/recurring-translations.php:93
+msgid "The subtotal is zero, the order is free for this subscription period."
+msgstr ""
 
 #: payment/VippsApi.class.php:668
 msgid ""
@@ -3356,6 +3850,30 @@ msgstr ""
 "normalt ikke er nyttige for almindelige brugere, eller som endnu ikke er "
 "klar til primetime."
 
+#: payment/recurring-translations.php:38
+msgid ""
+"These settings control the connection between your store and Vipps MobilePay."
+msgstr ""
+
+#: payment/recurring-translations.php:84
+#, php-format
+msgid ""
+"This area is for special actions that aren't settings. If you are looking "
+"for the plugin's settings, click <a href='%s'>here</a>."
+msgstr ""
+
+#: payment/recurring-translations.php:29
+msgid ""
+"This controls the description which the user sees during checkout. {brand} "
+"is substituted with either Vipps or MobilePay."
+msgstr ""
+
+#: payment/recurring-translations.php:55
+msgid ""
+"This option will make sure order statuses always transition to \"completed\" "
+"when the renewal charge is completed in Vipps/MobilePay."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1483
 #, php-format
 msgid ""
@@ -3365,7 +3883,11 @@ msgstr ""
 "Denne ordre kan ikke betales med %1$s - prøv venligst en anden "
 "betalingsmetode eller prøv igen senere"
 
-#: payment/VippsCheckout.class.php:876
+#: payment/recurring-translations.php:16
+msgid "This order has not yet been captured."
+msgstr ""
+
+#: payment/VippsCheckout.class.php:887
 #, php-format
 msgid ""
 "This page is used for the alternative %1$s page, which you can choose to use "
@@ -3373,6 +3895,12 @@ msgid ""
 msgstr ""
 "Denne side bruges til det alternative %1$s side, som du kan vælge at bruge i "
 "stedet for den normale WooCommerce checkout side. "
+
+#: payment/recurring-translations.php:133
+msgid ""
+"This page is used for the alternative Vipps/MobilePay checkout page, which "
+"you can choose to use instead of the normal WooCommerce checkout page. "
+msgstr ""
 
 #: payment/Vipps.class.php:931
 #, php-format
@@ -3415,6 +3943,20 @@ msgid ""
 "This product supports express checkout, and so will have a Buy Now button."
 msgstr ""
 "Dette produkt understøtter hurtig kassen, og vil derfor have en Køb Nu-knap."
+
+#: payment/recurring-translations.php:109
+msgid ""
+"This subscription is already active in Vipps/MobilePay. You can leave this "
+"page."
+msgstr ""
+
+#: payment/recurring-translations.php:73
+msgid "This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr ""
+
+#: payment/recurring-translations.php:117
+msgid "This Vipps/MobilePay agreement ID is invalid."
+msgstr ""
 
 #: payment/Vipps.class.php:1819 payment/Vipps.class.php:1837
 msgid "Timestamp"
@@ -3503,6 +4045,10 @@ msgstr "Transaktionsoversigt"
 msgid "Transaction text"
 msgstr "Transaktionstekst"
 
+#: payment/recurring-translations.php:54
+msgid "Transition order status for renewals to \"completed\""
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1841
 #, php-format
 msgid "Trying to cancel payment on order not made by %1$s:"
@@ -3568,12 +4114,12 @@ msgstr ""
 "Desværre er betalingsmetoden %1$s midlertidigt utilgængelig. Vent venligst "
 "eller vælg en anden metode."
 
-#: payment/VippsCheckout.class.php:380
+#: payment/VippsCheckout.class.php:391
 #, php-format
 msgid "Unknown error creating %1$s partial order"
 msgstr "Ukendt fejl ved oprettelse af %1$s delordre"
 
-#: payment/VippsCheckout.class.php:454
+#: payment/VippsCheckout.class.php:465
 #, php-format
 msgid "Unknown error creating %1$s session"
 msgstr "Ukendt fejl ved oprettelse af %1$s session"
@@ -3632,6 +4178,10 @@ msgstr "URL"
 msgid "URL to the %1$s logo"
 msgstr "URL til %1$s logoet"
 
+#: payment/recurring-translations.php:80
+msgid "URL to the Vipps/MobilePay logo"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1085
 #, php-format
 msgid "Use %1$s as default payment method on checkout page"
@@ -3666,6 +4216,10 @@ msgstr "Brug en simuleret side (standard)"
 #: payment/VippsQRCodeController.class.php:629
 msgid "Use as featured image"
 msgstr "Brug som fremhævet billede"
+
+#: payment/recurring-translations.php:31
+msgid "Use at your own risk"
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:416
 msgid "Use default template"
@@ -3745,6 +4299,10 @@ msgstr "Bruger-ID"
 msgid "Variant"
 msgstr "Variant"
 
+#: payment/recurring-translations.php:162
+msgid "Verifying your payment. Please wait."
+msgstr ""
+
 #: payment/Vipps.class.php:495
 msgid "View"
 msgstr "Se"
@@ -3758,6 +4316,7 @@ msgid "View QR Codes"
 msgstr "Se QR-koder"
 
 #: payment/WC_Gateway_Vipps.class.php:1010
+#: payment/recurring-translations.php:24
 msgid "Vipps"
 msgstr "Vipps"
 
@@ -3765,7 +4324,7 @@ msgstr "Vipps"
 msgid "Vipps Checkout"
 msgstr "Vipps Kassen"
 
-#: payment/VippsCheckout.class.php:606
+#: payment/VippsCheckout.class.php:617
 #, php-format
 msgid "Vipps Checkout cannot be used for orders less than %1$s %2$s"
 msgstr ""
@@ -3778,6 +4337,20 @@ msgstr "Vipps Express Checkout"
 #: payment/WC_Gateway_Vipps.class.php:134 payment/Vipps.class.php:61
 msgid "Vipps MobilePay"
 msgstr "Vipps MobilePay"
+
+#: payment/recurring-translations.php:33
+msgid ""
+"Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an "
+"easier and more seamless checkout that allows you to pay with Vipps "
+"MobilePay (and soon also a credit card). Your customers will be able to "
+"provide their billing/shipping details directly from the Vipps MobilePay app."
+" <br><br><strong>Important!</strong> Checkout for recurring payments <strong>"
+"only supports static shipping</strong> at the moment."
+msgstr ""
+
+#: payment/recurring-translations.php:139
+msgid "Vipps MobilePay Recurring Checkout"
+msgstr ""
 
 #: payment/VippsQRCodeController.class.php:234
 msgid "Vipps QR-codes not present on this site"
@@ -3797,6 +4370,63 @@ msgstr ""
 "abonnementer eller medlemskaber. Pluginet er tilgængeligt for WordPress og "
 "WooCommerce - kom i gang her!"
 
+#: payment/recurring-translations.php:116
+msgid "Vipps/MobilePay Agreement ID"
+msgstr ""
+
+#: payment/recurring-translations.php:107
+msgid "Vipps/MobilePay is temporarily unavailable."
+msgstr ""
+
+#: payment/recurring-translations.php:98
+msgid "Vipps/MobilePay payment cancelled."
+msgstr ""
+
+#: payment/recurring-translations.php:99
+msgid "Vipps/MobilePay payment failed."
+msgstr ""
+
+#: payment/recurring-translations.php:132
+msgid "Vipps/MobilePay Recurring Checkout Page"
+msgstr ""
+
+#: payment/recurring-translations.php:129
+msgid "Vipps/MobilePay recurring checkout payment initiated"
+msgstr ""
+
+#: payment/recurring-translations.php:83
+msgid "Vipps/MobilePay Recurring Payments"
+msgstr ""
+
+#. These are translations from vipps-recurring that we want to add to woo-vipps.
+#: payment/recurring-translations.php:3
+msgid "Vipps/MobilePay recurring payments for WooCommerce"
+msgstr ""
+
+#: payment/recurring-translations.php:136
+msgid ""
+"Vipps/MobilePay Recurring Payments is currently in test mode - no real "
+"transactions will occur. Disable test mode when you are ready to go live!"
+msgstr ""
+
+#: payment/recurring-translations.php:135
+#, php-format
+msgid ""
+"Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be "
+"installed and active. You can purchase and download %s here."
+msgstr ""
+
+#: payment/recurring-translations.php:91
+msgid ""
+"Vipps/MobilePay Recurring Payments works by redirecting your customers to "
+"the Vipps MobilePay portal for confirmation. It creates a payment plan and "
+"charges your users on the intervals you specify."
+msgstr ""
+
+#: payment/recurring-translations.php:138
+msgid "vipps_recurring_checkout"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1349
 msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"
@@ -3814,6 +4444,10 @@ msgstr ""
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr "Venter på bekræftelse af køb fra %1$s"
 
+#: payment/recurring-translations.php:97
+msgid "Waiting for you to capture the payment"
+msgstr ""
+
 #: payment/Vipps.class.php:4594
 msgid "Waiting for your order confirmation"
 msgstr "Venter på din ordrebekræftelse"
@@ -3821,6 +4455,16 @@ msgstr "Venter på din ordrebekræftelse"
 #: payment/Vipps.class.php:3865 payment/Vipps.class.php:3879
 msgid "Waiting on order"
 msgstr "Venter på ordre"
+
+#: payment/recurring-translations.php:126
+msgid "We hit Vipps/MobilePay's rate limit, we will retry later."
+msgstr ""
+
+#: payment/recurring-translations.php:57
+msgid ""
+"We use webhooks in most instances, but they are not guaranteed to be "
+"reliable. In those cases we rely on cron."
+msgstr ""
 
 #: payment/Vipps.class.php:482
 msgid "Webhook"
@@ -3830,6 +4474,13 @@ msgstr "Webhook"
 #: payment/Vipps.class.php:1222
 msgid "Webhooks"
 msgstr "Webhooks"
+
+#: payment/recurring-translations.php:53
+msgid ""
+"When a renewal order happens we have to wait a few days for the money to be "
+"drawn from the customer. This settings controls the status to give these "
+"renewal orders before the charge completes."
+msgstr ""
 
 #: payment/WC_Gateway_Vipps.class.php:1134
 #, php-format
@@ -3871,6 +4522,12 @@ msgstr ""
 "Dette bruges af dette plugin til at få besked om betalinger fra brugere, "
 "selv når de ikke vender tilbage til din butik."
 
+#: payment/recurring-translations.php:145
+msgid ""
+"Where we should source the agreement description from. Displayed in the "
+"Vipps/MobilePay app."
+msgstr ""
+
 #: payment/VippsWCProductEditorV2.class.php:183 payment/Vipps.class.php:712
 #: payment/Vipps.class.php:1477 payment/Blocks/Badges/vipps-badge.php:52
 msgid "White"
@@ -3911,6 +4568,10 @@ msgstr ""
 "Forkert auth token i callback fra %1$s - muligvis et forsøg på at forfalske "
 "en callback"
 
+#: payment/recurring-translations.php:17
+msgid "Yes"
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:3581
 #, php-format
 msgid "Yes, activate %1$s!"
@@ -3947,6 +4608,19 @@ msgstr ""
 #, php-format
 msgid "You can get %1$s now!"
 msgstr "Du kan få %1$s nu!"
+
+#: payment/recurring-translations.php:103
+msgid ""
+"You can not partially refund a pending or due charge. Please wait till the "
+"payment clears first or refund the full amount instead."
+msgstr ""
+
+#: payment/recurring-translations.php:101
+#, php-format
+msgid ""
+"You cannot refund a charge that was made more than 365 days ago. This order "
+"was created %s days ago."
+msgstr ""
 
 #: payment/Vipps.class.php:669 payment/Vipps.class.php:690
 msgid "You don't have sufficient rights"
@@ -3991,6 +4665,10 @@ msgstr ""
 "køber nu. Der skulle være en e-mail i din indbakke fra det forrige køb. Er "
 "du sikker på, at du vil bestille igen?"
 
+#: payment/recurring-translations.php:163
+msgid "You will be redirected shortly."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:1028
 msgid ""
 "Your \"Merchant Serial Number\" from the Developer tab on https://portal."
@@ -4008,6 +4686,10 @@ msgstr "Dine kunder kan betale med %1$s, Visa eller Mastercard"
 msgid "Your order from"
 msgstr "Din ordre fra"
 
+#: payment/recurring-translations.php:158
+msgid "Your payment has been cancelled."
+msgstr ""
+
 #: payment/WC_Gateway_Vipps.class.php:922
 msgid ""
 "Your phone number where Porterbuddy may send you important messages. Format "
@@ -4020,7 +4702,7 @@ msgstr ""
 msgid "Your product is temporarily no longer available for purchase"
 msgstr "Dit produkt er midlertidigt ikke længere tilgængeligt for køb."
 
-#: payment/VippsCheckout.class.php:708
+#: payment/VippsCheckout.class.php:719
 msgid ""
 "Your session has expired - please reload the page to restart, or return to "
 "the shop"
@@ -4065,3 +4747,14 @@ msgstr ""
 "Express Checkout-forsendelsessystem, som er nødvendigt, hvis din forsendelse "
 "skal inkludere metadata. Du kan gøre dette, eller stoppe denne besked, fra "
 "<a href=\"%1$s\">indstillinger siden</a>"
+
+#: payment/recurring-translations.php:124
+msgid ""
+"Your Vipps/MobilePay Recurring Payments gateway is not correctly configured."
+msgstr ""
+
+#: payment/recurring-translations.php:128
+msgid ""
+"Your WordPress URL is not passing Merchant Agreement URL validation. Is your "
+"website publicly accessible?"
+msgstr ""
