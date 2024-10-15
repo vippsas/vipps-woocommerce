@@ -124,6 +124,52 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return ob_get_clean();
     }
 
+    // Attempts to detect the current country based on the store's currency NT-2024-10-15
+    private function detect_country_from_currency() {
+        $currency = get_woocommerce_currency();
+        switch ($currency) {
+            case 'DKK':
+                return 'DK';
+            case 'NOK':
+                return 'NO';
+            case 'EUR':
+                return 'FI';
+            default:
+                return null;
+        }
+    }
+    // Migrates the keysets to include the country setting if it's missing
+    // This is an initial migration step to ensure the country setting is explicitly set.
+    // We do this because we no longer want to automatically guess payment method name. NT-2024-10-15
+    private function migrate_keyset_with_country_detection() {
+        $settings = get_option('woocommerce_vipps_settings', array());
+        $keyset = get_transient('_vipps_keyset');
+        // If there's no keyset there's nothing to migrate
+        if (!$keyset) return;
+        
+        $country = $settings['country'] ?? $this->detect_country_from_currency();
+        // If we can't detect the country, there's nothing to migrate
+        if (!$country) return;
+        
+        // Update main MSN keyset
+        $main_msn = $settings['merchantSerialNumber'] ?? '';
+        if ($main_msn && isset($keyset[$main_msn])) {
+            $keyset[$main_msn]['country'] = $country;
+        }
+        
+        // Update test MSN keyset
+        $test_msn = $settings['merchantSerialNumber_test'] ?? '';
+        if ($test_msn && isset($keyset[$test_msn])) {
+            $keyset[$test_msn]['country'] = $country;
+        }
+        // Save updated keyset
+        set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
+    
+        // Update settings with detected country
+        $settings['country'] = $country;
+        update_option('woocommerce_vipps_settings', $settings);
+    }
+
     public function __construct() {
         $this->testapiurl = 'https://apitest.vipps.no';
         $this->apiurl = 'https://api.vipps.no';
@@ -135,6 +181,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
         $this->init_form_fields();
         $this->init_settings();
+        
+        $this->migrate_keyset_with_country_detection();
+        
         $this->api = new VippsApi($this);
 
         $this->supports = array('products','refunds');
@@ -231,7 +280,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($main) {
             $data = ['client_id'=>$clientid=$this->get_option('clientId'), 
                 'client_secret' => $this->get_option('secret'), 
-                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce')];
+                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce'),
+                'country' => $this->get_option('country')
+            ];
             if (! in_array(false, array_map('boolval', array_values($data)))) {
                 $data['testmode'] = 0; // Must add after 
                 $keyset[$main] = $data;
@@ -243,7 +294,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $data = [
                 'client_id'=>$clientid=$this->get_option('clientId_test'),
                 'client_secret' => $this->get_option('secret_test'), 
-                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test')]; 
+                'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test'),
+                'country' => $this->get_option('country')
+            ]; 
 
             if (! in_array(false, array_map('boolval', array_values($data)))) {
                 $data['testmode'] = 1;
@@ -289,6 +342,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $keyset = $this->get_keyset();
         if (!isset($keyset[$msn])) return false;
         return $keyset[$msn]['sub_key'];
+    }
+    public function get_country($msn="") {
+        if (!$msn) $msn = $this->get_merchant_serial();
+        $keyset = $this->get_keyset();
+        if (!isset($keyset[$msn])) return false;
+        return $keyset[$msn]['country'];
     }
 
     public function get_orderprefix() {
@@ -723,23 +782,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $ok;
     }
 
-    // Detect default payment method based on store location, user locale, currency NT 2023-11-30
-    public function detect_default_payment_method_name() {
-        // IOK 2023-12-01 use the main locale instead of the user locale
-        $locale = get_locale();
-        // Countries object not yet available at this point IOK 2023-12-01
-        // $store_location = WC()->countries->get_base_country();
-        $store_location=  wc_get_base_location();
-        $store_country = $store_location['country'] ?? '';
-        $currency = get_woocommerce_currency();
-
-        $default_payment_method_name = "MobilePay";
-
-        // If store location, locale, or currency is Norwegian, use Vipps
-        if ($store_country== "NO" || preg_match("/.*_NO/", $locale) || $currency == "NOK") {
-            $default_payment_method_name = "Vipps";
+    // Detect default payment method based on country code NT-2024-10-15
+    public function detect_default_payment_method_from_country($country_code) {
+        // Default to MobilePay
+        $payment_method_name = 'MobilePay';
+        // Currently only Vipps is available in Norway, we don't need to check for the other countries for now as they'll likely be using MobilePay
+        if($country_code == 'NO') {
+            $payment_method_name = 'Vipps';
         }
-        return $default_payment_method_name;
+        return $payment_method_name;
     }
 
     // Returns true iff this is a store where Vipps will allow external payment methods.
@@ -791,8 +842,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
         }
 
+        // Get the already-set country code, otherwise fallback to detecting the country from the currency NT-2024-10-15
+        $country_code = $current['country'] ?? $this->detect_country_from_currency();
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
-        $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_name();
+        $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_from_country($country_code);
 
         $checkoutfields = array(
                 'checkout_options' => array(
@@ -986,8 +1039,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
            }
        }
-     
 
+       
         $mainfields = array(
             'main_options'             => array(
                 'title' => __('Main options', 'woo-vipps'),
@@ -1000,6 +1053,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'type'        => 'checkbox',
                 'description' => '',
                 'default'     => 'no',
+            ),
+            'country' => array(
+                'title' => __('Country', 'woo-vipps'),
+                'label' => __('Country', 'woo-vipps'),
+                'type' => 'select',
+                'options' => array(
+                    'NO' => __('Norway', 'woo-vipps'),
+                    'FI' => __('Finland', 'woo-vipps'),
+                    'DK' => __('Denmark', 'woo-vipps'),
+                ),
+                'description' => __('Select the country for this merchant serial number. This will determine the appropriate payment method (Vipps or MobilePay).', 'woo-vipps'),
             ),
 
             'payment_method_name' => array(
@@ -3865,3 +3929,4 @@ function activate_vipps_checkout(yesno) {
 
 
 }
+

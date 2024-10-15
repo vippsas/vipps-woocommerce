@@ -81,12 +81,20 @@ export function AdminSettings(): JSX.Element {
 
   function showWizardp(): boolean {
     const hasImportantSettings =
-      getOption('merchantSerialNumber') && getOption('clientId') && getOption('secret') && getOption('Ocp_Apim_Key_eCommerce');
+      getOption('merchantSerialNumber') &&
+      getOption('clientId') &&
+      getOption('secret') &&
+      getOption('Ocp_Apim_Key_eCommerce') &&
+      getOption('country') &&
+      getOption('payment_method_name');
+
     const hasImportantSettingsTest =
       getOption('merchantSerialNumber_test') &&
       getOption('clientId_test') &&
       getOption('secret_test') &&
-      getOption('Ocp_Apim_Key_eCommerce_test');
+      getOption('Ocp_Apim_Key_eCommerce_test') &&
+      getOption('payment_method_name') &&
+      getOption('country');
     return !hasImportantSettings && !hasImportantSettingsTest;
   }
 
