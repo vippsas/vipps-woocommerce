@@ -2,403 +2,690 @@
 # This file is distributed under the same license as the Plugins - Vipps/MobilePay recurring payments for WooCommerce - Development (trunk) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2024-09-16 09:03+0000\n"
+"PO-Revision-Date: 2024-10-08 16:32:28+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Loco https://localise.biz/\n"
+"X-Generator: GlotPress/4.0.1\n"
 "Language: nb_NO\n"
-"Project-Id-Version: Plugins - Vipps/MobilePay recurring payments for "
-"WooCommerce - Development (trunk)\n"
-"Language-Team: Norsk bokmål\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-20 09:25+0000\n"
-"Last-Translator: \n"
-"X-Loco-Version: 2.6.10; wp-6.5.4"
+"Project-Id-Version: Plugins - Vipps/MobilePay recurring payments for WooCommerce - Development (trunk)\n"
 
-#: includes/admin/vipps-recurring-settings.php:102
-msgid "\"Continue shopping\" link"
-msgstr "\"Fortsett å handle\" lenke"
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentError.jsx:22
+msgid "An unknown error has occurred."
+msgstr "En ukjent feil har oppstått."
+
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentError.jsx:16
+msgid "An error occurred"
+msgstr "En feil oppstod"
+
+#: assets/build/checkout.js:1 src/pages/CheckoutPage.jsx:126
+msgid "Checkout session expired. Please refresh to start a new session."
+msgstr "Kasse-økten har utløpt. Oppfrisk for å starte en ny økt."
+
+#: includes/wc-vipps-recurring.php:555
+msgctxt "Page title"
+msgid "Vipps MobilePay Recurring Checkout"
+msgstr "Vipps MobilePay faste betalinger"
+
+#: includes/wc-vipps-recurring.php:554
+msgctxt "Page slug"
+msgid "vipps_recurring_checkout"
+msgstr "vipps_recurring_checkout"
+
+#: includes/wc-vipps-recurring-checkout.php:664
+msgid "Order specification changed - order abandoned by customer in Checkout"
+msgstr ""
+
+#: includes/wc-vipps-recurring-checkout.php:250
+msgid "Page contents: [%1$s]"
+msgstr "Sideinnhold: [%1$s]"
+
+#: includes/wc-vipps-recurring-checkout.php:250
+msgid "This page is used for the alternative Vipps/MobilePay checkout page, which you can choose to use instead of the normal WooCommerce checkout page. "
+msgstr ""
+
+#: includes/wc-vipps-recurring-checkout.php:249
+msgid "Vipps/MobilePay Recurring Checkout Page"
+msgstr "Vipps MobilePay faste betalinger-side"
+
+#: includes/wc-vipps-recurring-checkout-rest-api.php:352
+msgid "Could not start Vipps/MobilePay checkout session"
+msgstr ""
+
+#: includes/wc-vipps-recurring-checkout-rest-api.php:321
+msgid "Customer passed to Vipps/MobilePay checkout"
+msgstr ""
+
+#: includes/wc-vipps-recurring-checkout-rest-api.php:320
+msgid "Vipps/MobilePay recurring checkout payment initiated"
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:2451
+msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:1801
+msgid "Test API settings"
+msgstr "Test API-innstillinger"
+
+#: includes/admin/vipps-recurring-settings.php:156
+msgid "Developer, test, and debugging options."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:155
+msgid "Developer settings"
+msgstr "Utvikler-innstillinger"
+
+#: includes/admin/vipps-recurring-settings.php:134
+msgid "We use webhooks in most instances, but they are not guaranteed to be reliable. In those cases we rely on cron."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:133
+msgid "Cron settings"
+msgstr "Cron-innstillinger"
+
+#: includes/admin/vipps-recurring-settings.php:98
+msgid "Orders, renewals and status settings."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:97
+msgid "Order settings"
+msgstr "Ordre-innstillinger"
+
+#: includes/admin/vipps-recurring-settings.php:65
+msgid "These settings control the connection between your store and Vipps MobilePay."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:64
+msgid "API settings"
+msgstr "API-innstilinger"
+
+#: includes/admin/vipps-recurring-settings.php:59
+msgid "An alphanumeric text string to use as a prefix on checkout orders from your shop, to avoid duplicate order ids."
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:57
+#: includes/admin/vipps-recurring-settings.php:58
+msgid "OrderId prefix"
+msgstr ""
+
+#: includes/admin/vipps-recurring-settings.php:51
+msgid "Enable Vipps/MobilePay Checkout"
+msgstr "Slå på Vipps MobilePay i kassen"
+
+#. translators: %s "use at your own risk" title
+#: includes/admin/vipps-recurring-settings.php:47
+msgid "Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an easier and more seamless checkout that allows you to pay with Vipps MobilePay (and soon also a credit card). Your customers will be able to provide their billing/shipping details directly from the Vipps MobilePay app. <br><br><strong>Important!</strong> Checkout for recurring payments <strong>only supports static shipping</strong> at the moment."
+msgstr ""
+
+#. translators: %s "use at your own risk" title
+#: includes/admin/vipps-recurring-settings.php:46
+msgid "Checkout settings"
+msgstr "Kasse-innstillinger"
+
+#. translators: %s "use at your own risk" title
+#: includes/admin/vipps-recurring-settings.php:46
+msgid "Use at your own risk"
+msgstr "Bruk på egen risiko"
+
+#: includes/admin/vipps-recurring-settings.php:17
+msgid "Brand settings"
+msgstr "Merke-innstillinger"
+
+#. translators: %s is the current store currency code
+#: assets/js/vipps-recurring-admin.js:91
+msgid "Note: Vipps is only available with the NOK currency. Your store currency is set to %s"
+msgstr "Merk: Vipps er bare tilgjengelig med valutaen NOK. Butikken din bruker %s"
+
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentCancelled.jsx:28
+#: src/components/PaymentRedirectPage/PaymentError.jsx:28
+msgid "Continue shopping"
+msgstr "Fortsett å handle"
+
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentCancelled.jsx:22
+msgid "Your payment has been cancelled."
+msgstr "Betalingen din ble kansellert."
+
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentCancelled.jsx:16
+msgid "Order cancelled"
+msgstr "Ordren kansellert"
 
 #: includes/admin/vipps-recurring-settings.php:104
 msgid "[Default] Shop or homepage"
-msgstr "[Standard] Butikk eller forside"
+msgstr "[Standard] Butikk- eller forside"
+
+#: includes/admin/vipps-recurring-settings.php:103
+msgid "The page to redirect customers to when they click \"Continue shopping\" after a cancelled payment."
+msgstr "Siden kundene skal omdirigeres til når de klikker \"Forstett å handle\" etter en kansellert betaling."
+
+#: includes/admin/vipps-recurring-settings.php:102
+msgid "\"Continue shopping\" link"
+msgstr "\"Fortsett å handle\"-lenke"
+
+#: assets/js/vipps-recurring-admin.js:77
+msgid "Note: Reservations in MobilePay will be cancelled after 14 days. Remember to ship and fulfill your orders."
+msgstr "Merk: Reservasjoner i MobilePay vil bli kansellert etter 7 dager. Husk å sende og fullføre ordrene dine."
+
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentRedirect.jsx:25
+msgid "You will be redirected shortly."
+msgstr "Du blir snart omdirigert."
+
+#: assets/build/main.js:1
+#: src/components/PaymentRedirectPage/PaymentRedirect.jsx:20
+msgid "Verifying your payment. Please wait."
+msgstr "Bekrefter betalingen din. Vent."
+
+#: includes/wc-gateway-vipps-recurring.php:561
+msgid "MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days."
+msgstr "Betalinger med MobilePay blir automatisk belastet for å forhindre at betalingsreservasjonen fra automatisk blir kansellert etter 7 dager."
+
+#: includes/admin/vipps-recurring-settings.php:172
+msgid "This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr "Denne verdien blir overstyrt av WC_VIPPS_RECURRING_TEST_MODE."
+
+#: includes/admin/vipps-recurring-settings.php:169
+msgid "Enabling this will route all API requests to the Vipps MobilePay test API."
+msgstr "Å slå på dette vil rute alle API-forespørsler til test-API-et for Vipps MobilePay."
+
+#: includes/admin/vipps-recurring-settings.php:167
+msgid "Enable test mode"
+msgstr "Slå på testmodus."
+
+#: includes/admin/vipps-recurring-settings.php:166
+msgid "Test mode"
+msgstr "Testmodus"
+
+#: includes/admin/vipps-recurring-settings.php:33
+msgid "If this option is checked we will start automatically capturing MobilePay payments. This prevents reservations from being cancelled after 7 days."
+msgstr "Om dette alternativet velges vil vi begynne automatisk å belaste betalinger emd MobilePay. Dette forhindrer at reservasjoner kanselleres etter 7 dager."
+
+#: includes/admin/vipps-recurring-settings.php:31
+#: includes/admin/vipps-recurring-settings.php:32
+msgid "Automatically capture payments made with MobilePay"
+msgstr "Belast automatisk alle betalinger gjort med MobilePay."
+
+#: includes/admin/vipps-recurring-settings.php:26
+msgid "MobilePay"
+msgstr "MobilePay"
+
+#. translators: %s: brand name, Vipps or MobilePay
+#: assets/js/vipps-recurring-payment-method-block.js:47
+msgid "Continue with %s"
+msgstr "Fortsett med %s"
+
+#: includes/wc-vipps-recurring.php:623
+msgid "Max 100 characters"
+msgstr "Maks 100 tegn"
+
+#: includes/wc-vipps-recurring.php:622
+msgid "If the description source is set to \"custom\" this text will be used."
+msgstr "Hvis beskrivelseskilden er satt til \"egendefinert\" vil denne teksten bli brukt."
+
+#: includes/wc-vipps-recurring.php:621
+msgid "Custom description"
+msgstr "Egendefinert beskrivelse"
+
+#: includes/wc-vipps-recurring.php:614
+msgid "Custom"
+msgstr "Egendefinert"
+
+#: includes/wc-vipps-recurring.php:613
+msgid "Product short description"
+msgstr "Kort beskrivelse av produktet"
+
+#: includes/wc-vipps-recurring.php:612
+msgid "None"
+msgstr "Ingen"
+
+#: includes/wc-vipps-recurring.php:609
+msgid "Where we should source the agreement description from. Displayed in the Vipps/MobilePay app."
+msgstr "Hvor beskrivelsen som brukes til betalingsavtalen i appen skal komme fra."
+
+#: includes/wc-vipps-recurring.php:608
+msgid "Description source"
+msgstr "Beskrivelseskilde"
+
+#: includes/wc-vipps-recurring.php:601
+msgid "Capture payment instantly even if the product is not virtual. Please make sure you are following the local jurisdiction in your country when using this option."
+msgstr "Trekk en betaling umiddelbart selv om produktet ikke er digitalt. Vær sikker på at du følger norsk lov når du bruker denne innstillingen. Du skal ikke trekke penger før forsendelse er sendt."
+
+#: includes/wc-vipps-recurring-api.php:542
+msgid "We hit Vipps/MobilePay's rate limit, we will retry later."
+msgstr "Vi traff Vipps/MobilePay sin \"rate-limit\", vi prøver igjen snart."
+
+#: includes/wc-vipps-recurring-api.php:522
+msgid "No response from Vipps/MobilePay"
+msgstr "Mottok ikke et svar fra Vipps/MobilePay"
+
+#: includes/wc-gateway-vipps-recurring.php:2105
+msgid "Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!"
+msgstr "Kunne ikke kansellere trekk i Vipps/MobilePay. Vennligst manuelt sjekk statusen på denne ordren dersom du har planer om å opprette en ny fornyelse!"
+
+#: includes/wc-gateway-vipps-recurring.php:2101
+msgid "Cancelled due charge in Vipps/MobilePay."
+msgstr "Kansellerte ventende trekk i Vipps/MobilePay."
+
+#: includes/wc-gateway-vipps-recurring.php:2018
+msgid "On hold"
+msgstr "På vent"
+
+#: includes/wc-gateway-vipps-recurring.php:2007
+msgid "Cancelled"
+msgstr "Kansellert"
+
+#: includes/wc-gateway-vipps-recurring.php:1996
+msgid "Pending cancellation"
+msgstr "Venter på kansellering"
+
+#: includes/wc-gateway-vipps-recurring.php:1934
+msgid "This Vipps/MobilePay agreement ID is invalid."
+msgstr "Denne Vipps/MobilePay betalingsavtale ID-en er ugyldig."
+
+#: includes/wc-gateway-vipps-recurring.php:1910
+msgid "Vipps/MobilePay Agreement ID"
+msgstr "Vipps/MobilePay Betalingsavtale ID"
+
+#. translators: %s: the error message returned from Vipps/MobilePay
+#: includes/wc-gateway-vipps-recurring.php:1870
+msgid "Could not authenticate with the Vipps/MobilePay API: %s"
+msgstr "Kunne ikke autentisere med Vipps/MobilePay API-et: %s"
+
+#: includes/wc-gateway-vipps-recurring.php:1865
+msgid "Successfully authenticated with the Vipps/MobilePay API"
+msgstr "Autentisering med Vipps/MobilePay vellykket"
+
+#. translators: Vipps/MobilePay Agreement ID
+#: includes/wc-gateway-vipps-recurring.php:1656
+msgid "Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
+msgstr "Betalingsavtale opprettet: %s. Kunde sendt til Vipps/MobilePay for bekreftelse."
+
+#. translators: Vipps/MobilePay Agreement ID
+#: includes/wc-gateway-vipps-recurring.php:1627
+msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
+msgstr "Forespørsel om å bytte til Vipps/MobilePay med agreement ID: %s"
+
+#. translators: %s: brand (Vipps or MobilePay)
+#: includes/wc-gateway-vipps-recurring.php:1598
+msgid "Different subscription products can not be purchased at the same time using %s."
+msgstr "Forskjellige abonnementer kan ikke kjøpes samtidig i samme ordre med %s."
+
+#: includes/wc-gateway-vipps-recurring.php:1531
+msgid "Your early renewal order was successful."
+msgstr "Din tidlige fornyelsesbestilling var vellykket."
+
+#: includes/wc-gateway-vipps-recurring.php:1124
+msgid "Vipps/MobilePay is temporarily unavailable."
+msgstr "Vipps/MobilePay er midlertidig utilgjengelig."
+
+#. translators: %s: The charge's status
+#: includes/wc-gateway-vipps-recurring.php:1101
+msgid "Could not capture charge because the status is not RESERVED or PARTIALLY_CAPTURED. Found status: %s"
+msgstr "Kunne ikke trekke beløp. Status på trekk er ikke RESERVED eller PARTIALLY_CAPTURED. Fant status: %s"
+
+#. translators: %s is the days as an integer since the order was created
+#: includes/wc-gateway-vipps-recurring.php:897
+msgid "You cannot refund a charge that was made more than 365 days ago. This order was created %s days ago."
+msgstr "Du kan ikke tilbakebetale en betaling som skjedde for mer enn 365 dager siden. Denne ordren ble gjort for %s dager siden."
+
+#: includes/wc-gateway-vipps-recurring.php:736
+msgid "Vipps/MobilePay payment failed."
+msgstr "Vipps/MobilePay betaling mislyktes."
+
+#: includes/wc-gateway-vipps-recurring.php:728
+msgid "Vipps/MobilePay payment cancelled."
+msgstr "Vipps/MobilePay betaling kansellert."
+
+#: includes/wc-gateway-vipps-recurring.php:705
+msgid "Waiting for you to capture the payment"
+msgstr "Venter på at du skal trekke beløpet"
+
+#. translators: %s: brand name, Vipps or MobilePay
+#: includes/wc-gateway-vipps-recurring.php:154
+msgid "Pay with %s"
+msgstr "Betal med %s"
+
+#: includes/pages/admin/vipps-recurring-admin-menu-page.php:58
+msgid "here"
+msgstr "her"
 
 #. translators: %s: link to possible failure reasons
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:57
 msgid "A list of possible failure reasons and what they mean can be found %s"
 msgstr "En liste med feilkoder og hva de betyr finnes %s"
 
-#: includes/wc-gateway-vipps-recurring.php:913
-msgid ""
-"A temporary error occurred when refunding a payment through Vipps MobilePay. "
-"Please ensure the order is refunded manually or reset the order to "
-"\"Processing\" and try again."
-msgstr ""
-"En midlertidig feil oppstod hos Vipps MobilePay. Vennligst dobbeltsjekk at "
-"ordren er refundert manuelt eller tilbakestill ordren til \"Behandler\" og "
-"prøvd igjen."
+#: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
+#: includes/wc-gateway-vipps-recurring.php:98
+#: includes/wc-vipps-recurring.php:485 includes/wc-vipps-recurring.php:486
+#: includes/wc-vipps-recurring.php:583
+msgid "Vipps/MobilePay Recurring Payments"
+msgstr "Vipps/MobilePay faste betalinger"
 
-#: includes/compat/wc-vipps-recurring-kc-support.php:83
-msgid "Activate"
-msgstr "Aktiver"
-
-#: includes/compat/wc-vipps-recurring-kc-support.php:85
-msgid ""
-"Activate Vipps/MobilePay Recurring Payments as an external payment method "
-"for Klarna Checkout"
-msgstr ""
-"Aktiver Vipps/MobilePay faste betalinger som en ekstern betalingsmetode i "
-"Klarna Checkout"
-
-#. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1651
-msgid ""
-"Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
-msgstr ""
-"Betalingsavtale opprettet: %s. Kunde sendt til Vipps/MobilePay for "
-"bekreftelse."
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:167
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:168
-msgid "Agreement ID"
-msgstr "Agreement ID"
-
-#: includes/admin/vipps-recurring-settings.php:138
-msgid "Amount of charges to check per status check"
-msgstr "Mengde trekk å sjekke status på per sjekk"
-
-#: includes/admin/vipps-recurring-settings.php:59
-msgid ""
-"An alphanumeric text string to use as a prefix on checkout orders from your "
-"shop, to avoid duplicate order ids."
-msgstr ""
-"En alfanumerisk tekst som brukes som en prefiks til Checkout-ordre i "
-"butikken din. Denne brukes for å unngå duplikate ordre ID-er."
-
-#: src/components/PaymentRedirectPage/PaymentError.jsx:16
-msgid "An error occurred"
-msgstr "Det oppstod en feil"
-
-#: includes/wc-gateway-vipps-recurring.php:937
-msgid ""
-"An unexpected error occurred while refunding a payment in Vipps/MobilePay."
-msgstr ""
-"En uforventet feil oppstod ved opprettelse av refusjon i Vipps/MobilePay."
-
-#: src/components/PaymentRedirectPage/PaymentError.jsx:22
-msgid "An unknown error has occurred."
-msgstr "En uforutsett feil oppstod."
-
-#: includes/admin/vipps-recurring-settings.php:64
-msgid "API settings"
-msgstr "API-innstillinger"
-
-#: includes/admin/vipps-recurring-settings.php:31
-#: includes/admin/vipps-recurring-settings.php:32
-msgid "Automatically capture payments made with MobilePay"
-msgstr "Trekk betalinger via MobilePay automatisk"
-
-#: includes/admin/vipps-recurring-settings.php:20
-msgid "Brand"
-msgstr "Merkevare"
-
-#: includes/admin/vipps-recurring-settings.php:17
-msgid "Brand settings"
-msgstr "Merkevare-innstillinger"
-
-#: includes/wc-gateway-vipps-recurring.php:2002
-msgid "Cancelled"
-msgstr "Kansellert"
-
-#: includes/wc-gateway-vipps-recurring.php:2090
-msgid "Cancelled due charge in Vipps/MobilePay."
-msgstr "Kansellerte ventende trekk i Vipps/MobilePay."
-
-#: includes/wc-vipps-recurring.php:675
-msgid "Capture payment"
-msgstr "Trekk beløp"
-
-#: includes/wc-vipps-recurring.php:600
-msgid "Capture payment instantly"
-msgstr "Trekk betaling umiddelbart"
-
-#: includes/wc-vipps-recurring.php:601
-msgid ""
-"Capture payment instantly even if the product is not virtual. Please make "
-"sure you are following the local jurisdiction in your country when using "
-"this option."
-msgstr ""
-"Trekk en betaling umiddelbart selv om produktet ikke er digitalt. Vær sikker "
-"på at du følger norsk lov når du bruker denne innstillingen. Du skal ikke "
-"trekke penger før forsendelse er sendt."
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:170
-msgid "Captured"
-msgstr "Beløp trukket"
-
-#. translators: Vipps/MobilePay Charge ID
-#: includes/wc-gateway-vipps-recurring.php:693
-msgid "Charge completed (Charge ID: %s)"
-msgstr "Trekk fullført (Charge ID: %s)"
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:168
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:169
-msgid "Charge ID"
-msgstr "Charge ID"
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:261
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:263
-msgid "Charge ID not available. Check the order's notes instead."
-msgstr "Charge ID ikke tilgjengelig. Sjekk notatene til ordren i stedet."
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:114
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:115
-msgid "Check Status"
-msgstr "Sjekk Status"
-
-#: includes/pages/admin/vipps-recurring-admin-menu-page.php:27
-msgid "Check status of all Vipps/MobilePay subscription orders now"
-msgstr "Sjekk status på alle Vipps/MobilePay faste betalinger ordre nå"
-
-#: src/pages/CheckoutPage.jsx:126
-msgid "Checkout session expired. Please refresh to start a new session."
-msgstr ""
-"Checkout økten utløp. Du kan forfrisk nettleservinduet for å starte en ny "
-"økt."
-
-#. translators: %s "use at your own risk" title
-#: includes/admin/vipps-recurring-settings.php:46
-msgid "Checkout settings"
-msgstr "Checkout-innstillinger"
-
-#: includes/admin/vipps-recurring-settings.php:75
-msgid "client_id"
-msgstr "client_id"
-
-#: includes/admin/vipps-recurring-settings.php:82
-msgid "client_secret"
-msgstr "client_secret"
-
-#: src/components/PaymentRedirectPage/PaymentCancelled.jsx:28
-#: src/components/PaymentRedirectPage/PaymentError.jsx:28
-msgid "Continue shopping"
-msgstr "Fortsett å handle"
-
-#. translators: %s: brand name, Vipps or MobilePay
-#: assets/js/vipps-recurring-payment-method-block.js:49
-msgid "Continue with %s"
-msgstr "Fortsett med %s"
-
-#: includes/admin/vipps-recurring-settings.php:22
-msgid "Controls the payment flow brand (Vipps or MobilePay)."
-msgstr ""
-"Kontrollerer hvilken merkevare som brukes i betalingsflyten (Vipps eller "
-"MobilePay)."
-
-#. translators: %s: the error message returned from Vipps/MobilePay
-#: includes/wc-gateway-vipps-recurring.php:1865
-msgid "Could not authenticate with the Vipps/MobilePay API: %s"
-msgstr "Kunne ikke autentisere med Vipps/MobilePay API-et: %s"
-
-#: includes/wc-gateway-vipps-recurring.php:2094
-msgid ""
-"Could not cancel charge in Vipps/MobilePay. Please manually check the status "
-"of this order if you plan to process a new renewal order!"
-msgstr ""
-"Kunne ikke kansellere trekk i Vipps/MobilePay. Vennligst manuelt sjekk "
-"statusen på denne ordren dersom du har planer om å opprette en ny fornyelse!"
-
-#. translators: %s: The charge's status
-#: includes/wc-gateway-vipps-recurring.php:1101
-msgid ""
-"Could not capture charge because the status is not RESERVED or "
-"PARTIALLY_CAPTURED. Found status: %s"
-msgstr ""
-"Kunne ikke trekke beløp. Status på trekk er ikke RESERVED eller "
-"PARTIALLY_CAPTURED. Fant status: %s"
-
-#: includes/wc-vipps-recurring-checkout-rest-api.php:352
-msgid "Could not start Vipps/MobilePay checkout session"
-msgstr "Kunne ikke starte Vipps/MobilePay Checkout økt"
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:171
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
-msgid "Created At"
-msgstr "Tidspunkt"
-
-#: includes/admin/vipps-recurring-settings.php:133
-msgid "Cron settings"
-msgstr "Cron-innstillinger"
-
-#: includes/wc-vipps-recurring.php:614
-msgid "Custom"
-msgstr "Egendefinert"
-
-#: includes/wc-vipps-recurring.php:621
-msgid "Custom description"
-msgstr "Egendefinert beskrivelse"
-
-#: includes/wc-vipps-recurring-checkout-rest-api.php:321
-msgid "Customer passed to Vipps/MobilePay checkout"
-msgstr "Kunden ble videresendt til Vipps/MobilePay Checkout"
-
-#: includes/admin/vipps-recurring-settings.php:108
-msgid "Default status to give orders with a reserved charge"
-msgstr "Standardstatus for ordre med reservert trekk i Vipps/MobilePay"
-
-#: includes/admin/vipps-recurring-settings.php:117
-msgid "Default status to give pending renewal orders"
-msgstr "Standardstatus for fornyelsesordre"
-
-#: includes/admin/vipps-recurring-settings.php:37
-#: includes/compat/wc-vipps-recurring-kc-support.php:90
-msgid "Description"
-msgstr "Beskrivelse"
-
-#: includes/compat/wc-vipps-recurring-kc-support.php:92
-msgid ""
-"Description for Vipps/MobilePay Recurring Payments method. This controls the "
-"description which the user sees in the checkout form."
-msgstr ""
-"Beskrivelse for Vipps/MobilePay faste betalinger metoden. Dette kontrollerer "
-"beskrivelsen som kunden ser i checkout."
-
-#: includes/wc-vipps-recurring.php:608
-msgid "Description source"
-msgstr "Beskrivelseskilde"
-
-#: includes/admin/vipps-recurring-settings.php:155
-msgid "Developer settings"
-msgstr "Utvikler-innstillinger"
-
-#: includes/admin/vipps-recurring-settings.php:156
-msgid "Developer, test, and debugging options."
-msgstr "Utvikler, test og feilsøkings-innstillinger"
-
-#. translators: %s: brand (Vipps or MobilePay)
-#: includes/wc-gateway-vipps-recurring.php:1593
-msgid ""
-"Different subscription products can not be purchased at the same time using "
-"%s."
-msgstr ""
-"Forskjellige abonnementer kan ikke kjøpes samtidig i samme ordre med %s."
+#: includes/compat/wc-vipps-recurring-kc-support.php:107
+msgid "Disables the \"Select another Payment method\" button in Klarna Checkout."
+msgstr "Skrur av \"Velg en annen betalingsløsning\"-knappen i Klarna Checkout."
 
 #: includes/compat/wc-vipps-recurring-kc-support.php:105
 msgid "Disable other gateway button"
 msgstr "Skru av \"Velg en annen betalingsløsning\"-knappen"
 
-#: includes/compat/wc-vipps-recurring-kc-support.php:107
-msgid ""
-"Disables the \"Select another Payment method\" button in Klarna Checkout."
-msgstr "Skrur av \"Velg en annen betalingsløsning\"-knappen i Klarna Checkout."
+#: includes/compat/wc-vipps-recurring-kc-support.php:100
+msgid "URL to the Vipps/MobilePay logo"
+msgstr "Lenke til Vipps/MobilePay logoen"
 
-#. translators: amount of orders checked
-#: includes/wc-vipps-recurring.php:568
-msgid "Done. Checked the status of %s orders"
-msgstr "Sånn. Sjekket status på %s ordre"
+#: includes/compat/wc-vipps-recurring-kc-support.php:98
+msgid "Image url"
+msgstr "Bildelenke"
 
-#: includes/admin/vipps-recurring-settings.php:167
-msgid "Enable test mode"
-msgstr "Skru på testmodus"
+#. translators: {brand}: brand name, Vipps or MobilePay
+#: includes/compat/wc-vipps-recurring-kc-support.php:94
+msgid "Remember: {brand} is always has no fees when paying businesses."
+msgstr "Husk: {brand} er alltid gebyrfritt når du betaler til bedrifter."
 
-#: includes/admin/vipps-recurring-settings.php:51
-msgid "Enable Vipps/MobilePay Checkout"
-msgstr "Aktiver Vipps/MobilePay Checkout"
+#: includes/compat/wc-vipps-recurring-kc-support.php:92
+msgid "Description for Vipps/MobilePay Recurring Payments method. This controls the description which the user sees in the checkout form."
+msgstr "Beskrivelse for Vipps/MobilePay faste betalinger metoden. Dette kontrollerer beskrivelsen som kunden ser i checkout."
 
-#: includes/admin/vipps-recurring-settings.php:10
-msgid "Enable Vipps/MobilePay Recurring Payments"
-msgstr "Skru på Vipps/MobilePay Faste Betalinger"
+#: includes/compat/wc-vipps-recurring-kc-support.php:85
+msgid "Activate Vipps/MobilePay Recurring Payments as an external payment method for Klarna Checkout"
+msgstr "Aktiver Vipps/MobilePay faste betalinger som en ekstern betalingsmetode i Klarna Checkout"
 
-#: includes/admin/vipps-recurring-settings.php:9
-#: includes/admin/vipps-recurring-settings.php:50
-msgid "Enable/Disable"
-msgstr "Skru på/Skru av"
-
-#: includes/admin/vipps-recurring-settings.php:169
-msgid ""
-"Enabling this will route all API requests to the Vipps MobilePay test API."
-msgstr ""
-"Denne innstillingen gjør at alle forespørsler blir sendt mot Vipps MobilePay "
-"sitt test API."
-
-#. Author of the plugin
-msgid "Everyday AS"
-msgstr "Everyday AS"
+#: includes/compat/wc-vipps-recurring-kc-support.php:83
+msgid "Activate"
+msgstr "Aktiver"
 
 #: includes/compat/wc-vipps-recurring-kc-support.php:78
 msgid "External Payment Method - Vipps/MobilePay Recurring Payments"
 msgstr "Ekstern betalingsmetode - Vipps/MobilePay Faste Betalinger"
 
+#: includes/admin/vipps-recurring-settings.php:150
+msgid "Newest first"
+msgstr "Nyeste først"
+
+#: includes/admin/vipps-recurring-settings.php:149
+msgid "Oldest first"
+msgstr "Eldste først"
+
+#: includes/admin/vipps-recurring-settings.php:148
+msgid "Random"
+msgstr "Tilfeldig"
+
+#: includes/admin/vipps-recurring-settings.php:145
+msgid "The sort order we use when checking charges in wp-cron. Random sort order is the best for most use cases. Oldest first may be useful if you use synchronized renewals."
+msgstr "Rekkefølgen trekk skal status-sjekkes i wp-cron. En tilfeldig rekkefølge er anbefalt for de fleste bruksområder. Eldste først kan være nyttig dersom du bruker synkroniserte fornyelser."
+
+#: includes/admin/vipps-recurring-settings.php:144
+msgid "Status checking sort order for charges"
+msgstr "Rekkefølgen trekk skal sjekkes i"
+
+#: includes/admin/vipps-recurring-settings.php:139
+msgid "The amount of charges to check the status for in wp-cron per scheduled event. It is recommended to keep this between 5 and 100. The higher the value, the more performance issues you may run into."
+msgstr "Mengden trekk som skal sjekkes status på samtidig i wp-cron. Det anbefales å sette denne til et tall mellom 5 og 100. Overstiger du 100 kan det by på ytelsesproblemer."
+
+#: includes/admin/vipps-recurring-settings.php:138
+msgid "Amount of charges to check per status check"
+msgstr "Mengde trekk å sjekke status på per sjekk"
+
+#: includes/admin/vipps-recurring-settings.php:89
+msgid "Ocp-Apim-Subscription-Key"
+msgstr "Ocp-Apim-Subscription-Key"
+
+#: includes/admin/vipps-recurring-settings.php:70
+msgid "Get your Merchant Serial Number your Vipps/MobilePay developer portal."
+msgstr "Hent ditt Merchant Serial Number fra Vipps/MobilePay-portalen."
+
+#: includes/admin/vipps-recurring-settings.php:68
+msgid "Merchant Serial Number (MSN)"
+msgstr "Merchant Serial Number (MSN)"
+
+#. translators: {brand}: brand title (Vipps or MobilePay)
+#: includes/admin/vipps-recurring-settings.php:41
+msgid "Pay with {brand}."
+msgstr "Betal med {brand}."
+
+#: includes/admin/vipps-recurring-settings.php:39
+msgid "This controls the description which the user sees during checkout. {brand} is substituted with either Vipps or MobilePay."
+msgstr "Kontrollerer hvilken merkevare kunden ser i kassa. {brand} blir erstattet av enten Vipps eller MobilePay."
+
+#: includes/admin/vipps-recurring-settings.php:22
+msgid "Controls the payment flow brand (Vipps or MobilePay)."
+msgstr "Kontrollerer hvilken merkevare som brukes i betalingsflyten (Vipps eller MobilePay)."
+
+#: includes/admin/vipps-recurring-settings.php:20
+msgid "Brand"
+msgstr "Merkevare"
+
+#: includes/admin/vipps-recurring-settings.php:10
+msgid "Enable Vipps/MobilePay Recurring Payments"
+msgstr "Skru på Vipps/MobilePay Faste Betalinger"
+
+#. Plugin Name of the plugin
+#: woo-vipps-recurring.php
+msgid "Vipps/MobilePay recurring payments for WooCommerce"
+msgstr "Vipps/MobilePay faste betalinger for WooCommerce"
+
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:49
 msgid "Failed Charges"
 msgstr "Mislykkede trekk"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:169
+msgid "Failure Reason"
+msgstr "Feilårsak"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:103
+msgid "No failed charges found."
+msgstr "Ingen trekk har mislykket foreløpig."
+
+#: includes/wc-vipps-recurring-api.php:638
+msgid "Your WordPress URL is not passing Merchant Agreement URL validation. Is your website publicly accessible?"
+msgstr "WordPress nettadressen din samsvarer ikke med reglene for Merchant Agreement nettadresser. Er nettsiden din privat?"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:170
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:171
+msgid "Latest API Status"
+msgstr "Nyeste API status"
+
+#: includes/wc-gateway-vipps-recurring.php:1575
+msgid "This subscription is already active in Vipps/MobilePay. You can leave this page."
+msgstr "Dette abonnementet har allerede en aktiv betalingsavtale i Vipps/MobilePay. Du kan forlate denne siden."
+
+#: includes/admin/vipps-recurring-settings.php:128
+msgid "This option will make sure order statuses always transition to \"completed\" when the renewal charge is completed in Vipps/MobilePay."
+msgstr "Denne innstillingen vil sørge for at status på ordre alltid blir \"fullført\" når et trekk blir fullført i Vipps/MobilePay."
+
+#: includes/admin/vipps-recurring-settings.php:126
+#: includes/admin/vipps-recurring-settings.php:127
+msgid "Transition order status for renewals to \"completed\""
+msgstr "Flytt status på fornyelsesordre til \"fullført\""
+
+#: includes/admin/vipps-recurring-settings.php:118
+msgid "When a renewal order happens we have to wait a few days for the money to be drawn from the customer. This settings controls the status to give these renewal orders before the charge completes."
+msgstr "Når et abonnement fornyes tar det et par dager før pengene blir trukket fra kunden sin bankkonto. Denne innstillingen kontrollerer hvilken status ordren skal ha i WooCommerce i mellomtiden."
+
+#: includes/admin/vipps-recurring-settings.php:109
+msgid "The status to give orders when the charge is reserved in Vipps/MobilePay (i.e. tangible goods). Notice: This option only counts for newly signed agreements by the customer. Use the setting below to set the default status for renewal orders."
+msgstr "Denne statusen gis til ordre hvor et trekk er reservert og ikke trukket ennå i Vipps/MobilePay (for eksempel for materielle varer). Merk: denne innstillingen gjelder kun ved nylig signert betalingsavtale av kunde. Bruk innstillingen for fornyelsesordre nedenfor for å kontrollere standardstatus for fornyelsesordre."
+
+#: includes/admin/vipps-recurring-settings.php:108
+msgid "Default status to give orders with a reserved charge"
+msgstr "Standardstatus for ordre med reservert trekk i Vipps/MobilePay"
+
+#: includes/wc-vipps-recurring-api.php:450
+msgid "Your Vipps/MobilePay Recurring Payments gateway is not correctly configured."
+msgstr "Vipps/MobilePay faste betalinger er ikke konfigurert riktig. Vennligst dobbeltsjekk innstillingene til utvidelsen."
 
 #. translators: Error message
 #: includes/wc-gateway-vipps-recurring.php:824
 msgid "Failed creating a charge: %s"
 msgstr "Mislyktes med å opprette et trekk: %s"
 
+#: includes/wc-gateway-vipps-recurring.php:937
+msgid "An unexpected error occurred while refunding a payment in Vipps/MobilePay."
+msgstr "En uforventet feil oppstod ved opprettelse av refusjon i Vipps/MobilePay."
+
+#: includes/wc-gateway-vipps-recurring.php:933
+msgid "You can not partially refund a pending or due charge. Please wait till the payment clears first or refund the full amount instead."
+msgstr "Du kan ikke delvis refundere betalinger som ikke har blitt fullført ennå. Vent til betalingen er fullført eller gi en refusjon på hele beløpet i stedet."
+
+#: includes/wc-gateway-vipps-recurring.php:913
+msgid "A temporary error occurred when refunding a payment through Vipps MobilePay. Please ensure the order is refunded manually or reset the order to \"Processing\" and try again."
+msgstr "En midlertidig feil oppstod hos Vipps MobilePay. Vennligst dobbeltsjekk at ordren er refundert manuelt eller tilbakestill ordren til \"Behandler\" og prøvd igjen."
+
+#. Author URI of the plugin
+#: woo-vipps-recurring.php
+msgid "https://everyday.no"
+msgstr "https://everyday.no"
+
+#. Author of the plugin
+#: woo-vipps-recurring.php
+msgid "Everyday AS"
+msgstr "Everyday AS"
+
+#: includes/wc-gateway-vipps-recurring.php:1201
+msgid "Payment gateway change request cancelled in Vipps/MobilePay"
+msgstr "Forespørsel om bytte av betalingsmiddel avbrutt i Vipps/MobilePay"
+
+#: includes/admin/vipps-recurring-settings.php:117
+msgid "Default status to give pending renewal orders"
+msgstr "Standardstatus for fornyelsesordre"
+
+#. translators: Vipps/MobilePay Charge ID, human diff timestamp
+#: includes/wc-gateway-vipps-recurring.php:1050
+msgid "Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s."
+msgstr "Vipps/MobilePay trekk opprettet: %1$s. Trekket blir fullført %2$s."
+
+#: includes/wc-vipps-recurring.php:238
+msgid "Successfully checked the status of these charges"
+msgstr "Sjekk av trekkstatus vellykket"
+
+#. translators: php date format
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:282
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:287
+msgctxt "post date"
+msgid "Y/m/d g:i:s A"
+msgstr "Y-m-d H:i:s"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:272
+msgid "No"
+msgstr "Nei"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
+msgid "Yes"
+msgstr "Ja"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:265
+msgid "This order has not yet been captured."
+msgstr "Denne ordren har ikke blitt trukket ennå."
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:261
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:263
+msgid "Charge ID not available. Check the order's notes instead."
+msgstr "Charge ID ikke tilgjengelig. Sjekk notatene til ordren i stedet."
+
+#. translators: %s: Order ID.
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:218
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:219
+msgid "Select order %s"
+msgstr "Veldg ordre %s"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:171
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:172
+msgid "Created At"
+msgstr "Tidspunkt"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:170
+msgid "Captured"
+msgstr "Beløp trukket"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:168
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:169
+msgid "Charge ID"
+msgstr "Charge ID"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:167
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:168
+msgid "Agreement ID"
+msgstr "Agreement ID"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:166
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:167
+msgid "Order"
+msgstr "Ordre"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:114
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:115
+msgid "Check Status"
+msgstr "Sjekk Status"
+
+#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:104
+msgid "No pending charges found."
+msgstr "Fant ingen ventende trekk."
+
+#. translators: Link to a GitHub readme about the error
+#: includes/wc-vipps-recurring-api.php:634
+msgid "Recurring payments is not yet activated for this sale unit. Read more <a href=\"%s\" target=\"_blank\">here</a>"
+msgstr "Faste betalinger er ikke aktivert for denne salgsenheten. Les mer <a href=\"%s\" target=\"_blank\">her</a>"
+
+#: includes/pages/admin/vipps-recurring-admin-menu-page.php:32
+msgid "Pending Charges"
+msgstr "Trekk på vent"
+
 #: includes/wc-vipps-recurring.php:570
 msgid "Failed to finish checking the status of all orders. Please try again."
 msgstr "Klarte ikke hente status på alle ordre. Vennligst prøv igjen."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:169
-msgid "Failure Reason"
-msgstr "Feilårsak"
+#. translators: amount of orders checked
+#: includes/wc-vipps-recurring.php:568
+msgid "Done. Checked the status of %s orders"
+msgstr "Sånn. Sjekket status på %s ordre"
 
-#: includes/admin/vipps-recurring-settings.php:77
-#: includes/admin/vipps-recurring-settings.php:84
-#: includes/admin/vipps-recurring-settings.php:91
-msgid "Get your API keys from your Vipps/MobilePay developer portal."
-msgstr "Hent API-nøklene dine fra Vipps/MobilePay-portalen."
-
-#: includes/admin/vipps-recurring-settings.php:70
-msgid "Get your Merchant Serial Number your Vipps/MobilePay developer portal."
-msgstr "Hent ditt Merchant Serial Number fra Vipps/MobilePay-portalen."
-
-#: includes/pages/admin/vipps-recurring-admin-menu-page.php:58
-msgid "here"
-msgstr "her"
-
-#. Author URI of the plugin
-msgid "https://everyday.no"
-msgstr "https://everyday.no"
-
-#: includes/wc-vipps-recurring.php:622
-msgid "If the description source is set to \"custom\" this text will be used."
-msgstr ""
-"Hvis beskrivelseskilden er satt til \"egendefinert\" vil denne teksten bli "
-"brukt."
-
-#: includes/admin/vipps-recurring-settings.php:33
-msgid ""
-"If this option is checked we will start automatically capturing MobilePay "
-"payments. This prevents reservations from being cancelled after 7 days."
-msgstr ""
-"Når denne innstillingen er aktivert vil vi automatisk trekke reserverte "
-"beløp i MobilePay. Dette forhindrer at betalingsreservasjonene til MobilePay "
-"utløper etter 7 dager."
+#: includes/pages/admin/vipps-recurring-admin-menu-page.php:27
+msgid "Check status of all Vipps/MobilePay subscription orders now"
+msgstr "Sjekk status på alle Vipps/MobilePay faste betalinger ordre nå"
 
 #: includes/pages/admin/vipps-recurring-admin-menu-page.php:19
-msgid ""
-"If you have a lot of Vipps/MobilePay subscription orders that are currently "
-"on-hold you might want to force check the status of all the orders instead "
-"of waiting for the cron-job to do it's job."
-msgstr ""
-"Hvis du har mange faste betalinger med Vipps/MobilePay som foreløpig er \"på "
-"vent\" kan det hende du har lyst til å sjekke status på alle ordre med en "
-"gang i stedet for å vente på at wp-cron skal gjøre jobben sin."
+msgid "If you have a lot of Vipps/MobilePay subscription orders that are currently on-hold you might want to force check the status of all the orders instead of waiting for the cron-job to do it's job."
+msgstr "Hvis du har mange faste betalinger med Vipps/MobilePay som foreløpig er \"på vent\" kan det hende du har lyst til å sjekke status på alle ordre med en gang i stedet for å vente på at wp-cron skal gjøre jobben sin."
 
-#: includes/compat/wc-vipps-recurring-kc-support.php:98
-msgid "Image url"
-msgstr "Bildelenke"
+#. translators: link to the plugin's settings page
+#: includes/pages/admin/vipps-recurring-admin-menu-page.php:14
+msgid "This area is for special actions that aren't settings. If you are looking for the plugin's settings, click <a href='%s'>here</a>."
+msgstr "Dette området er for handlinger som ikke er vanlige innstillinger. Hvis du leter etter utvidelsen sine innstillinger finner du de <a href='%s'>her</a>."
 
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:170
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:171
-msgid "Latest API Status"
-msgstr "Nyeste API status"
+#: includes/wc-vipps-recurring.php:923
+msgid "Every One Minute"
+msgstr "Hvert minutt"
+
+#: includes/wc-vipps-recurring.php:600
+msgid "Capture payment instantly"
+msgstr "Trekk betaling umiddelbart"
+
+#: includes/wc-gateway-vipps-recurring.php:512
+msgid "The subtotal is zero, the order is free for this subscription period."
+msgstr "Delsummen er lik null, ordren er gratis i denne abonnementsperioden."
+
+#. translators: Vipps/MobilePay Charge ID
+#: includes/wc-gateway-vipps-recurring.php:693
+msgid "Charge completed (Charge ID: %s)"
+msgstr "Trekk fullført (Charge ID: %s)"
+
+#: includes/wc-gateway-vipps-recurring.php:614
+msgid "The agreement was cancelled or expired in Vipps/MobilePay"
+msgstr "Betalingsavtalen utløp eller var avbrutt i Vipps/MobilePay"
+
+#: includes/wc-gateway-vipps-recurring.php:99
+msgid "Vipps/MobilePay Recurring Payments works by redirecting your customers to the Vipps MobilePay portal for confirmation. It creates a payment plan and charges your users on the intervals you specify."
+msgstr "Vipps/MobilePay Faste Betalinger lar deg ta løpende betalt med Vipps eller MobilePay via en betalingsavtale."
+
+#: includes/admin/vipps-recurring-settings.php:162
+msgid "Save debug messages to the WooCommerce System Status log."
+msgstr "Lagre feilsøkingsmeldinger i WooCommerce sin System Status logg."
 
 #: includes/admin/vipps-recurring-settings.php:160
 msgid "Log debug messages"
@@ -408,488 +695,52 @@ msgstr "Logg feilsøkingsmeldinger"
 msgid "Logging"
 msgstr "Logging"
 
-#: includes/wc-vipps-recurring.php:623
-msgid "Max 100 characters"
-msgstr "Maks 100 tegn"
+#: includes/admin/vipps-recurring-settings.php:82
+msgid "client_secret"
+msgstr "client_secret"
 
-#: includes/admin/vipps-recurring-settings.php:68
-msgid "Merchant Serial Number (MSN)"
-msgstr "Merchant Serial Number (MSN)"
+#: includes/admin/vipps-recurring-settings.php:77
+#: includes/admin/vipps-recurring-settings.php:84
+#: includes/admin/vipps-recurring-settings.php:91
+msgid "Get your API keys from your Vipps/MobilePay developer portal."
+msgstr "Hent API-nøklene dine fra Vipps/MobilePay-portalen."
 
-#: includes/admin/vipps-recurring-settings.php:26
-msgid "MobilePay"
-msgstr "MobilePay"
+#: includes/admin/vipps-recurring-settings.php:75
+msgid "client_id"
+msgstr "client_id"
 
-#: includes/wc-gateway-vipps-recurring.php:561
-#| msgid ""
-#| "MobilePay payments are automatically captured to prevent the payment "
-#| "reservation from automatically getting cancelled after 7 days."
-msgid ""
-"MobilePay payments are automatically captured to prevent the payment "
-"reservation from automatically getting cancelled after 14 days."
-msgstr ""
-"Betalinger med MobilePay er automatisk trukket slik at reservasjonen ikke "
-"blir automatisk kansellert etter 14 dager."
-
-#: includes/admin/vipps-recurring-settings.php:150
-msgid "Newest first"
-msgstr "Nyeste først"
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:272
-msgid "No"
-msgstr "Nei"
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-failed-charges.php:103
-msgid "No failed charges found."
-msgstr "Ingen trekk har mislykket foreløpig."
-
-#: includes/wc-vipps-recurring-api.php:522
-msgid "No response from Vipps/MobilePay"
-msgstr "Mottok ikke et svar fra Vipps/MobilePay"
-
-#: includes/wc-vipps-recurring.php:612
-msgid "None"
-msgstr "Ingen"
-
-#: assets/js/vipps-recurring-admin.js:79
-#| msgid ""
-#| "Note: Reservations in MobilePay will be cancelled after 7 days. Remember "
-#| "to ship and fulfill your orders."
-msgid ""
-"Note: Reservations in MobilePay will be cancelled after 14 days. Remember to "
-"ship and fulfill your orders."
-msgstr ""
-"NB: Reservasjoner i MobilePay blir kansellert etter 14 dager. Husk å "
-"fullføre og sende ordrene dine."
-
-#. translators: %s is the current store currency code
-#: assets/js/vipps-recurring-admin.js:93
-msgid ""
-"Note: Vipps is only available with the NOK currency. Your store currency is "
-"set to %s"
-msgstr ""
-"NB: Vipps er kun tilgjengelig med NOK som valuta. Din butikk sin valuta er "
-"satt til %s"
-
-#: includes/admin/vipps-recurring-settings.php:89
-msgid "Ocp-Apim-Subscription-Key"
-msgstr "Ocp-Apim-Subscription-Key"
-
-#. Description of the plugin
-msgid ""
-"Offer recurring payments with Vipps MobilePay for WooCommerce Subscriptions"
-msgstr ""
-"Tilby faste betalinger med Vipps/MobilePay for WooCommerce Subscriptions"
-
-#: includes/admin/vipps-recurring-settings.php:149
-msgid "Oldest first"
-msgstr "Eldste først"
-
-#: includes/wc-gateway-vipps-recurring.php:2013
-msgid "On hold"
-msgstr "På vent"
-
-#: src/components/PaymentRedirectPage/PaymentCancelled.jsx:16
-msgid "Order cancelled"
-msgstr "Ordre kansellert"
-
-#: includes/admin/vipps-recurring-settings.php:97
-msgid "Order settings"
-msgstr "Ordre-innstillinger"
-
-#: includes/wc-vipps-recurring-checkout.php:666
-msgid "Order specification changed - order abandoned by customer in Checkout"
-msgstr "Ordrespesifikasjon endret - ordre forlatt av kunden i Checkout"
-
-#: includes/admin/vipps-recurring-settings.php:57
-#: includes/admin/vipps-recurring-settings.php:58
-msgid "OrderId prefix"
-msgstr "OrderId prefiks"
-
-#: includes/admin/vipps-recurring-settings.php:98
-msgid "Orders, renewals and status settings."
-msgstr "Ordre, fornyelser og status-innstillinger"
-
-#: includes/wc-vipps-recurring.php:554
-msgctxt "Page slug"
-msgid "vipps_recurring_checkout"
-msgstr "vipps_recurring_checkout"
-
-#: includes/wc-vipps-recurring.php:555
-msgctxt "Page title"
-msgid "Vipps MobilePay Recurring Checkout"
-msgstr "Vipps MobilePay faste betalinger checkout"
-
-#. translators: %s: brand name, Vipps or MobilePay
-#: includes/wc-gateway-vipps-recurring.php:154
-msgid "Pay with %s"
-msgstr "Betal med %s"
-
-#. translators: {brand}: brand title (Vipps or MobilePay)
-#: includes/admin/vipps-recurring-settings.php:41
-msgid "Pay with {brand}."
-msgstr "Betal med {brand}."
-
-#: includes/wc-gateway-vipps-recurring.php:1201
-msgid "Payment gateway change request cancelled in Vipps/MobilePay"
-msgstr "Forespørsel om bytte av betalingsmiddel avbrutt i Vipps/MobilePay"
-
-#: includes/wc-gateway-vipps-recurring.php:1991
-msgid "Pending cancellation"
-msgstr "Venter på kansellering"
-
-#: includes/pages/admin/vipps-recurring-admin-menu-page.php:32
-msgid "Pending Charges"
-msgstr "Trekk på vent"
-
-#: includes/wc-vipps-recurring.php:613
-msgid "Product short description"
-msgstr "Kort beskrivelse av produktet"
-
-#: includes/admin/vipps-recurring-settings.php:148
-msgid "Random"
-msgstr "Tilfeldig"
-
-#. translators: Link to a GitHub readme about the error
-#: includes/wc-vipps-recurring-api.php:634
-msgid ""
-"Recurring payments is not yet activated for this sale unit. Read more <a "
-"href=\"%s\" target=\"_blank\">here</a>"
-msgstr ""
-"Faste betalinger er ikke aktivert for denne salgsenheten. Les mer <a "
-"href=\"%s\" target=\"_blank\">her</a>"
-
-#. translators: {brand}: brand name, Vipps or MobilePay
-#: includes/compat/wc-vipps-recurring-kc-support.php:94
-msgid "Remember: {brand} is always has no fees when paying businesses."
-msgstr "Husk: {brand} er alltid gebyrfritt når du betaler til bedrifter."
-
-#. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1622
-msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
-msgstr "Forespørsel om å bytte til Vipps/MobilePay med agreement ID: %s"
-
-#: includes/admin/vipps-recurring-settings.php:162
-msgid "Save debug messages to the WooCommerce System Status log."
-msgstr "Lagre feilsøkingsmeldinger i WooCommerce sin System Status logg."
-
-#: includes/wc-vipps-recurring.php:820
-msgid "Settings"
-msgstr "Innstillinger"
-
-#: includes/admin/vipps-recurring-settings.php:144
-msgid "Status checking sort order for charges"
-msgstr "Rekkefølgen trekk skal sjekkes i"
-
-#: includes/wc-gateway-vipps-recurring.php:2440
-msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
-msgstr "Abonnementet ble avsluttet av kunden fra Vipps-appen."
-
-#: includes/wc-gateway-vipps-recurring.php:1860
-msgid "Successfully authenticated with the Vipps/MobilePay API"
-msgstr "Autentisering med Vipps/MobilePay vellykket"
-
-#: includes/wc-vipps-recurring.php:238
-msgid "Successfully checked the status of these charges"
-msgstr "Sjekk av trekkstatus vellykket"
-
-#: includes/wc-gateway-vipps-recurring.php:1796
-msgid "Test API settings"
-msgstr "Test API-innstillinger"
-
-#: includes/admin/vipps-recurring-settings.php:166
-msgid "Test mode"
-msgstr "Testmodus"
-
-#: includes/wc-gateway-vipps-recurring.php:614
-msgid "The agreement was cancelled or expired in Vipps/MobilePay"
-msgstr "Betalingsavtalen utløp eller var avbrutt i Vipps/MobilePay"
-
-#: includes/admin/vipps-recurring-settings.php:139
-msgid ""
-"The amount of charges to check the status for in wp-cron per scheduled event."
-" It is recommended to keep this between 5 and 100. The higher the value, the "
-"more performance issues you may run into."
-msgstr ""
-"Mengden trekk som skal sjekkes status på samtidig i wp-cron. Det anbefales å "
-"sette denne til et tall mellom 5 og 100. Overstiger du 100 kan det by på "
-"ytelsesproblemer."
-
-#: includes/admin/vipps-recurring-settings.php:103
-msgid ""
-"The page to redirect customers to when they click \"Continue shopping\" "
-"after a cancelled payment."
-msgstr ""
-"Siden du vil videresende kunder til når de trykker \"Fortsett å handle\" "
-"etter å ha kansellert en ordre."
-
-#: includes/admin/vipps-recurring-settings.php:145
-msgid ""
-"The sort order we use when checking charges in wp-cron. Random sort order is "
-"the best for most use cases. Oldest first may be useful if you use "
-"synchronized renewals."
-msgstr ""
-"Rekkefølgen trekk skal status-sjekkes i wp-cron. En tilfeldig rekkefølge er "
-"anbefalt for de fleste bruksområder. Eldste først kan være nyttig dersom du "
-"bruker synkroniserte fornyelser."
-
-#: includes/admin/vipps-recurring-settings.php:109
-msgid ""
-"The status to give orders when the charge is reserved in Vipps/MobilePay (i."
-"e. tangible goods). Notice: This option only counts for newly signed "
-"agreements by the customer. Use the setting below to set the default status "
-"for renewal orders."
-msgstr ""
-"Denne statusen gis til ordre hvor et trekk er reservert og ikke trukket ennå "
-"i Vipps/MobilePay (for eksempel for materielle varer). Merk: denne "
-"innstillingen gjelder kun ved nylig signert betalingsavtale av kunde. Bruk "
-"innstillingen for fornyelsesordre nedenfor for å kontrollere standardstatus "
-"for fornyelsesordre."
-
-#: includes/wc-gateway-vipps-recurring.php:512
-msgid "The subtotal is zero, the order is free for this subscription period."
-msgstr "Delsummen er lik null, ordren er gratis i denne abonnementsperioden."
-
-#: includes/admin/vipps-recurring-settings.php:65
-msgid ""
-"These settings control the connection between your store and Vipps MobilePay."
-msgstr ""
-"Disse innstillingene kontrollerer tilkoblingen mellom din butikk og Vipps "
-"MobilePay."
-
-#. translators: link to the plugin's settings page
-#: includes/pages/admin/vipps-recurring-admin-menu-page.php:14
-msgid ""
-"This area is for special actions that aren't settings. If you are looking "
-"for the plugin's settings, click <a href='%s'>here</a>."
-msgstr ""
-"Dette området er for handlinger som ikke er vanlige innstillinger. Hvis du "
-"leter etter utvidelsen sine innstillinger finner du de <a href='%s'>her</a>."
-
-#: includes/admin/vipps-recurring-settings.php:39
-msgid ""
-"This controls the description which the user sees during checkout. {brand} "
-"is substituted with either Vipps or MobilePay."
-msgstr ""
-"Kontrollerer hvilken merkevare kunden ser i kassa. {brand} blir erstattet av "
-"enten Vipps eller MobilePay."
-
-#: includes/admin/vipps-recurring-settings.php:128
-msgid ""
-"This option will make sure order statuses always transition to \"completed\" "
-"when the renewal charge is completed in Vipps/MobilePay."
-msgstr ""
-"Denne innstillingen vil sørge for at status på ordre alltid blir "
-"\"fullført\" når et trekk blir fullført i Vipps/MobilePay."
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:265
-msgid "This order has not yet been captured."
-msgstr "Denne ordren har ikke blitt trukket ennå."
-
-#: includes/wc-vipps-recurring-checkout.php:252
-msgid ""
-"This page is used for the alternative Vipps/MobilePay checkout page, which "
-"you can choose to use instead of the normal WooCommerce checkout page. "
-msgstr ""
-"Denne siden er brukt for den alternative Vipps/MobilePay checkout-kassen. "
-
-#: includes/wc-gateway-vipps-recurring.php:1570
-msgid ""
-"This subscription is already active in Vipps/MobilePay. You can leave this "
-"page."
-msgstr ""
-"Dette abonnementet har allerede en aktiv betalingsavtale i Vipps/MobilePay. "
-"Du kan forlate denne siden."
-
-#: includes/admin/vipps-recurring-settings.php:172
-msgid "This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE."
-msgstr "Denne verdien er overstyrt av WC_VIPPS_RECURRING_TEST_MODE."
-
-#: includes/wc-gateway-vipps-recurring.php:1929
-msgid "This Vipps/MobilePay agreement ID is invalid."
-msgstr "Denne Vipps/MobilePay betalingsavtale ID-en er ugyldig."
-
-#: includes/admin/vipps-recurring-settings.php:126
-#: includes/admin/vipps-recurring-settings.php:127
-msgid "Transition order status for renewals to \"completed\""
-msgstr "Flytt status på fornyelsesordre til \"fullført\""
-
-#: includes/compat/wc-vipps-recurring-kc-support.php:100
-msgid "URL to the Vipps/MobilePay logo"
-msgstr "Lenke til Vipps/MobilePay logoen"
-
-#. translators: %s "use at your own risk" title
-#: includes/admin/vipps-recurring-settings.php:46
-msgid "Use at your own risk"
-msgstr "Bruk på egen risiko"
-
-#: src/components/PaymentRedirectPage/PaymentRedirect.jsx:20
-msgid "Verifying your payment. Please wait."
-msgstr "Vennligst vent mens vi sjekker betalingen din."
+#: includes/admin/vipps-recurring-settings.php:37
+#: includes/compat/wc-vipps-recurring-kc-support.php:90
+msgid "Description"
+msgstr "Beskrivelse"
 
 #: includes/admin/vipps-recurring-settings.php:25
 msgid "Vipps"
 msgstr "Vipps"
 
-#: includes/admin/vipps-recurring-settings.php:47
-msgid ""
-"Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an "
-"easier and more seamless checkout that allows you to pay with Vipps "
-"MobilePay (and soon also a credit card). Your customers will be able to "
-"provide their billing/shipping details directly from the Vipps MobilePay app."
-" <br><br><strong>Important!</strong> Checkout for recurring payments <strong>"
-"only supports static shipping</strong> at the moment."
-msgstr ""
-"Vipps Checkout erstatter den vanlige WooCommerce kassen med en enklere og "
-"mer intuitiv kasse som lar deg betale med Vipps (og snart bankkort). Kundene "
-"dine kan dele personalia og adresseinformasjon direkte fra Vipps-appen. <br>"
-"<br><strong>Viktig!</strong> Checkout til faste betalinger <strong>støtter "
-"foreløpig kun statisk frakt</strong>."
+#: includes/admin/vipps-recurring-settings.php:9
+#: includes/admin/vipps-recurring-settings.php:50
+msgid "Enable/Disable"
+msgstr "Skru på/Skru av"
 
-#: includes/wc-gateway-vipps-recurring.php:1905
-msgid "Vipps/MobilePay Agreement ID"
-msgstr "Vipps/MobilePay Betalingsavtale ID"
+#: includes/wc-vipps-recurring.php:820
+msgid "Settings"
+msgstr "Innstillinger"
 
-#. translators: Vipps/MobilePay Charge ID, human diff timestamp
-#: includes/wc-gateway-vipps-recurring.php:1050
-msgid "Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s."
-msgstr "Vipps/MobilePay trekk opprettet: %1$s. Trekket blir fullført %2$s."
-
-#: includes/wc-gateway-vipps-recurring.php:1124
-msgid "Vipps/MobilePay is temporarily unavailable."
-msgstr "Vipps/MobilePay er midlertidig utilgjengelig."
-
-#: includes/wc-gateway-vipps-recurring.php:728
-msgid "Vipps/MobilePay payment cancelled."
-msgstr "Vipps/MobilePay betaling kansellert."
-
-#: includes/wc-gateway-vipps-recurring.php:736
-msgid "Vipps/MobilePay payment failed."
-msgstr "Vipps/MobilePay betaling mislyktes."
-
-#: includes/wc-vipps-recurring-checkout.php:251
-msgid "Vipps/MobilePay Recurring Checkout Page"
-msgstr "Vipps/MobilePay faste betalinger kasseside"
-
-#: includes/wc-vipps-recurring-checkout-rest-api.php:320
-msgid "Vipps/MobilePay recurring checkout payment initiated"
-msgstr "Vipps/MobilePay faste betalinger betaling startet"
-
-#: includes/pages/admin/vipps-recurring-admin-menu-page.php:9
-#: includes/wc-gateway-vipps-recurring.php:98
-#: includes/wc-vipps-recurring.php:485 includes/wc-vipps-recurring.php:486
-#: includes/wc-vipps-recurring.php:583
-msgid "Vipps/MobilePay Recurring Payments"
-msgstr "Vipps/MobilePay faste betalinger"
-
-#. Plugin Name of the plugin
-msgid "Vipps/MobilePay recurring payments for WooCommerce"
-msgstr "Vipps/MobilePay faste betalinger for WooCommerce"
+#: includes/wc-vipps-recurring.php:675
+msgid "Capture payment"
+msgstr "Trekk beløp"
 
 #: includes/wc-vipps-recurring.php:230
-#| msgid ""
-#| "Vipps/MobilePay Recurring Payments is currently in test mode - no real "
-#| "transactions will occur. Disable this in your wp_config when you are "
-#| "ready to go live!"
-msgid ""
-"Vipps/MobilePay Recurring Payments is currently in test mode - no real "
-"transactions will occur. Disable test mode when you are ready to go live!"
-msgstr ""
-"Vipps/MobilePay faste betalinger er foreløpig i testmodus - ingen ekte "
-"betalinger vil finne sted. Skru av testmodus når du er klar for å gå live."
+msgid "Vipps/MobilePay Recurring Payments is currently in test mode - no real transactions will occur. Disable test mode when you are ready to go live!"
+msgstr "Vipps/MobilePay faste betalinger er foreløpig i testmodus - ingen ekte betalinger vil finne sted. Slå av denne i wp_config når du er klar for å gå live."
 
 #. translators: %s link to WooCommerce Subscription's purchase page
 #: includes/wc-vipps-recurring.php:217
-msgid ""
-"Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be "
-"installed and active. You can purchase and download %s here."
-msgstr ""
-"Vipps/MobilePay faste betalinger krever at WooCommerce Subscriptions er "
-"installert. Du kan kjøpe og laste ned %s her."
+msgid "Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here."
+msgstr "Vipps/MobilePay faste betalinger krever at WooCommerce Subscriptions er installert. Du kan kjøpe og laste ned %s her."
 
-#: includes/wc-gateway-vipps-recurring.php:99
-msgid ""
-"Vipps/MobilePay Recurring Payments works by redirecting your customers to "
-"the Vipps MobilePay portal for confirmation. It creates a payment plan and "
-"charges your users on the intervals you specify."
-msgstr ""
-"Vipps/MobilePay Faste Betalinger lar deg ta løpende betalt med Vipps eller "
-"MobilePay via en betalingsavtale."
-
-#: includes/wc-gateway-vipps-recurring.php:705
-msgid "Waiting for you to capture the payment"
-msgstr "Venter på at du skal trekke beløpet"
-
-#: includes/wc-vipps-recurring-api.php:542
-msgid "We hit Vipps/MobilePay's rate limit, we will retry later."
-msgstr "Vi traff Vipps/MobilePay sin \"rate-limit\", vi prøver igjen snart."
-
-#: includes/admin/vipps-recurring-settings.php:134
-msgid ""
-"We use webhooks in most instances, but they are not guaranteed to be "
-"reliable. In those cases we rely on cron."
-msgstr ""
-"Vi bruker webhooks i de fleste tilfeller, men det kan ikke garanteres at de "
-"er tilgjengelig. I disse tilfellene bruker vi cron."
-
-#: includes/admin/vipps-recurring-settings.php:118
-msgid ""
-"When a renewal order happens we have to wait a few days for the money to be "
-"drawn from the customer. This settings controls the status to give these "
-"renewal orders before the charge completes."
-msgstr ""
-"Når et abonnement fornyes tar det et par dager før pengene blir trukket fra "
-"kunden sin bankkonto. Denne innstillingen kontrollerer hvilken status ordren "
-"skal ha i WooCommerce i mellomtiden."
-
-#: includes/wc-vipps-recurring.php:609
-msgid ""
-"Where we should source the agreement description from. Displayed in the "
-"Vipps/MobilePay app."
-msgstr ""
-"Hvor beskrivelsen som brukes til betalingsavtalen i appen skal komme fra."
-
-#: includes/admin/list-tables/wc-vipps-recurring-list-table-pending-charges.php:271
-msgid "Yes"
-msgstr "Ja"
-
-#: includes/wc-gateway-vipps-recurring.php:933
-msgid ""
-"You can not partially refund a pending or due charge. Please wait till the "
-"payment clears first or refund the full amount instead."
-msgstr ""
-"Du kan ikke delvis refundere betalinger som ikke har blitt fullført ennå. "
-"Vent til betalingen er fullført eller gi en refusjon på hele beløpet i "
-"stedet."
-
-#. translators: %s is the days as an integer since the order was created
-#: includes/wc-gateway-vipps-recurring.php:897
-msgid ""
-"You cannot refund a charge that was made more than 365 days ago. This order "
-"was created %s days ago."
-msgstr ""
-"Du kan ikke tilbakebetale en betaling som skjedde for mer enn 365 dager "
-"siden. Denne ordren ble gjort for %s dager siden."
-
-#: src/components/PaymentRedirectPage/PaymentRedirect.jsx:25
-msgid "You will be redirected shortly."
-msgstr "Du blir straks videresendt."
-
-#: src/components/PaymentRedirectPage/PaymentCancelled.jsx:22
-msgid "Your payment has been cancelled."
-msgstr "Betalingen din har blitt kansellert."
-
-#: includes/wc-vipps-recurring-api.php:450
-msgid ""
-"Your Vipps/MobilePay Recurring Payments gateway is not correctly configured."
-msgstr ""
-"Vipps/MobilePay faste betalinger er ikke konfigurert riktig. Vennligst "
-"dobbeltsjekk innstillingene til utvidelsen."
-
-#: includes/wc-vipps-recurring-api.php:638
-msgid ""
-"Your WordPress URL is not passing Merchant Agreement URL validation. Is your "
-"website publicly accessible?"
-msgstr ""
-"WordPress nettadressen din samsvarer ikke med reglene for Merchant Agreement "
-"nettadresser. Er nettsiden din privat?"
+#. Description of the plugin
+#: woo-vipps-recurring.php
+msgid "Offer recurring payments with Vipps MobilePay for WooCommerce Subscriptions"
+msgstr "Tilby faste betalinger med Vipps/MobilePay for WooCommerce Subscriptions"
