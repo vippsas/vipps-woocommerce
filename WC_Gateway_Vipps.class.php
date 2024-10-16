@@ -143,31 +143,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // We do this because we no longer want to automatically guess payment method name. NT-2024-10-15
     private function migrate_keyset_with_country_detection() {
         $settings = get_option('woocommerce_vipps_settings', array());
-        $keyset = get_transient('_vipps_keyset');
-        // If there's no keyset there's nothing to migrate
-        if (!$keyset) return;
-        
-        $country = $settings['country'] ?? $this->detect_country_from_currency();
+        $detected_country = $this->detect_country_from_currency();
         // If we can't detect the country, there's nothing to migrate
-        if (!$country) return;
-        
-        // Update main MSN keyset
-        $main_msn = $settings['merchantSerialNumber'] ?? '';
-        if ($main_msn && isset($keyset[$main_msn])) {
-            $keyset[$main_msn]['country'] = $country;
+        if (!$detected_country) return;
+
+        // Only set the country with the detected country value if it's not already set
+        if(!isset($settings['country'])) {
+            $settings['country'] = $detected_country;
+            update_option('woocommerce_vipps_settings', $settings);
         }
-        
-        // Update test MSN keyset
-        $test_msn = $settings['merchantSerialNumber_test'] ?? '';
-        if ($test_msn && isset($keyset[$test_msn])) {
-            $keyset[$test_msn]['country'] = $country;
+
+        $keyset = $this->get_keyset();
+        if($keyset) {
+            // Update main MSN keyset if country is not set
+            $main_msn = $settings['merchantSerialNumber'] ?? '';
+            if ($main_msn && isset($keyset[$main_msn]) && !isset($keyset[$main_msn]['country'])) {
+                $keyset[$main_msn]['country'] = $detected_country;
+            }
+            
+            // Update test MSN keyset if country is not set
+            $test_msn = $settings['merchantSerialNumber_test'] ?? '';
+            if ($test_msn && isset($keyset[$test_msn]) && !isset($keyset[$test_msn]['country'])) {
+                $keyset[$test_msn]['country'] = $detected_country;
+            }
+            set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
         }
-        // Save updated keyset
-        set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
-    
-        // Update settings with detected country
-        $settings['country'] = $country;
-        update_option('woocommerce_vipps_settings', $settings);
     }
 
     public function __construct() {
@@ -179,11 +179,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
+        $this->migrate_keyset_with_country_detection();
         $this->init_form_fields();
         $this->init_settings();
-        
-        $this->migrate_keyset_with_country_detection();
-        
+
+
         $this->api = new VippsApi($this);
 
         $this->supports = array('products','refunds');
