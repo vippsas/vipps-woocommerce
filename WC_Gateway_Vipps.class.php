@@ -143,30 +143,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // We do this because we no longer want to automatically guess payment method name. NT-2024-10-15
     private function migrate_keyset_with_country_detection() {
         $settings = get_option('woocommerce_vipps_settings', array());
-        $detected_country = $this->detect_country_from_currency();
-        // If we can't detect the country, there's nothing to migrate
-        if (!$detected_country) return;
+        if ($settings['country'] ?? false) return; // Already set, do nothing IOK 2024-10-17
+        
+        // Now we are only wanting to do this with people who have already configured the plugin. These will have at least this value set:
+        if ($settings['payment_method_name'] ?? false) {
+            // This assumes that EUR == FI which will be correct for all users reaching this branch IOK 2024-10-17
+            $detected_country = $this->detect_country_from_currency();
+            // If we can't detect the country, there's nothing to migrate
+            if (!$detected_country) return;
 
-        // Only set the country with the detected country value if it's not already set
-        if(!isset($settings['country'])) {
             $settings['country'] = $detected_country;
             update_option('woocommerce_vipps_settings', $settings);
-        }
-
-        $keyset = $this->get_keyset();
-        if($keyset) {
-            // Update main MSN keyset if country is not set
-            $main_msn = $settings['merchantSerialNumber'] ?? '';
-            if ($main_msn && isset($keyset[$main_msn]) && !isset($keyset[$main_msn]['country'])) {
-                $keyset[$main_msn]['country'] = $detected_country;
-            }
-            
-            // Update test MSN keyset if country is not set
-            $test_msn = $settings['merchantSerialNumber_test'] ?? '';
-            if ($test_msn && isset($keyset[$test_msn]) && !isset($keyset[$test_msn]['country'])) {
-                $keyset[$test_msn]['country'] = $detected_country;
-            }
-            set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
+            delete_transient('_vipps_keyset');
         }
     }
 
@@ -842,8 +830,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
         }
 
-        // Get the already-set country code, otherwise fallback to detecting the country from the currency NT-2024-10-15
-        $country_code = $current['country'] ?? $this->detect_country_from_currency();
+        // Get the already-set country code. For existing sites, this will guess the country based on the currency; for new sites, use 
+        // the woo base country. IOK 2024-10-17 (previously used the currency here too).
+        $countries = new WC_Countries(); // Can't use WC()->countries here - too early IOK 2024-10-17
+        $country_code = $current['country'] ?? $countries->get_base_country();
+
         // Same issue as above: We need the default payment method name before it is set to be able to provide defaults IOK 2023-12-01
         $payment_method_name = $current['payment_method_name'] ?? $this->detect_default_payment_method_from_country($country_code);
 
@@ -1064,6 +1055,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'DK' => __('Denmark', 'woo-vipps'),
                 ),
                 'description' => __('Select the country for this merchant serial number. This will determine the appropriate payment method (Vipps or MobilePay).', 'woo-vipps'),
+                'default' => $country_code,
             ),
 
             'payment_method_name' => array(
