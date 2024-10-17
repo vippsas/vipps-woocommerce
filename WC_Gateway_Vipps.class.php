@@ -144,17 +144,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     private function migrate_keyset_with_country_detection() {
         $settings = get_option('woocommerce_vipps_settings', array());
         if ($settings['country'] ?? false) return; // Already set, do nothing IOK 2024-10-17
-        
+
         // Now we are only wanting to do this with people who have already configured the plugin. These will have at least this value set:
         if ($settings['payment_method_name'] ?? false) {
             // This assumes that EUR == FI which will be correct for all users reaching this branch IOK 2024-10-17
             $detected_country = $this->detect_country_from_currency();
-            // If we can't detect the country, there's nothing to migrate
+            // If we can't detect the country, there's nothing to migrate. "this cannot happen" etc. 
             if (!$detected_country) return;
 
             $settings['country'] = $detected_country;
             update_option('woocommerce_vipps_settings', $settings);
             delete_transient('_vipps_keyset');
+            return;
         }
     }
 
