@@ -22,6 +22,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         name="country"
         titleKey="country.title"
         descriptionKey="country.description"
+        includeEmptyOption={false}
         required
         onChange={(e) => {
           // Set the payment method name based on the selected country
@@ -43,6 +44,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         name="payment_method_name"
         titleKey="payment_method_name.title"
         descriptionKey="payment_method_name.description"
+        includeEmptyOption={false}
         required
         options={[
           { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },

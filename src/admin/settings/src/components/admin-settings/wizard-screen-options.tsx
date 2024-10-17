@@ -37,7 +37,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               setOption('payment_method_name', paymentMethod);
             }}
             required
-            includeEmptyOption
+            includeEmptyOption={false}
             options={[
               { label: gettext('country.options.NO'), value: 'NO' },
               { label: gettext('country.options.FI'), value: 'FI' },
@@ -51,7 +51,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             titleKey="payment_method_name.title"
             descriptionKey="payment_method_name.description"
             required
-            includeEmptyOption
+            includeEmptyOption={false}
             options={[
               {
                 label: gettext('payment_method_name.options.Vipps'),
