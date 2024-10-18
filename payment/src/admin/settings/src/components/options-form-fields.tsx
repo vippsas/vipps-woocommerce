@@ -83,6 +83,20 @@ interface SelectFormFieldProps {
    * The options for the select form field.
    */
   options: { label: string; value: string }[];
+
+  /**
+   * The function to call when the select form field changes.
+   */
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  /**
+   * Specifies if the form field is required.
+   */
+  required?: boolean;
+
+  /**
+   * Specifies if the form field should include an empty option.
+   */
+  includeEmptyOption?: boolean;
 }
 
 /**
@@ -91,14 +105,33 @@ interface SelectFormFieldProps {
  * Reads and updates the WP data available in the WPOptionsProvider.
  * @returns A select form field component.
  */
-export function SelectFormField({ name, titleKey, labelKey, descriptionKey, options }: SelectFormFieldProps): JSX.Element {
+export function SelectFormField({
+  name,
+  titleKey,
+  labelKey,
+  descriptionKey,
+  options,
+  onChange,
+  required = false,
+  includeEmptyOption = false
+}: SelectFormFieldProps): JSX.Element {
   const { getOption, setOption } = useWP();
 
   return (
     <WPFormField>
       <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
-        <WPSelect id={name} name={name} onChange={(e) => setOption(name, e.target.value)} value={getOption(name)} >
+        <WPSelect
+          id={name}
+          name={name}
+          onChange={(e) => {
+            setOption(name, e.target.value);
+            if (onChange) onChange(e);
+          }}
+          required={required}
+          value={getOption(name)}
+        >
+          {includeEmptyOption && <WPOption value=""></WPOption>}
           {options.map((option) => (
             <WPOption key={option.value} value={option.value}>
               {option.label}

@@ -1,3 +1,5 @@
+import { detectPaymentMethodName } from '../../lib/payment-method';
+import { useWP } from '../../wp-options-provider';
 import { gettext } from '../../lib/wp-data';
 import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 
@@ -7,6 +9,7 @@ import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField }
  * @returns The rendered main options tab.
  */
 export function AdminSettingsMainOptionsTab(): JSX.Element {
+  const { setOption, getOption } = useWP();
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description"></p>
@@ -14,11 +17,35 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
       {/* Renders a checkbox that specifies whether or not the plugin is enabled  */}
       <CheckboxFormField name="enabled" titleKey="enabled.title" labelKey="enabled.label" />
 
+      {/* Renders a select field that specifies the country */}
+      <SelectFormField
+        name="country"
+        titleKey="country.title"
+        descriptionKey="country.description"
+        includeEmptyOption={false}
+        required
+        onChange={(e) => {
+          // Set the payment method name based on the selected country
+          const paymentMethod = detectPaymentMethodName(e.target.value);
+          // Only update the payment method name if it is not already set
+          if (!getOption('payment_method_name')) {
+            setOption('payment_method_name', paymentMethod);
+          }
+        }}
+        options={[
+          { label: gettext('country.options.NO'), value: 'NO' },
+          { label: gettext('country.options.FI'), value: 'FI' },
+          { label: gettext('country.options.DK'), value: 'DK' }
+        ]}
+      />
+
       {/* Renders a select field that specifies the payment method name (Vipps or MobilePay) */}
       <SelectFormField
         name="payment_method_name"
         titleKey="payment_method_name.title"
         descriptionKey="payment_method_name.description"
+        includeEmptyOption={false}
+        required
         options={[
           { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },
           { label: gettext('payment_method_name.options.MobilePay'), value: 'MobilePay' }
