@@ -965,6 +965,10 @@ class WC_Vipps_Recurring_Checkout {
 		$agreement_id = $session['subscriptionDetails']['agreementId'];
 		$status       = $session['sessionState'];
 
+		if ( empty( $agreement_id ) ) {
+			return;
+		}
+
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
 
 		// This makes sure we are covered by all our normal cron checks as well
