@@ -162,6 +162,14 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 2.0.2 =
+* Fixed: Resubscribing to expired subscriptions is now possible when Checkout is enabled.
+* Fixed: You are now informed that a Merchant Serial Number is required in order to enable Checkout.
+* Fixed: Your applied coupons are now given the proper respect when Checkout is enabled.
+* Fixed: The price is now set correctly when one off products are in a recurring cart when Checkout is enabled.
+* Added: We now cancel initial orders after two hours to avoid checking them in cron forever.
+* Added: You can now enable or disable deletion of changed or abandoned Checkout orders in the settings.
+
 = 2.0.1 =
 * Fixed: A conflict with some themes, like Salient, where this plugin would cause certain blocks to not load.
 * Fixed: Products with a trial period and a sign up fee were not correctly dealt with when using the new Checkout.

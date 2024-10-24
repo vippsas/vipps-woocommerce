@@ -500,6 +500,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$agreement = $this->get_agreement_from_order( $order );
 		if ( ! $agreement ) {
+			// If there is no agreement we can't complete Checkout orders. Let Checkout deal with this through an action.
+			$order_initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
+
+			if ( $order_initial && $order->get_payment_method() === $this->id ) {
+				do_action( 'wc_vipps_recurring_check_charge_status_no_agreement', $order );
+			}
+			
 			return 'INVALID';
 		}
 
@@ -527,6 +534,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$charge = $this->get_latest_charge_from_order( $order );
+
 		if ( ! $charge ) {
 			// we're being rate limited
 			return 'SUCCESS';
@@ -1377,8 +1385,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// If we have more products in our cart we know that the agreement total should just be the sum of the subscription total.
 		// We then create an initialCharge for the full initial sum, including the rest of the cart.
 		// We can safely ignore all of the above code regarding $agreement_total because this will never happen for a subscription switch.
+		$recurring_item_total = $subscription_item->get_total() + $order->get_shipping_total();
+
 		if ( $has_more_products ) {
-			$agreement_total = $subscription_item->get_total() + $order->get_shipping_total();
+			$agreement_total = $recurring_item_total;
+		}
+
+		if ( WC()->cart->has_discount() ) {
+			$agreement_total = (float) $parent_product->get_price( 'code' ) + $order->get_shipping_total();
 		}
 
 		$has_trial = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
@@ -1448,7 +1462,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $has_campaign ) {
-			$campaign_price = $has_free_campaign ? $sign_up_fee : $order->get_total();
+			$campaign_price = $has_free_campaign ? $sign_up_fee : $recurring_item_total;
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
 			$campaign_period = null;
@@ -1460,10 +1474,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					->set_count( WC_Subscriptions_Product::get_trial_length( $product ) )
 					->set_unit( strtoupper( WC_Subscriptions_Product::get_trial_period( $product ) ) );
 			} else {
-				$next_payment = new DateTime( '@' . $subscription->get_time( 'next_payment' ) );
-				$end_date     = new DateTime( '@' . $subscription->get_time( 'end' ) );
+				$next_payment = WC_Subscriptions_Product::get_first_renewal_payment_date( $product );
+				$end_date     = WC_Subscriptions_Product::get_expiration_date( $product );
 
-				$campaign_end_date = $subscription->get_time( 'end' ) === 0 ? $next_payment : $end_date;
+				$campaign_end_date = $end_date === 0 ? $next_payment : $end_date;
 			}
 
 			$agreement = $agreement->set_campaign(
@@ -1872,6 +1886,20 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$checkout_enabled = $this->get_option( 'checkout_enabled' ) === "yes";
+		$test_mode        = $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE;
+
+		// Validate that we have an MSN set, as it is required in Checkout.
+		$merchant_serial_number = $test_mode ? $this->get_option( 'test_merchant_serial_number' ) : $this->get_option( 'merchant_serial_number' );
+		if ( empty( $merchant_serial_number ) ) {
+			$this->admin_notify( __( 'You need to provide a Merchant Serial Number before you can enable Checkout.', 'vipps-recurring-payments-gateway-for-woocommerce' ), "error" );
+
+			// Disable checkout if we do not have an MSN value.
+			$this->update_option( 'checkout_enabled', 'no' );
+			update_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false, true );
+
+			return $saved;
+		}
+
 		update_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, $checkout_enabled, true );
 
 		if ( $checkout_enabled ) {
@@ -2500,6 +2528,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws Exception
 	 */
 	public function create_partial_order( $checkout = false ): int {
+		$order_id = apply_filters( 'woocommerce_create_order', null );
+		if ( $order_id ) {
+			return $order_id;
+		}
+
 		// This is necessary for some plugins, like YITH Dynamic Pricing, that adds filters to get_price depending on whether is_checkout is true.
 		// so basically, since we are impersonating WC_Checkout here, we should define this constant too
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
@@ -2512,11 +2545,37 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC()->cart->calculate_totals();
 		do_action( 'wc_vipps_recurring_before_create_express_checkout_order', WC()->cart );
 
+		$order_id  = absint( WC()->session->get( 'order_awaiting_payment' ) );
+		$cart_hash = WC()->cart->get_cart_hash();
+		$order     = $order_id ? wc_get_order( $order_id ) : null;
+
+		/**
+		 * If there is an order pending payment, we can resume it here so
+		 * long as it has not changed. If the order has changed, i.e.
+		 * different items or cost, create a new order. We use a hash to
+		 * detect changes which is based on cart items + order total.
+		 */
+		if ( $order && $order->has_cart_hash( $cart_hash ) && $order->has_status( array( 'pending', 'failed' ) ) ) {
+			/**
+			 * Indicates that we are resuming checkout for an existing order (which is pending payment, and which
+			 * has not changed since it was added to the current shopping session).
+			 *
+			 * @param int $order_id The ID of the order being resumed.
+			 *
+			 * @since 3.0.0 or earlier
+			 *
+			 */
+			do_action( 'woocommerce_resume_order', $order_id );
+
+			// Remove all items - we will re-add them later.
+			$order->remove_order_items();
+		} else {
+			$order = new WC_Order();
+		}
+
 		// We store this in the order, so we don't have to access the cart when initiating payment. This allows us to restart orders etc.
 		$needs_shipping = WC()->cart->needs_shipping();
 
-		$order = new WC_Order();
-		$order->set_status( 'pending' );
 		$order->set_payment_method( $this );
 
 		try {
@@ -2529,6 +2588,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			// We use 'checkout' as the created_via key as per requests, but allow merchants to use their own.
 			$created_via = apply_filters( 'wc_vipps_recurring_express_checkout_created_via', 'checkout', $order, $checkout );
+
+			$order->set_cart_hash( $cart_hash );
 			$order->set_created_via( $created_via );
 
 			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS, 1 );

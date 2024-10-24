@@ -418,7 +418,7 @@ class WC_Vipps_Recurring {
 
 			foreach ( $order_ids as $order_id ) {
 				// check charge status
-				$this->gateway()->check_charge_status( $order_id );
+				$this->gateway()->check_charge_status( $order_id, true );
 			}
 
 			$sendback = add_query_arg( 'statuses_checked', 1, $sendback );
@@ -730,8 +730,6 @@ class WC_Vipps_Recurring {
 		$order_ids = wc_get_orders( $options );
 
 		foreach ( $order_ids as $order_id ) {
-			$order = wc_get_order( $order_id );
-
 			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
 			$this->gateway()->check_charge_status( $order_id );
 			do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );

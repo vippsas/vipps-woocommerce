@@ -20,7 +20,7 @@ class WC_Vipps_Recurring_Checkout {
 		return self::$instance;
 	}
 
-	public static function register_hooks() {
+	public static function register_hooks(): void {
 		$instance = WC_Vipps_Recurring_Checkout::get_instance();
 		add_action( 'init', [ $instance, 'init' ] );
 		add_action( 'woocommerce_loaded', [ $instance, 'woocommerce_loaded' ] );
@@ -41,7 +41,7 @@ class WC_Vipps_Recurring_Checkout {
 		return $this->gateway;
 	}
 
-	public function maybe_load_cart() {
+	public function maybe_load_cart(): void {
 		if ( version_compare( WC_VERSION, '3.6.0', '>=' ) && WC()->is_rest_api_request() ) {
 			if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 				return;
@@ -93,7 +93,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 	}
 
-	public function init() {
+	public function init(): void {
 		require_once __DIR__ . '/wc-vipps-recurring-checkout-rest-api.php';
 		WC_Vipps_Recurring_Checkout_Rest_Api::get_instance();
 
@@ -113,6 +113,11 @@ class WC_Vipps_Recurring_Checkout {
 		// For Checkout, we need to know any time and as soon as the cart changes, so fold all the events into a single one
 		add_action( 'woocommerce_add_to_cart', function () {
 			do_action( 'vipps_recurring_cart_changed', 'woocommerce_add_to_cart' );
+		}, 10, 0 );
+
+		// Cart coupon applied
+		add_action( 'woocommerce_applied_coupon', function () {
+			do_action( 'vipps_recurring_cart_changed', 'woocommerce_applied_coupon' );
 		}, 10, 0 );
 
 		// Cart emptied
@@ -146,14 +151,244 @@ class WC_Vipps_Recurring_Checkout {
 		add_action( 'vipps_recurring_cart_changed', [ $this, 'cart_changed' ] );
 
 		add_action( 'wc_vipps_recurring_checkout_callback', [ $this, 'handle_callback' ], 10, 2 );
+
+		// Handle cancelled orders
+		add_action( 'wc_vipps_recurring_check_charge_status_no_agreement', [ $this, 'maybe_cancel_initial_order' ] );
 	}
 
-	public function admin_init() {
+	public function admin_init(): void {
 		// Checkout page
 		add_filter( 'woocommerce_settings_pages', array( $this, 'woocommerce_settings_pages' ) );
 	}
 
-	public function maybe_login_checkout_user( int $order_id, ?string $key = null ) {
+	/**
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 */
+	public function maybe_create_session(): array {
+		$redirect_url = null;
+		$token        = null;
+		$url          = null;
+
+		$session = WC_Vipps_Recurring_Checkout::get_instance()->current_pending_session();
+
+		if ( isset( $session['redirect_url'] ) ) {
+			$redirect_url = $session['redirect_url'];
+		}
+
+		if ( isset( $session['session']['token'] ) ) {
+			$token = $session['session']['token'];
+			$src   = $session['session']['checkoutFrontendUrl'];
+			$url   = $src;
+		}
+
+		if ( $url ) {
+			$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
+
+			return [
+				'success'      => true,
+				'src'          => $url,
+				'redirect_url' => $redirect_url,
+				'token'        => $token,
+				'order_id'     => $pending_order_id
+			];
+		}
+
+		$session = null;
+
+		try {
+			$partial_order_id = WC_Gateway_Vipps_Recurring::get_instance()->create_partial_order( true );
+
+			$order      = wc_get_order( $partial_order_id );
+			$auth_token = WC_Gateway_Vipps_Recurring::get_instance()->api->generate_idempotency_key();
+
+			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN, $auth_token );
+			$order->save();
+
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID, $partial_order_id );
+			WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, $auth_token );
+
+			do_action( 'wc_vipps_recurring_checkout_order_created', $order );
+		} catch ( Exception $exception ) {
+			return [
+				'success'      => false,
+				'msg'          => $exception->getMessage(),
+				'src'          => null,
+				'redirect_url' => null,
+				'order_id'     => 0
+			];
+		}
+
+		$order = wc_get_order( $partial_order_id );
+
+		$session_orders = WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_ORDERS );
+		if ( ! $session_orders ) {
+			$session_orders = [];
+		}
+
+		$session_orders[ $partial_order_id ] = 1;
+		WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_PENDING_ORDER_ID, $partial_order_id );
+		WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDERS, $session_orders );
+
+		$customer_id = get_current_user_id();
+		if ( $customer_id ) {
+			$customer = new WC_Customer( $customer_id );
+		} else {
+			$customer = WC()->customer;
+		}
+
+		if ( $customer ) {
+			$customer_info['email']         = $customer->get_billing_email();
+			$customer_info['firstName']     = $customer->get_billing_first_name();
+			$customer_info['lastName']      = $customer->get_billing_last_name();
+			$customer_info['streetAddress'] = $customer->get_billing_address_1();
+			$address2                       = trim( $customer->get_billing_address_2() );
+
+			if ( ! empty( $address2 ) ) {
+				$customer_info['streetAddress'] = $customer_info['streetAddress'] . ", " . $address2;
+			}
+			$customer_info['city']       = $customer->get_billing_city();
+			$customer_info['postalCode'] = $customer->get_billing_postcode();
+			$customer_info['country']    = $customer->get_billing_country();
+
+			// Currently Vipps requires all phone numbers to have area codes and NO +. We can't guarantee that at all, but try for Norway
+			$normalized_phone_number = WC_Vipps_Recurring_Helper::normalize_phone_number( $customer->get_billing_phone(), $customer_info['country'] );
+			if ( $normalized_phone_number ) {
+				$customer_info['phoneNumber'] = $normalized_phone_number;
+			}
+		}
+
+		$keys = [ 'firstName', 'lastName', 'streetAddress', 'postalCode', 'country', 'phoneNumber' ];
+		foreach ( $keys as $k ) {
+			if ( empty( $customer_info[ $k ] ) ) {
+				$customer_info = [];
+				break;
+			}
+		}
+		$customer_info = apply_filters( 'wc_vipps_recurring_customer_info', $customer_info, $order );
+
+		try {
+			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
+			$gateway  = $checkout->gateway();
+
+			$order_prefix = $gateway->order_prefix;
+
+			$agreement = $gateway->create_vipps_agreement_from_order( $order );
+
+			$checkout_subscription = ( new WC_Vipps_Checkout_Session_Subscription() )
+				->set_amount(
+					( new WC_Vipps_Checkout_Session_Amount() )
+						->set_value( $agreement->pricing->amount )
+						->set_currency( $agreement->pricing->currency )
+				)
+				->set_product_name( $agreement->product_name )
+				->set_interval( $agreement->interval )
+				->set_merchant_agreement_url( $agreement->merchant_agreement_url );
+
+			if ( $agreement->campaign ) {
+				$checkout_subscription = $checkout_subscription->set_campaign( $agreement->campaign );
+			}
+
+			if ( $agreement->product_description ) {
+				$checkout_subscription = $checkout_subscription->set_product_description( $agreement->product_description );
+			}
+
+			$customer = new WC_Vipps_Checkout_Session_Customer( $customer_info );
+
+			// Create a checkout session dto
+			$checkout_session = ( new WC_Vipps_Checkout_Session() )
+				->set_type( WC_Vipps_Checkout_Session::TYPE_SUBSCRIPTION )
+				->set_subscription( $checkout_subscription )
+				->set_merchant_info(
+					( new WC_Vipps_Checkout_Session_Merchant_Info() )
+						->set_callback_url( $gateway->webhook_callback_url() )
+						->set_return_url( $agreement->merchant_redirect_url )
+						->set_callback_authorization_token( $auth_token )
+				)
+				->set_prefill_customer( $customer )
+				->set_configuration(
+					( new WC_Vipps_Checkout_Session_Configuration() )
+						->set_user_flow( WC_Vipps_Checkout_Session_Configuration::USER_FLOW_WEB_REDIRECT )
+						->set_customer_interaction( WC_Vipps_Checkout_Session_Configuration::CUSTOMER_INTERACTION_NOT_PRESENT )
+						->set_elements( WC_Vipps_Checkout_Session_Configuration::ELEMENTS_FULL )
+						->set_require_user_info( empty( $customer->email ) )
+						->set_show_order_summary( true )
+				);
+
+			if ( $agreement->initial_charge ) {
+				$reference = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $order_prefix );
+
+				$checkout_transaction = ( new WC_Vipps_Checkout_Session_Transaction() )
+					->set_reference( $reference )
+					->set_amount(
+						( new WC_Vipps_Checkout_Session_Amount() )
+							->set_value( $agreement->initial_charge->amount )
+							->set_currency( $agreement->pricing->currency )
+					)
+					->set_order_summary( $checkout->make_order_summary( $order ) );
+
+				if ( $agreement->initial_charge->description ) {
+					$checkout_transaction = $checkout_transaction->set_payment_description( $agreement->initial_charge->description );
+				}
+
+				$checkout_session = $checkout_session->set_transaction( $checkout_transaction );
+
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $reference );
+			}
+
+			$checkout_session = apply_filters( 'wc_vipps_recurring_checkout_session', $checkout_session, $order );
+
+			$session = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_initiate( $checkout_session );
+
+			$order = wc_get_order( $partial_order_id );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL, true );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION, $session->to_array() );
+
+			$session_poll = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_poll( $session->polling_url );
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID, $session_poll['sessionId'] );
+
+			$order->add_order_note( __( 'Vipps/MobilePay recurring checkout payment initiated', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->add_order_note( __( 'Customer passed to Vipps/MobilePay checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->save();
+
+			$token = $session->token;
+			$src   = $session->checkout_frontend_url;
+			$url   = $src;
+		} catch ( Exception $e ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Could not initiate Vipps/MobilePay checkout session: %s", $e->getMessage() ) );
+
+			return [
+				'success'      => false,
+				'msg'          => $e->getMessage(),
+				'src'          => null,
+				'redirect_url' => null,
+				'order_id'     => $partial_order_id
+			];
+		}
+
+		if ( $url || $redirect_url ) {
+			return [
+				'success'      => true,
+				'msg'          => 'session started',
+				'src'          => $url,
+				'redirect_url' => $redirect_url,
+				'token'        => $token,
+				'order_id'     => $partial_order_id
+			];
+		}
+
+		return [
+			'success'      => false,
+			'msg'          => __( 'Could not start Vipps/MobilePay checkout session', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'src'          => $url,
+			'redirect_url' => $redirect_url,
+			'order_id'     => $partial_order_id
+		];
+	}
+
+	public function maybe_login_checkout_user( int $order_id, ?string $key = null ): void {
 		if ( ! $key ) {
 			return;
 		}
@@ -182,7 +417,7 @@ class WC_Vipps_Recurring_Checkout {
 		WC()->session->set( WC_Vipps_Recurring_Helper::SESSION_ORDER_EXPRESS_AUTH_TOKEN, null );
 	}
 
-	public function cart_changed( string $source ) {
+	public function cart_changed( string $source ): void {
 		$pending_order_id = is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( WC_Vipps_Recurring_Helper::SESSION_CHECKOUT_PENDING_ORDER_ID ) : false;
 		$order            = $pending_order_id ? wc_get_order( $pending_order_id ) : null;
 
@@ -200,7 +435,7 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function check_order_status( $order_id ) {
+	public function check_order_status( $order_id ): void {
 		$lock_name = "vipps_recurring_checkout_check_order_status_$order_id";
 		$lock      = get_transient( $lock_name );
 
@@ -268,7 +503,7 @@ class WC_Vipps_Recurring_Checkout {
 		return $settings;
 	}
 
-	public function woocommerce_loaded() {
+	public function woocommerce_loaded(): void {
 		// Higher priority than the single payments Vipps plugin
 		add_filter( 'woocommerce_get_checkout_page_id', function ( $id ) {
 			$checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
@@ -286,7 +521,7 @@ class WC_Vipps_Recurring_Checkout {
 		}, 20 );
 	}
 
-	public function template_redirect() {
+	public function template_redirect(): void {
 		global $post;
 
 		if ( $post && is_page() && has_shortcode( $post->post_content, 'vipps_recurring_checkout' ) ) {
@@ -313,7 +548,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 	}
 
-	public function wp_head() {
+	public function wp_head(): void {
 		// If we have a Vipps MobilePay Checkout page, stop iOS from giving previews of it that
 		// starts the session - iOS should use the visibility API of the browser for this, but it doesn't as of 2021-11-11
 		$checkout_id = wc_get_page_id( 'vipps_recurring_checkout' );
@@ -323,7 +558,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 	}
 
-	public function register_scripts() {
+	public function register_scripts(): void {
 		$sdk_url = 'https://checkout.vipps.no/vippsCheckoutSDK.js';
 		wp_register_script( 'woo-vipps-recurring-sdk', $sdk_url );
 
@@ -351,7 +586,7 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 */
-	public function shortcode() {
+	public function shortcode(): bool|string {
 		global $wp;
 
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
@@ -385,19 +620,14 @@ class WC_Vipps_Recurring_Checkout {
 
 		do_action( 'vipps_recurring_checkout_before_get_session' );
 
-		// We need to be able to check if we still have a live, good session, in which case
-		// we can open the iframe directly. Otherwise, the form we are going to output will
-		// create the iframe after a button press which will create a new order.
-		$session = $this->current_pending_session();
-
 		// This is the current pending order id, if it exists. Will be used to restart orders etc
 		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
 
 		// Localize script with variables we need to reveal to the frontend
-		$data = [
-			'pendingOrderId' => $pending_order_id,
-			'data'           => $session
-		];
+		$data = $this->current_pending_session();
+		if ( empty( $data['session'] ) ) {
+			$data['session'] = $this->maybe_create_session();
+		}
 
 		wp_add_inline_script( 'woo-vipps-recurring-checkout', 'window.VippsRecurringCheckout = ' . wp_json_encode( $data ), 'before' );
 
@@ -582,7 +812,12 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// This will return either a valid vipps session, nothing, or redirect.
-		return [ 'order' => $order ? $order->get_id() : false, 'session' => $session, 'redirect_url' => $redirect ];
+		return [
+			'success'      => (bool) $order,
+			'order'        => $order ? $order->get_id() : false,
+			'session'      => $session,
+			'redirect_url' => $redirect
+		];
 	}
 
 	/**
@@ -664,10 +899,16 @@ class WC_Vipps_Recurring_Checkout {
 			$order->set_status( 'cancelled', __( "Order specification changed - order abandoned by customer in Checkout", 'vipps-recurring-payments-gateway-for-woocommerce' ), false );
 
 			// Also mark for deletion and remove stored session
-			$order->delete_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
+			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );
+
+			// Stop checking the status of this order in cron
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 
 			// This is dealt with by a cron schedule
-			$order->update_meta_data( WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
+			if ( $this->gateway()->get_option( 'checkout_cleanup_abandoned_orders' ) === 'yes' ) {
+				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
+			}
+
 			$order->save();
 		}
 	}
@@ -678,7 +919,7 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Data_Exception
 	 */
-	public function handle_callback( array $body, string $authorization_token ) {
+	public function handle_callback( array $body, string $authorization_token ): void {
 		WC_Vipps_Recurring_Logger::log( sprintf( "Handling Vipps/MobilePay Checkout callback with body: %s", json_encode( $body ) ) );
 
 		$order_ids = wc_get_orders( [
@@ -719,7 +960,7 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws Exception
 	 */
-	public function handle_payment( WC_Order $order, array $session ) {
+	public function handle_payment( WC_Order $order, array $session ): void {
 		$order_id     = WC_Vipps_Recurring_Helper::get_id( $order );
 		$agreement_id = $session['subscriptionDetails']['agreementId'];
 		$status       = $session['sessionState'];
@@ -803,7 +1044,6 @@ class WC_Vipps_Recurring_Checkout {
 			$subscription->save();
 		}
 
-		// todo: check_charge_status doesn't do it's job properly initially!
 		// todo: throw an error if we try to purchase a product with a location based shipping method?
 
 		$this->gateway()->check_charge_status( $order_id, true );
@@ -836,6 +1076,25 @@ class WC_Vipps_Recurring_Checkout {
 			$order->set_shipping_city( $contact['city'] );
 			$order->set_shipping_postcode( $contact['postalCode'] );
 			$order->set_shipping_country( $contact['country'] );
+		}
+	}
+
+	public function maybe_cancel_initial_order( WC_Order $order ): void {
+		$created = $order->get_date_created();
+		$now     = time();
+
+		try {
+			$timestamp = $created->getTimestamp();
+		} catch ( Exception $e ) {
+			// PHP 8 gives ValueError for certain older versions of WooCommerce here.
+			$timestamp = intval( $created->format( 'U' ) );
+		}
+
+		$passed  = $now - $timestamp;
+		$minutes = ( $passed / 60 );
+
+		if ( $order->get_status() === 'pending' && $minutes > 1 ) {
+			$this->abandon_checkout_order( $order );
 		}
 	}
 }
