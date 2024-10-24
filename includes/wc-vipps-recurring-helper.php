@@ -278,7 +278,7 @@ class WC_Vipps_Recurring_Helper {
 	public static function can_capture_charge_for_order( $order ): bool {
 		return (int) self::get_meta( $order, self::META_CHARGE_PENDING ) === 1
 		       && ! self::is_charge_captured_for_order( $order )
-		       && ! self::is_charge_failed_for_order( $order )
+		       && in_array( self::get_latest_api_status_from_order( $order ), [ WC_Vipps_Charge::STATUS_RESERVED, WC_Vipps_Charge::STATUS_PARTIALLY_CAPTURED ] )
 		       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT )
 		       && ! wcs_order_contains_renewal( $order );
 	}

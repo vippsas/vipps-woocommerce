@@ -167,6 +167,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: You are now informed that a Merchant Serial Number is required in order to enable Checkout.
 * Fixed: Your applied coupons are now given the proper respect when Checkout is enabled.
 * Fixed: The price is now set correctly when one off products are in a recurring cart when Checkout is enabled.
+* Fixed: No longer show the "Capture payment" button when the charge is in a non-RESERVED state.
+* Fixed: A scenario where the "auto capture payment" feature for MobilePay would not trigger correctly.
 * Added: We now cancel initial Checkout orders after two hours to avoid checking them in cron forever.
 * Added: You can now enable or disable deletion of changed or abandoned Checkout orders in the settings.
 

@@ -459,6 +459,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	/**
 	 * @param $order_id
+	 * @param bool $skip_lock
 	 *
 	 * @return string
 	 * @throws WC_Vipps_Recurring_Config_Exception
@@ -506,7 +507,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( $order_initial && $order->get_payment_method() === $this->id ) {
 				do_action( 'wc_vipps_recurring_check_charge_status_no_agreement', $order );
 			}
-			
+
 			return 'INVALID';
 		}
 
@@ -561,11 +562,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$is_captured = ! in_array( $charge->status, [
 			WC_Vipps_Charge::STATUS_PENDING,
 			WC_Vipps_Charge::STATUS_RESERVED
-		], true );
+		], true ) && $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE;
 
 		// If the brand is MobilePay, we should capture the payment now if it is not already captured.
 		// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
-		if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY && ! $is_captured && $this->auto_capture_mobilepay ) {
+		if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY
+			 && ! $is_captured
+			 && $this->auto_capture_mobilepay ) {
+			$order->save();
+
 			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 			$this->maybe_capture_payment( $order_id );
 
@@ -574,6 +579,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$is_direct_capture = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
 		if ( $is_direct_capture && ! $is_captured ) {
+			$order->save();
+
 			$this->maybe_capture_payment( $order_id );
 
 			return 'SUCCESS';
@@ -1400,7 +1407,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$agreement_total = WC_Subscriptions_Product::get_regular_price( $product, 'code' ) * $quantity;
 		}
 
-		$is_zero_amount      = (int) $agreement_total === 0 || $is_gateway_change;
+		$is_zero_amount      = (int) $agreement_total === 0 || (int) $order->get_total() === 0 || $is_gateway_change;
 		$capture_immediately = $is_virtual || $direct_capture;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 
