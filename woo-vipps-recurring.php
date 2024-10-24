@@ -8,8 +8,8 @@
  * Version: 2.0.2
  * Requires Plugins: woocommerce
  * Requires at least: 6.1
- * Tested up to: 6.5
- * WC tested up to: 8.6
+ * Tested up to: 6.6
+ * WC tested up to: 9.3
  * Text Domain: vipps-recurring-payments-gateway-for-woocommerce
  * Domain Path: /languages
  */
