@@ -1,4 +1,12 @@
 .vipps-recurring-checkout-page {
+	&__error {
+		text-align: center;
+
+		&__action {
+			//
+		}
+	}
+
 	&__loading {
 		display: flex;
 		justify-content: center;

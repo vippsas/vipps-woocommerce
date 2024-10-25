@@ -7,39 +7,21 @@ import apiFetch from '@wordpress/api-fetch'
 import { __ } from '@wordpress/i18n'
 
 export default function CheckoutPage () {
-	const { pendingOrderId, data: initialData } = window.VippsRecurringCheckout
+	const checkoutData = window.VippsRecurringCheckout
+	const { continueShoppingUrl } = window.VippsMobilePaySettings
 
-	const [loaded, setLoaded] = useState(!!initialData.session)
-	const [session, setSession] = useState(initialData.session)
 	const [sessionStatus, setSessionStatus] = useState(null)
 	const sessionPollHandler = useRef(null)
 
 	const iframeRef = useRef(null)
 
 	useEffect(() => {
-		if (loaded) {
+		if (!checkoutData.redirect_url) {
 			return
 		}
 
-		fetchOrCreateSession()
-
-		setLoaded(true)
-	}, [session, loaded])
-
-	useEffect(() => {
-		if (!initialData.redirect_url) {
-			return
-		}
-
-		window.location.href = initialData.redirect_url
-	}, [initialData])
-
-	const fetchOrCreateSession = useCallback(() => {
-		apiFetch({
-			path: `/vipps-mobilepay-recurring/v1/checkout/session`,
-			method: 'POST',
-		}).then(response => setSession(response))
-	}, [pendingOrderId])
+		window.location.href = checkoutData.redirect_url
+	}, [checkoutData])
 
 	const pollSessionStatus = useCallback(() => {
 		apiFetch({
@@ -51,7 +33,7 @@ export default function CheckoutPage () {
 	}, [])
 
 	useEffect(() => {
-		if (!session.token) {
+		if (!checkoutData.session.token || !checkoutData.success) {
 			return
 		}
 
@@ -60,7 +42,7 @@ export default function CheckoutPage () {
 		return () => {
 			clearInterval(sessionPollHandler.current)
 		}
-	}, [session])
+	}, [checkoutData])
 
 	useEffect(() => {
 		if (!sessionStatus) {
@@ -105,20 +87,33 @@ export default function CheckoutPage () {
 		return () => {
 			window.removeEventListener('message', listenToIframe)
 		}
-	}, [iframeRef.current, session.token])
+	}, [iframeRef.current, checkoutData.session.token])
 
 	return <form id="vippsdata" className="woocommerce-checkout">
 		<div className={'vipps-recurring-checkout-page'}>
-			<div className={'vipps-recurring-checkout-page__loading'}>
-				{sessionStatus?.status !== 'EXPIRED' && <>
-					{!session.token && <div
+			{(!checkoutData.session.success && checkoutData.session.msg?.length > 0) ? <div
+				className={'vipps-recurring-checkout-page__error'}>
+				<p>
+					{checkoutData.session.msg}
+				</p>
+
+				<p>
+					<a href={continueShoppingUrl}
+					   className={'btn button vipps-recurring-checkout-page__error__action'}>
+						{__('Continue shopping',
+							'vipps-recurring-payments-gateway-for-woocommerce')}
+					</a>
+				</p>
+			</div> : <div className={'vipps-recurring-checkout-page__loading'}>
+				{(sessionStatus?.status !== 'EXPIRED') && <>
+					{!checkoutData.session.token && <div
 						className={'vipps-recurring-checkout-page__loading__spinner'}/>}
 
-					{session.token && (
+					{checkoutData.session.token && (
 						<iframe ref={iframeRef}
-								src={`${(session.checkoutFrontendUrl ||
-									session.src)}?token=${session.token}`}
-								frameborder="0" width={'100%'}></iframe>
+								src={`${(checkoutData.session.checkoutFrontendUrl ||
+									checkoutData.session.src)}?token=${checkoutData.session.token}`}
+								frameBorder="0" width={'100%'}></iframe>
 					)}
 				</>}
 
@@ -126,7 +121,7 @@ export default function CheckoutPage () {
 					{__('Checkout session expired. Please refresh to start a new session.',
 						'vipps-recurring-payments-gateway-for-woocommerce')}
 				</div>}
-			</div>
+			</div>}
 		</div>
 	</form>
 }

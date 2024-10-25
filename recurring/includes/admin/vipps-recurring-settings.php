@@ -43,7 +43,7 @@ return apply_filters(
 		'title_checkout'                   => [
 			'type'        => 'title',
 			// translators: %s "use at your own risk" title
-			'title'       =>  sprintf("<span style='color: #ff9800;' title='%s'>[BETA]</span>", __('Use at your own risk', 'vipps-recurring-payments-gateway-for-woocommerce')) . " " . __( 'Checkout settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title'       => sprintf( "<span style='color: #ff9800;' title='%s'>[BETA]</span>", __( 'Use at your own risk', 'vipps-recurring-payments-gateway-for-woocommerce' ) ) . " " . __( 'Checkout settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'description' => __( 'Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an easier and more seamless checkout that allows you to pay with Vipps MobilePay (and soon also a credit card). Your customers will be able to provide their billing/shipping details directly from the Vipps MobilePay app. <br><br><strong>Important!</strong> Checkout for recurring payments <strong>only supports static shipping</strong> at the moment.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 		],
 		'checkout_enabled'                 => [
@@ -52,12 +52,19 @@ return apply_filters(
 			'type'    => 'checkbox',
 			'default' => 'no',
 		],
-		'order_prefix' => [
+		'order_prefix'                     => [
 			'type'        => 'text',
-			'title' => __('OrderId prefix', 'vipps-recurring-payments-gateway-for-woocommerce'),
-			'label'       => __('OrderId prefix', 'vipps-recurring-payments-gateway-for-woocommerce'),
-			'description' => __('An alphanumeric text string to use as a prefix on checkout orders from your shop, to avoid duplicate order ids.','vipps-recurring-payments-gateway-for-woocommerce'),
+			'title'       => __( 'OrderId prefix', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'label'       => __( 'OrderId prefix', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'An alphanumeric text string to use as a prefix on checkout orders from your shop, to avoid duplicate order ids.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
 			'default'     => ''
+		],
+		'checkout_cleanup_abandoned_orders'  => [
+			'title'       => __( 'Cleanup changed/abandoned orders', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'label'       => __( 'Cleanup changed/abandoned orders', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Automatically clean up Checkout orders where the order was abandoned, or the specification changed (runs every hour).', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'type'        => 'checkbox',
+			'default'     => 'no',
 		],
 		'title_api'                        => [
 			'type'        => 'title',
