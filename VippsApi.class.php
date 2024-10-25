@@ -1412,7 +1412,7 @@ class VippsApi {
         if ($encoding == 'url' || $verb == 'GET') {
             $data_encoded = http_build_query($data);
         } else {
-            $data_encoded = json_encode($data);
+            $data_encoded = json_encode($data, JSON_THROW_ON_ERROR);
         }
         $data_len = strlen ($data_encoded);
         $http_response_header = null;
