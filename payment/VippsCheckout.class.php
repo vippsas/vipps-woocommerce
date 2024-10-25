@@ -127,7 +127,7 @@ jQuery(document).ready(function () {
        foreach ($possible as $key => $gws) {
          $on = $gw->get_option('checkout_external_payments_' . $key);
          $active = array_intersect($gws, $available);
-         if ($on && !empty($active)) {
+         if ($on == "yes" && !empty($active)) {
            $externals[$key] = ['gw' => array_values($active)[0]];
          }
        }

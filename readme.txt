@@ -5,7 +5,7 @@ Tags: woocommerce, vipps
 Version: 4.0.0
 Stable tag: 4.0.0
 Requires at least: 6.2
-Tested up to: 6.6.2
+Tested up to: 6.7.0
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 3.0.3 Fixes issue where zero-value fees would make purchases impossible
 Version 3.0.2 Fixes support of Klarna Payments as an external payment method
 Version 3.0.1 fixes an issue in the Gutenberg Checkout block where issues with Vipps/Mobilepay were turned into fatal errors.
 In version 3.0.0  we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the co nfiguraton experience as the features improve and the settings grow more complicated.
@@ -242,7 +243,12 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-11-14 version 3.0.2 =
+= 2024-10-2x version 3.0.3 =
+Fix issue with orders with zero-value fees
+Fix issue with not being able to turn off Klarna in Checkout
+Change settings-setup to require country to be selected first
+
+= 2024-10-14 version 3.0.2 =
 Fix support of Klarna Payments as an external payment method
 
 = 2024-10-07 version 3.0.1 =

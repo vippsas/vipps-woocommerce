@@ -264,9 +264,7 @@ class VippsApi {
                     $url = get_permalink($prodid);
                 }
                 $taxpercentageraw = 0;
-                if ($subtotalNoTax == 0) {
-                    $taxpercentageraw = 0;
-                } else {
+                if ($subtotalNoTax > 0) {
                     $taxpercentageraw = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
                 $taxrate = abs(round(100*$taxpercentageraw));
@@ -295,7 +293,10 @@ class VippsApi {
                 $tax = $order_item->get_total_tax();
                 $total = $tax+$totalNoTax;
                 $quantity = 1;
-                $taxpercentageraw = (($total - $totalNoTax) / $totalNoTax)*100;
+                $taxpercentageraw = 0;
+                if ($totalNoTax > 0) { 
+                    $taxpercentageraw = (($total - $totalNoTax) / $totalNoTax)*100;
+                }
                 $taxrate = abs(round(100*$taxpercentageraw));
                 $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
@@ -328,9 +329,7 @@ class VippsApi {
                 $subtotal = $subtotalNoTax + $subtotalTax;
 
                 $taxpercentageraw = 0;
-                if ($subtotalNoTax == 0) {
-                    $taxpercentageraw = 0;
-                }  else {
+                if ($subtotalNoTax > 0) {
                     $taxpercentageraw = (($subtotal - $subtotalNoTax) / $subtotalNoTax)*100;
                 }
                 $taxpercentage = abs(round($taxpercentageraw));
@@ -887,7 +886,6 @@ class VippsApi {
         // IOK 2024-01-09 Fix this as soon as the EUR bug is fixed!
         if ($summarize) {
             $ordersummary = $this->get_receipt_data($order);
-
             // This is different in the receipt api, the epayment api and in checkout.
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
             unset($ordersummary['bottomLine']);
@@ -1412,7 +1410,7 @@ class VippsApi {
         if ($encoding == 'url' || $verb == 'GET') {
             $data_encoded = http_build_query($data);
         } else {
-            $data_encoded = json_encode($data);
+            $data_encoded = json_encode($data, JSON_THROW_ON_ERROR);
         }
         $data_len = strlen ($data_encoded);
         $http_response_header = null;

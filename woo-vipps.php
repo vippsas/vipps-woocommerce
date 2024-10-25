@@ -10,7 +10,7 @@
    Version: 4.0.0
    Stable tag: 4.0.0
    Requires at least: 6.2
-   Tested up to: 6.6.2
+   Tested up to: 6.7.0
    Requires PHP: 7.0
    Requires Plugins: woocommerce
    WC requires at least: 3.3.4
