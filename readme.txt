@@ -243,7 +243,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2024-10-2x version 3.0.3 =
+= 2024-10-28 version 3.0.3 =
 Fix issue with orders with zero-value fees
 Fix issue with not being able to turn off Klarna in Checkout
 Change settings-setup to require country to be selected first
