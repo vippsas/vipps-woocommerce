@@ -166,6 +166,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: Checkout webhooks no longer fail with an "Invalid authorization token" message.
 * Fixed: Propagate shipping and billing address to newly registered users when using Checkout.
 * Added: We now send a password reset link to newly registered users when using Checkout.
+* Fixed: Make sure phone numbers from Checkout are saved with a + prefix.
 
 = 2.0.4 =
 * Fixed: Increase deletion period for checkout orders, as intended.

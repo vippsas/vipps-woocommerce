@@ -1068,7 +1068,7 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		$object->set_billing_email( $contact['email'] );
-		$object->set_billing_phone( $contact['phoneNumber'] );
+		$object->set_billing_phone( '+' . $contact['phoneNumber'] );
 		$object->set_billing_first_name( $contact['firstName'] );
 		$object->set_billing_last_name( $contact['lastName'] );
 		$object->set_billing_address_1( $contact['streetAddress'] );
