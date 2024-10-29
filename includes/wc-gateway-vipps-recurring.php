@@ -1338,7 +1338,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		} );
 
 		$subscription_item = array_pop( $subscription_items );
-		$quantity          = $subscription_item->get_quantity();
 		$product           = $subscription_item->get_product();
 		$parent_product    = wc_get_product( $subscription_item->get_product_id() );
 
@@ -1370,7 +1369,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order, $is_gateway_change );
 
 		// total no longer returns the order amount when gateway is being changed
-		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total();
+		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total( 'code' );
 
 		// when we're performing a variation switch we need some special logic in Vipps
 		$is_subscription_switch = wcs_order_contains_switch( $order );
@@ -1389,29 +1388,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 		}
 
-		// If we have more products in our cart we know that the agreement total should just be the sum of the subscription total.
-		// We then create an initialCharge for the full initial sum, including the rest of the cart.
-		// We can safely ignore all of the above code regarding $agreement_total because this will never happen for a subscription switch.
-		$recurring_item_total = $subscription_item->get_total() + $order->get_shipping_total();
-
-		if ( $has_more_products ) {
-			$agreement_total = $recurring_item_total;
-		}
-
-		if ( WC()->cart->has_discount() ) {
-			$agreement_total = (float) $parent_product->get_price( 'code' ) + $order->get_shipping_total();
-		}
-
-		$has_trial = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
-		if ( $has_trial ) {
-			$agreement_total = WC_Subscriptions_Product::get_regular_price( $product, 'code' ) * $quantity;
-		}
-
+		$has_trial           = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
 		$is_zero_amount      = (int) $agreement_total === 0 || (int) $order->get_total() === 0 || $is_gateway_change;
 		$capture_immediately = $is_virtual || $direct_capture;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 
-		$sign_up_fee       = WC_Subscriptions_Product::get_sign_up_fee( $product ) * $quantity;
+		$sign_up_fee       = WC_Subscriptions_Order::get_sign_up_fee( $order );
 		$has_campaign      = $has_trial || $has_synced_product || $is_zero_amount || $order->get_total_discount() !== 0.00 || $is_subscription_switch || $sign_up_fee;
 		$has_free_campaign = $is_subscription_switch || $sign_up_fee || $has_synced_product || $has_trial;
 
@@ -1469,7 +1451,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $has_campaign ) {
-			$campaign_price = $has_free_campaign ? $sign_up_fee : $recurring_item_total;
+			$campaign_price = $has_free_campaign ? $sign_up_fee : $agreement_total;
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
 			$campaign_period = null;
@@ -2656,6 +2638,27 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return $order_id;
 	}
 
+	/**
+	 * @throws Exception
+	 */
+	public function create_or_get_anonymous_system_customer(): WC_Customer {
+		$customer_id = get_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID );
+
+		// Create a user if it does not exist
+		if ( ! get_user_by( 'ID', $customer_id ) ) {
+			$email       = 'anonymous@vippsmobilepay.local';
+			$username    = wc_create_new_customer_username( $email );
+			$customer_id = wc_create_new_customer( $email, $username, null, [
+				'first_name'    => 'Anonymous Vipps MobilePay Customer',
+				'user_nicename' => __( 'Anonymous Vipps MobilePay Customer', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			] );
+
+			update_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID, $customer_id );
+		}
+
+		return new WC_Customer( $customer_id );
+	}
+
 	public function create_partial_subscription_groups_from_order( WC_Order $order ): array {
 		$subscription_groups = [];
 
@@ -2678,7 +2681,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws Exception
 	 */
-	public function create_partial_subscriptions_from_order( WC_Order $order ) {
+	public function create_partial_subscriptions_from_order( WC_Order $order ): bool|array {
 		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 		if ( ! $order->get_customer_id() ) {

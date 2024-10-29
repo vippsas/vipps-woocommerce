@@ -268,13 +268,42 @@ class WC_Vipps_Recurring_Checkout {
 		}
 		$customer_info = apply_filters( 'wc_vipps_recurring_customer_info', $customer_info, $order );
 
+		// todo: throw an error if we try to purchase a product with a location based shipping method?
 		try {
 			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
 			$gateway  = $checkout->gateway();
 
 			$order_prefix = $gateway->order_prefix;
 
-			$agreement = $gateway->create_vipps_agreement_from_order( $order );
+			// hack - fake "Anonymous Vipps/MobilePay User"
+			$fake_user = false;
+			if ( ! $order->get_customer_id( 'edit' ) ) {
+				$fake_user = true;
+
+				$order->set_customer_id( $this->gateway()->create_or_get_anonymous_system_customer()->get_id() );
+				$order->save();
+			}
+
+			$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
+
+			// reset hack
+			if ( $fake_user ) {
+				$order->set_customer_id( 0 );
+				$order->save();
+			}
+
+			$subscription = array_pop( $subscriptions );
+
+			// Remove this action to avoid making an unnecessary API request
+			remove_action( 'woocommerce_order_after_calculate_totals', [
+				$this->gateway(),
+				'update_agreement_price_in_app'
+			] );
+
+			$subscription->calculate_totals();
+			$subscription->save();
+
+			$agreement = $gateway->create_vipps_agreement_from_order( $order, $subscription );
 
 			$checkout_subscription = ( new WC_Vipps_Checkout_Session_Subscription() )
 				->set_amount(
@@ -1004,17 +1033,16 @@ class WC_Vipps_Recurring_Checkout {
 			$user_id = $user->ID;
 
 			if ( ! $user_id ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout creating a new customer", $order_id ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: creating a new customer", $order_id ) );
 
-				$email_parts = explode( '@', $email );
-				$username    = $email_parts[0] . wp_generate_password( 4 );
-				$user_id     = wc_create_new_customer( $email, $username, null );
+				$username = wc_create_new_customer_username( $email );
+				$user_id  = wc_create_new_customer( $email, $username, null );
 
 				$customer = new WC_Customer( $user_id );
 				$this->maybe_update_billing_and_shipping( $customer, $session );
 
 				// Send a password reset link right away.
-				$user_data = get_user_by('ID', $user_id);
+				$user_data = get_user_by( 'ID', $user_id );
 
 				$key = get_password_reset_key( $user_data );
 
@@ -1028,31 +1056,21 @@ class WC_Vipps_Recurring_Checkout {
 			}
 
 			$order->set_customer_id( $user_id );
+			$order->save();
 		}
 
 		$this->maybe_update_billing_and_shipping( $order, $session );
 
-		// Create subscription
+		// Update subscription with the correct customer id, and agreement id
 		$existing_subscriptions = wcs_get_subscriptions_for_order( $order );
 
-		if ( empty( $existing_subscriptions ) ) {
-			$order         = wc_get_order( $order_id );
-			$subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
-			if ( ! $subscriptions ) {
-				return;
-			}
+		/** @var WC_Subscription $subscription */
+		$subscription = array_pop( $existing_subscriptions );
+		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
 
-			/** @var WC_Subscription $subscription */
-			$subscription = array_pop( $subscriptions );
-			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout created a new subscription: %s", $order_id, WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
-
-			$subscription->calculate_totals();
-			$subscription->save();
-		}
-
-		// todo: throw an error if we try to purchase a product with a location based shipping method?
+		$subscription->set_customer_id( $order->get_customer_id( 'edit' ) );
+		wcs_copy_order_address( $order, $subscription );
+		$subscription->save();
 
 		$this->gateway()->check_charge_status( $order_id, true );
 

@@ -70,6 +70,7 @@ class WC_Vipps_Recurring_Helper {
 	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
 	public const OPTION_CHECKOUT_ENABLED = '_woo_vipps_recurring_checkout_enabled';
 	public const OPTION_WEBHOOKS = '_woo_vipps_recurring_webhooks';
+	public const OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID = '_woo_vipps_recurring_anonymous_system_customer_id';
 
 	public const SESSION_CHECKOUT_PENDING_ORDER_ID = '_vipps_recurring_checkout_pending_order_id';
 	public const SESSION_ORDERS = '_vipps_recurring_session_orders';
