@@ -1097,7 +1097,7 @@ class WC_Vipps_Recurring_Checkout {
 		$passed  = $now - $timestamp;
 		$minutes = ( $passed / 60 );
 
-		if ( $order->get_status() === 'pending' && $minutes > 1 ) {
+		if ( $order->get_status() === 'pending' && $minutes > 120 ) {
 			$this->abandon_checkout_order( $order );
 		}
 	}
