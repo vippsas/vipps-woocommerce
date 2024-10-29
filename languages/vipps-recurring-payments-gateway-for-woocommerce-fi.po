@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2024-01-18T15:12:13+00:00\n"
-"PO-Revision-Date: 2024-10-24 09:48+0000\n"
+"PO-Revision-Date: 2024-10-29 18:11+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: vipps-recurring-payments-gateway-for-woocommerce\n"
 "Language: fi\n"
@@ -34,7 +34,7 @@ msgstr ""
 "Löydät luettelon mahdollisista epäonnistumisen syistä ja niiden merkitykset "
 "%s"
 
-#: includes/wc-gateway-vipps-recurring.php:921
+#: includes/wc-gateway-vipps-recurring.php:928
 msgid ""
 "A temporary error occurred when refunding a payment through Vipps MobilePay. "
 "Please ensure the order is refunded manually or reset the order to "
@@ -56,7 +56,7 @@ msgstr ""
 "Aktivoi MobilePay Toistuvat maksut ulkoisena maksutapana Klarna Checkoutissa"
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1670
+#: includes/wc-gateway-vipps-recurring.php:1659
 msgid ""
 "Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
 msgstr ""
@@ -81,13 +81,17 @@ msgstr ""
 msgid "An error occurred"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:945
+#: includes/wc-gateway-vipps-recurring.php:952
 msgid ""
 "An unexpected error occurred while refunding a payment in Vipps/MobilePay."
 msgstr "Odottamaton virhe tapahtui palautettaessa maksua Vipps/MobilePayssa."
 
 #: src/components/PaymentRedirectPage/PaymentError.jsx:22
 msgid "An unknown error has occurred."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:2653
+msgid "Anonymous Vipps MobilePay Customer"
 msgstr ""
 
 #: includes/admin/vipps-recurring-settings.php:71
@@ -113,11 +117,11 @@ msgstr "Brändi"
 msgid "Brand settings"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2035
+#: includes/wc-gateway-vipps-recurring.php:2024
 msgid "Cancelled"
 msgstr "Peruutettu"
 
-#: includes/wc-gateway-vipps-recurring.php:2129
+#: includes/wc-gateway-vipps-recurring.php:2118
 msgid "Cancelled due charge in Vipps/MobilePay."
 msgstr "Peruutettu Osto"
 
@@ -143,7 +147,7 @@ msgid "Captured"
 msgstr "Varattu"
 
 #. translators: Vipps/MobilePay Charge ID
-#: includes/wc-gateway-vipps-recurring.php:701
+#: includes/wc-gateway-vipps-recurring.php:708
 msgid "Charge completed (Charge ID: %s)"
 msgstr "Veloitus on valmis (Charge ID: %s)"
 
@@ -204,11 +208,11 @@ msgid "Controls the payment flow brand (Vipps or MobilePay)."
 msgstr "Ohjaa maksuliikennemerkin (Vipps tai MobilePay) maksuvirtausta."
 
 #. translators: %s: the error message returned from Vipps/MobilePay
-#: includes/wc-gateway-vipps-recurring.php:1884
+#: includes/wc-gateway-vipps-recurring.php:1873
 msgid "Could not authenticate with the Vipps/MobilePay API: %s"
 msgstr "Ei voitu autentikoitua Vipps MobilePay -rajapinnan kanssa: %s"
 
-#: includes/wc-gateway-vipps-recurring.php:2133
+#: includes/wc-gateway-vipps-recurring.php:2122
 msgid ""
 "Could not cancel charge in Vipps/MobilePay. Please manually check the status "
 "of this order if you plan to process a new renewal order!"
@@ -217,7 +221,7 @@ msgstr ""
 "tila manuaalisesti, jos aiot käsitellä uuden uusimistilauksen!"
 
 #. translators: %s: The charge's status
-#: includes/wc-gateway-vipps-recurring.php:1109
+#: includes/wc-gateway-vipps-recurring.php:1116
 msgid ""
 "Could not capture charge because the status is not RESERVED or "
 "PARTIALLY_CAPTURED. Found status: %s"
@@ -225,7 +229,7 @@ msgstr ""
 "Ei voitu varata maksua, koska tila ei ole RESERVED tai PARTIALLY_CAPTURED. "
 "Löydetty tila: %s"
 
-#: includes/wc-vipps-recurring-checkout.php:384
+#: includes/wc-vipps-recurring-checkout.php:413
 msgid "Could not start Vipps/MobilePay checkout session"
 msgstr ""
 
@@ -246,7 +250,7 @@ msgstr "Mukautettu"
 msgid "Custom description"
 msgstr "Mukautettu kuvaus"
 
-#: includes/wc-vipps-recurring-checkout.php:353
+#: includes/wc-vipps-recurring-checkout.php:382
 msgid "Customer passed to Vipps/MobilePay checkout"
 msgstr ""
 
@@ -284,7 +288,7 @@ msgid "Developer, test, and debugging options."
 msgstr ""
 
 #. translators: %s: brand (Vipps or MobilePay)
-#: includes/wc-gateway-vipps-recurring.php:1612
+#: includes/wc-gateway-vipps-recurring.php:1601
 msgid ""
 "Different subscription products can not be purchased at the same time using "
 "%s."
@@ -339,7 +343,7 @@ msgid "Failed Charges"
 msgstr "Epäonnistuneet veloitukset"
 
 #. translators: Error message
-#: includes/wc-gateway-vipps-recurring.php:832
+#: includes/wc-gateway-vipps-recurring.php:839
 msgid "Failed creating a charge: %s"
 msgstr ""
 "\n"
@@ -421,7 +425,7 @@ msgstr "Merchant Serial Number (MSN)"
 msgid "MobilePay"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:569
+#: includes/wc-gateway-vipps-recurring.php:574
 msgid ""
 "MobilePay payments are automatically captured to prevent the payment "
 "reservation from automatically getting cancelled after 14 days."
@@ -475,7 +479,7 @@ msgstr ""
 msgid "Oldest first"
 msgstr "Vanhin ensin"
 
-#: includes/wc-gateway-vipps-recurring.php:2046
+#: includes/wc-gateway-vipps-recurring.php:2035
 msgid "On hold"
 msgstr "Odottaa"
 
@@ -487,7 +491,7 @@ msgstr ""
 msgid "Order settings"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:899
+#: includes/wc-vipps-recurring-checkout.php:928
 msgid "Order specification changed - order abandoned by customer in Checkout"
 msgstr ""
 
@@ -520,13 +524,13 @@ msgstr "Maksa %s"
 msgid "Pay with {brand}."
 msgstr "Maksa {brand}."
 
-#: includes/wc-gateway-vipps-recurring.php:1209
+#: includes/wc-gateway-vipps-recurring.php:1216
 msgid "Payment gateway change request cancelled in Vipps/MobilePay"
 msgstr ""
 "\n"
 "Maksuyhdyskäytävän vaihtopyyntö peruttiin Vipps/MobilePayssa."
 
-#: includes/wc-gateway-vipps-recurring.php:2024
+#: includes/wc-gateway-vipps-recurring.php:2013
 msgid "Pending cancellation"
 msgstr "Odottaa peruutusta"
 
@@ -557,7 +561,7 @@ msgid "Remember: {brand} is always has no fees when paying businesses."
 msgstr "Muistutus: {brand} ei koskaan veloita maksua maksaessa yrityksille."
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1641
+#: includes/wc-gateway-vipps-recurring.php:1630
 msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
 msgstr ""
 "Pyyntö vaihtaa maksuyhdyskäytävä Vippsiin/MobilePayhin sopimusnumerolla: %s."
@@ -574,11 +578,11 @@ msgstr "Asetukset"
 msgid "Status checking sort order for charges"
 msgstr "Tilatarkistuksen lajittelujärjestys veloituksille"
 
-#: includes/wc-gateway-vipps-recurring.php:2479
+#: includes/wc-gateway-vipps-recurring.php:2468
 msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1879
+#: includes/wc-gateway-vipps-recurring.php:1868
 msgid "Successfully authenticated with the Vipps/MobilePay API"
 msgstr "Onnistuneesti autentikoitu Vipps/MobilePay API:lla"
 
@@ -586,7 +590,7 @@ msgstr "Onnistuneesti autentikoitu Vipps/MobilePay API:lla"
 msgid "Successfully checked the status of these charges"
 msgstr "Veloitusten tila on tarkistettu onnistuneesti"
 
-#: includes/wc-gateway-vipps-recurring.php:1815
+#: includes/wc-gateway-vipps-recurring.php:1804
 msgid "Test API settings"
 msgstr ""
 
@@ -594,7 +598,7 @@ msgstr ""
 msgid "Test mode"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:622
+#: includes/wc-gateway-vipps-recurring.php:629
 msgid "The agreement was cancelled or expired in Vipps/MobilePay"
 msgstr "Sopimus on Vippsillä/MobilePaylla peruutettu tai vanhentunut"
 
@@ -636,7 +640,7 @@ msgstr ""
 "koskee vain asiakkaan uudelleen allekirjoittamia sopimuksia. Käytä alla "
 "olevaa asetusta asettaaksesi oletustilan uusimistilauksille."
 
-#: includes/wc-gateway-vipps-recurring.php:519
+#: includes/wc-gateway-vipps-recurring.php:520
 msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr "Välisumma on nolla, tilaus on ilmainen tällä tilausjaksolla."
 
@@ -674,13 +678,13 @@ msgstr ""
 msgid "This order has not yet been captured."
 msgstr "Tilausta ei ole vielä varattu."
 
-#: includes/wc-vipps-recurring-checkout.php:485
+#: includes/wc-vipps-recurring-checkout.php:514
 msgid ""
 "This page is used for the alternative Vipps/MobilePay checkout page, which "
 "you can choose to use instead of the normal WooCommerce checkout page. "
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1589
+#: includes/wc-gateway-vipps-recurring.php:1578
 msgid ""
 "This subscription is already active in Vipps/MobilePay. You can leave this "
 "page."
@@ -691,7 +695,7 @@ msgstr ""
 msgid "This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1962
+#: includes/wc-gateway-vipps-recurring.php:1951
 msgid "This Vipps/MobilePay agreement ID is invalid."
 msgstr "Tämä Vippsin/MobilePayn sopimustunnus on virheellinen."
 
@@ -727,32 +731,32 @@ msgid ""
 "only supports static shipping</strong> at the moment."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1938
+#: includes/wc-gateway-vipps-recurring.php:1927
 msgid "Vipps/MobilePay Agreement ID"
 msgstr "Vipps/MobilePay sopimustunnus"
 
 #. translators: Vipps/MobilePay Charge ID, human diff timestamp
-#: includes/wc-gateway-vipps-recurring.php:1058
+#: includes/wc-gateway-vipps-recurring.php:1065
 msgid "Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s."
 msgstr "Vipps/MobilePay-veloitus on luotu: %1$s. Lataus on valmis %2$s."
 
-#: includes/wc-gateway-vipps-recurring.php:1132
+#: includes/wc-gateway-vipps-recurring.php:1139
 msgid "Vipps/MobilePay is temporarily unavailable."
 msgstr "Vipps/MobilePay ei väliaikaisesti ole saatavilla."
 
-#: includes/wc-gateway-vipps-recurring.php:736
+#: includes/wc-gateway-vipps-recurring.php:743
 msgid "Vipps/MobilePay payment cancelled."
 msgstr "Maksu peruutettu."
 
-#: includes/wc-gateway-vipps-recurring.php:744
+#: includes/wc-gateway-vipps-recurring.php:751
 msgid "Vipps/MobilePay payment failed."
 msgstr "Maksu epäonnistui."
 
-#: includes/wc-vipps-recurring-checkout.php:484
+#: includes/wc-vipps-recurring-checkout.php:513
 msgid "Vipps/MobilePay Recurring Checkout Page"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:352
+#: includes/wc-vipps-recurring-checkout.php:381
 msgid "Vipps/MobilePay recurring checkout payment initiated"
 msgstr ""
 
@@ -801,7 +805,7 @@ msgstr ""
 "portaaliin vahvistusta varten. Se luo maksusuunnitelman ja veloittaa "
 "käyttäjiäsi määrittelemiesi aikavälien mukaan."
 
-#: includes/wc-gateway-vipps-recurring.php:713
+#: includes/wc-gateway-vipps-recurring.php:720
 msgid "Waiting for you to capture the payment"
 msgstr "Odottaa, että vangitset maksun."
 
@@ -838,7 +842,7 @@ msgstr ""
 msgid "Yes"
 msgstr "Kyllä"
 
-#: includes/wc-gateway-vipps-recurring.php:941
+#: includes/wc-gateway-vipps-recurring.php:948
 msgid ""
 "You can not partially refund a pending or due charge. Please wait till the "
 "payment clears first or refund the full amount instead."
@@ -847,7 +851,7 @@ msgstr ""
 "maksu selvitetään ensin tai palauta sen sijaan koko summa."
 
 #. translators: %s is the days as an integer since the order was created
-#: includes/wc-gateway-vipps-recurring.php:905
+#: includes/wc-gateway-vipps-recurring.php:912
 msgid ""
 "You cannot refund a charge that was made more than 365 days ago. This order "
 "was created %s days ago."
@@ -855,7 +859,7 @@ msgstr ""
 "Et voi palauttaa veloitusta, joka on tehty yli 365 päivää sitten. Tämä "
 "tilaus luotiin %s päivää sitten."
 
-#: includes/wc-gateway-vipps-recurring.php:1894
+#: includes/wc-gateway-vipps-recurring.php:1883
 msgid ""
 "You need to provide a Merchant Serial Number before you can enable Checkout."
 msgstr ""
