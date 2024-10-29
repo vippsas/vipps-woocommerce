@@ -1008,13 +1008,18 @@ class WC_Vipps_Recurring_Checkout {
 
 				$email_parts = explode( '@', $email );
 				$username    = $email_parts[0] . wp_generate_password( 4 );
-				$password    = wp_generate_password( 24 );
-				$user_id     = wp_create_user( $username, $password, $email );
+				$user_id     = wc_create_new_customer( $email, $username, null );
 
-				$user = get_user_by_email( $email );
+				$customer = new WC_Customer( $user_id );
+				$this->maybe_update_billing_and_shipping( $customer, $session );
 
 				// Send a password reset link right away.
-				do_action( 'retrieve_password', $user->user_login );
+				$user_data = get_user_by('ID', $user_id);
+
+				$key = get_password_reset_key( $user_data );
+
+				WC()->mailer();
+				do_action( 'woocommerce_reset_password_notification', $user_data->user_login, $key );
 
 				// Log the user in, if we have a valid session.
 				if ( WC()->session ) {
@@ -1025,8 +1030,7 @@ class WC_Vipps_Recurring_Checkout {
 			$order->set_customer_id( $user_id );
 		}
 
-		$this->maybe_update_order_billing_and_shipping( $order, $session );
-		$order->save();
+		$this->maybe_update_billing_and_shipping( $order, $session );
 
 		// Create subscription
 		$existing_subscriptions = wcs_get_subscriptions_for_order( $order );
@@ -1056,31 +1060,34 @@ class WC_Vipps_Recurring_Checkout {
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 	}
 
-	/**
-	 * @throws WC_Data_Exception
-	 */
-	public function maybe_update_order_billing_and_shipping( WC_Order $order, $session ): void {
-		if ( isset( $session['billingDetails'] ) ) {
-			$contact = $session['billingDetails'];
-			$order->set_billing_email( $contact['email'] );
-			$order->set_billing_phone( $contact['phoneNumber'] );
-			$order->set_billing_first_name( $contact['firstName'] );
-			$order->set_billing_last_name( $contact['lastName'] );
-			$order->set_billing_address_1( $contact['streetAddress'] );
-			$order->set_billing_city( $contact['city'] );
-			$order->set_billing_postcode( $contact['postalCode'] );
-			$order->set_billing_country( $contact['country'] );
+	public function maybe_update_billing_and_shipping( WC_Customer|WC_Order $object, $session ): void {
+		$contact = $session['billingDetails'] ?? $session['shippingDetails'];
+
+		if ( empty( $contact ) ) {
+			return;
 		}
+
+		$object->set_billing_email( $contact['email'] );
+		$object->set_billing_phone( $contact['phoneNumber'] );
+		$object->set_billing_first_name( $contact['firstName'] );
+		$object->set_billing_last_name( $contact['lastName'] );
+		$object->set_billing_address_1( $contact['streetAddress'] );
+		$object->set_billing_city( $contact['city'] );
+		$object->set_billing_postcode( $contact['postalCode'] );
+		$object->set_billing_country( $contact['country'] );
 
 		if ( isset( $session['shippingDetails'] ) ) {
 			$contact = $session['shippingDetails'];
-			$order->set_shipping_first_name( $contact['firstName'] );
-			$order->set_shipping_last_name( $contact['lastName'] );
-			$order->set_shipping_address_1( $contact['streetAddress'] );
-			$order->set_shipping_city( $contact['city'] );
-			$order->set_shipping_postcode( $contact['postalCode'] );
-			$order->set_shipping_country( $contact['country'] );
 		}
+
+		$object->set_shipping_first_name( $contact['firstName'] );
+		$object->set_shipping_last_name( $contact['lastName'] );
+		$object->set_shipping_address_1( $contact['streetAddress'] );
+		$object->set_shipping_city( $contact['city'] );
+		$object->set_shipping_postcode( $contact['postalCode'] );
+		$object->set_shipping_country( $contact['country'] );
+
+		$object->save();
 	}
 
 	public function maybe_cancel_initial_order( WC_Order $order ): void {
