@@ -560,9 +560,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$is_captured = ! in_array( $charge->status, [
-			WC_Vipps_Charge::STATUS_PENDING,
-			WC_Vipps_Charge::STATUS_RESERVED
-		], true ) && $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE;
+				WC_Vipps_Charge::STATUS_PENDING,
+				WC_Vipps_Charge::STATUS_RESERVED
+			], true ) && $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE;
 
 		// If the brand is MobilePay, we should capture the payment now if it is not already captured.
 		// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
