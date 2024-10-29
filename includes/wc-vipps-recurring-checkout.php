@@ -940,7 +940,7 @@ class WC_Vipps_Recurring_Checkout {
 		$order    = wc_get_order( $order_id );
 
 		$stored_authorization_token = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
-		if ( ! wp_check_password( $authorization_token, $stored_authorization_token ) ) {
+		if ( $authorization_token !== $stored_authorization_token ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Invalid authorization token for session id %s.", $order_id, $body['sessionId'] ) );
 
 			return;

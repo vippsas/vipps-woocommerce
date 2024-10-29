@@ -2412,7 +2412,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 */
-	public function handle_webhook_callback( array $webhook_data ) {
+	public function handle_webhook_callback( array $webhook_data ): void {
 		WC_Vipps_Recurring_Logger::log( sprintf( "Handling webhook with data: %s", json_encode( $webhook_data ) ) );
 
 		$event_type = $webhook_data['eventType'];
@@ -2456,9 +2456,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'recurring.agreement-stopped.v1',
 			'recurring.agreement-expired.v1',
 		] ) ) {
-			$order_id = $webhook_data['agreementExternalId'];
+			$order_id = $webhook_data['agreementId'] ?? $webhook_data['agreementExternalId'];
 
-			// This order is old and does not have a agreementExternalId
+			// This order is old and does not have an agreementId
 			if ( empty( $order_id ) ) {
 				return;
 			}
@@ -2468,9 +2468,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Customers can soon cancel their agreements directly from the app.
 		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
-			$order_id = $webhook_data['agreementExternalId'];
+			$order_id = $webhook_data['agreementId'] ?? $webhook_data['agreementExternalId'];
 
-			// This order is old and does not have a agreementExternalId
+			// This order is old and does not have a agreementId
 			if ( empty( $order_id ) ) {
 				return;
 			}

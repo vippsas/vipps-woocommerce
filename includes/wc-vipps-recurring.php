@@ -983,7 +983,12 @@ class WC_Vipps_Recurring {
 		$local_webhook  = array_pop( $local_webhooks );
 		$secret         = $local_webhook ? ( $local_webhook['secret'] ?? false ) : false;
 
-		$order_id = $body['chargeExternalId'] ?? $body['agreementExternalId'];
+		$order_id = $body['chargeExternalId'] ?? $body['agreementId'] ?? $body['agreementExternalId'];
+		if ( ! $order_id ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Could not find order id in webhook with body %s", json_encode( $body ) ) );
+
+			return;
+		}
 
 		if ( ! $secret ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Cannot verify webhook callback for order %s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.", $order_id ) );
