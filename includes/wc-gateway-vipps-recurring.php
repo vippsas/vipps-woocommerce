@@ -2681,7 +2681,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @throws Exception
 	 */
-	public function create_partial_subscriptions_from_order( WC_Order $order ): bool|array {
+	public function create_partial_subscriptions_from_order( WC_Order $order ) {
 		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
 		if ( ! $order->get_customer_id() ) {

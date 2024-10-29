@@ -4,7 +4,7 @@ Tags: vipps, mobilepay, recurring payments, subscriptions, woocommerce subscript
 Requires at least: 5.0
 Tested up to: 6.7
 Stable tag: 2.0.5
-Requires PHP: 8.0
+Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 Vipps/MobilePay recurring payments is perfect if you run a shop with subscription based services or products that would benefit from subscriptions.

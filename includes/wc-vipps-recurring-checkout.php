@@ -615,7 +615,7 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 */
-	public function shortcode(): bool|string {
+	public function shortcode() {
 		global $wp;
 
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
@@ -1078,7 +1078,7 @@ class WC_Vipps_Recurring_Checkout {
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 	}
 
-	public function maybe_update_billing_and_shipping( WC_Customer|WC_Order $object, $session ): void {
+	public function maybe_update_billing_and_shipping( $object, $session ): void {
 		$contact = $session['billingDetails'] ?? $session['shippingDetails'];
 
 		if ( empty( $contact ) ) {
