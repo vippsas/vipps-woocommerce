@@ -1451,7 +1451,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $has_campaign ) {
-			$campaign_price = $has_free_campaign ? $sign_up_fee : $order->get_total();
+			$campaign_price = $has_free_campaign ? $sign_up_fee : $subscription_item->get_total();
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
 			$campaign_period = null;
