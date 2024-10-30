@@ -1389,7 +1389,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$has_trial           = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
-		$is_zero_amount      = (int) $agreement_total === 0 || (int) $order->get_total() === 0 || $is_gateway_change;
+		$is_zero_amount      = (int) $order->get_total() === 0 || $is_gateway_change;
 		$capture_immediately = $is_virtual || $direct_capture;
 		$has_synced_product  = WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription );
 
@@ -1451,7 +1451,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $has_campaign ) {
-			$campaign_price = $has_free_campaign ? $sign_up_fee : $agreement_total;
+			$campaign_price = $has_free_campaign ? $sign_up_fee : $order->get_total();
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
 			$campaign_period = null;
@@ -2701,8 +2701,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		foreach ( $subscription_groups as $items ) {
 			// Get the first item in the group to use as the base for the subscription.
-			$product  = $items[0]->get_product();
-			$quantity = $items[0]->get_quantity();
+			$product = $items[0]->get_product();
 
 			$start_date   = wcs_get_datetime_utc_string( $order->get_date_created( 'edit' ) );
 			$subscription = wcs_create_subscription( [
@@ -2747,16 +2746,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				wcs_copy_order_item( $item, $subscription_item );
 
-				$product   = wc_get_product( $subscription_item->get_product_id() );
-				$has_trial = WC_Subscriptions_Product::get_trial_length( $product ) !== 0;
-				if ( $has_trial ) {
-					$regular_price = WC_Subscriptions_Product::get_regular_price( $product, 'code' ) * $quantity;
-
-					$subscription_item->set_props( [
-						'subtotal' => $regular_price,
-						'total'    => $regular_price,
-					] );
-				}
+				// Don't include sign-up fees or $0 trial periods when setting the subscriptions item totals.
+				wcs_set_recurring_item_total( $subscription_item );
 
 				$subscription_item->save();
 

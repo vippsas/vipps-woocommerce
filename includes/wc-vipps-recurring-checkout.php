@@ -649,9 +649,6 @@ class WC_Vipps_Recurring_Checkout {
 
 		do_action( 'vipps_recurring_checkout_before_get_session' );
 
-		// This is the current pending order id, if it exists. Will be used to restart orders etc
-		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
-
 		// Localize script with variables we need to reveal to the frontend
 		$data = $this->current_pending_session();
 		if ( empty( $data['session'] ) ) {
