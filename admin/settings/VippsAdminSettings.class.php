@@ -162,6 +162,9 @@ class VippsAdminSettings
             'remove_image' => __('Remove image', 'woo-vipps'),
             'next_step' => __('Next step', 'woo-vipps'),
             'previous_step' => __('Previous step', 'woo-vipps'),
+            'receipt_image_size_requirement' => __('The image must be at least 167 pixels in height', 'woo-vipps'),
+            'receipt_image_error' => __('The uploaded image is too small. It must be at least 167 pixels in height.', 'woo-vipps'),
+            'settings_saved' => __('Settings saved', 'woo-vipps')
         );
 
         /* We need to postprocess the settings for.. various reasons IOK 2024-06-04  */
