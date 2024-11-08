@@ -107,6 +107,14 @@ class VippsAdminSettings
             $connection_msg .= sprintf(__("Could not connect to %1\$s", 'woo-vipps'), Vipps::CompanyName()) . ": $error_message";
         }
 
+        // Get the current options
+        $options = get_option('woocommerce_vipps_settings');
+
+        // Add receipt image URL if receipt image exists
+        if (!empty($new_settings['receiptimage'])) {
+            $options['receiptimage_url'] = wp_get_attachment_url($new_settings['receiptimage']);
+        }
+
         // Return the result, sending the new options, the connection status/message and the form status/errors
         echo json_encode(
             array(
@@ -114,7 +122,7 @@ class VippsAdminSettings
                 'connection_msg' => $connection_msg, // The connection message, whether the connection is OK or not.
                 'form_ok' => $form_ok, // Whether the form fields are OK.
                 'form_errors' => $form_errors, // The form field errors, if any.
-                'options' => get_option('woocommerce_vipps_settings') // The new options.
+                'options' => $options // The new options
             )
         );
         exit();
@@ -161,6 +169,9 @@ class VippsAdminSettings
          * first time it is called, it does wrong things in this context. IOK 2024-06-04 */
         $gw->init_form_fields();
         $settings = $gw->settings;
+        if (!empty($settings['receiptimage'])) {
+            $settings['receiptimage_url'] = wp_get_attachment_url($settings['receiptimage']);
+        }
         if (!$gw->allow_external_payments_in_checkout()) {
            unset($settings['checkout_external_payments_klarna']);
         } else {

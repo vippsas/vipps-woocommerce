@@ -24,6 +24,7 @@ export function AdminSettingsAdvancedOptionsTab(): JSX.Element {
    */
   const { handleImageUpload } = useWPImageUpload({
     onUpload(id, url) {
+      console.log('Image Upload - Setting values:', { id, url });
       setOption('receiptimage', id);
       setOption('receiptimage_url', url);
     }

@@ -53,6 +53,7 @@ export function AdminSettings(): JSX.Element {
 
     try {
       const data = await submitChanges({ forceEnable: showWizardScreen });
+      console.log('handleSaveSettings - Response data:', data);
 
       // Handle the error messages for connection and form errors
       if (!data.connection_ok || !data.form_ok) {
@@ -66,10 +67,12 @@ export function AdminSettings(): JSX.Element {
           text: data.connection_msg,
           variant: 'success'
         });
+        console.log('handleSaveSettings - Setting new options:', data.options);
         // Ensure we have the new options, then reload the screens using the new values
         setOptions(data.options).then(() => setShowWizardScreen(showWizardp()));
       }
     } catch (err) {
+      console.error('handleSaveSettings - Error:', err);
       setBanner({
         text: (err as Error).message,
         variant: 'error'
