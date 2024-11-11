@@ -195,6 +195,13 @@ class VippsApi {
                     $this->log(__("Could not read image file: ",'woo-vipps') .' '. $image, 'error');
                     return false;
                 }
+                
+                // Check image dimensions
+                $imageinfo = getimagesize($image);
+                if ($imageinfo && $imageinfo[1] < 167) {
+                    $this->log(__("Image height too small - minimum height requirement is 167px", 'woo-vipps'), 'error');
+                    return false;
+                }
             }
         }
 
@@ -210,23 +217,29 @@ class VippsApi {
             $res = $this->http_call($msn,$command,$args,'POST',$headers,'json'); 
             return $res['imageId'];
         } catch (Exception $e) {
-            // Previous versions of the API returned 400 for duplicate images, future will use 409;
-            // in both cases we can just return the imageid because of how we created it. IOK 2022-06-28
-            $duperror = false;
-            if (is_a($e, 'VippsApiException') && $e->responsecode == 400) {
-                $msg = $e->getMessage();
-                if (preg_match("!duplicate!i", $msg)) {
-                   $duperror = true;
-                }
+            if ($this->is_duplicate_error($e)) return $imageid;
+            
+            if ($this->is_image_size_error($e)) {
+                $this->log(__("Image rejected by Vipps - minimum height requirement is 167px", 'woo-vipps'), 'error');
+                return false;
             }
-            if (is_a($e, 'VippsApiException') && $e->responsecode == 409) {
-                   $duperror = true;
-            }
-            if ($duperror) return $imageid;
 
             $this->log(__("Could not send image to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
             return false;
         }
+    }
+
+    private function is_duplicate_error($e) {
+        if (!is_a($e, 'VippsApiException')) return false;
+        return ($e->responsecode == 409) || 
+               ($e->responsecode == 400 && preg_match("!duplicate!i", $e->getMessage()));
+    }
+
+    private function is_image_size_error($e) {
+        if (!is_a($e, 'VippsApiException')) return false;
+        return $e->responsecode == 400 && 
+               (strpos($e->getMessage(), 'height') !== false || 
+                strpos($e->getMessage(), 'size') !== false);
     }
 
     // Used by the add_receipt API call as well as epayment_initiate_payment. The latter will use this
