@@ -3364,8 +3364,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // the hook added should be used if selling tickets, bookings etc to add these to the Vipps app receipt; with images if desired (eg. QR images).
     public function order_add_vipps_categories ($order) {
         if (!is_a($order, 'WC_Order')) return;
-        $none  = ['link'=>null, 'image'=>null, 'imagesize'=>null];
-        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => intval($this->get_option('receiptimage')), 'imagesize'=>'medium'];
+        
+        $receipt_image = $this->get_option('receiptimage');
+        $none = ['link'=>null, 'image'=>null, 'imagesize'=>null];
+
+        if (!$receipt_image) {
+            error_log("No receipt image configured");
+            return $default;
+        }
+
+        $image_url = wp_get_attachment_url($receipt_image);
+        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => intval($receipt_image), 'imagesize'=>'full'];
         // Do these in this order, in case we get terminated at some point during processing
         $default = ['TICKET'=>$none,'ORDER_CONFIRMATION' => $orderconfirmation, 'RECEIPT' => $none,"BOOKING" => $none, "DELIVERY" => $none, "GENERAL" => $none];
         $categories = apply_filters('woo_vipps_add_order_categories', $default, $order, $this);
@@ -3398,7 +3407,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $uploads = wp_get_upload_dir();
 
         if (is_numeric($imagespec)) {
-
            // Don't send same image twice if we have an id
            $stored = get_post_meta($imagespec, '_vipps_imageid', true);
            if ($stored && !$this->is_test_mode()) {
@@ -3421,10 +3429,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $imagefile = join(DIRECTORY_SEPARATOR, [$uploads['basedir'] , $intermediate['path']]);
             }
         }
+
         if ($imagefile) {
+            // Check image dimensions before uploading
+            $dimensions = getimagesize($imagefile);
+            if ($dimensions && $dimensions[1] < 167) { // [1] is height
+                $this->log(sprintf(__('Image %1$s is too small - height %2$dpx (minimum 167px required)', 'woo-vipps'), 
+                    $imagefile, $dimensions[1]), 'error');
+                return null;
+            }
+
             $vippsid = $this->api->add_image($imagefile);
             if ($vippsid) {
-                update_post_meta( $imageid, '_vipps_imageid', $vippsid);
+                update_post_meta($imageid, '_vipps_imageid', $vippsid);
             }
         }
         return $vippsid;

@@ -23,6 +23,7 @@ const __DEV_FORCE_WIZARD_SCREEN = false;
 export function AdminSettings(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const [banner, setBanner] = useState<NotificationBannerProps | null>();
+  const [saveConfirmation, setSaveConfirmation] = useState(false);
   const { submitChanges, getOption, setOptions } = useWP();
   // The tabs to render on the admin settings page.
   const TAB_IDS = [
@@ -50,9 +51,11 @@ export function AdminSettings(): JSX.Element {
   async function handleSaveSettings(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
+    setSaveConfirmation(false);
 
     try {
       const data = await submitChanges({ forceEnable: showWizardScreen });
+      console.log('handleSaveSettings - Response data:', data);
 
       // Handle the error messages for connection and form errors
       if (!data.connection_ok || !data.form_ok) {
@@ -60,20 +63,31 @@ export function AdminSettings(): JSX.Element {
           text: data.connection_msg || data.form_errors,
           variant: 'error'
         });
+        setSaveConfirmation(false);
       } else {
         // If the connection is ok, show a success message
         setBanner({
           text: data.connection_msg,
           variant: 'success'
         });
+        setSaveConfirmation(true);
+        console.log('handleSaveSettings - Setting new options:', data.options);
         // Ensure we have the new options, then reload the screens using the new values
-        setOptions(data.options).then(() => setShowWizardScreen(showWizardp()));
+        await setOptions(data.options);
+        setShowWizardScreen(showWizardp());
+
+        // Auto-hide save confirmation after 2 seconds
+        setTimeout(() => {
+          setSaveConfirmation(false);
+        }, 2000);
       }
     } catch (err) {
+      console.error('handleSaveSettings - Error:', err);
       setBanner({
         text: (err as Error).message,
         variant: 'error'
       });
+      setSaveConfirmation(false);
     } finally {
       setIsLoading(false);
     }
@@ -129,9 +143,18 @@ export function AdminSettings(): JSX.Element {
 
             {/* Renders the developer options form fields */}
             {canShowDeveloperOptions && isVisible(TAB_IDS[4]) && <AdminSettingsDeveloperOptionsTab />}
-            <WPButton variant="primary" isLoading={isLoading}>
-              {gettext('save_changes')}
-            </WPButton>
+            
+            <div className="vipps-mobilepay-react-save-section">
+              <WPButton variant="primary" isLoading={isLoading}>
+                {gettext('save_changes')}
+              </WPButton>
+              {saveConfirmation && (
+                <span className="vipps-mobilepay-react-save-confirmation">
+                  <span className="dashicons dashicons-yes"></span>
+                  {gettext('settings_saved')}
+                </span>
+              )}
+            </div>
           </>
         )}
       </WPForm>
