@@ -8,3 +8,9 @@
 ** Webhooks!
 ** Callbacks!
 ** Checkout-pages!
+
+** ISSUE WHEN USING KLARNA / PAY-FOR-ORDER and VIPPS RECURRING CHECKOUT
+** LANGUAGE
+** New settings-page for recurring
+
+
