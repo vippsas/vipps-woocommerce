@@ -162,6 +162,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 2.0.7 =
+* Fixed: Renewal orders that come from subscriptions made via Checkout could get stuck as "pending", even though a charge was actually created. Updating to this version fixes the affected orders and their statuses.
+
 = 2.0.6 =
 * Fixed: Campaigns now display their "after" price correctly.
 * Fixed: Properly propagate recurring pricing to our manually created subscriptions in Checkout.

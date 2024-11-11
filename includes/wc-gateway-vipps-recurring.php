@@ -511,8 +511,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return 'INVALID';
 		}
 
+		$is_renewal = wcs_order_contains_renewal( $order );
+
 		// logic for zero amounts when a charge does not exist
-		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) && ! wcs_order_contains_renewal( $order ) ) {
+		if ( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT ) && ! $is_renewal ) {
 			// if there's a campaign with a price of 0 we can complete the order immediately
 			if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 				$this->complete_order( $order, $agreement->id );
@@ -724,7 +726,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// status: DUE or PENDING
 		// when DUE, we need to check that it becomes another status in a cron
-		$initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
+		$initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL )
+			&& ! wcs_order_contains_renewal( $order );
 
 		if ( ! $initial && ! $transaction_id && ( $charge->status === WC_Vipps_Charge::STATUS_DUE
 												  || ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
@@ -2056,6 +2059,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
 
+		WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $resubscribe_order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
+
 		$this->delete_renewal_meta( $resubscribe_order );
 	}
 
@@ -2072,6 +2079,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
+
+		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
 
 		$renewal_order->save();
 
