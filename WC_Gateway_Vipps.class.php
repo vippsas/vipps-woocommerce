@@ -164,9 +164,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->apiurl = 'https://api.vipps.no';
         
         $this->method_description = __('Offer Vipps or MobilePay as a payment method', 'woo-vipps');
-        
         $this->method_title = __('Vipps MobilePay','woo-vipps');
         $this->title = __('Vipps MobilePay','woo-vipps');
+
         $this->icon = plugins_url('img/vmp-logo.png',__FILE__);
         $this->migrate_keyset_with_country_detection();
         $this->init_form_fields();

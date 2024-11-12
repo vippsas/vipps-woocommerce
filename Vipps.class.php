@@ -106,8 +106,9 @@ class Vipps {
         } else {
             add_action('wp_footer', array($Vipps,'footer'));
         }
-        add_action('init',array($Vipps,'init'));
         add_action( 'plugins_loaded', array($Vipps,'plugins_loaded'));
+        add_action( 'after_setup_theme', array($Vipps,'after_setup_theme'));
+        add_action('init',array($Vipps,'init'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
         add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
     }
@@ -175,6 +176,7 @@ class Vipps {
     }
 
     public function init () {
+
         // Register certain scripts in wp_loaded because they will be added to the backend as well - the gutenberg checkout block
         // needs these to be defined in the backend. IOK 2024-04-16
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
@@ -2177,7 +2179,18 @@ EOF;
     }
 
     public function plugins_loaded() {
-        // To facilitate development, allow loading the plugin-supplied translations
+        /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
+        add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
+        /* Try to get a list of all installed gateways *before* we instantiate our own IOK 2024-05-27 */
+        add_filter( 'woocommerce_payment_gateways', function ($gws) {
+           if (!empty(Vipps::$installed_gateways)) return Vipps::$installed_gateways;
+           Vipps::$installed_gateways = $gws;
+           return $gws;
+        }, 99999);
+    }
+
+    public function after_setup_theme() {
+        // To facilitate development, allow loading the plugin-supplied translations. Must be called here at the earliest.
         $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
 
         // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
@@ -2185,15 +2198,6 @@ EOF;
         // is important.
         add_filter('woocommerce_create_pages', array($this, 'woocommerce_create_pages'), 50, 1);
 
-        /* The gateway is added at 'plugins_loaded' and instantiated by Woo itself. IOK 2018-02-07 */
-        add_filter( 'woocommerce_payment_gateways', array($this,'woocommerce_payment_gateways' ));
-
-        /* Try to get a list of all installed gateways *before* we instantiate our own IOK 2024-05-27 */
-        add_filter( 'woocommerce_payment_gateways', function ($gws) {
-           if (!empty(Vipps::$installed_gateways)) return Vipps::$installed_gateways;
-           Vipps::$installed_gateways = $gws;
-           return $gws;
-        }, 99999);
 
         // Callbacks use the Woo API IOK 2018-05-18
         add_action( 'woocommerce_api_wc_gateway_vipps', array($this,'vipps_callback'));
@@ -3291,7 +3295,7 @@ EOF;
         return $order_status;
     }
 
-    // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on plugins_loaded. IOK 2020-04-01
+    // This will probably be run in activate, but if the plugin is updated in other ways, will also be run on after_setup_theme. IOK 2020-04-01
     public static function maybe_add_cron_event() {
        if (!wp_next_scheduled('vipps_cron_cleanup_hook')) {
           wp_schedule_event(time(), 'hourly', 'vipps_cron_cleanup_hook');

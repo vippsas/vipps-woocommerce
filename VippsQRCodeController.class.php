@@ -54,12 +54,9 @@ class VippsQRCodeController {
             add_action('admin_menu',array($controller,'admin_menu'));
         } 
         add_action('init',array($controller,'init'));
-        add_action('plugins_loaded', array($controller,'plugins_loaded'));
         add_action('woocommerce_loaded', array($controller,'woocommerce_loaded'));
     }
 
-    public function plugins_loaded() {
-    }
     public function woocommerce_loaded () {
     }
     public function admin_init() {
