@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Support Yith WooCommerce Name your price. We need to load the front-end filters when doing express checkout - otherwise price will be zero.
 // Unfortunately, we can't do this before priority 10 for plugins loaded to support their 'premium' stuff. IOK 2021-09-29
-add_action('plugins_loaded', function () {
+add_action('after_setup_theme', function () {
     if (function_exists('YITH_Name_Your_Price_Frontend')) {
         if (is_admin() && defined('DOING_AJAX') && DOING_AJAX && isset($_REQUEST['action']) && $_REQUEST['action'] == 'do_express_checkout') {
             YITH_Name_Your_Price_Frontend();
@@ -64,7 +64,8 @@ add_action('plugins_loaded', function () {
 
 // IOK 2020-03-17: Klarna Checkout now supports external payment methods, such as Vipps. This is great, but we need first to check
 // that any user hasn't already installed the free plugin for this created by Krokedil. If they have, this filter will be present:
-add_action('plugins_loaded', function () {
+
+add_action('after_setup_theme', function () {
     if (class_exists('KCO') && defined('KCO_WC_VERSION') && version_compare(KCO_WC_VERSION, '2.0.0', '>=') && Vipps::instance()->gateway()->enabled == 'yes') {
         if (has_filter('kco_wc_api_request_args', 'kcoepm_create_order_vipps')) {
             // Vipps external payment support is already present - do nothing. IOK 2021-09-29

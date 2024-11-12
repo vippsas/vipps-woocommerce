@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class VippsKCSupport {
 
-    // To be run in "plugins_loaded" - extend Klarna Checkout with support for the Vipps external payment method.
+    // To be run in "after_setup_theme" - extend Klarna Checkout with support for the Vipps external payment method.
     public static function init() {
         add_filter( 'kco_wc_gateway_settings',        array('VippsKCSupport','form_fields'));
         add_filter( 'kco_wc_api_request_args',        array('VippsKCSupport','create_order_vipps' ), 90);

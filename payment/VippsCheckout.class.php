@@ -57,7 +57,6 @@ class VippsCheckout {
             add_action('admin_init',array($VippsCheckout,'admin_init'));
         }
         add_action('init',array($VippsCheckout,'init'));
-        add_action( 'plugins_loaded', array($VippsCheckout,'plugins_loaded'));
         add_action( 'woocommerce_loaded', array($VippsCheckout,'woocommerce_loaded'));
         add_action( 'template_redirect', array($VippsCheckout,'template_redirect'));
         add_action( 'admin_post_nopriv_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
@@ -866,8 +865,6 @@ jQuery(document).ready(function () {
 
     }
 
-    public function plugins_loaded() {
-    }
 
     public function woocommerce_settings_pages ($settings) {
         $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
