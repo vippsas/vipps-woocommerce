@@ -268,13 +268,42 @@ class WC_Vipps_Recurring_Checkout {
 		}
 		$customer_info = apply_filters( 'wc_vipps_recurring_customer_info', $customer_info, $order );
 
+		// todo: throw an error if we try to purchase a product with a location based shipping method?
 		try {
 			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
 			$gateway  = $checkout->gateway();
 
 			$order_prefix = $gateway->order_prefix;
 
-			$agreement = $gateway->create_vipps_agreement_from_order( $order );
+			// hack - fake "Anonymous Vipps/MobilePay User"
+			$fake_user = false;
+			if ( ! $order->get_customer_id( 'edit' ) ) {
+				$fake_user = true;
+
+				$order->set_customer_id( $this->gateway()->create_or_get_anonymous_system_customer()->get_id() );
+				$order->save();
+			}
+
+			$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
+
+			// reset hack
+			if ( $fake_user ) {
+				$order->set_customer_id( 0 );
+				$order->save();
+			}
+
+			$subscription = array_pop( $subscriptions );
+
+			// Remove this action to avoid making an unnecessary API request
+			remove_action( 'woocommerce_order_after_calculate_totals', [
+				$this->gateway(),
+				'update_agreement_price_in_app'
+			] );
+
+			$subscription->calculate_totals();
+			$subscription->save();
+
+			$agreement = $gateway->create_vipps_agreement_from_order( $order, $subscription );
 
 			$checkout_subscription = ( new WC_Vipps_Checkout_Session_Subscription() )
 				->set_amount(
@@ -586,7 +615,7 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 */
-	public function shortcode(): bool|string {
+	public function shortcode() {
 		global $wp;
 
 		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
@@ -619,9 +648,6 @@ class WC_Vipps_Recurring_Checkout {
 		wp_enqueue_script( 'vipps-recurring-checkout' );
 
 		do_action( 'vipps_recurring_checkout_before_get_session' );
-
-		// This is the current pending order id, if it exists. Will be used to restart orders etc
-		$pending_order_id = WC_Vipps_Recurring_Helper::get_checkout_pending_order_id();
 
 		// Localize script with variables we need to reveal to the frontend
 		$data = $this->current_pending_session();
@@ -940,7 +966,7 @@ class WC_Vipps_Recurring_Checkout {
 		$order    = wc_get_order( $order_id );
 
 		$stored_authorization_token = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
-		if ( ! wp_check_password( $authorization_token, $stored_authorization_token ) ) {
+		if ( $authorization_token !== $stored_authorization_token ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Invalid authorization token for session id %s.", $order_id, $body['sessionId'] ) );
 
 			return;
@@ -1004,17 +1030,21 @@ class WC_Vipps_Recurring_Checkout {
 			$user_id = $user->ID;
 
 			if ( ! $user_id ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout creating a new customer", $order_id ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: creating a new customer", $order_id ) );
 
-				$email_parts = explode( '@', $email );
-				$username    = $email_parts[0] . wp_generate_password( 4 );
-				$password    = wp_generate_password( 24 );
-				$user_id     = wp_create_user( $username, $password, $email );
+				$username = wc_create_new_customer_username( $email );
+				$user_id  = wc_create_new_customer( $email, $username, null );
 
-				$user = get_user_by_email( $email );
+				$customer = new WC_Customer( $user_id );
+				$this->maybe_update_billing_and_shipping( $customer, $session );
 
 				// Send a password reset link right away.
-				do_action( 'retrieve_password', $user->user_login );
+				$user_data = get_user_by( 'ID', $user_id );
+
+				$key = get_password_reset_key( $user_data );
+
+				WC()->mailer();
+				do_action( 'woocommerce_reset_password_notification', $user_data->user_login, $key );
 
 				// Log the user in, if we have a valid session.
 				if ( WC()->session ) {
@@ -1023,32 +1053,21 @@ class WC_Vipps_Recurring_Checkout {
 			}
 
 			$order->set_customer_id( $user_id );
+			$order->save();
 		}
 
-		$this->maybe_update_order_billing_and_shipping( $order, $session );
-		$order->save();
+		$this->maybe_update_billing_and_shipping( $order, $session );
 
-		// Create subscription
+		// Update subscription with the correct customer id, and agreement id
 		$existing_subscriptions = wcs_get_subscriptions_for_order( $order );
 
-		if ( empty( $existing_subscriptions ) ) {
-			$order         = wc_get_order( $order_id );
-			$subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
-			if ( ! $subscriptions ) {
-				return;
-			}
+		/** @var WC_Subscription $subscription */
+		$subscription = array_pop( $existing_subscriptions );
+		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
 
-			/** @var WC_Subscription $subscription */
-			$subscription = array_pop( $subscriptions );
-			WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
-
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout created a new subscription: %s", $order_id, WC_Vipps_Recurring_Helper::get_id( $subscription ) ) );
-
-			$subscription->calculate_totals();
-			$subscription->save();
-		}
-
-		// todo: throw an error if we try to purchase a product with a location based shipping method?
+		$subscription->set_customer_id( $order->get_customer_id( 'edit' ) );
+		wcs_copy_order_address( $order, $subscription );
+		$subscription->save();
 
 		$this->gateway()->check_charge_status( $order_id, true );
 
@@ -1056,31 +1075,34 @@ class WC_Vipps_Recurring_Checkout {
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Finished handling Vipps/MobilePay Checkout payment for agreement ID %s", $order_id, $agreement_id ) );
 	}
 
-	/**
-	 * @throws WC_Data_Exception
-	 */
-	public function maybe_update_order_billing_and_shipping( WC_Order $order, $session ): void {
-		if ( isset( $session['billingDetails'] ) ) {
-			$contact = $session['billingDetails'];
-			$order->set_billing_email( $contact['email'] );
-			$order->set_billing_phone( $contact['phoneNumber'] );
-			$order->set_billing_first_name( $contact['firstName'] );
-			$order->set_billing_last_name( $contact['lastName'] );
-			$order->set_billing_address_1( $contact['streetAddress'] );
-			$order->set_billing_city( $contact['city'] );
-			$order->set_billing_postcode( $contact['postalCode'] );
-			$order->set_billing_country( $contact['country'] );
+	public function maybe_update_billing_and_shipping( $object, $session ): void {
+		$contact = $session['billingDetails'] ?? $session['shippingDetails'];
+
+		if ( empty( $contact ) ) {
+			return;
 		}
+
+		$object->set_billing_email( $contact['email'] );
+		$object->set_billing_phone( '+' . $contact['phoneNumber'] );
+		$object->set_billing_first_name( $contact['firstName'] );
+		$object->set_billing_last_name( $contact['lastName'] );
+		$object->set_billing_address_1( $contact['streetAddress'] );
+		$object->set_billing_city( $contact['city'] );
+		$object->set_billing_postcode( $contact['postalCode'] );
+		$object->set_billing_country( $contact['country'] );
 
 		if ( isset( $session['shippingDetails'] ) ) {
 			$contact = $session['shippingDetails'];
-			$order->set_shipping_first_name( $contact['firstName'] );
-			$order->set_shipping_last_name( $contact['lastName'] );
-			$order->set_shipping_address_1( $contact['streetAddress'] );
-			$order->set_shipping_city( $contact['city'] );
-			$order->set_shipping_postcode( $contact['postalCode'] );
-			$order->set_shipping_country( $contact['country'] );
 		}
+
+		$object->set_shipping_first_name( $contact['firstName'] );
+		$object->set_shipping_last_name( $contact['lastName'] );
+		$object->set_shipping_address_1( $contact['streetAddress'] );
+		$object->set_shipping_city( $contact['city'] );
+		$object->set_shipping_postcode( $contact['postalCode'] );
+		$object->set_shipping_country( $contact['country'] );
+
+		$object->save();
 	}
 
 	public function maybe_cancel_initial_order( WC_Order $order ): void {
@@ -1097,7 +1119,7 @@ class WC_Vipps_Recurring_Checkout {
 		$passed  = $now - $timestamp;
 		$minutes = ( $passed / 60 );
 
-		if ( $order->get_status() === 'pending' && $minutes > 1 ) {
+		if ( $order->get_status() === 'pending' && $minutes > 120 ) {
 			$this->abandon_checkout_order( $order );
 		}
 	}

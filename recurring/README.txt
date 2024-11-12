@@ -2,8 +2,8 @@
 Contributors: EverydayAS
 Tags: vipps, mobilepay, recurring payments, subscriptions, woocommerce subscriptions
 Requires at least: 5.0
-Tested up to: 6.6
-Stable tag: 2.0.3
+Tested up to: 6.7
+Stable tag: 2.0.7
 Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
@@ -161,6 +161,24 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Synchronized products can not be paid via Vipps MobilePay when using KCO if the price at this moment in time is 0.
 
 == Changelog ==
+
+= 2.0.7 =
+* Fixed: Renewal orders that come from subscriptions made via Checkout could get stuck as "pending", even though a charge was actually created. Updating to this version fixes the affected orders and their statuses.
+
+= 2.0.6 =
+* Fixed: Campaigns now display their "after" price correctly.
+* Fixed: Properly propagate recurring pricing to our manually created subscriptions in Checkout.
+
+= 2.0.5 =
+* Fixed: Checkout webhooks no longer fail with an "Invalid authorization token" message.
+* Fixed: Propagate shipping and billing address to newly registered users when using Checkout.
+* Fixed: Make sure phone numbers from Checkout are saved with a + prefix.
+* Fixed: Properly handle VAT when ordering one-off items along with a recurring subscription.
+* Added: We now send a password reset link to newly registered users when using Checkout.
+* Added: We now create an anonymous Vipps MobilePay system user in order to create a subscription immediately. We replace this user with the real customer after the payment has been completed. This solves a lot of edge cases.
+
+= 2.0.4 =
+* Fixed: Increase deletion period for checkout orders, as intended.
 
 = 2.0.3 =
 * Fixed: Uploaded the newest assets.

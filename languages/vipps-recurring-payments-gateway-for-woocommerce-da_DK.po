@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2024-01-18T14:58:45+00:00\n"
-"PO-Revision-Date: 2024-10-24 09:47+0000\n"
+"PO-Revision-Date: 2024-10-29 18:11+0000\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Domain: vipps-recurring-payments-gateway-for-woocommerce\n"
 "Language: da_DK\n"
@@ -32,7 +32,7 @@ msgstr ""
 msgid "A list of possible failure reasons and what they mean can be found %s"
 msgstr "En liste med fejlkoder og hvad de betyder findes %s"
 
-#: includes/wc-gateway-vipps-recurring.php:921
+#: includes/wc-gateway-vipps-recurring.php:928
 #| msgid ""
 #| "A temporary error occurred when refunding a payment through "
 #| "Vipps/MobilePay. Please ensure the order is refunded manually or reset "
@@ -59,7 +59,7 @@ msgstr ""
 "Checkout."
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1670
+#: includes/wc-gateway-vipps-recurring.php:1659
 msgid ""
 "Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
 msgstr "Aftale oprettet: %s. Kunden sendt til Vipps/MobilePay for bekræftelse."
@@ -83,7 +83,7 @@ msgstr ""
 msgid "An error occurred"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:945
+#: includes/wc-gateway-vipps-recurring.php:952
 msgid ""
 "An unexpected error occurred while refunding a payment in Vipps/MobilePay."
 msgstr ""
@@ -92,6 +92,10 @@ msgstr ""
 
 #: src/components/PaymentRedirectPage/PaymentError.jsx:22
 msgid "An unknown error has occurred."
+msgstr ""
+
+#: includes/wc-gateway-vipps-recurring.php:2653
+msgid "Anonymous Vipps MobilePay Customer"
 msgstr ""
 
 #: includes/admin/vipps-recurring-settings.php:71
@@ -117,11 +121,11 @@ msgstr "Brand"
 msgid "Brand settings"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:2035
+#: includes/wc-gateway-vipps-recurring.php:2024
 msgid "Cancelled"
 msgstr "Annulleret"
 
-#: includes/wc-gateway-vipps-recurring.php:2129
+#: includes/wc-gateway-vipps-recurring.php:2118
 msgid "Cancelled due charge in Vipps/MobilePay."
 msgstr ""
 "\n"
@@ -151,7 +155,7 @@ msgid "Captured"
 msgstr "Fangtet"
 
 #. translators: Vipps/MobilePay Charge ID
-#: includes/wc-gateway-vipps-recurring.php:701
+#: includes/wc-gateway-vipps-recurring.php:708
 msgid "Charge completed (Charge ID: %s)"
 msgstr "Betaling fuldført (Betaling ID: %s)"
 
@@ -212,11 +216,11 @@ msgid "Controls the payment flow brand (Vipps or MobilePay)."
 msgstr "Styrer betalingsflowet for mærket (Vipps eller MobilePay)."
 
 #. translators: %s: the error message returned from Vipps/MobilePay
-#: includes/wc-gateway-vipps-recurring.php:1884
+#: includes/wc-gateway-vipps-recurring.php:1873
 msgid "Could not authenticate with the Vipps/MobilePay API: %s"
 msgstr "Kunne ikke godkendes med Vipps/MobilePay API'en: %s"
 
-#: includes/wc-gateway-vipps-recurring.php:2133
+#: includes/wc-gateway-vipps-recurring.php:2122
 msgid ""
 "Could not cancel charge in Vipps/MobilePay. Please manually check the status "
 "of this order if you plan to process a new renewal order!"
@@ -225,7 +229,7 @@ msgstr ""
 "status for denne ordre, hvis du planlægger at behandle en ny fornyelsesordre!"
 
 #. translators: %s: The charge's status
-#: includes/wc-gateway-vipps-recurring.php:1109
+#: includes/wc-gateway-vipps-recurring.php:1116
 msgid ""
 "Could not capture charge because the status is not RESERVED or "
 "PARTIALLY_CAPTURED. Found status: %s"
@@ -233,7 +237,7 @@ msgstr ""
 "Kunne ikke trække beløb. Status for trækket er ikke RESERVED eller PARTIALLY "
 "CAPTURED Fandt status: %s"
 
-#: includes/wc-vipps-recurring-checkout.php:384
+#: includes/wc-vipps-recurring-checkout.php:413
 msgid "Could not start Vipps/MobilePay checkout session"
 msgstr ""
 
@@ -254,7 +258,7 @@ msgstr "Brugerdefineret"
 msgid "Custom description"
 msgstr "Brugerdefineret beskrivelse"
 
-#: includes/wc-vipps-recurring-checkout.php:353
+#: includes/wc-vipps-recurring-checkout.php:382
 msgid "Customer passed to Vipps/MobilePay checkout"
 msgstr ""
 
@@ -292,7 +296,7 @@ msgid "Developer, test, and debugging options."
 msgstr ""
 
 #. translators: %s: brand (Vipps or MobilePay)
-#: includes/wc-gateway-vipps-recurring.php:1612
+#: includes/wc-gateway-vipps-recurring.php:1601
 msgid ""
 "Different subscription products can not be purchased at the same time using "
 "%s."
@@ -349,7 +353,7 @@ msgid "Failed Charges"
 msgstr "Mislykkede betalinger"
 
 #. translators: Error message
-#: includes/wc-gateway-vipps-recurring.php:832
+#: includes/wc-gateway-vipps-recurring.php:839
 msgid "Failed creating a charge: %s"
 msgstr "Fejl ved oprettelse af en træk: %s"
 
@@ -432,7 +436,7 @@ msgstr "CVR nummer"
 msgid "MobilePay"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:569
+#: includes/wc-gateway-vipps-recurring.php:574
 msgid ""
 "MobilePay payments are automatically captured to prevent the payment "
 "reservation from automatically getting cancelled after 14 days."
@@ -484,7 +488,7 @@ msgstr "Tilby faste betalinger med Vipps for WooCommerce Subscriptions "
 msgid "Oldest first"
 msgstr "Ældste først"
 
-#: includes/wc-gateway-vipps-recurring.php:2046
+#: includes/wc-gateway-vipps-recurring.php:2035
 msgid "On hold"
 msgstr "På pause"
 
@@ -496,7 +500,7 @@ msgstr ""
 msgid "Order settings"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:899
+#: includes/wc-vipps-recurring-checkout.php:928
 msgid "Order specification changed - order abandoned by customer in Checkout"
 msgstr ""
 
@@ -529,12 +533,12 @@ msgstr "Betal med %s"
 msgid "Pay with {brand}."
 msgstr "Betal med {brand}."
 
-#: includes/wc-gateway-vipps-recurring.php:1209
+#: includes/wc-gateway-vipps-recurring.php:1216
 msgid "Payment gateway change request cancelled in Vipps/MobilePay"
 msgstr ""
 "Anmodning om ændring af betalingsgateway er annulleret i Vipps/MobilePay"
 
-#: includes/wc-gateway-vipps-recurring.php:2024
+#: includes/wc-gateway-vipps-recurring.php:2013
 msgid "Pending cancellation"
 msgstr "Venter på annullering"
 
@@ -565,7 +569,7 @@ msgid "Remember: {brand} is always has no fees when paying businesses."
 msgstr "Husk: Du betaler ikke gebyr, når du betaler en virksomhed via {brand}."
 
 #. translators: Vipps/MobilePay Agreement ID
-#: includes/wc-gateway-vipps-recurring.php:1641
+#: includes/wc-gateway-vipps-recurring.php:1630
 msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
 msgstr "Anmodning om at skifte gateway til Vipps/MobilePay med aftale-ID: %s."
 
@@ -581,11 +585,11 @@ msgstr "Indstillinger"
 msgid "Status checking sort order for charges"
 msgstr "Den rækkefølge, som ordren skal tjekkes i "
 
-#: includes/wc-gateway-vipps-recurring.php:2479
+#: includes/wc-gateway-vipps-recurring.php:2468
 msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1879
+#: includes/wc-gateway-vipps-recurring.php:1868
 msgid "Successfully authenticated with the Vipps/MobilePay API"
 msgstr "Succesfuldt godkendt med Vipps/MobilePay API'en"
 
@@ -593,7 +597,7 @@ msgstr "Succesfuldt godkendt med Vipps/MobilePay API'en"
 msgid "Successfully checked the status of these charges"
 msgstr "Statusen for disse betalinger blev succesfuldt kontrolleret"
 
-#: includes/wc-gateway-vipps-recurring.php:1815
+#: includes/wc-gateway-vipps-recurring.php:1804
 msgid "Test API settings"
 msgstr ""
 
@@ -601,7 +605,7 @@ msgstr ""
 msgid "Test mode"
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:622
+#: includes/wc-gateway-vipps-recurring.php:629
 msgid "The agreement was cancelled or expired in Vipps/MobilePay"
 msgstr ""
 "Aftalen blev annulleret eller udløb i Vipps/MobilePay.\n"
@@ -650,7 +654,7 @@ msgstr ""
 "aftaler af kunden. Brug indstillingen nedenfor for at sætte standardstatus "
 "for fornyelsesordrer."
 
-#: includes/wc-gateway-vipps-recurring.php:519
+#: includes/wc-gateway-vipps-recurring.php:520
 msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr "Subtotalen er nul, ordren er gratis for denne abonnementsperiode."
 
@@ -688,13 +692,13 @@ msgstr ""
 msgid "This order has not yet been captured."
 msgstr "Denne ordre er endnu ikke blevet trækt."
 
-#: includes/wc-vipps-recurring-checkout.php:485
+#: includes/wc-vipps-recurring-checkout.php:514
 msgid ""
 "This page is used for the alternative Vipps/MobilePay checkout page, which "
 "you can choose to use instead of the normal WooCommerce checkout page. "
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1589
+#: includes/wc-gateway-vipps-recurring.php:1578
 msgid ""
 "This subscription is already active in Vipps/MobilePay. You can leave this "
 "page."
@@ -706,7 +710,7 @@ msgstr ""
 msgid "This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1962
+#: includes/wc-gateway-vipps-recurring.php:1951
 msgid "This Vipps/MobilePay agreement ID is invalid."
 msgstr "Dette Vipps/MobilePay-aftale-ID er ugyldigt."
 
@@ -742,33 +746,33 @@ msgid ""
 "only supports static shipping</strong> at the moment."
 msgstr ""
 
-#: includes/wc-gateway-vipps-recurring.php:1938
+#: includes/wc-gateway-vipps-recurring.php:1927
 msgid "Vipps/MobilePay Agreement ID"
 msgstr "Vipps/MobilePay Agreement ID"
 
 #. translators: Vipps/MobilePay Charge ID, human diff timestamp
-#: includes/wc-gateway-vipps-recurring.php:1058
+#: includes/wc-gateway-vipps-recurring.php:1065
 msgid "Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s."
 msgstr ""
 "Vipps/MobilePay betaling oprettet: %1$s. Betalingen vil være fuldført %2$s."
 
-#: includes/wc-gateway-vipps-recurring.php:1132
+#: includes/wc-gateway-vipps-recurring.php:1139
 msgid "Vipps/MobilePay is temporarily unavailable."
 msgstr "Vipps/MobilePay er midlertidigt utilgængelig."
 
-#: includes/wc-gateway-vipps-recurring.php:736
+#: includes/wc-gateway-vipps-recurring.php:743
 msgid "Vipps/MobilePay payment cancelled."
 msgstr "Vipps/MobilePay betaling annulleret."
 
-#: includes/wc-gateway-vipps-recurring.php:744
+#: includes/wc-gateway-vipps-recurring.php:751
 msgid "Vipps/MobilePay payment failed."
 msgstr "Vipps/MobilePay betaling mislykkedes."
 
-#: includes/wc-vipps-recurring-checkout.php:484
+#: includes/wc-vipps-recurring-checkout.php:513
 msgid "Vipps/MobilePay Recurring Checkout Page"
 msgstr ""
 
-#: includes/wc-vipps-recurring-checkout.php:352
+#: includes/wc-vipps-recurring-checkout.php:381
 msgid "Vipps/MobilePay recurring checkout payment initiated"
 msgstr ""
 
@@ -822,7 +826,7 @@ msgstr ""
 "Vipps MobilePay-portalen til bekræftelse. Den opretter en betalingsplan og "
 "opkræver dine brugere med de intervaller, du angiver."
 
-#: includes/wc-gateway-vipps-recurring.php:713
+#: includes/wc-gateway-vipps-recurring.php:720
 msgid "Waiting for you to capture the payment"
 msgstr "Venter på, at du trække beløpet."
 
@@ -857,7 +861,7 @@ msgstr ""
 msgid "Yes"
 msgstr "Ja"
 
-#: includes/wc-gateway-vipps-recurring.php:941
+#: includes/wc-gateway-vipps-recurring.php:948
 msgid ""
 "You can not partially refund a pending or due charge. Please wait till the "
 "payment clears first or refund the full amount instead."
@@ -867,7 +871,7 @@ msgstr ""
 "beløb."
 
 #. translators: %s is the days as an integer since the order was created
-#: includes/wc-gateway-vipps-recurring.php:905
+#: includes/wc-gateway-vipps-recurring.php:912
 msgid ""
 "You cannot refund a charge that was made more than 365 days ago. This order "
 "was created %s days ago."
@@ -875,7 +879,7 @@ msgstr ""
 "Du kan ikke refundere en betaling, der blev foretaget for mere end 365 dage "
 "siden. Denne ordre blev oprettet for %s dage siden."
 
-#: includes/wc-gateway-vipps-recurring.php:1894
+#: includes/wc-gateway-vipps-recurring.php:1883
 msgid ""
 "You need to provide a Merchant Serial Number before you can enable Checkout."
 msgstr ""
