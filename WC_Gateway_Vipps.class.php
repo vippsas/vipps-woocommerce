@@ -503,11 +503,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Almost the same as express checkout - unfortunately not *entirely* the same. IOK 2024-01-11
     public function cart_supports_checkout($cart=null) {
         if (!$cart) $cart = WC()->cart;
-        $supports  = true;
-        if (!$cart) return $supports;
+        if (!$cart) return false;
         # Not supported by Vipps MobilePay
         if ($cart->cart_contents_total <= 0) return false;
 
+        $supports  = true;
         foreach($cart->get_cart() as $key=>$val) {
             $prod = $val['data'];
             if (!is_a($prod, 'WC_Product')) continue;
