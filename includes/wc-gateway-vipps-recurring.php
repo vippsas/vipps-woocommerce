@@ -2488,7 +2488,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( ! $cart ) {
-			return true;
+			return false;
 		}
 
 		# Not supported by Vipps MobilePay Checkout
