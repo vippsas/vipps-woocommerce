@@ -210,15 +210,34 @@ add_action('after_setup_theme', function () {
 
 
 // Anti-support for WooCommerce subscriptions; but allow turning it off using an (advanced) setting or filter. IOK 2021-10-26
+// Turn off on "pay for order" too
 add_filter('woo_vipps_is_available', function ($ok, $gateway) {
     if (!$ok) return $ok;
     // Can't do these, so remove Vipps as payment method  IOK 2021-05-14
-    if (class_exists( 'WC_Subscriptions_Cart' ) && WC_Subscriptions_Cart::cart_contains_subscription()) {
-      $ok = ($gateway->get_option('support_subscription_cart') == 'yes');
-      $ok = apply_filters('woo_vipps_support_subscription_cart', $ok);
+    if (class_exists( 'WC_Subscriptions_Cart'))  {
+        $paying_for_order = absint( get_query_var( 'order-pay' ) );
+        if (WC_Subscriptions_Cart::cart_contains_subscription()) {
+            $ok = false;
+        }
+        if (function_exists('wcs_cart_contains_renewal') && wcs_cart_contains_renewal()) {
+            $ok = false;
+        }
+        if ($paying_for_order && class_exists('WC_Subscriptions_Product')) {
+            $order = wc_get_order($paying_for_order);
+            if (is_a($order,'WC_Order')) {
+                foreach ( $order->get_items() as $item_id => $item ) {
+                    if (is_a($item, 'WC_Order_Item_Product')) {
+                        $prod = $item->get_product();
+                        if (is_a($prod, 'WC_Product')) {
+                            if (WC_Subscriptions_Product::is_subscription($prod)) {
+                                $ok = false; break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $ok = apply_filters('woo_vipps_support_subscription_cart', $ok);
     }
     return $ok;
 }, 10, 2);
-
-
-
