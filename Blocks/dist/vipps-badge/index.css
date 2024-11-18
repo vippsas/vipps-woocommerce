@@ -1,0 +1,21 @@
+/*!********************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[2].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[2].use[2]!./src/vipps-badge/editor.css ***!
+  \********************************************************************************************************************************************************************************/
+/**
+ * The following styles get applied inside the editor only.
+ *
+ */
+
+.wp-block-woo-vipps-vipps-badge {
+}
+
+.vipps-badge-wrapper.aligncenter {
+  text-align: center;
+}
+
+.vipps-smile.vipps-component-icon {
+    width: 24px;
+}
+
+
+/*# sourceMappingURL=index.css.map*/

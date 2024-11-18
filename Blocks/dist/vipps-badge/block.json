@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "woo-vipps/vipps-badge",
+  "version": "0.1.0",
+  "title": "Vipps On-Site Messaging Badge",
+  "category": "widgets",
+  "supports": {
+    "html": true,
+    "anchor": true,
+    "align": [
+      "left",
+      "right",
+      "center"
+    ],
+    "customClassName": true
+  },
+  "attributes": {
+    "align": {
+      "type": "string"
+    },
+    "variant": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "default"
+    },
+    "later": {
+      "type": "boolean"
+    },
+    "amount": {
+      "type": "string",
+      "default": ""
+    }
+  },
+  "textdomain": "vipps-badge",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css"
+}
