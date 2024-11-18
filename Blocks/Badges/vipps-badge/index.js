@@ -33,29 +33,30 @@
                 default: VippsBadgeBlockConfig['defaultvariant'],
                 type: "string",
                 source: "attribute",
-                selector: "vipps-badge",
+                selector: "vipps-mobilepay-badge",
                 attribute: "variant"
             },
             language: {
                 default: 'default',
                 type: "string",
                 source: "attribute",
-                selector: "vipps-badge",
+                selector: "vipps-mobilepay-badge",
                 attribute: "language"
             },
-            later: {
-                type: "boolean",
-                source: "attribute",
-                selector: "vipps-badge",
-                attribute: "vipps-senere"
-            },
-            amount:  {
-                default: "",
-                type: "text",
-                source: "attribute",
-                selector: "vipps-badge",
-                attribute: "amount"
-            } 
+            // Comment out vipps-senere stuff. LP 18.11.2024
+            // later: {
+            //     type: "boolean",
+            //     source: "attribute",
+            //     selector: "vipps-mobilepay-badge",
+            //     attribute: "vipps-senere"
+            // },
+            // amount:  {
+            //     default: "",
+            //     type: "text",
+            //     source: "attribute",
+            //     selector: "vipps-mobilepay-badge",
+            //     attribute: "amount"
+            // } 
 
 
         },
@@ -77,21 +78,22 @@
             }
             if (!found) appOptions.push({label: current, value: current});
 
-            let attrs =  { className: props.className, variant: current };
-            if (props.attributes.later) {
-                attrs["vipps-senere"] = true;
-            }
+            let attrs =  { className: props.className, variant: current, brand: VippsBadgeBlockConfig['brand']};
+            // Comment out vipps-senere stuff. LP 18.11.2024
+            // if (props.attributes.later) {
+            //     attrs["vipps-senere"] = true;
+            // }
             if (props.attributes.language !== 'default') {
                 attrs['language'] = props.attributes.language;
             } else {
                 attrs['language'] = "";
             }
-            if (props.attributes.amount ) {
-                let am = parseInt(props.attributes.amount);
-                if (!isNaN(am)) {
-                    attrs['amount'] = props.attributes.amount;
-                }
-            } 
+            // if (props.attributes.amount ) {
+            //     let am = parseInt(props.attributes.amount);
+            //     if (!isNaN(am)) {
+            //         attrs['amount'] = props.attributes.amount;
+            //     }
+            // } 
 
             let extraclass =  (props.className && props.className != "undefined")  ? props.className : "";
             switch(props.attributes.align) {
@@ -107,21 +109,22 @@
                 'div',
                 { ...bp, className: bp.className + ' vipps-badge-wrapper ' + extraclass},
 
-                el('vipps-badge', attrs, []), 
+                el('vipps-mobilepay-badge', attrs, []), 
 
                 el(InspectorControls, {},
                     el(SelectControl, { onChange: x=>props.setAttributes({variant: x}) , 
                         label: VippsBadgeBlockConfig['Variant'], value:attributes.variant, 
                         options: appOptions,
                         help:  VippsBadgeBlockConfig['VariantText']  }),
-                    el(CheckboxControl, { onChange: x=>props.setAttributes({later: x}),
-                        label: VippsBadgeBlockConfig['VippsLater'], value: attributes.later,
-                        options: [true, false],
-                        checked: props.attributes.later,
-                        help: VippsBadgeBlockConfig['VippsLaterText']  }),
-                    el(TextControl, { onChange: x=>props.setAttributes({'amount': x}),
-                        label: VippsBadgeBlockConfig['Amount'], value: attributes.amount,
-                        help: VippsBadgeBlockConfig['AmountText']  }),
+                    // Comment out vipps-senere stuff. LP 18.11.2024
+                    // el(CheckboxControl, { onChange: x=>props.setAttributes({later: x}),
+                    //     label: VippsBadgeBlockConfig['VippsLater'], value: attributes.later,
+                    //     options: [true, false],
+                    //     checked: props.attributes.later,
+                    //     help: VippsBadgeBlockConfig['VippsLaterText']  }),
+                    // el(TextControl, { onChange: x=>props.setAttributes({'amount': x}),
+                    //     label: VippsBadgeBlockConfig['Amount'], value: attributes.amount,
+                    //     help: VippsBadgeBlockConfig['AmountText']  }),
                     el(SelectControl, { onChange: x=>props.setAttributes({language: x}) , 
                         label: VippsBadgeBlockConfig['Language'], value:attributes.language, 
                         options: VippsBadgeBlockConfig['languages'],
@@ -137,21 +140,24 @@
             let bp = useBlockProps.save();
             var attributes = props.attributes;
 
-            let attrs =  { className: props.className, variant: attributes.variant };
-            if (props.attributes.later) {
-                attrs["vipps-senere"] = "true";
-            }
+            let attrs =  { className: props.className, variant: attributes.variant, brand: VippsBadgeBlockConfig['brand']};
+
+            // Comment out vipps-senere stuff. LP 18.11.2024
+            // if (props.attributes.later) {
+            //     attrs["vipps-senere"] = "true";
+            // }
+
             if (props.attributes.language !== 'default') {
                 attrs['language'] = props.attributes.language;
             } else {
                 attrs['language'] = "";
             }
-            if (props.attributes.amount ) {
-                let am = parseInt(props.attributes.amount);
-                if (!isNaN(am)) {
-                    attrs['amount'] = props.attributes.amount;
-                }
-            } 
+            // if (props.attributes.amount ) {
+            //     let am = parseInt(props.attributes.amount);
+            //     if (!isNaN(am)) {
+            //         attrs['amount'] = props.attributes.amount;
+            //     }
+            // } 
 
             let extraclass =  (props.className && props.className != "undefined")  ? props.className : "";
             switch(props.attributes.align) {
@@ -164,7 +170,7 @@
             }
 
             return el( 'div', { ...bp, className: bp.className + ' vipps-badge-wrapper ' + extraclass},
-                el('vipps-badge', attrs, []),
+                el('vipps-mobilepay-badge', attrs, []),
 
             );
         },

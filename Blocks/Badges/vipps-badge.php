@@ -51,8 +51,8 @@ function vipps_badge_init() {
         $variants = array (
            array('label'=> __("White", 'woo-vipps'), 'value'=>'white'),
            array('label'=> __("Grey", 'woo-vipps'), 'value'=>'grey'),
-           array('label'=> __("Orange", 'woo-vipps'), 'value'=>'orange'),
-           array('label'=> __("Light Orange", 'woo-vipps'), 'value'=>'light-orange'),
+           array('label'=> __("Filled", 'woo-vipps'), 'value'=>'filled'),
+           array('label'=> __("Light", 'woo-vipps'), 'value'=>'light'),
            array('label'=> __("Purple", 'woo-vipps'), 'value'=>'purple'));
 
         $localizations['variants'] = $variants;
@@ -63,8 +63,11 @@ function vipps_badge_init() {
         $localizations['Variant'] = __('Variant', 'woo-vipps');
         $localizations['VariantText'] = __('Choose the badge variant with the perfect colors for your site', 'woo-vipps');
 
-        $localizations['VippsLater'] = sprintf(__('%1$s senere', 'woo-vipps'), "Vipps");
-        $localizations['VippsLaterText'] = sprintf(__('Add support for %1$s Senere, if your store provides it', 'woo-vipps'), "Vipps");
+        $localizations['brand'] = strtolower(Vipps::instance()->get_payment_method_name());
+        
+        // Comment out vipps-senere stuff. LP 18.11.2024
+        // $localizations['VippsLater'] = sprintf(__('%1$s senere', 'woo-vipps'), "Vipps");
+        // $localizations['VippsLaterText'] = sprintf(__('Add support for %1$s Senere, if your store provides it', 'woo-vipps'), "Vipps");
 
         $localizations['Language'] = __('Language', 'woo-vipps');
         $localizations['LanguageText'] = __('Choose language, or use the default', 'woo-vipps');
@@ -73,8 +76,10 @@ function vipps_badge_init() {
             ['label'=>__('English', 'woo-vipps'), 'value'=>'en'],
             ['label'=>__('Norwegian', 'woo-vipps'), 'value'=>'no']);
 
-        $localizations['Amount'] = __('Amount in minor units', 'woo-vipps');
-        $localizations['AmountText'] = __('You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)', 'woo-vipps');
+        
+        // Comment out vipps-senere stuff. LP 18.11.2024
+        // $localizations['Amount'] = __('Amount in minor units', 'woo-vipps');
+        // $localizations['AmountText'] = __('You can add an amount for the badge here, in the minor units of the currency (e.g. for NOK, in øre)', 'woo-vipps');
  
 
         $localizations['vippssmileurl'] = plugins_url('../../img/vipps-mobilepay-logo-only.png',__FILE__);

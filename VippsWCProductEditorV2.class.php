@@ -144,6 +144,7 @@ class VippsWCProductEditorV2
         $gw = $this->gateway();
         $parent = $general_group->get_parent();
         $payment_method_name = $gw->get_payment_method_name();
+        $company_name = Vipps::CompanyName();
 
         // Add the Vipps/MobilePay tab
         $gr = $parent->add_group(
@@ -163,7 +164,7 @@ class VippsWCProductEditorV2
                 'order' => 1,
                 'attributes' => [
                     'title' => __("On-site messaging badge", 'woo-vipps'),
-                    'description' => __("On-site messaging badges are small badges that can be added to your product pages to show that you accept Vipps payments.", 'woo-vipps'),
+                    'description' => sprintf(__('On-site messaging badges are small badges that can be added to your product pages to show that you accept %1$s payments.', 'woo-vipps'), $company_name),
                 ],
             ]
         );
@@ -182,32 +183,33 @@ class VippsWCProductEditorV2
                         ['value' => 'none', 'label' => __('No badge', 'woo-vipps')],
                         ['value' => 'white', 'label' => __('White', 'woo-vipps')],
                         ['value' => 'grey', 'label' => __('Grey', 'woo-vipps')],
-                        ['value' => 'orange', 'label' => __('Orange', 'woo-vipps')],
-                        ['value' => 'light-orange', 'label' => __('Light Orange', 'woo-vipps')],
+                        ['value' => 'filled', 'label' => __('Filled', 'woo-vipps')],
+                        ['value' => 'light', 'label' => __('Light', 'woo-vipps')],
                         ['value' => 'purple', 'label' => __('Purple', 'woo-vipps')],
                     ),
                 ],
             ]
         );
 
-        $badges_section->add_block(
-            [
-                'id' => 'woo-vipps-overrides-later',
-                'blockName' => 'woocommerce/product-select-field',
-                'order' => 3,
-                'attributes' => [
-                    'label' => sprintf(__('Override %1$s Later', 'woo-vipps'), $payment_method_name),
-                    'property' => 'meta_data._vipps_badge_pay_later',
-                    'autoFocus' => false,
-                    'help' => __('Choose if this product should use Vipps Later', 'woo-vipps'),
-                    'options' => array(
-                        ['value' => '', 'label' => __('Default setting', 'woo-vipps')],
-                        ['value' => 'later', 'label' => sprintf(__('Use %1$s Later', 'woo-vipps'), $payment_method_name)],
-                        ['value' => 'no', 'label' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), $payment_method_name)],
-                    ),
-                ],
-            ]
-        );
+        // Comment out vipps-senere stuff. LP 18.11.2024.
+        // $badges_section->add_block(
+        //     [
+        //         'id' => 'woo-vipps-overrides-later',
+        //         'blockName' => 'woocommerce/product-select-field',
+        //         'order' => 3,
+        //         'attributes' => [
+        //             'label' => sprintf(__('Override %1$s Later', 'woo-vipps'), $payment_method_name),
+        //             'property' => 'meta_data._vipps_badge_pay_later',
+        //             'autoFocus' => false,
+        //             'help' => __('Choose if this product should use Vipps Later', 'woo-vipps'),
+        //             'options' => array(
+        //                 ['value' => '', 'label' => __('Default setting', 'woo-vipps')],
+        //                 ['value' => 'later', 'label' => sprintf(__('Use %1$s Later', 'woo-vipps'), $payment_method_name)],
+        //                 ['value' => 'no', 'label' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), $payment_method_name)],
+        //             ),
+        //         ],
+        //     ]
+        // );
 
         // Buy now section
         $buy_now_section = $gr->add_section(
