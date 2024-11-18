@@ -39,6 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class VippsCheckout {
     private static $instance = null;
     private $gw = null;
+    private $payid = 0; // Used to improve handling of "what is the current checkout page" IOK 2024-11-14
 
     public static function instance()  {
         if (!static::$instance) static::$instance = new VippsCheckout();
@@ -206,7 +207,6 @@ jQuery(document).ready(function () {
         $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
         $order->save();
 
-        $url = get_permalink(wc_get_page_id('checkout'));
         $url = $order->get_checkout_payment_url();
 
         // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
@@ -822,22 +822,49 @@ jQuery(document).ready(function () {
         }
     }
 
+
+    public function maybe_override_checkout_page_id ($id) {
+        //  Only do this if Vipps Checkout was ever activated
+        $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
+        if (!$vipps_checkout_activated) return $id;
+
+         // The gutenberg block  (and other pages) calls the checkout-page-id function *a lot* so let's just check once
+        if ($this->payid) return $id;
+
+        // If we are on a checkout page, don't go other places please
+        if (is_page()){
+            global $post; 
+            // The unfiltered checkout page from woo
+            if ($post->ID == get_option( 'woocommerce_checkout_page_id' )) {
+                $this->payid = $id;
+                return $id;
+            }
+            // any other page with a gutenberg checkout block. We don't need to test for the shortcode, that works fine.
+            if (has_block( 'woocommerce/checkout', $post->post_content) ) {
+                $this->payid = $id;
+                return $id;
+            }
+            // If this is "pay for order", also don't do anything.
+            $orderid = absint(get_query_var( 'order-pay'));
+            if ($orderid) {
+                $this->payid = $id;
+                return $id;
+            }
+        }
+
+        // Else, if Vipps Checkout is enabled, can be used etc, use that.
+        $checkoutid = $this->gateway()->vipps_checkout_available();
+        if ($checkoutid) {
+            $this->payid = $id;
+            return $checkoutid;
+        }
+
+        return $id;
+    }
+
     public function woocommerce_loaded () {
         # This implements the Vipps Checkout replacement checkout page for those that wants to use that, by filtering the checkout page id.
-        add_filter('woocommerce_get_checkout_page_id',  function ($id) {
-                # Only do this if Vipps Checkout was ever activated
-                $vipps_checkout_activated = get_option('woo_vipps_checkout_activated', false);
-                if (!$vipps_checkout_activated) return $id;
-
-                # If Vipps Checkout is enabled, can be used etc, use that.
-                $checkoutid = $this->gateway()->vipps_checkout_available();
-                if ($checkoutid) {
-                    return $checkoutid;
-                }
-
-                return $id;
-        },10, 1);
-
+        add_filter('woocommerce_get_checkout_page_id', array($this, 'maybe_override_checkout_page_id'), 10, 1); 
 
         // This is for the 'other payment method' thing in Vipps Checkout - we store address info
         // in session. IOK 2024-05-13
