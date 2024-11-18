@@ -74,7 +74,9 @@ function vipps_badge_init() {
         $localizations['languages'] = array(
             ['label'=>__('Default', 'woo-vipps'), 'value'=>'default'],
             ['label'=>__('English', 'woo-vipps'), 'value'=>'en'],
-            ['label'=>__('Norwegian', 'woo-vipps'), 'value'=>'no']);
+            ['label'=>__('Norwegian', 'woo-vipps'), 'value'=>'no'],
+            ['label'=>__('Finnish', 'woo-vipps'), 'value'=>'fi'],
+            ['label'=>__('Danish', 'woo-vipps'), 'value'=>'dk']);
 
         
         // Comment out vipps-senere stuff. LP 18.11.2024

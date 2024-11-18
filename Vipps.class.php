@@ -397,9 +397,9 @@ class Vipps {
                 $attr .= " variant='" . sanitize_title($variant) . "' ";
             }
 
-            $price = 0;
-
+            
             // Comment out vipps-senere stuff. LP 18.11.2024
+            // $price = 0;
             // $supported_currencies = ['NOK'];
             // $currency = get_woocommerce_currency();
             // if ($product && in_array($currency, $supported_currencies)) {
@@ -423,12 +423,11 @@ class Vipps {
 
             $lang = $this->get_customer_language();
             if ($lang) {
-                $attr .= " language=' ". $lang . "' ";
+                $attr .= " language='". $lang . "' ";
             }
 
             $brand = $this->get_payment_method_name();
-            if ($brand) $attr .= " brand=' ". strtolower($brand) . "' ";
-
+            if ($brand) $attr .= " brand='". strtolower($brand) . "' ";
 
 
             $badge = "<vipps-mobilepay-badge $attr></vipps-mobilepay-badge>";
@@ -745,10 +744,9 @@ jQuery('a.webhook-adder').click(function (e) {
              <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
              <p><?php echo sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()); ?></p>
             </div>
-
            <p id=badgeholder style="font-size:1.5rem">
               <vipps-mobilepay-badge id="vipps-badge-demo"
-                <?php if (@$badge_options['brand']) echo ' brand="' . esc_attr($badge_options['brand']) . '" ' ?>
+                <?php if (@$badge_options['brand']) echo ' brand="' . esc_attr(strtolower($this->get_payment_method_name())) . '" ' ?>
                 <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
                 <?php /* Comment out vipps-later stuff. LP 18.11.2024.
                  if (@$badge_options['later']) echo ' vipps-senere="' . esc_attr($badge_options['later']) . '" ' */ ?>
@@ -796,7 +794,7 @@ jQuery('a.webhook-adder').click(function (e) {
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
            <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge <!--badge={vipps|mobilepay}<br>                       -->variant={white|filled|light|grey|purple}<br>                       language={en|no}<!-- Comment out vipps-senere stuff. LP 18.11.2024
+              <pre>[vipps-mobilepay-badge <!--badge={vipps|mobilepay}<br>                       -->variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk}<!-- Comment out vipps-senere stuff. LP 18.11.2024
               <br>                       amount={amount in minor units}<br>                       vipps-senere={false|true}-->]</pre><br> 
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
               <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
@@ -852,9 +850,6 @@ jQuery('a.webhook-adder').click(function (e) {
         if (isset($_POST['defaultall'])) {
             $current['defaultall'] = intval($_POST['defaultall']);
         }
-        if (isset($_POST['brand'])) {
-            $current['brand'] = sanitize_title($_POST['brand']);
-        }
         if (isset($_POST['variant'])) {
             $current['variant'] = sanitize_title($_POST['variant']);
         }
@@ -878,7 +873,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
         
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple', 'filled', 'light']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en','no']) ? $args['language'] : $this->get_customer_language();
+        $language = in_array($args['language'], ['en','no', 'fi', 'dk']) ? $args['language'] : $this->get_customer_language();
         // $amount = intval($args['amount']);
         // $later = $args['vipps-senere'];
         $id = sanitize_title($args['id']);
