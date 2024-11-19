@@ -1,12 +1,7 @@
 import type { BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import {
-	SelectControl,
-	TextControl,
-	CheckboxControl,
-	PanelBody,
-} from '@wordpress/components';
+import { SelectControl, PanelBody } from '@wordpress/components';
 
 import type { VippsBadgeBlockAttributes } from './types';
 import { blockConfig } from './blockConfig';
@@ -35,12 +30,7 @@ export default function Edit({
 		language = '';
 	}
 
-	let attrs: {
-		className: string;
-		variant: string;
-		language: string;
-		brand: string;
-	} = {
+	const attrs = {
 		className: attributes.className,
 		variant: current,
 		language: language,
@@ -48,7 +38,7 @@ export default function Edit({
 	};
 
 	let extraclass =
-		attributes.className && attributes.className != 'undefined'
+		attributes.className && attributes.className !== 'undefined'
 			? attributes.className
 			: '';
 	switch (attributes.align) {
@@ -80,8 +70,8 @@ export default function Edit({
 			<InspectorControls>
 				<PanelBody>
 					<SelectControl
-						onChange={(variant) =>
-							setAttributes({ variant: variant })
+						onChange={(newVariant) =>
+							setAttributes({ variant: newVariant })
 						}
 						label={__('Variant', 'woo-vipps')}
 						value={attributes.variant}
@@ -92,8 +82,8 @@ export default function Edit({
 						)}
 					/>
 					<SelectControl
-						onChange={(language) =>
-							setAttributes({ language: language })
+						onChange={(newLanguage) =>
+							setAttributes({ language: newLanguage })
 						}
 						label={__('Language', 'woo-vipps')}
 						value={attributes.language}

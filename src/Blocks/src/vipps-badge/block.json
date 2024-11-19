@@ -8,11 +8,7 @@
 	"supports": {
 		"html": true,
 		"anchor": true,
-		"align": [
-			"left",
-			"right",
-			"center"
-		],
+		"align": ["left", "right", "center"],
 		"customClassName": true
 	},
 	"attributes": {

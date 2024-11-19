@@ -1,8 +1,8 @@
 import type { BlockAttributes } from '@wordpress/blocks';
 
 interface Select {
-	label: string,
-	value: string,
+	label: string;
+	value: string;
 }
 
 export interface VippsBadgeBlockAttributes extends BlockAttributes {

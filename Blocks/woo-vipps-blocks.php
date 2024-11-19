@@ -11,6 +11,7 @@ function vipps_badge_block_hooks() {
 
     // Inject block config variables to vipps-badge editor script. LP 15.11.2024
     add_action('enqueue_block_editor_assets', function () {
+        $vipps = Vipps::instance();
         $variants = $variants = [
             ['label' => __("White", 'woo-vipps'), 'value' => 'white'],
             ['label' => __("Grey", 'woo-vipps'), 'value' => 'grey'],
@@ -23,9 +24,9 @@ function vipps_badge_block_hooks() {
             'variants' => $variants,
             'defaultVariant' => 'white',
             'iconSrc' => plugins_url('../img/vipps-mobilepay-logo-only.png', __FILE__),
-            'brand' => strtolower(Vipps::instance()->get_payment_method_name()),
+            'brand' => strtolower($vipps->get_payment_method_name()),
             'languages' => [
-                ['label' => __('Default', 'woo-vipps'), 'value' => 'default'],
+                ['label' => __('Default', 'woo-vipps'), 'value' => $vipps->get_customer_language()],
                 ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                 ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
                 ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
