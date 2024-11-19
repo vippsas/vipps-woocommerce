@@ -866,7 +866,7 @@ jQuery('a.webhook-adder').click(function (e) {
         exit();
     }
 
-    public function vipps_badge_shortcode($atts) {
+    public function vipps_mobilepay_badge_shortcode($atts) {
         // comment out vipps-senere stuff. LP 18.11.2024
         // $args = shortcode_atts( array('id'=>'', 'class'=>'', 'variant' => '','language'=>'','amount' => '', 'vipps-senere'=>''), $atts ); 
 
@@ -892,6 +892,34 @@ jQuery('a.webhook-adder').click(function (e) {
         foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
 
         return "<vipps-mobilepay-badge $badgeatts></vipps-mobilepay-badge>";
+    }
+
+    // legacy vipps_badge shortcode. LP 19.11.2024
+    public function vipps_badge_shortcode($atts) {
+        // comment out vipps-senere stuff. LP 19.11.2024
+        // $args = shortcode_atts( array('id'=>'', 'class'=>'', 'variant' => '','language'=>'','amount' => '', 'vipps-senere'=>''), $atts ); 
+
+        $args = shortcode_atts( array('id'=>'', 'class'=>'','variant' => '','language'=>''), $atts );
+        
+        $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
+        $language = in_array($args['language'], ['en','no', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
+        // $amount = intval($args['amount']);
+        // $later = $args['vipps-senere'];
+        $id = sanitize_title($args['id']);
+        $class = sanitize_text_field($args['class']);
+
+        $attributes = [];
+        if ($variant) $attributes['variant'] = $variant;
+        if ($language) $attributes['language'] = $language;
+        // if ($amount) $attributes['amount'] = $amount;
+        // if ($later) $attributes['vipps-senere'] = 1;
+        if ($id) $attributes['id'] = $id;
+        if ($class) $attributes['class'] = $class;
+        
+        $badgeatts = "";
+        foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
+
+        return "<vipps-badge $badgeatts></vipps-badge>";
     }
 
 
@@ -1290,8 +1318,12 @@ jQuery('a.webhook-adder').click(function (e) {
         add_shortcode('woo_vipps_buy_now', array($this, 'buy_now_button_shortcode'));
         add_shortcode('woo_vipps_express_checkout_button', array($this, 'express_checkout_button_shortcode'));
         add_shortcode('woo_vipps_express_checkout_banner', array($this, 'express_checkout_banner_shortcode'));
+
         // Badges, if using shortcodes
-        add_shortcode('vipps-mobilepay-badge', array($this, 'vipps_badge_shortcode'));
+        // New vipps-mobilepay-badge shortcode. LP 19.11.2024
+        add_shortcode('vipps-mobilepay-badge', array($this, 'vipps_mobilepay_badge_shortcode'));
+        // Legacy vipps-badge shortcode. LP 19.11.2024
+        add_shortcode('vipps-badge', array($this, 'vipps_badge_shortcode'));
     }
 
 
