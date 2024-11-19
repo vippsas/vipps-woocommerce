@@ -1,5 +1,7 @@
 <?php
 
+// This is the new script to register blocks built into ./dist. At this time only the vipps-badge block. LP 19.11.2024
+
 /**
  * Init hooks and inline script for the block vipps-badge. LP 14.11.2024
  * @return void
