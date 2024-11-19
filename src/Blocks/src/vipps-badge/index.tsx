@@ -11,7 +11,7 @@ registerBlockType(metadata.name, {
 	title: blockConfig.title,
 	icon: (
 		<img
-			className={'vipps-smile vipps-component-icon'}
+			className={'block-editor-block-icon has-colors vipps-smile vipps-component-icon'}
 			src={blockConfig.iconSrc}
 			alt={blockConfig.title + ' icon'}
 		/>
