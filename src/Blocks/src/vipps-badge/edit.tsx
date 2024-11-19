@@ -1,6 +1,12 @@
 import type { BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
-import { useBlockProps } from '@wordpress/block-editor';
+import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
+import {
+	SelectControl,
+	TextControl,
+	CheckboxControl,
+	PanelBody,
+} from '@wordpress/components';
 
 import type { VippsBadgeBlockAttributes } from './types';
 import { blockConfig } from './blockConfig';
@@ -11,7 +17,7 @@ export default function Edit({
 	setAttributes,
 }: BlockEditProps<VippsBadgeBlockAttributes>) {
 	// Let the user choose the variant. If the current one isn't in the list, add it (though we don't know the label then. IOK 2020-12-18
-	const variantOptions = blockConfig['variants'];
+	const variantOptions = blockConfig.variants;
 	const current = attributes.variant;
 	let found = false;
 	for (let i = 0; i < variantOptions.length; i++) {
@@ -33,23 +39,13 @@ export default function Edit({
 		className: string;
 		variant: string;
 		language: string;
-		'vipps-senere'?: boolean;
-		amount?: string;
+		brand: string;
 	} = {
 		className: attributes.className,
 		variant: current,
 		language: language,
+		brand: blockConfig.brand,
 	};
-
-	if (attributes.later) {
-		attrs['vipps-senere'] = true;
-	}
-	if (attributes.amount) {
-		let am = parseInt(attributes.amount);
-		if (!isNaN(am)) {
-			attrs['amount'] = attributes.amount;
-		}
-	}
 
 	let extraclass =
 		attributes.className && attributes.className != 'undefined'
@@ -69,30 +65,46 @@ export default function Edit({
 
 	return (
 		<>
+			{/* The block itself. LP 18.11.2024 */}
 			<div
 				{...useBlockProps({
 					className: 'vipps-badge-wrapper ' + extraclass,
 				})}
 			>
-				{/* <vipps-badge> gets defined in https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js, I think... LP 15.11.2024 */}
+				{/* <vipps-badge> is a web component that is enqueued with slug vipps-onsite-messageing. LP 18.11.2024 */}
 				{/* @ts-ignore */}
-				{/* <vipps-mobilepay-badge {...attrs} /> */}
-				{/* <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script> */}
-				{/* <script async type="text/javascript" src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script> */}
-				{/* @ts-ignore */}
-				{/* <vipps-mobilepay-badge
-					brand="vipps"
-					language="en"
-					variant="white"
-					/> */}
-				{/* @ts-ignore */}
-				<vipps-mobilepay-badge
-					brand="vipps"
-					language="en"
-					variant="white"
-					amount="500"
-				/>
+				<vipps-mobilepay-badge {...attrs} />
 			</div>
+
+			{/* The block controls on the right side-panel. LP 18.11.2024 */}
+			<InspectorControls>
+				<PanelBody>
+					<SelectControl
+						onChange={(variant) =>
+							setAttributes({ variant: variant })
+						}
+						label={__('Variant', 'woo-vipps')}
+						value={attributes.variant}
+						options={variantOptions}
+						help={__(
+							'Choose the badge variant with the perfect colors for your site',
+							'woo-vipps'
+						)}
+					/>
+					<SelectControl
+						onChange={(language) =>
+							setAttributes({ language: language })
+						}
+						label={__('Language', 'woo-vipps')}
+						value={attributes.language}
+						options={blockConfig.languages}
+						help={__(
+							'Choose language, or use the default',
+							'woo-vipps'
+						)}
+					/>
+				</PanelBody>
+			</InspectorControls>
 		</>
 	);
 }

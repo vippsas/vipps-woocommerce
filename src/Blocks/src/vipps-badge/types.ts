@@ -1,6 +1,6 @@
 import type { BlockAttributes } from '@wordpress/blocks';
 
-interface Variant {
+interface Select {
 	label: string,
 	value: string,
 }
@@ -16,6 +16,8 @@ export interface VippsBadgeBlockAttributes extends BlockAttributes {
 export interface VippsBadgeBlockConfig {
 	title: string;
 	iconSrc: string;
+	brand: string;
 	defaultVariant: string;
-	variants: Variant[];
+	variants: Select[];
+	languages: Select[];
 }

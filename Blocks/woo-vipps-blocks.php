@@ -14,15 +14,23 @@ function vipps_badge_block_hooks() {
         $variants = $variants = [
             ['label' => __("White", 'woo-vipps'), 'value' => 'white'],
             ['label' => __("Grey", 'woo-vipps'), 'value' => 'grey'],
-            ['label' => __("Orange", 'woo-vipps'), 'value' => 'orange'],
-            ['label' => __("Light Orange", 'woo-vipps'), 'value' => 'light-orange'],
+            ['label' => __("Filled", 'woo-vipps'), 'value' => 'filled'],
+            ['label' => __("Light", 'woo-vipps'), 'value' => 'light'],
             ['label' => __("Purple", 'woo-vipps'), 'value' => 'purple']];
-    
+
         $block_config = [
             'title' => sprintf(__('%1$s On-Site Messaging Badge', 'woo-vipps'), Vipps::CompanyName()),
             'variants' => $variants,
             'defaultVariant' => 'white',
-            'iconSrc' => plugins_url('../img/vipps-mobilepay-logo-only.png', __FILE__)
+            'iconSrc' => plugins_url('../img/vipps-mobilepay-logo-only.png', __FILE__),
+            'brand' => strtolower(Vipps::instance()->get_payment_method_name()),
+            'languages' => [
+                ['label' => __('Default', 'woo-vipps'), 'value' => 'default'],
+                ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
+                ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
+                ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
+                ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk']
+            ]
         ];
 
         wp_add_inline_script('woo-vipps-vipps-badge-editor-script',
