@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "woo-vipps/vipps-badge",
   "version": "0.1.0",
-  "title": "Vipps On-Site Messaging Badge",
+  "title": "Vipps MobilePay On-Site Messaging Badge",
   "category": "widgets",
   "supports": {
     "html": true,
@@ -34,7 +34,7 @@
       "default": ""
     }
   },
-  "textdomain": "vipps-badge",
+  "textdomain": "woo-vipps",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css"
 }

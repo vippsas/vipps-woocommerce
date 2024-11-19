@@ -37,7 +37,7 @@ function vipps_badge_block_hooks() {
         ];
 
         wp_add_inline_script('woo-vipps-vipps-badge-editor-script',
-            'const injectedBlockConfig = ' . json_encode($block_config),
+            'const injectedVippsBadgeBlockConfig = ' . json_encode($block_config),
             'before');
     });
 }
