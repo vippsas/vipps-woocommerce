@@ -829,7 +829,7 @@ jQuery(document).ready(function () {
         if (!$vipps_checkout_activated) return $id;
 
          // The gutenberg block  (and other pages) calls the checkout-page-id function *a lot* so let's just check once
-        if ($this->payid) return $id;
+        if ($this->payid) return $this->payid;
 
         // If we are on a checkout page, don't go other places please
         if (is_page()){
@@ -855,7 +855,7 @@ jQuery(document).ready(function () {
         // Else, if Vipps Checkout is enabled, can be used etc, use that.
         $checkoutid = $this->gateway()->vipps_checkout_available();
         if ($checkoutid) {
-            $this->payid = $id;
+            $this->payid = $checkoutid;
             return $checkoutid;
         }
 
