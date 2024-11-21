@@ -2,7 +2,7 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "woo-vipps/vipps-badge",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "title": "Vipps MobilePay On-Site Messaging Badge",
   "category": "widgets",
   "supports": {
@@ -16,22 +16,11 @@
     "customClassName": true
   },
   "attributes": {
-    "align": {
-      "type": "string"
-    },
     "variant": {
       "type": "string"
     },
     "language": {
-      "type": "string",
-      "default": "default"
-    },
-    "later": {
-      "type": "boolean"
-    },
-    "amount": {
-      "type": "string",
-      "default": ""
+      "type": "string"
     }
   },
   "textdomain": "woo-vipps",

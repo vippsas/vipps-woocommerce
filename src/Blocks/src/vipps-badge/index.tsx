@@ -11,7 +11,9 @@ registerBlockType(metadata.name, {
 	title: blockConfig.title,
 	icon: (
 		<img
-			className={'block-editor-block-icon has-colors vipps-smile vipps-component-icon'}
+			className={
+				'block-editor-block-icon has-colors vipps-smile vipps-component-icon'
+			}
 			src={blockConfig.iconSrc}
 			alt={blockConfig.title + ' icon'}
 		/>
@@ -20,6 +22,7 @@ registerBlockType(metadata.name, {
 	// Set attribute defaults. LP 15.11.2024
 	attributes: {
 		variant: { default: blockConfig.defaultVariant },
+		language: { default: blockConfig.defaultLanguage },
 	},
 
 	edit: Edit,

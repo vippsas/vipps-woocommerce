@@ -9,8 +9,6 @@ export interface VippsBadgeBlockAttributes extends BlockAttributes {
 	align: string;
 	variant: string;
 	language: string;
-	later: boolean;
-	amount: string;
 }
 
 export interface VippsBadgeBlockConfig {
@@ -18,6 +16,7 @@ export interface VippsBadgeBlockConfig {
 	iconSrc: string;
 	brand: string;
 	defaultVariant: string;
+	defaultLanguage: string;
 	variants: Select[];
 	languages: Select[];
 }

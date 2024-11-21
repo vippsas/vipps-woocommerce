@@ -19,17 +19,9 @@ export default function save({
 	}
 	if (!found) variantOptions.push({ label: current, value: current });
 
-	let language: string;
-	if (attributes.language !== 'default') {
-		language = attributes.language;
-	} else {
-		language = '';
-	}
-
 	const attrs = {
-		className: attributes.className,
 		variant: current,
-		language: language,
+		language: attributes.language,
 		brand: blockConfig.brand,
 	};
 
@@ -37,17 +29,6 @@ export default function save({
 		attributes.className && attributes.className !== 'undefined'
 			? attributes.className
 			: '';
-	switch (attributes.align) {
-		case 'center':
-			extraclass += ' aligncenter';
-			break;
-		case 'left':
-			extraclass += ' alignleft';
-			break;
-		case 'right':
-			extraclass += ' alignright';
-			break;
-	}
 
 	return (
 		<>
