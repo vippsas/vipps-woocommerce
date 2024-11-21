@@ -3365,16 +3365,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function order_add_vipps_categories ($order) {
         if (!is_a($order, 'WC_Order')) return;
         
-        $receipt_image = $this->get_option('receiptimage');
         $none = ['link'=>null, 'image'=>null, 'imagesize'=>null];
+        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => null, 'imagesize'=>null];
 
-        if (!$receipt_image) {
-            error_log("No receipt image configured");
+        $receipt_image = $this->get_option('receiptimage');
+        if ($receipt_image) {
+            $orderconfirmation['image'] = intval($receipt_image);
+            $orderconfirmation['imagesize'] = 'full';
             return $default;
         }
 
-        $image_url = wp_get_attachment_url($receipt_image);
-        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => intval($receipt_image), 'imagesize'=>'full'];
         // Do these in this order, in case we get terminated at some point during processing
         $default = ['TICKET'=>$none,'ORDER_CONFIRMATION' => $orderconfirmation, 'RECEIPT' => $none,"BOOKING" => $none, "DELIVERY" => $none, "GENERAL" => $none];
         $categories = apply_filters('woo_vipps_add_order_categories', $default, $order, $this);
