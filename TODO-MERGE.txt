@@ -4,6 +4,8 @@
 * Needs testing:
 ** activate, deactivate, uninstall
 
+** aktiver recurring hvis subscriptions finnes
+
 * Needs testing and working-out: 
 ** Webhooks!
 ** Callbacks!
@@ -13,4 +15,4 @@
 ** LANGUAGE
 ** New settings-page for recurring
 
-
+13 januar
