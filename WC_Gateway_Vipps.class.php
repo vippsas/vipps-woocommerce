@@ -2470,7 +2470,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0; 
                 $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
                 $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
-                $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'];
+                // now also reducing remainingAmmountToCancel with cancelledAmount PMB 2024-11-21
+                $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'] - $transactionSummary['cancelledAmount'];
+
                 $result['transactionSummary'] = $transactionSummary;
             }
 
