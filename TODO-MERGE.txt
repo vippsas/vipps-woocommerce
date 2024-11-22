@@ -16,3 +16,37 @@
 ** New settings-page for recurring
 
 13 januar
+
+
+AKTIVERING:
+
+* Vi laster inn recurring hviss recurring *ikke* er lastet inn, og hvis subscriptions *er* lastet inn.
+** så, i plugins-loaded, men veldig tidlig, så sjekker vi en "aktivitets"-ting for recurring. Hvis denne er *av* men skulle vært *på* kjører vi activate.
+** hvis den er *på* men skulle vært *av* kjører vi deactivate.
+** og så kjører vi deactivate når vi deaktiverer, også
+
+includes/wc-vipps-recurring.php:		register_activation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'activate' ] );
+includes/wc-vipps-recurring.php:		register_deactivation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'deactivate' ] );
+includes/wc-vipps-recurring.php:	public function activate() {
+includes/wc-vipps-recurring.php:	public static function deactivate() {
+
+ public function activate() {
+                global $wp_rewrite;
+
+                $this->install();
+
+                $wp_rewrite->flush_rules();
+                add_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
+        }
+
+
+        public static function deactivate() {
+                WC_Vipps_Recurring::get_instance()->gateway()->webhook_teardown();
+        }
+
+Det er også   public static function register_hooks() {
+
+recurring.php:WC_Vipps_Recurring::register_hooks();
+recurring.php:    WC_Vipps_Recurring_Checkout::register_hooks();
+
+og det opprettes cron-schedules etc i init.
