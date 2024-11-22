@@ -1657,6 +1657,7 @@ else:
         $total = intval($order->get_meta('_vipps_amount'));
         $captured = intval($order->get_meta('_vipps_captured'));
         $refunded = intval($order->get_meta('_vipps_refunded'));
+        $cancelled = intval($order->get_meta('_vipps_cancelled'));
 
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
@@ -1674,6 +1675,7 @@ else:
         print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print $currency; print "</td></tr>";
         print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print $currency; print "</td></tr>";
         print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print $currency; print "</td></tr>";
+        print "<tr><td>Cancelled</td><td align=right>" . sprintf("%0.2f ",$cancelled/100); print $currency; print "</td></tr>";
 
         if ($failures) {
           print("<tr><td>Capture attempts</td><td align=right>$failures</td></tr>");
