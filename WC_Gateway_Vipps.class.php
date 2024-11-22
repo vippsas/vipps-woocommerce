@@ -224,6 +224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
+        if ('epayment' != $order->get_meta('_vipps_api')) return false; // Cannot partially cancel legacy ecom orders
 
         $ok = true;
 
