@@ -212,6 +212,53 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
+        // when an order is complete, we need to check if there is reserved amount that is not captured
+        // if so, we need to cancel this amount PMB 2024-11-21
+        // nb: note very late priority - we must have captured before, please
+        add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+    }
+
+    // this funciton is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
+    public function maybe_cancel_reserved_amount ($orderid) {
+        $order = wc_get_order($orderid);
+        if (!$order) return;
+        if ('vipps' != $order->get_payment_method()) return false;
+
+        $ok = true;
+
+        $remaining = $order->get_meta('_vipps_capture_remaining');
+        if ($remaining > 0) {
+            $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
+            $currency = $order->get_currency();
+            try {
+                $res = $this->api->epayment_cancel_payment($order,$requestid=1,$remaining);
+
+
+                $amount = number_format($remaining/100, 2) . " " . $currency;
+                $note = sprintf(__('Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account.', 'woo-vipps'), $orderid, $amount);
+                $order->add_order_note($note);
+            } catch (Exception $e) {
+                $ok = false;
+                // if this happens, we just log it - we may not have an active admin
+                $msg = sprintf(__('Was not able to cancel remaining amount for the order %1$s: %2$s','woo-vipps'), $orderid, $e->getMessage());
+                $order->add_order_note($msg);
+                $this->log($msg,'error');
+            }
+
+            // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
+            if ($ok) {
+                try {
+                    $this->update_vipps_payment_details($order);
+                } catch (Exception $e) {
+                    // noop
+                }
+            }
+
+        }
+        // we just return true from this function for now PMB 2024-11-21
+        // return false if we couldn't cancel reserved. IOK 2024-11-22
+        return $ok;
     }
 
 
