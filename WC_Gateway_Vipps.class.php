@@ -3421,7 +3421,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($receipt_image) {
             $orderconfirmation['image'] = intval($receipt_image);
             $orderconfirmation['imagesize'] = 'full';
-            return $default;
         }
 
         // Do these in this order, in case we get terminated at some point during processing
