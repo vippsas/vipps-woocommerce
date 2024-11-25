@@ -1169,7 +1169,7 @@ class VippsApi {
     // Support for then new epayment API, which is also used by Checkout
     // Cancel a reserved but not captured payment IOK 2018-05-07
     // Currently must cancel the entire amount, but partial cancel will be possible.
-    public function epayment_cancel_payment($order,$requestid=1,$cancel_amount=NULL) {
+    public function epayment_cancel_payment($order,$requestid=1) {
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid.'/cancel';
         $msn = $this->get_merchant_serial();
@@ -1185,23 +1185,11 @@ class VippsApi {
 
         $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
-        
-        // as default we cancel the whole amount PMB 2024-11-21
-        $modificationAmount = $order->get_meta('_vipps_amount');
 
-        // however, if cancel_amount is not null, then we cancel this amount instead
-        // this can happen if an order is modified before being completed
-        // PMB 2024-11-21
-        if ( !is_null($cancel_amount) ) {
-            $this->log(sprintf(__("Part cancel of order %2\$s, cancel this amount: %2\$s ",'woo-vipps'), $orderid, $cancel_amount),'debug');
-            $modificationAmount = $cancel_amount;
-        }
-
-        $modificationCurrency = $order->get_currency();
-
-        $data = array();
-        $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
-
+        // The only current allowed argument is "cancelTransactionOnly" which will, if true, only cancel
+        // non-authorized transactions. We don't need that, but we have to send *something* or we get type errors. IOK 2024-11-25
+        $data = array('cancelTransactionOnly' => false); 
+     
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }

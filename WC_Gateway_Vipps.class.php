@@ -233,7 +233,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
             $currency = $order->get_currency();
             try {
-                $res = $this->api->epayment_cancel_payment($order,$requestid=1,$remaining);
+                // This will only cancel any remaining amount. IOK 2024-11-25
+                $res = $this->api->epayment_cancel_payment($order,$requestid=1);
 
 
                 $amount = number_format($remaining/100, 2) . " " . $currency;
