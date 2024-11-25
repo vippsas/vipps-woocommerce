@@ -27,7 +27,7 @@ const blockConfig = {
         supports: {
                 html: false,
         },
-        parent: [ 'woocommerce/all-products' ],
+        parent: [ 'woocommerce/product-template' ],
         icon: el('img', {"class": "vipps-smile vipps-component-icon", "src": VippsConfig['vippssmileurl'] }),
         title: VippsConfig['vippsbuynowbutton'],
         description: VippsConfig['vippsbuynowdescription'],

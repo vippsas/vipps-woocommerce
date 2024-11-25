@@ -34,7 +34,7 @@ const VippsBuyNow = ( props ) => {
 };
 
 const { registerBlockComponent } = wc.wcBlocksRegistry;
-const mainBlock = 'woocommerce/all-products';
+const mainBlock = 'woocommerce/product-template';
 
 registerBlockComponent( {
         main: mainBlock,

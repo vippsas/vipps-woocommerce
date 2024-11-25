@@ -33,9 +33,7 @@ SOFTWARE.
 }
 
 /* And this is for the products blocks IOK 2020-09-03 */
-.wc-block-grid__product .vippsbuynow {
-}
-.wc-block-grid__product .single-product.button.vipps-buy-now .inline.vipps-logo.negative {
+.single-product.button.vipps-buy-now .inline.vipps-logo.negative {
     display: inline-block;
     margin: 0 .2em;
     height: 2ex;
@@ -44,7 +42,7 @@ SOFTWARE.
     vertical-align: text-bottom;
 }
 
-.wc-block-grid__product .single-product.button.vipps-buy-now {
+.single-product.button.vipps-buy-now {
  min-width:15em;
 }
 

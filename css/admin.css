@@ -41,14 +41,14 @@ table.webhook-table td.actions {
 }
 
 /* Ditto for the products blocks IOK 2020-09-03 */
-.editor-styles-wrapper .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now {
+.wp-block-button__link.vipps-buy-now {
  color: #fff;
  display: inline-block;
  border:0;
  min-width:15em;
 }
 
-.editor-styles-wrapper .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now img.vipps-logo.negative {
+.wp-block-button__link.vipps-buy-now img.vipps-logo.negative {
  display: inline-block;
  margin: 0 .2em;
  height: 2ex;

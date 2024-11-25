@@ -9,7 +9,6 @@
 		"start": "wp-scripts start --webpack-copy-php --output-path=../../Blocks/dist"
 	},
 	"devDependencies": {
-		"@prettier/plugin-php": "^0.22.2",
 		"@types/wordpress__block-editor": "^11.5.15",
 		"@types/wordpress__blocks": "^12.5.14",
 		"@wordpress/prettier-config": "^4.11.0",
