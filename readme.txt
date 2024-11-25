@@ -242,8 +242,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2024-11-2x version 3.0.7 =
+= 2024-1x-xx version 3.0.7 =
 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
+Update the Badge block to the latest specifications and enable it for MobilePay
 
 = 2024-11-18 version 3.0.6 =
 Two extremely dumb errors fixed that interacted with 3.0.5 to disable Vipps Checkout. Sorry.
