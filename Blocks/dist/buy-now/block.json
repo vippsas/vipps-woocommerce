@@ -22,12 +22,13 @@
     "postId"
   ],
   "supports": {
-    "html": false
+    "html": false,
+    "interactivty": true
   },
   "textdomain": "buy-now",
   "editorScript": "file:./index.js",
   "editorStyle": "file:./index.css",
   "style": "file:./style-index.css",
   "render": "file:./render.php",
-  "viewScript": "file:./view.js"
+  "viewScriptModule": "file:./view.js"
 }

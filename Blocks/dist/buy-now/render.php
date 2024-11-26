@@ -12,12 +12,19 @@ if ($product && is_a($product, 'WC_Product')) {
 }
 
 ?>
-<p <?php echo get_block_wrapper_attributes(); ?>>
-	<?php esc_html_e( 'Vipps MobilePay Buy Now – hello from a dynamic block!', 'buy-now' ); ?>
+
+<p  <?php echo get_block_wrapper_attributes(); ?>
+    data-wp-interactive='woo-vipps'
+    <?php echo wp_interactivity_data_wp_context(array( 'pid' => $pid)); ?>
+    data-wp-watch="callbacks.watch" data-wp-init="callbacks.init"
+>
+
+
+	<?php esc_html_e( 'Vipps MobilePay Buy Now – hello from a dynamic block!!1!', 'buy-now' ); ?>
 <?php if ($supports): ?>
  Dette produktet støtter vipps hurtigkasse!
 <?php else: ?>
  Å nei, ingen hurtigkasse her
 <?php endif; ?>
-
 </p>
+
