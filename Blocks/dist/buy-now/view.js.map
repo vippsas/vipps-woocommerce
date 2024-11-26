@@ -1,0 +1,1 @@
+{"version":3,"file":"buy-now/view.js","mappings":";;;;AAAAA,OAAO,CAACC,GAAG,CAAC,6CAA6C,CAAC,C","sources":["webpack:///./src/buy-now/view.js"],"sourcesContent":["console.log(\"Hello World! (from woo-vipps-buy-now block)\");\n"],"names":["console","log"],"sourceRoot":""}

@@ -12,7 +12,6 @@
   ],
   "category": "woocommerce",
   "parent": [
-    "woocommerce/product-collection",
     "woocommerce/product-template",
     "woocommerce/all-products"
   ],
@@ -25,10 +24,8 @@
     "html": false,
     "interactivty": true
   },
-  "textdomain": "buy-now",
+  "textdomain": "woo-vipps",
   "editorScript": "file:./index.js",
-  "editorStyle": "file:./index.css",
-  "style": "file:./style-index.css",
   "render": "file:./render.php",
   "viewScriptModule": "file:./view.js"
 }
