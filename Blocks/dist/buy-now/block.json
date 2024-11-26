@@ -13,7 +13,8 @@
   "category": "woocommerce",
   "parent": [
     "woocommerce/product-collection",
-    "woocommerce/product-template"
+    "woocommerce/product-template",
+    "woocommerce/all-products"
   ],
   "usesContext": [
     "query",

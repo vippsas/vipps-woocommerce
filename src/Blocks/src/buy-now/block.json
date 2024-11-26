@@ -8,7 +8,7 @@
 	"description": "Express checkout button for Vipps MobilePay",
 	"keywords": ["WooCommerce", "woo-gutenberg-products-block"],
 	"category": "woocommerce",
-	"parent": ["woocommerce/product-collection", "woocommerce/product-template"],
+	"parent": ["woocommerce/product-collection", "woocommerce/product-template",  "woocommerce/all-products" ],
         "usesContext": [ "query", "queryId", "postId" ],
 	"supports": {
 		"html": false
