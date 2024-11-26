@@ -1,0 +1,1 @@
+console.log("Hello World! (from woo-vipps-buy-now block)");

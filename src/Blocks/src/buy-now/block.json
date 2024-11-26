@@ -2,15 +2,20 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "woo-vipps/buy-now",
-	"keywords": ["WooCommerce", "woo-gutenberg-products-block"],
-	"description": "Add a Vipps Buy Now-button to the product block",
 	"version": "2.0.0",
-	"title": "Vipps Buy Now Button",
+	"title": "Vipps MobilePay Buy Now",
+	"icon": "smiley",
+	"description": "Express checkout button for Vipps MobilePay",
+	"keywords": ["WooCommerce", "woo-gutenberg-products-block"],
 	"category": "woocommerce",
-	"parent": ["woocommerce/product-template"],
+	"parent": ["woocommerce/product-collection", "woocommerce/product-template"],
 	"supports": {
 		"html": false
 	},
-	"textdomain": "woo-vipps",
-	"editorScript": "file:./index.js"
+	"textdomain": "buy-now",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	"viewScript": "file:./view.js"
 }

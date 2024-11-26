@@ -112,4 +112,4 @@ function vipps_buy_now_block_hooks() {
 }
 
 vipps_badge_block_hooks();
-// vipps_buy_now_block_hooks();
+vipps_buy_now_block_hooks();
