@@ -244,6 +244,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 == Changelog ==
 = 2024-1x-xx version 3.0.7 =
 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
+Also, if an order that has not been captured yet needs repayment (in the Processing state) we now allow this. The money can only be refunded after capture, but in this case we will release the "refunded" money as soon as the order has been set to "complete".
+
+Change epayment_cancel_payment logic to match documentation
 Update the Badge block to the latest specifications and enable it for MobilePay
 
 = 2024-11-18 version 3.0.6 =

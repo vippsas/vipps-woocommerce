@@ -788,9 +788,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
+        // No funds captured, by epayment can do cancel of partial capture, so let's note that we are not to capture this.
         if (!$captured) {
-            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
-        }
+            if ('epayment' != $order->get_meta('_vipps_api')) {
+                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
+            }
+            if ($amount > $order->get_total()) {
+                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
+            }
+            $msg = sprintf(__('The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $amount, $currency);
+            $this->log($msg, 'info');
+            $uncapturable = round($amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
+
+            $order->update_meta_data('_vipps_noncapturable', $uncapturable);
+            $order->add_order_note($msg);
+            $order->save();
+            return true;
+        } 
+
         if ($amount*100 > $to_refund) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
@@ -1766,6 +1781,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
+    // Except that we *do* note that money "refunded" through vipps before capture should be "uncapturable". IOK 2024-11-25
     public function capture_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
@@ -1777,6 +1793,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Partial capture can happen if the order is edited IOK 2017-12-19
         $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
+        $noncapturable = intval($order->get_meta('_vipps_noncapturable'));  // This money has been marked as not-to-be-captured. It will be cancelled on complete.
 
         // Ensure 'SALE' direct captured orders work
         if (!$captured && $vippsstatus == 'SALE') { 
@@ -1785,7 +1802,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $total = round(wc_format_decimal($order->get_total(),'')*100);
-        $amount = $total-$captured;
+        $amount = $total-$captured-$noncapturable; // IOK subtract any amount not to be captured here
+
         if ($amount<=0) {
                 $order->add_order_note(__('Payment already captured','woo-vipps'));
                 return true;
