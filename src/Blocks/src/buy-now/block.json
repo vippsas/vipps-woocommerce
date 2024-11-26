@@ -9,6 +9,7 @@
 	"keywords": ["WooCommerce", "woo-gutenberg-products-block"],
 	"category": "woocommerce",
 	"parent": ["woocommerce/product-collection", "woocommerce/product-template"],
+        "usesContext": [ "query", "queryId", "postId" ],
 	"supports": {
 		"html": false
 	},
