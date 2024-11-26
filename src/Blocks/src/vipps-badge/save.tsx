@@ -1,8 +1,10 @@
 import type { BlockSaveProps } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
 
-import type { VippsBadgeBlockAttributes } from './types';
-import { blockConfig } from './blockConfig';
+import type { VippsBadgeBlockAttributes, VippsBadgeBlockConfig } from './types';
+
+declare var injectedVippsBadgeBlockConfig: VippsBadgeBlockConfig;
+const blockConfig = injectedVippsBadgeBlockConfig;
 
 export default function save({
 	attributes,

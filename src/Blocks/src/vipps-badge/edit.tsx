@@ -3,9 +3,11 @@ import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { SelectControl, PanelBody } from '@wordpress/components';
 
-import type { VippsBadgeBlockAttributes } from './types';
-import { blockConfig } from './blockConfig';
+import type { VippsBadgeBlockAttributes, VippsBadgeBlockConfig } from './types';
 import './editor.css';
+
+declare var injectedVippsBadgeBlockConfig: VippsBadgeBlockConfig;
+const blockConfig = injectedVippsBadgeBlockConfig;
 
 export default function Edit({
 	attributes,
