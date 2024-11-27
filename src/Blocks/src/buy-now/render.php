@@ -10,7 +10,8 @@ if ($product && is_a($product, 'WC_Product')) {
 
 ?>
 <?php if ($supports): ?>
-	<div <?php echo get_block_wrapper_attributes() ?>
+	<div 
+		<?php echo get_block_wrapper_attributes() ?>
 		class="wp-block-button  wc-block-components-product-button wc-block-button-vipps"
 	>
 		<a 
@@ -21,7 +22,11 @@ if ($product && is_a($product, 'WC_Product')) {
 			<span class="vippsbuynow">
 				<?php _e('Buy now with', 'woo-vipps'); ?>
 			</span>
-			<img class="inline vipps-logo-negative" src={VippsConfig.vippslogourl} alt="Vipps" />
+			<img 
+				class="inline vipps-logo-negative" 
+				src=<?php echo plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);?> 
+				alt="Vipps" 
+			/>
 		</a>
 	</div>
 <?php else: ?>
