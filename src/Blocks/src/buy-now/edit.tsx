@@ -1,6 +1,6 @@
-import { __ } from '@wordpress/i18n';
 import { useBlockProps } from '@wordpress/block-editor';
 
+// Injected from Vipps.class.php. LP 27.11.2024
 declare var VippsConfig: {
 	BuyNowWithVipps: string;
 	BuyNowWith: string;
@@ -16,7 +16,6 @@ export default function Edit() {
 			>
 				<a
 					className="single-product button vipps-buy-now wp-block-button__link"
-					href="javascript: void(0);"
 					title={VippsConfig.BuyNowWithVipps}
 				>
 					<span className="vippsbuynow">
@@ -26,8 +25,6 @@ export default function Edit() {
 						className="inline vipps-logo-negative"
 						src={VippsConfig.vippslogourl}
 						alt="Vipps"
-						// @ts-ignore - ?
-						border={0}
 					/>
 				</a>
 			</div>
