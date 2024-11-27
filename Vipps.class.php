@@ -398,29 +398,6 @@ class Vipps {
             }
 
             
-            // Comment out vipps-senere stuff. LP 18.11.2024
-            // $price = 0;
-            // $supported_currencies = ['NOK'];
-            // $currency = get_woocommerce_currency();
-            // if ($product && in_array($currency, $supported_currencies)) {
-            //     // Currently only supports NOK! 2022-11-11 IOK 
-            //     $price = $product->get_price();
-            //     $price = round($price * 100);
-            //     $attr .= " amount ='". $price. "' ";
-            // }
-
-            // $showlater = @$badge_options['later'] && $price>=intval(@$badge_options['minLater']);
-            // $showlaterforthis =  $product->get_meta('_vipps_badge_pay_later', true);
-            // if ($showlaterforthis == 'no') {
-            //     $showlater = false;
-            // } else if ($showlaterforthis == 'later') {
-            //     $showlater = true;
-            // }
-
-            // if (apply_filters('woo_vipps_product_badge_show_later', $showlater, $product)) {
-            //     $attr .= " vipps-senere='" . sanitize_title($badge_options['later']) . "' ";
-            // }
-
             $lang = $this->get_customer_language();
             if ($lang) {
                 $attr .= " language='". $lang . "' ";
@@ -748,9 +725,7 @@ jQuery('a.webhook-adder').click(function (e) {
               <vipps-mobilepay-badge id="vipps-badge-demo"
                 <?php if (@$badge_options['brand']) echo ' brand="' . esc_attr(strtolower($this->get_payment_method_name())) . '" ' ?>
                 <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
-                <?php /* Comment out vipps-later stuff. LP 18.11.2024.
-                 if (@$badge_options['later']) echo ' vipps-senere="' . esc_attr($badge_options['later']) . '" ' */ ?>
-></vipps-mobilepay-badge>
+               ></vipps-mobilepay-badge>
            </p>
 
             <div>
@@ -764,21 +739,6 @@ jQuery('a.webhook-adder').click(function (e) {
                 </option>
                <?php endforeach; ?>
               </select>
-
-            <!-- Comment out vipps-senere stuff. LP 18.11.2024 -->
-            <?php /*
-            <div>
-             <label for="vippsLater"><?php echo sprintf(__('Support "%1$s Later"', 'woo-vipps'), Vipps::CompanyName()); ?></label>
-             <input type="hidden" name="later" value="0" />
-             <input onChange='changeLater();'  <?php if (@$badge_options['later']) echo " checked "; ?> value="1" type="checkbox" id="vippsLater" name="later" /><div style="display:inline-block"><?php echo sprintf(__("Check this if your store supports %1\$s Senere and you want the specialized badge for that", 'woo-vipps'), Vipps::CompanyName()); ?>
-            </div>
-            <div>
-             <label for="vippsLater"><?php echo sprintf(__('Minimum price for "%1$s Later""', 'woo-vipps'), Vipps::CompanyName()); ?></label>
-             <input style="text-align:right; width: 8rem" type="text" pattern="[0-9]+" name="minLater" 
-                 <?php if (@$badge_options['minLater']) echo 'value="' . intval($badge_options['minLater']) . '"'; ?>
-              />
-            </div>
-            */ ?>
 
         <input type="hidden" name="brand" value="<?php echo strtolower($this->get_payment_method_name())?>" />
 
@@ -794,8 +754,7 @@ jQuery('a.webhook-adder').click(function (e) {
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
            <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge <!--badge={vipps|mobilepay}<br>                       -->variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk}<!-- Comment out vipps-senere stuff. LP 18.11.2024
-              <br>                       amount={amount in minor units}<br>                       vipps-senere={false|true}-->]</pre><br> 
+              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk} ] </pre><br> 
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
               <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
            </p>
@@ -814,21 +773,6 @@ jQuery('a.webhook-adder').click(function (e) {
              badge.remove();
              holder.appendChild(newbadge);
          }
-        // Comment out vipps-senere stuff. LP 18.11.2024
-        //  function changeLater() {
-        //      let badge = document.getElementById('vipps-badge-demo');
-        //      let later = document.getElementById('vippsLater').checked;
-        //      if (later) {
-        //          badge.setAttribute('vipps-senere', true);
-        //      } else {
-        //          badge.removeAttribute('vipps-senere');
-        //      }
-        //      let holder = document.getElementById('badgeholder');
-        //      let newbadge = badge.cloneNode();
-        //      badge.remove();
-        //      holder.appendChild(newbadge);
-        //  }
-
         </script> 
         <?php
     }
@@ -853,13 +797,6 @@ jQuery('a.webhook-adder').click(function (e) {
         if (isset($_POST['variant'])) {
             $current['variant'] = sanitize_title($_POST['variant']);
         }
-        // Comment out vipps-senere stuff. LP 18.11.2024
-        // if (isset($_POST['later'])) {
-        //     $current['later'] = intval($_POST['later']);
-        // }
-        // if (isset($_POST['minLater'])) {
-        //     $current['minLater'] = intval($_POST['minLater']);
-        // }
 
         update_option('vipps_badge_options', $current);
         wp_safe_redirect(admin_url("admin.php?page=vipps_badge_menu"));
@@ -867,9 +804,6 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     public function vipps_mobilepay_badge_shortcode($atts) {
-        // comment out vipps-senere stuff. LP 18.11.2024
-        // $args = shortcode_atts( array('id'=>'', 'class'=>'', 'variant' => '','language'=>'','amount' => '', 'vipps-senere'=>''), $atts ); 
-
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
         
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple', 'filled', 'light']) ? $args['variant'] : "";
@@ -896,23 +830,16 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // legacy vipps_badge shortcode. LP 19.11.2024
     public function vipps_badge_shortcode($atts) {
-        // comment out vipps-senere stuff. LP 19.11.2024
-        // $args = shortcode_atts( array('id'=>'', 'class'=>'', 'variant' => '','language'=>'','amount' => '', 'vipps-senere'=>''), $atts ); 
-
         $args = shortcode_atts( array('id'=>'', 'class'=>'','variant' => '','language'=>''), $atts );
         
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple']) ? $args['variant'] : "";
         $language = in_array($args['language'], ['en','no', 'dk', 'fi']) ? $args['language'] : $this->get_customer_language();
-        // $amount = intval($args['amount']);
-        // $later = $args['vipps-senere'];
         $id = sanitize_title($args['id']);
         $class = sanitize_text_field($args['class']);
 
         $attributes = [];
         if ($variant) $attributes['variant'] = $variant;
         if ($language) $attributes['language'] = $language;
-        // if ($amount) $attributes['amount'] = $amount;
-        // if ($later) $attributes['vipps-senere'] = 1;
         if ($id) $attributes['id'] = $id;
         if ($class) $attributes['class'] = $class;
         
@@ -1428,11 +1355,6 @@ jQuery('a.webhook-adder').click(function (e) {
             update_post_meta($id, '_vipps_show_badge', sanitize_text_field($_POST['woo_vipps_show_badge']));
         }
 
-        // Comment out vipps-senere stuff. LP 18.11.2024
-        // if (isset($_POST['woo_vipps_badge_pay_later'])) {
-        //     update_post_meta($id, '_vipps_badge_pay_later', sanitize_text_field($_POST['woo_vipps_badge_pay_later']));
-        // }
-
         // This is for the shareable links.
         if (isset($_POST['woo_vipps_shareable_delenda'])) {
             $delenda = array_map('sanitize_text_field',$_POST['woo_vipps_shareable_delenda']);
@@ -1514,9 +1436,6 @@ jQuery('a.webhook-adder').click(function (e) {
         echo "<h4></div>";
         $showbadge = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_show_badge', true));
 
-        // Comment out vipps-senere stuff. LP 18.11.2024
-        // $later = sanitize_text_field(get_post_meta( get_the_ID(), '_vipps_badge_pay_later', true));
-
         woocommerce_wp_select( 
                 array( 
                     'id'      => 'woo_vipps_show_badge', 
@@ -1533,20 +1452,6 @@ jQuery('a.webhook-adder').click(function (e) {
                     'value' => $showbadge
                     )
                 );
-
-        // Comment out vipps-senere stuff. LP 18.11.2024
-        // woocommerce_wp_select( 
-        //         array( 
-        //             'id'      => 'woo_vipps_badge_pay_later', 
-        //             'label'   => sprintf(__( 'Override %1$s Later', 'woo-vipps' ), $this->get_payment_method_name()),
-        //             'options' => array(
-        //                 '' => __('Default setting', 'woo-vipps'),
-        //                 'later' => sprintf(__('Use %1$s Later', 'woo-vipps'), $this->get_payment_method_name()),
-        //                 'no' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), $this->get_payment_method_name()),
-        //                 ),
-        //             'value' => $later
-        //             )
-        //         );
         echo "</div>";
         
     } 
@@ -1710,6 +1615,7 @@ else:
         $total = intval($order->get_meta('_vipps_amount'));
         $captured = intval($order->get_meta('_vipps_captured'));
         $refunded = intval($order->get_meta('_vipps_refunded'));
+        $cancelled = intval($order->get_meta('_vipps_cancelled'));
 
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
@@ -1727,6 +1633,7 @@ else:
         print "<tr><td>Amount</td><td align=right>" . sprintf("%0.2f ",$total/100); print $currency; print "</td></tr>";
         print "<tr><td>Captured</td><td align=right>" . sprintf("%0.2f ",$captured/100); print $currency; print "</td></tr>";
         print "<tr><td>Refunded</td><td align=right>" . sprintf("%0.2f ",$refunded/100); print $currency; print "</td></tr>";
+        print "<tr><td>Cancelled</td><td align=right>" . sprintf("%0.2f ",$cancelled/100); print $currency; print "</td></tr>";
 
         if ($failures) {
           print("<tr><td>Capture attempts</td><td align=right>$failures</td></tr>");

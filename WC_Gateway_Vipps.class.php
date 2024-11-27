@@ -212,6 +212,55 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
+        // when an order is complete, we need to check if there is reserved amount that is not captured
+        // if so, we need to cancel this amount PMB 2024-11-21
+        // nb: note very late priority - we must have captured before, please
+        add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+    }
+
+    // this funciton is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
+    public function maybe_cancel_reserved_amount ($orderid) {
+        $order = wc_get_order($orderid);
+        if (!$order) return;
+        if ('vipps' != $order->get_payment_method()) return false;
+        if ('epayment' != $order->get_meta('_vipps_api')) return false; // Cannot partially cancel legacy ecom orders
+
+        $ok = true;
+
+        $remaining = $order->get_meta('_vipps_capture_remaining');
+        if ($remaining > 0) {
+            $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
+            $currency = $order->get_currency();
+            try {
+                // This will only cancel any remaining amount. IOK 2024-11-25
+                $res = $this->api->epayment_cancel_payment($order,$requestid=1);
+
+
+                $amount = number_format($remaining/100, 2) . " " . $currency;
+                $note = sprintf(__('Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account.', 'woo-vipps'), $orderid, $amount);
+                $order->add_order_note($note);
+            } catch (Exception $e) {
+                $ok = false;
+                // if this happens, we just log it - we may not have an active admin
+                $msg = sprintf(__('Was not able to cancel remaining amount for the order %1$s: %2$s','woo-vipps'), $orderid, $e->getMessage());
+                $order->add_order_note($msg);
+                $this->log($msg,'error');
+            }
+
+            // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
+            if ($ok) {
+                try {
+                    $this->update_vipps_payment_details($order);
+                } catch (Exception $e) {
+                    // noop
+                }
+            }
+
+        }
+        // we just return true from this function for now PMB 2024-11-21
+        // return false if we couldn't cancel reserved. IOK 2024-11-22
+        return $ok;
     }
 
 
@@ -739,9 +788,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
+        // No funds captured, by epayment can do cancel of partial capture, so let's note that we are not to capture this.
         if (!$captured) {
-            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
-        }
+            if ('epayment' != $order->get_meta('_vipps_api')) {
+                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
+            }
+            if ($amount > $order->get_total()) {
+                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
+            }
+            $msg = sprintf(__('The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $amount, $currency);
+            $this->log($msg, 'info');
+            $uncapturable = round($amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
+
+            $order->update_meta_data('_vipps_noncapturable', $uncapturable);
+            $order->add_order_note($msg);
+            $order->save();
+            return true;
+        } 
+
         if ($amount*100 > $to_refund) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
@@ -1717,6 +1781,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
+    // Except that we *do* note that money "refunded" through vipps before capture should be "uncapturable". IOK 2024-11-25
     public function capture_payment($order) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
@@ -1728,6 +1793,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Partial capture can happen if the order is edited IOK 2017-12-19
         $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
+        $noncapturable = intval($order->get_meta('_vipps_noncapturable'));  // This money has been marked as not-to-be-captured. It will be cancelled on complete.
 
         // Ensure 'SALE' direct captured orders work
         if (!$captured && $vippsstatus == 'SALE') { 
@@ -1736,7 +1802,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $total = round(wc_format_decimal($order->get_total(),'')*100);
-        $amount = $total-$captured;
+        $amount = $total-$captured-$noncapturable; // IOK subtract any amount not to be captured here
+
         if ($amount<=0) {
                 $order->add_order_note(__('Payment already captured','woo-vipps'));
                 return true;
@@ -2423,7 +2490,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0; 
                 $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
                 $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
-                $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'];
+                // now also reducing remainingAmmountToCancel with cancelledAmount PMB 2024-11-21
+                $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'] - $transactionSummary['cancelledAmount'];
+
                 $result['transactionSummary'] = $transactionSummary;
             }
 
@@ -3365,16 +3434,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function order_add_vipps_categories ($order) {
         if (!is_a($order, 'WC_Order')) return;
         
-        $receipt_image = $this->get_option('receiptimage');
         $none = ['link'=>null, 'image'=>null, 'imagesize'=>null];
+        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => null, 'imagesize'=>null];
 
-        if (!$receipt_image) {
-            error_log("No receipt image configured");
-            return $default;
+        $receipt_image = $this->get_option('receiptimage');
+        if ($receipt_image) {
+            $orderconfirmation['image'] = intval($receipt_image);
+            $orderconfirmation['imagesize'] = 'full';
         }
 
-        $image_url = wp_get_attachment_url($receipt_image);
-        $orderconfirmation = ['link' => $this->get_return_url($order), 'image' => intval($receipt_image), 'imagesize'=>'full'];
         // Do these in this order, in case we get terminated at some point during processing
         $default = ['TICKET'=>$none,'ORDER_CONFIRMATION' => $orderconfirmation, 'RECEIPT' => $none,"BOOKING" => $none, "DELIVERY" => $none, "GENERAL" => $none];
         $categories = apply_filters('woo_vipps_add_order_categories', $default, $order, $this);
