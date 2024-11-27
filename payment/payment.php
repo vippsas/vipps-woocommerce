@@ -55,8 +55,8 @@ if (get_option('woo_vipps_checkout_activated', false)) {
     VippsCheckout::register_hooks();
 }
 
-// Gutenberg block for on-site messaging badges, if Gutenberg is installed. IOK 2022-11-16
-require_once(dirname(__FILE__) . '/Blocks/Badges/vipps-badge.php');
+// Register built Gutenberg blocks. LP 15.11.2024
+require_once __DIR__ . '/Blocks/woo-vipps-blocks.php';
 
 // Helper code for specific plugins, themes etc
 require_once(dirname(__FILE__) . '/woo-vipps-compatibility.php');

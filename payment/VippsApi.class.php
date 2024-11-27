@@ -1185,16 +1185,15 @@ class VippsApi {
 
         $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
-        
-        $modificationAmount = $order->get_meta('_vipps_amount');
-        $modificationCurrency = $order->get_currency();
 
-        $data = array();
-        $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
-
+        // The only current allowed argument is "cancelTransactionOnly" which will, if true, only cancel
+        // non-authorized transactions. We don't need that, but we have to send *something* or we get type errors. IOK 2024-11-25
+        $data = array('cancelTransactionOnly' => false); 
+     
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
     }
+
     // Support for then new epayment API, which is also used by Checkout
     // Capture (a part of) reserved but not captured payment IOK 2018-05-07
     public function epayment_capture_payment($order, $amount, $requestid=1) {

@@ -835,12 +835,12 @@ jQuery(document).ready(function () {
         if (is_page()){
             global $post; 
             // The unfiltered checkout page from woo
-            if ($post->ID == get_option( 'woocommerce_checkout_page_id' )) {
+            if ($post && $post->ID == get_option( 'woocommerce_checkout_page_id' )) {
                 $this->payid = $id;
                 return $id;
             }
             // any other page with a gutenberg checkout block. We don't need to test for the shortcode, that works fine.
-            if (has_block( 'woocommerce/checkout', $post->post_content) ) {
+            if ($post && has_block( 'woocommerce/checkout', $post->post_content) ) {
                 $this->payid = $id;
                 return $id;
             }
