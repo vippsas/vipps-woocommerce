@@ -22,7 +22,7 @@
   ],
   "supports": {
     "html": false,
-    "interactivty": true
+    "interactivity": true
   },
   "textdomain": "woo-vipps",
   "editorScript": "file:./index.js",

@@ -11,7 +11,6 @@ if ($product && is_a($product, 'WC_Product')) {
 }
 
 ?>
-<<<<<<< HEAD
 
 <p  <?php echo get_block_wrapper_attributes(); ?>
     data-wp-interactive='woo-vipps'
@@ -26,16 +25,5 @@ if ($product && is_a($product, 'WC_Product')) {
 <?php else: ?>
  Å nei, ingen hurtigkasse her
 <?php endif; ?>
-</p>
-
-=======
-<p <?php echo get_block_wrapper_attributes(); ?>>
-	<?php esc_html_e('Vipps MobilePay Buy Now – hello from a dynamic block!', 'woo-vipps'); ?>
-	<?php if ($supports): ?>
-		Dette produktet støtter vipps hurtigkasse!
-	<?php else: ?>
-		Å nei, ingen hurtigkasse her
-	<?php endif; ?>
 
 </p>
->>>>>>> 333477b (edit.tsx prototype for product block)

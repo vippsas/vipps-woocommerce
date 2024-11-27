@@ -81,7 +81,7 @@ module.exports = window["wp"]["blocks"];
   \********************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"woo-vipps/buy-now","version":"2.0.0","title":"Vipps MobilePay Buy Now","icon":"smiley","description":"Express checkout button for Vipps MobilePay","keywords":["WooCommerce","woo-gutenberg-products-block"],"category":"woocommerce","parent":["woocommerce/product-template","woocommerce/all-products"],"usesContext":["query","queryId","postId"],"supports":{"html":false},"textdomain":"woo-vipps","editorScript":"file:./index.js","render":"file:./render.php","viewScript":"file:./view.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"$schema":"https://schemas.wp.org/trunk/block.json","apiVersion":3,"name":"woo-vipps/buy-now","version":"2.0.0","title":"Vipps MobilePay Buy Now","icon":"smiley","description":"Express checkout button for Vipps MobilePay","keywords":["WooCommerce","woo-gutenberg-products-block"],"category":"woocommerce","parent":["woocommerce/product-template","woocommerce/all-products"],"usesContext":["query","queryId","postId"],"supports":{"html":false,"interactivity":true},"textdomain":"woo-vipps","editorScript":"file:./index.js","render":"file:./render.php","viewScriptModule":"file:./view.js"}');
 
 /***/ })
 
