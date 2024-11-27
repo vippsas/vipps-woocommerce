@@ -6,6 +6,12 @@
 	"title": "Vipps MobilePay Buy Now",
 	"icon": "smiley",
 	"description": "Express checkout button for Vipps MobilePay",
+	"attributes": {
+		"isInQuery": {
+			"type": "boolean",
+			"default": "false"
+		}
+	},
 	"keywords": [
 		"WooCommerce",
 		"woo-gutenberg-products-block"

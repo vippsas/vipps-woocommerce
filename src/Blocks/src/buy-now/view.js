@@ -5,6 +5,8 @@ store('woo-vipps', {
     init: () => {
       const { pid } = getContext();
       console.log(' init called for ' + pid);
+      document.body.dispatchEvent(new Event('vippsInit'));
+      
     },
     watch: () => {
       const { pid } = getContext();
