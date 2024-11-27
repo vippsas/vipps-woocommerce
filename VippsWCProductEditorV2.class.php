@@ -189,26 +189,6 @@ class VippsWCProductEditorV2
             ]
         );
 
-        // Comment out vipps-senere stuff. LP 18.11.2024.
-        // $badges_section->add_block(
-        //     [
-        //         'id' => 'woo-vipps-overrides-later',
-        //         'blockName' => 'woocommerce/product-select-field',
-        //         'order' => 3,
-        //         'attributes' => [
-        //             'label' => sprintf(__('Override %1$s Later', 'woo-vipps'), $payment_method_name),
-        //             'property' => 'meta_data._vipps_badge_pay_later',
-        //             'autoFocus' => false,
-        //             'help' => __('Choose if this product should use Vipps Later', 'woo-vipps'),
-        //             'options' => array(
-        //                 ['value' => '', 'label' => __('Default setting', 'woo-vipps')],
-        //                 ['value' => 'later', 'label' => sprintf(__('Use %1$s Later', 'woo-vipps'), $payment_method_name)],
-        //                 ['value' => 'no', 'label' => sprintf(__('Do not use %1$s Later', 'woo-vipps'), $payment_method_name)],
-        //             ),
-        //         ],
-        //     ]
-        // );
-
         if ($payment_method_name == "Vipps") {
             // Buy now section
             $buy_now_section = $gr->add_section(

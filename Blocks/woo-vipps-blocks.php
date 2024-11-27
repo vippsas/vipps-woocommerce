@@ -2,36 +2,30 @@
 
 // This is the new script to register blocks built into ./dist. At this time only the vipps-badge block. LP 19.11.2024
 
-/**
- * Init hooks and inline script for the block vipps-badge. LP 14.11.2024.
- *
- * @return void
- */
-function vipps_badge_block_hooks() {
-    add_action('init', function () {
+add_action('init', function () {
         register_block_type(__DIR__ . '/dist/vipps-badge');
-    });
+});
 
-    // Inject block config variables to vipps-badge editor script. LP 15.11.2024
-    add_action('enqueue_block_editor_assets', function () {
+// Inject block config variables to vipps-badge editor script. LP 15.11.2024
+add_action('enqueue_block_editor_assets', function () {
         $vipps = Vipps::instance();
         $variants = $variants = [
-            ['label' => __('White', 'woo-vipps'), 'value' => 'white'],
-            ['label' => __('Grey', 'woo-vipps'), 'value' => 'grey'],
-            ['label' => __('Filled', 'woo-vipps'), 'value' => 'filled'],
-            ['label' => __('Light', 'woo-vipps'), 'value' => 'light'],
-            ['label' => __('Purple', 'woo-vipps'), 'value' => 'purple']];
+        ['label' => __('White', 'woo-vipps'), 'value' => 'white'],
+        ['label' => __('Grey', 'woo-vipps'), 'value' => 'grey'],
+        ['label' => __('Filled', 'woo-vipps'), 'value' => 'filled'],
+        ['label' => __('Light', 'woo-vipps'), 'value' => 'light'],
+        ['label' => __('Purple', 'woo-vipps'), 'value' => 'purple']];
 
         // Set a default language for the vipps-badge. LP 21.11.2024
         $store_language = substr(get_bloginfo('language'), 0, 2);
         if ($store_language == 'nb' || $store_language == 'nn') {
-            $store_language = 'no';
+        $store_language = 'no';
         }
         if ($store_language == 'da') {
-            $store_language = 'dk';
+        $store_language = 'dk';
         }
         if (!in_array($store_language, ['en', 'no', 'dk', 'fi'])) {
-            $store_language = 'en';
+        $store_language = 'en';
         } // english default fallback
 
         $block_config = [
@@ -50,10 +44,9 @@ function vipps_badge_block_hooks() {
             ],
         ];
 
-        wp_add_inline_script('woo-vipps-vipps-badge-editor-script',
-            'const injectedVippsBadgeBlockConfig = ' . json_encode($block_config),
-            'before');
-    });
-}
+            wp_add_inline_script('woo-vipps-vipps-badge-editor-script',
+                    'const injectedVippsBadgeBlockConfig = ' . json_encode($block_config),
+                    'before');
+});
 
-vipps_badge_block_hooks();
+
