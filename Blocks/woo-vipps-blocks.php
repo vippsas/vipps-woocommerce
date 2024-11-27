@@ -50,3 +50,6 @@ add_action('enqueue_block_editor_assets', function () {
 });
 
 
+add_action('init', function () {
+    register_block_type(__DIR__ . '/dist/buy-now');
+});
