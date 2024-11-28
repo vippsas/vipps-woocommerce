@@ -10,11 +10,13 @@ if ($product && is_a($product, 'WC_Product')) {
 ?>
 <?php if ($supports): ?>
 	<div 
-		<?php echo get_block_wrapper_attributes() ?>
+		<?php echo get_block_wrapper_attributes([
+			'class' => 'wp-block-button wc-block-components-product-button wc-block-button-vipps'
+		]); ?>
 		data-wp-interactive='woo-vipps'
-		<?php echo wp_interactivity_data_wp_context(['pid' => $pid]); ?>
-    	data-wp-watch="callbacks.watch" data-wp-init="callbacks.init"
-		class="wp-block-button  wc-block-components-product-button wc-block-button-vipps"
+		<?php echo wp_interactivity_data_wp_context([]); ?>
+    	data-wp-watch="callbacks.watch"
+		data-wp-init="callbacks.init"
 	>
 		<a 
 			class="single-product button vipps-buy-now wp-block-button__link"

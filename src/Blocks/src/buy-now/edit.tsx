@@ -22,8 +22,10 @@ export default function Edit({
 	return (
 		<>
 			<div
-				{...useBlockProps()}
-				className="wp-block-button  wc-block-components-product-button wc-block-button-vipps"
+				{...useBlockProps({
+					className:
+						'wp-block-button wc-block-components-product-button wc-block-button-vipps',
+				})}
 			>
 				<a
 					className="single-product button vipps-buy-now wp-block-button__link"

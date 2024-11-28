@@ -33,5 +33,9 @@
 	"textdomain": "woo-vipps",
 	"editorScript": "file:./index.js",
 	"render": "file:./render.php",
-	"viewScriptModule": "file:./view.js"
+	"viewScriptModule": "file:./view.js",
+	"blockHooks": {
+		"woocommerce/product-template": "lastChild",
+		"woocommerce/all-products": "lastChild"
+	}
 }
