@@ -22,6 +22,7 @@ if ($product && is_a($product, 'WC_Product')) {
 			class="single-product button vipps-buy-now wp-block-button__link"
 			href="javascript: void(0);" 
 			title=<?php echo sprintf(__('Buy now with %1$s', 'woo-vipps'), $vipps->get_payment_method_name()); ?>
+			data-product_id=<?php echo $pid?>
 		>
 			<span class="vippsbuynow">
 				<?php _e('Buy now with', 'woo-vipps'); ?>
