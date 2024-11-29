@@ -16,8 +16,7 @@
   ],
   "category": "woocommerce",
   "parent": [
-    "woocommerce/product-template",
-    "woocommerce/all-products"
+    "woocommerce/product-template"
   ],
   "usesContext": [
     "query",
