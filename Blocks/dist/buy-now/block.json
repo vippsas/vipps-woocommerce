@@ -4,8 +4,6 @@
   "name": "woo-vipps/buy-now",
   "version": "2.0.0",
   "title": "Vipps MobilePay Buy Now",
-  "icon": "smiley",
-  "description": "Express checkout button for Vipps MobilePay",
   "attributes": {
     "isInQuery": {
       "type": "boolean",
@@ -27,15 +25,12 @@
     "postId"
   ],
   "supports": {
-    "html": false,
-    "interactivity": true
+    "html": false
   },
   "textdomain": "woo-vipps",
   "editorScript": "file:./index.js",
   "render": "file:./render.php",
-  "viewScriptModule": "file:./view.js",
   "blockHooks": {
-    "woocommerce/product-template": "lastChild",
-    "woocommerce/all-products": "lastChild"
+    "woocommerce/product-template": "lastChild"
   }
 }

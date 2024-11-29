@@ -2,11 +2,10 @@ import type { BlockEditProps } from '@wordpress/blocks';
 import type { BlockAttributes } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
 
-// Injected from Vipps.class.php. LP 27.11.2024
-declare var VippsConfig: {
+// Injected config. LP 27.11.2024
+declare const VippsConfig: {
 	BuyNowWithVipps: string;
-	BuyNowWith: string;
-	vippslogourl: string;
+	logoSvgUrl: string;
 };
 
 interface Attributes extends BlockAttributes {
@@ -17,6 +16,7 @@ export default function Edit({
 	context,
 	setAttributes,
 }: BlockEditProps<Attributes>) {
+	// Planned feature. LP 29.11.2024
 	if (context['query']) setAttributes({ isInQuery: true });
 
 	return (
@@ -29,15 +29,12 @@ export default function Edit({
 			>
 				<a
 					className="single-product button vipps-buy-now wp-block-button__link"
-					title={VippsConfig.BuyNowWithVipps}
+					title={VippsConfig['BuyNowWithVipps']}
 				>
-					<span className="vippsbuynow">
-						{VippsConfig.BuyNowWith}
-					</span>
 					<img
 						className="inline vipps-logo-negative"
-						src={VippsConfig.vippslogourl}
-						alt="Vipps"
+						src={VippsConfig['logoSvgUrl']}
+						alt={VippsConfig['BuyNowWithVipps']}
 					/>
 				</a>
 			</div>

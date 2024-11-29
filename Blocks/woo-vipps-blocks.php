@@ -1,14 +1,22 @@
 <?php
 
-// This is the new script to register blocks built into ./dist. At this time only the vipps-badge block. LP 19.11.2024
+// This is the script to register blocks built into ./dist. LP 19.11.2024
 
-// Register vipps-badge block
+// Register blocks
 add_action('init', function () {
+    // vipps-badge block. LP 29.11.2025
     register_block_type(__DIR__ . '/dist/vipps-badge');
+
+    // Buy-now product block uses JS event introduced in woocommerce 9.4. LP 29.11.2024
+    if (version_compare(WC_VERSION, '9.4', '>=')) {
+        register_block_type(__DIR__ . '/dist/buy-now');
+
+    }
 });
 
-// Inject block config variables to vipps-badge editor script. LP 15.11.2024
+// Inject block config variables to block editor assets
 add_action('enqueue_block_editor_assets', function () {
+    // vipps-badge config
     $vipps = Vipps::instance();
     $variants = $variants = [
         ['label' => __('White', 'woo-vipps'), 'value' => 'white'],
@@ -26,8 +34,8 @@ add_action('enqueue_block_editor_assets', function () {
         $store_language = 'dk';
     }
     if (!in_array($store_language, ['en', 'no', 'dk', 'fi'])) {
-        $store_language = 'en';
-    } // english default fallback
+        $store_language = 'en'; // english default fallback
+    }
 
     $block_config = [
         'title' => sprintf(__('%1$s On-Site Messaging Badge', 'woo-vipps'), Vipps::CompanyName()),
@@ -44,17 +52,15 @@ add_action('enqueue_block_editor_assets', function () {
             ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
         ],
     ];
+    // vipps-badge config stop
 
+    // Inject block config to vipps-badge editor script. LP 15.11.2024
     wp_add_inline_script('woo-vipps-vipps-badge-editor-script',
         'const injectedVippsBadgeBlockConfig = ' . json_encode($block_config),
         'before');
+
+    // Inject config from Vipps.class.php to buy-now editor script. LP 29.11.2024
+    if (version_compare(WC_VERSION, '9.4', '>=')) {
+        wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const VippsConfig = ' . json_encode(Vipps::instance()->vippsJSConfig), 'before');
+    }
 });
-
-
-// The "Buy Now"-button gutenberg block uses interactivity api which was added in wp 6.5. LP 27.11.2024   
-if (version_compare($wp_version, '6.5', '>=')) {
-    // Register buy-now block
-    add_action('init', function () {
-        register_block_type(__DIR__ . '/dist/buy-now');
-    });
-}
