@@ -1,0 +1,32 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "woo-vipps/buy-now",
+	"version": "2.0.0",
+	"title": "Vipps MobilePay Buy Now",
+	"attributes": {
+		"isInQuery": {
+			"type": "boolean",
+			"default": "false"
+		}
+	},
+	"keywords": [
+		"WooCommerce",
+		"woo-gutenberg-products-block"
+	],
+	"category": "woocommerce",
+	"parent": [
+		"woocommerce/product-template"
+	],
+	"usesContext": [
+		"query",
+		"queryId",
+		"postId"
+	],
+	"supports": {
+		"html": false
+	},
+	"textdomain": "woo-vipps",
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

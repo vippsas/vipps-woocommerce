@@ -2075,63 +2075,26 @@ else:
         WC()->session->set('vipps_address_hash', false);
         do_action('woo_vipps_before_thankyou', $orderid, $order);
     }
+    public function woocommerce_loaded() {
+        // Ended buy-now product block support for allproducts block. LP 29.11.2024    
 
-    public function woocommerce_loaded () {
-        /* IOK 2020-09-03 experimental support for the All Products type product block */
-        // This is for product blocks - augment the description when using the StoreAPI so that we know that a button should be added
-        add_filter('woocommerce_product_get_description', function ($description, $product) {
-                   // This is basically the store_api init, but as that calls no action, we need to replicate the logic of its protected function
-                   // here for the time being. IOK 2020-09-02
-                   if (empty($_SERVER['REQUEST_URI'])) return $description;
-                   if (!did_action('rest_api_init')) return $description;
-                   $request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-                   $storeapi = "/wc/store/";
-                   if (false === strpos($request_uri, $storeapi)) return $description;;
-
-                   // Now add a small tag to product descriptions if this product should be purchasable.
-                   if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $description;
-                   return $description . "<span class='_product_metadata _vipps_metadata _prod_{$product->get_id()}' data-vipps-purchasable='1'></span>";
-                   },10,2);
-
-        add_action( 'enqueue_block_editor_assets', function () {
-                wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-admin' ), filemtime(dirname(__FILE__) . "/Blocks/Products/js/index.js"), true );
-                wp_enqueue_script( 'create-block-vipps-products-block-editor', plugins_url( 'Blocks/Products/js/editor.js', __FILE__ ), array( 'wc-blocks','wp-i18n','wp-element','vipps-admin'),  filemtime(dirname(__FILE__) . "/Blocks/Products/js/editor.js"), true );
-        });
-
-
-
-        // Conditionally add the javascript for All Products Blocks so that they are only loaded when the block is used on a page.
-        // Overridable by filter if you are adding the block in some other way (for now). In the future, this may be a backend setting and eventually
-        // become the default, depending on how this goes. IOK 2020-11-16
-        add_action( 'wp_enqueue_scripts', function () {
-                $support_all_products_block = function_exists('has_block') && has_block('woocommerce/all-products');
-                $support_all_products_block = apply_filters('woo_vipps_support_all_products_block', $support_all_products_block);
-                if ($support_all_products_block) {
-                    wp_enqueue_script( 'create-block-vipps-products-block-extension', plugins_url( 'Blocks/Products/js/index.js', __FILE__ ), array( 'wc-blocks-registry','wp-i18n','wp-element','vipps-gw' ), filemtime(dirname(__FILE__) . "/Blocks/Products/js/index.js"), true );
-                }
-       });
-        
-
-        /* End 'all products' blocks support */
         /* This is for the other product blocks - here we only have a single HTML filter unfortunately */
         add_filter('woocommerce_blocks_product_grid_item_html', function ($html, $data, $product) {
-           if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
-           $stripped = preg_replace("!</li>$!", "", $html);
-           $pid = $product->get_id();
-           $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
-           $logo = $this->get_payment_logo();
-           $a=1;
-           $button = <<<EOF
+            if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
+            $stripped = preg_replace("!</li>$!", "", $html);
+            $pid = $product->get_id();
+            $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
+            $logo = $this->get_payment_logo();
+            $a=1;
+            $button = <<<EOF
 <div class="wp-block-button wc-block-components-product-button wc-block-button-vipps">
     <a javascript="void(0)" data-product_id="$pid" class="single-product button vipps-buy-now wp-block-button__link" title="$title">
         <img class="inline vipps-logo negative" src="$logo" alt="$title" border="0">
     </a>
     </div>
 EOF;
-           return $stripped . $button . "</li>";
+            return $stripped . $button . "</li>";
         }, 10, 3);
-
-
     }
 
     public function get_payment_method_name() {
@@ -2231,6 +2194,7 @@ EOF;
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
+        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo();
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10

@@ -27,6 +27,13 @@ SOFTWARE.
 
 */
 
+// Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
+document.body.addEventListener('wc-blocks_product_list_rendered',
+  function (event) {
+    document.body.dispatchEvent(new Event('vippsInit'));
+  }
+);
+
 jQuery( document ).ready( function() {
 
  // This is for WooCommerce Product Bundles, which potentially have *several* variant-products or configurable products, so
@@ -254,6 +261,5 @@ jQuery( document ).ready( function() {
  }
  
  vippsInit();
- 
 });
 
