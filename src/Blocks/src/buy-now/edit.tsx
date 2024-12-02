@@ -25,7 +25,6 @@ export default function Edit({
 				{...useBlockProps({
 					className:
 						'wp-block-button wc-block-components-product-button wc-block-button-vipps',
-						// 'test'
 				})}
 			>
 				<a
