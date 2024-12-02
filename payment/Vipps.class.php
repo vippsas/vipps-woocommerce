@@ -3064,7 +3064,7 @@ EOF;
             WC()->cart->set_session();
             return true;
         } catch (Exception $e) {
-            $this->log(sprintf(__("Error regenerating cart from order %1\$d:  %1\$s", 'woo-vipps'), $order_id,   $e->get_message()), 'error');
+            $this->log(sprintf(__("Error regenerating cart from order %1\$d:  %2\$s", 'woo-vipps'), $order_id,   $e->get_message()), 'error');
             return false;
         }
     }

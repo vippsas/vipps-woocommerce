@@ -2,5 +2,6 @@
 \#.*
 *~
 ignored.txt
+languages/*.json
 
 node_modules

@@ -5,11 +5,11 @@ Tags: woocommerce, vipps
 Version: 4.0.0
 Stable tag: 4.0.0
 Requires at least: 6.2
-Tested up to: 6.7.0
+Tested up to: 6.7.1
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.4.0
+WC tested up to: 9.4.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -242,9 +242,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2024-1x-xx version 3.0.7 =
+= 2024-12-02 version 3.0.7 =
 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
 Also, if an order that has not been captured yet needs repayment (in the Processing state) we now allow this. The money can only be refunded after capture, but in this case we will release the "refunded" money as soon as the order has been set to "complete".
+The On-Site messaging badge block will now use the 3.0 Block API
 
 Change epayment_cancel_payment logic to match documentation
 Update the Badge block to the latest specifications and enable it for MobilePay

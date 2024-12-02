@@ -10,11 +10,11 @@
    Version: 4.0.0
    Stable tag: 4.0.0
    Requires at least: 6.2
-   Tested up to: 6.7.0
+   Tested up to: 6.7.1
    Requires PHP: 7.0
    Requires Plugins: woocommerce
    WC requires at least: 3.3.4
-   WC tested up to: 9.4.0
+   WC tested up to: 9.4.2
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
