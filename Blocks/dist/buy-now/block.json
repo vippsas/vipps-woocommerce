@@ -28,8 +28,5 @@
   },
   "textdomain": "woo-vipps",
   "editorScript": "file:./index.js",
-  "render": "file:./render.php",
-  "blockHooks": {
-    "woocommerce/product-template": "lastChild"
-  }
+  "render": "file:./render.php"
 }
