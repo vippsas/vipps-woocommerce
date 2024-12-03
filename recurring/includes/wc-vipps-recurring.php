@@ -28,8 +28,9 @@ class WC_Vipps_Recurring {
 	public static function register_hooks() {
 		$instance = WC_Vipps_Recurring::get_instance();
 
-		register_activation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'activate' ] );
-		register_deactivation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'deactivate' ] );
+                // No longer handled directly here
+		// register_activation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'activate' ] );
+		// register_deactivation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'deactivate' ] );
 
 		if ( is_admin() ) {
 			add_action( 'admin_init', [ $instance, 'admin_init' ] );

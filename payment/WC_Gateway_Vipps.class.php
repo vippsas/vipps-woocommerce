@@ -308,7 +308,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Returns a table of all the keydata of this instance, keyed on MSN. IOK 2023-12-19
     public function get_keyset() {
         if ($this->keyset) return $this->keyset;
-//        $stored = get_transient('_vipps_keyset');
+        $stored = get_transient('_vipps_keyset');
         if ($stored) {
             return $stored;
         }
@@ -346,7 +346,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $recurring = $this->get_recurring_keysets();
         foreach($recurring as $key => $value) {
-           $keyset[$key] = $value;
+            $keyset[$key] = $value;
         }
 
         $this->keyset = $keyset;
@@ -3965,9 +3965,6 @@ function activate_vipps_checkout(yesno) {
                 $change = true;
                 $this->api->delete_webhook($msn,$wrong);
             }
-
-            error_log("local hoooks " . print_r($local_hooks, true));
-            error_log("local hoooks " . print_r($keysets , true));
 
             if ($gotit) {
                 // Now if we got a hook, then we should *just* remember that for this msn. 

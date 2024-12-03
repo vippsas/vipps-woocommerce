@@ -32,9 +32,7 @@ includes/wc-vipps-recurring.php:	public static function deactivate() {
 
  public function activate() {
                 global $wp_rewrite;
-
                 $this->install();
-
                 $wp_rewrite->flush_rules();
                 add_option( 'woo-vipps-recurring-version', WC_VIPPS_RECURRING_VERSION );
         }
@@ -50,5 +48,37 @@ recurring.php:WC_Vipps_Recurring::register_hooks();
 recurring.php:    WC_Vipps_Recurring_Checkout::register_hooks();
 
 og det opprettes cron-schedules etc i init.
+
+** FOR Å KUNNE DEAKTIVERE må vi faktisk laste selv om subscriptions ikke er der - hvis tilstand var "aktiv"
+
+
+** "har blitt aktivert":
+1. ER AKTIVERINGS-VERDI SATT? JA
+2. ER RECURRING AKTIV? => ja
+
+** "har ikke blitt aktivert":
+1. ER AKTIVERINGSVERDI SATT? Nei
+2. OGSÅ, ER RECURRING AKTIV? Nei
+
+** "skal aktiveres":
+1. "har ikke blitt aktivert",
+2. "woocommerce subscriptions er aktiv"
+
+** "skal deaktiveres":
+1. "har blitt aktivert"
+2. "recurring-plugin ikke aktiv"
+3. "woocommerce subscriptoins er inaktiv"
+4. "hele pluginen deaktiveres".
+
+
+$instance = WC_Vipps_Recurring::get_instance();
+
+
+** så det er TRE TING:
+** 1. Skal vi *laste inn* recurring?
+** 2. Skal vi *aktivere* recurring?
+** 3. Skal vi *deaktivere* recurring?
+** 4. Og noter riktig tilstand
+
 
 
