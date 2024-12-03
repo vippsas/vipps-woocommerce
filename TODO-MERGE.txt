@@ -50,3 +50,22 @@ recurring.php:WC_Vipps_Recurring::register_hooks();
 recurring.php:    WC_Vipps_Recurring_Checkout::register_hooks();
 
 og det opprettes cron-schedules etc i init.
+
+
+** MSNer og sånt, get_keyset i woo-vipps
+
+FRA RECURRING:
+
+                $client_id              = $this->gateway->get_option( "client_id" );
+                $secret_key             = $this->gateway->get_option( "secret_key" );
+                $subscription_key       = $this->gateway->get_option( "subscription_key" );
+                $merchant_serial_number = $this->gateway->get_option( "merchant_serial_number" );
+
+                if ( $this->get_test_mode() ) {
+                        $client_id              = $this->gateway->get_option( "test_client_id" );
+                        $secret_key             = $this->gateway->get_option( "test_secret_key" );
+                        $subscription_key       = $this->gateway->get_option( "test_subscription_key" );
+                        $merchant_serial_number = $this->gateway->get_option( "test_merchant_serial_number" );
+                }
+
+

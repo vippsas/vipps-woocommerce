@@ -308,7 +308,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Returns a table of all the keydata of this instance, keyed on MSN. IOK 2023-12-19
     public function get_keyset() {
         if ($this->keyset) return $this->keyset;
-        $stored = get_transient('_vipps_keyset');
+//        $stored = get_transient('_vipps_keyset');
         if ($stored) {
             return $stored;
         }
@@ -319,7 +319,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $data = ['client_id'=>$clientid=$this->get_option('clientId'), 
                 'client_secret' => $this->get_option('secret'), 
                 'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce'),
-                'country' => $this->get_option('country')
+                'country' => $this->get_option('country'),
+                'gw' => 'vipps'
             ];
             if (! in_array(false, array_map('boolval', array_values($data)))) {
                 $data['testmode'] = 0; // Must add after 
@@ -333,7 +334,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'client_id'=>$clientid=$this->get_option('clientId_test'),
                 'client_secret' => $this->get_option('secret_test'), 
                 'sub_key'=>$this->get_option('Ocp_Apim_Key_eCommerce_test'),
-                'country' => $this->get_option('country')
+                'country' => $this->get_option('country'),
+                'gw' => 'vipps'
             ]; 
 
             if (! in_array(false, array_map('boolval', array_values($data)))) {
@@ -341,9 +343,41 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $keyset[$test] = $data;
             }
         }
+
+        $recurring = $this->get_recurring_keysets();
+        foreach($recurring as $key => $value) {
+           $keyset[$key] = $value;
+        }
+
         $this->keyset = $keyset;
         set_transient('_vipps_keyset', $keyset, DAY_IN_SECONDS);
         return $keyset;
+    }
+
+    // Get and show any keysets from the Vipps Recurring plugin too IOK 2024-11-29
+    private function get_recurring_keysets () {
+        $res = [];
+        $settings = get_option( 'woocommerce_vipps_recurring_settings' );
+        if (empty($settings)) return $res;
+
+        $country = $this->get_option('country');
+
+        $client_id     =  $settings["client_id"] ?? "";
+        $client_secret =  $settings["secret_key"] ?? "";
+        $subscription_key =  $settings["subscription_key"] ?? "";
+        $merchant_serial_number =  $settings["merchant_serial_number"] ?? "";
+        if ($merchant_serial_number && $client_id && $client_secret && $subscription_key ) {
+           $res[$merchant_serial_number] = ['client_id' => $client_id, 'client_secret' => $client_secret, 'sub_key' => $subscription_key, 'country' => $country, 'testmode' => 0, 'gw'=>'vipps_recurring'];
+        }
+
+        $client_id     =  $settings["test_client_id"] ?? "";
+        $client_secret =  $settings["test_secret_key"] ?? "";
+        $subscription_key =  $settings["test_subscription_key"] ?? "";
+        $merchant_serial_number =  $settings["test_merchant_serial_number"] ?? "";
+        if ($merchant_serial_number && $client_id && $client_secret && $subscription_key ) {
+           $res[$merchant_serial_number] = ['client_id' => $client_id, 'client_secret' => $client_secret, 'sub_key' => $subscription_key, 'country' => $country, 'testmode' => 1, 'gw'=>'vipps_recurring'];
+        }
+        return $res;
     }
 
     // Return all webhooks for our MSNs
@@ -3896,6 +3930,7 @@ function activate_vipps_checkout(yesno) {
         $local_hooks = get_option('_woo_vipps_webhooks');
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
+        $keysets = $this->get_keyset();
 
         // Ignore any extra arguments
         $comparandum = strtok($ourselves, '?');
@@ -3931,15 +3966,24 @@ function activate_vipps_checkout(yesno) {
                 $this->api->delete_webhook($msn,$wrong);
             }
 
+            error_log("local hoooks " . print_r($local_hooks, true));
+            error_log("local hoooks " . print_r($keysets , true));
+
             if ($gotit) {
                 // Now if we got a hook, then we should *just* remember that for this msn. 
                 $local_hooks[$msn] = array($local['id'] => $local);
             } else {
                 // If not, we don't have a hook for this msn and site, so we need to (try to) create one
-                $change = true;
-                $result = $this->api->register_webhook($msn, $ourselves);
-                if ($result) {
-                    $local_hooks[$msn] = [$result['id'] => ['id'=>$result['id'], 'url' => $ourselves, 'secret' => $result['secret']]];
+                // but only if the MSN is registered for the payment gateway 'vipps' ! IOK 2024-12-03
+                $keys = $keysets[$msn] ?? [];
+                $gateway = $keys['gw'] ?? 'vipps';
+
+                if ($gateway == 'vipps') {
+                    $change = true;
+                    $result = $this->api->register_webhook($msn, $ourselves);
+                    if ($result) {
+                        $local_hooks[$msn] = [$result['id'] => ['id'=>$result['id'], 'url' => $ourselves, 'secret' => $result['secret']]];
+                    }
                 }
             }
         }

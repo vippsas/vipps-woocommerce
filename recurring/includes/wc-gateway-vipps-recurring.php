@@ -1858,6 +1858,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	public function process_admin_options(): bool {
 		$saved = parent::process_admin_options();
+                delete_transient('_vipps_keyset'); // Same transient as for the payment api IOK 2024-12-03
 
 		$this->init_form_fields();
 
