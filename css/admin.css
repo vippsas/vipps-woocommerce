@@ -60,7 +60,7 @@ table.webhook-table td.actions {
  max-height: 32px;
 }
 
-/* Gutenberg buy-now product block, copied from vipps.css with a few additions. LP 02.12.2024 */
+/* Product buy-now button. LP 02.12.2024 */
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
     text-align: center;
 }
