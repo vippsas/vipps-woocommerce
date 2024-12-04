@@ -3264,6 +3264,7 @@ EOF;
     }
 
     public function activate () {
+error_log("activating woo-vipps payment");
        static::maybe_add_cron_event();
        $gw = $this->gateway();
 
@@ -3278,12 +3279,20 @@ EOF;
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
     public static function deactivate() {
+error_log("deactivating woo-vipps payment");
        $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
        wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
         $timestamp = wp_next_scheduled('vipps_cron_missing_callback_hook');
        wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
        // IOK 2023-12-20 Delete all webhooks for this instance
        WC_Gateway_Vipps::instance()->delete_all_webhooks();
+
+       // Run deactivation logic for recurring
+       if (class_exists('WC_Vipps_Recurring')) {
+           WC_Vipps_Recurring::get_instance()->deactivate();
+       }
+       delete_option('woo_vipps_recurring_payments_activation');
+
     }
 
     public function footer() {

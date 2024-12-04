@@ -22,3 +22,6 @@
 # Fiks dette når recurring ikke er lastet - mer kode til dactivate
 
 [04-Dec-2024 10:03:21 UTC] Feil ved gjenplanlegging av hendelsen for knaggen: woocommerce_vipps_recurring_check_order_statuses, feilkode: invalid_schedule, feilmelding: Hendelsplanen finnes ikke., data: {"schedule":"one_minute","args":[],"interval":60}
+[04-Dec-2024 10:32:24 UTC] Feil ved gjenplanlegging av hendelsen for knaggen: woocommerce_vipps_recurring_check_order_statuses, feilkode: invalid_schedule, feilmelding: Hendelsplanen finnes ikke., data: {"schedule":"one_minute","args":[],"interval":60}
+[04-Dec-2024 10:32:24 UTC] Feil ved gjenplanlegging av hendelsen for knaggen: woocommerce_vipps_recurring_check_gateway_change_request, feilkode: invalid_schedule, feilmelding: Hendelsplanen finnes ikke., data: {"schedule":"one_minute","args":[],"interval":60}
+[04-Dec-2024 10:32:24 UTC] Feil ved gjenplanlegging av hendelsen for knaggen: woocommerce_vipps_recurring_update_subscription_details_in_app, feilkode: invalid_schedule, feilmelding: Hendelsplanen finnes ikke., data: {"schedule":"one_minute","args":[],"interval":60}

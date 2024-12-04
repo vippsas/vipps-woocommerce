@@ -46,7 +46,7 @@ add_action('plugins_loaded', function () {
        if (!woo_vipps_ajax_cron_or_rest ()) {
            error_log("We have loaded the code but not previously activated the plugin.");
            add_action('wp_loaded', function () {
-               error_log("wp loaded. Activating.");
+               error_log("wp loaded. Activating recurring");
                WC_Vipps_Recurring::get_instance()->activate();
                update_option('woo_vipps_recurring_payments_activation', WC_VIPPS_RECURRING_VERSION);
            });
