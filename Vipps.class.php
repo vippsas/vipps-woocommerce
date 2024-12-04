@@ -2082,7 +2082,7 @@ else:
         add_filter('woocommerce_blocks_product_grid_item_html', function ($html, $data, $product) {
             if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
             $stripped = preg_replace("!</li>$!", "", $html);
-            $button = "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $this->get_buy_now_button($product->get_id(), false) . "</div>";
+            $button = $this->get_buy_now_button($product->get_id(), false);
             return $stripped . $button . "</li>";
         }, 10, 3);
     }
@@ -3934,7 +3934,7 @@ else:
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
 
-        $buttoncode = "<a href='javascript:void(0)' $disabled ";
+        $buttoncode = "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'><a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {
             $value = esc_attr($value);
             $buttoncode .= " data-$key='$value' ";
@@ -3953,7 +3953,7 @@ else:
         }
         if ($classes) $classes = " $classes";
 
-        $buttoncode .=  " class='single-product button vipps-buy-now $disabled$classes' title='$title'>$message</a>";
+        $buttoncode .=  " class='single-product button vipps-buy-now $disabled$classes' title='$title'>$message</a></div>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
     }
 
