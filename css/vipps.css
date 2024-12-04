@@ -64,6 +64,11 @@ SOFTWARE.
 .wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img{
     max-width: 10rem;
 }
+
+body.single-product .wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
+    display: inline-block;
+}
+
 body.single-product .wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img {
     max-width: 15rem;
 }
