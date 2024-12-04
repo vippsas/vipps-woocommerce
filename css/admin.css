@@ -60,20 +60,17 @@ table.webhook-table td.actions {
  max-height: 32px;
 }
 
-.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
+/* Gutenberg buy-now product block, copied from vipps.css LP 02.12.2024 */
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
     text-align: center;
 }
-.wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now {
-    margin-left: auto;
-    margin-right: auto;
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
+    /* margin-left: auto;
+    margin-right: auto; */
     display: inline-block;
-    border: 0;
 }
-.wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img{
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 10rem;
-}
-body.single-product .wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img {
-    max-width: 15rem;
 }
 
 /* Admin-menu for vipps */

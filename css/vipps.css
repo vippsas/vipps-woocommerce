@@ -45,6 +45,7 @@ SOFTWARE.
 }
 
 .wc-block-grid__product .single-product.button.vipps-buy-now {
+ min-width:15em;
 }
 
 /* This is for the badge block IOK 2022-11-16 */
@@ -52,25 +53,17 @@ SOFTWARE.
   text-align: center;
 }
 
-/* Product buy-now button. LP 02.12.2024 */
-.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
+/* Gutenberg buy-now product block. LP 02.12.2024 */
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
     text-align: center;
 }
-.wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now {
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
     margin-left: auto;
     margin-right: auto;
     display: inline-block;
 }
-.wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img{
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 10rem;
-}
-
-body.single-product .wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
-    display: inline-block;
-}
-
-body.single-product .wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img {
-    max-width: 100%;
 }
 
 /* end block stuff for now */
