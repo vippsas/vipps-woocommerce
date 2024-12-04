@@ -62,28 +62,14 @@ if ($activesiteplugins) {
 
 $woo_active = in_array('woocommerce/woocommerce.php', $activeplugins);
 
-/* If the recurring feature has been activated at any point, we will need to load the recurring-support, if only to call the deactivate method. */
-$recurring_active = in_array('vipps-recurring-woocommerce/woo-vipps-recurring.php', $activeplugins);
-$recurring_active = $recurring_active || in_array('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php', $activeplugins);
-$subscriptions_active = in_array('woocommerce-subscriptions/woocommerce-subscriptions.php', $activeplugins);
-if ($recurring_active) {
-   update_option('woo_vipps_recurring_payments', 1);
-}
-$recurring_activated = get_option('woo_vipps_recurring_payments');
-
 if ($woo_active) {
     /* Load support for the basic payment plugin IOK 2024-09-27 */
     require_once(dirname(__FILE__) ."/payment/payment.php");
 
     /* Load support for recurring payments if the stand-alone plugin isn't active IOK 2024-09-27  */
-    /* But only if Subscriptions is or if we have activated recurring at an earlier date. IOK 2024-11-22  */
-    if (!$recurring_active && ($recurring_activated || $subscriptions_active)) {
-        require_once(dirname(__FILE__) . "/recurring/recurring.php");
-// "is defined" på funksjonen
-        if ((!defined("DOING_AJAX") || !DOING_AJAX) && !wp_is_json_request() && !wp_doing_cron()) {
-            add_action('plugins_loaded', 'woo_vipps_maybe_activate_recurring');
-        }
-    }
+    /* Moved to a separate file and the action moved to early in plugins_loaded so we can try to do this as gracefully as possible. 
+       This will also handle the activation and deactivation code for the recurring features. IOK 2024-12-04 */
+    require_once(dirname(__FILE__) . "/maybe_load_recurring.php");
 }
 
 // Declare our support for the HPOS feature IOK 2022-12-07
@@ -92,9 +78,3 @@ add_action( 'before_woocommerce_init', function() {
                 \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_VIPPS_MAIN_FILE, true );
         }
 });
-
-// Maybe activate/deactivate the recurring feature
-function woo_vipps_maybe_activate_recurring () {
-    global $recurring_activated;
-    error_log("Hello maybe to activate " . $_SERVER['REQUEST_URI']);
-}
