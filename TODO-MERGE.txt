@@ -3,8 +3,8 @@
 
 * Needs testing:
 ** activate, deactivate, uninstall
-
 ** aktiver recurring hvis subscriptions finnes
+** OGSÅ AKTIVER OG DEAKTIVER I DEN VANLIGE HOOKEN (hvis lastet). DVS deaktiver ihvertfall.
 
 * Needs testing and working-out: 
 ** Webhooks!
