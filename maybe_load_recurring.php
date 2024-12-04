@@ -23,18 +23,21 @@ function woo_vipps_ajax_cron_or_rest () {
 
 // Load very early in plugins_loaded, since the Recurring feature will add events on precedence 10 itself.
 add_action('plugins_loaded', function () {
-   $subscriptions_exist = class_exists('WC_Subscriptions');
    $woo_exists = function_exists('WC');
    $vipps_recurring_exists = defined('WC_VIPPS_RECURRING_VERSION');
 
-   if ($vipps_recurring_exists) {
-       error_log("Vipps recurring already supported - plugin must be loaded");
+   /* If no woo, or recurring is already loaded, we don't do anything */
+   if (!$woo_exists || $vipps_recurring_exists) {
        return false;
    }
-   // IF WOOCOMMERCE SUBSCRIPTIONS, OR PREVIOUSLY ACTIVE
-   if ($woo_exists) {
+
+   /* We will load support */
+   $subscriptions_exist = class_exists('WC_Subscriptions');
+   $previously_activated = get_option('woo_vipps_recurring_payments');
+   if ($subscriptions_exist || $previously_activated) {
        error_log("Loading recurring support");
        require_once(dirname(__FILE__) . "/recurring/recurring.php");
    }
+
 }, 1);
 
