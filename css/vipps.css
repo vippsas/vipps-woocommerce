@@ -70,7 +70,7 @@ body.single-product .wp-block-button.wc-block-components-product-button.wc-block
 }
 
 body.single-product .wp-block-button.wc-block-components-product-button.wc-block-button-vipps .single-product.button.vipps-buy-now img {
-    max-width: 15rem;
+    max-width: 100%;
 }
 
 /* end block stuff for now */
