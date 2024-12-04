@@ -6,12 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-/*
-if ($recurring_active) {
-   update_option('woo_vipps_recurring_payments', 1);
-}
-$recurring_activated = get_option('woo_vipps_recurring_payments');
-*/
 
 // We will not do activation or deactivation if this is ajax, rest or cron. 
 function woo_vipps_ajax_cron_or_rest () {
@@ -37,23 +31,34 @@ add_action('plugins_loaded', function () {
    /* We will load support now if either the plugin has been activated, or if subscriptions exist */
    $subscriptions_exist = class_exists('WC_Subscriptions');
    $previously_activated = get_option('woo_vipps_recurring_payments_activation');
-
-error_log("Previously activated: $previously_activated");
-
-   if ($subscriptions_exist || $previously_activated) {
-error_log("Loading recurring support");
-       require_once(dirname(__FILE__) . "/recurring/recurring.php");
+   if (!$subscriptions_exist && !$previously_activated) {
+       return false;
    }
+
+   // It should now be safe to load the recurring support.
+   require_once(dirname(__FILE__) . "/recurring/recurring.php");
+
    // We need to do the old plugin de/activation logic for the standalone plugin here:
    // If we are here and we have not been previously activated, we should call the "activate" hook and note that we have been activated.
    // If we are here and we were previously activated, but subscriptions are not active, we should call the *deactivate* hook and reset the database setting.
+   // This must be done fairly late, so we are going to use "wp_loaded". IOK 2024-12-04
    if (!$previously_activated) {
        if (!woo_vipps_ajax_cron_or_rest ()) {
            error_log("We have loaded the code but not previously activated the plugin.");
+           add_action('wp_loaded', function () {
+               error_log("wp loaded. Activating.");
+               WC_Vipps_Recurring::get_instance()->activate();
+               update_option('woo_vipps_recurring_payments_activation', WC_VIPPS_RECURRING_VERSION);
+           });
        }
-   } else if (!$subscriptions_exists) {
+   } else if (!$subscriptions_exist) {
        if (!woo_vipps_ajax_cron_or_rest ()) {
            error_log("We have loaded the code but woo subscriptions are not present.");
+           add_action('wp_loaded', function () {
+               error_log("wp loaded. dectivating.");
+               WC_Vipps_Recurring::get_instance()->deactivate();
+               delete_option('woo_vipps_recurring_payments_activation');
+           });
        }
    } else {
        if (!woo_vipps_ajax_cron_or_rest ()) {
