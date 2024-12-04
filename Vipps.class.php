@@ -1324,7 +1324,7 @@ jQuery('a.webhook-adder').click(function (e) {
     // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
     public function buy_now_button_shortcode ($atts) {
         $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
-        return $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false);
+        $html = "<div class='vipps_buy_now_wrapper'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false) . "</div>";
     }
 
     // The express checkout shortcode implementation. It does not need to check if we are to show the button, obviously, but needs to see if the cart works
@@ -2083,16 +2083,9 @@ else:
             if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
             $stripped = preg_replace("!</li>$!", "", $html);
             $pid = $product->get_id();
-            $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
-            $logo = $this->get_payment_logo();
-            $a=1;
-            $button = <<<EOF
-<div class="wp-block-button wc-block-components-product-button wc-block-button-vipps">
-    <a javascript="void(0)" data-product_id="$pid" class="single-product button vipps-buy-now wp-block-button__link" title="$title">
-        <img class="inline vipps-logo negative" src="$logo" alt="$title" border="0">
-    </a>
-    </div>
-EOF;
+            $button = '<div class="wp-block-button wc-block-components-product-button wc-block-button-vipps">';
+            $button .= $this->get_buy_now_button($pid,false);
+            $button .= '</div>';
             return $stripped . $button . "</li>";
         }, 10, 3);
     }
@@ -4007,7 +4000,9 @@ EOF;
         if ($compat) $classes[] ='compat-mode';
         $classes = apply_filters('woo_vipps_single_product_buy_now_classes', $classes, $product);
 
-        echo $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
+        $button = $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
+        $code = "<div class='vipps_buy_now_wrapper'>$button</div>";
+        echo $code;
     }
 
 
