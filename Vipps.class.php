@@ -4036,7 +4036,8 @@ else:
        
         $sku = $product->get_sku();
 
-        echo $this->get_buy_now_button($product->get_id(),false,$sku);
+        $button = $this->get_buy_now_button($product->get_id(),false,$sku);
+        echo "<div class='vipps_buy_now_wrapper loop'>$button</div>";
     }
 
 

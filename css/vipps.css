@@ -65,6 +65,9 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.s
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 10rem;
 }
+div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
+    max-width: 10rem;
+}
 
 /* end block stuff for now */
 
