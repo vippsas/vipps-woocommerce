@@ -2082,17 +2082,7 @@ else:
         add_filter('woocommerce_blocks_product_grid_item_html', function ($html, $data, $product) {
             if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return $html; 
             $stripped = preg_replace("!</li>$!", "", $html);
-            $pid = $product->get_id();
-            $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
-            $logo = $this->get_payment_logo();
-            $a=1;
-            $button = <<<EOF
-<div class="wp-block-button wc-block-components-product-button wc-block-button-vipps">
-    <a javascript="void(0)" data-product_id="$pid" class="single-product button vipps-buy-now wp-block-button__link" title="$title">
-        <img class="inline vipps-logo negative" src="$logo" alt="$title" border="0">
-    </a>
-    </div>
-EOF;
+            $button = "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $this->get_buy_now_button($product->get_id(), false) . "</div>";
             return $stripped . $button . "</li>";
         }, 10, 3);
     }
