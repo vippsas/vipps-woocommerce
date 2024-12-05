@@ -3,7 +3,11 @@ import { registerBlockType } from '@wordpress/blocks';
 import Edit from './edit';
 import save from './save';
 import metadata from './block.json';
-import { blockConfig } from './blockConfig';
+
+import type { VippsBadgeBlockConfig } from './types';
+
+declare var injectedVippsBadgeBlockConfig: VippsBadgeBlockConfig;
+const blockConfig = injectedVippsBadgeBlockConfig;
 
 // @ts-ignore
 registerBlockType(metadata.name, {

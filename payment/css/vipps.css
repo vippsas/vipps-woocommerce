@@ -44,13 +44,28 @@ SOFTWARE.
     vertical-align: text-bottom;
 }
 
-.wc-block-grid__product .single-product.button.vipps-buy-now {
- min-width:15em;
-}
-
 /* This is for the badge block IOK 2022-11-16 */
 .vipps-badge-wrapper.aligncenter {
   text-align: center;
+}
+
+/* Gutenberg buy-now product block. LP 02.12.2024 */
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
+    text-align: center;
+}
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
+}
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
+    max-width: 10rem;
+}
+div.vipps_buy_now_wrapper.loop {
+    text-align:center;
+}
+div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
+    max-width: 10rem;
 }
 
 /* end block stuff for now */
