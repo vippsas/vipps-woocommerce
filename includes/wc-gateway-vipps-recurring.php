@@ -2401,6 +2401,33 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return add_query_arg( $args, $base_url );
 	}
 
+	private function maybe_get_order_id_from_agreement_webhook( array $webhook_data ) {
+		$order_id = $webhook_data['agreementExternalId'];
+
+		if ( empty( $order_id ) && isset($webhook_data['agreementId']) ) {
+			$agreement_id = $webhook_data['agreementId'];
+
+			$options = [
+				'limit'          => 1,
+				'type'           => 'shop_subscription',
+				'meta_key'       => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
+				'meta_compare'   => '=',
+				'meta_value'     => $agreement_id,
+				'return'         => 'ids',
+				'payment_method' => $this->id,
+				'order_by'       => 'post_date'
+			];
+
+			$order_ids = wc_get_orders( $options );
+
+			if (!empty($order_ids)) {
+				$order_id = $order_ids[0];
+			}
+		}
+
+		return $order_id;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
@@ -2444,27 +2471,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->check_charge_status( $order_id );
 		}
 
-		if ( in_array( $event_type, [
-			'recurring.agreement-activated.v1',
-			'recurring.agreement-rejected.v1',
-			'recurring.agreement-stopped.v1',
-			'recurring.agreement-expired.v1',
-		] ) ) {
-			$order_id = $webhook_data['agreementId'] ?? $webhook_data['agreementExternalId'];
-
-			// This order is old and does not have an agreementId
-			if ( empty( $order_id ) ) {
-				return;
-			}
-
-			$this->check_charge_status( $order_id );
-		}
-
-		// Customers can soon cancel their agreements directly from the app.
+		// Customers can now cancel their agreements directly from the app.
 		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
-			$order_id = $webhook_data['agreementId'] ?? $webhook_data['agreementExternalId'];
-
-			// This order is old and does not have a agreementId
+			$order_id = $this->maybe_get_order_id_from_agreement_webhook($webhook_data);
 			if ( empty( $order_id ) ) {
 				return;
 			}
