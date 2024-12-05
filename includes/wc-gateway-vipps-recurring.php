@@ -2484,8 +2484,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				return;
 			}
 
-			$this->cancel_subscription( $subscription );
-
 			$message = __( 'Subscription cancelled by the customer via the Vipps MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' );
 			$subscription->set_status( 'cancelled', $message );
 		}
