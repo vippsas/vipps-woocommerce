@@ -963,7 +963,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return mixed|string
 	 */
 	public function get_idempotency_key( $order ) {
-		$idempotency_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
+		$idempotency_key = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
 		if ( ! $idempotency_key ) {
 			$idempotency_key = $this->generate_idempotency_key( $order );
@@ -978,12 +978,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	protected function generate_idempotency_key( $order ): string {
-		$idempotence_key = $this->api->generate_idempotency_key();
+		$idempotency_key = $this->api->generate_idempotency_key();
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotence_key );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotency_key );
 		$order->save();
 
-		return $idempotence_key;
+		return $idempotency_key;
 	}
 
 	/**
