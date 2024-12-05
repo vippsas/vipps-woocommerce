@@ -44,10 +44,6 @@ SOFTWARE.
     vertical-align: text-bottom;
 }
 
-.wc-block-grid__product .single-product.button.vipps-buy-now {
- min-width:15em;
-}
-
 /* This is for the badge block IOK 2022-11-16 */
 .vipps-badge-wrapper.aligncenter {
   text-align: center;
