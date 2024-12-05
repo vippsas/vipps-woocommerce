@@ -1063,6 +1063,11 @@ class WC_Vipps_Recurring_Checkout {
 
 		/** @var WC_Subscription $subscription */
 		$subscription = array_pop( $existing_subscriptions );
+
+		if ( ! $subscription ) {
+			return;
+		}
+
 		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $agreement_id );
 
 		$subscription->set_customer_id( $order->get_customer_id( 'edit' ) );
