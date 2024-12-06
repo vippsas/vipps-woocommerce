@@ -800,7 +800,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			[
 				'NOK',
 				'DKK',
-				'EUR'
+				'EUR',
+				'SEK'
 			]
 		);
 	}
