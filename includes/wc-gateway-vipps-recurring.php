@@ -2402,9 +2402,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return add_query_arg( $args, $base_url );
 	}
 
-	private function maybe_get_order_id_from_agreement_webhook( array $webhook_data ) {
+	private function maybe_get_subscription_id_from_agreement_webhook( array $webhook_data ) {
 		$order_id = $webhook_data['agreementExternalId'];
 
+		// Check if agreementExternalId is not set, we can get the subscription from agreementId
 		if ( empty( $order_id ) && isset($webhook_data['agreementId']) ) {
 			$agreement_id = $webhook_data['agreementId'];
 
@@ -2420,12 +2421,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			];
 
 			$order_ids = wc_get_orders( $options );
-
-			if (!empty($order_ids)) {
-				$order_id = $order_ids[0];
-			}
+			$order_id = array_pop($order_ids);
 		}
 
+		// If the order id is not a subscription, we can get the subscription from the order
+		if ( !empty( $order_id ) && !wcs_is_subscription($order_id) ) {
+			$order = wc_get_order($order_id);
+			$subscriptions = wcs_get_subscriptions_for_order($order);
+			$order_id = array_pop($subscriptions);
+		}
+
+		// Otherwise the order_id is either empty, or a subscription
 		return $order_id;
 	}
 
@@ -2474,12 +2480,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Customers can now cancel their agreements directly from the app.
 		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
-			$order_id = $this->maybe_get_order_id_from_agreement_webhook($webhook_data);
-			if ( empty( $order_id ) ) {
+			$subscription_id = $this->maybe_get_subscription_id_from_agreement_webhook($webhook_data);
+			if ( empty( $subscription_id ) ) {
 				return;
 			}
 
-			$subscription = wcs_get_subscription( $order_id );
+			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( empty( $subscription ) ) {
 				return;
