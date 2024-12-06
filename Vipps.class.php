@@ -61,7 +61,7 @@ class Vipps {
         return __("Vipps MobilePay", 'woo-vipps');
     }
     public static function CheckoutName($order=null) {
-        return __("Vipps Checkout", 'woo-vipps');
+        return "Vipps MobilePay Checkout"; // Do not translate
     }
     public static function ExpressCheckoutName($order=null) {
         return __("Vipps Express Checkout", 'woo-vipps');
