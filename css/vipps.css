@@ -58,6 +58,7 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.s
     margin-left: auto;
     margin-right: auto;
     display: inline-block;
+    padding-top:0;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 10rem;
@@ -131,7 +132,6 @@ a.button.vipps-express-checkout:hover, a.button.vipps-buy-now:hover {
 a.single-product.button.vipps-buy-now  {
     padding-left:0;
     padding-right:0;
-    padding-top:0;
     padding-bottom:0;
 }
 
