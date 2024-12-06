@@ -166,6 +166,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Fixed: No longer throw an error when checking a Checkout payment where the subscription is now deleted.
 * Fixed: Properly handle in-app subscription cancelling.
 * Added: Support for the SEK currency.
+* Fixed: Identified a potentially critical bug where the idempotency key was deleted from orders upon payment retry.
 
 = 2.0.8 =
 * Fixed: We should not return `true` in `cart_supports_checkout` if the cart is empty.
