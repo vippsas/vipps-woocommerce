@@ -275,6 +275,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
 			$hosts[] = 'api.vipps.no';
 			$hosts[] = 'apitest.vipps.no';
+			$hosts[] = 'pay.mobilepay.dk';
+			$hosts[] = 'pay.mobilepay.fi';
 
 			return $hosts;
 		} );
