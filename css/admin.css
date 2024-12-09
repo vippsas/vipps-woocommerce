@@ -41,14 +41,13 @@ table.webhook-table td.actions {
 }
 
 /* Ditto for the products blocks IOK 2020-09-03 */
-.editor-styles-wrapper .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now {
+.wp-block-button__link.vipps-buy-now {
  color: #fff;
  display: inline-block;
  border:0;
- min-width:15em;
 }
 
-.editor-styles-wrapper .wc-block-grid__products .wc-block-grid__product .wp-block-button__link.vipps-buy-now img.vipps-logo.negative {
+.wp-block-button__link.vipps-buy-now img.vipps-logo.negative {
  display: inline-block;
  margin: 0 .2em;
  height: 2ex;
@@ -59,6 +58,19 @@ table.webhook-table td.actions {
 .editor-styles-wrapper .block-editor-block-icon .vipps-component-icon {
  max-width: 32px;
  max-height: 32px;
+}
+
+/* Gutenberg buy-now product block, copied from vipps.css LP 02.12.2024 */
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
+    text-align: center;
+}
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
+    /* margin-left: auto;
+    margin-right: auto; */
+    display: inline-block;
+}
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
+    max-width: 10rem;
 }
 
 /* Admin-menu for vipps */

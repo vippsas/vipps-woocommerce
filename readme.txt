@@ -2,14 +2,14 @@
 Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev, lassepladsen
 Tags: woocommerce, vipps, mobilepay
 Tags: woocommerce, vipps
-Version: 3.0.7
-Stable tag: 3.0.7
+Version: 3.0.8
+Stable tag: 3.0.8
 Requires at least: 6.2
 Tested up to: 6.7.1
 Requires PHP: 7.0
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.4.2
+WC tested up to: 9.5.0
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -94,6 +94,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 3.0.8 includes a new Buy-now block for Express Checkout that works with the new standard Product Collection block.
 Version 3.0.7 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
 Version 3.0.6 Fixes the problem caused by the 3.0.5 fix that disabled Vipps Checkout
 Version 3.0.5 Fixes compatibility issues with Checkout, Checkout for Recurring, WooCommerce Subscriptions and Gutenberg Checkout block
@@ -242,6 +243,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2024-12-09 version 3.0.8 =
+Support for the Product Collection block with the new Buy-now block for Vipps Express checkout. This new block being standard from Woo 9.5, support for the old "All products" block is removed. The other legacy collection blocks are still supported, since the framework for those is rather easier to maintain. If you are using the All Products block and want support for Express Checkout, we suggest moving on to the new Product Collection block.
+
 = 2024-12-02 version 3.0.7 =
 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
 Also, if an order that has not been captured yet needs repayment (in the Processing state) we now allow this. The money can only be refunded after capture, but in this case we will release the "refunded" money as soon as the order has been set to "complete".
