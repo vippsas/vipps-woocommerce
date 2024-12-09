@@ -273,12 +273,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps MobilePay API
 		// Unless we whitelist the domains specifically
 		add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
-			$hosts[] = 'api.vipps.no';
-			$hosts[] = 'apitest.vipps.no';
-			$hosts[] = 'pay.mobilepay.dk';
-			$hosts[] = 'pay.mobilepay.fi';
-
-			return $hosts;
+			return array_merge($hosts, [
+				// Production servers
+				'api.vipps.no',
+				'pay.vipps.no',
+				'api.mobilepay.dk',
+				'api.mobilepay.fi',
+				// MT servers
+				'apitest.vipps.no',
+				'pay-mt.vipps.no',
+				'pay-mt.mobilepay.dk',
+				'pay-mt.mobilepay.fi'
+			]);
 		} );
 	}
 
