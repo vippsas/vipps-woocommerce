@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Vipps Payment Module\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-02 08:56+0000\n"
+"POT-Creation-Date: 2024-12-13 14:57+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -32,6 +32,10 @@ msgstr ""
 msgid "\"Buy now\" compatibility mode"
 msgstr ""
 
+#: lib/recurring-translations.php:47
+msgid "\"Continue shopping\" link"
+msgstr ""
+
 #: VippsCheckout.class.php:725 VippsKCSupport.class.php:64 Vipps.class.php:988
 #: Vipps.class.php:1013 Vipps.class.php:1187 Vipps.class.php:1187
 #: Vipps.class.php:1219 Vipps.class.php:1232 Vipps.class.php:1373
@@ -47,7 +51,7 @@ msgid ""
 "which will start the purchase process immediately."
 msgstr ""
 
-#: Vipps.class.php:2230
+#: Vipps.class.php:2186
 #, php-format
 msgid "%1$s Buy Now button"
 msgstr ""
@@ -84,7 +88,7 @@ msgstr ""
 msgid "%1$s does not support your currency."
 msgstr ""
 
-#: Vipps.class.php:4402
+#: Vipps.class.php:4362
 #, php-format
 msgid "%1$s Express Checkout"
 msgstr ""
@@ -152,7 +156,7 @@ msgstr ""
 msgid "%1$s is not an image that can be uploaded to %2$s"
 msgstr ""
 
-#: Vipps.class.php:3577 Vipps.class.php:3646 Vipps.class.php:3709
+#: Vipps.class.php:3534 Vipps.class.php:3603 Vipps.class.php:3666
 #, php-format
 msgid "%1$s is not available for this order"
 msgstr ""
@@ -164,7 +168,7 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:824 WC_Gateway_Vipps.class.php:1851
 #: WC_Gateway_Vipps.class.php:1947 WC_Gateway_Vipps.class.php:1993
-#: Vipps.class.php:3633 Vipps.class.php:3778 Vipps.class.php:4312
+#: Vipps.class.php:3590 Vipps.class.php:3735 Vipps.class.php:4272
 #, php-format
 msgid "%1$s is temporarily unavailable."
 msgstr ""
@@ -184,7 +188,7 @@ msgstr ""
 msgid "%1$s On-Site Messaging"
 msgstr ""
 
-#: Blocks/woo-vipps-blocks.php:32
+#: Blocks/woo-vipps-blocks.php:41
 #, php-format
 msgid "%1$s On-Site Messaging Badge"
 msgstr ""
@@ -354,6 +358,22 @@ msgid ""
 "settings</a> to complete your setup:<br> %3$s</p>"
 msgstr ""
 
+#: lib/recurring-translations.php:49
+msgid "[Default] Shop or homepage"
+msgstr ""
+
+#: lib/recurring-translations.php:89
+#, php-format
+msgid "A list of possible failure reasons and what they mean can be found %s"
+msgstr ""
+
+#: lib/recurring-translations.php:102
+msgid ""
+"A temporary error occurred when refunding a payment through Vipps MobilePay. "
+"Please ensure the order is refunded manually or reset the order to "
+"\"Processing\" and try again."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:2547
 msgid "Abandonded by customer"
 msgstr ""
@@ -370,7 +390,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: VippsKCSupport.class.php:55
+#: VippsKCSupport.class.php:55 lib/recurring-translations.php:75
 msgid "Activate"
 msgstr ""
 
@@ -416,6 +436,12 @@ msgstr ""
 msgid "Activate this for PostNord as a %1$s Shipping method."
 msgstr ""
 
+#: lib/recurring-translations.php:76
+msgid ""
+"Activate Vipps/MobilePay Recurring Payments as an external payment method "
+"for Klarna Checkout"
+msgstr ""
+
 #: Vipps.class.php:1401
 #, php-format
 msgid "Add  'Buy now with %1$s' button"
@@ -430,7 +456,7 @@ msgstr ""
 msgid "Add 'Buy now' button on catalog pages too"
 msgstr ""
 
-#: Vipps.class.php:2231
+#: Vipps.class.php:2187
 #, php-format
 msgid "Add a %1$s Buy Now-button to the product block"
 msgstr ""
@@ -485,7 +511,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: Vipps.class.php:2880
+#: Vipps.class.php:2837
 #, php-format
 msgid "Address given for %1$s was %2$s"
 msgstr ""
@@ -498,8 +524,18 @@ msgstr ""
 msgid "Agreement accepted"
 msgstr ""
 
+#: lib/recurring-translations.php:112
+#, php-format
+msgid ""
+"Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation."
+msgstr ""
+
 #: Vipps.class.php:501
 msgid "Agreement expired"
+msgstr ""
+
+#: lib/recurring-translations.php:9
+msgid "Agreement ID"
 msgstr ""
 
 #: Vipps.class.php:499
@@ -560,6 +596,16 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
+#: lib/recurring-translations.php:58
+msgid "Amount of charges to check per status check"
+msgstr ""
+
+#: lib/recurring-translations.php:36
+msgid ""
+"An alphanumeric text string to use as a prefix on checkout orders from your "
+"shop, to avoid duplicate order ids."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1142
 msgid ""
 "An alphanumeric textstring to use as a prefix on orders from your shop, to "
@@ -572,7 +618,7 @@ msgid ""
 "or return to the shop"
 msgstr ""
 
-#: Vipps.class.php:4544
+#: Vipps.class.php:4504
 msgid ""
 "An error occured during order confirmation. The error has been logged. "
 "Please contact us to determine the status of your order"
@@ -580,6 +626,19 @@ msgstr ""
 
 #: Vipps.class.php:1519
 msgid "An error occured while creating a shareable link"
+msgstr ""
+
+#: lib/recurring-translations.php:160
+msgid "An error occurred"
+msgstr ""
+
+#: lib/recurring-translations.php:104
+msgid ""
+"An unexpected error occurred while refunding a payment in Vipps/MobilePay."
+msgstr ""
+
+#: lib/recurring-translations.php:161
+msgid "An unknown error has occurred."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:3241
@@ -595,7 +654,11 @@ msgstr ""
 msgid "API"
 msgstr ""
 
-#: VippsQRCodeController.class.php:235 Vipps.class.php:4336
+#: lib/recurring-translations.php:37
+msgid "API settings"
+msgstr ""
+
+#: VippsQRCodeController.class.php:235 Vipps.class.php:4296
 msgid "Are you sure?"
 msgstr ""
 
@@ -613,6 +676,10 @@ msgstr ""
 
 #: Vipps.class.php:495
 msgid "Authorized"
+msgstr ""
+
+#: lib/recurring-translations.php:26
+msgid "Automatically capture payments made with MobilePay"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1708
@@ -641,10 +708,25 @@ msgid ""
 "product editor."
 msgstr ""
 
+#: Blocks/dist/buy-now/block.json:1 src/Blocks/src/buy-now/block.json:1
+msgctxt "block keyword"
+msgid "woo-gutenberg-products-block"
+msgstr ""
+
+#: Blocks/dist/buy-now/block.json:1 src/Blocks/src/buy-now/block.json:1
+msgctxt "block keyword"
+msgid "WooCommerce"
+msgstr ""
+
 #: admin/blocks/dist/product-shareable-link/block.json:1
 #: src/admin/blocks/src/product-shareable-link/block.json:1
 msgctxt "block title"
 msgid "Blocks"
+msgstr ""
+
+#: Blocks/dist/buy-now/block.json:1 src/Blocks/src/buy-now/block.json:1
+msgctxt "block title"
+msgid "Vipps MobilePay Buy Now"
 msgstr ""
 
 #: Blocks/dist/vipps-badge/block.json:1 src/Blocks/src/vipps-badge/block.json:1
@@ -652,20 +734,28 @@ msgctxt "block title"
 msgid "Vipps MobilePay On-Site Messaging Badge"
 msgstr ""
 
+#: lib/recurring-translations.php:22
+msgid "Brand"
+msgstr ""
+
+#: lib/recurring-translations.php:21
+msgid "Brand settings"
+msgstr ""
+
 #: VippsWCProductEditorV2.class.php:199
 msgid "Buy Now Button"
 msgstr ""
 
-#: Vipps.class.php:2226
+#: Vipps.class.php:2182
 msgid "Buy now with"
 msgstr ""
 
-#: Vipps.class.php:2121 Vipps.class.php:2227 Vipps.class.php:3989
+#: Vipps.class.php:2183 Vipps.class.php:3946
 #, php-format
 msgid "Buy now with %1$s"
 msgstr ""
 
-#: Vipps.class.php:1317 Vipps.class.php:4399
+#: Vipps.class.php:1317 Vipps.class.php:4359
 #, php-format
 msgid "Buy now with %1$s!"
 msgstr ""
@@ -699,14 +789,14 @@ msgstr ""
 msgid "Calculate costs in the Checkout window"
 msgstr ""
 
-#: Vipps.class.php:3243
+#: Vipps.class.php:3200
 #, php-format
 msgid ""
 "Callback from %1$s delayed or never happened; order status checked by "
 "periodic job"
 msgstr ""
 
-#: Vipps.class.php:2737
+#: Vipps.class.php:2694
 msgid "Callback was:"
 msgstr ""
 
@@ -715,12 +805,16 @@ msgstr ""
 msgid "Callback: Payment cancelled at %1$s"
 msgstr ""
 
-#: Vipps.class.php:492
+#: Vipps.class.php:492 lib/recurring-translations.php:119
 msgid "Cancelled"
 msgstr ""
 
 #: Vipps.class.php:1725
 msgid "Cancelled amount"
+msgstr ""
+
+#: lib/recurring-translations.php:121
+msgid "Cancelled due charge in Vipps/MobilePay."
 msgstr ""
 
 #: VippsCheckout.class.php:809
@@ -811,21 +905,21 @@ msgstr ""
 msgid "Cannot use flock() to lock orders: cannot create or write to directory"
 msgstr ""
 
-#: Vipps.class.php:2982
+#: Vipps.class.php:2939
 #, php-format
 msgid ""
 "Cannot use shipping method %2$s in %1$s Express checkout: the shipping "
 "method isn't serializable."
 msgstr ""
 
-#: Vipps.class.php:2417
+#: Vipps.class.php:2374
 #, php-format
 msgid ""
 "Cannot verify webhook callback for order %1$d - signature does not match. "
 "This may be an attempt to forge callbacks"
 msgstr ""
 
-#: Vipps.class.php:2412
+#: Vipps.class.php:2369
 #, php-format
 msgid ""
 "Cannot verify webhook callback for order %1$d - this shop does not know the "
@@ -833,11 +927,22 @@ msgid ""
 "MSN on several shops, this callback is probably for one of the others."
 msgstr ""
 
-#: Vipps.class.php:2323
+#: Vipps.class.php:2280 lib/recurring-translations.php:152
 msgid "Capture payment"
 msgstr ""
 
-#: Vipps.class.php:493
+#: lib/recurring-translations.php:142
+msgid "Capture payment instantly"
+msgstr ""
+
+#: lib/recurring-translations.php:143
+msgid ""
+"Capture payment instantly even if the product is not virtual. Please make "
+"sure you are following the local jurisdiction in your country when using "
+"this option."
+msgstr ""
+
+#: Vipps.class.php:493 lib/recurring-translations.php:15
 msgid "Captured"
 msgstr ""
 
@@ -853,16 +958,33 @@ msgstr ""
 msgid "Charge captured"
 msgstr ""
 
+#: lib/recurring-translations.php:96
+#, php-format
+msgid "Charge completed (Charge ID: %s)"
+msgstr ""
+
 #: Vipps.class.php:505
 msgid "Charge failed"
+msgstr ""
+
+#: lib/recurring-translations.php:10
+msgid "Charge ID"
+msgstr ""
+
+#: lib/recurring-translations.php:14
+msgid "Charge ID not available. Check the order's notes instead."
 msgstr ""
 
 #: Vipps.class.php:502
 msgid "Charge reserved"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:908
-msgid "Checkout"
+#: lib/recurring-translations.php:8
+msgid "Check Status"
+msgstr ""
+
+#: lib/recurring-translations.php:86
+msgid "Check status of all Vipps/MobilePay subscription orders now"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:2545
@@ -870,6 +992,14 @@ msgstr ""
 msgid ""
 "Checkout order older than 120 minutes with no order status - cancelled as "
 "abandoned: %1$s"
+msgstr ""
+
+#: lib/recurring-translations.php:164
+msgid "Checkout session expired. Please refresh to start a new session."
+msgstr ""
+
+#: lib/recurring-translations.php:32
+msgid "Checkout settings"
 msgstr ""
 
 #: VippsWCProductEditorV2.class.php:178
@@ -884,7 +1014,7 @@ msgstr ""
 msgid "Choose default order status for reserved (not captured) orders"
 msgstr ""
 
-#: src/Blocks/src/vipps-badge/edit.tsx:72
+#: src/Blocks/src/vipps-badge/edit.tsx:74
 msgid "Choose language, or use the default"
 msgstr ""
 
@@ -896,7 +1026,7 @@ msgstr ""
 msgid "Choose product"
 msgstr ""
 
-#: src/Blocks/src/vipps-badge/edit.tsx:60
+#: src/Blocks/src/vipps-badge/edit.tsx:62
 msgid "Choose the badge variant with the perfect colors for your site"
 msgstr ""
 
@@ -926,6 +1056,14 @@ msgstr ""
 msgid "Client Secret"
 msgstr ""
 
+#: lib/recurring-translations.php:41
+msgid "client_id"
+msgstr ""
+
+#: lib/recurring-translations.php:43
+msgid "client_secret"
+msgstr ""
+
 #: Vipps.class.php:908 Vipps.class.php:956
 #, php-format
 msgid ""
@@ -943,17 +1081,27 @@ msgstr ""
 msgid "Connection to %1$s is OK"
 msgstr ""
 
-#: Vipps.class.php:4549
+#: Vipps.class.php:4509
 msgid "Continue"
 msgstr ""
 
-#: Vipps.class.php:4506 Vipps.class.php:4545 Vipps.class.php:4553
+#: Vipps.class.php:4466 Vipps.class.php:4505 Vipps.class.php:4513
+#: lib/recurring-translations.php:159
 msgid "Continue shopping"
 msgstr ""
 
 #: Vipps.class.php:1232
 #, php-format
 msgid "Continue with %1$s"
+msgstr ""
+
+#: lib/recurring-translations.php:156
+#, php-format
+msgid "Continue with %s"
+msgstr ""
+
+#: lib/recurring-translations.php:23
+msgid "Controls the payment flow brand (Vipps or MobilePay)."
 msgstr ""
 
 #: src/admin/blocks/src/product-shareable-link/edit.tsx:303
@@ -992,6 +1140,11 @@ msgid ""
 "too long (100, 500 respectively)"
 msgstr ""
 
+#: lib/recurring-translations.php:115
+#, php-format
+msgid "Could not authenticate with the Vipps/MobilePay API: %s"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:633 WC_Gateway_Vipps.class.php:675
 #, php-format
 msgid "Could not cancel %1$s payment"
@@ -1005,6 +1158,12 @@ msgstr ""
 #: WC_Gateway_Vipps.class.php:1992
 #, php-format
 msgid "Could not cancel %1$s payment for order_id:"
+msgstr ""
+
+#: lib/recurring-translations.php:122
+msgid ""
+"Could not cancel charge in Vipps/MobilePay. Please manually check the status "
+"of this order if you plan to process a new renewal order!"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1771
@@ -1027,14 +1186,21 @@ msgstr ""
 msgid "Could not capture %1$s payment for this order!"
 msgstr ""
 
+#: lib/recurring-translations.php:106
+#, php-format
+msgid ""
+"Could not capture charge because the status is not RESERVED or "
+"PARTIALLY_CAPTURED. Found status: %s"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:3802
 #: admin/settings/VippsAdminSettings.class.php:107
 #, php-format
 msgid "Could not connect to %1$s"
 msgstr ""
 
-#: Vipps.class.php:3607 Vipps.class.php:3612 Vipps.class.php:3622
-#: Vipps.class.php:3744 Vipps.class.php:3750 Vipps.class.php:3760
+#: Vipps.class.php:3564 Vipps.class.php:3569 Vipps.class.php:3579
+#: Vipps.class.php:3701 Vipps.class.php:3707 Vipps.class.php:3717
 msgid "Could not create order"
 msgstr ""
 
@@ -1053,19 +1219,19 @@ msgstr ""
 msgid "Could not do all payment-complete actions on %1$s order %2$d: %3$s "
 msgstr ""
 
-#: Vipps.class.php:2737
+#: Vipps.class.php:2694
 #, php-format
 msgid "Could not find %1$s order with id:"
 msgstr ""
 
-#: Vipps.class.php:2879
+#: Vipps.class.php:2836
 #, php-format
 msgid ""
 "Could not find any applicable shipping methods for %1$s - order %2$d will "
 "fail"
 msgstr ""
 
-#: Vipps.class.php:2745
+#: Vipps.class.php:2702
 msgid "Could not find Woo order with id:"
 msgstr ""
 
@@ -1105,7 +1271,7 @@ msgstr ""
 msgid "Could not get order status from %1$s using epayment api: "
 msgstr ""
 
-#: Vipps.class.php:2453
+#: Vipps.class.php:2410
 #, php-format
 msgid "Could not get orderid of reference %2$s from %1$s: "
 msgstr ""
@@ -1127,7 +1293,7 @@ msgstr ""
 msgid "Could not get receipt data for order %1$s from Vipps: "
 msgstr ""
 
-#: Vipps.class.php:3392
+#: Vipps.class.php:3349
 msgid "Could not get user email from order before thankyou-page"
 msgstr ""
 
@@ -1200,7 +1366,7 @@ msgid ""
 "Could not register webhooks for merchant serial number %1$s callback %2$s: "
 msgstr ""
 
-#: Vipps.class.php:2663
+#: Vipps.class.php:2620
 #, php-format
 msgid "Could not restore cart from session of order %1$d"
 msgstr ""
@@ -1213,7 +1379,11 @@ msgstr ""
 msgid "Could not send receipt to Vipps: "
 msgstr ""
 
-#: Vipps.class.php:4581
+#: lib/recurring-translations.php:131
+msgid "Could not start Vipps/MobilePay checkout session"
+msgstr ""
+
+#: Vipps.class.php:4541
 #, php-format
 msgid "Could not use special page with id %s - it seems not to exist."
 msgstr ""
@@ -1250,6 +1420,10 @@ msgstr ""
 msgid "Created"
 msgstr ""
 
+#: lib/recurring-translations.php:13
+msgid "Created At"
+msgstr ""
+
 #: Vipps.class.php:478
 msgid "Created for this site"
 msgstr ""
@@ -1260,21 +1434,45 @@ msgstr ""
 msgid "Credit Card / %1$s"
 msgstr ""
 
+#: lib/recurring-translations.php:56
+msgid "Cron settings"
+msgstr ""
+
+#: lib/recurring-translations.php:148
+msgid "Custom"
+msgstr ""
+
+#: lib/recurring-translations.php:149
+msgid "Custom description"
+msgstr ""
+
 #: VippsCheckout.class.php:458
 #, php-format
 msgid "Customer passed to %1$s"
 msgstr ""
 
-#: Blocks/woo-vipps-blocks.php:43
+#: lib/recurring-translations.php:130
+msgid "Customer passed to Vipps/MobilePay checkout"
+msgstr ""
+
+#: Blocks/woo-vipps-blocks.php:52
 msgid "Danish"
 msgstr ""
 
-#: Blocks/woo-vipps-blocks.php:39
+#: Blocks/woo-vipps-blocks.php:48
 msgid "Default"
 msgstr ""
 
 #: VippsWCProductEditorV2.class.php:180 Vipps.class.php:1444
 msgid "Default setting"
+msgstr ""
+
+#: lib/recurring-translations.php:50
+msgid "Default status to give orders with a reserved charge"
+msgstr ""
+
+#: lib/recurring-translations.php:52
+msgid "Default status to give pending renewal orders"
 msgstr ""
 
 #: Vipps.class.php:476 Vipps.class.php:1510 Vipps.class.php:1538
@@ -1303,7 +1501,7 @@ msgid "Denmark"
 msgstr ""
 
 #: VippsKCSupport.class.php:67 VippsCheckoutShippingMethods.php:116
-#: VippsCheckoutShippingMethods.php:143
+#: VippsCheckoutShippingMethods.php:143 lib/recurring-translations.php:28
 msgid "Description"
 msgstr ""
 
@@ -1314,17 +1512,47 @@ msgid ""
 "user sees in the checkout form."
 msgstr ""
 
+#: lib/recurring-translations.php:77
+msgid ""
+"Description for Vipps/MobilePay Recurring Payments method. This controls the "
+"description which the user sees in the checkout form."
+msgstr ""
+
+#: lib/recurring-translations.php:144
+msgid "Description source"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1389
 msgid "Developer mode"
 msgstr ""
 
-#: Vipps.class.php:2388
+#: lib/recurring-translations.php:65
+msgid "Developer settings"
+msgstr ""
+
+#: lib/recurring-translations.php:66
+msgid "Developer, test, and debugging options."
+msgstr ""
+
+#: Vipps.class.php:2345
 #, php-format
 msgid "Did not understand callback from %1$s:"
 msgstr ""
 
-#: VippsKCSupport.class.php:79
+#: lib/recurring-translations.php:110
+#, php-format
+msgid ""
+"Different subscription products can not be purchased at the same time using "
+"%s."
+msgstr ""
+
+#: VippsKCSupport.class.php:79 lib/recurring-translations.php:81
 msgid "Disable other gateway button"
+msgstr ""
+
+#: lib/recurring-translations.php:82
+msgid ""
+"Disables the \"Select another Payment method\" button in Klarna Checkout."
 msgstr ""
 
 #: VippsKCSupport.class.php:81
@@ -1342,6 +1570,11 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:957
 msgid "Don't require the contact fields"
+msgstr ""
+
+#: lib/recurring-translations.php:140
+#, php-format
+msgid "Done. Checked the status of %s orders"
 msgstr ""
 
 #: VippsQRCodeController.class.php:376
@@ -1411,7 +1644,7 @@ msgstr ""
 msgid "Enable static shipping for Express Checkout"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1397
+#: WC_Gateway_Vipps.class.php:1397 lib/recurring-translations.php:71
 msgid "Enable test mode"
 msgstr ""
 
@@ -1459,11 +1692,28 @@ msgid ""
 "regardless of order."
 msgstr ""
 
-#: Blocks/woo-vipps-blocks.php:40
+#: lib/recurring-translations.php:34
+msgid "Enable Vipps/MobilePay Checkout"
+msgstr ""
+
+#: lib/recurring-translations.php:20
+msgid "Enable Vipps/MobilePay Recurring Payments"
+msgstr ""
+
+#: lib/recurring-translations.php:19
+msgid "Enable/Disable"
+msgstr ""
+
+#: lib/recurring-translations.php:72
+msgid ""
+"Enabling this will route all API requests to the Vipps MobilePay test API."
+msgstr ""
+
+#: Blocks/woo-vipps-blocks.php:49
 msgid "English"
 msgstr ""
 
-#: Vipps.class.php:3620 Vipps.class.php:3758
+#: Vipps.class.php:3577 Vipps.class.php:3715
 msgid "Error calculating static shipping"
 msgstr ""
 
@@ -1477,7 +1727,7 @@ msgstr ""
 msgid "Error calling the Order Management API: %1$s "
 msgstr ""
 
-#: Vipps.class.php:3528
+#: Vipps.class.php:3485
 msgid "Error creating customer in express checkout: "
 msgstr ""
 
@@ -1505,15 +1755,15 @@ msgstr ""
 msgid "Error downloading QR code image: %1$s"
 msgstr ""
 
-#: Vipps.class.php:4543
+#: Vipps.class.php:4503
 msgid "Error during order confirmation"
 msgstr ""
 
-#: Vipps.class.php:3687
+#: Vipps.class.php:3644
 msgid "Error finding product - cannot create order"
 msgstr ""
 
-#: Vipps.class.php:2726
+#: Vipps.class.php:2683
 #, php-format
 msgid "Error getting customer data in the %1$s shipping details callback: %2$s"
 msgstr ""
@@ -1523,7 +1773,7 @@ msgstr ""
 msgid "Error getting list of QR codes from %1$s: %2$s"
 msgstr ""
 
-#: Vipps.class.php:3248
+#: Vipps.class.php:3205
 #, php-format
 msgid "Error getting order status at %1$s for order %2$d"
 msgstr ""
@@ -1556,12 +1806,12 @@ msgstr ""
 msgid "Error polling status - error message %1$s"
 msgstr ""
 
-#: Vipps.class.php:3069
+#: Vipps.class.php:3026
 #, php-format
 msgid "Error regenerating cart from order %1$d:  %2$s"
 msgstr ""
 
-#: Vipps.class.php:2389
+#: Vipps.class.php:2346
 #, php-format
 msgid "Error was: %1$s"
 msgstr ""
@@ -1576,6 +1826,10 @@ msgid ""
 "Error: Cannot instantiate payment gateway, because WooCommerce is not loaded!"
 " This can happen when WooCommerce updates itself; but if it didn't, please "
 "activate WooCommerce again"
+msgstr ""
+
+#: lib/recurring-translations.php:5
+msgid "Everyday AS"
 msgstr ""
 
 #: Vipps.class.php:491
@@ -1595,8 +1849,29 @@ msgstr ""
 msgid "External Payment Method - %1$s"
 msgstr ""
 
+#: lib/recurring-translations.php:74
+msgid "External Payment Method - Vipps/MobilePay Recurring Payments"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1090
 msgid "External Payment Methods"
+msgstr ""
+
+#: lib/recurring-translations.php:88
+msgid "Failed Charges"
+msgstr ""
+
+#: lib/recurring-translations.php:100
+#, php-format
+msgid "Failed creating a charge: %s"
+msgstr ""
+
+#: lib/recurring-translations.php:141
+msgid "Failed to finish checking the status of all orders. Please try again."
+msgstr ""
+
+#: lib/recurring-translations.php:11
+msgid "Failure Reason"
 msgstr ""
 
 #: VippsQRCodeController.class.php:623
@@ -1609,7 +1884,7 @@ msgid "File type was %1$s; supported types are %2$s"
 msgstr ""
 
 #: VippsWCProductEditorV2.class.php:184 Vipps.class.php:693
-#: Vipps.class.php:1448 Blocks/woo-vipps-blocks.php:15
+#: Vipps.class.php:1448 Blocks/woo-vipps-blocks.php:24
 msgid "Filled"
 msgstr ""
 
@@ -1668,7 +1943,7 @@ msgstr ""
 msgid "Finland"
 msgstr ""
 
-#: Blocks/woo-vipps-blocks.php:42
+#: Blocks/woo-vipps-blocks.php:51
 msgid "Finnish"
 msgstr ""
 
@@ -1676,13 +1951,21 @@ msgstr ""
 msgid "First Name"
 msgstr ""
 
-#: Vipps.class.php:3246
+#: Vipps.class.php:3203
 #, php-format
 msgid "For order %2$d order status at %1$s is %3$s"
 msgstr ""
 
+#: lib/recurring-translations.php:42
+msgid "Get your API keys from your Vipps/MobilePay developer portal."
+msgstr ""
+
+#: lib/recurring-translations.php:40
+msgid "Get your Merchant Serial Number your Vipps/MobilePay developer portal."
+msgstr ""
+
 #: VippsWCProductEditorV2.class.php:183 Vipps.class.php:692
-#: Vipps.class.php:1447 Blocks/woo-vipps-blocks.php:14
+#: Vipps.class.php:1447 Blocks/woo-vipps-blocks.php:23
 msgid "Grey"
 msgstr ""
 
@@ -1700,6 +1983,14 @@ msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1056
 msgid "Helthjem Username"
+msgstr ""
+
+#: lib/recurring-translations.php:90
+msgid "here"
+msgstr ""
+
+#: lib/recurring-translations.php:6
+msgid "https://everyday.no"
 msgstr ""
 
 #. URI of the plugin
@@ -1751,6 +2042,10 @@ msgid ""
 "in the %1$s app for links to the order confirmation etc"
 msgstr ""
 
+#: lib/recurring-translations.php:150
+msgid "If the description source is set to \"custom\" this text will be used."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1263
 msgid ""
 "If the order contains only \"virtual\" products that do not need shipping, "
@@ -1763,6 +2058,12 @@ msgstr ""
 msgid ""
 "If this is checked, a receipt will be sent to %1$s which will be viewable in "
 "the users' app, specifying the order items, shipping et cetera"
+msgstr ""
+
+#: lib/recurring-translations.php:27
+msgid ""
+"If this option is checked we will start automatically capturing MobilePay "
+"payments. This prevents reservations from being cancelled after 7 days."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:943
@@ -1800,6 +2101,13 @@ msgstr ""
 msgid ""
 "If you experience problems or unexpected results, please check the 'fatal-"
 "errors' and 'woo-vipps' logs at <a href='%1$s'>WooCommerce logs page</a>."
+msgstr ""
+
+#: lib/recurring-translations.php:85
+msgid ""
+"If you have a lot of Vipps/MobilePay subscription orders that are currently "
+"on-hold you might want to force check the status of all the orders instead "
+"of waiting for the cron-job to do it's job."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1324
@@ -1906,7 +2214,7 @@ msgstr ""
 msgid "Image rejected by Vipps - minimum height requirement is 167px"
 msgstr ""
 
-#: VippsKCSupport.class.php:73
+#: VippsKCSupport.class.php:73 lib/recurring-translations.php:79
 msgid "Image url"
 msgstr ""
 
@@ -1926,7 +2234,7 @@ msgstr ""
 msgid "Imported QR Code"
 msgstr ""
 
-#: Vipps.class.php:4456
+#: Vipps.class.php:4416
 #, php-format
 msgid "In order return: The order %1$d  seems to be deleted"
 msgstr ""
@@ -1939,7 +2247,7 @@ msgstr ""
 msgid "Insert into item"
 msgstr ""
 
-#: Vipps.class.php:2749
+#: Vipps.class.php:2706
 msgid "Invalid order for shipping callback:"
 msgstr ""
 
@@ -1947,7 +2255,7 @@ msgstr ""
 msgid "Invalid request"
 msgstr ""
 
-#: Vipps.class.php:4260
+#: Vipps.class.php:4220
 msgid ""
 "It seems a customer is trying to re-order product(s) recently bought in the "
 "same session, asking user for confirmation"
@@ -1989,7 +2297,7 @@ msgstr ""
 msgid "Klarna"
 msgstr ""
 
-#: src/Blocks/src/vipps-badge/edit.tsx:69
+#: src/Blocks/src/vipps-badge/edit.tsx:71
 msgid "Language"
 msgstr ""
 
@@ -1997,8 +2305,12 @@ msgstr ""
 msgid "Last Name"
 msgstr ""
 
+#: lib/recurring-translations.php:12
+msgid "Latest API Status"
+msgstr ""
+
 #: VippsWCProductEditorV2.class.php:185 Vipps.class.php:693
-#: Vipps.class.php:1449 Blocks/woo-vipps-blocks.php:16
+#: Vipps.class.php:1449 Blocks/woo-vipps-blocks.php:25
 msgid "Light"
 msgstr ""
 
@@ -2007,12 +2319,20 @@ msgstr ""
 msgid "Link"
 msgstr ""
 
-#: Vipps.class.php:4191
+#: Vipps.class.php:4151
 msgid "Link expired, please try again"
 msgstr ""
 
 #: Vipps.class.php:1522
 msgid "Link(s) will be deleted when you save the product"
+msgstr ""
+
+#: lib/recurring-translations.php:68
+msgid "Log debug messages"
+msgstr ""
+
+#: lib/recurring-translations.php:67
+msgid "Logging"
 msgstr ""
 
 #: Vipps.class.php:70
@@ -2033,6 +2353,10 @@ msgstr ""
 msgid "Mark this link for deletion"
 msgstr ""
 
+#: lib/recurring-translations.php:151
+msgid "Max 100 characters"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:233
 #, php-format
 msgid ""
@@ -2050,6 +2374,10 @@ msgstr ""
 msgid "Merchant Serial Number %1$s"
 msgstr ""
 
+#: lib/recurring-translations.php:39
+msgid "Merchant Serial Number (MSN)"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:3210
 #, php-format
 msgid "Message from %1$s: %2$s"
@@ -2064,8 +2392,14 @@ msgstr ""
 msgid "Mobile Number"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1132
+#: WC_Gateway_Vipps.class.php:1132 lib/recurring-translations.php:25
 msgid "MobilePay"
+msgstr ""
+
+#: lib/recurring-translations.php:94
+msgid ""
+"MobilePay payments are automatically captured to prevent the payment "
+"reservation from automatically getting cancelled after 14 days."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1833
@@ -2089,8 +2423,16 @@ msgstr ""
 msgid "New QR Code"
 msgstr ""
 
+#: lib/recurring-translations.php:64
+msgid "Newest first"
+msgstr ""
+
 #: admin/settings/VippsAdminSettings.class.php:163
 msgid "Next step"
+msgstr ""
+
+#: lib/recurring-translations.php:18
+msgid "No"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:2371
@@ -2104,7 +2446,7 @@ msgstr ""
 msgid "No badge"
 msgstr ""
 
-#: Vipps.class.php:3025
+#: Vipps.class.php:2982
 #, php-format
 msgid ""
 "No cart, so will try to calculate shipping based on order contents for order "
@@ -2115,12 +2457,20 @@ msgstr ""
 msgid "No delivery method specified"
 msgstr ""
 
+#: lib/recurring-translations.php:7
+msgid "No failed charges found."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1237
 msgid "No products"
 msgstr ""
 
 #: VippsApi.class.php:1485
 msgid "No response from Vipps"
+msgstr ""
+
+#: lib/recurring-translations.php:125
+msgid "No response from Vipps/MobilePay"
 msgstr ""
 
 #: VippsCheckout.class.php:191
@@ -2132,7 +2482,7 @@ msgstr ""
 msgid "No shipping details from %1$s for express checkout for order id:"
 msgstr ""
 
-#: Vipps.class.php:2868 Vipps.class.php:3085
+#: Vipps.class.php:2825 Vipps.class.php:3042
 msgid "No shipping required"
 msgstr ""
 
@@ -2144,6 +2494,10 @@ msgstr ""
 msgid "No, thank you not right now anyway"
 msgstr ""
 
+#: lib/recurring-translations.php:146
+msgid "None"
+msgstr ""
+
 #: VippsQRCodeController.class.php:345
 msgid "None chosen"
 msgstr ""
@@ -2152,11 +2506,11 @@ msgstr ""
 msgid "Norway"
 msgstr ""
 
-#: Blocks/woo-vipps-blocks.php:41
+#: Blocks/woo-vipps-blocks.php:50
 msgid "Norwegian"
 msgstr ""
 
-#: Vipps.class.php:3819 Vipps.class.php:3824
+#: Vipps.class.php:3776 Vipps.class.php:3781
 msgid "Not an order"
 msgstr ""
 
@@ -2166,6 +2520,28 @@ msgstr ""
 
 #: VippsQRCodeController.class.php:622
 msgid "Not found in Trash"
+msgstr ""
+
+#: lib/recurring-translations.php:154
+msgid ""
+"Note: Reservations in MobilePay will be cancelled after 14 days. Remember to "
+"ship and fulfill your orders."
+msgstr ""
+
+#: lib/recurring-translations.php:155
+#, php-format
+msgid ""
+"Note: Vipps is only available with the NOK currency. Your store currency is "
+"set to %s"
+msgstr ""
+
+#: lib/recurring-translations.php:44
+msgid "Ocp-Apim-Subscription-Key"
+msgstr ""
+
+#: lib/recurring-translations.php:4
+msgid ""
+"Offer recurring payments with Vipps MobilePay for WooCommerce Subscriptions"
 msgstr ""
 
 #. Description of the plugin
@@ -2180,7 +2556,11 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1183
+#: lib/recurring-translations.php:63
+msgid "Oldest first"
+msgstr ""
+
+#: WC_Gateway_Vipps.class.php:1183 lib/recurring-translations.php:120
 msgid "On hold"
 msgstr ""
 
@@ -2216,7 +2596,7 @@ msgid ""
 "Order %2$d has no address info and any %1$s session is dead - have to cancel."
 msgstr ""
 
-#: Vipps.class.php:3222
+#: Vipps.class.php:3179
 #, php-format
 msgid ""
 "Order %2$d is 'pending' but its %1$s Order Status is %3$s  - this means that "
@@ -2236,7 +2616,8 @@ msgstr ""
 msgid "Order cancel for order"
 msgstr ""
 
-#: Vipps.class.php:4505 Vipps.class.php:4508 Vipps.class.php:4552
+#: Vipps.class.php:4465 Vipps.class.php:4468 Vipps.class.php:4512
+#: lib/recurring-translations.php:157
 msgid "Order cancelled"
 msgstr ""
 
@@ -2244,7 +2625,7 @@ msgstr ""
 msgid "Order capture for order"
 msgstr ""
 
-#: Vipps.class.php:4548
+#: Vipps.class.php:4508
 msgid "Order confirmed"
 msgstr ""
 
@@ -2253,7 +2634,7 @@ msgstr ""
 msgid "Order does not exist at %1$s - cancelling"
 msgstr ""
 
-#: Vipps.class.php:3834 Vipps.class.php:3862
+#: Vipps.class.php:3791 Vipps.class.php:3819
 msgid "Order failed"
 msgstr ""
 
@@ -2266,7 +2647,7 @@ msgstr ""
 msgid "Order id"
 msgstr ""
 
-#: Vipps.class.php:4391
+#: Vipps.class.php:4351
 msgid "Order in progress"
 msgstr ""
 
@@ -2277,6 +2658,14 @@ msgstr ""
 #: WC_Gateway_Vipps.class.php:1620
 #, php-format
 msgid "Order session expired at %1$s, please try again!"
+msgstr ""
+
+#: lib/recurring-translations.php:45
+msgid "Order settings"
+msgstr ""
+
+#: lib/recurring-translations.php:134
+msgid "Order specification changed - order abandoned by customer in Checkout"
 msgstr ""
 
 #: VippsCheckout.class.php:810
@@ -2316,6 +2705,14 @@ msgstr ""
 msgid "Orderid %1$s: Wrong nonce when trying to switch payment methods."
 msgstr ""
 
+#: lib/recurring-translations.php:35
+msgid "OrderId prefix"
+msgstr ""
+
+#: lib/recurring-translations.php:46
+msgid "Orders, renewals and status settings."
+msgstr ""
+
 #: VippsWCProductEditorV2.class.php:175 Vipps.class.php:1442
 msgid "Override default settings"
 msgstr ""
@@ -2329,12 +2726,12 @@ msgstr ""
 msgid "Page"
 msgstr ""
 
-#: Vipps.class.php:4091
+#: Vipps.class.php:4051
 msgctxt "Page slug"
 msgid "vipps_checkout"
 msgstr ""
 
-#: Vipps.class.php:4092
+#: Vipps.class.php:4052
 msgctxt "Page title"
 msgid "Vipps MobilePay Checkout"
 msgstr ""
@@ -2352,15 +2749,24 @@ msgstr ""
 msgid "Pay with %1$s for WooCommerce"
 msgstr ""
 
+#: lib/recurring-translations.php:92
+#, php-format
+msgid "Pay with %s"
+msgstr ""
+
 #. Name of the plugin
 msgid "Pay with Vipps and MobilePay for WooCommerce"
+msgstr ""
+
+#: lib/recurring-translations.php:30
+msgid "Pay with {brand}."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1808 WC_Gateway_Vipps.class.php:1816
 msgid "Payment already captured"
 msgstr ""
 
-#: Vipps.class.php:3851
+#: Vipps.class.php:3808
 msgid "Payment authorized"
 msgstr ""
 
@@ -2369,7 +2775,7 @@ msgstr ""
 msgid "Payment authorized at %1$s"
 msgstr ""
 
-#: Vipps.class.php:3857
+#: Vipps.class.php:3814
 msgid "Payment captured"
 msgstr ""
 
@@ -2385,6 +2791,10 @@ msgid ""
 "automatically"
 msgstr ""
 
+#: lib/recurring-translations.php:108
+msgid "Payment gateway change request cancelled in Vipps/MobilePay"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1127 Vipps.class.php:1711 Vipps.class.php:1713
 msgid "Payment method"
 msgstr ""
@@ -2394,6 +2804,14 @@ msgstr ""
 msgid ""
 "Payment method reset to %1$s - it had been set to KCO while completing the "
 "order for %2$d"
+msgstr ""
+
+#: lib/recurring-translations.php:118
+msgid "Pending cancellation"
+msgstr ""
+
+#: lib/recurring-translations.php:87
+msgid "Pending Charges"
 msgstr ""
 
 #: Vipps.class.php:1739
@@ -2421,7 +2839,7 @@ msgstr ""
 msgid "Please refer to the documentation for the meaning of the parameters."
 msgstr ""
 
-#: Vipps.class.php:4389
+#: Vipps.class.php:4349
 msgid "Please wait while we are preparing your order"
 msgstr ""
 
@@ -2480,7 +2898,7 @@ msgstr ""
 msgid "Processing"
 msgstr ""
 
-#: Vipps.class.php:3566
+#: Vipps.class.php:3523
 msgid "Processing order... "
 msgstr ""
 
@@ -2488,8 +2906,12 @@ msgstr ""
 msgid "Product"
 msgstr ""
 
-#: Vipps.class.php:4154
+#: Vipps.class.php:4114
 msgid "Product is no longer available"
+msgstr ""
+
+#: lib/recurring-translations.php:147
+msgid "Product short description"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1361
@@ -2498,7 +2920,7 @@ msgid "Profile image used in the %1$s App"
 msgstr ""
 
 #: VippsWCProductEditorV2.class.php:186 Vipps.class.php:694
-#: Vipps.class.php:1450 Blocks/woo-vipps-blocks.php:17
+#: Vipps.class.php:1450 Blocks/woo-vipps-blocks.php:26
 msgid "Purple"
 msgstr ""
 
@@ -2518,36 +2940,47 @@ msgstr ""
 msgid "QR-id"
 msgstr ""
 
-#: Vipps.class.php:2727
+#: lib/recurring-translations.php:62
+msgid "Random"
+msgstr ""
+
+#: Vipps.class.php:2684
 msgid "Raw input was "
 msgstr ""
 
-#: Vipps.class.php:4385
+#: Vipps.class.php:4345
 #, php-format
 msgid "Ready for %1$s - press the button"
 msgstr ""
 
-#: Vipps.class.php:2395
+#: Vipps.class.php:2352
 msgid "Received a test callback, exiting"
 msgstr ""
 
-#: Vipps.class.php:2473
+#: Vipps.class.php:2430
 #, php-format
 msgid ""
 "Received webhook callback for checkout/express checkout order %1$d - "
 "ignoring since full callback should come"
 msgstr ""
 
-#: Vipps.class.php:2468
+#: Vipps.class.php:2425
 #, php-format
 msgid "Received webhook callback for order %1$d but this is no longer pending."
+msgstr ""
+
+#: lib/recurring-translations.php:127
+#, php-format
+msgid ""
+"Recurring payments is not yet activated for this sale unit. Read more <a "
+"href=\"%s\" target=\"_blank\">here</a>"
 msgstr ""
 
 #: VippsApi.class.php:1134
 msgid "Refund for order"
 msgstr ""
 
-#: Vipps.class.php:2348
+#: Vipps.class.php:2305
 msgid "Refund superfluous payment"
 msgstr ""
 
@@ -2579,6 +3012,10 @@ msgid ""
 "register the <em>return url</em> you will find on the settings page."
 msgstr ""
 
+#: lib/recurring-translations.php:78
+msgid "Remember: {brand} is always has no fees when paying businesses."
+msgstr ""
+
 #: VippsQRCodeController.class.php:625
 msgid "Remove featured image"
 msgstr ""
@@ -2592,13 +3029,22 @@ msgstr ""
 msgid "Request ID"
 msgstr ""
 
-#: Vipps.class.php:3236
+#: lib/recurring-translations.php:111
+#, php-format
+msgid "Request to change gateway to Vipps/MobilePay with agreement ID: %s."
+msgstr ""
+
+#: Vipps.class.php:3193
 #, php-format
 msgid "Restoring session of order %1$d"
 msgstr ""
 
 #: admin/settings/VippsAdminSettings.class.php:159
 msgid "Save changes"
+msgstr ""
+
+#: lib/recurring-translations.php:69
+msgid "Save debug messages to the WooCommerce System Status log."
 msgstr ""
 
 #: VippsQRCodeController.class.php:620
@@ -2623,11 +3069,11 @@ msgstr ""
 msgid "Select variant"
 msgstr ""
 
-#: Vipps.class.php:3704
+#: Vipps.class.php:3661
 msgid "Selected product variant is not available"
 msgstr ""
 
-#: Vipps.class.php:3716
+#: Vipps.class.php:3673
 msgid "Selected product variant is not available for purchase"
 msgstr ""
 
@@ -2655,7 +3101,7 @@ msgid "Setting order status to pending to start payment"
 msgstr ""
 
 #: Vipps.class.php:708 Vipps.class.php:1045 Vipps.class.php:1188
-#: Vipps.class.php:1188
+#: Vipps.class.php:1188 lib/recurring-translations.php:153
 msgid "Settings"
 msgstr ""
 
@@ -2741,7 +3187,7 @@ msgstr ""
 msgid "Skip entering your address and just checkout using"
 msgstr ""
 
-#: Vipps.class.php:3597
+#: Vipps.class.php:3554
 #, php-format
 msgid ""
 "Some of the products in your cart are no longer available in the quantities "
@@ -2769,6 +3215,14 @@ msgid ""
 "Somehow, this QR code has disappeard at %1$s. Save it to make it work again!"
 msgstr ""
 
+#: lib/recurring-translations.php:60
+msgid "Status checking sort order for charges"
+msgstr ""
+
+#: lib/recurring-translations.php:123
+msgid "Subscription cancelled by the customer via the Vipps MobilePay app."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1169 WC_Gateway_Vipps.class.php:1170
 #: WC_Gateway_Vipps.class.php:1428 WC_Gateway_Vipps.class.php:1429
 msgid "Subscription Key"
@@ -2776,6 +3230,14 @@ msgstr ""
 
 #: Vipps.class.php:1777 Vipps.class.php:1795
 msgid "Success"
+msgstr ""
+
+#: lib/recurring-translations.php:114
+msgid "Successfully authenticated with the Vipps/MobilePay API"
+msgstr ""
+
+#: lib/recurring-translations.php:137
+msgid "Successfully checked the status of these charges"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1038
@@ -2819,7 +3281,12 @@ msgstr ""
 msgid "Terminated"
 msgstr ""
 
+#: lib/recurring-translations.php:113
+msgid "Test API settings"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1396 Vipps.class.php:453
+#: lib/recurring-translations.php:70
 msgid "Test mode"
 msgstr ""
 
@@ -2850,6 +3317,17 @@ msgid ""
 "button - including this."
 msgstr ""
 
+#: lib/recurring-translations.php:95
+msgid "The agreement was cancelled or expired in Vipps/MobilePay"
+msgstr ""
+
+#: lib/recurring-translations.php:59
+msgid ""
+"The amount of charges to check the status for in wp-cron per scheduled event."
+" It is recommended to keep this between 5 and 100. The higher the value, the "
+"more performance issues you may run into."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1024
 msgid "The API key provided to you by Porterbuddy"
 msgstr ""
@@ -2858,7 +3336,7 @@ msgstr ""
 msgid "The brand will be automatically applied."
 msgstr ""
 
-#: Vipps.class.php:2314
+#: Vipps.class.php:2271
 #, php-format
 msgid "The entire amount has been captured at %1$s"
 msgstr ""
@@ -2878,7 +3356,7 @@ msgstr ""
 msgid "The image must be at least 167 pixels in height"
 msgstr ""
 
-#: Vipps.class.php:4155
+#: Vipps.class.php:4115
 msgid ""
 "The link you have followed is for a product that is no longer available at "
 "this location. Please return to the store and try again"
@@ -2896,6 +3374,12 @@ msgstr ""
 msgid "The order is not a %1$s order"
 msgstr ""
 
+#: lib/recurring-translations.php:48
+msgid ""
+"The page to redirect customers to when they click \"Continue shopping\" "
+"after a cancelled payment."
+msgstr ""
+
 #: Vipps.class.php:926 Vipps.class.php:974
 #, php-format
 msgid "The plugin is <b>active</b> - %1$s is available as a payment method."
@@ -2909,7 +3393,7 @@ msgstr ""
 msgid "The public key provided to you by Porterbuddy"
 msgstr ""
 
-#: Vipps.class.php:2444
+#: Vipps.class.php:2401
 #, php-format
 msgid ""
 "The reference %1$s and order id %2$s does not match in webhook event %3$s - "
@@ -2922,6 +3406,25 @@ msgstr ""
 
 #: Vipps.class.php:756
 msgid "The shortcode looks like this:"
+msgstr ""
+
+#: lib/recurring-translations.php:61
+msgid ""
+"The sort order we use when checking charges in wp-cron. Random sort order is "
+"the best for most use cases. Oldest first may be useful if you use "
+"synchronized renewals."
+msgstr ""
+
+#: lib/recurring-translations.php:51
+msgid ""
+"The status to give orders when the charge is reserved in Vipps/MobilePay (i."
+"e. tangible goods). Notice: This option only counts for newly signed "
+"agreements by the customer. Use the setting below to set the default status "
+"for renewal orders."
+msgstr ""
+
+#: lib/recurring-translations.php:93
+msgid "The subtotal is zero, the order is free for this subscription period."
 msgstr ""
 
 #: VippsApi.class.php:680
@@ -2977,12 +3480,12 @@ msgid ""
 "these into your current site and manage them from here"
 msgstr ""
 
-#: Vipps.class.php:2491
+#: Vipps.class.php:2448
 #, php-format
 msgid "There is no order with this %1$s orderid, callback fails:"
 msgstr ""
 
-#: Vipps.class.php:2497
+#: Vipps.class.php:2454
 msgid "There is no order with this order id, callback fails:"
 msgstr ""
 
@@ -2992,6 +3495,30 @@ msgid ""
 "normally not useful for regular users, or are not yet ready for primetime"
 msgstr ""
 
+#: lib/recurring-translations.php:38
+msgid ""
+"These settings control the connection between your store and Vipps MobilePay."
+msgstr ""
+
+#: lib/recurring-translations.php:84
+#, php-format
+msgid ""
+"This area is for special actions that aren't settings. If you are looking "
+"for the plugin's settings, click <a href='%s'>here</a>."
+msgstr ""
+
+#: lib/recurring-translations.php:29
+msgid ""
+"This controls the description which the user sees during checkout. {brand} "
+"is substituted with either Vipps or MobilePay."
+msgstr ""
+
+#: lib/recurring-translations.php:55
+msgid ""
+"This option will make sure order statuses always transition to \"completed\" "
+"when the renewal charge is completed in Vipps/MobilePay."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1604
 #, php-format
 msgid ""
@@ -2999,11 +3526,21 @@ msgid ""
 "try again later"
 msgstr ""
 
+#: lib/recurring-translations.php:16
+msgid "This order has not yet been captured."
+msgstr ""
+
 #: VippsCheckout.class.php:911
 #, php-format
 msgid ""
 "This page is used for the alternative %1$s page, which you can choose to use "
 "instead of the normal WooCommerce checkout page. "
+msgstr ""
+
+#: lib/recurring-translations.php:133
+msgid ""
+"This page is used for the alternative Vipps/MobilePay checkout page, which "
+"you can choose to use instead of the normal WooCommerce checkout page. "
 msgstr ""
 
 #: Vipps.class.php:903
@@ -3037,6 +3574,20 @@ msgstr ""
 #: VippsWCProductEditorV2.class.php:253 Vipps.class.php:1416
 msgid ""
 "This product supports express checkout, and so will have a Buy Now button."
+msgstr ""
+
+#: lib/recurring-translations.php:109
+msgid ""
+"This subscription is already active in Vipps/MobilePay. You can leave this "
+"page."
+msgstr ""
+
+#: lib/recurring-translations.php:73
+msgid "This value is being overriden by WC_VIPPS_RECURRING_TEST_MODE."
+msgstr ""
+
+#: lib/recurring-translations.php:117
+msgid "This Vipps/MobilePay agreement ID is invalid."
 msgstr ""
 
 #: Vipps.class.php:1778 Vipps.class.php:1796
@@ -3087,7 +3638,7 @@ msgid ""
 "data from that to set up your plugins as needed."
 msgstr ""
 
-#: Vipps.class.php:4313
+#: Vipps.class.php:4273
 #, php-format
 msgid "To the %1$s app!"
 msgstr ""
@@ -3114,6 +3665,10 @@ msgstr ""
 
 #: Vipps.class.php:1779
 msgid "Transaction text"
+msgstr ""
+
+#: lib/recurring-translations.php:54
+msgid "Transition order status for renewals to \"completed\""
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1965
@@ -3179,7 +3734,7 @@ msgstr ""
 msgid "Unknown error creating %1$s session"
 msgstr ""
 
-#: Vipps.class.php:3530
+#: Vipps.class.php:3487
 msgid "Unknown error customer in express checkout."
 msgstr ""
 
@@ -3187,15 +3742,15 @@ msgstr ""
 msgid "Unknown operation"
 msgstr ""
 
-#: Vipps.class.php:1677 Vipps.class.php:4460
+#: Vipps.class.php:1677 Vipps.class.php:4420
 msgid "Unknown order"
 msgstr ""
 
-#: Vipps.class.php:3865
+#: Vipps.class.php:3822
 msgid "Unknown payment status"
 msgstr ""
 
-#: Vipps.class.php:3694
+#: Vipps.class.php:3651
 msgid "Unknown product, cannot create order"
 msgstr ""
 
@@ -3230,6 +3785,10 @@ msgstr ""
 msgid "URL to the %1$s logo"
 msgstr ""
 
+#: lib/recurring-translations.php:80
+msgid "URL to the Vipps/MobilePay logo"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1206
 #, php-format
 msgid "Use %1$s as default payment method on checkout page"
@@ -3256,6 +3815,10 @@ msgstr ""
 
 #: VippsQRCodeController.class.php:626
 msgid "Use as featured image"
+msgstr ""
+
+#: lib/recurring-translations.php:31
+msgid "Use at your own risk"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:513
@@ -3320,13 +3883,17 @@ msgid "User ID"
 msgstr ""
 
 #: Vipps.class.php:732 Vipps.class.php:1527
-#: src/Blocks/src/vipps-badge/edit.tsx:57
+#: src/Blocks/src/vipps-badge/edit.tsx:59
 msgid "Variant"
 msgstr ""
 
 #: src/admin/blocks/src/product-shareable-link/edit.tsx:223
 #: src/admin/blocks/src/product-shareable-link/edit.tsx:248
 msgid "Variation"
+msgstr ""
+
+#: lib/recurring-translations.php:162
+msgid "Verifying your payment. Please wait."
 msgstr ""
 
 #: Vipps.class.php:474
@@ -3341,11 +3908,11 @@ msgstr ""
 msgid "View QR Codes"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:1131
+#: WC_Gateway_Vipps.class.php:1131 lib/recurring-translations.php:24
 msgid "Vipps"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:3552 Vipps.class.php:64
+#: WC_Gateway_Vipps.class.php:3552
 msgid "Vipps Checkout"
 msgstr ""
 
@@ -3363,6 +3930,20 @@ msgstr ""
 msgid "Vipps MobilePay"
 msgstr ""
 
+#: lib/recurring-translations.php:33
+msgid ""
+"Vipps MobilePay Checkout replaces the normal WooCommerce checkout with an "
+"easier and more seamless checkout that allows you to pay with Vipps "
+"MobilePay (and soon also a credit card). Your customers will be able to "
+"provide their billing/shipping details directly from the Vipps MobilePay app."
+" <br><br><strong>Important!</strong> Checkout for recurring payments <strong>"
+"only supports static shipping</strong> at the moment."
+msgstr ""
+
+#: lib/recurring-translations.php:139
+msgid "Vipps MobilePay Recurring Checkout"
+msgstr ""
+
 #: VippsQRCodeController.class.php:231
 msgid "Vipps QR-codes not present on this site"
 msgstr ""
@@ -3378,6 +3959,63 @@ msgid ""
 "WooCommerce - get started here!"
 msgstr ""
 
+#: lib/recurring-translations.php:116
+msgid "Vipps/MobilePay Agreement ID"
+msgstr ""
+
+#: lib/recurring-translations.php:107
+msgid "Vipps/MobilePay is temporarily unavailable."
+msgstr ""
+
+#: lib/recurring-translations.php:98
+msgid "Vipps/MobilePay payment cancelled."
+msgstr ""
+
+#: lib/recurring-translations.php:99
+msgid "Vipps/MobilePay payment failed."
+msgstr ""
+
+#: lib/recurring-translations.php:132
+msgid "Vipps/MobilePay Recurring Checkout Page"
+msgstr ""
+
+#: lib/recurring-translations.php:129
+msgid "Vipps/MobilePay recurring checkout payment initiated"
+msgstr ""
+
+#: lib/recurring-translations.php:83
+msgid "Vipps/MobilePay Recurring Payments"
+msgstr ""
+
+#. These are translations from vipps-recurring that we want to add to woo-vipps.
+#: lib/recurring-translations.php:3
+msgid "Vipps/MobilePay recurring payments for WooCommerce"
+msgstr ""
+
+#: lib/recurring-translations.php:136
+msgid ""
+"Vipps/MobilePay Recurring Payments is currently in test mode - no real "
+"transactions will occur. Disable test mode when you are ready to go live!"
+msgstr ""
+
+#: lib/recurring-translations.php:135
+#, php-format
+msgid ""
+"Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be "
+"installed and active. You can purchase and download %s here."
+msgstr ""
+
+#: lib/recurring-translations.php:91
+msgid ""
+"Vipps/MobilePay Recurring Payments works by redirecting your customers to "
+"the Vipps MobilePay portal for confirmation. It creates a payment plan and "
+"charges your users on the intervals you specify."
+msgstr ""
+
+#: lib/recurring-translations.php:138
+msgid "vipps_recurring_checkout"
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1470
 msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - dev mode is forced"
@@ -3388,16 +4026,20 @@ msgid ""
 "VIPPS_TEST_MODE is set to true in your configuration - test mode is forced"
 msgstr ""
 
-#: Vipps.class.php:4526
+#: Vipps.class.php:4486
 #, php-format
 msgid "Waiting for confirmation of purchase from %1$s"
 msgstr ""
 
-#: Vipps.class.php:4558
+#: lib/recurring-translations.php:97
+msgid "Waiting for you to capture the payment"
+msgstr ""
+
+#: Vipps.class.php:4518
 msgid "Waiting for your order confirmation"
 msgstr ""
 
-#: Vipps.class.php:3829 Vipps.class.php:3843
+#: Vipps.class.php:3786 Vipps.class.php:3800
 msgid "Waiting on order"
 msgstr ""
 
@@ -3406,12 +4048,29 @@ msgstr ""
 msgid "Was not able to cancel remaining amount for the order %1$s: %2$s"
 msgstr ""
 
+#: lib/recurring-translations.php:126
+msgid "We hit Vipps/MobilePay's rate limit, we will retry later."
+msgstr ""
+
+#: lib/recurring-translations.php:57
+msgid ""
+"We use webhooks in most instances, but they are not guaranteed to be "
+"reliable. In those cases we rely on cron."
+msgstr ""
+
 #: Vipps.class.php:461
 msgid "Webhook"
 msgstr ""
 
 #: Vipps.class.php:426 Vipps.class.php:1190 Vipps.class.php:1190
 msgid "Webhooks"
+msgstr ""
+
+#: lib/recurring-translations.php:53
+msgid ""
+"When a renewal order happens we have to wait a few days for the money to be "
+"drawn from the customer. This settings controls the status to give these "
+"renewal orders before the charge completes."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1255
@@ -3441,8 +4100,14 @@ msgid ""
 "your store."
 msgstr ""
 
+#: lib/recurring-translations.php:145
+msgid ""
+"Where we should source the agreement description from. Displayed in the "
+"Vipps/MobilePay app."
+msgstr ""
+
 #: VippsWCProductEditorV2.class.php:182 Vipps.class.php:692
-#: Vipps.class.php:1446 Blocks/woo-vipps-blocks.php:13
+#: Vipps.class.php:1446 Blocks/woo-vipps-blocks.php:22
 msgid "White"
 msgstr ""
 
@@ -3458,12 +4123,12 @@ msgstr ""
 msgid "WP Hosting"
 msgstr ""
 
-#: WC_Gateway_Vipps.class.php:3202 Vipps.class.php:2507
+#: WC_Gateway_Vipps.class.php:3202 Vipps.class.php:2464
 #, php-format
 msgid "Wrong %1$s Orderid - possibly an attempt to fake a callback "
 msgstr ""
 
-#: Vipps.class.php:2758
+#: Vipps.class.php:2715
 #, php-format
 msgid "Wrong %1$s Orderid on shipping details callback"
 msgstr ""
@@ -3473,6 +4138,10 @@ msgstr ""
 msgid ""
 "Wrong auth token in callback from %1$s - possibly an attempt to fake a "
 "callback"
+msgstr ""
+
+#: lib/recurring-translations.php:17
+msgid "Yes"
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:3723
@@ -3497,6 +4166,19 @@ msgstr ""
 #: VippsDismissibleAdminBanners.class.php:114
 #, php-format
 msgid "You can get %1$s now!"
+msgstr ""
+
+#: lib/recurring-translations.php:103
+msgid ""
+"You can not partially refund a pending or due charge. Please wait till the "
+"payment clears first or refund the full amount instead."
+msgstr ""
+
+#: lib/recurring-translations.php:101
+#, php-format
+msgid ""
+"You cannot refund a charge that was made more than 365 days ago. This order "
+"was created %s days ago."
 msgstr ""
 
 #: Vipps.class.php:648 Vipps.class.php:669
@@ -3532,11 +4214,15 @@ msgstr ""
 msgid "You need to enter your phone number to pay with %1$s"
 msgstr ""
 
-#: Vipps.class.php:4337
+#: Vipps.class.php:4297
 msgid ""
 "You recently completed an order with exactly the same products as you are "
 "buying now. There should be an email in your inbox from the previous "
 "purchase. Are you sure you want to order again?"
+msgstr ""
+
+#: lib/recurring-translations.php:163
+msgid "You will be redirected shortly."
 msgstr ""
 
 #: WC_Gateway_Vipps.class.php:1149
@@ -3554,13 +4240,17 @@ msgstr ""
 msgid "Your order from"
 msgstr ""
 
+#: lib/recurring-translations.php:158
+msgid "Your payment has been cancelled."
+msgstr ""
+
 #: WC_Gateway_Vipps.class.php:1031
 msgid ""
 "Your phone number where Porterbuddy may send you important messages. Format "
 "must be MSISDN (including country code). Example: \"4791234567\""
 msgstr ""
 
-#: Vipps.class.php:3722
+#: Vipps.class.php:3679
 msgid "Your product is temporarily no longer available for purchase"
 msgstr ""
 
@@ -3570,7 +4260,7 @@ msgid ""
 "the shop"
 msgstr ""
 
-#: Vipps.class.php:4197
+#: Vipps.class.php:4157
 msgid "Your shopping cart is empty"
 msgstr ""
 
@@ -3596,4 +4286,15 @@ msgid ""
 "shipping system, which is neccessary if your shipping is to include metadata."
 " You can do this, or stop this message, from the <a href=\"%1$s\">settings "
 "page</a>"
+msgstr ""
+
+#: lib/recurring-translations.php:124
+msgid ""
+"Your Vipps/MobilePay Recurring Payments gateway is not correctly configured."
+msgstr ""
+
+#: lib/recurring-translations.php:128
+msgid ""
+"Your WordPress URL is not passing Merchant Agreement URL validation. Is your "
+"website publicly accessible?"
 msgstr ""
