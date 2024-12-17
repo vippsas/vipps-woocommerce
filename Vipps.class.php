@@ -4357,7 +4357,7 @@ else:
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
             $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
-            $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
+            $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a></div>";
             $content .= "<div id='vipps-status-message'></div>";
             $this->fakepage(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
             return;
