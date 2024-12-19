@@ -273,10 +273,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps MobilePay API
 		// Unless we whitelist the domains specifically
 		add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
-			$hosts[] = 'api.vipps.no';
-			$hosts[] = 'apitest.vipps.no';
-
-			return $hosts;
+			return array_merge($hosts, [
+				// Production servers
+				'api.vipps.no',
+				'pay.vipps.no',
+				'api.mobilepay.dk',
+				'api.mobilepay.fi',
+				// MT servers
+				'apitest.vipps.no',
+				'pay-mt.vipps.no',
+				'pay-mt.mobilepay.dk',
+				'pay-mt.mobilepay.fi'
+			]);
 		} );
 	}
 
@@ -727,7 +735,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: DUE or PENDING
 		// when DUE, we need to check that it becomes another status in a cron
 		$initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL )
-			&& ! wcs_order_contains_renewal( $order );
+				   && ! wcs_order_contains_renewal( $order );
 
 		if ( ! $initial && ! $transaction_id && ( $charge->status === WC_Vipps_Charge::STATUS_DUE
 												  || ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
@@ -800,7 +808,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			[
 				'NOK',
 				'DKK',
-				'EUR'
+				'EUR',
+				'SEK'
 			]
 		);
 	}
@@ -835,7 +844,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return $this->process_subscription_payment( $amount_to_charge, $order );
 		} catch ( Exception $e ) {
 			// if we reach this point we consider the error to be completely unrecoverable.
-			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, new WC_Vipps_Charge() );
 			$order->update_status( 'failed' );
 
 			/* translators: Error message */
@@ -963,7 +971,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return mixed|string
 	 */
 	public function get_idempotency_key( $order ) {
-		$idempotency_key = WC_Vipps_Recurring_Helper::get_meta( $order, '_idempotency_key' );
+		$idempotency_key = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 
 		if ( ! $idempotency_key ) {
 			$idempotency_key = $this->generate_idempotency_key( $order );
@@ -978,12 +986,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	protected function generate_idempotency_key( $order ): string {
-		$idempotence_key = $this->api->generate_idempotency_key();
+		$idempotency_key = $this->api->generate_idempotency_key();
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotence_key );
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY, $idempotency_key );
 		$order->save();
 
-		return $idempotence_key;
+		return $idempotency_key;
 	}
 
 	/**
@@ -2072,14 +2080,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param mixed $renewal_order The renewal order
 	 */
-	public function delete_renewal_meta( $renewal_order ) {
+	public function delete_renewal_meta( WC_Order $renewal_order ) {
+		// Do not delete the idempotency key if the order has failed previously
+		$has_failed_previously = WC_Vipps_Recurring_Helper::get_meta( $renewal_order, '_failed_renewal_order' );
+		if ( $has_failed_previously !== "yes" ) {
+			WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
+		}
+
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_DESCRIPTION );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_FAILED_REASON );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_LATEST_STATUS );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX );
-		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_IDEMPOTENCY_KEY );
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED );
 
 		WC_Vipps_Recurring_Helper::delete_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
@@ -2402,6 +2415,39 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return add_query_arg( $args, $base_url );
 	}
 
+	private function maybe_get_subscription_id_from_agreement_webhook( array $webhook_data ) {
+		$order_id = $webhook_data['agreementExternalId'];
+
+		// Check if agreementExternalId is not set, we can get the subscription from agreementId
+		if ( empty( $order_id ) && isset( $webhook_data['agreementId'] ) ) {
+			$agreement_id = $webhook_data['agreementId'];
+
+			$options = [
+				'limit'          => 1,
+				'type'           => 'shop_subscription',
+				'meta_key'       => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
+				'meta_compare'   => '=',
+				'meta_value'     => $agreement_id,
+				'return'         => 'ids',
+				'payment_method' => $this->id,
+				'order_by'       => 'post_date'
+			];
+
+			$order_ids = wc_get_orders( $options );
+			$order_id  = array_pop( $order_ids );
+		}
+
+		// If the order id is not a subscription, we can get the subscription from the order
+		if ( ! empty( $order_id ) && ! wcs_is_subscription( $order_id ) ) {
+			$order         = wc_get_order( $order_id );
+			$subscriptions = wcs_get_subscriptions_for_order( $order );
+			$order_id      = array_pop( $subscriptions );
+		}
+
+		// Otherwise the order_id is either empty, or a subscription
+		return $order_id;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
@@ -2445,41 +2491,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->check_charge_status( $order_id );
 		}
 
-		if ( in_array( $event_type, [
-			'recurring.agreement-activated.v1',
-			'recurring.agreement-rejected.v1',
-			'recurring.agreement-stopped.v1',
-			'recurring.agreement-expired.v1',
-		] ) ) {
-			$order_id = $webhook_data['agreementId'] ?? $webhook_data['agreementExternalId'];
-
-			// This order is old and does not have an agreementId
-			if ( empty( $order_id ) ) {
-				return;
-			}
-
-			$this->check_charge_status( $order_id );
-		}
-
-		// Customers can soon cancel their agreements directly from the app.
+		// Customers can now cancel their agreements directly from the app.
 		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
-			$order_id = $webhook_data['agreementId'] ?? $webhook_data['agreementExternalId'];
-
-			// This order is old and does not have a agreementId
-			if ( empty( $order_id ) ) {
+			$subscription_id = $this->maybe_get_subscription_id_from_agreement_webhook( $webhook_data );
+			if ( empty( $subscription_id ) ) {
 				return;
 			}
 
-			$subscription = wcs_get_subscription( $order_id );
+			$subscription = wcs_get_subscription( $subscription_id );
 
 			if ( empty( $subscription ) ) {
 				return;
 			}
 
-			$this->cancel_subscription( $subscription );
-
 			$message = __( 'Subscription cancelled by the customer via the Vipps MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' );
 			$subscription->set_status( 'cancelled', $message );
+			$subscription->save();
 		}
 	}
 

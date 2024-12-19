@@ -3,7 +3,7 @@ Contributors: EverydayAS
 Tags: vipps, mobilepay, recurring payments, subscriptions, woocommerce subscriptions
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 2.0.8
+Stable tag: 2.1.1
 Requires PHP: 7.4
 License: AGPLv3.0 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
@@ -161,6 +161,15 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 * Synchronized products can not be paid via Vipps MobilePay when using KCO if the price at this moment in time is 0.
 
 == Changelog ==
+
+= 2.1.1 =
+* Fixed: Added two new hosts to `allowed_redirect_hosts`: `pay.mobilepay.dk` and `pay.mobilepay.fi`. This fixes a bug where customers were not able to switch to MobilePay.
+
+= 2.1.0 =
+* Fixed: No longer throw an error when checking a Checkout payment where the subscription is now deleted.
+* Fixed: Properly handle in-app subscription cancelling.
+* Added: Support for the SEK currency.
+* Fixed: Identified a potentially critical bug where the idempotency key was deleted from orders upon payment retry.
 
 = 2.0.8 =
 * Fixed: We should not return `true` in `cart_supports_checkout` if the cart is empty.
