@@ -61,7 +61,7 @@ class Vipps {
         return __("Vipps MobilePay", 'woo-vipps');
     }
     public static function CheckoutName($order=null) {
-        return __("Vipps Checkout", 'woo-vipps');
+        return "Vipps MobilePay Checkout"; // Do not translate
     }
     public static function ExpressCheckoutName($order=null) {
         return __("Vipps Express Checkout", 'woo-vipps');
@@ -1098,14 +1098,17 @@ jQuery('a.webhook-adder').click(function (e) {
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
         // Ensure the old order table understands the meta query IOK 2022-12-02
         static::add_wc_order_meta_key_support();
-        $delenda = wc_get_orders( array(
-            'status' => 'cancelled',
-            'limit' => $limit,
-            'date_modified' => "$oldorders...$cutoff",
-            'meta_vipps_delendum' => 1,
+        $args = array(
+                'status' => 'cancelled',
+                'limit' => $limit,
+                'date_modified' => "$oldorders...$cutoff",
+                'meta_vipps_delendum' => 1);
+        if  ($this->useHPOS()) {
             /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
-            'meta_query' =>  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]]
-        ));
+            $args['meta_query'] =  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]];
+        }
+
+        $delenda = wc_get_orders($args);
 
         foreach ($delenda as $del) {
             // Delete only if there is no customer info for the order IOK 2022-10-12
@@ -1322,7 +1325,7 @@ jQuery('a.webhook-adder').click(function (e) {
     // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
     public function buy_now_button_shortcode ($atts) {
         $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
-        $html = "<div class='vipps_buy_now_wrapper'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false) . "</div>";
+        $html = "<div class='vipps_buy_now_wrapper noloop'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false) . "</div>";
     }
 
     // The express checkout shortcode implementation. It does not need to check if we are to show the button, obviously, but needs to see if the cart works
@@ -4005,7 +4008,7 @@ error_log("deactivating woo-vipps payment");
         $classes = apply_filters('woo_vipps_single_product_buy_now_classes', $classes, $product);
 
         $button = $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
-        $code = "<div class='vipps_buy_now_wrapper'>$button</div>";
+        $code = "<div class='vipps_buy_now_wrapper noloop'>$button</div>";
         echo $code;
     }
 
@@ -4361,7 +4364,7 @@ error_log("deactivating woo-vipps payment");
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
             $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
-            $content .= "<p><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a>";
+            $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a></div>";
             $content .= "<div id='vipps-status-message'></div>";
             $this->fakepage(sprintf(__('%1$s Express Checkout','woo-vipps'), $this->get_payment_method_name()), $content);
             return;

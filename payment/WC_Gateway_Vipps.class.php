@@ -939,7 +939,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $checkoutfields = array(
                 'checkout_options' => array(
-                    'title' => sprintf(__('Checkout', 'woo-vipps'), Vipps::CompanyName()),
+                    'title' => "Checkout", // Vipps::CheckoutName(), // Don't translate this, but save some space IOK 2024-12-06
                     'type'  => 'title',
                     'class' => 'tab',
                     'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
@@ -2293,7 +2293,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
 # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
-            $transaction = @$paymentdetails['transactionInfo'];
+            $transaction = $paymentdetails['transactionInfo'] ?? "";
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
                 $amount  = $transaction['amount'];
