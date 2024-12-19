@@ -1100,14 +1100,17 @@ jQuery('a.webhook-adder').click(function (e) {
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
         // Ensure the old order table understands the meta query IOK 2022-12-02
         static::add_wc_order_meta_key_support();
-        $delenda = wc_get_orders( array(
-            'status' => 'cancelled',
-            'limit' => $limit,
-            'date_modified' => "$oldorders...$cutoff",
-            'meta_vipps_delendum' => 1,
+        $args = array(
+                'status' => 'cancelled',
+                'limit' => $limit,
+                'date_modified' => "$oldorders...$cutoff",
+                'meta_vipps_delendum' => 1);
+        if  ($this->useHPOS()) {
             /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
-            'meta_query' =>  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]]
-        ));
+            $args['meta_query'] =  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]];
+        }
+
+        $delenda = wc_get_orders($args);
 
         foreach ($delenda as $del) {
             // Delete only if there is no customer info for the order IOK 2022-10-12
