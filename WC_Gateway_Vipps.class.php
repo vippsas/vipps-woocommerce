@@ -2259,7 +2259,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
 # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
-            $transaction = @$paymentdetails['transactionInfo'];
+            $transaction = $paymentdetails['transactionInfo'] ?? "";
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
                 $amount  = $transaction['amount'];
