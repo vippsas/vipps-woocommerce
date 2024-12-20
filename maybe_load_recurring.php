@@ -22,6 +22,7 @@ add_action( 'deactivate_plugin', function($plugin, $network_deactivating ) {
         }
 },10,2);
 
+
 // Load very early in plugins_loaded, since the Recurring feature will add events on precedence 10 itself.
 add_action('plugins_loaded', function () {
     $woo_exists = function_exists('WC');
@@ -68,3 +69,28 @@ add_action('plugins_loaded', function () {
 
 }, 1);
 
+/* Mark the Vipps MobilePay Recurring-plugin as needing update, so that we can inform that it is no longer required IOK 2024-12-20 */
+add_filter( 'all_plugins', function ( $plugins ) {
+                foreach ( $plugins as $plugin=> $plugin_data ) {
+                        if (basename($plugin) == 'woo-vipps-recurring.php') {
+                                // Necessary to properly display notice within row.
+                                $plugins[$plugin]['update'] = 1;
+                        }
+                }
+                return $plugins;
+        }
+);
+add_action('after_plugin_row', function ($plugin) {
+                global $wp_list_table;
+                $columns_count = $wp_list_table->get_column_count();
+                if (basename($plugin) != 'woo-vipps-recurring.php')  return;
+
+                $notice = "";
+                if (is_plugin_active($plugin)) {
+                    $notice = sprintf(__( 'This plugin can now be <strong>deactivated</strong> because its functionality is now included in <strong>%1$s</strong>. After deactivation, it can not be activated again while that plugin is active, but exactly the same functionality will be provided.', 'woo-vipps' ), __("Pay with Vipps and MobilePay for WooCommerce", 'woo-vipps')); 
+                } else {
+                    $notice = sprintf(__( 'This plugin can no longer be activated because its functionality is now included in <strong>%1$s</strong>. It is recommended to <strong>delete</strong> it.', 'woo-vipps' ), __("Pay with Vipps and MobilePay for WooCommerce", 'woo-vipps'));
+                }
+                echo '<tr class="plugin-update-tr"><td colspan="' . esc_attr( $columns_count ) . '" class="plugin-update"><div class="update-message notice inline notice-error notice-alt"><p>' . wp_kses_post( $notice ) . '</p></div></td></tr>';
+        }
+);
