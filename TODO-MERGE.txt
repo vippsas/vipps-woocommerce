@@ -1,6 +1,8 @@
 * WC_VIPPS_RECURRING_MAIN_FILE  is now recurring/recurring.php and no longer the plugin main file.
 * WC_VIPPS_MAIN_FILE is now the plugin main file; *where apropriate* ensure the correct one is used
 
+README.TXT har høyeste prioritet
+
 * Needs testing and working-out: 
 ** Webhooks!
 ** Callbacks!
