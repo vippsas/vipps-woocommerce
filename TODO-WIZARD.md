@@ -3,7 +3,7 @@
 - [ ] Første wizard-steg:
     - [ ] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
     - [ ] Ha en banner/firkant på høyre side med lenker til docs, vipps, support.
-    - [ ] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 (har bare klassen button-primary så kan påvirk mer) 
+    - [ ] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 px (har bare klassen button-primary så kan påvirk mer) 
 
 - [ ] Andre wizard-steg kan erstattes helt:
     - [ ] Vindu som gir bruker en siste sjanse til å skru på checkout "Start using vipps checkout" eller "skip" knapper. Denne har info om "why vipps checkout" og salgspunkter.
