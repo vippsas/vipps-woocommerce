@@ -6,6 +6,8 @@
 - [ ] Første wizard-steg:
     - [x] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
     - [ ] Ha en banner/firkant på høyre side med lenker til docs, vipps, support. WORK IN PROGRESS LP 23.12.2024.
+        - [ ] dokumentasjon-lenken kan være lenke til "Get started" avsnittet på wp.org, men må få inn klasse på tilsvarende paragraf for å lenke til
+        - [ ] support så lenker vi heller til vårt wp support-forum. 
     - [x] Sentrere knappen "neste steg"
 
 - [ ] Andre wizard-steg kan erstattes helt:
