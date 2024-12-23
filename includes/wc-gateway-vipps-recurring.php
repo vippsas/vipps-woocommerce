@@ -186,8 +186,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		] );
 
 		add_action( 'woocommerce_order_status_pending_to_cancelled', [ $this, 'maybe_delete_order' ], 99999 );
-		add_action( 'woocommerce_new_order', [$this, 'maybe_delete_order_later'] );
-		add_action( 'woocommerce_vipps_recurring_delete_pending_order', [$this, 'maybe_delete_order'] );
+		add_action( 'woocommerce_new_order', [ $this, 'maybe_delete_order_later' ] );
+		add_action( 'woocommerce_vipps_recurring_delete_pending_order', [ $this, 'maybe_delete_order' ] );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [
 			$this,
@@ -2425,26 +2425,29 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( empty( $order_id ) && isset( $webhook_data['agreementId'] ) ) {
 			$agreement_id = $webhook_data['agreementId'];
 
-			$options = [
-				'limit'          => 1,
-				'type'           => 'shop_subscription',
-				'meta_key'       => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
-				'meta_compare'   => '=',
-				'meta_value'     => $agreement_id,
-				'return'         => 'ids',
-				'payment_method' => $this->id,
-				'order_by'       => 'post_date'
-			];
+			$subscription_ids = get_posts( [
+				'limit'        => 1,
+				'post_type'    => 'shop_subscription',
+				'post_status'  => [ 'wc-active', 'wc-pending', 'wc-on-hold' ],
+				'meta_key'     => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
+				'meta_compare' => '=',
+				'meta_value'   => $agreement_id,
+				'fields'       => 'ids',
+			] );
 
-			$order_ids = wc_get_orders( $options );
-			$order_id  = array_pop( $order_ids );
+			if ( ! empty( $subscription_ids ) ) {
+				return array_pop( $subscription_ids );
+			}
 		}
 
 		// If the order id is not a subscription, we can get the subscription from the order
 		if ( ! empty( $order_id ) && ! wcs_is_subscription( $order_id ) ) {
 			$order         = wc_get_order( $order_id );
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			$order_id      = array_pop( $subscriptions );
+
+			if ( ! empty( $subscriptions ) ) {
+				return array_pop( $subscriptions );
+			}
 		}
 
 		// Otherwise the order_id is either empty, or a subscription
