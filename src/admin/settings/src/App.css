@@ -127,3 +127,19 @@
   width: auto;
   height: auto;
 }
+
+.vipps-mobilepay-form-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.vipps-mobilepay-form-help-box {
+  margin-right: 13rem;
+  background-color: white;
+  border-color: rgb(140, 143, 148);
+  border-radius: 4px;
+  border: 1px solid #8c8f94;
+  padding: 15px;
+  align-self: center;
+}

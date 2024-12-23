@@ -1,11 +1,12 @@
-- [ ] Egen notat LP: under land så står det "Dette vil avgjøre avgjøre passende betalingsmåte (Vipps eller MobilePay)", men samtidig så har man valget for betalingsmåte rett under. Bør dette endres?
+- [ ] ~~Egen notat LP: under land så står det "Dette vil avgjøre avgjøre passende betalingsmåte (Vipps eller MobilePay)", men samtidig så har man valget for betalingsmåte rett under. Bør dette endres?~~
 
 - [ ] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 px (har bare klassen button-primary så kan påvirk mer) 
 
 
 - [ ] Første wizard-steg:
-    - [ ] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
-    - [ ] Ha en banner/firkant på høyre side med lenker til docs, vipps, support.
+    - [x] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
+    - [ ] Ha en banner/firkant på høyre side med lenker til docs, vipps, support. WORK IN PROGRESS LP 23.12.2024.
+    - [x] Sentrere knappen "neste steg"
 
 - [ ] Andre wizard-steg kan erstattes helt:
     - [ ] Vindu som gir bruker en siste sjanse til å skru på checkout "Start using vipps checkout" eller "skip" knapper. Denne har info om "why vipps checkout" og salgspunkter.

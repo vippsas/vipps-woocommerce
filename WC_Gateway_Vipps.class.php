@@ -919,6 +919,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => 'no',
                     ),
 
+                'vipps_checkout_enabled_simple' => array(
+                    'title'       => '',
+                    'label'       => sprintf(__('Yes, I want to start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                    'type'        => 'checkbox',
+                    'description' => '',
+                    'default'     => 'no',
+                    ),
+
                 'checkoutcreateuser' => array (
                         'title'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'label'       => sprintf(__('Create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
@@ -1434,6 +1442,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
             );
 
+        $misc = [
+            'help_box' => [
+                'get_started' => __('Get started', 'woo_vipps'),
+                'documentation' => __('Documentation', 'woo-vipps'),
+                'portal' => sprintf(__('%1$s Portal', 'woo-vipps'), Vipps::CompanyName()),
+                'support_title' => __('Support', 'woo-vipps'),
+                'support_description' => __('If you have any questions related to this plugin, you are welcome to contact the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
+            ] 
+        ];
+
        // Add all the standard fields
        foreach($mainfields as $key=>$field) {
           $this->form_fields[$key] = $field;
@@ -1471,6 +1489,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $this->form_fields['testmode']['description'] .= '<br><b>' . __('VIPPS_TEST_MODE is set to true in your configuration - test mode is forced', 'woo-vipps') . "</b>";
            }
        }
+
+
+        foreach($misc as $key=>$field) {
+        $this->form_fields[$key] = $field;
+        }
     }
 
 
