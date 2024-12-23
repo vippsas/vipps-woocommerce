@@ -165,6 +165,8 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 = 2.1.2 =
 * Fixed: Cleaning up old cancelled orders that were initiated via Checkout now works as intended.
 * Fixed: Old agreements that customers now cancelled in the Vipps or MobilePay apps are now cancelled properly in WooCommerce.
+* Fixed: VAT is now properly shown when a subscription is switched to Vipps MobilePay.
+* Fixed: If an agreement is cancelled we don't want to listen for webhooks when the actor is the merchant, i.e. ourselves. This prevents us from cancelling our subscription when changing payment gateway from Vipps MobilePay to Vipps MobilePay.
 
 = 2.1.1 =
 * Fixed: Added two new hosts to `allowed_redirect_hosts`: `pay.mobilepay.dk` and `pay.mobilepay.fi`. This fixes a bug where customers were not able to switch to MobilePay.

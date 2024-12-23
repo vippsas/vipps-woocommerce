@@ -1384,7 +1384,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order, $is_gateway_change );
 
 		// total no longer returns the order amount when gateway is being changed
-		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total( 'code' );
+		$agreement_total = $subscription->get_total( 'code' );
 
 		// when we're performing a variation switch we need some special logic in Vipps
 		$is_subscription_switch = wcs_order_contains_switch( $order );
@@ -1668,11 +1668,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
-			}
 
-			/* translators: Vipps/MobilePay Agreement ID */
-			$message = sprintf( __( 'Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $response['agreementId'] );
-			$order->add_order_note( $message );
+				/* translators: Vipps/MobilePay Agreement ID */
+				$message = sprintf( __( 'Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $response['agreementId'] );
+				$order->add_order_note( $message );
+			}
 
 			$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
 
@@ -2499,6 +2499,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Customers can now cancel their agreements directly from the app.
 		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
+			// If the initiator of this webhook is ourselves, we must discard it.
+			// Otherwise, we risk cancelling payment gateway changes etc.
+			if ( $webhook_data['actor'] === 'MERCHANT' ) {
+				return;
+			}
+
 			$subscription_id = $this->maybe_get_subscription_id_from_agreement_webhook( $webhook_data );
 			if ( empty( $subscription_id ) ) {
 				return;
