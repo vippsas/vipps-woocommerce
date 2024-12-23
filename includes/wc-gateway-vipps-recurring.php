@@ -185,6 +185,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'append_valid_statuses_for_payment_complete'
 		] );
 
+		add_action( 'woocommerce_order_status_pending_to_cancelled', [ $this, 'maybe_delete_order' ], 99999 );
+		add_action( 'woocommerce_new_order', [$this, 'maybe_delete_order_later'] );
+		add_action( 'woocommerce_vipps_recurring_delete_pending_order', [$this, 'maybe_delete_order'] );
+
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [
 			$this,
 			'process_admin_options'
@@ -273,7 +277,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps MobilePay API
 		// Unless we whitelist the domains specifically
 		add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
-			return array_merge($hosts, [
+			return array_merge( $hosts, [
 				// Production servers
 				'api.vipps.no',
 				'pay.vipps.no',
@@ -284,7 +288,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'pay-mt.vipps.no',
 				'pay-mt.mobilepay.dk',
 				'pay-mt.mobilepay.fi'
-			]);
+			] );
 		} );
 	}
 
@@ -2685,7 +2689,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Create a user if it does not exist
 		if ( ! get_user_by( 'ID', $customer_id ) ) {
-			$email       = 'anonymous@vippsmobilepay.local';
+			$email       = WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL;
 			$username    = wc_create_new_customer_username( $email );
 			$customer_id = wc_create_new_customer( $email, $username, null, [
 				'first_name'    => 'Anonymous Vipps MobilePay Customer',
@@ -2861,5 +2865,45 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		return $subscriptions;
+	}
+
+	public function maybe_delete_order_later( $order_id ) {
+		if ( $this->get_option( 'checkout_cleanup_abandoned_orders' ) !== 'yes' ) {
+			return;
+		}
+
+		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] ) ) {
+			wp_schedule_single_event( time() + 3600, 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] );
+		}
+	}
+
+	public function maybe_delete_order( $order_id ): bool {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return false;
+		}
+
+		if ( $this->id !== $order->get_payment_method() ) {
+			return false;
+		}
+
+		$express = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+		if ( ! $express ) {
+			return false;
+		}
+
+		$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
+		if ( ! $empty_email ) {
+			return false;
+		}
+
+		if ( $this->get_option( 'checkout_cleanup_abandoned_orders' ) !== 'yes' ) {
+			return false;
+		}
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
+		$order->save();
+
+		return true;
 	}
 }

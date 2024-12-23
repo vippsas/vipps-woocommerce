@@ -78,6 +78,8 @@ class WC_Vipps_Recurring_Helper {
 	public const SESSION_ADDRESS_HASH = '_vipps_recurring_address_hash';
 	public const SESSION_ORDER_EXPRESS_AUTH_TOKEN = '_vipps_recurring_order_express_auth_token';
 
+	public const FAKE_USER_EMAIL = 'anonymous@vippsmobilepay.local';
+
 	/**
 	 * Whether we are successfully connected to the Vipps/MobilePay API
 	 *
