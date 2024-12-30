@@ -1441,15 +1441,35 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => '',
                     ),
             );
-
+        
+        // Miscellanous stuff, mostly for the wizard for now. LP 30.12.2024
         $misc = [
             'help_box' => [
                 'get_started' => __('Get started', 'woo_vipps'),
                 'documentation' => __('Documentation', 'woo-vipps'),
                 'portal' => sprintf(__('%1$s Portal', 'woo-vipps'), Vipps::CompanyName()),
-                'support_title' => __('Support', 'woo-vipps'),
-                'support_description' => __('If you have any questions related to this plugin, you are welcome to contact the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
-            ] 
+                'support' => [
+                    'title' => __('Support', 'woo-vipps'),
+                    'description' => __('If you have any questions related to this plugin, you are welcome to contact the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
+                ],
+            ],
+            'checkout_confirm' => [
+                'title' => __('Upgrade your customer experience with %1$s Checkout', 'woo-vipps'),
+                'img' => [
+                    'alt' => sprintf(__('%1$s Checkout sketch', 'woo-vipps'), Vipps::CompanyName()),
+                ],
+                'paragraph1' => [
+                    'header' => __('Why Vipps Checkout?', 'woo-vipps'),
+                    'first' => __('Effortless Payments: Accept payments smoothly with Vipps, Visa, and Mastercard.', 'woo-vipps'),
+                    'second' => __('Streamlined Shopping Process: Simplify your customers\' journey from cart to confirmation', 'woo-vipps'),
+                    'third' => __('All-in-One Solution: No fixed monthly fees-just pure convenience.', 'woo-vipps'),
+                ],
+                'paragraph2' => [
+                    'header' => __('Perfect for you if:', 'woo-vipps'),
+                    'first' => __('You want simple, varied payment options', 'woo-vipps'),
+                    'second' => __('You need easy shipping solutions with diverse choices.', 'woo-vipps'),
+                ],
+            ],
         ];
 
        // Add all the standard fields
@@ -1492,6 +1512,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         foreach($misc as $key=>$field) {
+            error_log("Adding misc field $key => $field");
         $this->form_fields[$key] = $field;
         }
     }

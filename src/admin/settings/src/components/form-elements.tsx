@@ -166,7 +166,7 @@ export function WPFormField(props: ComponentProps<'div'>) {
  * @param value - The string value to convert.
  * @returns The boolean representation of the value.
  */
-function truthToBool(value: string | null) {
+export function truthToBool(value: string | null) {
   return value === 'yes';
 }
 
@@ -175,6 +175,6 @@ function truthToBool(value: string | null) {
  * @param value - The boolean value to convert.
  * @returns The string representation of the value.
  */
-function boolToTruth(value: boolean) {
+export function boolToTruth(value: boolean) {
   return value ? 'yes' : 'no';
 }

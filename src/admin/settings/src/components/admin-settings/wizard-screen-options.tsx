@@ -1,12 +1,9 @@
-//import { useState } from 'react';
 import { useState } from 'react';
 import { gettext } from '../../lib/wp-data';
-//import { WPButton, WPForm } from '../form-elements';
 import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
-import { WPButton, WPFormField, WPLabel } from '../form-elements';
+import { WPButton, WPFormField, WPLabel, truthToBool } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { detectPaymentMethodName } from '../../lib/payment-method';
-//import { useWP } from '../../wp-options-provider';
 
 /**
  * A React component that renders the wizard screen options for the admin settings page.
@@ -18,7 +15,7 @@ interface Props {
 }
 
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
-  const { setOption } = useWP();
+  const { getOption, setOption } = useWP();
   const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
 
   return (
@@ -109,16 +106,20 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                     onClick={(e) => {
                       e.preventDefault();
                       // Ensure there's always a form so we can trigger validation
-                      const form = e.currentTarget.closest('form') as HTMLFormElement | null;
-                      if (!form) throw new Error('Form not found');
+                      const form = e.currentTarget.closest(
+                        "form"
+                      ) as HTMLFormElement | null;
+                      if (!form) throw new Error("Form not found");
 
                       // Trigger validation and proceed to the next step if valid
                       if (form.reportValidity()) {
-                        setStep('CHECKOUT_CONFIRM');
+                        // If user did not enable checkout - show confirmation step. LP 30.12.2024
+                        if (truthToBool(getOption('vipps_checkout_enabled'))) setStep('CHECKOUT');
+                        else setStep('CHECKOUT_CONFIRM');
                       }
                     }}
                   >
-                    {gettext('next_step')}
+                    {gettext("next_step")}
                   </WPButton>
                 </div>
               </WPFormField>
@@ -126,8 +127,16 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
 
             {/* Help box on the right hand side. LP 23.12.2024*/}
             <div className="vipps-mobilepay-form-col vipps-mobilepay-form-help-box">
-              <strong>{gettext('help_box.get_started')}</strong><br/>
-              {/* TODO: rest of the help box on the right hand side. 23.12.2024 */}
+              <div>
+                <strong className="title">{gettext('help_box.get_started')}</strong><br/>
+                <a href="https://wordpress.org/plugins/woo-vipps/">{gettext('help_box.documentation')}</a><br/>
+                <a href="https://portal.vippsmobilepay.com">{gettext('help_box.portal')}</a>
+              </div>
+              <br/>
+              <div>
+                <strong className="title">{gettext('help_box.support.title')}</strong><br/>
+                <span dangerouslySetInnerHTML={{__html: gettext('help_box.support.description')}}/>
+              </div>
             </div>
           </div>
         </>
@@ -135,6 +144,39 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
 
       {step === 'CHECKOUT_CONFIRM' && (
         <>
+        <div className="vipps-mobilepay-react-checkout-confirm">
+          <h1 className="title"><strong>{gettext('checkout_confirm.title')}</strong></h1>
+          <div className="body">
+            <div className="list">
+              <strong>{gettext('checkout_confirm.paragraph1.header')}</strong>
+              <ul>
+                <li>{gettext('checkout_confirm.paragraph1.first')}</li>
+                <li>{gettext('checkout_confirm.paragraph1.second')}</li>
+                <li>{gettext('checkout_confirm.paragraph1.third')}</li>
+              </ul>
+              <strong>{gettext('checkout_confirm.paragraph2.header')}</strong>
+              <ul>
+                <li>{gettext('checkout_confirm.paragraph2.first')}</li>
+                <li>{gettext('checkout_confirm.paragraph2.second')}</li>
+              </ul>
+            </div>
+            <img alt={gettext('checkout_confirm.img.alt')}/>
+          </div>
+          <div className="vipps-mobilepay-react-button-actions">
+            <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
+              {gettext('previous_step')}
+            </WPButton>
+            <WPButton variant="primary" isLoading={isLoading} onClick={() => setStep('CHECKOUT')}>
+              {gettext('next_step')}
+            </WPButton>
+          </div>
+        </div>
+        </>
+      )}
+
+      {step === 'CHECKOUT' && (
+        <>
+        CHECKOUT
           <div className="vipps-mobilepay-react-button-actions">
             <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
               {gettext('previous_step')}

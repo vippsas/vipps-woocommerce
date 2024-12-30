@@ -1,18 +1,17 @@
 - [ ] ~~Egen notat LP: under land så står det "Dette vil avgjøre avgjøre passende betalingsmåte (Vipps eller MobilePay)", men samtidig så har man valget for betalingsmåte rett under. Bør dette endres?~~
 
-- [ ] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 px (har bare klassen button-primary så kan påvirk mer) 
+- [x] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 px 
 
-
-- [ ] Første wizard-steg:
+- [x] Første wizard-steg:
     - [x] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
-    - [ ] Ha en banner/firkant på høyre side med lenker til docs, vipps, support. WORK IN PROGRESS LP 23.12.2024.
-        - [ ] dokumentasjon-lenken kan være lenke til "Get started" avsnittet på wp.org, men må få inn klasse på tilsvarende paragraf for å lenke til
-        - [ ] support så lenker vi heller til vårt wp support-forum. 
+    - [x] Ha en banner/firkant på høyre side med lenker til docs, vipps, support.
+        - [x] dokumentasjon-lenken til wp.org/plugin/woo-vipps
+        - [x] support så lenker vi heller til vårt wp support-forum. 
     - [x] Sentrere knappen "neste steg"
 
 - [ ] Andre wizard-steg kan erstattes helt:
-    - [ ] Vindu som gir bruker en siste sjanse til å skru på checkout "Start using vipps checkout" eller "skip" knapper. Denne har info om "why vipps checkout" og salgspunkter.
-    - [ ] Bilde på høyre side av checkout-løpet. Se sketch 2.
+    - [x] Vindu som gir bruker en siste sjanse til å skru på checkout "Start using vipps checkout" eller "skip" knapper. Denne har info om "why vipps checkout" og salgspunkter.
+    - [ ] Bilde på høyre side av checkout-løpet. Se sketch 2. WIP LP 30.12.2024
 
 - [ ] Nytt tredje wizard-steg dersom man ikke skippet forrige steg:
     - [ ] Overskrift "Kom i gang med Vipps checkout" og et kort avsnitt om hva det er.
