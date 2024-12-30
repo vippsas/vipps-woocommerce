@@ -688,6 +688,10 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
         $badge_options = get_option('vipps_badge_options');
+        
+        // Get current brand and language
+        $current_brand = strtolower($this->get_payment_method_name());
+        $current_language = $this->get_customer_language();
 
         $variants = ['white'=> __('White', 'woo-vipps'), 'grey' => __('Grey','woo-vipps'), 
                      'filled'=> __('Filled', 'woo-vipps'), 'light'=>__('Light','woo-vipps'), 
@@ -721,9 +725,10 @@ jQuery('a.webhook-adder').click(function (e) {
              <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
              <p><?php echo sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()); ?></p>
             </div>
-           <p id=badgeholder style="font-size:1.5rem">
+           <p id="badgeholder" style="font-size:1.5rem">
               <vipps-mobilepay-badge id="vipps-badge-demo"
-                <?php if (@$badge_options['brand']) echo ' brand="' . esc_attr(strtolower($this->get_payment_method_name())) . '" ' ?>
+                brand="<?php echo esc_attr($current_brand); ?>"
+                language="<?php echo esc_attr($current_language); ?>"
                 <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
                ></vipps-mobilepay-badge>
            </p>
@@ -739,8 +744,6 @@ jQuery('a.webhook-adder').click(function (e) {
                 </option>
                <?php endforeach; ?>
               </select>
-
-        <input type="hidden" name="brand" value="<?php echo strtolower($this->get_payment_method_name())?>" />
 
             <div>
               <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
@@ -761,18 +764,14 @@ jQuery('a.webhook-adder').click(function (e) {
 
         </div>
         <script>
-         function changeVariant() {
-             let badge = document.getElementById('vipps-badge-demo');
-             let variantSelector = document.getElementById('vippsBadgeVariant');
-             let holder = document.getElementById('badgeholder');
-             let newbadge = badge.cloneNode();
+        function changeVariant() {
+            const badge = document.getElementById('vipps-badge-demo');
+            const variantSelector = document.getElementById('vippsBadgeVariant');
+            const variant = variantSelector.options[variantSelector.selectedIndex].value;
             
-             let variant = variantSelector.options[variantSelector.selectedIndex].value 
- 
-             newbadge.setAttribute('variant', variant);
-             badge.remove();
-             holder.appendChild(newbadge);
-         }
+            // Just update the variant attribute, preserving brand and language
+            badge.setAttribute('variant', variant);
+        }
         </script> 
         <?php
     }
