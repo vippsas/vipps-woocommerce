@@ -34,6 +34,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         }}
         options={[
           { label: gettext('country.options.NO'), value: 'NO' },
+          { label: gettext('country.options.SE'), value: 'SE' },
           { label: gettext('country.options.FI'), value: 'FI' },
           { label: gettext('country.options.DK'), value: 'DK' }
         ]}

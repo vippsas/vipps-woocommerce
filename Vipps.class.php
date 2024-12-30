@@ -754,7 +754,7 @@ jQuery('a.webhook-adder').click(function (e) {
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
            <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk} ] </pre><br> 
+              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|se|fi|dk} ] </pre><br> 
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
               <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
            </p>
@@ -807,7 +807,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
         
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple', 'filled', 'light']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en','no', 'fi', 'dk']) ? $args['language'] : $this->get_customer_language();
+        $language = in_array($args['language'], ['en','no', 'fi', 'dk', 'se']) ? $args['language'] : $this->get_customer_language();
         // $amount = intval($args['amount']);
         // $later = $args['vipps-senere'];
         $id = sanitize_title($args['id']);
@@ -2214,7 +2214,8 @@ else:
         if (! $language) $language = substr(get_bloginfo('language'),0,2);
         if ($language == 'nb' || $language == 'nn') $language = 'no';
         if ($language == 'da') $language = 'dk';
-        if (! in_array($language, ['en', 'no', 'dk', 'fi'])) $language = 'en';
+        if ($language == 'sv') $language = 'se';
+        if (! in_array($language, ['en', 'no', 'dk', 'fi', 'se'])) $language = 'en';
         return $language;
     }
 
@@ -3923,6 +3924,10 @@ else:
         if($lang === "no") {
             // get Norwegian logo
             return plugins_url('img/vipps-rectangular-pay-NO.svg',__FILE__);
+        // if language is Swedish
+        } else if($lang === "sv") {
+            // currently using English logo for Swedish
+            return plugins_url('img/vipps-rectangular-pay-EN.svg',__FILE__);
         // otherwise
         } else {
             // get English logo by default
