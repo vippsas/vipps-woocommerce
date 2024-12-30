@@ -11,3 +11,19 @@ export function detectPaymentMethodName(country: string): string {
   }
   return 'MobilePay';
 }
+
+export function getPaymentMethodSupportedCurrencies(paymentMethod: string): string[] {
+  switch (paymentMethod) {
+    case 'Vipps':
+      return ['NOK', 'SEK'];
+    case 'MobilePay':
+      return ['DKK', 'EUR'];
+    default:
+      return [];
+  }
+}
+
+export function isPaymentMethodCurrencySupported(paymentMethod: string, currency: string | null): boolean {
+  if (!currency) return false;
+  return getPaymentMethodSupportedCurrencies(paymentMethod).includes(currency);
+}
