@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { gettext } from '../../lib/wp-data';
+import { gettext, VippsMobilePayReactMetadata } from '../../lib/wp-data';
 import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
-import { WPButton, WPFormField, WPLabel, truthToBool } from '../form-elements';
+import { WPButton, WPFormField, WPLabel, boolToTruth, truthToBool } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { detectPaymentMethodName } from '../../lib/payment-method';
 
@@ -160,14 +160,17 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <li>{gettext('checkout_confirm.paragraph2.second')}</li>
               </ul>
             </div>
-            <img alt={gettext('checkout_confirm.img.alt')}/>
+            <img src={VippsMobilePayReactMetadata['checkout_img_src']} alt={gettext('checkout_confirm.img.alt')}/>
           </div>
           <div className="vipps-mobilepay-react-button-actions">
-            <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
-              {gettext('previous_step')}
+            <WPButton variant="primary" isLoading={isLoading} onClick={() => {
+              setOption('vipps_checkout_enabled', boolToTruth(true));
+              setStep('CHECKOUT');
+            }}>
+              {gettext('checkout_confirm.accept')}
             </WPButton>
-            <WPButton variant="primary" isLoading={isLoading} onClick={() => setStep('CHECKOUT')}>
-              {gettext('next_step')}
+            <WPButton variant="secondary">
+              {gettext('checkout_confirm.skip')}
             </WPButton>
           </div>
         </div>
@@ -178,7 +181,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
         <>
         CHECKOUT
           <div className="vipps-mobilepay-react-button-actions">
-            <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
+            <WPButton variant="secondary" type="button" onClick={() => setStep('CHECKOUT')}>
               {gettext('previous_step')}
             </WPButton>
             <WPButton variant="primary" isLoading={isLoading}>

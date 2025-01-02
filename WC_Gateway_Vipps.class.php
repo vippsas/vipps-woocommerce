@@ -1454,9 +1454,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ],
             ],
             'checkout_confirm' => [
-                'title' => __('Upgrade your customer experience with %1$s Checkout', 'woo-vipps'),
+                'title' => sprintf(__('Upgrade your customer experience with %1$s Checkout', 'woo-vipps'), Vipps::CompanyName()),
                 'img' => [
-                    'alt' => sprintf(__('%1$s Checkout sketch', 'woo-vipps'), Vipps::CompanyName()),
+                    'alt' => sprintf(__('Sketch of %1$s Checkout', 'woo-vipps'), Vipps::CompanyName()),
                 ],
                 'paragraph1' => [
                     'header' => __('Why Vipps Checkout?', 'woo-vipps'),
@@ -1469,6 +1469,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'first' => __('You want simple, varied payment options', 'woo-vipps'),
                     'second' => __('You need easy shipping solutions with diverse choices.', 'woo-vipps'),
                 ],
+                'accept' => sprintf(__('Start using %1$s Checkout', 'woo-vipps'), Vipps::CompanyName()),
+                'skip' => __('Skip & save', 'woo-vipps'),
             ],
         ];
 
@@ -1512,8 +1514,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
         foreach($misc as $key=>$field) {
-            error_log("Adding misc field $key => $field");
-        $this->form_fields[$key] = $field;
+            $this->form_fields[$key] = $field;
         }
     }
 
