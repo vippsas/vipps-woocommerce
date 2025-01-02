@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { gettext, VippsMobilePayReactMetadata } from '../../lib/wp-data';
+import { gettext } from '../../lib/wp-data';
 import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { WPButton, WPFormField, WPLabel, boolToTruth, truthToBool } from '../form-elements';
 import { useWP } from '../../wp-options-provider';

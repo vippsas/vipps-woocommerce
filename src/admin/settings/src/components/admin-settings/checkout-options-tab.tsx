@@ -11,15 +11,25 @@ import { UnsafeHtmlText } from '../unsafe-html-text';
 export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   const { getOption, hasOption } = useWP();
 
-  const showPorterbuddy = getOption('vcs_porterbuddy') === 'yes';
-  const showHelthjem = getOption('vcs_helthjem') === 'yes';
-  const showExternalKlarna = hasOption('checkout_external_payments_klarna');
-  const showExternals = (showExternalKlarna);
+  const showPorterbuddy = getOption("vcs_porterbuddy") === "yes";
+  const showHelthjem = getOption("vcs_helthjem") === "yes";
+  const showExternalKlarna = hasOption("checkout_external_payments_klarna");
+  const showExternals = showExternalKlarna;
+
+  // Conditionally replace Vipps Checkout in string with MobilePay Checkout if the user selected brand is not Vipps. LP 02.01.2025
+  const maybeReplaceCheckoutBrand = (str: string) =>
+    getOption("payment_method_name") === "Vipps"
+      ? str
+      : str.replace("Vipps Checkout", "MobilePay Checkout");
 
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description">
-        <UnsafeHtmlText htmlString={gettext('checkout_options.description')} />
+        <UnsafeHtmlText
+          htmlString={maybeReplaceCheckoutBrand(
+            gettext("checkout_options.description")
+          )}
+        />
       </p>
 
       {/* Renders a checkbox to enable the Alternative screen  */}
@@ -72,21 +82,25 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
 
       {showExternals && (
         <>
-         <h3 className="vipps-mobilepay-react-trab-description">{gettext('checkout_external_payment_title.title')}</h3>
-         <p>{gettext('checkout_external_payment_title.description')}</p>
-         {showExternalKlarna && 
-           <CheckboxFormField
-             name="checkout_external_payments_klarna"
-             titleKey="checkout_external_payments_klarna.title"
-             labelKey="checkout_external_payments_klarna.label"
-             descriptionKey="checkout_external_payments_klarna.description"
-           />
-         }
+          <h3 className="vipps-mobilepay-react-trab-description">
+            {gettext("checkout_external_payment_title.title")}
+          </h3>
+          <p>{gettext("checkout_external_payment_title.description")}</p>
+          {showExternalKlarna && (
+            <CheckboxFormField
+              name="checkout_external_payments_klarna"
+              titleKey="checkout_external_payments_klarna.title"
+              labelKey="checkout_external_payments_klarna.label"
+              descriptionKey="checkout_external_payments_klarna.description"
+            />
+          )}
         </>
-       )}
+      )}
 
-      <h3 className="vipps-mobilepay-react-tab-description">{gettext('checkout_shipping.title')}</h3>
-      <p>{gettext('checkout_shipping.description')}</p>
+      <h3 className="vipps-mobilepay-react-tab-description">
+        {gettext("checkout_shipping.title")}
+      </h3>
+      <p>{gettext("checkout_shipping.description")}</p>
 
       {/* Renders a checkbox to enable Posten Norge  */}
       <CheckboxFormField

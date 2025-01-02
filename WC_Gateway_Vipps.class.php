@@ -908,14 +908,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'title' => "Checkout", // Vipps::CheckoutName(), // Don't translate this, but save some space IOK 2024-12-06
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("%1\$s is a service from %2\$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
+                    // In the settings react, Vipps Checkout will be .replace() to MobilePay Checkout. LP 02.01.2025
+                    'description' => sprintf(__("Vipps Checkout is a service from %1\$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps/MobilePay, Visa, and MasterCard!", 'woo-vipps'), Vipps::CompanyName())
                     ),
 
                 'vipps_checkout_enabled' => array(
-                    'title'       => sprintf(__('Activate Alternative %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                    'label'       => sprintf(__('Enable Alternative %1$s screen, replacing the standard checkout page', 'woo-vipps'), Vipps::CheckoutName()),
+                    'title'       => __('Activate Alternative Vipps Checkout', 'woo-vipps'),
+                    'label'       => __('Enable Alternative Vipps Checkout screen, replacing the standard checkout page', 'woo-vipps'),
                     'type'        => 'checkbox',
-                    'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
+                    'description' => __('If activated, this will <strong>replace</strong> the standard Woo checkout screen with Vipps Checkout, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'),
                     'default'     => 'no',
                     ),
 
