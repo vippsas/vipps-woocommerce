@@ -153,8 +153,6 @@ class VippsAdminSettings
         $metadata = array(
             'admin_url' => admin_url('admin-ajax.php'),
             'page' => 'admin_settings_page',
-            // Dont use __FILE__ here now because the plugin file structure will be restructured in the recurring merge. LP 02.01.2025
-            'checkout_img_src' => plugins_url('woo-vipps/img/checkout.png'),
         );
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(

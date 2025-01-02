@@ -161,7 +161,7 @@
 .vipps-mobilepay-react-checkout-confirm .body {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 12%;
 }
 
@@ -175,7 +175,8 @@
 }
 
 .vipps-mobilepay-react-checkout-confirm img {
-  width: 60rem;
+  width: 30rem;
+  margin-right: 50px;
   /* Align alt text */
   display: flex;
   align-items: center;

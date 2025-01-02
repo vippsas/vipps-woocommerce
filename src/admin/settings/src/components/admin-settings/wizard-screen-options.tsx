@@ -4,6 +4,7 @@ import { CheckboxFormField, InputFormField, SelectFormField } from '../options-f
 import { WPButton, WPFormField, WPLabel, boolToTruth, truthToBool } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { detectPaymentMethodName } from '../../lib/payment-method';
+import { UnsafeHtmlText } from '../unsafe-html-text';
 
 /**
  * A React component that renders the wizard screen options for the admin settings page.
@@ -17,7 +18,6 @@ interface Props {
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
   const { getOption, setOption } = useWP();
   const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
-
   return (
     <>
       <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
@@ -135,7 +135,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               <br/>
               <div>
                 <strong className="title">{gettext('help_box.support.title')}</strong><br/>
-                <span dangerouslySetInnerHTML={{__html: gettext('help_box.support.description')}}/>
+                <UnsafeHtmlText htmlString={gettext('help_box.support.description')}/>
               </div>
             </div>
           </div>
@@ -145,10 +145,10 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
       {step === 'CHECKOUT_CONFIRM' && (
         <>
         <div className="vipps-mobilepay-react-checkout-confirm">
-          <h1 className="title"><strong>{gettext('checkout_confirm.title')}</strong></h1>
+          <h1 className="title"><strong>{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.title.vipps') : gettext('checkout_confirm.title.mobilepay')}</strong></h1>
           <div className="body">
             <div className="list">
-              <strong>{gettext('checkout_confirm.paragraph1.header')}</strong>
+              <strong>{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.paragraph1.header.vipps') : gettext('checkout_confirm.paragraph1.header.mobilepay')}</strong>
               <ul>
                 <li>{gettext('checkout_confirm.paragraph1.first')}</li>
                 <li>{gettext('checkout_confirm.paragraph1.second')}</li>
@@ -160,7 +160,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <li>{gettext('checkout_confirm.paragraph2.second')}</li>
               </ul>
             </div>
-            <img src={VippsMobilePayReactMetadata['checkout_img_src']} alt={gettext('checkout_confirm.img.alt')}/>
+            <img src={getOption("payment_method_name") == "Vipps" ? gettext('checkout_confirm.img.vipps.src') : gettext('checkout_confirm.img.mobilepay.src')} alt={getOption("payment_method_name") == "Vipps" ? gettext('checkout_confirm.img.vipps.alt') : gettext('checkout_confirm.img.mobilepay.alt')}/>
           </div>
           <div className="vipps-mobilepay-react-button-actions">
             <WPButton variant="primary" isLoading={isLoading} onClick={() => {
