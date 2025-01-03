@@ -3,8 +3,8 @@
 - [x] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 px 
 
 - [ ] Bytte alle Vipps MobilePay Checkout til dynamisk Vipps/Mobilepay fra getOption(). 
-    - [ ] steg 2
-    - [ ] steg 3 WIP 03.01.2025
+    - [ ] steg 2 WIP 03.01.2025
+    - [x] steg 3 
 
 - [ ] Første wizard-steg:
     - [x] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
@@ -19,12 +19,12 @@
     - [ ] Her er navn spesifikt Vipps Checkout eller MobilePay og må hentes fra betalingsmåte
     - [ ] Bilde på høyre side av checkout-løpet. TRENGER ASSET HØYOPPLØSNING.
 
-- [ ] Nytt tredje wizard-steg dersom man ikke skippet forrige steg:
-    - [ ] Overskrift "Kom i gang med Vipps checkout" og et kort avsnitt om hva det er.
-    - [ ] Avhukningsboksene som idag ligger i checkout tab-en, med litt tekstendringer for å forbedre klarhet :
-        - [ ] Ønsker du å opprette nye kunder merd checkout? 
-        - [ ] Skal du basere fraktprisen på hvor kunden bor?
+- [x] Nytt tredje wizard-steg dersom man ikke skippet forrige steg:
+    - [x] Overskrift "Kom i gang med Vipps checkout" og et kort avsnitt om hva det er.
+    - [x] Avhukningsboksene som idag ligger i checkout tab-en, med litt tekstendringer for å forbedre klarhet :
+        - [x] Ønsker du å opprette nye kunder merd checkout? 
+        - [x] Skal du basere fraktprisen på hvor kunden bor?
         Ønsker du at kunden skal legge inn adressen sin?
-        - [ ] Bokser for fraktalternativene, med noe klarere tekst
+        - [x] Bokser for fraktalternativene, med noe klarere tekst
 
 - [ ] Endre tekst & ordlyd i vanlig settings -> Checkout til slik det nye wizard-skjermen i siste steg
