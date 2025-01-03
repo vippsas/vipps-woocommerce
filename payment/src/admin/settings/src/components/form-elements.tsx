@@ -117,11 +117,24 @@ export function WPCheckbox({ id, name, onChange, checked, children, className }:
  * Represents the props for a WPSelect component.
  * @returns The rendered select element.
  */
-export function WPSelect(props: ComponentProps<'select'>): JSX.Element {
+interface WPSelectProps extends ComponentProps<'select'> {
+  error?: string;
+}
+
+export function WPSelect({ error, ...props }: WPSelectProps): JSX.Element {
   return (
-    <select {...props} className={[props.className ?? ''].join(' ')}>
-      {props.children}
-    </select>
+    <div>
+      <select {...props} className={['', props.className ?? '', error ? 'has-error' : ''].join(' ')}>
+        {props.children}
+      </select>
+      {error && (
+        <div className="vipps-mobilepay-react-field-error">
+          {error.split('\n').map((line, i) => (
+            <div key={i}>{line}</div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
