@@ -178,3 +178,12 @@ export function truthToBool(value: string | null) {
 export function boolToTruth(value: boolean) {
   return value ? 'yes' : 'no';
 }
+
+/**
+ * Inverts a string truth value to its opposite based on the WordPress expectation of 'yes' or 'no'.
+ * @param value - The string value to convert.
+ * @returns 
+ */
+export function invertTruth(value: string | null ) {
+  return truthToBool(value) ? 'no' : 'yes';
+}

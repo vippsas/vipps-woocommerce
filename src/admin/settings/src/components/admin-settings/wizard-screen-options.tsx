@@ -16,14 +16,31 @@ interface Props {
 }
 
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
-  const { getOption, setOption } = useWP();
-  const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
+  const { getOption, setOption, hasOption } = useWP();
+  // const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
+  const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('CHECKOUT'); // FIXME: temporary override. remove line when done. LP 03.01.2025
+
+
+  // For the "CHECKOUT" step
+  const showPorterbuddy = getOption("vcs_porterbuddy") === "yes";
+  const showHelthjem = getOption("vcs_helthjem") === "yes";
+  const showExternalKlarna = hasOption("checkout_external_payments_klarna");
+  const showExternals = showExternalKlarna;
+
+
+  const isCurrentPaymentVipps = getOption("payment_method_name") === "Vipps";
+  /** This is bad, you're welcome.
+  Conditionally replace vipps with mobilepay in gettext key strings if the user selected brand is not Vipps. LP 03.01.2025 */
+  const maybeReplaceVippsByMobilePay = (str: string) =>
+    isCurrentPaymentVipps
+      ? str
+      : str.replace("vipps", "mobilepay");
+
   return (
     <>
-      <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
-
       {step === 'ESSENTIAL' && (
         <>
+          <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
           <div className="vipps-mobilepay-form-container">
             <div className="vipps-mobilepay-form-col">
               <SelectFormField
@@ -145,7 +162,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
       {step === 'CHECKOUT_CONFIRM' && (
         <>
         <div className="vipps-mobilepay-react-checkout-confirm">
-          <h1 className="title"><strong>{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.title.vipps') : gettext('checkout_confirm.title.mobilepay')}</strong></h1>
+          <h1 className="title">{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.title.vipps') : gettext('checkout_confirm.title.mobilepay')}</h1>
           <div className="body">
             <div className="list">
               <strong>{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.paragraph1.header.vipps') : gettext('checkout_confirm.paragraph1.header.mobilepay')}</strong>
@@ -179,14 +196,156 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
 
       {step === 'CHECKOUT' && (
         <>
-        CHECKOUT
-          <div className="vipps-mobilepay-react-button-actions">
-            <WPButton variant="secondary" type="button" onClick={() => setStep('CHECKOUT')}>
-              {gettext('previous_step')}
-            </WPButton>
-            <WPButton variant="primary" isLoading={isLoading}>
-              {gettext('save_changes')}
-            </WPButton>
+          <div className="vipps-mobilepay-react-checkout-confirm">
+            <h1 className="vipps-mobilepay-react-tab-description title">
+              {gettext(maybeReplaceVippsByMobilePay("checkout_options_simple_vipps.title"))}
+            </h1>
+            <p>{gettext(maybeReplaceVippsByMobilePay("checkout_options_simple_vipps.description"))}</p>
+
+            {/* Renders a checkbox to enable the creation of new customers on Checkout */}
+            <CheckboxFormField
+              name="checkoutcreateuser"
+              titleKey={maybeReplaceVippsByMobilePay("checkoutcreateuser_simple_vipps.title")}
+              labelKey={maybeReplaceVippsByMobilePay("checkoutcreateuser_simple_vipps.label")}
+              descriptionKey={maybeReplaceVippsByMobilePay("checkoutcreateuser_simple_vipps.description")}
+            />
+
+            {/* Renders a checkbox to enable dynamic shipping (inverted checkbox from static shipping details) */}
+            <CheckboxFormField
+              name="enablestaticshipping_checkout"
+              titleKey="enablestaticshipping_checkout_simple.title"
+              labelKey="enablestaticshipping_checkout_simple.label"
+              descriptionKey="enablestaticshipping_checkout_simple.description"
+              inverted
+            />
+
+            {/* Renders a checkbox to enable address fields (inverted checkbox from dropping address fields) */}
+            <CheckboxFormField
+              name="noAddressFields"
+              titleKey="noAddressFields_simple.title"
+              labelKey="noAddressFields_simple.label"
+              descriptionKey="noAddressFields_simple.description"
+              inverted
+            />
+
+            <h3 className="vipps-mobilepay-react-tab-description">
+              {gettext(maybeReplaceVippsByMobilePay("checkout_shipping_simple_vipps.title"))}
+            </h3>
+            <p>{gettext(maybeReplaceVippsByMobilePay("checkout_shipping_simple_vipps.description"))}</p>
+
+            {/* Renders a checkbox to enable Posten Norge  */}
+            <CheckboxFormField
+              name="vcs_posten"
+              titleKey="vcs_posten_simple.title"
+              labelKey="vcs_posten_simple.label"
+              descriptionKey="vcs_posten_simple.description"
+            />
+
+            {/* Renders a checkbox to enable Posten Nord */}
+            <CheckboxFormField
+              name="vcs_postnord"
+              titleKey="vcs_postnord_simple.title"
+              labelKey="vcs_postnord_simple.label"
+              descriptionKey="vcs_postnord_simple.description"
+            />
+
+            {/* Render a checkbox to enable Porterbuddy */}
+            <CheckboxFormField
+              name="vcs_porterbuddy"
+              titleKey="vcs_porterbuddy_simple.title"
+              labelKey="vcs_porterbuddy_simple.label"
+              descriptionKey="vcs_porterbuddy_simple.description"
+            />
+
+            {/* Display Porterbuddy input fields if Porterbuddy is enabled */}
+            {showPorterbuddy && (
+              <>
+                {/* Renders a text input field for the Porterbuddy public token */}
+                <InputFormField
+                  asterisk
+                  name="vcs_porterbuddy_publicToken"
+                  titleKey="vcs_porterbuddy_publicToken_simple.title"
+                  descriptionKey="vcs_porterbuddy_publicToken_simple.description"
+                />
+
+                {/* Renders a text input field for the Porterbuddy API key */}
+                <InputFormField
+                  asterisk
+                  name="vcs_porterbuddy_apiKey"
+                  titleKey="vcs_porterbuddy_apiKey_simple.title"
+                  descriptionKey="vcs_porterbuddy_apiKey_simple.description"
+                />
+
+                {/* Renders a text input field for the Porterbuddy phone number */}
+                <InputFormField
+                  name="vcs_porterbuddy_phoneNumber"
+                  titleKey="vcs_porterbuddy_phoneNumber_simple.title"
+                  descriptionKey="vcs_porterbuddy_phoneNumber_simple.description"
+                />
+              </>
+            )}
+
+            {/* Renders a checkbox to enable Helthjem */}
+            <CheckboxFormField
+              name="vcs_helthjem"
+              titleKey="vcs_helthjem_simple.title"
+              labelKey="vcs_helthjem_simple.label"
+              descriptionKey="vcs_helthjem_simple.description"
+            />
+
+            {/* Display Helthjem input fields if Helthjem is enabled */}
+            {showHelthjem && (
+              <>
+                {/* Renders a text input field for the Helthjem Shop Id */}
+                <InputFormField
+                  type="number"
+                  name="vcs_helthjem_shopId"
+                  titleKey="vcs_helthjem_shopId_simple.title"
+                  descriptionKey="vcs_helthjem_shopId_simple.description"
+                />
+
+                {/* Renders a text input field for the Helthjem Username */}
+                <InputFormField
+                  name="vcs_helthjem_username"
+                  titleKey="vcs_helthjem_username_simple.title"
+                  descriptionKey="vcs_helthjem_username_simple.description"
+                />
+
+                {/* Renders a text input field for the Helthjem Password */}
+                <InputFormField
+                  asterisk
+                  name="vcs_helthjem_password"
+                  titleKey="vcs_helthjem_password_simple.title"
+                  descriptionKey="vcs_helthjem_password_simple.description"
+                />
+              </>
+            )}
+
+            {/* External payment methods */}
+            {showExternals && (
+              <>
+                <h3 className="vipps-mobilepay-react-trab-description">
+                  {gettext("checkout_external_payment_title_simple.title")}
+                </h3>
+                <p>{gettext("checkout_external_payment_title_simple.description")}</p>
+                {showExternalKlarna && (
+                  <CheckboxFormField
+                    name="checkout_external_payments_klarna"
+                    titleKey="checkout_external_payments_klarna_simple.title"
+                    labelKey="checkout_external_payments_klarna_simple.label"
+                    descriptionKey="checkout_external_payments_klarna_simple.description"
+                  />
+                )}
+              </>
+            )}
+            <div className="vipps-mobilepay-react-button-actions">
+              <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
+                {gettext('previous_step')}
+              </WPButton>
+              <WPButton variant="primary" isLoading={isLoading}>
+                {gettext('save_changes')}
+              </WPButton>
+            </div>
           </div>
         </>
       )}

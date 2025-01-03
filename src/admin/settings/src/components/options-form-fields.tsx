@@ -2,12 +2,20 @@ import { useState } from 'react';
 import { gettext } from '../lib/wp-data';
 import { useWP } from '../wp-options-provider';
 import { UnsafeHtmlText } from './unsafe-html-text';
-import { WPCheckbox, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
+import { invertTruth, WPCheckbox, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
+
+interface PropsWithCheckoutBrandFix {
+  /**
+   * Whether to replace Vipps Checkout in title and description with MobilePay Checkout (workaround). LP 03.01.2025
+   */
+  replaceCheckoutBrand?: boolean;
+}
+
 
 /**
  * Represents the props for the options form fields component.
  */
-interface Props {
+interface Props extends PropsWithCheckoutBrandFix {
   /**
    * The name of the field.
    */
@@ -27,6 +35,11 @@ interface Props {
    * The optional key for the description of the field.
    */
   descriptionKey?: string;
+
+  /**
+   * Whether to invert the option toggle. Meaning, the checkbox will be checked when the option is false, and vice versa. LP 03.01.2025
+   */
+  inverted?: boolean;
 }
 
 /**
@@ -34,7 +47,7 @@ interface Props {
  *
  * Reads and updates the WP data available in the WPOptionsProvider.
  */
-export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey }: Props) {
+export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey, inverted = false }: Props) {
   const { getOption, setOption } = useWP();
 
   return (
@@ -42,7 +55,7 @@ export function CheckboxFormField({ name, titleKey, labelKey, descriptionKey }: 
       <WPLabel htmlFor={name}>{gettext(titleKey)}</WPLabel>
       <div className="vipps-mobilepay-react-col">
         <div className="vipps-mobilepay-react-row-center">
-          <WPCheckbox id={name} name={name} checked={getOption(name)} onChange={(value) => setOption(name, value)} />
+          <WPCheckbox id={name} name={name} checked={inverted ? invertTruth(getOption(name)) : getOption(name)} onChange={(value) => inverted ? setOption(name, invertTruth(value)) : setOption(name, value)} />
           {labelKey && (
             <label htmlFor={name}>
               <UnsafeHtmlText htmlString={gettext(labelKey)} />

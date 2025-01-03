@@ -165,8 +165,9 @@
   gap: 12%;
 }
 
-.vipps-mobilepay-react-checkout-confirm h1 {
+.vipps-mobilepay-react-checkout-confirm .title {
   margin-bottom: 1em;
+  font-weight: bold;
 }
 
 .vipps-mobilepay-react-checkout-confirm li {
@@ -181,4 +182,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.vipps-mobilepay-react-checkout .title {
+  margin-bottom: 1em;
+  font-weight: bold;
 }

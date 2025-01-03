@@ -13,7 +13,7 @@ import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
 import { NotificationBanner, type NotificationBannerProps } from '../notification-banner';
 
 // Development option to force the wizard screen to be shown. This is useful for testing the wizard screen.
-const __DEV_FORCE_WIZARD_SCREEN = false;
+const __DEV_FORCE_WIZARD_SCREEN = true;
 
 /**
  * A React component that renders the admin settings page.

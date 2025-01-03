@@ -16,19 +16,11 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
   const showExternals = showExternalKlarna;
 
-  // Conditionally replace Vipps Checkout in string with MobilePay Checkout if the user selected brand is not Vipps. LP 02.01.2025
-  const maybeReplaceCheckoutBrand = (str: string) =>
-    getOption("payment_method_name") === "Vipps"
-      ? str
-      : str.replace("Vipps Checkout", "MobilePay Checkout");
-
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description">
         <UnsafeHtmlText
-          htmlString={maybeReplaceCheckoutBrand(
-            gettext("checkout_options.description")
-          )}
+          htmlString={gettext("checkout_options.description")}
         />
       </p>
 
@@ -36,7 +28,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       <CheckboxFormField
         name="vipps_checkout_enabled"
         titleKey="vipps_checkout_enabled.title"
-        labelKey="vipps_checkout_enabled.label"
+        labelKey="vipps_checkout_enabled.label" 
         descriptionKey="vipps_checkout_enabled.description"
       />
 
@@ -48,7 +40,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         descriptionKey="checkoutcreateuser.description"
       />
 
-      {/* Renders a checkbox to enable static shipping */}
+      {/* Renders a checkbox to enable dynamic shipping (inverted from static. LP 03.01.2025) */}
       <CheckboxFormField
         name="enablestaticshipping_checkout"
         titleKey="enablestaticshipping_checkout.title"

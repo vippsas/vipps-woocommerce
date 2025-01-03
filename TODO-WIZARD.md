@@ -2,7 +2,9 @@
 
 - [x] Hvis man bryr seg: øke border-radius på "Neste steg"-knappen til ~10 px 
 
-- [ ] Bytte alle Vipps MobilePay Checkout til dynamisk Vipps/Mobilepay fra getOption(). i Settings og i wizard.
+- [ ] Bytte alle Vipps MobilePay Checkout til dynamisk Vipps/Mobilepay fra getOption(). 
+    - [ ] steg 2
+    - [ ] steg 3 WIP 03.01.2025
 
 - [ ] Første wizard-steg:
     - [x] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
