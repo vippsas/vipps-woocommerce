@@ -127,3 +127,13 @@
   width: auto;
   height: auto;
 }
+
+.vipps-mobilepay-react-field-error {
+  color: #dc3232;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+select.has-error {
+  border-color: #dc3232;
+}
