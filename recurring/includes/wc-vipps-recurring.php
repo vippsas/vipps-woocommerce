@@ -788,7 +788,10 @@ error_log("deactivating recurring");
 			$order = wc_get_order( $order_id );
 
 			// If this order has been manually updated in the mean-time, we no longer want to delete it.
-			if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) ) {
+			// Similarly, if it has a billing email we don't want to delete it.
+			$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || !$order->get_billing_email();
+
+			if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || $empty_email ) {
 				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION );
 
 				continue;

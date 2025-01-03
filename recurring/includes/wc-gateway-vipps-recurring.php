@@ -185,6 +185,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'append_valid_statuses_for_payment_complete'
 		] );
 
+		add_action( 'woocommerce_order_status_pending_to_cancelled', [ $this, 'maybe_delete_order' ], 99999 );
+		add_action( 'woocommerce_new_order', [ $this, 'maybe_delete_order_later' ] );
+		add_action( 'woocommerce_vipps_recurring_delete_pending_order', [ $this, 'maybe_delete_order' ] );
+
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [
 			$this,
 			'process_admin_options'
@@ -273,7 +277,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps MobilePay API
 		// Unless we whitelist the domains specifically
 		add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
-			return array_merge($hosts, [
+			return array_merge( $hosts, [
 				// Production servers
 				'api.vipps.no',
 				'pay.vipps.no',
@@ -284,7 +288,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'pay-mt.vipps.no',
 				'pay-mt.mobilepay.dk',
 				'pay-mt.mobilepay.fi'
-			]);
+			] );
 		} );
 	}
 
@@ -1380,7 +1384,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$redirect_url = WC_Vipps_Recurring_Helper::get_payment_redirect_url( $order, $is_gateway_change );
 
 		// total no longer returns the order amount when gateway is being changed
-		$agreement_total = $is_gateway_change ? $subscription->get_subtotal() : $subscription->get_total( 'code' );
+		$agreement_total = $subscription->get_total( 'code' );
 
 		// when we're performing a variation switch we need some special logic in Vipps
 		$is_subscription_switch = wcs_order_contains_switch( $order );
@@ -1664,11 +1668,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
-			}
 
-			/* translators: Vipps/MobilePay Agreement ID */
-			$message = sprintf( __( 'Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $response['agreementId'] );
-			$order->add_order_note( $message );
+				/* translators: Vipps/MobilePay Agreement ID */
+				$message = sprintf( __( 'Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $response['agreementId'] );
+				$order->add_order_note( $message );
+			}
 
 			$debug_msg .= sprintf( 'Created agreement with agreement ID: %s', $response['agreementId'] ) . "\n";
 
@@ -2422,26 +2426,29 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( empty( $order_id ) && isset( $webhook_data['agreementId'] ) ) {
 			$agreement_id = $webhook_data['agreementId'];
 
-			$options = [
-				'limit'          => 1,
-				'type'           => 'shop_subscription',
-				'meta_key'       => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
-				'meta_compare'   => '=',
-				'meta_value'     => $agreement_id,
-				'return'         => 'ids',
-				'payment_method' => $this->id,
-				'order_by'       => 'post_date'
-			];
+			$subscription_ids = get_posts( [
+				'limit'        => 1,
+				'post_type'    => 'shop_subscription',
+				'post_status'  => [ 'wc-active', 'wc-pending', 'wc-on-hold' ],
+				'meta_key'     => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
+				'meta_compare' => '=',
+				'meta_value'   => $agreement_id,
+				'fields'       => 'ids',
+			] );
 
-			$order_ids = wc_get_orders( $options );
-			$order_id  = array_pop( $order_ids );
+			if ( ! empty( $subscription_ids ) ) {
+				return array_pop( $subscription_ids );
+			}
 		}
 
 		// If the order id is not a subscription, we can get the subscription from the order
 		if ( ! empty( $order_id ) && ! wcs_is_subscription( $order_id ) ) {
 			$order         = wc_get_order( $order_id );
 			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			$order_id      = array_pop( $subscriptions );
+
+			if ( ! empty( $subscriptions ) ) {
+				return array_pop( $subscriptions );
+			}
 		}
 
 		// Otherwise the order_id is either empty, or a subscription
@@ -2493,6 +2500,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Customers can now cancel their agreements directly from the app.
 		if ( $event_type === 'recurring.agreement-stopped.v1' ) {
+			// If the initiator of this webhook is ourselves, we must discard it.
+			// Otherwise, we risk cancelling payment gateway changes etc.
+			if ( $webhook_data['actor'] === 'MERCHANT' ) {
+				return;
+			}
+
 			$subscription_id = $this->maybe_get_subscription_id_from_agreement_webhook( $webhook_data );
 			if ( empty( $subscription_id ) ) {
 				return;
@@ -2686,7 +2699,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Create a user if it does not exist
 		if ( ! get_user_by( 'ID', $customer_id ) ) {
-			$email       = 'anonymous@vippsmobilepay.local';
+			$email       = WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL;
 			$username    = wc_create_new_customer_username( $email );
 			$customer_id = wc_create_new_customer( $email, $username, null, [
 				'first_name'    => 'Anonymous Vipps MobilePay Customer',
@@ -2862,5 +2875,45 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		return $subscriptions;
+	}
+
+	public function maybe_delete_order_later( $order_id ) {
+		if ( $this->get_option( 'checkout_cleanup_abandoned_orders' ) !== 'yes' ) {
+			return;
+		}
+
+		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] ) ) {
+			wp_schedule_single_event( time() + 3600, 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] );
+		}
+	}
+
+	public function maybe_delete_order( $order_id ): bool {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return false;
+		}
+
+		if ( $this->id !== $order->get_payment_method() ) {
+			return false;
+		}
+
+		$express = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+		if ( ! $express ) {
+			return false;
+		}
+
+		$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
+		if ( ! $empty_email ) {
+			return false;
+		}
+
+		if ( $this->get_option( 'checkout_cleanup_abandoned_orders' ) !== 'yes' ) {
+			return false;
+		}
+
+		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
+		$order->save();
+
+		return true;
 	}
 }
