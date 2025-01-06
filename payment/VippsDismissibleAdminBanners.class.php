@@ -54,8 +54,6 @@ class VippsDismissibleAdminBanners {
         if ($this->configured) {
            // Login with Vipps 
            $this->add_login_vipps_dismissible_admin_banner();
-           // If WooCommerce Subscriptions is installed, but Vipps Recurring isn't, create a banner.
-           $this->add_recurring_vipps_dismissible_admin_banner();
            // Advertise Vipps Checkout for users who haven't seen/dismissed the banner
            $this->add_vipps_checkout_dismissible_admin_banner();
         }
@@ -158,42 +156,5 @@ class VippsDismissibleAdminBanners {
             });
     }
 
-    // Advertise The Recurring Plugin if not installed and WooCommerce subscriptions is
-    public function add_recurring_vipps_dismissible_admin_banner () {
-        if (!function_exists('get_plugins')) return;
-
-        $dismissed = $this->dismissed;
-        if (isset($dismissed['vippssub01'])) return;
-
-        if (!class_exists('WC_Subscriptions')) {
-            // We only need this if the user has Woocommerce Subscriptions installed
-            return;
-        }
-
-        $installed_plugins = get_plugins();
-        if (class_exists( 'WC_Vipps_Recurring' ) || isset($installed_plugins['vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php']) || get_option('woo-vipps-recurring-version')) {
-            if (!is_array($dismissed)) $dismissed = array();
-            $dismissed['vippssub01'] = time();
-            update_option('_vipps_dismissed_notices', $dismissed, false);
-            $this->dismissed = $dismissed;
-           return;
-        }
-
-        add_action('admin_notices', function () {
-            $logo = plugins_url('img/vipps-rgb-orange-neg.svg',__FILE__);
-            $recurringurl = "https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/";
-            ?>
-            <div class='notice notice-vipps notice-vipps-neg notice-info is-dismissible'  data-key='vippssub01'>
-            <a target="_blank"  href="<?php echo $recurringurl; ?>">
-            <img src="<?php echo $logo; ?>" style="float:left; height: 3rem; margin-top: 0.2rem" alt="Vipps Recurring Payments logo">
-             <div>
-                 <p style="font-size:1rem"><?php echo __("Vipps Recurring Payments for WooCommerce is perfect if you sell subscriptions or memberships. The plugin is available for Wordpress and WooCommerce - get started here!", 'woo-vipps');
- ?></p>
-             </div>
-             </a>
-            </div>
-            <?php
-            });
-    }
 
 }
