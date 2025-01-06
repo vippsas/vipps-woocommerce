@@ -69,9 +69,6 @@ class Vipps {
     public static function LoginName() {
         return __("Login with Vipps", 'woo-vipps');
    }
-    public static function RecurringName() {
-        return __('Vipps Recurring Payments', 'woo-vipps');
-   }
 
     public static function instance()  {
         if (!static::$instance) static::$instance = new Vipps();
@@ -861,7 +858,6 @@ jQuery('a.webhook-adder').click(function (e) {
 
         $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
         $subscriptioninstall = 'https://woocommerce.com/products/woocommerce-subscriptions/';
-        $recurringinstall = admin_url('/plugin-install.php?s=vipps-recurring-payments-gateway-for-woocommerce&tab=search&type=term');
 
         $logspage = admin_url('/admin.php?page=wc-status&tab=logs');
         $forumpage = 'https://wordpress.org/support/plugin/woo-vipps/';
@@ -869,8 +865,11 @@ jQuery('a.webhook-adder').click(function (e) {
         $portalurl = 'https://portal.vippsmobilepay.com';
 
         $installed = get_plugins();
+
         $recurringinstalled = array_key_exists('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php',$installed);
         $recurringactive = class_exists('WC_Vipps_Recurring');
+        $recurringstandalone = $recurringactive && !(defined('WC_VIPPS_RECURRING_INTEGRATED') && WC_VIPPS_RECURRING_INTEGRATED);
+        $deactivatelink = admin_url("plugins.php?s=vipps-recurring-payments-gateway-for-woocommerce");
 
         $logininstalled = array_key_exists('login-with-vipps/login-with-vipps.php', $installed);
         $loginactive = class_exists('ContinueWithVipps');
@@ -982,26 +981,28 @@ jQuery('a.webhook-adder').click(function (e) {
             </div>
 
             <div class="pluginsection vipps-recurring">
-               <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::RecurringName());?></h2>
+               <h2><?php echo sprintf(__( 'Recurring Payments with %1$s', 'woo-vipps' ), Vipps::CompanyName());?></h2>
                <p>
-                  <?php echo sprintf(__("<a href='%1\$s' target='_blank'>%2\$s for WooCommerce</a> by <a href='%3\$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', Vipps::RecurringName(), 'https://everyday.no/'); ?>
-
-                  <?php echo sprintf(__("%1\$s requires the <a href='%2\$s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'), Vipps::RecurringName(), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
+                  <?php echo sprintf(__("%1\$s supports recurring payments through the plugin <a href='%2\$s' target='_blank'>WooCommerce Subscriptions</a>. This support is written and supported by <a href='%3\$s' target='_blank'>Everyday</a>, and is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), Vipps::CompanyName(), 'https://woocommerce.com/products/woocommerce-subscriptions/', Vipps::CompanyName(), 'https://everyday.no/'); ?>
                <?php do_action('vipps_page_vipps_recurring_payments_section'); ?>
                <div class="pluginstatus vipps_admin_highlighted_section">
-               <?php if ($recurringactive): ?>
-                     <p>
-                       <?php echo sprintf(__("%1\$s is <b>installed and active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'), Vipps::RecurringName(), $recurringsettings); ?>
-                    </p>
-               <?php elseif ($recurringinstalled): ?>
-                     <p>
-                     <?php echo sprintf(__("%1\$s installed, but <em>not active</em>. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), Vipps::RecurringName(), admin_url("/plugins.php")); ?>
-                     </p>
-               <?php else: ?>
-                     <p>
-                     <?php echo sprintf(__("%1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), Vipps::RecurringName(), $recurringinstall); ?>
-                     </p>
-               <?php endif; ?> 
+                 <?php if ($recurringactive): ?>
+                  <p>
+                   <?php echo sprintf(__("Support for recurring payments with %1\$s is <b>active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>.", 'woo-vipps'), Vipps::CompanyName(), $recurringsettings); ?>
+                  </p>
+                 <?php endif; ?>
+                 <?php if (!$subscriptioninstall): ?>
+                  <p>
+                   <?php echo sprintf(__("This plugins support for recurring payments requires the plugin <a href='%1\$s' target='_blank'>WooCommerce Subscriptions</a>. You need to install and activate this first.", 'woo-vipps'), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
+                  </p>
+                 <?php endif; ?>
+                 <?php if ($recurringactive && $recurringstandalone): ?>
+                  <p>
+                  <?php echo sprintf(__("Your support for recurring payments with %1\$s uses the legacy stand-alone plugin. This is no longer required, and you should <b><a href='%2\$s'>deactivate</a></b> this plugin, since development on this will soon cease.", 'woo-vipps'), Vipps::CompanyName(), esc_attr($deactivatelink));?>
+                  </p>
+
+                 <?php endif; ?>
+
                </div>
 
             </div>
@@ -3224,7 +3225,6 @@ else:
     }
 
     public function activate () {
-error_log("activating woo-vipps payment");
        static::maybe_add_cron_event();
        $gw = $this->gateway();
 
@@ -3239,7 +3239,6 @@ error_log("activating woo-vipps payment");
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
     public static function deactivate() {
-error_log("deactivating woo-vipps payment");
        $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
        wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
         $timestamp = wp_next_scheduled('vipps_cron_missing_callback_hook');

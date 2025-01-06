@@ -41,6 +41,9 @@ define( 'WC_VIPPS_RECURRING_MAIN_FILE', __FILE__ );
 define( 'WC_VIPPS_RECURRING_PLUGIN_URL', plugins_url("", __FILE__));
 define( 'WC_VIPPS_RECURRING_PLUGIN_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 
+/* Note that this is the integrated version of the plugin IOK 2025-01-06*/
+define( 'WC_VIPPS_RECURRING_INTEGRATED', true);
+
 /*
  * Amount of days to retry a payment when creating a charge in the Vipps/MobilePay API
  */
