@@ -162,10 +162,10 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
       {step === 'CHECKOUT_CONFIRM' && (
         <>
         <div className="vipps-mobilepay-react-checkout-confirm">
-          <h1 className="title">{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.title.vipps') : gettext('checkout_confirm.title.mobilepay')}</h1>
+          <h1 className="title">{ gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.title.vipps' )) }</h1>
           <div className="body">
             <div className="list">
-              <strong>{getOption('payment_method_name') === "Vipps" ? gettext('checkout_confirm.paragraph1.header.vipps') : gettext('checkout_confirm.paragraph1.header.mobilepay')}</strong>
+              <strong>{ gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.paragraph1.header.vipps' )) }</strong>
               <ul>
                 <li>{gettext('checkout_confirm.paragraph1.first')}</li>
                 <li>{gettext('checkout_confirm.paragraph1.second')}</li>
@@ -177,7 +177,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <li>{gettext('checkout_confirm.paragraph2.second')}</li>
               </ul>
             </div>
-            <img src={getOption("payment_method_name") == "Vipps" ? gettext('checkout_confirm.img.vipps.src') : gettext('checkout_confirm.img.mobilepay.src')} alt={getOption("payment_method_name") == "Vipps" ? gettext('checkout_confirm.img.vipps.alt') : gettext('checkout_confirm.img.mobilepay.alt')}/>
+            <img src={gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.img.vipps.src' )) } alt={gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.img.vipps.alt' )) }/>
           </div>
           <div className="vipps-mobilepay-react-button-actions">
             <WPButton variant="primary" isLoading={isLoading} onClick={() => {

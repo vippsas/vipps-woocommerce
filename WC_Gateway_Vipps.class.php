@@ -1601,7 +1601,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'first' => __('You want simple, varied payment options', 'woo-vipps'),
                     'second' => __('You need easy shipping solutions with diverse choices.', 'woo-vipps'),
                 ],
-                'accept' => sprintf(__('Start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                'accept' => [
+                    'vipps' => __('Start using Vipps Checkout', 'woo-vipps'),
+                    'mobilepay' => __('Start using MobilePay Checkout', 'woo-vipps'),
+                ],
                 'skip' => __('Skip & save', 'woo-vipps'),
             ],
         ];

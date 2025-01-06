@@ -6,6 +6,10 @@
     - [ ] steg 2 WIP 03.01.2025
     - [x] steg 3 
 
+- [ ] Bytte til å bruke Vipps::CheckoutName likevel, også .replace() i react. Kan ikke bruke getOption i gettext, så kan heller lage en ny state fra payment-method dropdownen som gettext kan bruke?
+    - [ ] steg 2
+    - [ ] steg 3
+
 - [ ] Første wizard-steg:
     - [x] Avhukningsboks for å skru på vipps mobilepay checkout over "neste trinn"
     - [x] Ha en banner/firkant på høyre side med lenker til docs, vipps, support.
