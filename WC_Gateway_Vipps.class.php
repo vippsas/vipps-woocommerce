@@ -132,6 +132,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return 'DK';
             case 'NOK':
                 return 'NO';
+            case 'SEK':
+                return 'SE';
             case 'EUR':
                 return 'FI';
             default:
@@ -839,8 +841,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function detect_default_payment_method_from_country($country_code) {
         // Default to MobilePay
         $payment_method_name = 'MobilePay';
-        // Currently only Vipps is available in Norway, we don't need to check for the other countries for now as they'll likely be using MobilePay
-        if($country_code == 'NO') {
+        // Default to Vipps if country is Norway or Sweden
+        if($country_code == 'NO' || $country_code == 'SE') {
             $payment_method_name = 'Vipps';
         }
         return $payment_method_name;
@@ -854,7 +856,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $store_country = $store_location['country'] ?? '';
         $finland = (get_woocommerce_currency() == "EUR" && $store_country == "FI");
         $norway = (get_woocommerce_currency() == "NOK" && $store_country == "NO");
-        return apply_filters('woo_vipps_allow_external_payment_methods', ($finland || $norway));
+        $sweden = (get_woocommerce_currency() == "SEK" && $store_country == "SE");
+        return apply_filters('woo_vipps_allow_external_payment_methods', ($finland || $norway || $sweden));
     }
 
     public function init_form_fields() { 
@@ -1235,6 +1238,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'type' => 'select',
                 'options' => array(
                     'NO' => __('Norway', 'woo-vipps'),
+                    'SE' => __('Sweden', 'woo-vipps'),
                     'FI' => __('Finland', 'woo-vipps'),
                     'DK' => __('Denmark', 'woo-vipps'),
                 ),
@@ -1699,7 +1703,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Get supported currencies for payment method NT 2023-12-04
     public function get_supported_currencies($payment_method) {
         switch ($payment_method) {
-            case 'Vipps': return array('NOK');
+            case 'Vipps': return array('NOK', 'SEK');
             case 'MobilePay': return array('DKK', 'EUR');
             default: return array();
         }
@@ -2432,7 +2436,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
 # IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
-            $transaction = @$paymentdetails['transactionInfo'];
+            $transaction = $paymentdetails['transactionInfo'] ?? "";
             if ($transaction) {
                 $vippsstamp = strtotime($transaction['timeStamp']);
                 $amount  = $transaction['amount'];

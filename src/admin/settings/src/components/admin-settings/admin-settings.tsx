@@ -1,4 +1,4 @@
-import { gettext } from '../../lib/wp-data';
+import { gettext, getMetadata } from '../../lib/wp-data';
 import { Tabs } from '../tabs';
 import { AdminSettingsMainOptionsTab } from './main-options-tab';
 import { AdminSettingsExpressOptionsTab } from './express-options-tab';
@@ -11,6 +11,7 @@ import { useWP } from '../../wp-options-provider';
 import { useState } from 'react';
 import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
 import { NotificationBanner, type NotificationBannerProps } from '../notification-banner';
+import { isPaymentMethodCurrencySupported, getPaymentMethodSupportedCurrencies } from '../../lib/payment-method';
 
 // Development option to force the wizard screen to be shown. This is useful for testing the wizard screen.
 const __DEV_FORCE_WIZARD_SCREEN = true;
@@ -25,6 +26,9 @@ export function AdminSettings(): JSX.Element {
   const [banner, setBanner] = useState<NotificationBannerProps | null>();
   const [saveConfirmation, setSaveConfirmation] = useState(false);
   const { submitChanges, getOption, setOptions } = useWP();
+  const currency = getMetadata('currency');  // Get currency from metadata
+  const paymentMethod = getOption('payment_method_name');
+  const showCurrencyWarning = !isPaymentMethodCurrencySupported(paymentMethod, currency);
   // The tabs to render on the admin settings page.
   const TAB_IDS = [
     gettext('main_options.title'),
@@ -120,6 +124,13 @@ export function AdminSettings(): JSX.Element {
   return (
     <>
       {banner && <NotificationBanner variant={banner.variant} text={banner.text} />}
+
+      {showCurrencyWarning && (
+        <NotificationBanner 
+          variant="error" 
+          text={`${paymentMethod} does not support your store currency (${currency}). Supported currencies: ${getPaymentMethodSupportedCurrencies(paymentMethod).join(', ')}`} 
+        />
+      )}
 
       <WPForm onSubmit={handleSaveSettings} className="vippsAdminSettings">
         {showWizardScreen ? (

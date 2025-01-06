@@ -688,6 +688,10 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
         $badge_options = get_option('vipps_badge_options');
+        
+        // Get current brand and language
+        $current_brand = strtolower($this->get_payment_method_name());
+        $current_language = $this->get_customer_language();
 
         $variants = ['white'=> __('White', 'woo-vipps'), 'grey' => __('Grey','woo-vipps'), 
                      'filled'=> __('Filled', 'woo-vipps'), 'light'=>__('Light','woo-vipps'), 
@@ -721,9 +725,10 @@ jQuery('a.webhook-adder').click(function (e) {
              <input <?php if (@$badge_options['defaultall']) echo " checked "; ?> value="1" type="checkbox" id="defaultall" name="defaultall" />
              <p><?php echo sprintf(__("If selected, all products will get a badge, but you can override this on the %1\$s tab on the product data page. If not, it's the other way around. You can also choose a particular variant on that page", 'woo-vipps'), Vipps::CompanyName()); ?></p>
             </div>
-           <p id=badgeholder style="font-size:1.5rem">
+           <p id="badgeholder" style="font-size:1.5rem">
               <vipps-mobilepay-badge id="vipps-badge-demo"
-                <?php if (@$badge_options['brand']) echo ' brand="' . esc_attr(strtolower($this->get_payment_method_name())) . '" ' ?>
+                brand="<?php echo esc_attr($current_brand); ?>"
+                language="<?php echo esc_attr($current_language); ?>"
                 <?php if (@$badge_options['variant']) echo ' variant="' . esc_attr($badge_options['variant']) . '" ' ?>
                ></vipps-mobilepay-badge>
            </p>
@@ -740,8 +745,6 @@ jQuery('a.webhook-adder').click(function (e) {
                <?php endforeach; ?>
               </select>
 
-        <input type="hidden" name="brand" value="<?php echo strtolower($this->get_payment_method_name())?>" />
-
             <div>
               <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
             </div>
@@ -754,25 +757,21 @@ jQuery('a.webhook-adder').click(function (e) {
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
            <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk} ] </pre><br> 
+              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|se|fi|dk} ] </pre><br> 
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
               <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
            </p>
 
         </div>
         <script>
-         function changeVariant() {
-             let badge = document.getElementById('vipps-badge-demo');
-             let variantSelector = document.getElementById('vippsBadgeVariant');
-             let holder = document.getElementById('badgeholder');
-             let newbadge = badge.cloneNode();
+        function changeVariant() {
+            const badge = document.getElementById('vipps-badge-demo');
+            const variantSelector = document.getElementById('vippsBadgeVariant');
+            const variant = variantSelector.options[variantSelector.selectedIndex].value;
             
-             let variant = variantSelector.options[variantSelector.selectedIndex].value 
- 
-             newbadge.setAttribute('variant', variant);
-             badge.remove();
-             holder.appendChild(newbadge);
-         }
+            // Just update the variant attribute, preserving brand and language
+            badge.setAttribute('variant', variant);
+        }
         </script> 
         <?php
     }
@@ -807,7 +806,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
         
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple', 'filled', 'light']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en','no', 'fi', 'dk']) ? $args['language'] : $this->get_customer_language();
+        $language = in_array($args['language'], ['en','no', 'fi', 'dk', 'se']) ? $args['language'] : $this->get_customer_language();
         // $amount = intval($args['amount']);
         // $later = $args['vipps-senere'];
         $id = sanitize_title($args['id']);
@@ -1100,14 +1099,17 @@ jQuery('a.webhook-adder').click(function (e) {
         $oldorders = time() - (60*60*24*7); // Very old orders: Ignore them to make this work on sites with enormous order databases
         // Ensure the old order table understands the meta query IOK 2022-12-02
         static::add_wc_order_meta_key_support();
-        $delenda = wc_get_orders( array(
-            'status' => 'cancelled',
-            'limit' => $limit,
-            'date_modified' => "$oldorders...$cutoff",
-            'meta_vipps_delendum' => 1,
+        $args = array(
+                'status' => 'cancelled',
+                'limit' => $limit,
+                'date_modified' => "$oldorders...$cutoff",
+                'meta_vipps_delendum' => 1);
+        if  ($this->useHPOS()) {
             /* The above, with the filter, is for the old orders table, the below is for the new IOK 2022-12-02 */
-            'meta_query' =>  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]]
-        ));
+            $args['meta_query'] =  [[ 'key'  => '_vipps_delendum', 'value' => 1 ]];
+        }
+
+        $delenda = wc_get_orders($args);
 
         foreach ($delenda as $del) {
             // Delete only if there is no customer info for the order IOK 2022-10-12
@@ -2211,7 +2213,8 @@ else:
         if (! $language) $language = substr(get_bloginfo('language'),0,2);
         if ($language == 'nb' || $language == 'nn') $language = 'no';
         if ($language == 'da') $language = 'dk';
-        if (! in_array($language, ['en', 'no', 'dk', 'fi'])) $language = 'en';
+        if ($language == 'sv') $language = 'se';
+        if (! in_array($language, ['en', 'no', 'dk', 'fi', 'se'])) $language = 'en';
         return $language;
     }
 
@@ -3920,6 +3923,10 @@ else:
         if($lang === "no") {
             // get Norwegian logo
             return plugins_url('img/vipps-rectangular-pay-NO.svg',__FILE__);
+        // if language is Swedish
+        } else if($lang === "sv") {
+            // currently using English logo for Swedish
+            return plugins_url('img/vipps-rectangular-pay-EN.svg',__FILE__);
         // otherwise
         } else {
             // get English logo by default

@@ -153,6 +153,7 @@ class VippsAdminSettings
         $metadata = array(
             'admin_url' => admin_url('admin-ajax.php'),
             'page' => 'admin_settings_page',
+            'currency' => get_woocommerce_currency(),
         );
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(

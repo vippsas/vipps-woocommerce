@@ -1,6 +1,6 @@
-import { detectPaymentMethodName } from '../../lib/payment-method';
+import { detectPaymentMethodName, getPaymentMethodSupportedCurrencies, isPaymentMethodCurrencySupported } from '../../lib/payment-method';
 import { useWP } from '../../wp-options-provider';
-import { gettext } from '../../lib/wp-data';
+import { getMetadata, gettext } from '../../lib/wp-data';
 import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField } from '../options-form-fields';
 
 /**
@@ -34,6 +34,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         }}
         options={[
           { label: gettext('country.options.NO'), value: 'NO' },
+          { label: gettext('country.options.SE'), value: 'SE' },
           { label: gettext('country.options.FI'), value: 'FI' },
           { label: gettext('country.options.DK'), value: 'DK' }
         ]}
@@ -46,6 +47,11 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
         descriptionKey="payment_method_name.description"
         includeEmptyOption={false}
         required
+        error={
+          !isPaymentMethodCurrencySupported(getOption('payment_method_name'), getMetadata('currency'))
+            ? `${getOption('payment_method_name')} does not support your store currency (${getMetadata('currency')}). Supported currencies: ${getPaymentMethodSupportedCurrencies(getOption('payment_method_name')).join(', ')}`
+            : undefined
+        }
         options={[
           { label: gettext('payment_method_name.options.Vipps'), value: 'Vipps' },
           { label: gettext('payment_method_name.options.MobilePay'), value: 'MobilePay' }

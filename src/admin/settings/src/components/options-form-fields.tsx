@@ -29,7 +29,7 @@ interface Props extends PropsWithCheckoutBrandFix {
   /**
    * The key for the label of the field.
    */
-  labelKey: string;
+  labelKey?: string;
 
   /**
    * The optional key for the description of the field.
@@ -110,6 +110,11 @@ interface SelectFormFieldProps {
    * Specifies if the form field should include an empty option.
    */
   includeEmptyOption?: boolean;
+
+  /**
+   * The error message for the select form field.
+   */
+  error?: string;
 }
 
 /**
@@ -126,7 +131,8 @@ export function SelectFormField({
   options,
   onChange,
   required = false,
-  includeEmptyOption = false
+  includeEmptyOption = false,
+  error
 }: SelectFormFieldProps): JSX.Element {
   const { getOption, setOption } = useWP();
 
@@ -143,6 +149,7 @@ export function SelectFormField({
           }}
           required={required}
           value={getOption(name)}
+          error={error}
         >
           {includeEmptyOption && <WPOption value=""></WPOption>}
           {options.map((option) => (
