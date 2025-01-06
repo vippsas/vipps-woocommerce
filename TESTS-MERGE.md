@@ -1,0 +1,28 @@
+LP Testing 06.01.2025
+- [ ] Normal payment functionality
+    - [x] Woocommerce checkout
+    - [x] vipps express checkout
+    - [ ] vipps checkout.
+        - [ ] NB: Does not work with mobilepay (dkk or euro): error in /vipps_checkout: "Vi beklager Noe gikk feil ved betaling. Du må starte betalingen om igjen." No log in site log, woo-vipps log, wc_logger, etc. 
+            - [ ] Try logging the msn etc. Might be something wrong with getting details on save.
+        - [ ] vipps -  Works, but log shows error: "2024-01-06T11:24:06+00:00 ERROR Kunne ikke sende bilde til Vipps -  413 Request Entity Too Large"
+        - [ ] mobilepay -  Works, but log shows error: "2024-01-06T11:24:06+00:00 ERROR Kunne ikke sende bilde til Vipps -  413 Request Entity Too Large"
+        - [ ] kort - "unable to contact Vipps at this time; check your network and try again." (I don't remember this working before. Maybe my woocommerce is not set up right.)
+        - [x] klarna integration - redirected to correct uri /checkout/order-pay. (Can't pay, but I did not even manage to do this before). 
+    - [ ] settings are working
+        - [ ] general
+        - [ ] express checkout
+        - [ ] checkout
+        - [ ] advanced
+        - [ ] dev
+        - [ ] badges
+        - [ ] webooks
+        - [ ] qr-codes:w
+- [ ] Normal recurring functionality
+- [ ] Is recurring deactivated when subscriptions is deactivated?
+- [ ] Is recurring activated when subscriptions is activated?
+- [ ] Is recurring untouched when standalone is activated?
+- [ ] Is recurring activated when standalone is deactivated?
+- [x] Recurring standalone warning before deactivation
+- [ ] Recurring standalone warning/error on activation
+- [ ] Fresh wp install woo-vipps -> recurring standalone
