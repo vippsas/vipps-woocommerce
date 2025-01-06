@@ -378,8 +378,8 @@ class WC_Vipps_Recurring_Checkout {
 			$session_poll = WC_Gateway_Vipps_Recurring::get_instance()->api->checkout_poll( $session->polling_url );
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID, $session_poll['sessionId'] );
 
-			$order->add_order_note( __( 'Vipps/MobilePay recurring checkout payment initiated', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
-			$order->add_order_note( __( 'Customer passed to Vipps/MobilePay checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->add_order_note( __( 'Vipps/MobilePay recurring checkout payment initiated', 'woo-vipps' ) );
+			$order->add_order_note( __( 'Customer passed to Vipps/MobilePay checkout', 'woo-vipps' ) );
 			$order->save();
 
 			$token = $session->token;
@@ -410,7 +410,7 @@ class WC_Vipps_Recurring_Checkout {
 
 		return [
 			'success'      => false,
-			'msg'          => __( 'Could not start Vipps/MobilePay checkout session', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'msg'          => __( 'Could not start Vipps/MobilePay checkout session', 'woo-vipps' ),
 			'src'          => $url,
 			'redirect_url' => $redirect_url,
 			'order_id'     => $partial_order_id
@@ -510,8 +510,8 @@ class WC_Vipps_Recurring_Checkout {
 		if ( $i < $count ) {
 			array_splice( $settings, $i, 0, [
 				[
-					'title'    => __( 'Vipps/MobilePay Recurring Checkout Page', 'vipps-recurring-payments-gateway-for-woocommerce' ),
-					'desc'     => __( 'This page is used for the alternative Vipps/MobilePay checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'vipps-recurring-payments-gateway-for-woocommerce' ) . sprintf( __( 'Page contents: [%1$s]', 'woocommerce' ), 'vipps_recurring_checkout' ),
+					'title'    => __( 'Vipps/MobilePay Recurring Checkout Page', 'woo-vipps' ),
+					'desc'     => __( 'This page is used for the alternative Vipps/MobilePay checkout page, which you can choose to use instead of the normal WooCommerce checkout page. ', 'woo-vipps' ) . sprintf( __( 'Page contents: [%1$s]', 'woocommerce' ), 'vipps_recurring_checkout' ),
 					'id'       => 'woocommerce_vipps_recurring_checkout_page_id',
 					'type'     => 'single_select_page_with_search',
 					'default'  => '',
@@ -922,7 +922,7 @@ class WC_Vipps_Recurring_Checkout {
 
 			// NB: This can *potentially* be revived by a callback!
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling Checkout order because order changed', $order->get_id() ) );
-			$order->set_status( 'cancelled', __( "Order specification changed - order abandoned by customer in Checkout", 'vipps-recurring-payments-gateway-for-woocommerce' ), false );
+			$order->set_status( 'cancelled', __( "Order specification changed - order abandoned by customer in Checkout", 'woo-vipps' ), false );
 
 			// Also mark for deletion and remove stored session
 			WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION );

@@ -18,12 +18,12 @@ export default function PaymentRedirect ({ logo }) {
 					className={'vipps-recurring-payment-redirect-page__container__content__text'}>
 					<p>
 						{__('Verifying your payment. Please wait.',
-							'vipps-recurring-payments-gateway-for-woocommerce')}
+							'woo-vipps')}
 					</p>
 
 					<p>
 						{__('You will be redirected shortly.',
-							'vipps-recurring-payments-gateway-for-woocommerce')}
+							'woo-vipps')}
 					</p>
 				</div>
 			</div>

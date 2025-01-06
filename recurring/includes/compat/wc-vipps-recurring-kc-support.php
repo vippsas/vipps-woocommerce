@@ -75,36 +75,36 @@ class WC_Vipps_Recurring_Kc_Support {
 	 */
 	public static function form_fields( $settings ) {
 		$settings['epm_vipps_recurring_settings_title'] = [
-			'title' => __( 'External Payment Method - Vipps/MobilePay Recurring Payments', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title' => __( 'External Payment Method - Vipps/MobilePay Recurring Payments', 'woo-vipps' ),
 			'type'  => 'title',
 		];
 
 		$settings['epm_vipps_recurring_activate'] = [
-			'title'       => __( 'Activate', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title'       => __( 'Activate', 'woo-vipps' ),
 			'type'        => 'checkbox',
-			'description' => __( 'Activate Vipps/MobilePay Recurring Payments as an external payment method for Klarna Checkout', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Activate Vipps/MobilePay Recurring Payments as an external payment method for Klarna Checkout', 'woo-vipps' ),
 			'default'     => 'yes',
 		];
 
 		$settings['epm_vipps_recurring_description'] = [
-			'title'       => __( 'Description', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title'       => __( 'Description', 'woo-vipps' ),
 			'type'        => 'textarea',
-			'description' => __( 'Description for Vipps/MobilePay Recurring Payments method. This controls the description which the user sees in the checkout form.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Description for Vipps/MobilePay Recurring Payments method. This controls the description which the user sees in the checkout form.', 'woo-vipps' ),
 			// translators: {brand}: brand name, Vipps or MobilePay
-			'default'     => __( 'Remember: {brand} is always has no fees when paying businesses.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'default'     => __( 'Remember: {brand} is always has no fees when paying businesses.', 'woo-vipps' ),
 		];
 
 		$settings['epm_vipps_recurring_img_url'] = [
-			'title'       => __( 'Image url', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title'       => __( 'Image url', 'woo-vipps' ),
 			'type'        => 'text',
-			'description' => __( 'URL to the Vipps/MobilePay logo', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'URL to the Vipps/MobilePay logo', 'woo-vipps' ),
 			'default'     => WC_VIPPS_RECURRING_PLUGIN_URL . '/assets/images/{brand}-logo-black.svg'
 		];
 
 		$settings['epm_vipps_recurring_disable_button'] = [
-			'title'       => __( 'Disable other gateway button', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'title'       => __( 'Disable other gateway button', 'woo-vipps' ),
 			'type'        => 'checkbox',
-			'description' => __( 'Disables the "Select another Payment method" button in Klarna Checkout.', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+			'description' => __( 'Disables the "Select another Payment method" button in Klarna Checkout.', 'woo-vipps' ),
 			'default'     => 'no',
 		];
 

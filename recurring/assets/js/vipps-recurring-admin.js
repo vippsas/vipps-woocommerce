@@ -74,7 +74,7 @@ jQuery(document).ready(function ($) {
     }
 
     function toggleMobilePayReservationsWarning(brand, checked) {
-      const note = wp.i18n.__('Note: Reservations in MobilePay will be cancelled after 14 days. Remember to ship and fulfill your orders.', 'vipps-recurring-payments-gateway-for-woocommerce');
+      const note = wp.i18n.__('Note: Reservations in MobilePay will be cancelled after 14 days. Remember to ship and fulfill your orders.', 'woo-vipps');
 
       const brandInput = $('#woocommerce_vipps_recurring_brand');
       const fieldset = brandInput.parent();
@@ -88,7 +88,7 @@ jQuery(document).ready(function ($) {
 
     function toggleVippsCurrencyWarning(brand, currency) {
       // translators: %s is the current store currency code
-      const note = wp.i18n.sprintf(__('Note: Vipps is only available with the NOK currency. Your store currency is set to %s', 'vipps-recurring-payments-gateway-for-woocommerce'), currency);
+      const note = wp.i18n.sprintf(__('Note: Vipps is only available with the NOK currency. Your store currency is set to %s', 'woo-vipps'), currency);
 
       const brandInput = $('#woocommerce_vipps_recurring_brand');
       const fieldset = brandInput.parent();

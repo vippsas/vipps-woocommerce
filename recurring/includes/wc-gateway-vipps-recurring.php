@@ -95,8 +95,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                 = 'vipps_recurring';
-		$this->method_title       = __( 'Vipps/MobilePay Recurring Payments', 'vipps-recurring-payments-gateway-for-woocommerce' );
-		$this->method_description = __( 'Vipps/MobilePay Recurring Payments works by redirecting your customers to the Vipps MobilePay portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'vipps-recurring-payments-gateway-for-woocommerce' );
+		$this->method_title       = __( 'Vipps/MobilePay Recurring Payments', 'woo-vipps' );
+		$this->method_description = __( 'Vipps/MobilePay Recurring Payments works by redirecting your customers to the Vipps MobilePay portal for confirmation. It creates a payment plan and charges your users on the intervals you specify.', 'woo-vipps' );
 		$this->has_fields         = true;
 
 		/*
@@ -151,7 +151,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// translators: %s: brand name, Vipps or MobilePay
-		$this->order_button_text = sprintf( __( 'Pay with %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title );
+		$this->order_button_text = sprintf( __( 'Pay with %s', 'woo-vipps' ), $this->title );
 
 		$this->api = new WC_Vipps_Recurring_Api( $this );
 
@@ -531,7 +531,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 				$this->complete_order( $order, $agreement->id );
 
-				$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+				$order->add_order_note( __( 'The subtotal is zero, the order is free for this subscription period.', 'woo-vipps' ) );
 				$order->save();
 			}
 
@@ -585,7 +585,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 && $this->auto_capture_mobilepay ) {
 			$order->save();
 
-			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'woo-vipps' ) );
 			$this->maybe_capture_payment( $order_id );
 
 			return 'SUCCESS';
@@ -640,7 +640,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
 	public function check_charge_agreement_cancelled( $order, WC_Vipps_Agreement $agreement, $charge = false ): void {
-		$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps/MobilePay', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+		$order->update_status( 'cancelled', __( 'The agreement was cancelled or expired in Vipps/MobilePay', 'woo-vipps' ) );
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 		$order->save();
@@ -719,7 +719,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->complete_order( $order, $charge->id );
 
 			/* translators: Vipps/MobilePay Charge ID */
-			$message = sprintf( __( 'Charge completed (Charge ID: %s)', 'vipps-recurring-payments-gateway-for-woocommerce' ), $charge->id );
+			$message = sprintf( __( 'Charge completed (Charge ID: %s)', 'woo-vipps' ), $charge->id );
 			$order->add_order_note( $message );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Completed order for charge: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
@@ -731,7 +731,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 && ! wcs_order_contains_renewal( $order ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
 
-			$message = __( 'Waiting for you to capture the payment', 'vipps-recurring-payments-gateway-for-woocommerce' );
+			$message = __( 'Waiting for you to capture the payment', 'woo-vipps' );
 			$order->update_status( $this->default_reserved_charge_status, $message );
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge reserved: %s (%s)', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $charge->status ) );
 		}
@@ -755,7 +755,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// status: CANCELLED
 		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
-			$order->update_status( 'cancelled', __( 'Vipps/MobilePay payment cancelled.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->update_status( 'cancelled', __( 'Vipps/MobilePay payment cancelled.', 'woo-vipps' ) );
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge cancelled: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
@@ -763,7 +763,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// status: FAILED
 		if ( $charge->status === WC_Vipps_Charge::STATUS_FAILED ) {
-			$order->update_status( 'failed', __( 'Vipps/MobilePay payment failed.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$order->update_status( 'failed', __( 'Vipps/MobilePay payment failed.', 'woo-vipps' ) );
 			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, $charge );
 
 			// if subscription status is already pending-cancel, we should cancel it completely
@@ -851,7 +851,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$order->update_status( 'failed' );
 
 			/* translators: Error message */
-			$message = sprintf( __( 'Failed creating a charge: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $e->getMessage() );
+			$message = sprintf( __( 'Failed creating a charge: %s', 'woo-vipps' ), $e->getMessage() );
 			$order->add_order_note( $message );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Error in process_subscription_payment: %s', $order->get_id(), $e->getMessage() ) );
@@ -924,7 +924,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			if ( $diff->days > 365 ) {
 				/* translators: %s is the days as an integer since the order was created */
-				$err = sprintf( __( 'You cannot refund a charge that was made more than 365 days ago. This order was created %s days ago.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $diff->days );
+				$err = sprintf( __( 'You cannot refund a charge that was made more than 365 days ago. This order was created %s days ago.', 'woo-vipps' ), $diff->days );
 				throw new \RuntimeException( $err );
 			}
 		}
@@ -940,7 +940,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 			return true;
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
-			$msg = __( 'A temporary error occurred when refunding a payment through Vipps MobilePay. Please ensure the order is refunded manually or reset the order to "Processing" and try again.', 'vipps-recurring-payments-gateway-for-woocommerce' );
+			$msg = __( 'A temporary error occurred when refunding a payment through Vipps MobilePay. Please ensure the order is refunded manually or reset the order to "Processing" and try again.', 'woo-vipps' );
 			throw new \RuntimeException( $msg );
 		} catch ( WC_Vipps_Recurring_Exception $e ) {
 			// attempt to cancel charge instead
@@ -960,11 +960,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			// if the remaining refund amount is not equal to the amount we're trying to refund
 			// that probably means we are trying to partially refund a charge that hasn't yet cleared
 			if ( (float) $order->get_remaining_refund_amount() !== 0.00 ) {
-				$err = __( 'You can not partially refund a pending or due charge. Please wait till the payment clears first or refund the full amount instead.', 'vipps-recurring-payments-gateway-for-woocommerce' );
+				$err = __( 'You can not partially refund a pending or due charge. Please wait till the payment clears first or refund the full amount instead.', 'woo-vipps' );
 				throw new \RuntimeException( $err );
 			}
 
-			$err = __( 'An unexpected error occurred while refunding a payment in Vipps/MobilePay.', 'vipps-recurring-payments-gateway-for-woocommerce' );
+			$err = __( 'An unexpected error occurred while refunding a payment in Vipps/MobilePay.', 'woo-vipps' );
 			throw new \RuntimeException( $err );
 		}
 	}
@@ -1077,7 +1077,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$date_to_display = ucfirst( wcs_get_human_time_diff( $timestamp_gmt ) );
 
 		// translators: Vipps/MobilePay Charge ID, human diff timestamp
-		return sprintf( __( 'Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $charge->id, strtolower( $date_to_display ) );
+		return sprintf( __( 'Vipps/MobilePay charge created: %1$s. The charge will be complete %2$s.', 'woo-vipps' ), $charge->id, strtolower( $date_to_display ) );
 	}
 
 	/**
@@ -1128,7 +1128,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
 					/* translators: %s: The charge's status */
-					$order->add_order_note( sprintf( __( 'Could not capture charge because the status is not RESERVED or PARTIALLY_CAPTURED. Found status: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $charge->status ) );
+					$order->add_order_note( sprintf( __( 'Could not capture charge because the status is not RESERVED or PARTIALLY_CAPTURED. Found status: %s', 'woo-vipps' ), $charge->status ) );
 					$order->save();
 
 					return false;
@@ -1151,7 +1151,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return true;
 		} catch ( WC_Vipps_Recurring_Temporary_Exception $e ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Temporary error in capture_payment: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $e->getMessage() ) );
-			$this->admin_error( __( 'Vipps/MobilePay is temporarily unavailable.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			$this->admin_error( __( 'Vipps/MobilePay is temporarily unavailable.', 'woo-vipps' ) );
 
 			return false;
 		} catch ( WC_Vipps_Recurring_Config_Exception $e ) {
@@ -1228,7 +1228,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			}
 
 			if ( in_array( $agreement->status, [ WC_Vipps_Agreement::STATUS_STOPPED, 'EXPIRED' ], true ) ) {
-				$subscription->add_order_note( __( 'Payment gateway change request cancelled in Vipps/MobilePay', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+				$subscription->add_order_note( __( 'Payment gateway change request cancelled in Vipps/MobilePay', 'woo-vipps' ) );
 			}
 
 			if ( in_array( $agreement->status, [
@@ -1590,7 +1590,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 
 				if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
-					throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps/MobilePay. You can leave this page.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+					throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps/MobilePay. You can leave this page.', 'woo-vipps' ) );
 				}
 			}
 
@@ -1613,7 +1613,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 					if ( $counter > 1 ) {
 						// translators: %s: brand (Vipps or MobilePay)
-						wc_add_notice( sprintf( __( 'Different subscription products can not be purchased at the same time using %s.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $this->title ), 'error' );
+						wc_add_notice( sprintf( __( 'Different subscription products can not be purchased at the same time using %s.', 'woo-vipps' ), $this->title ), 'error' );
 
 						return [
 							'result'   => 'fail',
@@ -1642,7 +1642,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( $should_cancel_old ) {
 				if ( $is_gateway_change ) {
 					/* translators: Vipps/MobilePay Agreement ID */
-					$message = sprintf( __( 'Request to change gateway to Vipps/MobilePay with agreement ID: %s.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $response['agreementId'] );
+					$message = sprintf( __( 'Request to change gateway to Vipps/MobilePay with agreement ID: %s.', 'woo-vipps' ), $response['agreementId'] );
 					$subscription->add_order_note( $message );
 					$debug_msg .= 'Request to change gateway to Vipps' . "\n";
 				} elseif ( $is_subscription_switch ) {
@@ -1670,7 +1670,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, true );
 
 				/* translators: Vipps/MobilePay Agreement ID */
-				$message = sprintf( __( 'Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation.', 'vipps-recurring-payments-gateway-for-woocommerce' ), $response['agreementId'] );
+				$message = sprintf( __( 'Agreement created: %s. Customer sent to Vipps/MobilePay for confirmation.', 'woo-vipps' ), $response['agreementId'] );
 				$order->add_order_note( $message );
 			}
 
@@ -1816,7 +1816,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( $this->get_option( 'test_mode' ) === "yes" || WC_VIPPS_RECURRING_TEST_MODE ) {
 			$this->form_fields['title_test_api'] = [
 				'type'  => 'title',
-				'title' => __( 'Test API settings', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+				'title' => __( 'Test API settings', 'woo-vipps' ),
 			];
 
 			$this->form_fields['test_merchant_serial_number'] = $this->form_fields['merchant_serial_number'];
@@ -1881,12 +1881,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$this->api->get_access_token( true );
 				update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 1, true );
 
-				$this->admin_notify( __( 'Successfully authenticated with the Vipps/MobilePay API', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+				$this->admin_notify( __( 'Successfully authenticated with the Vipps/MobilePay API', 'woo-vipps' ) );
 			} catch ( Exception $e ) {
 				update_option( WC_Vipps_Recurring_Helper::OPTION_CONFIGURED, 0, true );
 
 				/* translators: %s: the error message returned from Vipps/MobilePay */
-				$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps/MobilePay API: %s', 'vipps-recurring-payments-gateway-for-woocommerce' ), $e->getMessage() ) );
+				$this->admin_error( sprintf( __( 'Could not authenticate with the Vipps/MobilePay API: %s', 'woo-vipps' ), $e->getMessage() ) );
 			}
 		}
 
@@ -1896,7 +1896,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// Validate that we have an MSN set, as it is required in Checkout.
 		$merchant_serial_number = $test_mode ? $this->get_option( 'test_merchant_serial_number' ) : $this->get_option( 'merchant_serial_number' );
 		if ( empty( $merchant_serial_number ) ) {
-			$this->admin_notify( __( 'You need to provide a Merchant Serial Number before you can enable Checkout.', 'vipps-recurring-payments-gateway-for-woocommerce' ), "error" );
+			$this->admin_notify( __( 'You need to provide a Merchant Serial Number before you can enable Checkout.', 'woo-vipps' ), "error" );
 
 			// Disable checkout if we do not have an MSN value.
 			$this->update_option( 'checkout_enabled', 'no' );
@@ -1940,7 +1940,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'post_meta' => [
 				'_agreement_id' => [
 					'value' => WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID ),
-					'label' => __( 'Vipps/MobilePay Agreement ID', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+					'label' => __( 'Vipps/MobilePay Agreement ID', 'woo-vipps' ),
 				]
 			],
 		];
@@ -1964,7 +1964,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		try {
 			$this->api->get_agreement( $agreement_id );
 		} catch ( Exception $e ) {
-			throw new \RuntimeException( __( 'This Vipps/MobilePay agreement ID is invalid.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+			throw new \RuntimeException( __( 'This Vipps/MobilePay agreement ID is invalid.', 'woo-vipps' ) );
 		}
 	}
 
@@ -2026,7 +2026,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data(
 					$order,
 					WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
-					__( 'Pending cancellation', 'vipps-recurring-payments-gateway-for-woocommerce' )
+					__( 'Pending cancellation', 'woo-vipps' )
 				);
 
 				$order->save();
@@ -2037,7 +2037,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data(
 					$order,
 					WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
-					__( 'Cancelled', 'vipps-recurring-payments-gateway-for-woocommerce' )
+					__( 'Cancelled', 'woo-vipps' )
 				);
 
 				$order->save();
@@ -2048,7 +2048,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data(
 					$order,
 					WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX,
-					__( 'On hold', 'vipps-recurring-payments-gateway-for-woocommerce' )
+					__( 'On hold', 'woo-vipps' )
 				);
 
 				$order->save();
@@ -2145,11 +2145,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				], true ) ) {
 					$idempotency_key = $this->get_idempotency_key( $order );
 					$this->api->cancel_charge( $agreement_id, $charge_id, $idempotency_key );
-					$order->add_order_note( __( 'Cancelled due charge in Vipps/MobilePay.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+					$order->add_order_note( __( 'Cancelled due charge in Vipps/MobilePay.', 'woo-vipps' ) );
 					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelled DUE charge with ID: %s for agreement with ID: %s', $order_id, $charge_id, $agreement_id ) );
 				}
 			} catch ( Exception $e ) {
-				$order->add_order_note( __( 'Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
+				$order->add_order_note( __( 'Could not cancel charge in Vipps/MobilePay. Please manually check the status of this order if you plan to process a new renewal order!', 'woo-vipps' ) );
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Failed cancelling DUE charge with ID: %s for agreement with ID: %s. Error: %s', $order_id, $charge_id, $agreement_id, $e->getMessage() ) );
 			}
 		}
@@ -2517,7 +2517,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				return;
 			}
 
-			$message = __( 'Subscription cancelled by the customer via the Vipps MobilePay app.', 'vipps-recurring-payments-gateway-for-woocommerce' );
+			$message = __( 'Subscription cancelled by the customer via the Vipps MobilePay app.', 'woo-vipps' );
 			$subscription->set_status( 'cancelled', $message );
 			$subscription->save();
 		}
@@ -2703,7 +2703,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$username    = wc_create_new_customer_username( $email );
 			$customer_id = wc_create_new_customer( $email, $username, null, [
 				'first_name'    => 'Anonymous Vipps MobilePay Customer',
-				'user_nicename' => __( 'Anonymous Vipps MobilePay Customer', 'vipps-recurring-payments-gateway-for-woocommerce' ),
+				'user_nicename' => __( 'Anonymous Vipps MobilePay Customer', 'woo-vipps' ),
 			] );
 
 			update_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID, $customer_id );

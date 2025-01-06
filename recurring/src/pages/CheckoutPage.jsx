@@ -101,7 +101,7 @@ export default function CheckoutPage () {
 					<a href={continueShoppingUrl}
 					   className={'btn button vipps-recurring-checkout-page__error__action'}>
 						{__('Continue shopping',
-							'vipps-recurring-payments-gateway-for-woocommerce')}
+							'woo-vipps')}
 					</a>
 				</p>
 			</div> : <div className={'vipps-recurring-checkout-page__loading'}>
@@ -119,7 +119,7 @@ export default function CheckoutPage () {
 
 				{sessionStatus?.status === 'EXPIRED' && <div>
 					{__('Checkout session expired. Please refresh to start a new session.',
-						'vipps-recurring-payments-gateway-for-woocommerce')}
+						'woo-vipps')}
 				</div>}
 			</div>}
 		</div>

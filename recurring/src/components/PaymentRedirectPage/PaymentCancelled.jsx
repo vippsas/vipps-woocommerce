@@ -14,19 +14,19 @@ export default function PaymentCancelled ({ continueShoppingUrl, logo }) {
 					<p>
 						<h1 className={'vipps-recurring-payment-redirect-page__container__content__text__heading'}>
 							{__('Order cancelled',
-								'vipps-recurring-payments-gateway-for-woocommerce')}
+								'woo-vipps')}
 						</h1>
 					</p>
 
 					<p>
 						{__('Your payment has been cancelled.',
-							'vipps-recurring-payments-gateway-for-woocommerce')}
+							'woo-vipps')}
 					</p>
 
 					<p>
 						<a href={continueShoppingUrl} className={"btn button vipps-recurring-payment-redirect-page__container__content__text__action"}>
 						{__('Continue shopping',
-							'vipps-recurring-payments-gateway-for-woocommerce')}
+							'woo-vipps')}
 						</a>
 					</p>
 				</div>
