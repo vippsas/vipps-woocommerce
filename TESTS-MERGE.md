@@ -6,11 +6,10 @@ LP Testing 06.01.2025
         - [x] vipps
             -  Works, but log shows error: "2024-01-06T11:24:06+00:00 ERROR Kunne ikke sende bilde til Vipps -  413 Request Entity Too Large"
 
-        - [x] kort
-            - "unable to contact Vipps at this time; check your network and try again." (I don't remember this working before. Maybe my woocommerce is not set up right.)
+        - [ ] Card - I don't have WooPayments configured
 
         - [x] klarna integration - redirected to correct uri /checkout/order-pay.
-            - (Can't pay, but I did not even manage to do this before). 
+
 
     - [x] settings are working
         - [x] general
