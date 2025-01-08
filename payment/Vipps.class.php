@@ -1199,7 +1199,11 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
     public function recurring_settings_page () {
-        wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
+        if (class_exists('WC_Vipps_Recurring')) {
+            wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
+        } else {
+            wp_safe_redirect(admin_url('/admin.php?page=vipps_admin_menu'), 302);
+        }
         exit();
     }
 
