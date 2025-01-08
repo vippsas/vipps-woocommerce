@@ -110,7 +110,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Version 4.0.0:
-This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
+This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Recurring payments requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
 
 == Frequently Asked Questions ==
 
