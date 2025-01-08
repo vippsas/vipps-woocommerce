@@ -46,7 +46,6 @@ class WC_Vipps_Recurring {
 	}
 
 	public function activate() {
-error_log("activating recurring");
 		global $wp_rewrite;
 
 		$this->install();
@@ -86,7 +85,6 @@ error_log("activating recurring");
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 */
 	public static function deactivate() {
-error_log("deactivating recurring");
 		WC_Vipps_Recurring::get_instance()->gateway()->webhook_teardown();
 	}
 
