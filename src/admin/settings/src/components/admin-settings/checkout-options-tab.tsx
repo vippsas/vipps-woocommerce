@@ -1,3 +1,4 @@
+import fixCheckoutName from '../../lib/fix-checkout-name';
 import { gettext } from '../../lib/wp-data';
 import { useWP } from '../../wp-options-provider';
 import { CheckboxFormField, InputFormField } from '../options-form-fields';
@@ -20,7 +21,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
     <div>
       <p className="vipps-mobilepay-react-tab-description">
         <UnsafeHtmlText
-          htmlString={gettext("checkout_options.description")}
+          htmlString={fixCheckoutName(gettext("checkout_options.description"), getOption('payment_method_name'))}
         />
       </p>
 
@@ -90,9 +91,9 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       )}
 
       <h3 className="vipps-mobilepay-react-tab-description">
-        {gettext("checkout_shipping.title")}
+        {fixCheckoutName(gettext("checkout_shipping.title"), getOption('payment_method_name'))}
       </h3>
-      <p>{gettext("checkout_shipping.description")}</p>
+      <p>{fixCheckoutName(gettext("checkout_shipping.description"), getOption('payment_method_name'))}</p>
 
       {/* Renders a checkbox to enable Posten Norge  */}
       <CheckboxFormField

@@ -6,7 +6,7 @@
  */
 const fixCheckoutName = (str: string, paymentMethod: string) =>
   str.replace(
-    "Vipps MobilePay Checkout",
+    /Vipps MobilePay Checkout/g,
     paymentMethod === "Vipps" ? "Vipps Checkout" : "MobilePay Checkout"
   );
 
