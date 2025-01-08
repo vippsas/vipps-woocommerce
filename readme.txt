@@ -284,7 +284,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 = 2025-01-13 version 4.0.0 =
-This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
+This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Recurring payments requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
 Fixes some spurious warnings
 
 = 2024-12-18 version 3.0.9 =
