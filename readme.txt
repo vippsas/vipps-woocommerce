@@ -49,7 +49,7 @@ With Vipps/MobilePay recurring payments you can:
 
 See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/) for an overview.
 
-Recurring payments require [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/).
+Recurring payments require [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/) and a Vipps MobilePay MSN with recurring payments added.
 
 === Mobilepay Reservations are currently for 14 days ===
 When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 14 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
