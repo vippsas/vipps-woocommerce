@@ -1013,17 +1013,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => sprintf(__("When using %1\$s, you have the option to use %1\$s specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the %1\$s screen.", 'woo-vipps'), Vipps::CheckoutName())
                     ),
 
-                'checkout_shipping_simple_vipps' => array(
-                    'title' => __('Shipping alternatives available with Vipps Checkout', 'woo-vipps'),
+                'checkout_shipping_simple' => array(
+                    'title' => sprintf(__('Shipping alternatives available with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                     'type'  => 'title',
-                    'description' => __('When you use Checkout, you have a variety of shipping options to choose from, giving you even more choices from certain shipping providers.')
+                    'description' => sprintf(__('When you use %1$s, you have a variety of shipping options to choose from, giving you even more choices from certain shipping providers.'), Vipps::CheckoutName())
                     ),
 
-                'checkout_shipping_simple_mobilepay' => array(
-                    'title' => __('Shipping alternatives available with MobilePay Checkout', 'woo-vipps'),
-                    'type'  => 'title',
-                    'description' => __('When you use Checkout, you have a variety of shipping options to choose from, giving you even more choices from certain shipping providers.')
-                    ),
 
                 'vcs_posten' => array(
                         'title'       => __('Posten Norge', 'woo-vipps'),

@@ -5,18 +5,10 @@ import { useWP } from '../wp-options-provider';
 import { invertTruth, WPCheckbox, WPFormField, WPInput, WPLabel, WPOption, WPSelect, WPTextarea } from './form-elements';
 import { UnsafeHtmlText } from './unsafe-html-text';
 
-interface PropsWithCheckoutBrandFix {
-  /**
-   * Whether to replace Vipps Checkout in title and description with MobilePay Checkout (workaround). LP 03.01.2025
-   */
-  replaceCheckoutBrand?: boolean;
-}
-
-
 /**
  * Represents the props for the options form fields component.
  */
-interface Props extends PropsWithCheckoutBrandFix {
+interface Props {
   /**
    * The name of the field.
    */

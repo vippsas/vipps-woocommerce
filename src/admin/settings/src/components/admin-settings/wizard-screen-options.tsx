@@ -27,7 +27,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
   const showExternals = showExternalKlarna;
   
-  // TODO: test if this works when the first select onChange sets the option.
   const paymentMethod = getOption("payment_method_name");
 
   return (
