@@ -1186,9 +1186,21 @@ jQuery('a.webhook-adder').click(function (e) {
         $adminSettings = VippsAdminSettings::instance();
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
+
         add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 90);
+
+        if (class_exists('WC_Vipps_Recurring')) {
+            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 95);
+        }
+
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
+    }
+
+    // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
+    public function recurring_settings_page () {
+        wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
+        exit();
     }
 
     public function add_meta_boxes () {
