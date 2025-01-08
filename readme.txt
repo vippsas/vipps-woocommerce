@@ -109,17 +109,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 3.0.9 fixes the wrapper of the button on the terms-and-condition page for Express Checkout
-Version 3.0.8 includes a new Buy-now block for Express Checkout that works with the new standard Product Collection block.
-Version 3.0.7 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
-Version 3.0.6 Fixes the problem caused by the 3.0.5 fix that disabled Vipps Checkout
-Version 3.0.5 Fixes compatibility issues with Checkout, Checkout for Recurring, WooCommerce Subscriptions and Gutenberg Checkout block
-In version 3.0.0  we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the co nfiguraton experience as the features improve and the settings grow more complicated.
-
-We also support the new block-based product editor from this version on.
-
-To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add e
-ssential and security fixes to this branch.
+Version 4.0.0:
+This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
 
 == Frequently Asked Questions ==
 
@@ -292,6 +283,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-01-13 version 4.0.0 =
+This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
+Fixes some spurious warnings
+
 = 2024-12-18 version 3.0.9 =
 Fix wrapper of Express Checkout button on the terms-and-condition page
 Preliminary Swedish translations
