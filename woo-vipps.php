@@ -69,7 +69,7 @@ if ($woo_active) {
     /* Load support for recurring payments if the stand-alone plugin isn't active IOK 2024-09-27  */
     /* Moved to a separate file and the action moved to early in plugins_loaded so we can try to do this as gracefully as possible. 
        This will also handle the activation and deactivation code for the recurring features. IOK 2024-12-04 */
-    require_once(dirname(__FILE__) . "/maybe_load_recurring.php");
+    require_once(dirname(__FILE__) . "/recurring/maybe_load.php");
 }
 
 // Declare our support for the HPOS feature IOK 2022-12-07

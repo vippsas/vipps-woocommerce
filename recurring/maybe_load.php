@@ -43,7 +43,7 @@ add_action('plugins_loaded', function () {
     }
 
     // It should now be safe to load the recurring support.
-    require_once(dirname(__FILE__) . "/recurring/recurring.php");
+    require_once(dirname(__FILE__) . "/recurring.php");
 
     // We need to do the old plugin de/activation logic for the standalone plugin here:
     // If we are here and we have not been previously activated, we should call the "activate" hook and note that we have been activated.
