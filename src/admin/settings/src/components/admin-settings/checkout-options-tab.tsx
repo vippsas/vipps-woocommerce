@@ -17,11 +17,12 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
   const showExternals = showExternalKlarna;
 
+  const paymentMethod = getOption('payment_method_name');
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description">
         <UnsafeHtmlText
-          htmlString={fixCheckoutName(gettext("checkout_options.description"), getOption('payment_method_name'))}
+          htmlString={fixCheckoutName(gettext("checkout_options.description"), paymentMethod)}
         />
       </p>
 
@@ -76,9 +77,9 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       {showExternals && (
         <>
           <h3 className="vipps-mobilepay-react-trab-description">
-            {gettext("checkout_external_payment_title.title")}
+            {fixCheckoutName(gettext("checkout_external_payment_title.title"), paymentMethod)}
           </h3>
-          <p>{gettext("checkout_external_payment_title.description")}</p>
+          <p>{fixCheckoutName(gettext("checkout_external_payment_title.description"), paymentMethod)}</p>
           {showExternalKlarna && (
             <CheckboxFormField
               name="checkout_external_payments_klarna"
@@ -91,9 +92,9 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       )}
 
       <h3 className="vipps-mobilepay-react-tab-description">
-        {fixCheckoutName(gettext("checkout_shipping.title"), getOption('payment_method_name'))}
+        {fixCheckoutName(gettext("checkout_shipping.title"), paymentMethod)}
       </h3>
-      <p>{fixCheckoutName(gettext("checkout_shipping.description"), getOption('payment_method_name'))}</p>
+      <p>{fixCheckoutName(gettext("checkout_shipping.description"), paymentMethod)}</p>
 
       {/* Renders a checkbox to enable Posten Norge  */}
       <CheckboxFormField
