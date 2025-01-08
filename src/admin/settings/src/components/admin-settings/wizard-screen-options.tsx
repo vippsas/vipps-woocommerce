@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { gettext } from '../../lib/wp-data';
-import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
-import { WPButton, WPFormField, WPLabel, boolToTruth, truthToBool } from '../form-elements';
-import { useWP } from '../../wp-options-provider';
+import fixCheckoutName from '../../lib/fix-checkout-name';
 import { detectPaymentMethodName } from '../../lib/payment-method';
+import { gettext } from '../../lib/wp-data';
+import { useWP } from '../../wp-options-provider';
+import { WPButton, WPFormField, WPLabel, boolToTruth, truthToBool } from '../form-elements';
+import { CheckboxFormField, InputFormField, SelectFormField } from '../options-form-fields';
 import { UnsafeHtmlText } from '../unsafe-html-text';
 
 /**
@@ -17,8 +18,7 @@ interface Props {
 
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
   const { getOption, setOption, hasOption } = useWP();
-  // const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
-  const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('CHECKOUT'); // FIXME: temporary override. remove line when done. LP 03.01.2025
+  const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
 
 
   // For the "CHECKOUT" step
@@ -26,15 +26,9 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
   const showHelthjem = getOption("vcs_helthjem") === "yes";
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
   const showExternals = showExternalKlarna;
-
-
-  const isCurrentPaymentVipps = getOption("payment_method_name") === "Vipps";
-  /** This is bad, you're welcome.
-  Conditionally replace vipps with mobilepay in gettext key strings if the user selected brand is not Vipps. LP 03.01.2025 */
-  const maybeReplaceVippsByMobilePay = (str: string) =>
-    isCurrentPaymentVipps
-      ? str
-      : str.replace("vipps", "mobilepay");
+  
+  // TODO: test if this works when the first select onChange sets the option.
+  const paymentMethod = getOption("payment_method_name");
 
   return (
     <>
@@ -162,32 +156,32 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
       {step === 'CHECKOUT_CONFIRM' && (
         <>
         <div className="vipps-mobilepay-react-checkout-confirm">
-          <h1 className="title">{ gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.title.vipps' )) }</h1>
+          <h1 className="title">{ fixCheckoutName(gettext( 'checkout_confirm.title' ), getOption("payment_method_name")) }</h1>
           <div className="body">
             <div className="list">
-              <strong>{ gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.paragraph1.header.vipps' )) }</strong>
+              <strong>{ fixCheckoutName(gettext( 'checkout_confirm.paragraph1.header' ), paymentMethod) }</strong>
               <ul>
-                <li>{gettext('checkout_confirm.paragraph1.first')}</li>
-                <li>{gettext('checkout_confirm.paragraph1.second')}</li>
-                <li>{gettext('checkout_confirm.paragraph1.third')}</li>
+                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph1.first'), paymentMethod)}</li>
+                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph1.second'), paymentMethod)}</li>
+                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph1.third'), paymentMethod)}</li>
               </ul>
-              <strong>{gettext('checkout_confirm.paragraph2.header')}</strong>
+              <strong>{fixCheckoutName(gettext('checkout_confirm.paragraph2.header'), paymentMethod)}</strong>
               <ul>
-                <li>{gettext('checkout_confirm.paragraph2.first')}</li>
-                <li>{gettext('checkout_confirm.paragraph2.second')}</li>
+                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph2.first'), paymentMethod)}</li>
+                <li>{fixCheckoutName(gettext('checkout_confirm.paragraph2.second'), paymentMethod)}</li>
               </ul>
             </div>
-            <img src={gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.img.vipps.src' )) } alt={gettext(maybeReplaceVippsByMobilePay( 'checkout_confirm.img.vipps.alt' )) }/>
+            <img src={gettext( paymentMethod === "Vipps" ? 'checkout_confirm.img.vipps.src' : 'checkout_confirm.img.mobilepay.src' )} alt={gettext( paymentMethod === "Vipps" ? 'checkout_confirm.img.vipps.alt' : 'checkout_confirm.img.vipps.alt') }/>
           </div>
           <div className="vipps-mobilepay-react-button-actions">
             <WPButton variant="primary" isLoading={isLoading} onClick={() => {
               setOption('vipps_checkout_enabled', boolToTruth(true));
               setStep('CHECKOUT');
             }}>
-              {gettext('checkout_confirm.accept')}
+              {fixCheckoutName(gettext('checkout_confirm.accept'), paymentMethod)}
             </WPButton>
             <WPButton variant="secondary">
-              {gettext('checkout_confirm.skip')}
+              {fixCheckoutName(gettext('checkout_confirm.skip'), paymentMethod)}
             </WPButton>
           </div>
         </div>
@@ -198,16 +192,16 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
         <>
           <div className="vipps-mobilepay-react-checkout-confirm">
             <h1 className="vipps-mobilepay-react-tab-description title">
-              {gettext(maybeReplaceVippsByMobilePay("checkout_options_simple_vipps.title"))}
+              {fixCheckoutName(gettext("checkout_options_simple.title"), paymentMethod)}
             </h1>
-            <p>{gettext(maybeReplaceVippsByMobilePay("checkout_options_simple_vipps.description"))}</p>
+            <p>{fixCheckoutName(gettext("checkout_options_simple.description"), paymentMethod)}</p>
 
             {/* Renders a checkbox to enable the creation of new customers on Checkout */}
             <CheckboxFormField
               name="checkoutcreateuser"
-              titleKey={maybeReplaceVippsByMobilePay("checkoutcreateuser_simple_vipps.title")}
-              labelKey={maybeReplaceVippsByMobilePay("checkoutcreateuser_simple_vipps.label")}
-              descriptionKey={maybeReplaceVippsByMobilePay("checkoutcreateuser_simple_vipps.description")}
+              titleKey={"checkoutcreateuser_simple.title"}
+              labelKey={"checkoutcreateuser_simple.label"}
+              descriptionKey={"checkoutcreateuser_simple.description"}
             />
 
             {/* Renders a checkbox to enable dynamic shipping (inverted checkbox from static shipping details) */}
@@ -229,9 +223,9 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             />
 
             <h3 className="vipps-mobilepay-react-tab-description">
-              {gettext(maybeReplaceVippsByMobilePay("checkout_shipping_simple_vipps.title"))}
+              {fixCheckoutName(gettext("checkout_shipping_simple.title"), paymentMethod)}
             </h3>
-            <p>{gettext(maybeReplaceVippsByMobilePay("checkout_shipping_simple_vipps.description"))}</p>
+            <p>{fixCheckoutName(gettext("checkout_shipping_simple.description"), paymentMethod)}</p>
 
             {/* Renders a checkbox to enable Posten Norge  */}
             <CheckboxFormField
@@ -325,9 +319,9 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             {showExternals && (
               <>
                 <h3 className="vipps-mobilepay-react-trab-description">
-                  {gettext("checkout_external_payment_title_simple.title")}
+                  {fixCheckoutName(gettext("checkout_external_payment_title_simple.title"), paymentMethod)}
                 </h3>
-                <p>{gettext("checkout_external_payment_title_simple.description")}</p>
+                <p>{fixCheckoutName(gettext("checkout_external_payment_title_simple.description"), paymentMethod)}</p>
                 {showExternalKlarna && (
                   <CheckboxFormField
                     name="checkout_external_payments_klarna"
@@ -340,10 +334,10 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             )}
             <div className="vipps-mobilepay-react-button-actions">
               <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
-                {gettext('previous_step')}
+                {fixCheckoutName(gettext('previous_step'), paymentMethod)}
               </WPButton>
               <WPButton variant="primary" isLoading={isLoading}>
-                {gettext('save_changes')}
+                {fixCheckoutName(gettext('save_changes'), paymentMethod)}
               </WPButton>
             </div>
           </div>

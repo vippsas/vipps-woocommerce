@@ -914,19 +914,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     ),
 
-                // Hardcode these brands, I know its bad, you're welcome. LP 03.01.2025
-                'checkout_options_simple_vipps' => array(
-                    'title' => __('Get started with Vipps Checkout', 'woo-vipps'), 
+                'checkout_options_simple' => array(
+                    'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                     'type'  => 'title',
                     'class' => 'tab',
-                    'description' => sprintf(__("Vipps Checkout is a service from %1\$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!", 'woo-vipps'), Vipps::CompanyName()),
-                    ),
-
-                'checkout_options_simple_mobilepay' => array(
-                    'title' => __('Get started with MobilePay Checkout', 'woo-vipps'), 
-                    'type'  => 'title',
-                    'class' => 'tab',
-                    'description' => sprintf(__("MobilePay Checkout is a service from %1\$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with MobilePay, Visa, and MasterCard!", 'woo-vipps'), Vipps::CompanyName()),
+                    'description' => sprintf(__('%1$s is a service from %2$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     ),
 
                 'vipps_checkout_enabled' => array(
@@ -953,24 +945,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => $vippscreateuserdefault,
                         ),
 
-                'checkoutcreateuser_simple_vipps' => array (
-                        'title'       => __('Do you want to create new customers on Vipps Checkout?', 'woo-vipps'),
-                        'label'       => __('Yes, create new customers on Vipps Checkout', 'woo-vipps'),
+                'checkoutcreateuser_simple' => array (
+                        'title'       => sprintf(__('Do you want to create new customers on %1$s?', 'woo-vipps'), Vipps::CheckoutName()),
+                        'label'       => sprintf(__('Yes, create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'type'        => 'checkbox',
                         'description' => sprintf(__('By creating new customers, you avoid orders showing up as guest orders. We recommend combining this with Log in with %1$s for a full overview of your customers.', 'woo-vipps'), Vipps::CompanyName()),
                         'default'     => $vippscreateuserdefault,
                         ),
 
-                'checkoutcreateuser_simple_mobilepay' => array (
-                        'title'       => __('Do you want to create new customers on MobilePay Checkout?', 'woo-vipps'),
-                        'label'       => __('Yes, create new customers on MobilePay Checkout', 'woo-vipps'),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('By creating new customers, you avoid orders showing up as guest orders. We recommend combining this with Log in with %1$s for a full overview of your customers.', 'woo-vipps'), Vipps::CompanyName()),
-                        'default'     => $vippscreateuserdefault,
-                        ),
-
-
-                'enablestaticshipping_checkout' => array(
+            'enablestaticshipping_checkout' => array(
                         'title'       => sprintf(__('Enable static shipping for %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'label'       => __('Enable static shipping', 'woo-vipps'),
                         'type'        => 'checkbox',
@@ -1565,15 +1548,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'portal' => sprintf(__('%1$s Portal', 'woo-vipps'), Vipps::CompanyName()),
                 'support' => [
                     'title' => __('Support', 'woo-vipps'),
-                    'description' => __('If you have any questions related to this plugin, you are welcome to contact the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
+                    'description' => __('If you have any questions related to this plugin, you are welcome to check out the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
                 ],
             ],
             'checkout_confirm' => [
-                'title' => [
-                    // For the settings wizard using get_option will not work since this method is called before the wizard step is saved. Hard code the two checkout names. LP 02.01.2025
-                    'vipps' => __('Upgrade your customer experience with Vipps Checkout', 'woo-vipps'),
-                    'mobilepay' => __('Upgrade your customer experience with MobilePay Checkout', 'woo-vipps'),
-                ],
+                'title' => sprintf(__('Upgrade your customer experience with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'img' => [
                     'vipps' => [
                         // Dont use __FILE__ here now because the plugin file structure will be restructured in the recurring merge. LP 02.01.2025
@@ -1587,12 +1566,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ],
                 ],
                 'paragraph1' => [
-                    'header' => [
-                        // For the settings wizard using get_option will not work since this method is called before the wizard step is saved. Hard code the two checkout names. LP 02.01.2025
-                        'vipps' => __('Why Vipps Checkout?', 'woo-vipps'),
-                        'mobilepay' => __('Why MobilePay Checkout?', 'woo-vipps'),
-                    ],
-                    'first' => __('Effortless Payments: Accept payments smoothly with Vipps, Visa, and Mastercard.', 'woo-vipps'),
+                    'header' => sprintf(__('Why %1$s?', 'woo-vipps'), Vipps::CheckoutName()),
+                    'first' => __('Effortless Payments: Accept payments smoothly with Vipps/MobilePay, Visa, and Mastercard.', 'woo-vipps'),
                     'second' => __('Streamlined Shopping Process: Simplify your customers\' journey from cart to confirmation', 'woo-vipps'),
                     'third' => __('All-in-One Solution: No fixed monthly fees-just pure convenience.', 'woo-vipps'),
                 ],
@@ -1601,10 +1576,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'first' => __('You want simple, varied payment options', 'woo-vipps'),
                     'second' => __('You need easy shipping solutions with diverse choices.', 'woo-vipps'),
                 ],
-                'accept' => [
-                    'vipps' => __('Start using Vipps Checkout', 'woo-vipps'),
-                    'mobilepay' => __('Start using MobilePay Checkout', 'woo-vipps'),
-                ],
+                'accept' => sprintf(__('Start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'skip' => __('Skip & save', 'woo-vipps'),
             ],
         ];

@@ -14,7 +14,7 @@ import { NotificationBanner, type NotificationBannerProps } from '../notificatio
 import { isPaymentMethodCurrencySupported, getPaymentMethodSupportedCurrencies } from '../../lib/payment-method';
 
 // Development option to force the wizard screen to be shown. This is useful for testing the wizard screen.
-const __DEV_FORCE_WIZARD_SCREEN = true;
+const __DEV_FORCE_WIZARD_SCREEN = false;
 
 /**
  * A React component that renders the admin settings page.
