@@ -276,13 +276,16 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Woo Subscriptions uses `wp_safe_redirect()` during a gateway change, which will not allow us to redirect to the Vipps MobilePay API
 		// Unless we whitelist the domains specifically
+		// https://developer.vippsmobilepay.com/docs/knowledge-base/servers/
 		add_filter( 'allowed_redirect_hosts', function ( $hosts ) {
 			return array_merge( $hosts, [
 				// Production servers
 				'api.vipps.no',
-				'pay.vipps.no',
 				'api.mobilepay.dk',
 				'api.mobilepay.fi',
+				'pay.vipps.no',
+				'pay.mobilepay.dk',
+				'pay.mobilepay.fi',
 				// MT servers
 				'apitest.vipps.no',
 				'pay-mt.vipps.no',
@@ -585,10 +588,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 && $this->auto_capture_mobilepay ) {
 			$order->save();
 
-			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'woo-vipps' ) );
-			$this->maybe_capture_payment( $order_id );
+			if ( $this->maybe_capture_payment( $order_id ) ) {
+				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'woo-vipps' ) );
 
-			return 'SUCCESS';
+				return 'SUCCESS';
+			}
 		}
 
 		$is_direct_capture = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
@@ -1085,16 +1089,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param $order_id
 	 *
+	 * @return bool
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function maybe_capture_payment( $order_id ): void {
+	public function maybe_capture_payment( $order_id ): bool {
 		$order = wc_get_order( $order_id );
 
 		if ( ! WC_Vipps_Recurring_Helper::can_capture_charge_for_order( $order ) ) {
-			return;
+			return false;
 		}
 
 		$this->capture_payment( $order );
+
+		return true;
 	}
 
 	/**
@@ -1192,7 +1199,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	private function end_gateway_change_checking( $subscription ) {
 		$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
-		$subscription->delete_meta_data( WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
 		$subscription->delete_meta_data( '_new_agreement_id' );
 		$subscription->delete_meta_data( '_old_agreement_id' );
 	}
@@ -1579,7 +1585,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 * this will prevent duplicate transactions
 			 */
 			$agreement_id              = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
-			$already_swapping_to_vipps = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS );
+			$already_swapping_to_vipps = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE );
 
 			if ( $agreement_id && ( ! $is_gateway_change || $already_swapping_to_vipps ) && ! $is_failed_renewal_order ) {
 				if ( ! $already_swapping_to_vipps ) {
@@ -1654,7 +1660,6 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_old_agreement_id', WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription ) );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, '_new_agreement_id', $response['agreementId'] );
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE, true );
-				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS, true );
 			}
 
 			if ( ! $is_gateway_change ) {
@@ -2419,25 +2424,27 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return add_query_arg( $args, $base_url );
 	}
 
-	private function maybe_get_subscription_id_from_agreement_webhook( array $webhook_data ) {
+	private function maybe_get_subscription_from_agreement_webhook( array $webhook_data ) {
 		$order_id = $webhook_data['agreementExternalId'];
 
 		// Check if agreementExternalId is not set, we can get the subscription from agreementId
 		if ( empty( $order_id ) && isset( $webhook_data['agreementId'] ) ) {
 			$agreement_id = $webhook_data['agreementId'];
 
-			$subscription_ids = get_posts( [
-				'limit'        => 1,
-				'post_type'    => 'shop_subscription',
-				'post_status'  => [ 'wc-active', 'wc-pending', 'wc-on-hold' ],
-				'meta_key'     => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
-				'meta_compare' => '=',
-				'meta_value'   => $agreement_id,
-				'fields'       => 'ids',
+			$subscriptions = wcs_get_subscriptions( [
+				'subscriptions_per_page' => 1,
+				'subscription_status'    => [ 'active', 'pending', 'on-hold' ],
+				'meta_query'             => [
+					[
+						'key'     => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
+						'compare' => '=',
+						'value'   => $agreement_id
+					]
+				]
 			] );
 
-			if ( ! empty( $subscription_ids ) ) {
-				return array_pop( $subscription_ids );
+			if ( ! empty( $subscriptions ) ) {
+				return array_pop( $subscriptions );
 			}
 		}
 
@@ -2506,7 +2513,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				return;
 			}
 
-			$subscription_id = $this->maybe_get_subscription_id_from_agreement_webhook( $webhook_data );
+			$subscription_id = $this->maybe_get_subscription_from_agreement_webhook( $webhook_data );
 			if ( empty( $subscription_id ) ) {
 				return;
 			}

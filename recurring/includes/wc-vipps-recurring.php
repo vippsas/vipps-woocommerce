@@ -734,18 +734,20 @@ class WC_Vipps_Recurring {
 	 * Check the status of gateway change requests
 	 */
 	public function check_gateway_change_agreement_statuses() {
-		$posts = get_posts( [
-			'post_type'    => 'shop_subscription',
-			'post_status'  => [ 'wc-active', 'wc-pending', 'wc-on-hold' ],
-			'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE,
-			'meta_compare' => '=',
-			'meta_value'   => 1,
-			'return'       => 'ids',
+		$subscriptions = wcs_get_subscriptions( [
+			'subscription_status' => [ 'active', 'pending', 'on-hold' ],
+			'meta_query'          => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE,
+					'compare' => '=',
+					'value'   => 1
+				]
+			]
 		] );
 
-		foreach ( $posts as $post ) {
+		foreach ( $subscriptions as $subscription ) {
 			// check charge status
-			$this->gateway()->maybe_process_gateway_change( $post->ID );
+			$this->gateway()->maybe_process_gateway_change( $subscription->get_id() );
 		}
 	}
 
@@ -753,19 +755,21 @@ class WC_Vipps_Recurring {
 	 * Update a subscription's details in the app
 	 */
 	public function update_subscription_details_in_app() {
-		$posts = get_posts( [
-			'limit'        => 5,
-			'post_type'    => 'shop_subscription',
-			'post_status'  => [ 'wc-active', 'wc-pending-cancel', 'wc-cancelled', 'wc-on-hold' ],
-			'meta_key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP,
-			'meta_compare' => '=',
-			'meta_value'   => 1,
-			'return'       => 'ids',
+		$subscriptions = wcs_get_subscriptions( [
+			'subscriptions_per_page' => 5,
+			'subscription_status'    => [ 'active', 'pending-cancel', 'cancelled', 'on-hold' ],
+			'meta_query'             => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP,
+					'compare' => '=',
+					'value'   => 1,
+				]
+			]
 		] );
 
-		foreach ( $posts as $post ) {
+		foreach ( $subscriptions as $subscription ) {
 			// check charge status
-			$this->gateway()->maybe_update_subscription_details_in_app( $post->ID );
+			$this->gateway()->maybe_update_subscription_details_in_app( $subscription->get_id() );
 		}
 	}
 
@@ -785,7 +789,7 @@ class WC_Vipps_Recurring {
 
 			// If this order has been manually updated in the mean-time, we no longer want to delete it.
 			// Similarly, if it has a billing email we don't want to delete it.
-			$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || !$order->get_billing_email();
+			$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
 
 			if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || $empty_email ) {
 				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION );
