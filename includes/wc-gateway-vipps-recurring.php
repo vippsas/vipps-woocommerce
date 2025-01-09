@@ -588,10 +588,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			 && $this->auto_capture_mobilepay ) {
 			$order->save();
 
-			$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
-			$this->maybe_capture_payment( $order_id );
+			if ( $this->maybe_capture_payment( $order_id ) ) {
+				$order->add_order_note( __( 'MobilePay payments are automatically captured to prevent the payment reservation from automatically getting cancelled after 14 days.', 'vipps-recurring-payments-gateway-for-woocommerce' ) );
 
-			return 'SUCCESS';
+				return 'SUCCESS';
+			}
 		}
 
 		$is_direct_capture = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE );
@@ -1088,16 +1089,19 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 *
 	 * @param $order_id
 	 *
+	 * @return bool
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function maybe_capture_payment( $order_id ): void {
+	public function maybe_capture_payment( $order_id ): bool {
 		$order = wc_get_order( $order_id );
 
 		if ( ! WC_Vipps_Recurring_Helper::can_capture_charge_for_order( $order ) ) {
-			return;
+			return false;
 		}
 
 		$this->capture_payment( $order );
+
+		return true;
 	}
 
 	/**
