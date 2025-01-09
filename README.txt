@@ -165,6 +165,7 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 = 2.1.3 =
 * Fixed: We were still using calls to `get_posts` a few places, which was incompatible with WooCommerce HPOS. This fixes gateway changes, in-app description updates, and in-app subscription cancellation for installations using HPOS.
 * Fixed: Some payments that were cancelled quickly could get stuck in a "MobilePay payments are automatically captured" loop for merchants using MobilePay.
+* Fixed: An issue where swapping gateways did not work for MobilePay merchants, because a certain URL was not whitelisted in wp_safe_redirect.
 
 = 2.1.2 =
 * Fixed: Cleaning up old cancelled orders that were initiated via Checkout now works as intended.
