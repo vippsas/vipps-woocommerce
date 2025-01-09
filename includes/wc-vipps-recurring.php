@@ -753,8 +753,6 @@ class WC_Vipps_Recurring {
 			]
 		] );
 
-		WC_Vipps_Recurring_Logger::log( sprintf( 'Checking %s subscriptions for gateway change: %s', count( $subscriptions ), json_encode( $subscriptions ) ) );
-
 		foreach ( $subscriptions as $subscription ) {
 			// check charge status
 			$this->gateway()->maybe_process_gateway_change( $subscription->get_id() );
