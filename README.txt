@@ -162,6 +162,9 @@ Alternatively you could look into using WooCommerce "Early renewals": [https://d
 
 == Changelog ==
 
+= 2.1.3 =
+* Fixed: We were still using calls to `get_posts` a few places, which was incompatible with WooCommerce HPOS. This fixes gateway changes, in-app description updates, and in-app subscription cancellation for installations using HPOS.
+
 = 2.1.2 =
 * Fixed: Cleaning up old cancelled orders that were initiated via Checkout now works as intended.
 * Fixed: Old agreements that customers now cancelled in the Vipps or MobilePay apps are now cancelled properly in WooCommerce.

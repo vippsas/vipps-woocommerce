@@ -60,7 +60,6 @@ class WC_Vipps_Recurring_Helper {
 	 * Subscription
 	 */
 	public const META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE = '_vipps_recurring_waiting_for_gateway_change';
-	public const META_SUBSCRIPTION_SWAPPING_GATEWAY_TO_VIPPS = '_vipps_recurring_swapping_gateway_to_vipps';
 	public const META_SUBSCRIPTION_UPDATE_IN_APP = '_vipps_recurring_update_in_app';
 	public const META_SUBSCRIPTION_UPDATE_IN_APP_DESCRIPTION_PREFIX = '_vipps_recurring_update_in_app_description_prefix';
 	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON = '_vipps_recurring_latest_failed_charge_reason';
