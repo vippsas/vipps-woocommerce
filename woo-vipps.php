@@ -14,7 +14,7 @@
    Requires PHP: 7.4
    Requires Plugins: woocommerce
    WC requires at least: 3.3.4
-   WC tested up to: 9.4.2
+   WC tested up to: 9.5.2
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
