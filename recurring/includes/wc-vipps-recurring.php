@@ -813,6 +813,10 @@ class WC_Vipps_Recurring {
 	 * @version 4.0.0
 	 */
 	public function plugin_action_links( $links ): array {
+                // IOK 2025-01-13 temporarily deactivated, because there is currently two
+                // sets of settings, and not enough room to disambituate between them (at least in norwegian).
+                return $links;
+
 		$plugin_links = [
 			'<a href="admin.php?page=wc-settings&tab=checkout&section=vipps_recurring">' . esc_html__( 'Settings', 'woo-vipps' ) . '</a>',
 		];
