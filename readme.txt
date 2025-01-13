@@ -38,7 +38,7 @@ With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete che
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
 
-= Vipps/MobilePay recurring payments ==
+== Vipps/MobilePay recurring payments ==
 
 Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
 
