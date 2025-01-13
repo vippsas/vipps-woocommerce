@@ -23,7 +23,8 @@ class WC_Vipps_Recurring_Checkout {
 	public static function register_hooks(): void {
 		$instance = WC_Vipps_Recurring_Checkout::get_instance();
 		add_action( 'init', [ $instance, 'init' ] );
-		add_action( 'woocommerce_loaded', [ $instance, 'woocommerce_loaded' ] );
+		// Higher priority than the single payments Vipps plugin
+                add_filter('woocommerce_get_checkout_page_id', [ $instance,'woocommerce_get_checkout_page_id'], 20);
 		add_action( 'template_redirect', [ $instance, 'template_redirect' ] );
 
 		if ( is_admin() ) {
@@ -532,23 +533,20 @@ class WC_Vipps_Recurring_Checkout {
 		return $settings;
 	}
 
-	public function woocommerce_loaded(): void {
-		// Higher priority than the single payments Vipps plugin
-		add_filter( 'woocommerce_get_checkout_page_id', function ( $id ) {
-			$checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
+        public function woocommerce_get_checkout_page_id($id) : int {
+            $checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
 
-			if ( ! $checkout_enabled ) {
-				return $id;
-			}
+            if ( ! $checkout_enabled ) {
+                return $id;
+            }
 
-			$checkout_id = $this->gateway()->checkout_is_available();
-			if ( $checkout_id ) {
-				return $checkout_id;
-			}
+            $checkout_id = $this->gateway()->checkout_is_available();
+            if ( $checkout_id ) {
+                return $checkout_id;
+            }
 
-			return $id;
-		}, 20 );
-	}
+            return $id;
+        }
 
 	public function template_redirect(): void {
 		global $post;
