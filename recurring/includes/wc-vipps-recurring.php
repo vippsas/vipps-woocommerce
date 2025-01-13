@@ -41,7 +41,9 @@ class WC_Vipps_Recurring {
 			] );
 		}
 
-		add_action( 'plugins_loaded', [ $instance, 'plugins_loaded' ] );
+		add_action( 'plugins_loaded', [ $instance, 'plugins_loaded' ]);
+		// Declare compatibility with the WooCommerce checkout block
+		add_action( 'woocommerce_blocks_loaded', [ $instance, 'woocommerce_blocks_loaded' ]);
 		add_action( 'init', [ $instance, 'init' ] );
 	}
 
@@ -104,20 +106,20 @@ class WC_Vipps_Recurring {
 		// Create a real page for Vipps Checkout
 		add_filter( 'woocommerce_create_pages', [ $this, 'woocommerce_create_pages' ], 50 );
 
-		// Declare compatibility with the WooCommerce checkout block
-		add_action( 'woocommerce_blocks_loaded', function () {
-			if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-				require_once 'wc-vipps-recurring-blocks-support.php';
-
-				add_action(
-					'woocommerce_blocks_payment_method_type_registration',
-					function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-						$payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
-					}
-				);
-			}
-		} );
 	}
+
+        // Runs possibly before plugins_loaded
+        public function woocommerce_blocks_loaded () {
+            if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+                require_once 'wc-vipps-recurring-blocks-support.php';
+                add_action(
+                        'woocommerce_blocks_payment_method_type_registration',
+                        function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+                        $payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
+                        }
+                        );
+            }
+        }
 
 	/**
 	 * Init the plugin after plugins_loaded so environment variables are set.
