@@ -1584,14 +1584,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title' => sprintf(__('Upgrade your customer experience with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                 'img' => [
                     'vipps' => [
-                        // Dont use __FILE__ here now because the plugin file structure will be restructured in the recurring merge. LP 02.01.2025
-                        'src' => plugins_url('woo-vipps/img/no_vippsmobilepay_checkout_app-teaser_2400x1600.webp'),
-                        'alt' => __('Sketch of Vipps Checkout', 'woo-vipps'),
+                        'src' => plugins_url('img/no_vippsmobilepay_checkout_app-teaser_2400x1600.webp', WC_VIPPS_PAYMENT_MAIN_FILE),
+                        'alt' => __('Sketch of', 'woo-vipps') . ' Vipps Checkout', // dont translate checkout name
                     ],
                     'mobilepay' => [
-                        // Dont use __FILE__ here now because the plugin file structure will be restructured in the recurring merge. LP 02.01.2025
-                        'src' => plugins_url('woo-vipps/img/dk_vm_checkout_app-teaser_2400x1600.webp'),
-                        'alt' => __('Sketch of MobilePay Checkout', 'woo-vipps'),
+                        'src' => plugins_url('img/dk_vm_checkout_app-teaser_2400x1600.webp', WC_VIPPS_PAYMENT_MAIN_FILE),
+                        'alt' => __('Sketch of', 'woo-vipps') . ' MobilePay Checkout',
                     ],
                 ],
                 'paragraph1' => [
