@@ -16,9 +16,13 @@ interface Props {
   isLoading: boolean;
 }
 
+type Steps = 'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT';
+
 export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Element {
   const { getOption, setOption, hasOption } = useWP();
-  const [step, setStep] = useState<'ESSENTIAL' | 'CHECKOUT_CONFIRM' | 'CHECKOUT'>('ESSENTIAL');
+  
+  const [step, setStep] = useState<Steps>('ESSENTIAL');
+  const [prevStep, setPrevStep] = useState<Steps>('ESSENTIAL');
 
 
   // For the "CHECKOUT" step
@@ -49,6 +53,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 includeEmptyOption={false}
                 options={[
                   { label: gettext('country.options.NO'), value: 'NO' },
+                  { label: gettext('country.options.SE'), value: 'SE' }, 
                   { label: gettext('country.options.FI'), value: 'FI' },
                   { label: gettext('country.options.DK'), value: 'DK' }
                 ]}
@@ -123,7 +128,8 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
 
                       // Trigger validation and proceed to the next step if valid
                       if (form.reportValidity()) {
-                        // If user did not enable checkout - show confirmation step. LP 30.12.2024
+                        setPrevStep(step);
+                        // If user did not enable checkout - show checkout confirmation step. LP 30.12.2024
                         if (truthToBool(getOption('vipps_checkout_enabled'))) setStep('CHECKOUT');
                         else setStep('CHECKOUT_CONFIRM');
                       }
@@ -173,8 +179,12 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <img src={gettext( paymentMethod === "Vipps" ? 'checkout_confirm.img.vipps.src' : 'checkout_confirm.img.mobilepay.src' )} alt={gettext( paymentMethod === "Vipps" ? 'checkout_confirm.img.vipps.alt' : 'checkout_confirm.img.vipps.alt') }/>
           </div>
           <div className="vipps-mobilepay-react-button-actions">
+            <WPButton variant="secondary" type="button" onClick={() => setStep(prevStep)}>
+              {fixCheckoutName(gettext('previous_step'), paymentMethod)}
+            </WPButton>
             <WPButton variant="primary" isLoading={isLoading} onClick={() => {
               setOption('vipps_checkout_enabled', boolToTruth(true));
+              setPrevStep(step);
               setStep('CHECKOUT');
             }}>
               {fixCheckoutName(gettext('checkout_confirm.accept'), paymentMethod)}
@@ -332,7 +342,13 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               </>
             )}
             <div className="vipps-mobilepay-react-button-actions">
-              <WPButton variant="secondary" type="button" onClick={() => setStep('ESSENTIAL')}>
+              <WPButton variant="secondary" 
+              type="button" 
+              onClick={() => {
+                setStep(prevStep);
+                setPrevStep('ESSENTIAL');
+              }}
+              >
                 {fixCheckoutName(gettext('previous_step'), paymentMethod)}
               </WPButton>
               <WPButton variant="primary" isLoading={isLoading}>
