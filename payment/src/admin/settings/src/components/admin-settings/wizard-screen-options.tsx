@@ -189,7 +189,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             }}>
               {fixCheckoutName(gettext('checkout_confirm.accept'), paymentMethod)}
             </WPButton>
-            <WPButton variant="secondary">
+            <WPButton variant="secondary" onClick={() => setOption('vipps_checkout_enabled', boolToTruth(false))}>
               {fixCheckoutName(gettext('checkout_confirm.skip'), paymentMethod)}
             </WPButton>
           </div>
