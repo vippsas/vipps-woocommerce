@@ -69,9 +69,6 @@ class Vipps {
     public static function LoginName() {
         return __("Login with Vipps", 'woo-vipps');
    }
-    public static function RecurringName() {
-        return __('Vipps Recurring Payments', 'woo-vipps');
-   }
 
     public static function instance()  {
         if (!static::$instance) static::$instance = new Vipps();
@@ -97,9 +94,8 @@ class Vipps {
 
     public static function register_hooks() {
         $Vipps = static::instance();
-        register_activation_hook(dirname(__FILE__) . "/woo-vipps.php",array($Vipps,'activate'));
-        register_deactivation_hook(dirname(__FILE__) . "/woo-vipps.php",array('Vipps','deactivate'));
-        register_uninstall_hook(dirname(__FILE__) . "/woo-vipps.php", 'Vipps::uninstall');
+        register_activation_hook(WC_VIPPS_MAIN_FILE, array($Vipps,'activate'));
+        register_deactivation_hook(WC_VIPPS_MAIN_FILE,array('Vipps','deactivate'));
         if (is_admin()) {
             add_action('admin_init',array($Vipps,'admin_init'));
             add_action('admin_menu',array($Vipps,'admin_menu'));
@@ -324,7 +320,7 @@ class Vipps {
         add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
 
         // Link to the settings page from the plugin list
-        add_filter( 'plugin_action_links_'.plugin_basename( plugin_dir_path( __FILE__ ) . 'woo-vipps.php'), array($this, 'plugin_action_links'));
+        add_filter( 'plugin_action_links_'.plugin_basename(WC_VIPPS_MAIN_FILE ), array($this, 'plugin_action_links'));
 
         if ($gw->enabled == 'yes' && $gw->is_test_mode()) {
             $what = sprintf(__('%1$s is currently in test mode - no real transactions will occur', 'woo-vipps'), Vipps::CompanyName());
@@ -397,7 +393,6 @@ class Vipps {
                 $attr .= " variant='" . sanitize_title($variant) . "' ";
             }
 
-            
             $lang = $this->get_customer_language();
             if ($lang) {
                 $attr .= " language='". $lang . "' ";
@@ -863,7 +858,6 @@ jQuery('a.webhook-adder').click(function (e) {
 
         $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
         $subscriptioninstall = 'https://woocommerce.com/products/woocommerce-subscriptions/';
-        $recurringinstall = admin_url('/plugin-install.php?s=vipps-recurring-payments-gateway-for-woocommerce&tab=search&type=term');
 
         $logspage = admin_url('/admin.php?page=wc-status&tab=logs');
         $forumpage = 'https://wordpress.org/support/plugin/woo-vipps/';
@@ -871,8 +865,11 @@ jQuery('a.webhook-adder').click(function (e) {
         $portalurl = 'https://portal.vippsmobilepay.com';
 
         $installed = get_plugins();
+
         $recurringinstalled = array_key_exists('vipps-recurring-payments-gateway-for-woocommerce/woo-vipps-recurring.php',$installed);
         $recurringactive = class_exists('WC_Vipps_Recurring');
+        $recurringstandalone = $recurringactive && !(defined('WC_VIPPS_RECURRING_INTEGRATED') && WC_VIPPS_RECURRING_INTEGRATED);
+        $deactivatelink = admin_url("plugins.php?s=vipps-recurring-payments-gateway-for-woocommerce");
 
         $logininstalled = array_key_exists('login-with-vipps/login-with-vipps.php', $installed);
         $loginactive = class_exists('ContinueWithVipps');
@@ -984,26 +981,28 @@ jQuery('a.webhook-adder').click(function (e) {
             </div>
 
             <div class="pluginsection vipps-recurring">
-               <h2><?php echo sprintf(__( '%1$s', 'woo-vipps' ), Vipps::RecurringName());?></h2>
+               <h2><?php echo sprintf(__( 'Recurring Payments with %1$s', 'woo-vipps' ), Vipps::CompanyName());?></h2>
                <p>
-                  <?php echo sprintf(__("<a href='%1\$s' target='_blank'>%2\$s for WooCommerce</a> by <a href='%3\$s' target='_blank'>Everyday</a>  is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), 'https://www.wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/', Vipps::RecurringName(), 'https://everyday.no/'); ?>
-
-                  <?php echo sprintf(__("%1\$s requires the <a href='%2\$s' target='_blank'>WooCommerce Subscriptions plugin</a>.", 'woo-vipps'), Vipps::RecurringName(), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
+                  <?php echo sprintf(__("%1\$s supports recurring payments through the plugin <a href='%2\$s' target='_blank'>WooCommerce Subscriptions</a>. This support is written and supported by <a href='%3\$s' target='_blank'>Everyday</a>, and is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.", 'woo-vipps'), Vipps::CompanyName(), 'https://woocommerce.com/products/woocommerce-subscriptions/', Vipps::CompanyName(), 'https://everyday.no/'); ?>
                <?php do_action('vipps_page_vipps_recurring_payments_section'); ?>
                <div class="pluginstatus vipps_admin_highlighted_section">
-               <?php if ($recurringactive): ?>
-                     <p>
-                       <?php echo sprintf(__("%1\$s is <b>installed and active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>", 'woo-vipps'), Vipps::RecurringName(), $recurringsettings); ?>
-                    </p>
-               <?php elseif ($recurringinstalled): ?>
-                     <p>
-                     <?php echo sprintf(__("%1\$s installed, but <em>not active</em>. Activate it on the <a href='%2\$s'>plugins page</a>", 'woo-vipps'), Vipps::RecurringName(), admin_url("/plugins.php")); ?>
-                     </p>
-               <?php else: ?>
-                     <p>
-                     <?php echo sprintf(__("%1\$s is not installed. You can install it <a href='%2\$s'>here!</a>", 'woo-vipps'), Vipps::RecurringName(), $recurringinstall); ?>
-                     </p>
-               <?php endif; ?> 
+                 <?php if ($recurringactive): ?>
+                  <p>
+                   <?php echo sprintf(__("Support for recurring payments with %1\$s is <b>active</b>. You can configure the plugin at its <a href='%2\$s'>settings page</a>.", 'woo-vipps'), Vipps::CompanyName(), $recurringsettings); ?>
+                  </p>
+                 <?php endif; ?>
+                 <?php if (!$subscriptioninstall): ?>
+                  <p>
+                   <?php echo sprintf(__("This plugins support for recurring payments requires the plugin <a href='%1\$s' target='_blank'>WooCommerce Subscriptions</a>. You need to install and activate this first.", 'woo-vipps'), 'https://woocommerce.com/products/woocommerce-subscriptions/'); ?>
+                  </p>
+                 <?php endif; ?>
+                 <?php if ($recurringactive && $recurringstandalone): ?>
+                  <p>
+                  <?php echo sprintf(__("Your support for recurring payments with %1\$s uses the legacy stand-alone plugin. This is no longer required, and you should <b><a href='%2\$s'>deactivate</a></b> this plugin, since development on this will soon cease.", 'woo-vipps'), Vipps::CompanyName(), esc_attr($deactivatelink));?>
+                  </p>
+
+                 <?php endif; ?>
+
                </div>
 
             </div>
@@ -1187,9 +1186,25 @@ jQuery('a.webhook-adder').click(function (e) {
         $adminSettings = VippsAdminSettings::instance();
 
         add_menu_page(sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), sprintf(__("%1\$s", 'woo-vipps'), Vipps::CompanyName()), 'manage_woocommerce', 'vipps_admin_menu', array($this, 'admin_menu_page'), $logo, 58);
+
         add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 90);
+
+        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions')) {
+            add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 95);
+        }
+
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
+    }
+
+    // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
+    public function recurring_settings_page () {
+        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions')) {
+            wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
+        } else {
+            wp_safe_redirect(admin_url('/admin.php?page=vipps_admin_menu'), 302);
+        }
+        exit();
     }
 
     public function add_meta_boxes () {
@@ -3246,11 +3261,15 @@ else:
        wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
        // IOK 2023-12-20 Delete all webhooks for this instance
        WC_Gateway_Vipps::instance()->delete_all_webhooks();
+
+       // Run deactivation logic for recurring
+       if (class_exists('WC_Vipps_Recurring')) {
+           WC_Vipps_Recurring::get_instance()->deactivate();
+       }
+       delete_option('woo_vipps_recurring_payments_activation');
+
     }
 
-    public static function uninstall() {
-       // Nothing yet
-    }
     public function footer() {
        // Nothing yet
     }

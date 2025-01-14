@@ -1,0 +1,369 @@
+== Changelog ==
+
+= 2.1.3 =
+* Fixed: We were still using calls to `get_posts` a few places, which was incompatible with WooCommerce HPOS. This fixes gateway changes, in-app description updates, and in-app subscription cancellation for installations using HPOS.
+* Fixed: Some payments that were cancelled quickly could get stuck in a "MobilePay payments are automatically captured" loop for merchants using MobilePay.
+* Fixed: An issue where swapping gateways did not work for MobilePay merchants, because a certain URL was not whitelisted in wp_safe_redirect.
+
+= 2.1.2 =
+* Fixed: Cleaning up old cancelled orders that were initiated via Checkout now works as intended.
+* Fixed: Old agreements that customers now cancelled in the Vipps or MobilePay apps are now cancelled properly in WooCommerce.
+* Fixed: VAT is now properly shown when a subscription is switched to Vipps MobilePay.
+* Fixed: If an agreement is cancelled we don't want to listen for webhooks when the actor is the merchant, i.e. ourselves. This prevents us from cancelling our subscription when changing payment gateway from Vipps MobilePay to Vipps MobilePay.
+
+= 2.1.1 =
+* Fixed: Added two new hosts to `allowed_redirect_hosts`: `pay.mobilepay.dk` and `pay.mobilepay.fi`. This fixes a bug where customers were not able to switch to MobilePay.
+
+= 2.1.0 =
+* Fixed: No longer throw an error when checking a Checkout payment where the subscription is now deleted.
+* Fixed: Properly handle in-app subscription cancelling.
+* Added: Support for the SEK currency.
+* Fixed: Identified a potentially critical bug where the idempotency key was deleted from orders upon payment retry.
+
+= 2.0.8 =
+* Fixed: We should not return `true` in `cart_supports_checkout` if the cart is empty.
+
+= 2.0.7 =
+* Fixed: Renewal orders that come from subscriptions made via Checkout could get stuck as "pending", even though a charge was actually created. Updating to this version fixes the affected orders and their statuses.
+
+= 2.0.6 =
+* Fixed: Campaigns now display their "after" price correctly.
+* Fixed: Properly propagate recurring pricing to our manually created subscriptions in Checkout.
+
+= 2.0.5 =
+* Fixed: Checkout webhooks no longer fail with an "Invalid authorization token" message.
+* Fixed: Propagate shipping and billing address to newly registered users when using Checkout.
+* Fixed: Make sure phone numbers from Checkout are saved with a + prefix.
+* Fixed: Properly handle VAT when ordering one-off items along with a recurring subscription.
+* Added: We now send a password reset link to newly registered users when using Checkout.
+* Added: We now create an anonymous Vipps MobilePay system user in order to create a subscription immediately. We replace this user with the real customer after the payment has been completed. This solves a lot of edge cases.
+
+= 2.0.4 =
+* Fixed: Increase deletion period for checkout orders, as intended.
+
+= 2.0.3 =
+* Fixed: Uploaded the newest assets.
+* Fixed: A fatal error that may occur in a faulty state that could only happen when Checkout is enabled in versions 2.0.0 and 2.0.1.
+
+= 2.0.2 =
+* Fixed: Resubscribing to expired subscriptions is now possible when Checkout is enabled.
+* Fixed: You are now informed that a Merchant Serial Number is required in order to enable Checkout.
+* Fixed: Your applied coupons are now given the proper respect when Checkout is enabled.
+* Fixed: The price is now set correctly when one off products are in a recurring cart when Checkout is enabled.
+* Fixed: No longer show the "Capture payment" button when the charge is in a non-RESERVED state.
+* Fixed: A scenario where the "auto capture payment" feature for MobilePay would not trigger correctly.
+* Added: We now cancel initial Checkout orders after two hours to avoid checking them in cron forever.
+* Added: You can now enable or disable deletion of changed or abandoned Checkout orders in the settings.
+
+= 2.0.1 =
+* Fixed: A conflict with some themes, like Salient, where this plugin would cause certain blocks to not load.
+* Fixed: Products with a trial period and a sign up fee were not correctly dealt with when using the new Checkout.
+* Fixed: Use `WC_Subscriptions_Product::get_sign_up_fee` instead of `WC_Subscriptions_Order::get_sign_up_fee` as we do not always have a subscription order.
+
+= 2.0.0 =
+* Added: Support for Vipps/MobilePay Checkout. This includes the possibility of using card payments if they are enabled for your sales unit.
+* Fixed: "Continue shopping" link default value is now correct.
+* Added: New fields in the settings area to separate test API credentials.
+* Fixed: A bug where the "Reservations in MobilePay" warning would display twice.
+* Fixed: A bug that could occur where the Vipps API would be hit a lot of times in a short period of time.
+* Fixed: Make sure to update the agreement in Vipps right away when the user performs a subscription switch.
+* Fixed: Make sure we redirect the user to their account page when they perform a payment method update.
+* Fixed: Webhooks should no longer throw an error about referenceId not being set.
+* Fixed: Made webhook handling a little bit faster in some instances.
+* Fixed: Webhooks should now be handled properly for agreement events.
+* Added: Handle the `recurring.agreement-stopped.v1` webhook for when Vipps MobilePay enable cancellations directly from the app.
+
+= 1.20.3 =
+* Fixed: An issue where `maybe_cancel_due_charge` is called when order statuses are changed in other gateways (GitHub issue #93 and #94).
+* Fixed: Implemented proper "order cancelled" handling.
+* Added: An option to select which page "Continue shopping" should redirect a user to after a failed payment.
+* Fixed: An odd error that might occur when our special options screen is being called before we initialize our custom tables.
+
+= 1.20.2 =
+* Added: A warning for when you select Vipps as your brand when your currency is not set to NOK.
+* Fixed: Frontend admin localization.
+* Fixed: A fatal error that could occur when calling `get_agreement_id_from_order` when handling renewals. Reported and diagnosed by magnuskl on GitHub.
+* Fixed: 404 page that could occur after payments are cancelled or paid.
+
+= 1.20.1 =
+* Fixed: Frontend scripts were not properly loaded.
+
+= 1.20.0 =
+* Added: Webhooks. To enable webhooks you just need to save your settings one more time. A webhook will be automatically set-up.
+* Added: Try to detect whether to use Vipps or MobilePay branding.
+* Added: Use the translations from translate.wordpress.org.
+* Added: Better handling of our special action pages.
+* Fixed: Admin notice styling is now a bit better.
+* Added: A setting to automatically capture MobilePay payments now even when they are physical products in order to prevent the payment reservation from getting cancelled after 7 days.
+* Added: A landing page for payments. This allows us to check the status of a payment before we redirect to the order received/receipt page.
+
+= 1.19.0 =
+* Added: Support for paying with MobilePay in Finland, and later Denmark.
+
+= 1.18.0 =
+* Added: Support for WooCommerce checkout blocks. This allows Vipps/MobilePay recurring payments to be used with the new standard checkout.
+
+= 1.17.3 =
+* Fixed: No longer use the `wp_safe_remote_post` function and instead use `wp_remote_post` because it causes problems on some hosts, and our calls are to endpoints returned by Vipps MobilePay either way.
+
+= 1.17.2 =
+* Fixed: Hide this gateway if there are no subscription products in the cart.
+
+= 1.17.1 =
+* Fixed: Added the new version of an admin JS file that controls the logic for capturing a payment. This fixes payment captures.
+
+= 1.17.0 =
+* Added: Support for WooCommerce High Performance Order Storage (HPOS)
+* Fixed: Period campaigns now show correctly in the app when there's both a free trial and a sign-up fee.
+* Fixed: Changed the logic for how we determine whether to show our gateway, because certain plugins add their own subscription types. Now we only disable our gateway if "Pay with Vipps and MobilePay for WooCommerce" is being shown as well.
+* Fixed: We no longer care about an order's status when it comes to displaying the "Capture" button. If there are funds to capture, we show it.
+* Fixed: Better error logging for when we try to capture a charge that can no longer be captured. Rewrote the capture payment handler.
+* Fixed: Changing gateway was no longer possible in one of the later Woo Subscription versions, due to the use of `wp_safe_redirect`. We now whitelist Vipps MobilePay's domains.
+
+= 1.16.5 =
+* Fixed: Refunds could not be processed properly because of a mistake when calling the `woocommerce_order_after_calculate_totals` action. We assume the object is always a subscription, when it is not.
+
+= 1.16.4 =
+* Fixed: Properly stop checking for a gateway change when a gateway change succeeded.
+
+= 1.16.3 =
+* Fixed: Listen for total recalculation instead of a change in orders items when making sure we update the subscription price in Vipps MobilePay whenever a Vipps MobilePay subscription's price changes.
+
+= 1.16.2 =
+* Fixed: Updating a subscription. Campaign period was not being serialized properly when calling `->set_period(...)`
+
+= 1.16.1 =
+* Fixed: Added a missing file that was not uploaded due to a mistake when committing files to SVN.
+
+= 1.16.0 =
+* Added: a `wc_vipps_recurring_after_payment_complete` action
+* Added: Implementation of period campaigns. It will now properly inform your customers of a campaigns length in the app.
+
+= 1.15.2 =
+* Fix: No longer attempt to cancel agreements that are already cancelled.
+* Fix: Removed `order_id` from `WC_Vipps_Charge` and added `transaction_id` as it should be correctly named.
+* Fix: A case where `initialCharge.description` would be empty
+
+= 1.15.1 =
+* Fix: `cancelled_order_page` must be an int.
+
+= 1.15.0 =
+* Refactored: We are now using the Vipps MobilePay Recurring API v3
+* Changed: We now require at least PHP 7.4. You should however already be on 8.0+ as PHP 7.4 is end of life.
+* Added: Much more type safety to the entire codebase.
+* Fixed: We now check the order status before showing the "thank you" page, instead of after. This should fix the order status sometimes being wrong when the user lands on this page.
+* Refactored: We no longer pass product descriptions to Vipps MobilePay unless you choose to do so.
+* Refactored: We now use Vipps MobilePay's new campaign system.
+* Refactored: We no longer need to store the agreement's confirmation url ourselves. Idempotency now works as expected.
+* Changed: We now use the `woocommerce_subscription_cancelled_vipps_recurring` hook instead of `woocommerce_subscription_status_cancelled` to cancel a subscription.
+* Added: A merchant serial number setting to help Vipps MobilePay to identify who the merchant is.
+* Added: New filters, `wc_vipps_recurring_create_agreement_data`, `wc_vipps_recurring_update_agreement_data`, `wc_vipps_recurring_cancel_agreement_data`, `wc_vipps_recurring_create_charge_data`, `wc_vipps_recurring_process_payment_agreement`
+* Fixed: A rare problem that could occur where subscriptions would not be set to "Active" when an order's status transitions to processing or completed.
+* Changed: Made the `api` attribute public in `WC_Gateway_Vipps_Recurring` as it may sometimes be beneficial to call the API directly from third party plugins and hand it off to Vipps MobilePay Recurring later, especially in the charity sector.
+
+= 1.14.7 =
+* Fixed: Coupons and "expire date" on a product in WooCommerce Subscriptions now play well together.
+
+= 1.14.6 =
+* Fixed: Fixed a conflict that prevented Vipps MobilePay from working in Klarna if Vipps MobilePay Recurring and "Pay with Vipps and MobilePay for WooCommerce" were installed at the same time.
+
+= 1.14.5 =
+* Fixed: You can now swap gateway to Vipps/MobilePay recurring payments from a subscription again.
+
+= 1.14.4 =
+* Fixed: You can now pay for failed renewal orders. It will cancel the old agreement and substitute it with a new one.
+
+= 1.14.3 =
+* Fixed: You will now get an error message when trying to refund an order that is older than 365 days via Vipps MobilePay.
+* Fixed: Do not show this gateway if `WCS_ATT_Cart::get_subscription_scheme` returns null.
+* Fixed: We no longer show that the price is 0,- during a campaign for a synchronised product when Prorate First Renewal is set to "Never (charge the full recurring amount at sign-up)".
+
+= 1.14.2 =
+* Fixed: Changing payment gateway to Vipps MobilePay now works again.
+
+= 1.14.1 =
+* Fixed: Renamed our Vipps MobilePay access token transient to prevent conflicts with "Pay with Vipps and MobilePay for WooCommerce" when two different sets of merchant tokens are used.
+
+= 1.14.0 =
+* Added: Support for [All Products for WooCommerce Subscriptions](https://woocommerce.com/products/all-products-for-woocommerce-subscriptions/). Thanks to @danielcherubini on GitHub.
+* Fixed: `prevent_backwards_transition_on_completed_order` no longer has a return type, this fixes compatibility with plugins like `WooCommerce Order custom Statuses`.
+
+= 1.13.4 =
+* Fixed: We now prevent orders from being transitioned to `processing` when the status is already `completed`.
+
+= 1.13.3 =
+* Fixed: Early renewals now work properly. If you renew early, and you're already using Vipps MobilePay it will now skip the app entirely and create a new charge.
+If you renew early, and you're not already using Vipps MobilePay you will be sent to the app and a gateway switch will be performed after successful checkout.
+* Fixed: A small error notice when swapping gateways in the admin area no longer appears.
+
+= 1.13.2 =
+* Fixed: Subscriptions now get cancelled if a charge fails and the status of the subscription is `pending-cancel`.
+* Fixed: If you provide no custom description for a product when the description source is set to `custom` we now default back to the product name. This prevents an error during checkout when no description is provided.
+
+= 1.13.1 =
+* Fixed: Pass arguments to `wc_vipps_recurring_transaction_id_for_order` in the correct order.
+
+= 1.13.0 =
+* Added: `wc_vipps_recurring_merchant_agreement_url` filter.
+* Added: `wc_vipps_recurring_merchant_redirect_url` filter.
+* Fixed: No longer use deprecated function `WC_Subscriptions_Order::order_contains_subscription`
+* Fixed: Make sure we don't register the Vipps MobilePay Recurring gateway twice.
+* Fixed: KCO compatibility `headers already output` notice no longer shows on every page when debug mode is enabled.
+* Fixed: Set payment method to Vipps MobilePay Recurring on the subscription after paying with the Vipps MobilePay Recurring EPM in KCO. This is likely caused by a WooCommerce bug.
+* Refactor: `capture_payment` should no longer create a charge if a RESERVED charge does not exist.
+* Fixed: Now sets the correct order status for RESERVED payments when paying with Vipps MobilePay through KCO.
+
+= 1.12.4 =
+* Fixed: Product names no longer use the default context, meaning it will no longer get overridden by themes or plugins and show HTML in the Vipps/MobilePay app or app-switch screen.
+
+= 1.12.3 =
+* Fixed: Initial charge description no longer contains " + " when no extra products are purchased.
+* Fixed: Filling in 0 in the trial field tricking us into adding a campaign to the product, also resulting in an empty `initialCharge.description` and being unable to check out.
+
+= 1.12.2 =
+* Fixed: Fixed an issue where `initialCharge.description` was empty. It cannot be empty under any circumstances.
+
+= 1.12.1 =
+* Fixed: A bug in Klarna Checkout where it would attempt to use Vipps/MobilePay recurring payments instead of "Pay with Vipps and MobilePay for WooCommerce" when you're only purchasing one time payment products.
+* Fixed: Descriptions of products you are not paying for right away is no longer included in initialCharge's description.
+* Fixed: Campaigns are now used correctly when a single product is purchased along with a synced subscription product.
+* Fixed: Campaigns are now used correctly when a single product is purchased along with a subscription product with a free trial.
+
+= 1.12.0 =
+* Added: Support for Klarna Checkout.
+* Fixed: No longer attempt to load Vipps/MobilePay recurring payments if WooCommerce is disabled/not installed.
+* Fixed: If you have a variable subscription product the Vipps MobilePay settings from the "parent" will now be respected.
+* Fixed: This gateway no longer shows up for single purchase products, only if there is at least one subscription product in the cart.
+
+= 1.11.0 =
+* Added: You can now pay for single payment products in the same shopping cart as a subscription.
+
+= 1.10.0 =
+* Refactor: Rewrote our admin notification system to allow for dismissible alerts.
+* Added: A campaign banner for Login with Vipps MobilePay. This will last for 10 days, and it is fully dismissible.
+
+= 1.9.1 =
+* Fix: Renewal orders will no longer transition to `completed` when the setting for this is turned off.
+* Fix: Fixed a problem where our `_vipps_recurring_waiting_for_gateway_change` was never processed for orders where the subscription was not `wc-active`. Added `wc-on-hold` and `wc-pending` to this list.
+
+= 1.9.0 =
+* Enhancement: Added a setting for what sort order we should check charges by.
+* Enhancement: Added a setting for how many charges we should check at a time.
+* Enhancement: Default amount of charges to check per wp-cron run is now 10.
+* Change: Removed extra sortable columns from pending charges and failed charges tables. Sorting by meta value does not work in WooCommerce's wc_get_orders.
+* Fix: Order by random now works as expected in our periodic status check for charges.
+
+= 1.8.4 =
+* Fix: The 1.8.2 migration will no longer throw a fatal error for some installations if a subscription does not exist on an order.
+
+= 1.8.3 =
+* Fix: Fixed an issue where an invalid "my account" page link would cause checkout to not work.
+
+= 1.8.2 =
+* Enhancement: Added `_vipps_recurring_latest_failed_charge_reason` and `_vipps_recurring_latest_failed_charge_description` to subscriptions.
+* Enhancement: Migrate the aforementioned data.
+* Enhancement: Update tested up to, now 5.8.
+
+= 1.8.1 =
+* Fix: Added an exit condition after attempting to redirect to the Cancelled Vipps MobilePay Purchase page. This should in theory make this redirect work every single time.
+* Fix: No longer clean up necessary data like charge id or whether the charge is pending on renewals.
+* Fix: Force re-checking of older charges that are affected by the aforementioned fix.
+* Change: We now check 8 charges at the same time instead of 5.
+
+= 1.8.0 =
+* Fix: Cancelled agreements can not be updated, thus we can not say that they have been cancelled in the description. Ensure we run the "maybe_update_subscription_details_in_app" code before we cancel an agreement, and only if the agreement is still "ACTIVE".
+* Fix: Ensure we only ever cancel an agreement once.
+* Fix: It's no longer possible to end up with more than one Vipps MobilePay agreement by changing gateway twice or more on accident (this bug was introduced in 1.7.0).
+* Enhancement: We now cancel DUE charges in Vipps MobilePay when you change an order's status to 'Cancelled' or 'Failed'.
+
+= 1.7.0 =
+* Fix: Add missing Norwegian translation for "No failed charges found.".
+* Fix: Failed charges now appear properly in the "Failed charges" list.
+* Fix: Fixed an edge case when changing payment method to Vipps MobilePay as a customer, when already using Vipps MobilePay.
+* Fix: Support upgrading to a different product variation. Price is now passed along properly and a campaign is applied in order to not confuse the customer.
+* Fix: Update agreement in app when downgrading or not prorating a subscription.
+* Fix: Do not allow multiple subscriptions in a single Vipps MobilePay payment when other gateways that support it are enabled.
+* Fix: No longer show the "capture" button on an order where the charge has failed previously.
+* Fix: Delete meta values from renewal and resubscribe orders to make sure we get fresh charges.
+* Fix: WooCommerce's automatic retry system should now work as expected on renewal orders. We now override the behaviour of `wcs_is_scheduled_payment_attempt` in our `check_charge_status` function.
+* Enhancement: The subscription description is now prefixed in the Vipps MobilePay app with "[Pending cancellation]", "[Cancelled]" and "[On hold]" depending on the subscription's status.
+* Enhancement: Added a setting per product for what source should be used for an agreement's description. You can now choose between product title, product short description, or custom text.
+* Enhancement: Display sign up fees in a better way in the Vipps MobilePay app. Use a campaign with a price of 0,- until the next payment date.
+* Enhancement: Update item name and description in app for delayed in-app updates.
+* Enhancement: Added a link to explain the various possible failure reasons.
+* Enhancement: Ability to change gateway from the admin dashboard, this means setting another Vipps MobilePay agreement ID manually. This should also allow using the REST API to create a subscription.
+* Enhancement: Bring style on notices and in product tabs up to par with the Vipps MobilePay e-com plugin.
+
+= 1.6.2 =
+* Fix: Swapping payment gateway to Vipps MobilePay now works again after the recent WooCommerce and WooCommerce Subscription updates.
+
+= 1.6.1 =
+* Fix: 'free' agreements where the agreement status is 'STOPPED' should not be completed.
+* Fix: Do not attempt to fetch charge for synchronised renewals at initial order.
+* Fix: Add 'completed' to 'woocommerce_valid_order_statuses_for_payment_complete' conditionally instead of rolling our own logic.
+* Fix: Remove visibility modifier from `const` to fix support for PHP 7.0.
+
+= 1.6.0 =
+* Enhancement: There's now an overview of failed charges and their failure reason on the Settings -> Vipps/MobilePay recurring payments page.
+* Refactor: Use the Helper class for most of our frequently used meta keys.
+* Refactor: Renamed the class filenames, class names remain untouched.
+* Fix: Redirect to last known agreement confirmation URL if the agreement is pending. This prevents being stuck in checkout.
+
+= 1.5.5 =
+* Fix: No longer attempt to charge a non existent agreement when a renewal is attempted on a subscription that does not have a Vipps MobilePay agreement.
+* Fix: Multibyte characters like 'æøå' in product titles work, these characters caused an internal server error when json encoding.
+
+= 1.5.4 =
+* Fix: Cancelled or expired "zero amount" payments getting stuck in the checking queue
+
+= 1.5.3 =
+* Fix: A rare edge case where an order was never captured for a long time and the order would not disappear from the status checker tool.
+* Fix: A rare edge case where a new pending renewal order would not fetch the Charge ID properly when hitting the capture payment button.
+* Fix: Fixed an issue where 100% off coupons did not automatically complete the initial purchase
+* Enhancement: The status checker tool now shows the latest status from the API as a column value
+* Enhancement: We now validate Vipps MobilePay API details when you save your settings
+
+= 1.5.2 =
+* Fix: Fixed a bug where you were able to checkout the same order more than once while a Vipps MobilePay agreement is not expired. This fixes problems with multiple charges occurring.
+
+= 1.5.1 =
+* Fix: We're no longer trying to cancel an agreement in Vipps MobilePay when the status is anything other than `ACTIVE`.
+* Fix: No longer throw an error and retry with "latest charge" when we hit a rate limit when checking a single charge.
+
+= 1.5.0 =
+* Fix: No longer mark an order as "Failed" if a charge's status is "FAILED" unless an agreement is also "EXPIRED" or "STOPPED" (a user can be prompted to swap card or top-up bank account in-app).
+* Fix: No longer attempt to cancel an already cancelled charge.
+* Fix: We should no longer hit the Vipps MobilePay API rate-limit as a result of a renewal order.
+* Fix: Properly set the `_charge_id` meta key when capturing a payment.
+* Fix: Changing of gateways to Vipps/MobilePay recurring payments would sometimes cancel the new agreement instead of the old one due to a race condition.
+* Fix: Multiples of the same product in the same subscription will now be charged correctly based on the total order price.
+* Tweak: Updated the `WC_VIPPS_RECURRING_RETRY_DAYS` constant to 4 days by default.
+* Enhancement: Bolstered compatibility with WC < 3.0. Created a bunch of helper functions and doubled down on our backwards compatibility with fetching IDs and fetching plus updating meta.
+* Enhancement: If you update a subscription's order item prices this will now be reflected in the app.
+
+= 1.4.6 =
+* Fix: Fix a bug when an agreement is created twice on the same order. We didn't fetch the right charge ID. This is a temporary fix I will have to revisit later on a proper setup.
+
+= 1.4.5 =
+* Fix: Changed how we make requests to minimize the amount of times we hit Vipps MobilePay's rate limits. If you have gotten a lot of exceptions lately
+that look like this: `HTTP Response Error: (recurring/v2/agreements/:id/charges) with request body: Array` it's because of rate limits.
+* Enhancement: Errors caused by HTTP requests now have more debug information attached to them.
+
+= 1.4.4 =
+* Enhancement: Added an option to move renewal orders from "processing" to "completed" when the charge completes in Vipps MobilePay.
+
+= 1.4.3 =
+* Fix: Truncate agreement description if it's longer than 100 characters and truncate productName if it's longer than 45.
+
+= 1.4.2 =
+* Fix: Truncate initialCharge description if it's longer than 45 characters.
+
+= 1.4.1 =
+* Fix: Added a polyfill for the PHP `array_key_last` function for hosts with PHP < 7.3.0.
+
+= 1.4.0 =
+* Enhancement: Added a "Default status to give orders with a reserved charge" option.
+* Enhancement: Improved safety of reserved charges, they should never be put in an unrecoverable state anymore. Un-nested payment logic so we should never run into a similar case again.
+* Fix: Refunding a reversed charge now works, just like pending charges in version 1.3.9.
+* Change: "Default status to give pending renewal orders" default is now "processing" instead of "on hold"
+* Change: Removed "completed" as a possible default status for the "Default status to give pending renewal orders" setting as this status is conventionally used for orders that are completely finished.

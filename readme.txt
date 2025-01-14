@@ -1,15 +1,16 @@
 === Pay with Vipps and MobilePay for WooCommerce ===
-Contributors: wphostingdev, iverok, perwilhelmsen, nikolaidev, lassepladsen
-Tags: woocommerce, vipps, mobilepay
-Tags: woocommerce, vipps
-Version: 3.0.9
-Stable tag: 3.0.9
+Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lassepladsen
+Author: WP Hosting, Everyday AS
+Author URI: https://www.wp-hosting.no/
+Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
+Version: 4.0.0
+Stable tag: 4.0.0
 Requires at least: 6.2
 Tested up to: 6.7.1
-Requires PHP: 7.0
+Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.5.0
+WC tested up to: 9.5.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -25,7 +26,7 @@ Vipps and MobilePay are payment methods offered by Vipps MobilePay.
 
 When you enable this plugin, you will choose between offering either Vipps or MobilePay as a payment method for your customers - hence "Vipps/MobilePay" going forward.
 
-This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), and Vipps Express Checkout (*Vipps Hurtigkasse*). Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
+This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps Express Checkout (*Vipps Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
@@ -36,6 +37,19 @@ With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete che
 
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
+
+== Vipps/MobilePay recurring payments ==
+
+Vipps/MobilePay recurring payments is perfect for you if you run a web shop with subscription based services or other products that would benefit from subscriptions.
+
+With Vipps/MobilePay recurring payments you can:
+
+* Sell recurring products (virtual and physical)
+* Offer subscription services
+
+See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/) for an overview.
+
+Recurring payments requires [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/) and a Vipps MobilePay MSN with recurring payments added.
 
 === Mobilepay Reservations are currently for 14 days ===
 When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 14 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
@@ -62,7 +76,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
-* After 1-2 days you will get an email with login details to Vipps Developer Portal, where you can get the API credentials
+* After 1-2 days you will get an email with login details to Vipps Business Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
 
@@ -70,16 +84,16 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
+4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Business Portal (detailed info in the section below)
 
 
 == Installation ==
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Developer Portal (detailed info in the section below)
+4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Business Portal (detailed info in the section below)
 
-=== How to get Vipps account keys from Vipps Developer Portal ===
+=== How to get Vipps account keys from Vipps Business Portal ===
 1. Sign in to the Vipps Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
 3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
@@ -88,23 +102,15 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 1. Enable Vipps Checkout as your checkout.
 2. Enable Vipps as a payment method.
 3. Enter your Vipps account keys and configure the plugin.
-4. Create shareable links and QR codes
+4. Setup and activate the recurring payment gateway in WooCommerce.
+5. Configure the plugin settings for recurring payments.
 
 == Contributing on Github ==
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 3.0.9 fixes the wrapper of the button on the terms-and-condition page for Express Checkout
-Version 3.0.8 includes a new Buy-now block for Express Checkout that works with the new standard Product Collection block.
-Version 3.0.7 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
-Version 3.0.6 Fixes the problem caused by the 3.0.5 fix that disabled Vipps Checkout
-Version 3.0.5 Fixes compatibility issues with Checkout, Checkout for Recurring, WooCommerce Subscriptions and Gutenberg Checkout block
-In version 3.0.0  we are introducing an all-new settings screen reached from the Vipps Mobilpay menu. The old settings page will redirect to this. It should look and feel familiar, but we're going to use this page to hopefully improve the co nfiguraton experience as the features improve and the settings grow more complicated.
-
-We also support the new block-based product editor from this version on.
-
-To be able to do this, we are increasing the required version of Wordpress to version 6.2. If you are unable to upgrade wordpress to this version, you can still download versions from the 2.1.x branch on wordpress.org - but we'll only add e
-ssential and security fixes to this branch.
+Version 4.0.0:
+This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Recurring payments requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
 
 == Frequently Asked Questions ==
 
@@ -147,6 +153,39 @@ Yes, though you need to ensure that the order-id's you produce like this are uni
     return $prefix . $order->get_order_number();
 }, 10, 3);`
 
+= Do I need to have a license for WooCommerce Subscriptions in order to use recurring payments? =
+
+Yes, you do. Get it
+[here](https://woocommerce.com/products/woocommerce-subscriptions/).
+
+= Does the recurring payment part of the plugin work with the WooCommerce Memberships-plugin? =
+
+[WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/)
+and
+[WooCommerce Memberships](https://woocommerce.com/products/woocommerce-memberships/)
+are able to work together for access to recurring memberships that unlock content.
+
+**WooCommerce Subscriptions is required in order to use Vipps/MobilePay recurring payments, but Memberships is not.**
+
+You can read about how WooCommerce Subscriptions and WooCommerce Memberships work together [here](https://docs.woocommerce.com/document/woocommerce-memberships-subscriptions-integration/).
+
+
+= When I use recurring payments, why do I have to capture payments for physical products manually? =
+
+This is because of the Norwegian law. You are not allowed to charge for a physical product before you ship it, without a valid reason to do so.
+
+You can read about it [here](https://www.forbrukertilsynet.no/english/guidelines/guidelines-the-standard-sales-conditions-consumer-purchases-of-goods-the-internet#chapter-7).
+
+If you have a valid reason to do so you can use the "Capture payment instantly" option from the "Vipps/MobilePay recurring payments" settings in your product's settings.
+
+= When I use recurring payments and a renewal happens, why is the order on hold? =
+
+This is because when an order is charged in Vipps MobilePay it takes 2 days before the payment has been fully captured from the customer's bank account.
+
+After 2 days it will move to the "Processing" status. You can however change the behaviour of this by using the "Default status to give pending renewals" option in the plugin settings.
+
+Alternatively you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
+
 = Firewall ports =
 Ensure *outgoing* traffic to port 443 is open. This is used to communicate with Vipps servers.
 
@@ -163,7 +202,7 @@ If this isn't practical for your usage, we recommend that you "test in productio
 
 = What are the requirements? =
 * WooCommerce 3.3.4 or newer is required
-* PHP 7.0 or higher is required.
+* PHP 7.4 or higher is required.
 * An SSL Certificate is required.
 
 = Filters and Hooks for customization =
@@ -244,6 +283,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-01-13 version 4.0.0 =
+This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Recurring payments requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
+Fixes some spurious warnings
+
 = 2024-12-18 version 3.0.9 =
 Fix wrapper of Express Checkout button on the terms-and-condition page
 Preliminary Swedish translations

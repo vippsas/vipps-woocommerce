@@ -1,0 +1,82 @@
+.vipps-recurring-icon {
+	width: 70px;
+}
+
+.vipps-recurring-payment-redirect-page {
+	z-index: 100000;
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: #FFF;
+	color: #161225;
+
+	&__container {
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 15px;
+
+		&__content {
+			&__logo {
+				display: flex;
+				justify-content: center;
+				width: 100%;
+
+				img {
+					height: 100%;
+					width: 150px;
+				}
+			}
+
+			&__loading {
+				display: flex;
+				justify-content: center;
+
+				&__spinner {
+					@keyframes spin {
+						to {
+							transform: rotate(360deg);
+						}
+					}
+					@-webkit-keyframes spin {
+						to {
+							transform: rotate(360deg);
+						}
+					}
+
+					display: inline-block;
+					margin: 20px 0;
+					width: 32px;
+					height: 32px;
+					border: 2px solid rgba(0, 0, 0, .3);
+					border-radius: 50%;
+					border-top-color: #161225;
+					animation: spin 1s ease-in-out infinite;
+				}
+			}
+
+			&__text {
+				font-size: 1.2rem;
+				text-align: center;
+
+				p {
+					padding: 0;
+					margin: 0;
+				}
+
+				&__heading {
+					font-size: 1.5rem;
+					font-weight: 600;
+					margin-top: 15px;
+				}
+
+				&__action {
+					margin-top: 30px;
+				}
+			}
+		}
+	}
+}

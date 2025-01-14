@@ -1,0 +1,32 @@
+{
+  "name": "vipps-mobilepay-recurring-payments",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "wp-scripts build --webpack-src-dir=src entrypoints/main/main.js entrypoints/checkout/checkout.js --output-path=assets/build",
+    "check-engines": "wp-scripts check-engines",
+    "check-licenses": "wp-scripts check-licenses",
+    "format": "wp-scripts format",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:md:docs": "wp-scripts lint-md-docs",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "packages-update": "wp-scripts packages-update",
+    "plugin-zip": "wp-scripts plugin-zip",
+    "start": "wp-scripts start --webpack-src-dir=src --output-path=assets/build",
+    "test:e2e": "wp-scripts test-e2e",
+    "test:unit": "wp-scripts test-unit-js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@wordpress/api-fetch": "^6.49.0",
+    "@wordpress/blocks": "^12.30.0",
+    "@wordpress/data": "^9.23.0",
+    "@wordpress/element": "^5.30.0",
+    "@wordpress/i18n": "^4.53.0",
+    "@wordpress/scripts": "^30.8.1"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "src/pages/PaymentRedirectPage.jsx": "assets/build/main.js",
+  "src/pages/components/PaymentRedirectPage/PaymentCancelled.jsx": "assets/build/main.js",
+  "src/pages/components/PaymentRedirectPage/PaymentRedirect.jsx": "assets/build/main.js",
+  "src/pages/components/PaymentRedirectPage/PaymentError.jsx": "assets/build/main.js",
+  "assets/js/vipps-recurring-admin.js": "assets/js/vipps-recurring-admin.js",
+  "src/pages/CheckoutPage.jsx": "assets/build/checkout.js"
+}
