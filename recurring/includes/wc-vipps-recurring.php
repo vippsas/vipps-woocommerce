@@ -382,7 +382,10 @@ class WC_Vipps_Recurring {
 		// The only two reasons to not show our gateway is if the cart supports being purchased by the standard Vipps MobilePay gateway
 		// Or if the cart does not contain a subscription product
 		$active = ! isset( $methods['vipps'] )
-		          && ( WC_Subscriptions_Cart::cart_contains_subscription() || wcs_cart_contains_switches() || isset( $_GET['change_payment_method'] ) );
+		          && ( WC_Subscriptions_Cart::cart_contains_subscription()
+                       || wcs_cart_contains_switches()
+                       || wcs_cart_contains_failed_renewal_order_payment()
+                       || isset( $_GET['change_payment_method'] ) );
 
 		return apply_filters( 'wc_vipps_recurring_cart_has_subscription_product', $active, WC()->cart->get_cart_contents() );
 	}
