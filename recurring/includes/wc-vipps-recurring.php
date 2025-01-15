@@ -705,11 +705,13 @@ class WC_Vipps_Recurring {
 
 		$options = [
 			'limit'          => $limit,
-			'type'           => 'shop_order',
-			'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
-			'meta_compare'   => '=',
-			'meta_value'     => 1,
-			'return'         => 'ids',
+			'meta_query'     => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
+					'compare' => '=',
+					'value'   => 1
+				]
+			],
 			'payment_method' => $this->gateway()->id
 		];
 
@@ -721,15 +723,17 @@ class WC_Vipps_Recurring {
 		}
 
 		remove_all_filters( 'posts_orderby' );
-		$order_ids = wc_get_orders( $options );
+		$orders = wc_get_orders( $options );
 
-		foreach ( $order_ids as $order_id ) {
+		foreach ( $orders as $order ) {
+			$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+
 			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
 			$this->gateway()->check_charge_status( $order_id );
 			do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );
 		}
 
-		return $order_ids;
+		return $orders;
 	}
 
 	/**

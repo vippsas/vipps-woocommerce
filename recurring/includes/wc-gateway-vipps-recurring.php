@@ -376,9 +376,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	public function use_high_performance_order_storage(): bool {
 		if ( $this->use_high_performance_order_storage === null ) {
 			$this->use_high_performance_order_storage = function_exists( 'wc_get_container' ) &&  // 4.4.0
-														function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
-														class_exists( "Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController" ) &&
-														wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+			                                            function_exists( 'wc_get_page_screen_id' ) && // Exists in the HPOS update
+			                                            class_exists( "Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController" ) &&
+			                                            wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
 		}
 
 		return $this->use_high_performance_order_storage;
@@ -565,7 +565,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Helper::set_latest_api_status_for_order( $order, $charge->status );
 
 		$initial        = empty( WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL ) )
-						  && ! wcs_order_contains_renewal( $order );
+		                  && ! wcs_order_contains_renewal( $order );
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
@@ -584,8 +584,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// If the brand is MobilePay, we should capture the payment now if it is not already captured.
 		// This is because MobilePay auto-releases and refunds payments after 7 days. Vipps will keep a reservation for a lot longer.
 		if ( $this->brand === WC_Vipps_Recurring_Helper::BRAND_MOBILEPAY
-			 && ! $is_captured
-			 && $this->auto_capture_mobilepay ) {
+		     && ! $is_captured
+		     && $this->auto_capture_mobilepay ) {
 			$order->save();
 
 			if ( $this->maybe_capture_payment( $order_id ) ) {
@@ -732,7 +732,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: RESERVED
 		// not auto captured, so we need to put the order status to `$this->default_reserved_charge_status`
 		if ( ! $transaction_id && $charge->status === WC_Vipps_Charge::STATUS_RESERVED
-			 && ! wcs_order_contains_renewal( $order ) ) {
+		     && ! wcs_order_contains_renewal( $order ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
 
 			$message = __( 'Waiting for you to capture the payment', 'woo-vipps' );
@@ -743,11 +743,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		// status: DUE or PENDING
 		// when DUE, we need to check that it becomes another status in a cron
 		$initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL )
-				   && ! wcs_order_contains_renewal( $order );
+		           && ! wcs_order_contains_renewal( $order );
 
 		if ( ! $initial && ! $transaction_id && ( $charge->status === WC_Vipps_Charge::STATUS_DUE
-												  || ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
-													   && wcs_order_contains_renewal( $order ) ) ) ) {
+		                                          || ( $charge->status === WC_Vipps_Charge::STATUS_PENDING
+		                                               && wcs_order_contains_renewal( $order ) ) ) ) {
 			WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_CAPTURED, true );
@@ -786,8 +786,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// if status was FAILED, but no longer is
 		if ( $charge->status !== WC_Vipps_Charge::STATUS_FAILED
-			 && WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
-			 && in_array( $charge->status, [ WC_Vipps_Charge::STATUS_PROCESSING, 'DUE', 'PENDING' ], true ) ) {
+		     && WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order )
+		     && in_array( $charge->status, [ WC_Vipps_Charge::STATUS_PROCESSING, 'DUE', 'PENDING' ], true ) ) {
 			WC_Vipps_Recurring_Helper::set_order_charge_not_failed( $order, $charge->id );
 		}
 
@@ -1525,9 +1525,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$is_failed_renewal_order = wcs_cart_contains_failed_renewal_order_payment() !== false;
 
 		if ( ! $is_gateway_change
-			 && ! $is_failed_renewal_order
-			 && ! wcs_order_contains_subscription( $order )
-			 && ! wcs_order_contains_early_renewal( $order ) ) {
+		     && ! $is_failed_renewal_order
+		     && ! wcs_order_contains_subscription( $order )
+		     && ! wcs_order_contains_early_renewal( $order ) ) {
 			return [
 				'result'   => 'fail',
 				'redirect' => ''
@@ -1785,23 +1785,23 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		ob_start();
 		?>
-		<tr valign="top">
-			<th
-				scope="row"
-				class="titledesc"
-			>
-				<label
-					for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?><?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
-			</th>
-			<td class="forminp">
-				<fieldset>
-					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span>
-					</legend>
+        <tr valign="top">
+            <th
+                    scope="row"
+                    class="titledesc"
+            >
+                <label
+                        for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?><?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+            </th>
+            <td class="forminp">
+                <fieldset>
+                    <legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span>
+                    </legend>
 					<?php echo $dropdown_pages; ?>
 					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
-				</fieldset>
-			</td>
-		</tr>
+                </fieldset>
+            </td>
+        </tr>
 		<?php
 
 		return ob_get_clean();
@@ -1875,7 +1875,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	public function process_admin_options(): bool {
 		$saved = parent::process_admin_options();
-                delete_transient('_vipps_keyset'); // Same transient as for the payment api IOK 2024-12-03
+		delete_transient( '_vipps_keyset' ); // Same transient as for the payment api IOK 2024-12-03
 
 		$this->init_form_fields();
 
@@ -2208,8 +2208,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 */
 	public function prevent_backwards_transition_on_completed_order( $status, $order_id, $order ): ?string {
 		if ( $status === 'processing'
-			 && $order->has_status( 'completed' )
-			 && $order->get_payment_method() === $this->id ) {
+		     && $order->has_status( 'completed' )
+		     && $order->get_payment_method() === $this->id ) {
 			return 'completed';
 		}
 
@@ -2483,19 +2483,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			if ( empty( $order_id ) ) {
 				$charge_id = $webhook_data['chargeId'];
 
-				$options = [
+				$orders = wc_get_orders( [
 					'limit'          => 1,
-					'type'           => 'shop_order',
-					'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
-					'meta_compare'   => '=',
-					'meta_value'     => $charge_id,
-					'return'         => 'ids',
+					'meta_query'     => [
+						[
+							'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
+							'compare' => '=',
+							'value'   => $charge_id
+						]
+					],
 					'payment_method' => $this->id,
 					'order_by'       => 'post_date'
-				];
+				] );
 
-				$order_ids = wc_get_orders( $options );
-				$order_id  = array_pop( $order_ids );
+				$order = array_pop( $orders );
+
+				if ( $order ) {
+					$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+				}
 			}
 
 			if ( empty( $charge_id ) ) {
@@ -2551,8 +2556,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	public function checkout_is_available() {
 		if ( ! $this->checkout_enabled
-			 || ! $this->is_available()
-			 || ! $this->cart_supports_checkout() ) {
+		     || ! $this->is_available()
+		     || ! $this->cart_supports_checkout() ) {
 			return false;
 		}
 

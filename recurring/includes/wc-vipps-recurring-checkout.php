@@ -24,7 +24,7 @@ class WC_Vipps_Recurring_Checkout {
 		$instance = WC_Vipps_Recurring_Checkout::get_instance();
 		add_action( 'init', [ $instance, 'init' ] );
 		// Higher priority than the single payments Vipps plugin
-                add_filter('woocommerce_get_checkout_page_id', [ $instance,'woocommerce_get_checkout_page_id'], 20);
+		add_filter( 'woocommerce_get_checkout_page_id', [ $instance, 'woocommerce_get_checkout_page_id' ], 20 );
 		add_action( 'template_redirect', [ $instance, 'template_redirect' ] );
 
 		if ( is_admin() ) {
@@ -532,20 +532,20 @@ class WC_Vipps_Recurring_Checkout {
 		return $settings;
 	}
 
-        public function woocommerce_get_checkout_page_id($id) : int {
-            $checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
+	public function woocommerce_get_checkout_page_id( $id ): int {
+		$checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
 
-            if ( ! $checkout_enabled ) {
-                return $id;
-            }
+		if ( ! $checkout_enabled ) {
+			return $id;
+		}
 
-            $checkout_id = $this->gateway()->checkout_is_available();
-            if ( $checkout_id ) {
-                return $checkout_id;
-            }
+		$checkout_id = $this->gateway()->checkout_is_available();
+		if ( $checkout_id ) {
+			return $checkout_id;
+		}
 
-            return $id;
-        }
+		return $id;
+	}
 
 	public function template_redirect(): void {
 		global $post;
@@ -945,26 +945,27 @@ class WC_Vipps_Recurring_Checkout {
 	public function handle_callback( array $body, string $authorization_token ): void {
 		WC_Vipps_Recurring_Logger::log( sprintf( "Handling Vipps/MobilePay Checkout callback with body: %s", json_encode( $body ) ) );
 
-		$order_ids = wc_get_orders( [
-			'type'         => 'shop_order',
-			'meta_key'     => WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID,
-			'meta_value'   => $body['sessionId'],
-			'meta_compare' => '=',
-			'return'       => 'ids'
+		$orders = wc_get_orders( [
+			'meta_query' => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID,
+					'compare' => '=',
+					'value'   => $body['sessionId']
+				]
+			]
 		] );
 
-		if ( empty( $order_ids ) ) {
+		if ( empty( $orders ) ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Found no order ids in Vipps/MobilePay Checkout callback for session id: %s", $body['sessionId'] ) );
 
 			return;
 		}
 
-		$order_id = array_pop( $order_ids );
-		$order    = wc_get_order( $order_id );
+		$order = array_pop( $orders );
 
 		$stored_authorization_token = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_EXPRESS_AUTH_TOKEN );
 		if ( $authorization_token !== $stored_authorization_token ) {
-			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Invalid authorization token for session id %s.", $order_id, $body['sessionId'] ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Invalid authorization token for session id %s.", WC_Vipps_Recurring_Helper::get_id( $order ), $body['sessionId'] ) );
 
 			return;
 		}
