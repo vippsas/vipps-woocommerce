@@ -486,7 +486,6 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Polling checkout from check_order_status", $order_id ) );
 		$session = $this->gateway()->api->checkout_poll( $session['pollingUrl'] );
 
 		$this->handle_payment( $order, $session );

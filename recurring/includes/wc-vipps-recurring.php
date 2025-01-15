@@ -28,7 +28,7 @@ class WC_Vipps_Recurring {
 	public static function register_hooks() {
 		$instance = WC_Vipps_Recurring::get_instance();
 
-                // No longer handled directly here
+		// No longer handled directly here
 		// register_activation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'activate' ] );
 		// register_deactivation_hook( WC_VIPPS_MAIN_FILE, [ $instance, 'deactivate' ] );
 
@@ -41,9 +41,9 @@ class WC_Vipps_Recurring {
 			] );
 		}
 
-		add_action( 'plugins_loaded', [ $instance, 'plugins_loaded' ]);
+		add_action( 'plugins_loaded', [ $instance, 'plugins_loaded' ] );
 		// Declare compatibility with the WooCommerce checkout block
-		add_action( 'woocommerce_blocks_loaded', [ $instance, 'woocommerce_blocks_loaded' ]);
+		add_action( 'woocommerce_blocks_loaded', [ $instance, 'woocommerce_blocks_loaded' ] );
 		add_action( 'init', [ $instance, 'init' ] );
 	}
 
@@ -108,18 +108,18 @@ class WC_Vipps_Recurring {
 
 	}
 
-        // Runs possibly before plugins_loaded
-        public function woocommerce_blocks_loaded () {
-            if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-                require_once 'wc-vipps-recurring-blocks-support.php';
-                add_action(
-                        'woocommerce_blocks_payment_method_type_registration',
-                        function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
-                        $payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
-                        }
-                        );
-            }
-        }
+	// Runs possibly before plugins_loaded
+	public function woocommerce_blocks_loaded() {
+		if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+			require_once 'wc-vipps-recurring-blocks-support.php';
+			add_action(
+				'woocommerce_blocks_payment_method_type_registration',
+				function ( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+					$payment_method_registry->register( new WC_Vipps_Recurring_Blocks_Support() );
+				}
+			);
+		}
+	}
 
 	/**
 	 * Init the plugin after plugins_loaded so environment variables are set.
@@ -370,11 +370,11 @@ class WC_Vipps_Recurring {
 		$icon = plugins_url( 'assets/images/' . $this->gateway()->brand . '-mark-icon.svg', WC_VIPPS_RECURRING_MAIN_FILE );
 
 		?>
-		<style>
-			#woocommerce-product-data ul.wc-tabs li.wc_vipps_recurring_options a:before {
-				background-image: url( <?php echo $icon ?> );
-			}
-		</style>
+        <style>
+            #woocommerce-product-data ul.wc-tabs li.wc_vipps_recurring_options a:before {
+                background-image: url( <?php echo $icon ?> );
+            }
+        </style>
 		<?php
 	}
 
@@ -382,7 +382,7 @@ class WC_Vipps_Recurring {
 		// The only two reasons to not show our gateway is if the cart supports being purchased by the standard Vipps MobilePay gateway
 		// Or if the cart does not contain a subscription product
 		$active = ! isset( $methods['vipps'] )
-				  && ( WC_Subscriptions_Cart::cart_contains_subscription() || wcs_cart_contains_switches() || isset( $_GET['change_payment_method'] ) );
+		          && ( WC_Subscriptions_Cart::cart_contains_subscription() || wcs_cart_contains_switches() || isset( $_GET['change_payment_method'] ) );
 
 		return apply_filters( 'wc_vipps_recurring_cart_has_subscription_product', $active, WC()->cart->get_cart_contents() );
 	}
@@ -426,7 +426,7 @@ class WC_Vipps_Recurring {
 	 */
 	public function setup_screen() {
 		global $wc_vipps_recurring_list_table_pending_charges,
-			   $wc_vipps_recurring_list_table_failed_charges;
+		       $wc_vipps_recurring_list_table_failed_charges;
 
 		$screen_id = false;
 
@@ -452,16 +452,16 @@ class WC_Vipps_Recurring {
 		}
 
 		if ( $wc_vipps_recurring_list_table_pending_charges
-			 && $wc_vipps_recurring_list_table_pending_charges->current_action()
-			 && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
+		     && $wc_vipps_recurring_list_table_pending_charges->current_action()
+		     && $wc_vipps_recurring_list_table_pending_charges->current_action() === 'check_status' ) {
 			$sendback = $this->handle_check_statuses_bulk_action();
 
 			wp_redirect( $sendback );
 		}
 
 		if ( $wc_vipps_recurring_list_table_failed_charges
-			 && $wc_vipps_recurring_list_table_failed_charges->current_action()
-			 && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
+		     && $wc_vipps_recurring_list_table_failed_charges->current_action()
+		     && $wc_vipps_recurring_list_table_failed_charges->current_action() === 'check_status' ) {
 			$sendback = $this->handle_check_statuses_bulk_action();
 
 			wp_redirect( $sendback );
@@ -778,33 +778,51 @@ class WC_Vipps_Recurring {
 	public function check_orders_marked_for_deletion() {
 		$options = [
 			'limit'          => 25,
-			'type'           => 'shop_order',
-			'meta_key'       => WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION,
-			'meta_compare'   => '=',
-			'meta_value'     => 1,
-			'return'         => 'ids',
-			'payment_method' => $this->gateway()->id
+			'payment_method' => $this->gateway()->id,
+			'meta_query'     => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION,
+					'compare' => '=',
+					'value'   => 1
+				]
+			]
 		];
 
-		foreach ( wc_get_orders( $options ) as $order_id ) {
-			$order = wc_get_order( $order_id );
+		$orders = wc_get_orders( $options );
 
+		WC_Vipps_Recurring_Logger::log( sprintf( "Running check_orders_marked_for_deletion for %s orders", count( $orders ) ) );
+
+		foreach ( $orders as $order ) {
 			// If this order has been manually updated in the mean-time, we no longer want to delete it.
 			// Similarly, if it has a billing email we don't want to delete it.
 			$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
 
-			if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || $empty_email ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", WC_Vipps_Recurring_Helper::get_id( $order ), $order->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $order ) ? 'Yes' : 'No' ) );
+
+			if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || ! $empty_email ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( "Removing %s from the deletion queue as it should no longer be deleted.", WC_Vipps_Recurring_Helper::get_id( $order ) ) );
+
 				WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION );
+				$order->save();
 
 				continue;
 			}
 
-			$subscriptions = wcs_get_subscriptions_for_order( $order );
-			foreach ( $subscriptions as $subscription ) {
-				wp_delete_post( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( "Deleting %s.", WC_Vipps_Recurring_Helper::get_id( $order ) ) );
+
+			if ( ! wcs_order_contains_renewal( $order ) ) {
+				$subscriptions = wcs_get_subscriptions_for_order( $order );
+				foreach ( $subscriptions as $subscription ) {
+					// Do not delete active subscriptions under any circumstances.
+					if ( $subscription->get_status() === 'active' ) {
+						continue;
+					}
+
+					$subscription->delete();
+				}
 			}
 
-			wp_delete_post( $order_id );
+			$order->delete();
 		}
 	}
 
@@ -815,9 +833,9 @@ class WC_Vipps_Recurring {
 	 * @version 4.0.0
 	 */
 	public function plugin_action_links( $links ): array {
-                // IOK 2025-01-13 temporarily deactivated, because there is currently two
-                // sets of settings, and not enough room to disambituate between them (at least in norwegian).
-                return $links;
+		// IOK 2025-01-13 temporarily deactivated, because there is currently two
+		// sets of settings, and not enough room to disambituate between them (at least in norwegian).
+		return $links;
 
 		$plugin_links = [
 			'<a href="admin.php?page=wc-settings&tab=checkout&section=vipps_recurring">' . esc_html__( 'Settings', 'woo-vipps' ) . '</a>',
@@ -890,7 +908,7 @@ class WC_Vipps_Recurring {
 			'continueShoppingUrl' => $continue_shopping_url
 		] );
 
-		wp_set_script_translations( 'woo-vipps-recurring', 'woo-vipps', dirname(WC_VIPPS_MAIN_FILE) . '/languages' );
+		wp_set_script_translations( 'woo-vipps-recurring', 'woo-vipps', dirname( WC_VIPPS_MAIN_FILE ) . '/languages' );
 	}
 
 	/**
@@ -912,7 +930,7 @@ class WC_Vipps_Recurring {
 		);
 
 		wp_localize_script( 'woo-vipps-recurring-admin', 'VippsRecurringConfig', $this->ajax_config );
-		wp_set_script_translations( 'woo-vipps-recurring-admin', 'woo-vipps', dirname(WC_VIPPS_MAIN_FILE). '/languages' );
+		wp_set_script_translations( 'woo-vipps-recurring-admin', 'woo-vipps', dirname( WC_VIPPS_MAIN_FILE ) . '/languages' );
 	}
 
 	/**
