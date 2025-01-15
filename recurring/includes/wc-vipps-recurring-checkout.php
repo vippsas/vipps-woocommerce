@@ -155,6 +155,8 @@ class WC_Vipps_Recurring_Checkout {
 
 		// Handle cancelled orders
 		add_action( 'wc_vipps_recurring_check_charge_status_no_agreement', [ $this, 'maybe_cancel_initial_order' ] );
+
+		add_filter( 'wcs_user_has_subscription', [ $this, 'user_has_subscription' ], 10, 4 );
 	}
 
 	public function admin_init(): void {
@@ -1125,5 +1127,24 @@ class WC_Vipps_Recurring_Checkout {
 		if ( $order->get_status() === 'pending' && $minutes > 120 ) {
 			$this->abandon_checkout_order( $order );
 		}
+	}
+
+	public function user_has_subscription( $has_subscription, $user_id, $product_id, $status ) {
+		$subscriptions = wcs_get_users_subscriptions( $user_id );
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( ! WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_ORDER_IS_CHECKOUT ) ) {
+				continue;
+			}
+
+			// You do not have a subscription simply because you have a pending subscription.
+			// Checkout subscriptions are created BEFORE a payment is made.
+			if ( $subscription->has_status( 'pending' ) ) {
+				$has_subscription = false;
+				break;
+			}
+		}
+
+		return $has_subscription;
 	}
 }
