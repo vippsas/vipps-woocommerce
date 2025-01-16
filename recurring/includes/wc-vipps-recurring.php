@@ -806,6 +806,10 @@ class WC_Vipps_Recurring {
 
             WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", WC_Vipps_Recurring_Helper::get_id( $order ), $order->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $order ) ? 'Yes' : 'No' ) );
 
+            // Check the status of this order's charge for good measure.
+            $this->gateway()->check_charge_status( WC_Vipps_Recurring_Helper::get_id( $order ) );
+            $order = wc_get_order( $order );
+
             if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || ! $empty_email ) {
                 WC_Vipps_Recurring_Logger::log( sprintf( "Removing %s from the deletion queue as it should no longer be deleted.", WC_Vipps_Recurring_Helper::get_id( $order ) ) );
 
