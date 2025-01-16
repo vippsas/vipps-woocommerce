@@ -60,9 +60,13 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 			'offset'         => ( $paged - 1 ) * $orders_per_page,
 			'search'         => $ordersearch,
 			'paginate'       => true,
-			'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_FAILED,
-			'meta_value'     => 1,
-			'type'           => 'shop_order',
+			'meta_query'     => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_FAILED,
+					'compare' => '=',
+					'value'   => 1
+				]
+			],
 			'payment_method' => 'vipps_recurring'
 		];
 
@@ -177,8 +181,8 @@ class WC_Vipps_Recurring_Admin_List_Failed_Charges extends WP_List_Table {
 	 */
 	protected function get_sortable_columns() {
 		return [
-			'order'          => [ 'order', true ],
-			'created_at'     => [ 'created_at', true ]
+			'order'      => [ 'order', true ],
+			'created_at' => [ 'created_at', true ]
 		];
 	}
 

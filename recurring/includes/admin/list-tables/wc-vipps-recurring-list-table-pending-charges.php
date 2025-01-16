@@ -60,10 +60,13 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'offset'         => ( $paged - 1 ) * $orders_per_page,
 			'search'         => $ordersearch,
 			'paginate'       => true,
-			'type'           => 'shop_order',
-			'meta_key'       => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
-			'meta_compare'   => '=',
-			'meta_value'     => 1,
+			'meta_query'     => [
+				[
+					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
+					'compare' => '=',
+					'value'   => 1
+				]
+			],
 			'payment_method' => 'vipps_recurring'
 		];
 
