@@ -800,18 +800,22 @@ class WC_Vipps_Recurring {
         WC_Vipps_Recurring_Logger::log( sprintf( "Running check_orders_marked_for_deletion for %s orders", count( $orders ) ) );
 
         foreach ( $orders as $order ) {
+            $order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+
+            WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", $order_id, $order->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $order ) ? 'Yes' : 'No' ) );
+
+            // Check the status of this order's charge just in case.
+            do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
+            $this->gateway()->check_charge_status( $order_id );
+            do_action( 'wc_vipps_recurring_after_cron_check_order_status', $order_id );
+            $order = wc_get_order( $order );
+
             // If this order has been manually updated in the mean-time, we no longer want to delete it.
             // Similarly, if it has a billing email we don't want to delete it.
             $empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
 
-            WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", WC_Vipps_Recurring_Helper::get_id( $order ), $order->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $order ) ? 'Yes' : 'No' ) );
-
-            // Check the status of this order's charge for good measure.
-            $this->gateway()->check_charge_status( WC_Vipps_Recurring_Helper::get_id( $order ) );
-            $order = wc_get_order( $order );
-
             if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || ! $empty_email ) {
-                WC_Vipps_Recurring_Logger::log( sprintf( "Removing %s from the deletion queue as it should no longer be deleted.", WC_Vipps_Recurring_Helper::get_id( $order ) ) );
+                WC_Vipps_Recurring_Logger::log( sprintf( "Removing %s from the deletion queue as it should no longer be deleted.", $order_id ) );
 
                 WC_Vipps_Recurring_Helper::delete_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION );
                 $order->save();
@@ -824,7 +828,7 @@ class WC_Vipps_Recurring {
             if ( ! wcs_order_contains_renewal( $order ) ) {
                 $subscriptions = wcs_get_subscriptions_for_order( $order );
                 foreach ( $subscriptions as $subscription ) {
-                    // Do not delete active subscriptions under any circumstances.
+                    // Do not under any circumstances delete active subscriptions.
                     if ( $subscription->get_status() === 'active' ) {
                         continue;
                     }
