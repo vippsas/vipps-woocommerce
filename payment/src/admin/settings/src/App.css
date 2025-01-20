@@ -128,12 +128,62 @@
   height: auto;
 }
 
-.vipps-mobilepay-react-field-error {
-  color: #dc3232;
-  font-size: 12px;
-  margin-top: 5px;
+.vipps-mobilepay-form-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 200px;
 }
 
-select.has-error {
-  border-color: #dc3232;
+.vipps-mobilepay-react-form-field {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.vipps-mobilepay-form-help-box {
+  background-color: white;
+  border-color: rgb(140, 143, 148);
+  border-radius: 4px;
+  border: 1px solid #8c8f94;
+  padding: 30px;
+  width: 13rem;
+}
+
+.vipps-mobilepay-form-help-box a {
+  text-wrap: nowrap;
+}
+
+/* .vipps-mobilepay-form-col button[class^="button"] {
+  border-radius: 10px;
+} */
+
+.vipps-mobilepay-react-checkout-confirm .body {
+  display: flex;
+  flex-direction: row;
+  gap: 50px;
+}
+
+.vipps-mobilepay-react-checkout-confirm .title {
+  margin-bottom: 1em;
+  font-weight: bold;
+}
+
+.vipps-mobilepay-react-checkout-confirm li {
+  list-style: inside;
+  margin-left: 1em;
+}
+
+.vipps-mobilepay-react-checkout-confirm img {
+  width: 30rem;
+  margin-right: 50px;
+  /* Align alt text */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vipps-mobilepay-react-checkout .title {
+  margin-bottom: 1em;
+  font-weight: bold;
 }
