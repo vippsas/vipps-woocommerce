@@ -2976,7 +2976,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $address['country'] = $country;
 
-        return $address;
+        // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
+        return apply_filters('woo_vipps_canonicalize_checkout_address', $address, $user);
     }
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
