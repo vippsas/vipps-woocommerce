@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '4.0.0');
+define('WOO_VIPPS_VERSION', '4.0.2');
 
 // Legacy way of starting test mode - please use developer- and test-modes from now on. IOK 2019-08-30
 if ( ! defined('VIPPS_TEST_MODE' )) {
