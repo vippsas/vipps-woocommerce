@@ -948,7 +948,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => sprintf(__("%1\$s is a new service from %2\$s which replaces the usual WooCommerce checkout page entirely, replacing it with a simplified checkout screen providing payment both with %2\$s and credit card. Additionally, your customers will get the option of providing their address information using their %2\$s app directly.", 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
                     ),
 
-                'checkout_options_simple' => array(
+                'checkout_options_wizard' => array(
                     'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                     'type'  => 'title',
                     'class' => 'tab',
@@ -963,11 +963,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'default'     => 'no',
                     ),
 
-                'vipps_checkout_enabled_simple' => array(
+                'vipps_checkout_enabled_wizard' => array(
                     'title'       => '',
                     'label'       => sprintf(__('Yes, I want to start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                     'type'        => 'checkbox',
-                    'description' => '',
+                    'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
                     'default'     => 'no',
                     ),
 
@@ -979,7 +979,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => $vippscreateuserdefault,
                         ),
 
-                'checkoutcreateuser_simple' => array (
+                'checkoutcreateuser_wizard' => array (
                         'title'       => sprintf(__('Do you want to create new customers on %1$s?', 'woo-vipps'), Vipps::CheckoutName()),
                         'label'       => sprintf(__('Yes, create new customers on %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                         'type'        => 'checkbox',
@@ -996,7 +996,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         ),
 
 
-                'enablestaticshipping_checkout_simple' => array(
+                'enablestaticshipping_checkout_wizard' => array(
                         'title'       => __('Are you going to base shipping price on the customers address?', 'woo-vipps'),
                         'label'       => __('Yes, I want dynamic shipping calculation', 'woo-vipps'),
                         'type'        => 'checkbox',
@@ -1020,7 +1020,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no'
                     ),
 
-                'noAddressFields_simple' => array(
+                'noAddressFields_wizard' => array(
                         'title'       => __('Do you want the customer to enter their address?', 'woo-vipps'),
                         'label'       => __('Yes, all customers must enter their address', 'woo-vipps'),
                         'type'        => 'checkbox',
@@ -1047,7 +1047,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'description' => sprintf(__("When using %1\$s, you have the option to use %1\$s specific shipping methods with extended features for certain carriers. These will add an apropriate logo as well as extended delivery options for certain methods. For some of these, you need to add integration data from the carriers below. You can then add these shipping methods to your shipping zones the normal way, but they will only appear in the %1\$s screen.", 'woo-vipps'), Vipps::CheckoutName())
                     ),
 
-                'checkout_shipping_simple' => array(
+                'checkout_shipping_wizard' => array(
                     'title' => sprintf(__('Shipping alternatives available with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                     'type'  => 'title',
                     'description' => sprintf(__('When you use %1$s, you have a variety of shipping options to choose from, giving you even more choices from certain shipping providers.'), Vipps::CheckoutName())
@@ -1064,7 +1064,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes'
                     ),
 
-                'vcs_posten_simple' => array(
+                'vcs_posten_wizard' => array(
                         'title'       => __('Posten Norge', 'woo-vipps'),
                         'class'       => 'vcs_posten vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posten'),
@@ -1084,7 +1084,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes'
                     ),
 
-                'vcs_posti_simple' => array(
+                'vcs_posti_wizard' => array(
                         'title'       => __('Posti', 'woo-vipps'),
                         'class'       => 'vcs_posti vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posti'),
@@ -1104,7 +1104,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes'
                     ),
 
-                'vcs_postnord_simple' => array(
+                'vcs_postnord_wizard' => array(
                         'title'       => __('PostNord', 'woo-vipps'),
                         'class'       => 'vcs_postnord vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_postnord'),
@@ -1124,7 +1124,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no'
                     ),
 
-                'vcs_porterbuddy_simple' => array(
+                'vcs_porterbuddy_wizard' => array(
                         'title'       => __('Porterbuddy', 'woo-vipps'),
                         'class'       => 'vcs_porterbuddy vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
@@ -1167,7 +1167,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'no'
                     ),
 
-                'vcs_helthjem_simple' => array(
+                'vcs_helthjem_wizard' => array(
                         'title'       => __('Helthjem', 'woo-vipps'),
                         'label'       => __('Offer Helthjem as a shipping method', 'woo-vipps'),
                         'type'        => 'checkbox',
@@ -1224,7 +1224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                            'title' => sprintf(__('External Payment Methods', 'woo-vipps'), Vipps::CheckoutName()),
                            'type'  => 'title',
                            'description' => sprintf(__("Allow certain external payment methods in %1\$s, returning control to WooCommerce for the order", 'woo-vipps'), Vipps::CheckoutName())
-                           )
+                   ),
                ];
                foreach($externals as $k => $def)   $external_payment_fields[$k] = $def;
            }
@@ -1569,8 +1569,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
             );
         
-        // Miscellanous stuff, mostly for the wizard for now. LP 30.12.2024
-        $misc = [
+        $wizardfields = [
+            'wizard_header' => [
+                'title' => __('Initial settings', 'woo-vipps'),
+                'description' => sprintf(__('Welcome! You are almost ready to accept payments with %1$s', 'woo-vipps'), Vipps::CompanyName()),
+            ],
             'help_box' => [
                 'get_started' => __('Get started', 'woo_vipps'),
                 'documentation' => __('Documentation', 'woo-vipps'),
@@ -1647,7 +1650,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
        }
 
 
-        foreach($misc as $key=>$field) {
+        foreach($wizardfields as $key=>$field) {
             $this->form_fields[$key] = $field;
         }
     }

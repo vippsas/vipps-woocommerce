@@ -25,7 +25,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
   const [prevStep, setPrevStep] = useState<Steps>('ESSENTIAL');
 
 
-  // For the "CHECKOUT" step
+  // For the "CHECKOUT" step. LP 03.01.2025
   const showPorterbuddy = getOption("vcs_porterbuddy") === "yes";
   const showHelthjem = getOption("vcs_helthjem") === "yes";
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
@@ -37,7 +37,8 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
     <>
       {step === 'ESSENTIAL' && (
         <>
-          <h3 className="vipps-mobilepay-react-tab-description">{gettext('initial_settings')}</h3>
+          <h3 className="vipps-mobilepay-react-tab-description">{gettext('wizard_header.title')}</h3>
+          <p>{gettext('wizard_header.description')}</p>
           <div className="vipps-mobilepay-form-container">
             <div className="vipps-mobilepay-form-col">
               <SelectFormField
@@ -105,9 +106,9 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               {/* Renders a simplified checkbox to enable the Alternative checkout screen. LP 23.12.2024 */}
               <CheckboxFormField
                 name="vipps_checkout_enabled"
-                titleKey="vipps_checkout_enabled_simple.title"
-                labelKey="vipps_checkout_enabled_simple.label"
-                descriptionKey="vipps_checkout_enabled_simple.description"
+                titleKey="vipps_checkout_enabled_wizard.title"
+                labelKey="vipps_checkout_enabled_wizard.label"
+                descriptionKey="vipps_checkout_enabled_wizard.description"
               />
 
               {/* Renders a button to progress to the next form step. LP 23.12.2024 */}
@@ -162,6 +163,7 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
         <>
         <div className="vipps-mobilepay-react-checkout-confirm">
           <h1 className="title">{ fixCheckoutName(gettext( 'checkout_confirm.title' ), getOption("payment_method_name")) }</h1>
+            <p>{fixCheckoutName(gettext("checkout_options_wizard.description"), paymentMethod)}</p>
           <div className="body">
             <div className="list">
               <strong>{ fixCheckoutName(gettext( 'checkout_confirm.paragraph1.header' ), paymentMethod) }</strong>
@@ -201,63 +203,63 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
         <>
           <div className="vipps-mobilepay-react-checkout-confirm">
             <h1 className="vipps-mobilepay-react-tab-description title">
-              {fixCheckoutName(gettext("checkout_options_simple.title"), paymentMethod)}
+              {fixCheckoutName(gettext("checkout_options_wizard.title"), paymentMethod)}
             </h1>
-            <p>{fixCheckoutName(gettext("checkout_options_simple.description"), paymentMethod)}</p>
+            <p>{fixCheckoutName(gettext("checkout_options_wizard.description"), paymentMethod)}</p>
 
             {/* Renders a checkbox to enable the creation of new customers on Checkout */}
             <CheckboxFormField
               name="checkoutcreateuser"
-              titleKey={"checkoutcreateuser_simple.title"}
-              labelKey={"checkoutcreateuser_simple.label"}
-              descriptionKey={"checkoutcreateuser_simple.description"}
+              titleKey={"checkoutcreateuser_wizard.title"}
+              labelKey={"checkoutcreateuser_wizard.label"}
+              descriptionKey={"checkoutcreateuser_wizard.description"}
             />
 
             {/* Renders a checkbox to enable dynamic shipping (inverted checkbox from static shipping details) */}
             <CheckboxFormField
               name="enablestaticshipping_checkout"
-              titleKey="enablestaticshipping_checkout_simple.title"
-              labelKey="enablestaticshipping_checkout_simple.label"
-              descriptionKey="enablestaticshipping_checkout_simple.description"
+              titleKey="enablestaticshipping_checkout_wizard.title"
+              labelKey="enablestaticshipping_checkout_wizard.label"
+              descriptionKey="enablestaticshipping_checkout_wizard.description"
               inverted
             />
 
             {/* Renders a checkbox to enable address fields (inverted checkbox from dropping address fields) */}
             <CheckboxFormField
               name="noAddressFields"
-              titleKey="noAddressFields_simple.title"
-              labelKey="noAddressFields_simple.label"
-              descriptionKey="noAddressFields_simple.description"
+              titleKey="noAddressFields_wizard.title"
+              labelKey="noAddressFields_wizard.label"
+              descriptionKey="noAddressFields_wizard.description"
               inverted
             />
 
             <h3 className="vipps-mobilepay-react-tab-description">
-              {fixCheckoutName(gettext("checkout_shipping_simple.title"), paymentMethod)}
+              {fixCheckoutName(gettext("checkout_shipping_wizard.title"), paymentMethod)}
             </h3>
-            <p>{fixCheckoutName(gettext("checkout_shipping_simple.description"), paymentMethod)}</p>
+            <p>{fixCheckoutName(gettext("checkout_shipping_wizard.description"), paymentMethod)}</p>
 
             {/* Renders a checkbox to enable Posten Norge  */}
             <CheckboxFormField
               name="vcs_posten"
-              titleKey="vcs_posten_simple.title"
-              labelKey="vcs_posten_simple.label"
-              descriptionKey="vcs_posten_simple.description"
+              titleKey="vcs_posten_wizard.title"
+              labelKey="vcs_posten_wizard.label"
+              descriptionKey="vcs_posten_wizard.description"
             />
 
             {/* Renders a checkbox to enable Posten Nord */}
             <CheckboxFormField
               name="vcs_postnord"
-              titleKey="vcs_postnord_simple.title"
-              labelKey="vcs_postnord_simple.label"
-              descriptionKey="vcs_postnord_simple.description"
+              titleKey="vcs_postnord_wizard.title"
+              labelKey="vcs_postnord_wizard.label"
+              descriptionKey="vcs_postnord_wizard.description"
             />
 
             {/* Render a checkbox to enable Porterbuddy */}
             <CheckboxFormField
               name="vcs_porterbuddy"
-              titleKey="vcs_porterbuddy_simple.title"
-              labelKey="vcs_porterbuddy_simple.label"
-              descriptionKey="vcs_porterbuddy_simple.description"
+              titleKey="vcs_porterbuddy_wizard.title"
+              labelKey="vcs_porterbuddy_wizard.label"
+              descriptionKey="vcs_porterbuddy_wizard.description"
             />
 
             {/* Display Porterbuddy input fields if Porterbuddy is enabled */}
@@ -267,23 +269,23 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <InputFormField
                   asterisk
                   name="vcs_porterbuddy_publicToken"
-                  titleKey="vcs_porterbuddy_publicToken_simple.title"
-                  descriptionKey="vcs_porterbuddy_publicToken_simple.description"
+                  titleKey="vcs_porterbuddy_publicToken_wizard.title"
+                  descriptionKey="vcs_porterbuddy_publicToken_wizard.description"
                 />
 
                 {/* Renders a text input field for the Porterbuddy API key */}
                 <InputFormField
                   asterisk
                   name="vcs_porterbuddy_apiKey"
-                  titleKey="vcs_porterbuddy_apiKey_simple.title"
-                  descriptionKey="vcs_porterbuddy_apiKey_simple.description"
+                  titleKey="vcs_porterbuddy_apiKey_wizard.title"
+                  descriptionKey="vcs_porterbuddy_apiKey_wizard.description"
                 />
 
                 {/* Renders a text input field for the Porterbuddy phone number */}
                 <InputFormField
                   name="vcs_porterbuddy_phoneNumber"
-                  titleKey="vcs_porterbuddy_phoneNumber_simple.title"
-                  descriptionKey="vcs_porterbuddy_phoneNumber_simple.description"
+                  titleKey="vcs_porterbuddy_phoneNumber_wizard.title"
+                  descriptionKey="vcs_porterbuddy_phoneNumber_wizard.description"
                 />
               </>
             )}
@@ -291,9 +293,9 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             {/* Renders a checkbox to enable Helthjem */}
             <CheckboxFormField
               name="vcs_helthjem"
-              titleKey="vcs_helthjem_simple.title"
-              labelKey="vcs_helthjem_simple.label"
-              descriptionKey="vcs_helthjem_simple.description"
+              titleKey="vcs_helthjem_wizard.title"
+              labelKey="vcs_helthjem_wizard.label"
+              descriptionKey="vcs_helthjem_wizard.description"
             />
 
             {/* Display Helthjem input fields if Helthjem is enabled */}
@@ -303,23 +305,23 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <InputFormField
                   type="number"
                   name="vcs_helthjem_shopId"
-                  titleKey="vcs_helthjem_shopId_simple.title"
-                  descriptionKey="vcs_helthjem_shopId_simple.description"
+                  titleKey="vcs_helthjem_shopId_wizard.title"
+                  descriptionKey="vcs_helthjem_shopId_wizard.description"
                 />
 
                 {/* Renders a text input field for the Helthjem Username */}
                 <InputFormField
                   name="vcs_helthjem_username"
-                  titleKey="vcs_helthjem_username_simple.title"
-                  descriptionKey="vcs_helthjem_username_simple.description"
+                  titleKey="vcs_helthjem_username_wizard.title"
+                  descriptionKey="vcs_helthjem_username_wizard.description"
                 />
 
                 {/* Renders a text input field for the Helthjem Password */}
                 <InputFormField
                   asterisk
                   name="vcs_helthjem_password"
-                  titleKey="vcs_helthjem_password_simple.title"
-                  descriptionKey="vcs_helthjem_password_simple.description"
+                  titleKey="vcs_helthjem_password_wizard.title"
+                  descriptionKey="vcs_helthjem_password_wizard.description"
                 />
               </>
             )}
@@ -328,15 +330,15 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             {showExternals && (
               <>
                 <h3 className="vipps-mobilepay-react-trab-description">
-                  {fixCheckoutName(gettext("checkout_external_payment_title_simple.title"), paymentMethod)}
+                  {fixCheckoutName(gettext("checkout_external_payment_title.title"), paymentMethod)}
                 </h3>
-                <p>{fixCheckoutName(gettext("checkout_external_payment_title_simple.description"), paymentMethod)}</p>
+                <p>{fixCheckoutName(gettext("checkout_external_payment_title.description"), paymentMethod)}</p>
                 {showExternalKlarna && (
                   <CheckboxFormField
                     name="checkout_external_payments_klarna"
-                    titleKey="checkout_external_payments_klarna_simple.title"
-                    labelKey="checkout_external_payments_klarna_simple.label"
-                    descriptionKey="checkout_external_payments_klarna_simple.description"
+                    titleKey="checkout_external_payments_klarna.title"
+                    labelKey="checkout_external_payments_klarna.label"
+                    descriptionKey="checkout_external_payments_klarna.description"
                   />
                 )}
               </>
