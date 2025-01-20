@@ -154,7 +154,10 @@ class VippsAdminSettings
             'admin_url' => admin_url('admin-ajax.php'),
             'page' => 'admin_settings_page',
             'currency' => get_woocommerce_currency(),
+            // for debugging/testing: show wizard screen always IOK 2025-01-20
+            '__dev_force_wizard_screen' => defined('WOO_VIPPS_FORCE_WIZARD') && WOO_VIPPS_FORCE_WIZARD
         );
+
         // Add some extra common translations only used by the React UI
         $commonTranslations = array(
             'save_changes' => __('Save changes', 'woo-vipps'),
