@@ -10,9 +10,9 @@ END_METADATA -->
 
 # Vipps/MobilePay for WooCommerce
 
-![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
+![Support and development by WP Hosting](./payment/docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./payment/docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
-![Vipps icon](./docs/images/vipps.png) ![MobilePay icon](./docs/images/mp.png) *Available for Vipps and MobilePay.*
+![null](./payment/docs/images/vipps.png) ![null](./payment/docs/images/mp.png) *Available for Vipps and MobilePay.*
 
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/)
 and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).
@@ -99,15 +99,15 @@ See:
 
 First, enable *Vipps MobilePay* as a payment method.
 
-![Enable Vipps MobilePay as a payment method](./docs/images/enable-checkout.png)
+![Enable Vipps MobilePay as a payment method](./payment/docs/images/enable-checkout.png)
 
 Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
-![Enter your API keys and configure the plugin](./docs/images/add-secrets.png)
+![Enter your API keys and configure the plugin](./payment/docs/images/add-secrets.png)
 
 Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with minimum hassle.
 
-![Enable Checkout](./docs/images/turn-on-checkout.png)
+![Enable Checkout](./payment/docs/images/turn-on-checkout.png)
 
 ## Frequently Asked Questions
 
