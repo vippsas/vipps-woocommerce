@@ -12,7 +12,7 @@ END_METADATA -->
 
 ![Support and development by Everyday ](./docs/images/everyday.svg#gh-light-mode-only)![Support and development by Everyday](./docs/images/everyday_dark.svg#gh-dark-mode-only)
 
-![Vipps](./docs/images/vipps.png) ![MobilePay](./docs/images/mp.png) *Available for Vipps and MobilePay.*
+![null](./docs/images/vipps.png) ![null](./docs/images/mp.png) *Available for Vipps and MobilePay.*
 
 *This plugin is built and maintained by [Everyday AS](https://everyday.no)
 and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/).
