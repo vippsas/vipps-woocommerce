@@ -82,8 +82,9 @@ add_filter( 'all_plugins', function ( $plugins ) {
 );
 add_action('after_plugin_row', function ($plugin) {
                 global $wp_list_table;
-                $columns_count = $wp_list_table->get_column_count();
+                if (!$wp_list_table) return;
                 if (basename($plugin) != 'woo-vipps-recurring.php')  return;
+                $columns_count = $wp_list_table->get_column_count();
 
                 $notice = "";
                 if (is_plugin_active($plugin)) {
