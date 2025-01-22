@@ -1,5 +1,5 @@
 === Pay with Vipps and MobilePay for WooCommerce ===
-Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lassepladsen
+Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lassepladsen, marcuz2k2k
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
