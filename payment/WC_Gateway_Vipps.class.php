@@ -1580,7 +1580,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'portal' => sprintf(__('%1$s Portal', 'woo-vipps'), Vipps::CompanyName()),
                 'support' => [
                     'title' => __('Support', 'woo-vipps'),
-                    'description' => __('If you have any questions related to this plugin, you are welcome to check out the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
+                    'description' => __('If you have any questions related to this plugin, you are welcome to check out the <a href="https://wordpress.org/support/plugin/woo-vipps/" target="_blank">support forum.</a>', 'woo-vipps'),
                 ],
             ],
             'checkout_confirm' => [

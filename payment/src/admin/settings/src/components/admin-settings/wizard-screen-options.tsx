@@ -146,8 +146,8 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <div className="vipps-mobilepay-form-col vipps-mobilepay-form-help-box">
               <div>
                 <strong className="title">{gettext('help_box.get_started')}</strong><br/>
-                <a href="https://wordpress.org/plugins/woo-vipps/">{gettext('help_box.documentation')}</a><br/>
-                <a href="https://portal.vippsmobilepay.com">{gettext('help_box.portal')}</a>
+                <a href="https://wordpress.org/plugins/woo-vipps/" target="_blank">{gettext('help_box.documentation')}</a><br/>
+                <a href="https://portal.vippsmobilepay.com" target="_blank">{gettext('help_box.portal')}</a>
               </div>
               <br/>
               <div>
