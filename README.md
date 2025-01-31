@@ -10,9 +10,9 @@ END_METADATA -->
 
 # Vipps/MobilePay for WooCommerce
 
-![Support and development by WP Hosting ](./docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./docs/images/wphosting_dark.svg#gh-dark-mode-only)
+![Support and development by WP Hosting](./payment/docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./payment/docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
-![Vipps icon](./docs/images/vipps.png) ![MobilePay icon](./docs/images/mp.png) *Available for Vipps and MobilePay.*
+![null](./payment/docs/images/vipps.png) ![null](./payment/docs/images/mp.png) *Available for Vipps and MobilePay.*
 
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/)
 and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).
@@ -59,13 +59,13 @@ The express checkout can be done in the following ways:
 Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
-Express checkout buttons is only available with Vipps. Coming later 2024 for MobilePay.
+Express checkout buttons is only available with Vipps. Coming in 2025 for MobilePay.
 
 ## Single Payments
 
 When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the standard WooCommerce checkout.
 There is no need to go via a third party payment method.
-When choosing Vipps/MobilePay, the customer fills in the name and address and is then asked to enter phone number on the Vipps/MobilePay landing page.
+When choosing Vipps or MobilePay, the customer fills in the name and address and is then asked to enter phone number on the Vipps/MobilePay landing page.
 They then confirm the payment in the Vipps or MobilePay app.
 
 ## How to get started
@@ -99,15 +99,15 @@ See:
 
 First, enable *Vipps MobilePay* as a payment method.
 
-![Enable Vipps MobilePay as a payment method](./docs/images/enable-checkout.png)
+![Enable Vipps MobilePay as a payment method](./payment/docs/images/enable-checkout.png)
 
 Enter your [API keys](/docs/knowledge-base/api-keys/) and configure the plugin.
 
-![Enter your API keys and configure the plugin](./docs/images/add-secrets.png)
+![Enter your API keys and configure the plugin](./payment/docs/images/add-secrets.png)
 
 Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with minimum hassle.
 
-![Enable Checkout](./docs/images/turn-on-checkout.png)
+![Enable Checkout](./payment/docs/images/turn-on-checkout.png)
 
 ## Frequently Asked Questions
 
