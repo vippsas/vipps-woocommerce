@@ -329,6 +329,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $keyset[$main] = $data;
             }
         }
+
         $test = @$this->get_option('merchantSerialNumber_test');
         $testmode = @$this->get_option('testmode');
         if ($testmode === 'yes' && $test) {
@@ -344,11 +345,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $data['testmode'] = 1;
                 $keyset[$test] = $data;
             }
-        }
-
-        $recurring = $this->get_recurring_keysets();
-        foreach($recurring as $key => $value) {
-            $keyset[$key] = $value;
         }
 
         $this->keyset = $keyset;
@@ -3936,8 +3932,8 @@ function activate_vipps_checkout(yesno) {
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
         $keysets = $this->get_keyset();
-
-        // Ignore any extra arguments
+	
+	// Ignore any extra arguments
         $comparandum = strtok($ourselves, '?');
 
         $change = false;
@@ -3946,24 +3942,29 @@ function activate_vipps_checkout(yesno) {
         // for this sites' callback, and we need to know its secret. All others should be deleted.
         $delenda = [];
 
+
         foreach($all_hooks as $msn => $data) {
             $hooks = $data['webhooks'] ?? [];
             $gotit = false;
             $locals = $local_hooks[$msn] ?? [];
-            foreach ($hooks as $hook) {
-                $id = $hook['id'];
-                $url = $hook['url'];
-                $noargs = strtok($url, '?');
-                if ($noargs != $comparandum) continue; // Some other shops hook, we will ignore it
-                $local = $locals[$id] ?? false;
-                // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
-                if (!$gotit && $local && isset($local['secret']))  {
-                    $gotit = $local;
-                    continue;
-                }
-                // Now we have a hook for our own msn and url, but either we don't know the secret or it is a duplicate. It should be deleted.
-                $delenda[] = $id;
-            }
+
+	    foreach ($hooks as $hook) {
+		    $id = $hook['id'];
+		    $url = $hook['url'];
+		    $noargs = strtok($url, '?');
+		    if ($noargs != $comparandum) {
+			    continue; // Some other shops hook, we will ignore it
+		    }
+		    $local = $locals[$id] ?? false;
+
+		    // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
+		    if (!$gotit && $local && isset($local['secret']))  {
+			    $gotit = $local;
+			    continue;
+		    }
+		    // Now we have a hook for our own msn and url, but either we don't know the secret or it is a duplicate. It should be deleted.
+		    $delenda[] = $id;
+	    }
 
             // Delete all the webhooks for this msn that we don't want
             foreach ($delenda as $wrong) {
@@ -3973,7 +3974,7 @@ function activate_vipps_checkout(yesno) {
 
             if ($gotit) {
                 // Now if we got a hook, then we should *just* remember that for this msn. 
-                $local_hooks[$msn] = array($local['id'] => $local);
+                $local_hooks[$msn] = array($gotit['id'] => $gotit);
             } else {
                 // If not, we don't have a hook for this msn and site, so we need to (try to) create one
                 // but only if the MSN is registered for the payment gateway 'vipps' ! IOK 2024-12-03
