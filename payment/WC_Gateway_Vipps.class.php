@@ -3999,8 +3999,10 @@ function activate_vipps_checkout(yesno) {
 
 
     // Checks connection of the 'main' MSN IOK 2023-12-19
-    public function check_connection () {
-        $msn = $this->get_merchant_serial();
+    public function check_connection ($msn = null) {
+        if (!$msn) {
+            $msn = $this->get_merchant_serial();
+        }
         $at = $this->get_key($msn);
         $s = $this->get_secret($msn);
         $c = $this->get_clientid($msn);
@@ -4009,13 +4011,28 @@ function activate_vipps_checkout(yesno) {
 
 
             try {
+                // First, test the client id / client secret which will give us an access token
                 $token = $this->api->get_access_token($msn,'force');
-                update_option('woo-vipps-configured', 1, true);
-                return array(true,'');
+                if ($token) {
+                    // Then, call the webhooks api to check if the msn/sub key is ok
+                    try {
+                        $this->api->get_webhooks_raw($msn);
+                        update_option('woo-vipps-configured', 1, true);
+                        return array(true,'');
+                    } catch (Exception $e) {
+                        $msg = $e->getMessage();
+                        if ($msg == "403 Forbidden") {
+                            $msg= __("MSN or subscription key (or both) seem to be wrong: ", 'woo-vipps') . $msg;
+                        }
+                        update_option('woo-vipps-configured', 0, true);
+                        return array(false, $msg);
+                    }
+                }
 
             } catch (Exception $e) {
+                $msg = __("Your client key or secret is wrong.", 'woo-vipps');
                 update_option('woo-vipps-configured', 0, true);
-                return array(false, $e->getMessage());
+                return array(false, $msg);
             }
         }
         return array(false, ''); // No configuration

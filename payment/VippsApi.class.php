@@ -95,19 +95,30 @@ class VippsApi {
     }
 
     // List all webhooks registered for the given MSN IOK 2023-12-19
+    // will return false on error and empty when no webhooks. Use the "raw" version to get 
+    // the errors. 2025-01-31
     public function get_webhooks($msn="") {
-        $command = "webhooks/v1/webhooks";
-        if (!$msn) $msn = $this->get_merchant_serial(); 
-        $headers = $this->get_headers($msn);
-        $args = [];
         try {
-            $res = $this->http_call($msn,$command,$args,'GET',$headers,'json');
+            return $this->get_webhooks_raw($msn);
             return $res;
         } catch (Exception $e) {
             $this->log(sprintf(__("Could not get webhooks for merchant serial number %1\$s: ", 'woo-vipps'), $msn) . $e->getMessage(), 'error');
             return false;
         }
     }
+
+    // version of get webhooks that re-throws errors so you can detect configuration problems easier
+    // IOK 2025-01-31
+    public function get_webhooks_raw($msn="") {
+        $command = "webhooks/v1/webhooks";
+        if (!$msn) $msn = $this->get_merchant_serial(); 
+        $headers = $this->get_headers($msn);
+        $args = [];
+        $res = $this->http_call($msn,$command,$args,'GET',$headers,'json');
+        return $res;
+    }
+
+
     // Try to register a webhook for the site and the MSN passed
     public function register_webhook($msn, $callback, $events=null) {
         $command = "webhooks/v1/webhooks";
