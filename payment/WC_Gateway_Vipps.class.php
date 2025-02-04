@@ -220,17 +220,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
     }
 
-    // this funciton is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     public function maybe_cancel_reserved_amount ($orderid) {
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
-        if ('epayment' != $order->get_meta('_vipps_api')) return false; // Cannot partially cancel legacy ecom orders
+        // Cannot partially cancel legacy ecom orders
+        if ('epayment' != $order->get_meta('_vipps_api')) return false; 
+        // Check that the normal maybe_capture_order hook has actually ran *and* done something,
+        // it's only after this we know we have captured 'everything' so if there is anything left, 
+        // it should be cancelled. IOK 2025-05-04                                                              
+        if (! $order->get_meta('_vipps_capture_complete')) {
+            return false;
+        }
+        // We also only want to do this for orders that have had *something* captured. IOK 2025-02-04
+        $captured = intval($order->get_meta('_vipps_captured'));
+        if ($captured < 1) {
+            return false;
+        }
+        // Allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
+        if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) return false;
 
         $ok = true;
 
-        $remaining = $order->get_meta('_vipps_capture_remaining');
+        $remaining = intval($order->get_meta('_vipps_capture_remaining'));
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
             $currency = $order->get_currency();
@@ -1797,7 +1811,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
-        if (!$ok) {
+        if ($ok) {
+            // Signal other hooked actions that this one actually did something. IOK 2025-02-04
+            $order->update_meta_data('_vipps_capture_complete',true);
+            $order->save();
+        } else  {
             $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), $this->get_payment_method_name());
             $order->add_order_note($msg);
             $order->save();

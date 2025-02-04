@@ -3145,7 +3145,13 @@ else:
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $methods[] = 'WC_Gateway_Vipps';
+        // Protect the singleton: Use the object instead of the class name IOK 2025-02-04
+        $gateway = $this->gateway();
+        if ($gateway) {
+            $methods[] = $gateway;
+        } else {
+            $methods[] =  'WC_Gateway_Vipps';
+        }
         return $methods;
     }
 
