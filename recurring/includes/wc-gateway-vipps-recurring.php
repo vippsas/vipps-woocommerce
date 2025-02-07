@@ -2465,32 +2465,28 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
             'recurring.charge-canceled.v1',
             'recurring.charge-failed.v1',
         ] ) ) {
-            $order_id = $webhook_data['chargeExternalId'];
+			$order_id = null;
+
+			$orders = wc_get_orders( [
+				'limit'          => 1,
+				'meta_query'     => [
+					[
+						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
+						'compare' => '=',
+						'value'   => $webhook_data['chargeId']
+					]
+				],
+				'payment_method' => $this->id,
+				'order_by'       => 'post_date'
+			] );
+
+			$order = array_pop( $orders );
+
+			if ( $order ) {
+				$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+			}
 
             if ( empty( $order_id ) ) {
-                $charge_id = $webhook_data['chargeId'];
-
-                $orders = wc_get_orders( [
-                    'limit'          => 1,
-                    'meta_query'     => [
-                        [
-                            'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
-                            'compare' => '=',
-                            'value'   => $charge_id
-                        ]
-                    ],
-                    'payment_method' => $this->id,
-                    'order_by'       => 'post_date'
-                ] );
-
-                $order = array_pop( $orders );
-
-                if ( $order ) {
-                    $order_id = WC_Vipps_Recurring_Helper::get_id( $order );
-                }
-            }
-
-            if ( empty( $charge_id ) ) {
                 return;
             }
 
