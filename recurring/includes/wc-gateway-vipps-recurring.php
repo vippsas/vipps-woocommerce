@@ -2424,11 +2424,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
         return add_query_arg( $args, $base_url );
     }
 
-    private function maybe_get_subscription_from_agreement_webhook( array $webhook_data ) {
-        $order_id = $webhook_data['agreementExternalId'];
-
-        // Check if agreementExternalId is not set, we can get the subscription from agreementId
-        if ( empty( $order_id ) && isset( $webhook_data['agreementId'] ) ) {
+    private function maybe_get_subscription_from_agreement_webhook( array $webhook_data ): ?WC_Subscription {
+        if ( isset( $webhook_data['agreementId'] ) ) {
             $agreement_id = $webhook_data['agreementId'];
 
             $subscriptions = wcs_get_subscriptions( [
@@ -2448,18 +2445,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
             }
         }
 
-        // If the order id is not a subscription, we can get the subscription from the order
-        if ( ! empty( $order_id ) && ! wcs_is_subscription( $order_id ) ) {
-            $order         = wc_get_order( $order_id );
-            $subscriptions = wcs_get_subscriptions_for_order( $order );
-
-            if ( ! empty( $subscriptions ) ) {
-                return array_pop( $subscriptions );
-            }
-        }
-
-        // Otherwise the order_id is either empty, or a subscription
-        return $order_id;
+        // Otherwise we were unable to find the subscription
+        return null;
     }
 
     /**
@@ -2478,32 +2465,28 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
             'recurring.charge-canceled.v1',
             'recurring.charge-failed.v1',
         ] ) ) {
-            $order_id = $webhook_data['chargeExternalId'];
+			$order_id = null;
+
+			$orders = wc_get_orders( [
+				'limit'          => 1,
+				'meta_query'     => [
+					[
+						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
+						'compare' => '=',
+						'value'   => $webhook_data['chargeId']
+					]
+				],
+				'payment_method' => $this->id,
+				'order_by'       => 'post_date'
+			] );
+
+			$order = array_pop( $orders );
+
+			if ( $order ) {
+				$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
+			}
 
             if ( empty( $order_id ) ) {
-                $charge_id = $webhook_data['chargeId'];
-
-                $orders = wc_get_orders( [
-                    'limit'          => 1,
-                    'meta_query'     => [
-                        [
-                            'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
-                            'compare' => '=',
-                            'value'   => $charge_id
-                        ]
-                    ],
-                    'payment_method' => $this->id,
-                    'order_by'       => 'post_date'
-                ] );
-
-                $order = array_pop( $orders );
-
-                if ( $order ) {
-                    $order_id = WC_Vipps_Recurring_Helper::get_id( $order );
-                }
-            }
-
-            if ( empty( $charge_id ) ) {
                 return;
             }
 
@@ -2518,12 +2501,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
                 return;
             }
 
-            $subscription_id = $this->maybe_get_subscription_from_agreement_webhook( $webhook_data );
-            if ( empty( $subscription_id ) ) {
-                return;
-            }
-
-            $subscription = wcs_get_subscription( $subscription_id );
+            $subscription = $this->maybe_get_subscription_from_agreement_webhook( $webhook_data );
 
             if ( empty( $subscription ) ) {
                 return;
