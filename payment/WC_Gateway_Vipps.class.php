@@ -3874,23 +3874,47 @@ function activate_vipps_checkout(yesno) {
     // delete all the ones pointing wrong. If this returns false, you should reinitialize the webhooks. IOK 2023-12-20
     public function check_webhooks () {
         $local_hooks = get_option('_woo_vipps_webhooks');
+        if (!$local_hooks) return false;
+
         $callback = $this->webhook_callback_url();
         $callback_compare = strtok($callback, '?');
         $problems = false;
 
-        if (!$local_hooks) return false;
-        foreach($local_hooks as $msn => $hooks) {
-           foreach ($hooks as $id => $hook) {
+        // We are going to re-initialize our webhooks after this, but just to ensure we're not keeping any 'stale' hooks,
+        // we'll update the local hooks too. IOK 2025-02-13
+        $change = false;
+        $msns = array_keys($local_hooks);
+        foreach($msns as $msn) {
+           $hooks = $local_hooks[$msn];
+           $ids = array_keys($hooks);
+           foreach ($ids as $id) {
+               $hook = $hooks[$id];
                $noargs = strtok($hook['url'], '?');
                if ($noargs == $callback_compare) continue; // This hook is good, probably, unless somebody has deleted it
                try {
+                   $this->log(sprintf(__("For msn %s we have a webhook %s %s which is pointed the wrong way (%s) for this website", 'woo-vipps'), $msn, $hook['id'], $hook['url'], $callback_compare));
                    $this->api->delete_webhook($msn, $hook['id']); // This isn't - it's pointed the wrong way, which means we have changed name of the site or something
                } catch (Exception $e) {
                    $this->log(sprintf(__("Could not delete webhook for this site with url '%2\$s' : %1\$s", 'woo-vipps'), $e->getMessage(), $noargs), 'error');
                }
+               unset($hooks[$id]);
+               $change = true;
                $problems = true;
            }
+           
+           if ($change) {
+               if (empty($hooks)) { 
+                 unset($local_hooks[$msn]);
+               } else {
+                 $local_hooks[$msn] = $hooks;
+               }
+           }
         }
+
+        if ($change) {
+           update_option('_woo_vipps_webhooks', $local_hooks, true);
+        }
+
         if ($problems) return false;
         return true;
     }
