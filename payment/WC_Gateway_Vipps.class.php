@@ -1080,7 +1080,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posten'),
                         'label'       => __('Offer Posten Norge as a shipping method', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => '',
+                        'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
                         'default'     => 'yes'
                     ),
 
@@ -1100,7 +1100,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_posti'),
                         'label'       => __('Offer Posti as a shipping method', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => '',
+                        'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
                         'default'     => 'yes'
                     ),
 
@@ -1120,7 +1120,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_postnord'),
                         'label'       => __('Offer PostNord as a shipping method', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => '',
+                        'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
                         'default'     => 'yes'
                     ),
 
@@ -1140,7 +1140,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
                         'label'       => __('Offer Porterbuddy as a shipping method', 'woo-vipps'),
                         'type'        => 'checkbox',
-                        'description' => '', Vipps::CheckoutName(),
+                        'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
                         'default'     => 'no',
                     ),
 
@@ -1183,7 +1183,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'type'        => 'checkbox',
                         'class' => 'vcs_helthjem vcs_main',
                         'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_helthjem'),
-                        'description' => '',
+                        'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
                         'default'     => 'no'
                     ),
 
@@ -1590,7 +1590,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'portal' => sprintf(__('%1$s Portal', 'woo-vipps'), Vipps::CompanyName()),
                 'support' => [
                     'title' => __('Support', 'woo-vipps'),
-                    'description' => __('If you have any questions related to this plugin, you are welcome to check out the <a href="https://wordpress.org/support/plugin/woo-vipps/">support forum.</a>', 'woo-vipps'),
+                    'description' => __('If you have any questions related to this plugin, you are welcome to check out the <a href="https://wordpress.org/support/plugin/woo-vipps/" target="_blank">support forum.</a>', 'woo-vipps'),
                 ],
             ],
             'checkout_confirm' => [

@@ -146,8 +146,8 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
             <div className="vipps-mobilepay-form-col vipps-mobilepay-form-help-box">
               <div>
                 <strong className="title">{gettext('help_box.get_started')}</strong><br/>
-                <a href="https://wordpress.org/plugins/woo-vipps/">{gettext('help_box.documentation')}</a><br/>
-                <a href="https://portal.vippsmobilepay.com">{gettext('help_box.portal')}</a>
+                <a href="https://wordpress.org/plugins/woo-vipps/" target="_blank">{gettext('help_box.documentation')}</a><br/>
+                <a href="https://portal.vippsmobilepay.com" target="_blank">{gettext('help_box.portal')}</a>
               </div>
               <br/>
               <div>
@@ -269,23 +269,23 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <InputFormField
                   asterisk
                   name="vcs_porterbuddy_publicToken"
-                  titleKey="vcs_porterbuddy_publicToken_wizard.title"
-                  descriptionKey="vcs_porterbuddy_publicToken_wizard.description"
+                  titleKey="vcs_porterbuddy_publicToken.title"
+                  descriptionKey="vcs_porterbuddy_publicToken.description"
                 />
 
                 {/* Renders a text input field for the Porterbuddy API key */}
                 <InputFormField
                   asterisk
                   name="vcs_porterbuddy_apiKey"
-                  titleKey="vcs_porterbuddy_apiKey_wizard.title"
-                  descriptionKey="vcs_porterbuddy_apiKey_wizard.description"
+                  titleKey="vcs_porterbuddy_apiKey.title"
+                  descriptionKey="vcs_porterbuddy_apiKey.description"
                 />
 
                 {/* Renders a text input field for the Porterbuddy phone number */}
                 <InputFormField
                   name="vcs_porterbuddy_phoneNumber"
-                  titleKey="vcs_porterbuddy_phoneNumber_wizard.title"
-                  descriptionKey="vcs_porterbuddy_phoneNumber_wizard.description"
+                  titleKey="vcs_porterbuddy_phoneNumber.title"
+                  descriptionKey="vcs_porterbuddy_phoneNumber.description"
                 />
               </>
             )}
@@ -305,23 +305,23 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
                 <InputFormField
                   type="number"
                   name="vcs_helthjem_shopId"
-                  titleKey="vcs_helthjem_shopId_wizard.title"
-                  descriptionKey="vcs_helthjem_shopId_wizard.description"
+                  titleKey="vcs_helthjem_shopId.title"
+                  descriptionKey="vcs_helthjem_shopId.description"
                 />
 
                 {/* Renders a text input field for the Helthjem Username */}
                 <InputFormField
                   name="vcs_helthjem_username"
-                  titleKey="vcs_helthjem_username_wizard.title"
-                  descriptionKey="vcs_helthjem_username_wizard.description"
+                  titleKey="vcs_helthjem_username.title"
+                  descriptionKey="vcs_helthjem_username.description"
                 />
 
                 {/* Renders a text input field for the Helthjem Password */}
                 <InputFormField
                   asterisk
                   name="vcs_helthjem_password"
-                  titleKey="vcs_helthjem_password_wizard.title"
-                  descriptionKey="vcs_helthjem_password_wizard.description"
+                  titleKey="vcs_helthjem_password.title"
+                  descriptionKey="vcs_helthjem_password.description"
                 />
               </>
             )}
