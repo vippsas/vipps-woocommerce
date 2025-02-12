@@ -974,7 +974,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
 
                 'vipps_checkout_enabled_wizard' => array(
-                    'title'       => '',
+                    'title'       => sprintf(__('%1$s screen', 'woo-vipps'), Vipps::CheckoutName()),
                     'label'       => sprintf(__('Yes, I want to start using %1$s', 'woo-vipps'), Vipps::CheckoutName()),
                     'type'        => 'checkbox',
                     'description' => sprintf(__('If activated, this will <strong>replace</strong> the standard Woo checkout screen with %1$s, providing easy checkout using %1$s or credit card, with no need to type in addresses.', 'woo-vipps'), Vipps::CheckoutName()),
