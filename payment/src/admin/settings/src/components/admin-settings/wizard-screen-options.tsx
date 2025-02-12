@@ -106,13 +106,15 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               <h3 className="vipps-mobilepay-react-tab-description">
                 {fixCheckoutName(gettext("vipps_checkout_enabled_wizard.title"), paymentMethod)}
               </h3>
+              <p><UnsafeHtmlText htmlString={fixCheckoutName(gettext("vipps_checkout_enabled_wizard.description"), paymentMethod)} /></p>
+
 
               {/* Renders a simplified checkbox to enable the Alternative checkout screen. LP 23.12.2024 */}
               <CheckboxFormField
                 name="vipps_checkout_enabled"
                 titleKey=""
                 labelKey="vipps_checkout_enabled_wizard.label"
-                descriptionKey="vipps_checkout_enabled_wizard.description"
+                descriptionKey=""
               />
 
               {/* Renders a button to progress to the next form step. LP 23.12.2024 */}

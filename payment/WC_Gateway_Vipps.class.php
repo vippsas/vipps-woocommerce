@@ -959,7 +959,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     ),
 
                 'checkout_options_wizard' => array(
-                    'title' => sprintf(__('Get started with %1$s', 'woo-vipps'), Vipps::CheckoutName()),
+                    'title' => Vipps::CheckoutName(),
                     'type'  => 'title',
                     'class' => 'tab',
                     'description' => sprintf(__('%1$s is a service from %2$s, which allows you to replace the usual WooCommerce checkout page with a super simple checkout screen, where your customers can pay with Vipps, Visa, and MasterCard!', 'woo-vipps'), Vipps::CheckoutName(), Vipps::CompanyName()),
