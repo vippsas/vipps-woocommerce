@@ -6,7 +6,7 @@ import { AdminSettingsCheckoutOptionsTab } from './checkout-options-tab';
 import { AdminSettingsAdvancedOptionsTab } from './advanced-options-tab';
 import { useHash } from '../../hooks/use-hash';
 import { AdminSettingsDeveloperOptionsTab } from './developer-options-tab';
-import { WPButton, WPForm } from '../form-elements';
+import { truthToBool, WPButton, WPForm } from '../form-elements';
 import { useWP } from '../../wp-options-provider';
 import { useState } from 'react';
 import { AdminSettingsWizardScreenOptions } from './wizard-screen-options';
@@ -43,6 +43,7 @@ export function AdminSettings(): JSX.Element {
     TAB_IDS.push(gettext('developertitle.title'));
   }
 
+  
   // For debugging: show wizard screen if option is set in wp-config. IOK 2025-10-20
   const force_override = getMetadata('__dev_force_wizard_screen') || "";
   const force_wizard_screen =  __DEV_FORCE_WIZARD_SCREEN || ["1", "yes", "true", "TRUE"].includes(force_override);
@@ -110,6 +111,8 @@ export function AdminSettings(): JSX.Element {
       getOption('Ocp_Apim_Key_eCommerce') &&
       getOption('country') &&
       getOption('payment_method_name');
+    
+    const isTestMode = truthToBool(getOption('testmode'));
 
     const hasImportantSettingsTest =
       getOption('merchantSerialNumber_test') &&
@@ -118,7 +121,7 @@ export function AdminSettings(): JSX.Element {
       getOption('Ocp_Apim_Key_eCommerce_test') &&
       getOption('payment_method_name') &&
       getOption('country');
-    return !hasImportantSettings && !hasImportantSettingsTest;
+    return !hasImportantSettings && !hasImportantSettingsTest && !isTestMode;
   }
 
   // If the most important settings are not set, the user is shown a screen to set these settings.
