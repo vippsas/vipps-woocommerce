@@ -208,9 +208,18 @@
 } */
 
 .vipps-mobilepay-react-checkout-confirm .body {
-  display: flex;
-  flex-direction: row;
-  gap: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+    margin-bottom: 2rem
+}
+
+@media (min-width: 870px) {
+  .vipps-mobilepay-react-checkout-confirm .body {
+    display: flex;
+    flex-direction: row;
+    gap: 5rem;
+  }
 }
 
 .vipps-mobilepay-react-checkout-confirm .title {
@@ -224,12 +233,18 @@
 }
 
 .vipps-mobilepay-react-checkout-confirm img {
-  width: 30rem;
   margin-right: 50px;
+  width: 20rem;
   /* Align alt text */
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (min-width: 1280px) {
+  .vipps-mobilepay-react-checkout-confirm img {
+    width: 30rem;
+  }
 }
 
 .vipps-mobilepay-react-checkout .title {
