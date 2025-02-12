@@ -59,6 +59,15 @@ class WC_Vipps_Recurring_Rest_Api {
 		// Skip the lock here, otherwise we get a false result
 		$gateway->check_charge_status( $order_id, true );
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $order );
+
+		if ( ! $agreement_id ) {
+			return new WP_Error(
+				'not_found',
+				'Subscription not found.',
+				[ 'status' => 404 ]
+			);
+		}
+
 		$agreement    = $gateway->api->get_agreement( $agreement_id );
 
 		do_action( 'wc_vipps_recurring_after_rest_api_check_order_status', $order_id );

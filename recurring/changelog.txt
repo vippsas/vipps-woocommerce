@@ -1,5 +1,11 @@
 == Changelog ==
 
+= 2.1.5 =
+* Fixed: Always find subscription via the agreementId on a recurring agreement webhook. This fixes ending an agreement in the app once and for all, as the logic is now the same regardless of the agreement's age.
+* Fixed: Charge webhooks were also using the external ids instead of the charge id, this could cause an error too.
+* Fixed: Do not replace the billing email address of the user when the user is already signed in pre-Checkout.
+* Added: A new filter for overriding which countries are supported by recurring Checkout: `woo_vipps_recurring_checkout_countries($countries, $order_id)`.
+
 = 2.1.4 =
 * Fixed: Actually fixed abandoned Checkout orders not being deleted this time.
 * Fixed: Payments towards a failed renewal order are now possible.

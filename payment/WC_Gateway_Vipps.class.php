@@ -220,17 +220,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
     }
 
-    // this funciton is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     public function maybe_cancel_reserved_amount ($orderid) {
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
-        if ('epayment' != $order->get_meta('_vipps_api')) return false; // Cannot partially cancel legacy ecom orders
+        // Cannot partially cancel legacy ecom orders
+        if ('epayment' != $order->get_meta('_vipps_api')) return false; 
+        // Check that the normal maybe_capture_order hook has actually ran *and* done something,
+        // it's only after this we know we have captured 'everything' so if there is anything left, 
+        // it should be cancelled. IOK 2025-05-04                                                              
+        if (! $order->get_meta('_vipps_capture_complete')) {
+            return false;
+        }
+        // We also only want to do this for orders that have had *something* captured. IOK 2025-02-04
+        $captured = intval($order->get_meta('_vipps_captured'));
+        if ($captured < 1) {
+            return false;
+        }
+        // Allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
+        if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) return false;
 
         $ok = true;
 
-        $remaining = $order->get_meta('_vipps_capture_remaining');
+        $remaining = intval($order->get_meta('_vipps_capture_remaining'));
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
             $currency = $order->get_currency();
@@ -329,6 +343,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $keyset[$main] = $data;
             }
         }
+
         $test = @$this->get_option('merchantSerialNumber_test');
         $testmode = @$this->get_option('testmode');
         if ($testmode === 'yes' && $test) {
@@ -344,11 +359,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $data['testmode'] = 1;
                 $keyset[$test] = $data;
             }
-        }
-
-        $recurring = $this->get_recurring_keysets();
-        foreach($recurring as $key => $value) {
-            $keyset[$key] = $value;
         }
 
         $this->keyset = $keyset;
@@ -1945,7 +1955,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
-        if (!$ok) {
+        if ($ok) {
+            // Signal other hooked actions that this one actually did something. IOK 2025-02-04
+            $order->update_meta_data('_vipps_capture_complete',true);
+            $order->save();
+        } else  {
             $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), $this->get_payment_method_name());
             $order->add_order_note($msg);
             $order->save();
@@ -3120,7 +3134,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $address['country'] = $country;
 
-        return $address;
+        // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
+        return apply_filters('woo_vipps_canonicalize_checkout_address', $address, $user);
     }
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
@@ -4003,23 +4018,47 @@ function activate_vipps_checkout(yesno) {
     // delete all the ones pointing wrong. If this returns false, you should reinitialize the webhooks. IOK 2023-12-20
     public function check_webhooks () {
         $local_hooks = get_option('_woo_vipps_webhooks');
+        if (!$local_hooks) return false;
+
         $callback = $this->webhook_callback_url();
         $callback_compare = strtok($callback, '?');
         $problems = false;
 
-        if (!$local_hooks) return false;
-        foreach($local_hooks as $msn => $hooks) {
-           foreach ($hooks as $id => $hook) {
+        // We are going to re-initialize our webhooks after this, but just to ensure we're not keeping any 'stale' hooks,
+        // we'll update the local hooks too. IOK 2025-02-13
+        $change = false;
+        $msns = array_keys($local_hooks);
+        foreach($msns as $msn) {
+           $hooks = $local_hooks[$msn];
+           $ids = array_keys($hooks);
+           foreach ($ids as $id) {
+               $hook = $hooks[$id];
                $noargs = strtok($hook['url'], '?');
                if ($noargs == $callback_compare) continue; // This hook is good, probably, unless somebody has deleted it
                try {
+                   $this->log(sprintf(__("For msn %s we have a webhook %s %s which is pointed the wrong way (%s) for this website", 'woo-vipps'), $msn, $hook['id'], $hook['url'], $callback_compare));
                    $this->api->delete_webhook($msn, $hook['id']); // This isn't - it's pointed the wrong way, which means we have changed name of the site or something
                } catch (Exception $e) {
                    $this->log(sprintf(__("Could not delete webhook for this site with url '%2\$s' : %1\$s", 'woo-vipps'), $e->getMessage(), $noargs), 'error');
                }
+               unset($hooks[$id]);
+               $change = true;
                $problems = true;
            }
+           
+           if ($change) {
+               if (empty($hooks)) { 
+                 unset($local_hooks[$msn]);
+               } else {
+                 $local_hooks[$msn] = $hooks;
+               }
+           }
         }
+
+        if ($change) {
+           update_option('_woo_vipps_webhooks', $local_hooks, true);
+        }
+
         if ($problems) return false;
         return true;
     }
@@ -4079,8 +4118,8 @@ function activate_vipps_checkout(yesno) {
         $all_hooks = $this->get_webhooks_from_vipps();
         $ourselves = $this->webhook_callback_url();
         $keysets = $this->get_keyset();
-
-        // Ignore any extra arguments
+	
+	// Ignore any extra arguments
         $comparandum = strtok($ourselves, '?');
 
         $change = false;
@@ -4089,24 +4128,29 @@ function activate_vipps_checkout(yesno) {
         // for this sites' callback, and we need to know its secret. All others should be deleted.
         $delenda = [];
 
+
         foreach($all_hooks as $msn => $data) {
             $hooks = $data['webhooks'] ?? [];
             $gotit = false;
             $locals = $local_hooks[$msn] ?? [];
-            foreach ($hooks as $hook) {
-                $id = $hook['id'];
-                $url = $hook['url'];
-                $noargs = strtok($url, '?');
-                if ($noargs != $comparandum) continue; // Some other shops hook, we will ignore it
-                $local = $locals[$id] ?? false;
-                // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
-                if (!$gotit && $local && isset($local['secret']))  {
-                    $gotit = $local;
-                    continue;
-                }
-                // Now we have a hook for our own msn and url, but either we don't know the secret or it is a duplicate. It should be deleted.
-                $delenda[] = $id;
-            }
+
+	    foreach ($hooks as $hook) {
+		    $id = $hook['id'];
+		    $url = $hook['url'];
+		    $noargs = strtok($url, '?');
+		    if ($noargs != $comparandum) {
+			    continue; // Some other shops hook, we will ignore it
+		    }
+		    $local = $locals[$id] ?? false;
+
+		    // If we haven't gotten our hook yet, but we have a local hook now that we know a secret for, note it and continue
+		    if (!$gotit && $local && isset($local['secret']))  {
+			    $gotit = $local;
+			    continue;
+		    }
+		    // Now we have a hook for our own msn and url, but either we don't know the secret or it is a duplicate. It should be deleted.
+		    $delenda[] = $id;
+	    }
 
             // Delete all the webhooks for this msn that we don't want
             foreach ($delenda as $wrong) {
@@ -4116,7 +4160,7 @@ function activate_vipps_checkout(yesno) {
 
             if ($gotit) {
                 // Now if we got a hook, then we should *just* remember that for this msn. 
-                $local_hooks[$msn] = array($local['id'] => $local);
+                $local_hooks[$msn] = array($gotit['id'] => $gotit);
             } else {
                 // If not, we don't have a hook for this msn and site, so we need to (try to) create one
                 // but only if the MSN is registered for the payment gateway 'vipps' ! IOK 2024-12-03
@@ -4142,8 +4186,10 @@ function activate_vipps_checkout(yesno) {
 
 
     // Checks connection of the 'main' MSN IOK 2023-12-19
-    public function check_connection () {
-        $msn = $this->get_merchant_serial();
+    public function check_connection ($msn = null) {
+        if (!$msn) {
+            $msn = $this->get_merchant_serial();
+        }
         $at = $this->get_key($msn);
         $s = $this->get_secret($msn);
         $c = $this->get_clientid($msn);
@@ -4152,13 +4198,28 @@ function activate_vipps_checkout(yesno) {
 
 
             try {
+                // First, test the client id / client secret which will give us an access token
                 $token = $this->api->get_access_token($msn,'force');
-                update_option('woo-vipps-configured', 1, true);
-                return array(true,'');
+                if ($token) {
+                    // Then, call the webhooks api to check if the msn/sub key is ok
+                    try {
+                        $this->api->get_webhooks_raw($msn);
+                        update_option('woo-vipps-configured', 1, true);
+                        return array(true,'');
+                    } catch (Exception $e) {
+                        $msg = $e->getMessage();
+                        if ($msg == "403 Forbidden") {
+                            $msg= __("MSN or subscription key (or both) seem to be wrong: ", 'woo-vipps') . $msg;
+                        }
+                        update_option('woo-vipps-configured', 0, true);
+                        return array(false, $msg);
+                    }
+                }
 
             } catch (Exception $e) {
+                $msg = __("Your client key or secret is wrong.", 'woo-vipps');
                 update_option('woo-vipps-configured', 0, true);
-                return array(false, $e->getMessage());
+                return array(false, $msg);
             }
         }
         return array(false, ''); // No configuration

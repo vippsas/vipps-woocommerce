@@ -360,7 +360,9 @@ class Vipps {
                     $gw->initialize_webhooks();
                 } else {
                     $ok =  $gw->check_webhooks();
-                    if (!$ok) $gw->initialize_webhooks();
+                    if (!$ok) {
+                        $gw->initialize_webhooks();
+                    };
                 }
             }
         }
@@ -428,6 +430,12 @@ class Vipps {
         echo "<p>"; print __('The following is a listing of your webhooks. If you have changed your website name, you may see some hooks that you do not recognize - these should be deleted', 'woo-vipps'); echo "</p>";
 
         $keyset = $this->gateway()->get_keyset();
+	$recurrings = $this->gateway()->get_keyset();
+	foreach($recurrings as $msn=> $keys) {
+		if (!isset($keyset[$msn])) {
+			$keyset[$msn] = $keys;
+		}
+	}
         $allhooks = $this->gateway()->initialize_webhooks();
         $localhooks = get_option('_woo_vipps_webhooks');
 
@@ -3137,7 +3145,13 @@ else:
 
     public function woocommerce_payment_gateways($methods) {
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
-        $methods[] = 'WC_Gateway_Vipps';
+        // Protect the singleton: Use the object instead of the class name IOK 2025-02-04
+        $gateway = $this->gateway();
+        if ($gateway) {
+            $methods[] = $gateway;
+        } else {
+            $methods[] =  'WC_Gateway_Vipps';
+        }
         return $methods;
     }
 
