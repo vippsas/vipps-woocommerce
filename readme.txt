@@ -10,7 +10,7 @@ Tested up to: 6.7.2
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.6.0
+WC tested up to: 9.6.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -292,8 +292,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2025-02-xx version 4.0.5 =
+= 2025-02-17 version 4.0.5 =
 Fix webhooks handling for some edge cases
+New and improved Wizard for new users
 
 = 2025-02-04 version 4.0.4 =
 Ensure WooCommerce uses the singleton for the payment gateway
