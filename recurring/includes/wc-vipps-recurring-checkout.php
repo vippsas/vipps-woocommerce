@@ -287,7 +287,12 @@ class WC_Vipps_Recurring_Checkout {
 				$order->save();
 			}
 
-			$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
+			// Check if we already have a subscription on this order, otherwise create one
+			if ( wcs_order_contains_subscription( $order, 'any' ) ) {
+				$subscriptions = wcs_get_subscriptions_for_order( $order );
+			} else {
+				$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
+			}
 
 			// reset hack
 			if ( $fake_user ) {
