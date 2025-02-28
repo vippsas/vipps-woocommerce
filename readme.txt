@@ -292,6 +292,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-02-xx version 4.0.6 =
+Removed Porterbuddy from Vipps Checkout Shipping methods
+Added the QR api for Mobilpay sites
+
 = 2025-02-17 version 4.0.5 =
 Fix webhooks handling for some edge cases
 New and improved Wizard for new users
