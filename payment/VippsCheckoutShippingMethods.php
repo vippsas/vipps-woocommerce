@@ -12,7 +12,6 @@ add_action( 'woocommerce_shipping_init', function () {
       if ("yes" == $gw->get_option('vcs_posten'))     $methods['vipps_checkout_posten'] = 'VippsCheckout_Shipping_Method_Posten';
       if ("yes" == $gw->get_option('vcs_postnord'))   $methods['vipps_checkout_postnord'] = 'VippsCheckout_Shipping_Method_Postnord';
       if ("yes" == $gw->get_option('vcs_helthjem'))   $methods['vipps_checkout_helthjem'] = 'VippsCheckout_Shipping_Method_Helthjem';
-      if ("yes" == $gw->get_option('vcs_porterbuddy'))$methods['vipps_checkout_porterbuddy'] = 'VippsCheckout_Shipping_Method_Porterbuddy';
       if ("yes" == $gw->get_option('vcs_posti'))   $methods['vipps_checkout_posti'] = 'VippsCheckout_Shipping_Method_Posti';
 
       return $methods;
@@ -34,7 +33,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
     public $cost = 0;
     // Some methods may support free shipping
     public $supports_free_shipping = true;
-    // Porterbuddy (only) supports having the cost calculated in Vipps Checkout itself.
+    // No methods support dynamic cost at this point, but we're keeping the feature (IOK 2025-02-28)
     public $supports_dynamic_cost = false;
     // Does not need to set "type"
     public $no_type_needed = true;
@@ -523,33 +522,6 @@ class VippsCheckout_Shipping_Method_Postnord extends VippsCheckout_Shipping_Meth
         $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
         $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
     }
-}
-
-class VippsCheckout_Shipping_Method_Porterbuddy extends VippsCheckout_Shipping_Method {
-    public $id = 'vipps_checkout_porterbuddy';
-    public $delivery_types = ['HOME_DELIVERY'];
-    public $brand = "PORTERBUDDY";
-    public $supports_free_shipping = true;
-    public $supports_dynamic_cost = true;
-    public $no_type_needed = false;
-    public $default_delivery_method = 'HOME_DELIVERY';
-
-    // Only useable by Vipps Checkout
-    public function is_extended() {
-       return true;
-    }
-
-    // Called by the parent constructor before loading settings
-    function preinit() {
-        $this->defaulttitle = __( 'Porterbuddy', 'woo-vipps' );
-        $this->method_title = sprintf(__( '%1$s: %2$s', 'woo-vipps' ), Vipps::CheckoutName(), $this->defaulttitle);
-        $this->method_description = sprintf(__( 'Shipping method for %1$s only: %2$s', 'woo-vipps'), Vipps::CheckoutName(), $this->defaulttitle);
-    }
-
-
-
-
-
 }
 
 

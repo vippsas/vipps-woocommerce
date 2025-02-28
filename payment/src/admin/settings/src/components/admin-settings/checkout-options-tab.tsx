@@ -12,7 +12,6 @@ import { UnsafeHtmlText } from '../unsafe-html-text';
 export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
   const { getOption, hasOption } = useWP();
 
-  const showPorterbuddy = getOption("vcs_porterbuddy") === "yes";
   const showHelthjem = getOption("vcs_helthjem") === "yes";
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
   const showExternals = showExternalKlarna;
@@ -111,42 +110,6 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         descriptionKey="vcs_postnord.description"
         labelKey="vcs_postnord.label"
       />
-
-      {/* Render a checkbox to enable Porterbuddy */}
-      <CheckboxFormField
-        name="vcs_porterbuddy"
-        titleKey="vcs_porterbuddy.title"
-        descriptionKey="vcs_porterbuddy.description"
-        labelKey="vcs_porterbuddy.label"
-      />
-
-      {/* Display Porterbuddy input fields if Porterbuddy is enabled */}
-      {showPorterbuddy && (
-        <>
-          {/* Renders a text input field for the Porterbuddy public token */}
-          <InputFormField
-            asterisk
-            name="vcs_porterbuddy_publicToken"
-            titleKey="vcs_porterbuddy_publicToken.title"
-            descriptionKey="vcs_porterbuddy_publicToken.description"
-          />
-
-          {/* Renders a text input field for the Porterbuddy API key */}
-          <InputFormField
-            asterisk
-            name="vcs_porterbuddy_apiKey"
-            titleKey="vcs_porterbuddy_apiKey.title"
-            descriptionKey="vcs_porterbuddy_apiKey.description"
-          />
-
-          {/* Renders a text input field for the Porterbuddy phone number */}
-          <InputFormField
-            name="vcs_porterbuddy_phoneNumber"
-            titleKey="vcs_porterbuddy_phoneNumber.title"
-            descriptionKey="vcs_porterbuddy_phoneNumber.description"
-          />
-        </>
-      )}
 
       {/* Renders a checkbox to enable Helthjem */}
       <CheckboxFormField
