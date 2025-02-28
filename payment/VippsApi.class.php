@@ -576,8 +576,11 @@ class VippsApi {
             $receiptdata = $this->get_receipt_data($order);
             if (!empty($receiptdata)) {
                $data['receipt'] = $receiptdata;
-               $order->update_meta_data('_vipps_receipt_sent', true);
-               $order->save();
+               // for checkout and express, we don't have shipping at this point, so remember to send again on payment_complete.
+               if (!$express) {
+                    $order->update_meta_data('_vipps_receipt_sent', true);
+                   $order->save();
+               }
             }
         }
 
