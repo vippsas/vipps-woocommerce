@@ -3,6 +3,7 @@
 = 2.1.6 =
 * Fixed: A problem where manual renewals/payments were not possible towards an existing subscription while using Checkout.
 * Added: Support passing an MSN to our webhook API methods.
+* Fixed: Do not load recurring if the customer is using HF Subscriptions, which also creates a WC_Subscriptions class.
 
 = 2.1.5 =
 * Fixed: Always find subscription via the agreementId on a recurring agreement webhook. This fixes ending an agreement in the app once and for all, as the logic is now the same regardless of the agreement's age.

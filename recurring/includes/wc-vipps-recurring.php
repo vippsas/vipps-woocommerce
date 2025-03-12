@@ -206,14 +206,6 @@ class WC_Vipps_Recurring {
 
         add_action( 'admin_head', [ $this, 'admin_head' ] );
 
-        if ( ! class_exists( 'WC_Subscriptions' ) ) {
-            // translators: %s link to WooCommerce Subscription's purchase page
-            $notice = sprintf( esc_html__( 'Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
-            $this->notices->error( $notice );
-
-            return;
-        }
-
         // Add capture button if order is not captured
         add_action( 'woocommerce_order_item_add_action_buttons', [
             $this,

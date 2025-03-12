@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-// We will not do activation or deactivation if this is ajax, rest or cron. 
+// We will not do activation or deactivation if this is ajax, rest or cron.
 function woo_vipps_ajax_cron_or_rest () {
    if (defined("DOING_AJAX") && DOING_AJAX) return true;
    if (function_exists('wp_is_json_request') && wp_is_json_request()) return true;
@@ -36,7 +36,9 @@ add_action('plugins_loaded', function () {
     }
 
     /* We will load support now if either the plugin has been activated, or if subscriptions exist */
-    $subscriptions_exist = class_exists('WC_Subscriptions');
+	/* Plugins like HF Subscriptions also creates a WC_Subscriptions class, so we should use WC_Subscriptions_Plugin */
+	$subscriptions_exist = class_exists( 'WC_Subscriptions_Plugin' );
+
     $previously_activated = get_option('woo_vipps_recurring_payments_activation');
     if (!$subscriptions_exist && !$previously_activated) {
         return false;
@@ -63,7 +65,7 @@ add_action('plugins_loaded', function () {
                 delete_option('woo_vipps_recurring_payments_activation');
             });
         }
-    } 
+    }
 
 
 
@@ -88,7 +90,7 @@ add_action('after_plugin_row', function ($plugin) {
 
                 $notice = "";
                 if (is_plugin_active($plugin)) {
-                    $notice = sprintf(__( 'This plugin can now be <strong>deactivated</strong> because its functionality is now included in <strong>%1$s</strong>. After deactivation, it can not be activated again while that plugin is active, but exactly the same functionality will be provided.', 'woo-vipps' ), __("Pay with Vipps and MobilePay for WooCommerce", 'woo-vipps')); 
+                    $notice = sprintf(__( 'This plugin can now be <strong>deactivated</strong> because its functionality is now included in <strong>%1$s</strong>. After deactivation, it can not be activated again while that plugin is active, but exactly the same functionality will be provided.', 'woo-vipps' ), __("Pay with Vipps and MobilePay for WooCommerce", 'woo-vipps'));
                 } else {
                     $notice = sprintf(__( 'This plugin can no longer be activated because its functionality is now included in <strong>%1$s</strong>. It is recommended to <strong>delete</strong> it.', 'woo-vipps' ), __("Pay with Vipps and MobilePay for WooCommerce", 'woo-vipps'));
                 }

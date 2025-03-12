@@ -1197,7 +1197,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
         add_submenu_page( 'vipps_admin_menu', __('Settings', 'woo-vipps'),   __('Settings', 'woo-vipps'),   'manage_woocommerce', 'vipps_settings_menu', array($adminSettings, 'init_admin_settings_page_react_ui'), 90);
 
-        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions')) {
+        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
             add_submenu_page( 'vipps_admin_menu', __('Recurring Payments', 'woo-vipps'),   __('Recurring Payments', 'woo-vipps'),   'manage_woocommerce', 'vipps_recurring__settings_menu', array($this, 'recurring_settings_page'), 95);
         }
 
@@ -1207,7 +1207,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // Just a redirect to the recurring payment settings for the time being. IOK 2025-01-08
     public function recurring_settings_page () {
-        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions')) {
+        if (class_exists('WC_Vipps_Recurring') && class_exists('WC_Subscriptions_Plugin')) {
             wp_safe_redirect(admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring'), 302);
         } else {
             wp_safe_redirect(admin_url('/admin.php?page=vipps_admin_menu'), 302);
