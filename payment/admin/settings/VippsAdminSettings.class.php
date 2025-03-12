@@ -226,11 +226,6 @@ class VippsAdminSettings
                     'label' => __('Offer PostNord as a shipping method', 'woo-vipps'),
                     'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
                 ),
-            'vcs_porterbuddy_wizard' => array(
-                    'title' => __('Porterbuddy', 'woo-vipps'),
-                    'label' => __('Offer Porterbuddy as a shipping method', 'woo-vipps'),
-                    'description' => __('Select this to offer this shipping method.', 'woo-vipps'),
-                ),
             'help_box' => [
                     'get_started' => __('Get started', 'woo_vipps'),
                     'documentation' => __('Documentation', 'woo-vipps'),

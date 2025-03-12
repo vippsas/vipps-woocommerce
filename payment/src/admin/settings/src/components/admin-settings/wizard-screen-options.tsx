@@ -26,7 +26,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
 
 
   // For the "CHECKOUT" step. LP 03.01.2025
-  const showPorterbuddy = getOption("vcs_porterbuddy") === "yes";
   const showHelthjem = getOption("vcs_helthjem") === "yes";
   const showExternalKlarna = hasOption("checkout_external_payments_klarna");
   const showExternals = showExternalKlarna;
@@ -260,41 +259,6 @@ export function AdminSettingsWizardScreenOptions({ isLoading }: Props): JSX.Elem
               descriptionKey="vcs_postnord_wizard.description"
             />
 
-            {/* Render a checkbox to enable Porterbuddy */}
-            <CheckboxFormField
-              name="vcs_porterbuddy"
-              titleKey="vcs_porterbuddy_wizard.title"
-              labelKey="vcs_porterbuddy_wizard.label"
-              descriptionKey="vcs_porterbuddy_wizard.description"
-            />
-
-            {/* Display Porterbuddy input fields if Porterbuddy is enabled */}
-            {showPorterbuddy && (
-              <>
-                {/* Renders a text input field for the Porterbuddy public token */}
-                <InputFormField
-                  asterisk
-                  name="vcs_porterbuddy_publicToken"
-                  titleKey="vcs_porterbuddy_publicToken.title"
-                  descriptionKey="vcs_porterbuddy_publicToken.description"
-                />
-
-                {/* Renders a text input field for the Porterbuddy API key */}
-                <InputFormField
-                  asterisk
-                  name="vcs_porterbuddy_apiKey"
-                  titleKey="vcs_porterbuddy_apiKey.title"
-                  descriptionKey="vcs_porterbuddy_apiKey.description"
-                />
-
-                {/* Renders a text input field for the Porterbuddy phone number */}
-                <InputFormField
-                  name="vcs_porterbuddy_phoneNumber"
-                  titleKey="vcs_porterbuddy_phoneNumber.title"
-                  descriptionKey="vcs_porterbuddy_phoneNumber.description"
-                />
-              </>
-            )}
 
             {/* Renders a checkbox to enable Helthjem */}
             <CheckboxFormField

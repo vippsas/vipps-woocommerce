@@ -1049,38 +1049,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'default'     => 'yes'
                     ),
 
-                'vcs_porterbuddy' => array(
-                        'title'       => __('Porterbuddy', 'woo-vipps'),
-                        'class'       => 'vcs_porterbuddy vcs_main',
-                        'custom_attributes' => array('data-vcs-show'=>'.vcs_depend.vcs_porterbuddy'),
-                        'label'       => sprintf(__('Support Porterbuddy as a shipping method in %1$s', 'woo-vipps'), Vipps::CheckoutName()),
-                        'type'        => 'checkbox',
-                        'description' => sprintf(__('Activate this for Porterbuddy as a %1$s Shipping method. Your store address will be used as the pick-up point and your admin email will be used for booking information from Porterbuddy.' ,'woo-vipps'), Vipps::CheckoutName()),
-                        'default'     => 'no'
-                    ),
-
-                'vcs_porterbuddy_publicToken' => array(
-                        'title' => __('Porterbuddy public token', 'woo-vipps'),
-                        'class' => 'vippspw vcs_porterbuddy vcs_depend',
-                        'type'        => 'password',
-                        'description' => __('The public key provided to you by Porterbuddy','woo-vipps'),
-                        'default'     => '',
-                        ),
-                'vcs_porterbuddy_apiKey' => array(
-                        'title' => __('Porterbuddy API key', 'woo-vipps'),
-                        'class' => 'vippspw vcs_porterbuddy vcs_depend',
-                        'type'        => 'password',
-                        'description' => __('The API key provided to you by Porterbuddy','woo-vipps'),
-                        'default'     => '',
-                        ),
-                'vcs_porterbuddy_phoneNumber' => array(
-                        'title' => __('Porterbuddy Phone Number', 'woo-vipps'),
-                        'class' => 'vcs_porterbuddy vcs_depend',
-                        'type'        => 'text',
-                        'description' => __('Your phone number where Porterbuddy may send you important messages. Format must be MSISDN (including country code). Example: "4791234567"','woo-vipps'),
-                        'default'     => '',
-                        ),
-
                 // Vipps checkout *shipping options* - extra shipping options that only work with Vipps Checkout
                 'vcs_helthjem' => array(
                         'title'       => __('Helthjem', 'woo-vipps'),
