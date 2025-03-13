@@ -2873,7 +2873,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] ) ) {
-			wp_schedule_single_event( time() + 3600, 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] );
+			wp_schedule_single_event( time() + 7200, 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] );
 		}
 	}
 
@@ -2900,6 +2900,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( $this->get_option( 'checkout_cleanup_abandoned_orders' ) !== 'yes' ) {
 			return false;
 		}
+
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Order marked for deletion because it has no billing details after two hours. Billing email was: %s", WC_Vipps_Recurring_Helper::get_id( $order ), $order->get_billing_email() ) );
+		$order->add_order_note( __( 'This order has been automatically marked for deletion as it has no billing details after two hours.', 'woo-vipps' ) );
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
 		$order->save();
