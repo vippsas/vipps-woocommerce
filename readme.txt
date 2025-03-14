@@ -20,7 +20,7 @@ Official Vipps MobilePay payment plugin for WooCommerce.
 
 Vipps is used by more than 77 % of Norway's population (4.2 million users).
 
-MobilePay is used by more than 75 % of Denmark's population (4.4 million users), and more than 36 % of Finland's population (2 million users).
+MobilePay is used by more than 75 % of Denmark's population (4.4 million users), and approximately 50 % of Finland's population (2.8 million users).
 
 Vipps and MobilePay are payment methods offered by Vipps MobilePay. 
 
@@ -30,10 +30,10 @@ This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayme
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
-Read [information from Vipps](https://www.vipps.no/produkter-og-tjenester/bedrift/ta-betalt-paa-nett/ta-betalt-paa-nett/woocommerce/) about the plugin.
+Read [information from Vipps](https://developer.vippsmobilepay.com/docs/plugins/woocommerce/) about the plugin.
 
 === Vipps/MobilePay Checkout ===
-With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps Checkout here](https://vipps.no/checkout)
+With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps Checkout here](https://vippsmobilepay.com/en/online/checkout)
 
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
@@ -292,6 +292,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-03-xx version 4.0.6 =
+Added the QR api for Mobilpay sites
+
 = 2025-02-17 version 4.0.5 =
 Fix webhooks handling for some edge cases
 New and improved Wizard for new users

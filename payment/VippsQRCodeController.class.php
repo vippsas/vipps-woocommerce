@@ -465,10 +465,6 @@ img.onload = function () {
 
 
     public function admin_menu () {
-        // IOK 2024-01-17 temporarily: Only Vipps supports QR codes. FIXME
-        if (WC_Gateway_Vipps::instance()->get_payment_method_name() != "Vipps") {
-            return;
-        }
         // Vipps QR-codes are handled as a custom post type, we add them to the Vipps admin menu
         add_submenu_page( 'vipps_admin_menu', __('QR Codes', 'woo-vipps'), __('QR Codes', 'woo-vipps'), 'manage_woocommerce', 'edit.php?post_type=vipps_qr_code', null, 20);
     }
