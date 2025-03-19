@@ -206,6 +206,8 @@ jQuery(document).ready(function () {
         $order->update_meta_data('_vc_proceed', ($gw ? $gw : 'any'));
         $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
         $order->save();
+        // Should not be neccessary but we'll add this just so any caching does not cause other systems to return the wrong data here  IOK 2025-03-18
+        clean_post_cache($order->get_id());
 
         $url = $order->get_checkout_payment_url();
 
