@@ -925,24 +925,6 @@ class VippsApi {
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
             unset($ordersummary['bottomLine']);
 
-            // A bug in the Vipps Checkout API will not allow for several order lines with the same
-            // product id (for instance, with different custom text etc). IOK 2024-01-26
-            // FIXME when this is fixed at Vipps
-            $orderlines = $ordersummary['orderLines'];
-            $seen = [];
-            $newlines = [];
-            foreach($orderlines as $orderline) {
-                $productid = $orderline['id'];
-                if (isset($seen[$productid])) {
-                    $seen[$productid]++;
-                    $orderline['id'] = $orderline['id'] . ":" . $seen[$productid];
-                } else {
-                    $seen[$productid] = 0;
-                }
-                $newlines[] = $orderline;
-            }
-            $ordersummary['orderLines'] = $newlines;
-
             // Don't finalize the receipt number - we just want to show this rn.
             unset($ordersummary['orderBottomLine']['receiptNumber']);
             if (!empty($ordersummary)) {
@@ -951,6 +933,7 @@ class VippsApi {
 
                 // Currently, for checkout, *this counts as a receipt*, even though it lacks shipping.
                 // Probably a bug, must revisit later FIXME IOK 2025-03-20
+                // (As of 2025-03-20, not a bug, but it may be one when modifying the order )
                 $order->update_meta_data('_vipps_receipt_sent', true);
                 $order->save();
 
