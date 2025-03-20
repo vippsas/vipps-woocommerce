@@ -294,7 +294,7 @@ class VippsApi {
                 $taxrate = abs(round(100*$taxpercentageraw));
                 $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
-                $orderline['name'] = $order_item->get_name();
+                $orderline['name'] = strip_tags($order_item->get_name());
                 $orderline['id'] = strval($prodid);
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
@@ -324,7 +324,7 @@ class VippsApi {
                 $taxrate = abs(round(100*$taxpercentageraw));
                 $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
-                $orderline['name'] = $order_item->get_name();
+                $orderline['name'] = strip_tags($order_item->get_name());
                 $orderline['id'] = substr(sanitize_title($orderline['name']), 0, 254);
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
@@ -339,7 +339,7 @@ class VippsApi {
             // Handle shipping
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                 $shippingline =  [];
-                $orderline['name'] = $order_item->get_name();
+                $orderline['name'] = strip_tags($order_item->get_name());
                 $orderline['id'] = strval($order_item->get_method_id());
                 if (method_exists($order_item, 'get_instance_id')) {
                     $orderline['id'] .= ":" . strval($order_item->get_instance_id());
