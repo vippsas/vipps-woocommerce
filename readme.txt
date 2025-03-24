@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 4.0.6
-Stable tag: 4.0.6
+Version: 4.0.7
+Stable tag: 4.0.7
 Requires at least: 6.2
 Tested up to: 6.7.2
 Requires PHP: 7.4
@@ -109,6 +109,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 4.0.6:
+Slight improvements in order summary handling
 Version 4.0.5:
 Fix webhooks handling for some edge cases
 Version 4.0.4:
@@ -292,6 +294,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-03-24 version 4.0.7 =
+Slight improvements in order summary handling
+
 = 2025-03-19 version 4.0.6 =
 Added the QR api for Mobilpay sites
 Minor changes to texts 

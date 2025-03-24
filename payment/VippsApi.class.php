@@ -294,7 +294,7 @@ class VippsApi {
                 $taxrate = abs(round(100*$taxpercentageraw));
                 $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
-                $orderline['name'] = $order_item->get_name();
+                $orderline['name'] = strip_tags($order_item->get_name());
                 $orderline['id'] = strval($prodid);
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
@@ -324,7 +324,7 @@ class VippsApi {
                 $taxrate = abs(round(100*$taxpercentageraw));
                 $taxpercentage = abs(round($taxpercentageraw));
                 $unitInfo = [];
-                $orderline['name'] = $order_item->get_name();
+                $orderline['name'] = strip_tags($order_item->get_name());
                 $orderline['id'] = substr(sanitize_title($orderline['name']), 0, 254);
                 $orderline['totalAmount'] = round($total*100);
                 $orderline['totalAmountExcludingTax'] = round($totalNoTax*100);
@@ -339,7 +339,7 @@ class VippsApi {
             // Handle shipping
             foreach( $order->get_items( 'shipping' ) as $item_id => $order_item ){
                 $shippingline =  [];
-                $orderline['name'] = $order_item->get_name();
+                $orderline['name'] = strip_tags($order_item->get_name());
                 $orderline['id'] = strval($order_item->get_method_id());
                 if (method_exists($order_item, 'get_instance_id')) {
                     $orderline['id'] .= ":" . strval($order_item->get_instance_id());
@@ -391,8 +391,8 @@ class VippsApi {
         }
         $vippsid = $order->get_meta('_vipps_orderid');
         if (!$vippsid) {
-           $this->log(sprintf(__("Cannot add receipt for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
-           return false;
+            $this->log(sprintf(__("Cannot add receipt for order %1\$d: No vipps id present", 'woo-vipps'), $order->get_id()), 'error');
+            return false;
         }
         // Currently ecom or recurring - we are only doing ecom for now IOK 2022-06-20
         // please note that 'ecom' applies to both ecom and epayment. IOK 2023-12-13
@@ -406,6 +406,18 @@ class VippsApi {
             $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $order->getId(), 'error');
             return false;
         }
+        try {
+            $res = $this->http_call($msn,$command,$receiptdata,'POST',$headers,'json'); 
+            $order->update_meta_data('_vipps_receipt_sent', true);
+            $order->save();
+            $this->log(sprintf(__("Receipt for order %1\$d sent to Vipps ", 'woo-vipps'), $order->get_id()), 'info');
+            return true;
+        } catch (Exception $e) {
+            $this->log(__("Could not send receipt to Vipps: ", 'woo-vipps') . $e->getMessage(), 'error');
+            return false;
+        }
+
+
     }
 
     // Note that paymenttype 'ecom' applies to both ecom and epayment. IOK 2023-12-13
@@ -575,12 +587,9 @@ class VippsApi {
         if (!$express) {
             $receiptdata = $this->get_receipt_data($order);
             if (!empty($receiptdata)) {
-               // for checkout and express, we don't have shipping at this point, so remember to send again on payment_complete.
-                if (!$express) {
-                    $data['receipt'] = $receiptdata;
-                    $order->update_meta_data('_vipps_receipt_sent', true);
-                    $order->save();
-                }
+                $data['receipt'] = $receiptdata;
+                $order->update_meta_data('_vipps_receipt_sent', true);
+                $order->save();
             }
         }
 
@@ -910,36 +919,24 @@ class VippsApi {
 
         // IOK 2023-12-22 and we can add an order summary, so do so by default
         $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
-        // IOK 2024-01-09 Fix this as soon as the EUR bug is fixed!
         if ($summarize) {
             $ordersummary = $this->get_receipt_data($order);
             // This is different in the receipt api, the epayment api and in checkout.
             $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
             unset($ordersummary['bottomLine']);
 
-            // A bug in the Vipps Checkout API will not allow for several order lines with the same
-            // product id (for instance, with different custom text etc). IOK 2024-01-26
-            // FIXME when this is fixed at Vipps
-            $orderlines = $ordersummary['orderLines'];
-            $seen = [];
-            $newlines = [];
-            foreach($orderlines as $orderline) {
-                $productid = $orderline['id'];
-                if (isset($seen[$productid])) {
-                    $seen[$productid]++;
-                    $orderline['id'] = $orderline['id'] . ":" . $seen[$productid];
-                } else {
-                    $seen[$productid] = 0;
-                }
-                $newlines[] = $orderline;
-            }
-            $ordersummary['orderLines'] = $newlines;
-
             // Don't finalize the receipt number - we just want to show this rn.
             unset($ordersummary['orderBottomLine']['receiptNumber']);
             if (!empty($ordersummary)) {
                 $transaction['orderSummary'] = $ordersummary;
                 $configuration['showOrderSummary'] = true;
+
+                // Currently, for checkout, *this counts as a receipt*, even though it lacks shipping.
+                // Probably a bug, must revisit later FIXME IOK 2025-03-20
+                // (As of 2025-03-20, not a bug, but it may be one when modifying the order )
+                $order->update_meta_data('_vipps_receipt_sent', true);
+                $order->save();
+
             }
         }
  
