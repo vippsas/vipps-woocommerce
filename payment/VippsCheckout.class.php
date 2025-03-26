@@ -481,6 +481,7 @@ jQuery(document).ready(function () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
+
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
         if (in_array($payment_status, ['authorized', 'complete'])) {
             $this->abandonVippsCheckoutOrder(false);

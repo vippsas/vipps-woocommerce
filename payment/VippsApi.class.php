@@ -817,7 +817,7 @@ class VippsApi {
         // Required for Checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
-        $headers['Idempotency-Key'] = $requestid;
+//        $headers['Idempotency-Key'] = $requestid;
 
         // Object to send.
         $data = array();
@@ -831,6 +831,7 @@ class VippsApi {
         $transaction = array();
         $currency = $order->get_currency();
         // Ignore refOrderId - for child-transactions 
+        $transaction['reference'] = $vippsorderid;
         $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
         $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
@@ -996,6 +997,67 @@ class VippsApi {
 
         $this->log("Initiating Checkout session for $vippsorderid", 'debug');
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
+        return $res;
+    }
+
+    // Should retrieve order data for a given Checkout order, like for poll. but apparently only when payment 
+    /*
+[26-Mar-2025 15:47:18 UTC] Res is Array
+(
+    [sessionId] => 4ogqwez66Yusjiji7EHetm
+    [merchantSerialNumber] => 287262
+    [reference] => woodigitalt4526
+    [sessionState] => SessionCreated
+    [shippingDetails] => Array
+        (
+            [firstName] => Iver Odin
+            [lastName] => Kvello
+            [email] => iver@wp-hosting.no
+            [phoneNumber] => 4798818710
+            [streetAddress] => Observatorie terrasse 4a
+            [postalCode] => 0254
+            [city] => Oslo
+            [country] => NO
+            [shippingMethodId] => $flat_rate$c392b59fc1ba55e5abb79cf093d201ba6a107bec
+            [amount] => Array
+                (
+                    [value] => 4000
+                    [currency] => NOK
+                )
+
+        )
+
+    [billingDetails] => Array
+        (
+            [firstName] => Iver Odin
+            [lastName] => Kvello
+            [email] => iver@wp-hosting.no
+            [phoneNumber] => 4798818710
+            [streetAddress] => Observatorie terrasse 4a
+            [postalCode] => 0254
+            [city] => Oslo
+            [country] => NO
+        )
+
+)
+*/
+    public function checkout_get_session_info($order) {
+        $command = 'checkout/v3/session';
+        $vippsid = $order->get_meta('_vipps_orderid');
+        $command .= "/" . $vippsid;
+
+        $msn = $this->get_merchant_serial();
+        $headers = $this->get_headers($msn);
+        $clientid = $this->get_clientid($msn);
+        $secret = $this->get_secret($msn);
+
+        $headers = $this->get_headers($msn);
+        // Required for checkout
+        $headers['client_id'] = $clientid;
+        $headers['client_secret'] = $secret;
+//        $headers['Idempotency-Key'] = 1; // Shouldn't varyy
+        $data = [];
+        $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
         return $res;
     }
 
