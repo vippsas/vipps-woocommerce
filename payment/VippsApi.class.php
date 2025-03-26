@@ -817,6 +817,11 @@ class VippsApi {
         // Required for Checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
+        $headers['Idempotency-Key'] = $requestid;
+
+        // Object to send.
+        $data = array();
+        $data['reference'] = $vippsorderid;
 
         // The string returned is a prefix ending with callback=, for v3 we need to send a complete URL
         // so we just add the callback type here.
@@ -825,7 +830,6 @@ class VippsApi {
 
         $transaction = array();
         $currency = $order->get_currency();
-        $transaction['reference'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
         $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
@@ -839,23 +843,6 @@ class VippsApi {
           $transaction['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
-
-        # This have to exist, but we'll not check it now.
-        if (! function_exists("wc_terms_and_conditions_page_id")) {
-            $msg = sprintf(__('You need a newer version of WooCommerce to use %1$s!', 'woo-vipps'), Vipps::CheckoutName());
-            $this->log($msg, 'error');;
-            throw new Exception($msg);
-        }
-        $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
-        $data = array();
-
-        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackUrl'=>$callback, 'returnUrl'=>$fallback);
-
-        if (!empty($termsAndConditionsUrl)) {
-            $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
-        } else {
-            $this->log(sprintf(__('Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined', 'woo-vipps'), Vipps::CheckoutName()));
-        }
 
         ## Vipps Checkout Shipping
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
@@ -903,9 +890,25 @@ class VippsApi {
             $data['logistics'] = $logistics;
         }
 
+        // IOK 2025-03-26 currenlty only legal value
+        $data['type'] = "PAYMENT";
 
         if (!empty($customerinfo)) {
             $data['prefillCustomer'] = $customerinfo;
+        }
+
+        # This have to exist, but we'll not check it now.
+        if (! function_exists("wc_terms_and_conditions_page_id")) {
+            $msg = sprintf(__('You need a newer version of WooCommerce to use %1$s!', 'woo-vipps'), Vipps::CheckoutName());
+            $this->log($msg, 'error');;
+            throw new Exception($msg);
+        }
+        $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
+        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackUrl'=>$callback, 'returnUrl'=>$fallback);
+        if (!empty($termsAndConditionsUrl)) {
+            $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
+        } else {
+            $this->log(sprintf(__('Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined', 'woo-vipps'), Vipps::CheckoutName()));
         }
 
         // From v3: Certain data moved to a 'configuration' field
