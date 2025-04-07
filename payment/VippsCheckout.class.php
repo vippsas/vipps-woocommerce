@@ -659,7 +659,7 @@ jQuery(document).ready(function () {
         $session = $order ? $order->get_meta('_vipps_checkout_session') : false;
 
         // A single word or array containing session data, containing token and frontendFrameUrl
-        // ERROR EXPIRED FAILED IOK 2025-04-07 FIXME WHAT
+        // If a word, it will be ERROR EXPIRED FAILED IOK 2025-04-07
         $session_status = $session ? $this->get_vipps_checkout_status($order) : null;
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
@@ -783,7 +783,7 @@ jQuery(document).ready(function () {
             // we must ensure that no race or other mechanism kills the order while or after being paid.
             // if order is in the process of being finalized, don't kill it
             if (Vipps::instance()->isLocked($order)) {
-               return false;
+                return false;
             }
             // Get it again to ensure we have all the info, and check status again
             clean_post_cache($order->get_id());
@@ -793,19 +793,20 @@ jQuery(document).ready(function () {
             // And to be extra sure, check status at vipps
             $session = $order->get_meta('_vipps_checkout_session');
             if (!$session) return false;
+
             try {
-                    $polldata = $this->gateway()->api->checkout_get_session_info($order);
-                    $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
-                    $this->log("Checking Checkout status on cart/order change for " . $order->get_id() . " $sessionState ", 'debug');
-                    if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
-                       // If we have started payment, we do not kill the order.
-                       $this->log("Checkout payment started - cannot cancel for " . $order->get_id(), 'debug');
-                       return false;
-                    }
-               } catch (Exception $e) {
-                   $this->log(sprintf(__('Could not get Checkout status for order %1$s in progress while cancelling', 'woo-vipps'), $order->get_id()), 'debug');
-               }
+                $polldata = $this->gateway()->api->checkout_get_session_info($order);
+                $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                $this->log("Checking Checkout status on cart/order change for " . $order->get_id() . " $sessionState ", 'debug');
+                if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
+                    // If we have started payment, we do not kill the order.
+                    $this->log("Checkout payment started - cannot cancel for " . $order->get_id(), 'debug');
+                    return false;
+                }
+            } catch (Exception $e) {
+                $this->log(sprintf(__('Could not get Checkout status for order %1$s in progress while cancelling', 'woo-vipps'), $order->get_id()), 'debug');
             }
+
 
             // NB: This can *potentially* be revived by a callback!
             $this->log(sprintf(__('Cancelling Checkout order because order changed: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
