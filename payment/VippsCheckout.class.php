@@ -500,7 +500,7 @@ jQuery(document).ready(function () {
         }
 
         add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-        $status = $this->get_vipps_checkout_status($session);
+        $status = $this->get_vipps_checkout_status($order);
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
         $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
@@ -659,8 +659,8 @@ jQuery(document).ready(function () {
         $session = $order ? $order->get_meta('_vipps_checkout_session') : false;
 
         // A single word or array containing session data, containing token and frontendFrameUrl
-        // ERROR EXPIRED FAILED
-        $session_status = $session ? $this->get_vipps_checkout_status($session) : null;
+        // ERROR EXPIRED FAILED IOK 2025-04-07 FIXME WHAT
+        $session_status = $session ? $this->get_vipps_checkout_status($order) : null;
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
         if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
@@ -792,10 +792,9 @@ jQuery(document).ready(function () {
 
             // And to be extra sure, check status at vipps
             $session = $order->get_meta('_vipps_checkout_session');
-            $poll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
-            if ($poll) {
-               try {
-                    $polldata = $this->gateway()->api->poll_checkout($poll);
+            if (!$session) return false;
+            try {
+                    $polldata = $this->gateway()->api->checkout_get_session_info($order);
                     $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
                     $this->log("Checking Checkout status on cart/order change for " . $order->get_id() . " $sessionState ", 'debug');
                     if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
@@ -818,11 +817,9 @@ jQuery(document).ready(function () {
         }
     }
     
-    public function get_vipps_checkout_status($session) {
-        if ($session && isset($session['token'])) {
-            $status = $this->gateway()->api->poll_checkout($session['pollingUrl']);
-            return $status;
-        }
+    public function get_vipps_checkout_status($order) {
+        $status = $this->gateway()->api->checkout_get_session_info($order);
+        return $status;
     }
 
 

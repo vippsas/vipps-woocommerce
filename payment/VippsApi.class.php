@@ -1000,47 +1000,7 @@ class VippsApi {
         return $res;
     }
 
-    // Should retrieve order data for a given Checkout order, like for poll. but apparently only when payment 
-    /*
-[26-Mar-2025 15:47:18 UTC] Res is Array
-(
-    [sessionId] => 4ogqwez66Yusjiji7EHetm
-    [merchantSerialNumber] => 287262
-    [reference] => woodigitalt4526
-    [sessionState] => SessionCreated
-    [shippingDetails] => Array
-        (
-            [firstName] => Iver Odin
-            [lastName] => Kvello
-            [email] => iver@wp-hosting.no
-            [phoneNumber] => 4798818710
-            [streetAddress] => Observatorie terrasse 4a
-            [postalCode] => 0254
-            [city] => Oslo
-            [country] => NO
-            [shippingMethodId] => $flat_rate$c392b59fc1ba55e5abb79cf093d201ba6a107bec
-            [amount] => Array
-                (
-                    [value] => 4000
-                    [currency] => NOK
-                )
-
-        )
-
-    [billingDetails] => Array
-        (
-            [firstName] => Iver Odin
-            [lastName] => Kvello
-            [email] => iver@wp-hosting.no
-            [phoneNumber] => 4798818710
-            [streetAddress] => Observatorie terrasse 4a
-            [postalCode] => 0254
-            [city] => Oslo
-            [country] => NO
-        )
-
-)
-*/
+    // Returns same data as session poll; we've changed it so 404s and so returns as words
     public function checkout_get_session_info($order) {
         $command = 'checkout/v3/session';
         $vippsid = $order->get_meta('_vipps_orderid');
@@ -1055,57 +1015,33 @@ class VippsApi {
         // Required for checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
-//        $headers['Idempotency-Key'] = 1; // Shouldn't varyy
         $data = [];
-        $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
-        return $res;
-    }
 
-    // Poll the sessionPollingURL gotten from the checkout API
-    public function poll_checkout ($pollingurl) {
-        $command = $pollingurl;
-
-        $data = array();
-        $headers = array();
-        $msn = $this->get_merchant_serial();
-        $clientid = $this->get_clientid($msn);
-        $secret = $this->get_secret($msn);
-
-        $headers = $this->get_headers($msn);
-        // Required for checkout
-        $headers['client_id'] = $clientid;
-        $headers['client_secret'] = $secret;
-
-
+        $res = "ERROR";
         try {
             $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
-            // This is not a 404, but the session is still expired. IOK 2023-10-16
             if (($res['sessionState'] ?? "") == 'SessionExpired') {
-                return 'EXPIRED';  
+                return 'EXPIRED';
             }
-
         } catch (VippsAPIException $e) {
             if ($e->responsecode == 400) {
+                error_log("IVEROK FIXME Response code for polling is 400");
                 // No information yet.
                 return array('sessionState'=>'PaymentInitiated');
             } else if ($e->responsecode == 404) {
                 return 'EXPIRED';
             } else {
                 $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
-                // We can't dom uch more than this so just return ERROR
+                // We can't do much more than this so just return ERROR
                 return 'ERROR';
-
-            } 
+            }
         } catch (Exception $e) {
             $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
             // We can't dom uch more than this so just return ERROR
             return 'ERROR';
         }
-
         return $res;
     }
-
-
 
     // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
     public function capture_payment($order,$amount,$requestid=1) {
