@@ -936,7 +936,6 @@ class VippsApi {
                 $configuration['showOrderSummary'] = true;
 
                 // Currently, for checkout, *this counts as a receipt*, even though it lacks shipping.
-                // Probably a bug, must revisit later FIXME IOK 2025-03-20
                 // (As of 2025-03-20, not a bug, but it may be one when modifying the order )
                 $order->update_meta_data('_vipps_receipt_sent', true);
                 $order->save();
@@ -1024,11 +1023,7 @@ class VippsApi {
                 return 'EXPIRED';
             }
         } catch (VippsAPIException $e) {
-            if ($e->responsecode == 400) {
-                error_log("IVEROK FIXME Response code for polling is 400");
-                // No information yet.
-                return array('sessionState'=>'PaymentInitiated');
-            } else if ($e->responsecode == 404) {
+            if ($e->responsecode == 404) {
                 return 'EXPIRED';
             } else {
                 $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
