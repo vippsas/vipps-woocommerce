@@ -935,7 +935,7 @@ jQuery(document).ready(function () {
     // Translate from the Express Checkout shipping method format to the Vipps Checkout shipping
     // format, which is slightly different. The ratemap maps from a method key to its WC_Shipping_Rate, and the method map does
     // the same for WP_Shipping_Method.
-    public function format_shipping_methods ($return, $ratemap, $methodmap) {
+    public function format_shipping_methods ($return, $ratemap, $methodmap, $order) {
         $translated = array();
         $currency = get_woocommerce_currency();
         foreach ($return['shippingDetails']  as $m) {
@@ -972,6 +972,43 @@ jQuery(document).ready(function () {
                 $m2['description'] = "";
             }
 
+            // Allow shipping methods to add pickup points data IOK 2025-04-08
+            $delivery = [];
+            $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
+            if ($pickup_points) {
+                $filtered = [];
+                foreach($pickup_points as $point) {
+                    $ok = true;
+                    $entry = [];
+                    foreach(['address', 'city', 'country', 'id', 'name', 'postalCode'] as $key) {
+                        if (!isset($point[$key])) {
+                            $this->log(__('Cannot add pickup point: A pickup point needs to have keys id, name, address, city, postalCode and country: ', 'woo-vipps') . print_r($point, true), 'error');
+                            $ok = false;
+                            break;
+                        } else {
+                            $entry[$key] = $point[$key];
+                        }
+                    }
+                    foreach(['openingHours', 'leadTime'] as $key) {
+                        if (isset($point[$key])) {
+                            $entry[$key] = $point[$key];
+                        }
+                    }
+
+                    if ($ok && !empty($entry)) {
+                        $filtered[] = $entry;
+                    }
+                }
+                $delivery['pickupPoints'] = $filtered;
+                $m2['type'] = 'PICKUP_POINT';
+            }
+
+            // IOK FIXME ADD LEAD TIME // delivery_time. Vipps requires 'earliest'/'latest' as date here, 
+            // but Woo only has a description string. (IOK 2025-04-08)
+            if (!empty($delivery)) {
+               $m2['delivery'] = $delivery;
+            }
+
             if (isset($meta['brand'])) {
                 $m2['brand'] = $meta['brand'];
                 unset($m2['title']);
@@ -997,6 +1034,9 @@ jQuery(document).ready(function () {
         $return['shippingDetails'] = $translated;
         unset($return['addressId']); // Not used it seems for checkout
         unset($return['orderId']);
+
+        $return = apply_filters('woo_vipps_checkout_json_shipping_methods', $return, $order);
+
         return $return;
     }
 
