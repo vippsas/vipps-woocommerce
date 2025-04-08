@@ -2991,7 +2991,7 @@ else:
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
         if ($is_checkout) {
-            $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap);
+            $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
         }
 
         return $return;
