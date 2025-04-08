@@ -313,11 +313,12 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function get_webhooks(): array {
+	public function get_webhooks( string $msn ): array {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'          => 'Bearer ' . $token,
+			'Merchant-Serial-Number' => $msn,
 		];
 
 		return $this->http_call( 'webhooks/v1/webhooks', 'GET', [], $headers );
@@ -329,11 +330,12 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function register_webhook(): array {
+	public function register_webhook( string $msn ): array {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'          => 'Bearer ' . $token,
+			'Merchant-Serial-Number' => $msn,
 		];
 
 		$callback_url = $this->gateway->webhook_callback_url();
@@ -361,11 +363,12 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function delete_webhook( string $id ) {
+	public function delete_webhook( string $msn, string $id ) {
 		$token = $this->get_access_token();
 
 		$headers = [
-			'Authorization' => 'Bearer ' . $token,
+			'Authorization'          => 'Bearer ' . $token,
+			'Merchant-Serial-Number' => $msn,
 		];
 
 		return $this->http_call( 'webhooks/v1/webhooks/' . $id, 'DELETE', [], $headers );
@@ -451,9 +454,9 @@ class WC_Vipps_Recurring_Api {
 		}
 
 		$system_plugin_version = WC_VIPPS_RECURRING_VERSION;
-		$checkout_enabled = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
+		$checkout_enabled      = get_option( WC_Vipps_Recurring_Helper::OPTION_CHECKOUT_ENABLED, false );
 
-		if ($checkout_enabled) {
+		if ( $checkout_enabled ) {
 			$system_plugin_version = $system_plugin_version . '/checkout';
 		}
 
