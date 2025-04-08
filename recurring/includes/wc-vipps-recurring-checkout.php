@@ -287,7 +287,12 @@ class WC_Vipps_Recurring_Checkout {
 				$order->save();
 			}
 
-			$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
+			// Check if we already have a subscription on this order, otherwise create one
+			if ( wcs_order_contains_subscription( $order, 'any' ) ) {
+				$subscriptions = wcs_get_subscriptions_for_order( $order );
+			} else {
+				$subscriptions = $gateway->create_partial_subscriptions_from_order( $order );
+			}
 
 			// reset hack
 			if ( $fake_user ) {
@@ -1028,7 +1033,6 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		// Create a subscription on success, and set all the required values like _charge_id, _agreement_id, and so on.
 		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
 		if ( ! $order->get_customer_id( 'edit' ) ) {
 			$user = $order->get_user();
@@ -1070,6 +1074,11 @@ class WC_Vipps_Recurring_Checkout {
 
 		// Update subscription with the correct customer id, and agreement id
 		$existing_subscriptions = wcs_get_subscriptions_for_order( $order );
+
+		// Create a subscription if we have no subscription, because it might've been deleted previously if this session has been recovered.
+		if ( empty( $existing_subscriptions ) ) {
+			$existing_subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
+		}
 
 		/** @var WC_Subscription $subscription */
 		$subscription = array_pop( $existing_subscriptions );
