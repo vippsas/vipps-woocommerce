@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 4.0.8
-Stable tag: 4.0.8
+Version: 4.0.9
+Stable tag: 4.0.9
 Requires at least: 6.2
 Tested up to: 6.8.0
 Requires PHP: 7.4
@@ -109,19 +109,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 4.0.6:
-Slight improvements in order summary handling
-Version 4.0.5:
-Fix webhooks handling for some edge cases
-Version 4.0.4:
-Ensure WooCommerce uses the singleton for the payment gateway
-Protect against errors when cancelling non-captured amounts from completed orders.
-Version 4.0.3:
-Fix webhooks-initializing when recurring is present, and provide better feedback when testing connection to Vipp
-Version 4.0.2, 4.0.1: 
-Several fixes to the recurring-support, fix intermittent error when showing warnings on duplicate plugins
-Version 4.0.0:
-This version integrates the Vipps MobilePay Recurring Payments plugin, adding support for recurring payments. (Recurring payments requires WooCommerce Subscriptions and a Vipps MobilePay MSN with recurring payments added).
+Version 4.0.9:
+Add support for pickup points in Vipps Checkout - see the changelog. Can be used to let customers select from several different pickup locations for the same shipping method.
 
 == Frequently Asked Questions ==
 
@@ -294,6 +283,12 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-04-08 version 4.0.9 =
+Support pickup-points in Vipps Checkout.
+A new filter,
+`$pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);`
+will allow merchants to add pickup points to shipping methods, as arrays with keys id, name, address, city, postalCode and country. It is also possible to add an array of openingHours (as strings).
+
 = 2025-04-08 version 4.0.8 =
 Various fixes in recurring-subsystem
 
