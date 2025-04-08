@@ -1,5 +1,12 @@
 == Changelog ==
 
+= 2.1.6 =
+* Fixed: Made subscription creations more robust when attempting to pay using Checkout and an early or manual renewal.
+* Added: Support passing an MSN to our webhook API methods.
+* Fixed: Do not load recurring if the customer is using HF Subscriptions, which also creates a WC_Subscriptions class.
+* Fixed: Increased the time it takes to delete inactive orders to two hours. Added logs and an order note as well.
+* Fixed: Create a new subscription if it's missing when completing a checkout order. This can happen if the session has been recovered.
+
 = 2.1.5 =
 * Fixed: Always find subscription via the agreementId on a recurring agreement webhook. This fixes ending an agreement in the app once and for all, as the logic is now the same regardless of the agreement's age.
 * Fixed: Charge webhooks were also using the external ids instead of the charge id, this could cause an error too.

@@ -206,14 +206,6 @@ class WC_Vipps_Recurring {
 
         add_action( 'admin_head', [ $this, 'admin_head' ] );
 
-        if ( ! class_exists( 'WC_Subscriptions' ) ) {
-            // translators: %s link to WooCommerce Subscription's purchase page
-            $notice = sprintf( esc_html__( 'Vipps/MobilePay Recurring Payments requires WooCommerce Subscriptions to be installed and active. You can purchase and download %s here.', 'woo-vipps' ), '<a href="https://woocommerce.com/products/woocommerce-subscriptions/" target="_blank">WooCommerce Subscriptions</a>' );
-            $this->notices->error( $notice );
-
-            return;
-        }
-
         // Add capture button if order is not captured
         add_action( 'woocommerce_order_item_add_action_buttons', [
             $this,
@@ -802,8 +794,6 @@ class WC_Vipps_Recurring {
         foreach ( $orders as $order ) {
             $order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
-            WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", $order_id, $order->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $order ) ? 'Yes' : 'No' ) );
-
             // Check the status of this order's charge just in case.
             do_action( 'wc_vipps_recurring_before_cron_check_order_status', $order_id );
             $this->gateway()->check_charge_status( $order_id );
@@ -813,6 +803,8 @@ class WC_Vipps_Recurring {
             // If this order has been manually updated in the mean-time, we no longer want to delete it.
             // Similarly, if it has a billing email we don't want to delete it.
             $empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
+
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", $order_id, $order->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $order ) ? 'Yes' : 'No' ) );
 
             if ( ! in_array( $order->get_status( 'edit' ), [ 'pending', 'cancelled' ] ) || ! $empty_email ) {
                 WC_Vipps_Recurring_Logger::log( sprintf( "Removing %s from the deletion queue as it should no longer be deleted.", $order_id ) );
