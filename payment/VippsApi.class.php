@@ -1009,13 +1009,7 @@ class VippsApi {
 
         $orderid = $order->get_id();
         $vippsorderid = $order->get_meta('_vipps_orderid');
-
-
-        $order->update_meta_data('_vipps_prefix',$prefix);
-        $order->update_meta_data('_vipps_orderid', $vippsorderid);
-        $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
-#        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
-        $order->save();
+        $reference = $vippsorderid;
 
         $headers = $this->get_headers($msn);
         // Required for Checkout
@@ -1043,7 +1037,9 @@ class VippsApi {
             }
         }
 
-        $res = $this->http_call($msn,$command,$data,'PATCH',$headers,'json'); 
+        $data = ['transaction'=>$transaction];
+
+        $res = $this->http_call($msn,$command . "/" . urlencode($reference),$data,'PATCH',$headers,'json'); 
         return $res;
     }
 

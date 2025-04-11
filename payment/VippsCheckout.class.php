@@ -583,7 +583,21 @@ jQuery(document).ready(function () {
             $order->set_shipping_country($contact['country']);
 
         }
-        if ($change) $order->save();
+        $prevtotal = $order->get_total();
+        // When the address changes, the VAT/taxes may have changed too. Recalculate the order total.
+        if ($change) {
+          $newtotal = $order->calculate_totals(true); // With taxes please
+          error_log("New total is $newtotal, prev total $prevtotal");
+          if ($newtotal != $prevtotal) {
+              try {
+                 $res = $this->gateway()->api->checkout_modify_session($order);
+                 error_log("Modify: " . print_r($res, true));
+              } catch (Exception $e) {
+                 error_log("Problem modifying Checkout session: " . $e->getMessage());
+              }
+          }
+          $order->save();
+        }
 
         // IOK 2021-09-27 we no longer get informed when the order is complete, but if we did, this would handle it.
         if ($complete) {
