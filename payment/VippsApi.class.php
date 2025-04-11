@@ -999,6 +999,54 @@ class VippsApi {
         return $res;
     }
 
+    // If an order materially changes, we need to call this to change the sum total and order description at Vipps. IOK 2025-04-11
+    public function checkout_modify_session($order) {
+        $command = 'checkout/v3/session';
+        $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
+        $clientid = $this->get_clientid($msn);
+        $secret = $this->get_secret($msn);
+
+        $orderid = $order->get_id();
+        $vippsorderid = $order->get_meta('_vipps_orderid');
+
+
+        $order->update_meta_data('_vipps_prefix',$prefix);
+        $order->update_meta_data('_vipps_orderid', $vippsorderid);
+        $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
+#        $order->delete_meta_data('_vipps_static_shipping'); // Don't need this any more
+        $order->save();
+
+        $headers = $this->get_headers($msn);
+        // Required for Checkout
+        $headers['client_id'] = $clientid;
+        $headers['client_secret'] = $secret;
+
+        // Transaction: amount,  description, orderSummary for modify.
+        $transaction = array();
+        $currency = $order->get_currency();
+        $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
+        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
+        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
+        $transaction['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
+        $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
+        if ($summarize) {
+            $ordersummary = $this->get_receipt_data($order);
+            // This is different in the receipt api, the epayment api and in checkout.
+            $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
+            unset($ordersummary['bottomLine']);
+
+            // Don't finalize the receipt number - we just want to show this rn.
+            unset($ordersummary['orderBottomLine']['receiptNumber']);
+            if (!empty($ordersummary)) {
+                $transaction['orderSummary'] = $ordersummary;
+            }
+        }
+
+        $res = $this->http_call($msn,$command,$data,'PATCH',$headers,'json'); 
+        return $res;
+    }
+
     // Returns same data as session poll; we've changed it so 404s and so returns as words
     public function checkout_get_session_info($order) {
         $command = 'checkout/v3/session';
