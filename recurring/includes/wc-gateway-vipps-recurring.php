@@ -205,7 +205,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		add_action( 'woocommerce_subscription_cancelled_' . $this->id, [
 			$this,
-			'cancel_subscription',
+			'maybe_cancel_subscription',
 		] );
 
 		add_action( 'woocommerce_before_thankyou', [ $this, 'maybe_process_redirect_order' ], 1 );
@@ -481,7 +481,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 */
-	public function check_charge_status( $order_id, $skip_lock = false ): string {
+	public function check_charge_status( $order_id, bool $skip_lock = false ): string {
 		if ( empty( $order_id ) || absint( $order_id ) <= 0 ) {
 			return 'INVALID';
 		}
@@ -867,11 +867,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	/**
 	 * Triggered when a subscription is cancelled
 	 *
-	 * @param $subscription
+	 * @param WC_Subscription $subscription
 	 *
 	 * @throws WC_Vipps_Recurring_Exception
 	 */
-	public function cancel_subscription( $subscription ): void {
+	public function maybe_cancel_subscription( $subscription ): void {
 		$payment_method = WC_Vipps_Recurring_Helper::get_payment_method( $subscription );
 		if ( $payment_method !== $this->id ) {
 			// If this is not the payment method, an agreement would not be available.
@@ -886,16 +886,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
-		if ( get_transient( 'cancel_subscription_lock' . $subscription_id ) ) {
-			return;
-		}
-
-		set_transient( 'cancel_subscription_lock' . $subscription_id, uniqid( '', true ), 30 );
-
 		$agreement_id = WC_Vipps_Recurring_Helper::get_agreement_id_from_order( $subscription );
 		if ( $agreement_id === null ) {
 			return;
 		}
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] maybe_cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
 
 		$agreement = $this->api->get_agreement( $agreement_id );
 
@@ -903,11 +899,22 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$this->maybe_handle_subscription_status_transitions( $subscription, $new_status, 'active' );
 			$this->maybe_update_subscription_details_in_app( WC_Vipps_Recurring_Helper::get_id( $subscription ) );
 
-			$idempotency_key = $this->get_idempotency_key( $subscription );
-			$this->api->cancel_agreement( $agreement_id, $idempotency_key );
-		}
+			// Woo Subscriptions sets the next payment date to 0 when a subscription is cancelled, thus we have to calculate it ourselves.
+			$last_payment_time = max( $subscription->get_time( 'last_order_date_created' ), $subscription->get_time( 'last_order_date_paid' ) );
+			$next_payment      = wcs_add_time( $subscription->get_billing_interval( 'edit' ), $subscription->get_billing_period( 'edit' ), $last_payment_time, 'offset_site_time' );
 
-		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
+			if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_cancel_subscription', [
+				$subscription_id,
+				$agreement_id
+			] ) ) {
+				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Scheduled a cancellation event for agreement %s at timestamp: %s', $subscription_id, $agreement_id, $next_payment ) );
+
+				wp_schedule_single_event( $next_payment, 'woocommerce_vipps_recurring_cancel_subscription', [
+					$subscription_id,
+					$agreement_id
+				] );
+			}
+		}
 	}
 
 	/**
