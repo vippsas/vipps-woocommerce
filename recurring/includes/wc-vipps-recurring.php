@@ -156,6 +156,8 @@ class WC_Vipps_Recurring {
             'check_order_statuses'
         ] );
 
+		add_action( 'woocommerce_vipps_recurring_cancel_subscription', [ $this, 'cancel_subscription' ], 10, 2 );
+
         // Schedule checking if gateway change went through
         if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_gateway_change_request' ) ) {
             wp_schedule_event( time(), 'one_minute', 'woocommerce_vipps_recurring_check_gateway_change_request' );
@@ -832,6 +834,36 @@ class WC_Vipps_Recurring {
             $order->delete();
         }
     }
+
+	/**
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function cancel_subscription( $subscription_id, $agreement_id ): void {
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
+
+		// Prevent temporary cancellations from reaching this code
+		$new_status = $subscription->get_status();
+		if ( $new_status !== 'cancelled' ) {
+			return;
+		}
+
+		if ( get_transient( 'cancel_subscription_lock' . $subscription_id ) ) {
+			return;
+		}
+
+		set_transient( 'cancel_subscription_lock' . $subscription_id, uniqid( '', true ), 30 );
+
+		$agreement = $this->gateway()->api->get_agreement( $agreement_id );
+
+		if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
+			$idempotency_key = $this->gateway()->get_idempotency_key( $subscription );
+			$this->gateway()->api->cancel_agreement( $agreement_id, $idempotency_key );
+		}
+	}
 
     /**
      * Adds plugin action links.

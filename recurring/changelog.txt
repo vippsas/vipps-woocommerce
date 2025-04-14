@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.1.7 =
+* Fixed: No longer cancel agreements in Vipps/MobilePay immediately. Cancel them at the next renewal date instead. This allows reserved payments to be triggered.
+
 = 2.1.6 =
 * Fixed: Made subscription creations more robust when attempting to pay using Checkout and an early or manual renewal.
 * Added: Support passing an MSN to our webhook API methods.
