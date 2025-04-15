@@ -101,22 +101,23 @@ jQuery( document ).ready( function() {
                      checkoutFrontendUrl: VippsSessionState['checkoutFrontendUrl'].replace(/\/$/, ''),
                      token:  VippsSessionState['token'],
                      iFrameContainerId: "vippscheckoutframe",
-                     language: VippsConfig['vippslanguage']
-             /* IOK 2024-04-10 future improvements of order management coming 
-                     ,on: {
-                         shipping_option_selected: function (data) { console.log("shipping %j", data); },
-                         total_amount_changed: function (data) { console.log("money %j", data); },
-                         session_status_changed: function (data) { console.log("session status: %j", data); },
-                         shipping_address_changed: function (data) { console.log("shipping address: %j", data); },
-                         customer_information_changed: function (data) { console.log("customer info changed: %j", data); }
+                     language: VippsConfig['vippslanguage'],
+                     on: {
+                         shipping_option_selected: function (data) { pollSessionStatus('shipping_selected', data); },
+                         total_amount_changed: function (data) { pollSessionStatus('total_changed', data); },
+                         session_status_changed: function (data) {
+                             // if data == SessionStarted
+                             jQuery("body").removeClass('processing');
+                             pollSessionStatus('status_changed', data);
+                         },
+                         shipping_address_changed: function (data) { pollSessionStatus('address_changed', data); } ,
+                         customer_information_changed: function (data) { pollSessionStatus('customer_info_changed', data); }
                      }
-                     */
          };
          let vippsCheckout = VippsCheckout(args);
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
          jQuery('.vipps_checkout_startdiv').hide();
-         listenToFrame();
          return true;
       }
 
@@ -195,29 +196,13 @@ jQuery( document ).ready( function() {
       initiating = false;
     }
 
-    function listenToFrame() {
-        if (listening) return;
-        var iframe = jQuery('#vippscheckoutframe iframe');
-        if (iframe.length < 1) return;
-        var src = iframe.attr('src');
-        if (!src) return;
-        listening = true;
-        var origin = new URL(src).origin;
-        window.addEventListener( 'message',
-                // Only frameHeight in pixels are sent, but it is sent whenever the frame changes (so, including when address etc is set). 
-                // So poll when this happens. IOK 2021-08-25
-                function (e) {
-                    if (e.origin != origin) return;
-                    jQuery("body").removeClass('processing');
-                    if (!polling && !pollingdone) pollSessionStatus();
-                    },
-                    false
-                );
-    }
-
-    function pollSessionStatus () {
+    function pollSessionStatus (type, pollData) {
         if (polling) return;
         polling=true;
+        if (!type) type="none";
+        if (!pollData) pollData={};
+        console.log("Polling type " + type + ", data %j", pollData);
+
 
         if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
                     wp.hooks.doAction('vippsCheckoutPollingStart');
@@ -227,7 +212,7 @@ jQuery( document ).ready( function() {
                 {cache:false,
                     timeout: 0,
                     dataType:'json',
-                    data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
+                    data: { 'action': 'vipps_checkout_poll_session', 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
                         // This may happen as a result of a race condition where the user is sent to Vipps
                         //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
@@ -241,10 +226,6 @@ jQuery( document ).ready( function() {
                     },
                     'complete': function (xhr, statustext, error)  {
                         polling = false;
-                        if (!pollingdone) {
-                            // In case of race conditions, poll at least every 5 seconds 
-                            setTimeout(pollSessionStatus, 10000);
-                        }
                     },
                     method: 'POST', 
                     'success': function (result,statustext, xhr) {
@@ -286,6 +267,5 @@ jQuery( document ).ready( function() {
 
     console.log("Vipps MobilePay Checkout Initialized version 111");
     
-    listenToFrame(); // Start now if we have an iframe. This will also start the polling.
     initWhenVisible(); // Or start the session maybe
 });

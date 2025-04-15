@@ -480,6 +480,8 @@ jQuery(document).ready(function () {
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+
+error_log("Polling .. " . print_r($_REQUEST, true));
         $order = $current_pending ? wc_get_order($current_pending) : null;
 
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
