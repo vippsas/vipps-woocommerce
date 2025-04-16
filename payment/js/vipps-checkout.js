@@ -33,8 +33,11 @@ jQuery( document ).ready( function() {
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
     var polling=false;
+    var sessionStarted = false;
     var listening=false;
     var initiating=false;
+
+    let VCO = null;
 
     // Just in case we need to do this by button.
     jQuery('.vipps_checkout_button.button').click(function (e) { initVippsCheckout() });
@@ -93,6 +96,13 @@ jQuery( document ).ready( function() {
       });
     }
 
+    function iframeLoaded() {
+        // Safeguard. This would actually mostly affect *second tabs* opened, so we may not want to call it at all. Insted,
+        // we may want to see here if the session status has changed, and if not, close the page. IOK 2025-04-16
+        // Unfortunately, the session status change thing doesn't happen immediately, so this would need to be with a timeout.
+        jQuery("body").removeClass('processing');
+    }
+
     function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
@@ -107,7 +117,8 @@ jQuery( document ).ready( function() {
                          total_amount_changed: function (data) { pollSessionStatus('total_changed', data); },
                          session_status_changed: function (data) {
                              // if data == SessionStarted
-                             jQuery("body").removeClass('processing');
+                             console.log("Session status changed to %j", data);
+                             sessionStarted = true; jQuery("body").removeClass('processing');
                              pollSessionStatus('status_changed', data);
                          },
                          shipping_address_changed: function (data) { pollSessionStatus('address_changed', data); } ,
@@ -115,10 +126,15 @@ jQuery( document ).ready( function() {
                      }
          };
          let vippsCheckout = VippsCheckout(args);
+         VCO = vippsCheckout;
          window.VCO = vippsCheckout; // IOK FIXME REMOVE ON LIVE
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
          jQuery('.vipps_checkout_startdiv').hide();
+
+         // The iframe should be *present* now, but not loaded, so we get to add an onLoad element. IOK 2025-04-16
+         jQuery('#vippscheckoutframe iframe').on("load", iframeLoaded);
+
          return true;
       }
 
@@ -266,7 +282,6 @@ jQuery( document ).ready( function() {
       }
     }
 
-    console.log("Vipps MobilePay Checkout Initialized version 111");
-    
-    initWhenVisible(); // Or start the session maybe
+    console.log("Vipps MobilePay Checkout Initialized version 112");
+    initWhenVisible(); 
 });
