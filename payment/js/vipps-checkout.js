@@ -115,6 +115,7 @@ jQuery( document ).ready( function() {
                      }
          };
          let vippsCheckout = VippsCheckout(args);
+         window.VCO = vippsCheckout; // IOK FIXME REMOVE ON LIVE
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
          jQuery('.vipps_checkout_startdiv').hide();
