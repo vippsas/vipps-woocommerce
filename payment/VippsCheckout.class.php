@@ -948,7 +948,7 @@ jQuery(document).ready(function () {
                 'currency' => $currency // May want to use the orders' currency instead here, since it exists.
             );
             $m2['brand'] = "OTHER";
-            $m2['title'] = $m['shippingMethod']; // Only for "other"
+            $m2['title'] = $m['shippingMethod']; 
             $m2['id'] = $m['shippingMethodId'];
 
             $rate = $ratemap[$m2['id']];
@@ -1003,16 +1003,39 @@ jQuery(document).ready(function () {
                 $m2['type'] = 'PICKUP_POINT';
             }
 
-            // IOK FIXME ADD LEAD TIME // delivery_time. Vipps requires 'earliest'/'latest' as date here, 
-            // but Woo only has a description string. (IOK 2025-04-08)
+            // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
+            // IOK 2025-04-10
+            $timeslots = apply_filters('woo_vipps_shipping_method_timeslots', [], $rate, $shipping_method, $order);
+            if (!empty($timeslots)) {
+                $filtered = [];
+                foreach($timeslots as $timeslot) {
+                    $entry = [];
+                    $ok = true;
+                    foreach(['id', 'date', 'start', 'end'] as $key) {
+                        if (!isset($timeslot[$key])) {
+                            $this->log(__('Cannot add timeslot: A timeslot needs to have keys id, date, start and end: ', 'woo-vipps') . print_r($timeslot, true), 'error');
+                            $ok = false;
+                            break;
+                        } else {
+                            $entry[$key] = $timeslot[$key];
+                        }
+                    }
+                    if ($ok && !empty($entry)) {
+                        $filtered[] = $entry;
+                    }
+                }
+                $delivery['timeslots']=$filtered;
+                $m2['type'] = 'HOME_DELIVERY';
+            }
+            
+            // IOK 2025-04-10 "leadTime" is still missing. Vipps uses a structured format here with "earliest" and "latest" as dates,
+            // woo uses a simple string. 
             if (!empty($delivery)) {
                $m2['delivery'] = $delivery;
             }
 
             if (isset($meta['brand'])) {
                 $m2['brand'] = $meta['brand'];
-                unset($m2['title']);
-
             } else {
                 // specialcase some known methods so they get brands, and put the label into the description
                 if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {

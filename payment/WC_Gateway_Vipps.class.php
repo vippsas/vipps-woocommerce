@@ -3106,6 +3106,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $shipping_rate->add_meta_data('Pickup Point Address', join(", ", $addr));
                 }
             }
+            if (isset($shipping['timeslot'])) {
+                $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
+                if ($shipping_rate) {
+                    $pp = $shipping['timeslot'];
+                    $slot = "";
+                    $slot .= sprintf(__("Date: %s", 'woo-vipps'), ($pp['date'] ?? ""));
+                    $slot .= " " . sprintf(__("Start: %s", 'woo-vipps'), ($pp['start'] ?? ""));
+                    $slot .= " " . sprintf(__("End: %s", 'woo-vipps'), ($pp['end'] ?? ""));
+                    $shipping_rate->add_meta_data(__('Timeslot', 'woo-vipps'), $slot);
+                    $shipping_rate->add_meta_data(__('Timeslot ID', 'woo-vipps'), $pp['id']);
+                }
+            }
 
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
             $it = null;       
