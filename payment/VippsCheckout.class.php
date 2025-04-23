@@ -1028,8 +1028,25 @@ jQuery(document).ready(function () {
                 $m2['type'] = 'HOME_DELIVERY';
             }
             
-            // IOK 2025-04-10 "leadTime" is still missing. Vipps uses a structured format here with "earliest" and "latest" as dates,
-            // woo uses a simple string. 
+            // add leadTime data to "Mailbox" types
+            $leadTime = apply_filters('woo_vipps_shipping_method_lead_time', null, $rate, $shipping_method, $order);
+            if (!empty($leadTime)) {
+                $entry = [];
+                $ok = true;
+                foreach(['earliest', 'latest'] as $key) {
+                    if (!isset($leadTime[$key])) {
+                        $ok = false; break;
+                    }
+                    $entry[$key] = $leadTime[$key];
+                }
+                if ($ok && !empty($entry)) {
+                    $delivery['leadTime'] = $entry;
+                    if ($m2['type'] == 'OTHER') {
+                        $m2['type'] = 'MAILBOX';
+                    }
+                }
+            }
+
             if (!empty($delivery)) {
                $m2['delivery'] = $delivery;
             }
@@ -1059,7 +1076,6 @@ jQuery(document).ready(function () {
         unset($return['orderId']);
 
         $return = apply_filters('woo_vipps_checkout_json_shipping_methods', $return, $order);
-
         return $return;
     }
 
