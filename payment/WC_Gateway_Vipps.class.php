@@ -3110,11 +3110,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
                 if ($shipping_rate) {
                     $pp = $shipping['timeslot'];
-                    $slot = [];
-                    foreach(['id', 'date', 'start', 'end'] as $key) {
-                        $slot[] = $pp[$key];
-                    }
-                    $shipping_rate->add_meta_data('Timeslot', join(", ", $slot));
+                    $slot = "";
+                    $slot .= sprintf(__("Date: %s", 'woo-vipps'), ($pp['date'] ?? ""));
+                    $slot .= " " . sprintf(__("Start: %s", 'woo-vipps'), ($pp['start'] ?? ""));
+                    $slot .= " " . sprintf(__("End: %s", 'woo-vipps'), ($pp['end'] ?? ""));
+                    $shipping_rate->add_meta_data(__('Timeslot', 'woo-vipps'), $slot);
+                    $shipping_rate->add_meta_data(__('Timeslot ID', 'woo-vipps'), $pp['id']);
                 }
             }
 
