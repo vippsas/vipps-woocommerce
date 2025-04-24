@@ -37,7 +37,27 @@ jQuery( document ).ready( function() {
     var listening=false;
     var initiating=false;
 
+    // This will hold the Vipps Checkout object
     let VCO = null;
+
+    // Which need to be locked/unlocked before we can modify the session. And the session
+    // can only be locked from a screen like this. IOK 2025-04-24
+    function lockSession() {
+       if (VCO) {
+         try {
+          VCO.lock();
+         } catch (error) {
+         }
+       }
+    }
+    function unlockSession() {
+       if (VCO) {
+         try {
+          VCO.unlock();
+         } catch (error) {
+         }
+       }
+    }
 
     // Just in case we need to do this by button.
     jQuery('.vipps_checkout_button.button').click(function (e) { initVippsCheckout() });
@@ -128,6 +148,11 @@ jQuery( document ).ready( function() {
          let vippsCheckout = VippsCheckout(args);
          VCO = vippsCheckout;
          window.VCO = vippsCheckout; // IOK FIXME REMOVE ON LIVE
+
+         // When just loaded, with a slight delay ensure the session is unlocked, just in case it was locked in a different tab which
+         // was then closed. IOK 2025-04-24
+         setTimeout(unlockSession, 5000);
+
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
          jQuery('.vipps_checkout_startdiv').hide();
@@ -216,13 +241,21 @@ jQuery( document ).ready( function() {
     function pollSessionStatus (type, pollData) {
         if (polling) return;
         polling=true;
+        locking = false;
         if (!type) type="none";
         if (!pollData) pollData={};
-        console.log("Polling type " + type + ", data %j", pollData);
 
+        // For these two, we need to lock the session because VAT calculations can change IOK 2025-04-24        
+        if (type =="address_changed" || type=="customer_info_changed") {
+          locking=true;
+        }
 
         if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-                    wp.hooks.doAction('vippsCheckoutPollingStart');
+                    wp.hooks.doAction('vippsCheckoutPollingStart', type, pollData, VCO);
+        }
+
+        if (locking) {
+           lockSession();
         }
 
         jQuery.ajax(VippsConfig['vippsajaxurl'],
@@ -231,6 +264,8 @@ jQuery( document ).ready( function() {
                     dataType:'json',
                     data: { 'action': 'vipps_checkout_poll_session', 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
+                        setTimeout(unlockSession, 5000); // Allow backend some time to complete actions that would require the lock to be held. IOK 2025-04-24
+
                         // This may happen as a result of a race condition where the user is sent to Vipps
                         //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
                         // It may also be a temporary error, so we do not interrupt polling or notify the user. Just log.
@@ -246,6 +281,7 @@ jQuery( document ).ready( function() {
                     },
                     method: 'POST', 
                     'success': function (result,statustext, xhr) {
+                        unlockSession();
                         console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
                         if (result['data']['msg'] == 'EXPIRED') {
                             jQuery('#vippscheckoutexpired').show();
