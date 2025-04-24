@@ -505,7 +505,6 @@ error_log("Polling .. " . print_r($_REQUEST, true));
         $status = $this->get_vipps_checkout_status($order);
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
-        $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
 
         // Disallow sessions that go on for too long.
         if (is_a($order, "WC_Order")) {
@@ -550,6 +549,7 @@ error_log("Polling .. " . print_r($_REQUEST, true));
         }
 
         // This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
+        // it is now! IOK 2024-04-24
         $change = false;
         $vipps_address_hash =  WC()->session->get('vipps_address_hash');
         if ($ok && (isset($status['billingDetails']) || isset($status['shippingDetails'])))  {
@@ -559,7 +559,6 @@ error_log("Polling .. " . print_r($_REQUEST, true));
                 WC()->session->set('vipps_address_hash', $serialized);
             } 
         }
-        if ($complete) $change = true;
 
         // IOK This is the actual status of the order when this is called, which will
         // include personalia only when available
@@ -599,15 +598,6 @@ error_log("Polling .. " . print_r($_REQUEST, true));
               }
           }
           $order->save();
-        }
-
-        // IOK 2021-09-27 we no longer get informed when the order is complete, but if we did, this would handle it.
-        if ($complete) {
-            // Order is complete! Yay!
-            $this->gateway()->update_vipps_payment_details($order);
-            $this->gateway()->payment_complete($order);
-            wp_send_json_success(array('msg'=>'completed','url' => $this->gateway()->get_return_url($order)));
-            exit();
         }
 
         if ($ok && $change) {
