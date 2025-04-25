@@ -479,9 +479,16 @@ jQuery(document).ready(function () {
     // Check the current status of the current Checkout session for the user.
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
-        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
 
-error_log("Polling .. " . print_r($_REQUEST, true));
+        $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
+        $lock_held = intval($_REQUEST['lock_held'] ?? 0);
+        $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
+
+error_log(print_r($_REQUEST, true));
+error_log("Callback $type for Orderid $orderid lock held $lock_held");
+
+        // The single current pending order. IOK 2025-04-25
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
 
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
@@ -584,20 +591,30 @@ error_log("Polling .. " . print_r($_REQUEST, true));
             $order->set_shipping_country($contact['country']);
 
         }
-        $prevtotal = $order->get_total();
-        // When the address changes, the VAT/taxes may have changed too. Recalculate the order total.
         if ($change) {
-          $newtotal = $order->calculate_totals(true); // With taxes please
-          error_log("New total is $newtotal, prev total $prevtotal");
-          if ($newtotal != $prevtotal) {
-              try {
-                 $res = $this->gateway()->api->checkout_modify_session($order);
-                 error_log("Modify: " . print_r($res, true));
-              } catch (Exception $e) {
-                 error_log("Problem modifying Checkout session: " . $e->getMessage());
-              }
-          }
-          $order->save();
+            $order->save();
+        }
+
+        // When the address changes, the VAT/taxes may have changed too. Recalculate the order total if we know the Vipps lock
+        // of the order is held. IOK 2025-04-25
+        if ($change && $lock_held) {
+            $prevtotal = $order->get_total();
+            $newtotal = $order->calculate_totals(true); // With taxes please
+
+            if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
+            if ($newtotal != $prevtotal) {
+                try {
+                    $res = $this->gateway()->api->checkout_modify_session($order);
+                    $order->save();
+                } catch (Exception $e) {
+                    $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
+                    if ($newtotal < $prevtotal) {
+                        // In this case, the orders value will be lower than what is reserved at Vipps, which is OK - the rest will be cancelled
+                        // on order completion. IOK 2025-05-24
+                        $order->save();
+                    }
+                }
+            }
         }
 
         if ($ok && $change) {

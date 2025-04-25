@@ -42,14 +42,6 @@ jQuery( document ).ready( function() {
 
     // Which need to be locked/unlocked before we can modify the session. And the session
     // can only be locked from a screen like this. IOK 2025-04-24
-    function lockSession() {
-       if (VCO) {
-         try {
-          VCO.lock();
-         } catch (error) {
-         }
-       }
-    }
     function unlockSession() {
        if (VCO) {
          try {
@@ -57,6 +49,26 @@ jQuery( document ).ready( function() {
          } catch (error) {
          }
        }
+    }
+    function lockSession(timeout=0) {
+       if (VCO) {
+         try {
+          VCO.lock();
+          if (timeout > 0) {
+              setTimeout(unlockSession, timeout);
+          }
+         } catch (error) {
+         }
+       }
+    }
+
+    // Provide a way for thirdparties to lock the session without exposing internal functions.
+    // Using WPs hooks interface here for historical reasons. IOK 2025-04-25
+    // Ensure you have enqueued wp-hooks and do (for instance) 
+    // wp.hooks.doAction('vippsCheckoutLockSession', 5000);
+    if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+                    wp.hooks.addAction('vippsCheckoutLockSession', 'woo-vipps', lockSession);
+                    wp.hooks.addAction('vippsCheckoutUnlockSession', 'woo-vipps', unlockSession);
     }
 
     // Just in case we need to do this by button.
@@ -147,7 +159,6 @@ jQuery( document ).ready( function() {
          };
          let vippsCheckout = VippsCheckout(args);
          VCO = vippsCheckout;
-         window.VCO = vippsCheckout; // IOK FIXME REMOVE ON LIVE
 
          // When just loaded, with a slight delay ensure the session is unlocked, just in case it was locked in a different tab which
          // was then closed. IOK 2025-04-24
@@ -241,13 +252,13 @@ jQuery( document ).ready( function() {
     function pollSessionStatus (type, pollData) {
         if (polling) return;
         polling=true;
-        locking = false;
+        locking = 0;
         if (!type) type="none";
         if (!pollData) pollData={};
 
         // For these two, we need to lock the session because VAT calculations can change IOK 2025-04-24        
         if (type =="address_changed" || type=="customer_info_changed") {
-          locking=true;
+          locking=1;
         }
 
         if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
@@ -262,7 +273,7 @@ jQuery( document ).ready( function() {
                 {cache:false,
                     timeout: 0,
                     dataType:'json',
-                    data: { 'action': 'vipps_checkout_poll_session', 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
+                    data: { 'action': 'vipps_checkout_poll_session', 'lock_held' : locking, 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
                         setTimeout(unlockSession, 5000); // Allow backend some time to complete actions that would require the lock to be held. IOK 2025-04-24
 

@@ -4312,7 +4312,7 @@ else:
         $expressCheckoutMessages['temporaryError'] = sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name());
         $expressCheckoutMessages['successMessage'] = sprintf(__('To the %1$s app!','woo-vipps'), $this->get_payment_method_name());
 
-        wp_register_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
+        wp_register_script('vipps-express-checkout',plugins_url('js/express-checkout.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/express-checkout.js"), 'true');
         wp_localize_script('vipps-express-checkout', 'VippsCheckoutMessages', $expressCheckoutMessages);
         wp_enqueue_script('vipps-express-checkout');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
