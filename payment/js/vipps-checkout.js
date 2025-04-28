@@ -148,8 +148,6 @@ jQuery( document ).ready( function() {
                          shipping_option_selected: function (data) { pollSessionStatus('shipping_selected', data); },
                          total_amount_changed: function (data) { pollSessionStatus('total_changed', data); },
                          session_status_changed: function (data) {
-                             // if data == SessionStarted
-                             console.log("Session status changed to %j", data);
                              sessionStarted = true; jQuery("body").removeClass('processing');
                              pollSessionStatus('status_changed', data);
                          },
@@ -329,6 +327,6 @@ jQuery( document ).ready( function() {
       }
     }
 
-    console.log("Vipps MobilePay Checkout Initialized version 112");
+    console.log("Vipps MobilePay Checkout Initialized version 115");
     initWhenVisible(); 
 });

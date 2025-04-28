@@ -484,9 +484,6 @@ jQuery(document).ready(function () {
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
 
-error_log(print_r($_REQUEST, true));
-error_log("Callback $type for Orderid $orderid lock held $lock_held");
-
         // The single current pending order. IOK 2025-04-25
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
