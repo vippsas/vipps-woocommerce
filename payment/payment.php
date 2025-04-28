@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '4.0.11');
+define('WOO_VIPPS_VERSION', '4.0.12');
 
 define( 'WC_VIPPS_PAYMENT_MAIN_FILE', __FILE__ );
 
