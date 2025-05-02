@@ -42,7 +42,7 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 
 ### NEW! Posten/Bring plugin and Checkout plugin
 
-![Posten and Checkout shared functiomnlity](payment/Posten_woocommerce_guide.png)
+![Posten and Checkout shared functionality](./payment/docs/images/Posten_woocommerce_guide.png)
 
 If you use [Posten Bring Checkout plugin for Woocommerce](https://www.bring.no/radgivning/integrasjon/plugin-woocommerce) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
 
