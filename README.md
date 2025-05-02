@@ -41,6 +41,18 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 For Finland, it is also possible to activate bank transfer (during product ordering) as a payment method, with some restrictions.
 VISA/MasterCard payments will be coming soon for MobilePay.
 
+### NEW! Posten/Bring plugin and Checkout plugin
+
+![Posten and Checkout shared functiomnlity](payment/Posten_woocommerce_guide.png)
+
+If you use [Posten Bring Checkout plugin for Woocommerce](https://www.bring.no/radgivning/integrasjon/plugin-woocommerce) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
+
+You can offer your customers a variety of delivery methods, track shipments, print shipping labels, and calculate shipping costs automatically at checkout. Both plugins are designed for simple installation and management through the WooCommerce dashboard and supports both smaller and larger shops looking to streamline their payments with Vipps MobilePay and logistics with Bring.
+
+👉 [Read more on Bring’s website](https://www.bring.no/radgivning/integrasjon/plugin-woocommerce)
+
+Psst! If you’re thinking about e-commerce for small or medium businesses, this sort of automation can really help keep things simple!
+
 ## Express Checkout
 
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps app.
