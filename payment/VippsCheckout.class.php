@@ -224,6 +224,10 @@ jQuery(document).ready(function () {
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
         global $post;
         if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
+
+            // Add fonts for the widgets on this page IOK 2025-05-02
+            wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
+
             add_filter('woocommerce_is_checkout', '__return_true');
             add_filter('body_class', function ($classes) {
                     $classes[] = 'vipps-checkout';
@@ -692,6 +696,38 @@ jQuery(document).ready(function () {
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
+    // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
+    function get_checkout_widgets() {
+        // Array of tables of [title, id, callback, class].
+        // NB: We may not have an order at this point. IOK 2025-05-02
+        $widgets = apply_filters('woo_vipps_checkout_widgets',  []);
+        if (empty($widgets)) return "";
+
+        ob_start();
+        echo "<div class='vipps_checkout_widget_wrapper'>";
+        foreach ($widgets as $widget) {
+           $id = $widget['id'] ?? "";
+           $title = $widget['title'] ?? "";
+           $class = $widget['class'] ?? "";
+           $callback = $widget['callback'] ?? "";
+
+           if (!$title || !$callback) continue;
+
+           $idattr = $id ? "id='" . esc_attr($id) . "'" : "";
+           $classattr = "class='vipps_checkout_widget" . ($class ? " " . esc_attr($class) : "") . "'";
+           echo "<div $idattr $classattr>";
+           echo "<div class='vipps_checkout_widget_title'>" . esc_html($title) . "</div>";
+           echo "<div class='vipps_checkout_body'>";
+           call_user_func($callback);
+           echo "</div>";
+           echo "</div>";
+        }
+        echo "</div>";
+        $res = ob_get_clean();
+error_log("Res is $res");
+        return $res;
+    }
+
     function vipps_checkout_shortcode ($atts, $content) {
         // No point in expanding this unless we are actually doing the checkout. IOK 2021-09-03
         if (is_admin()) return;
@@ -758,7 +794,9 @@ jQuery(document).ready(function () {
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
 
-        // Check that these exist etc
+        // Add widgets above the checkoutframe if required -- added by the woo_vipps_checkout_widgets filter. IOK 2025-05-02
+        $out .= $this->get_checkout_widgets();
+
         $out .= "<div id='vippscheckoutframe'>";
 
         $out .= "</div>";
