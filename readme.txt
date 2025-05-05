@@ -290,7 +290,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2025-05-xx version 4.0.13 =
+= 2025-05-05 version 4.0.13 =
 Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.
 
 = 2025-04-23 version 4.0.11, 4.0.12 =
