@@ -33,8 +33,43 @@ jQuery( document ).ready( function() {
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
     var polling=false;
+    var sessionStarted = false;
     var listening=false;
     var initiating=false;
+
+    // This will hold the Vipps Checkout object
+    let VCO = null;
+
+    // Which need to be locked/unlocked before we can modify the session. And the session
+    // can only be locked from a screen like this. IOK 2025-04-24
+    function unlockSession() {
+       if (VCO) {
+         try {
+          VCO.unlock();
+         } catch (error) {
+         }
+       }
+    }
+    function lockSession(timeout=0) {
+       if (VCO) {
+         try {
+          VCO.lock();
+          if (timeout > 0) {
+              setTimeout(unlockSession, timeout);
+          }
+         } catch (error) {
+         }
+       }
+    }
+
+    // Provide a way for thirdparties to lock the session without exposing internal functions.
+    // Using WPs hooks interface here for historical reasons. IOK 2025-04-25
+    // Ensure you have enqueued wp-hooks and do (for instance) 
+    // wp.hooks.doAction('vippsCheckoutLockSession', 5000);
+    if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
+                    wp.hooks.addAction('vippsCheckoutLockSession', 'woo-vipps', lockSession);
+                    wp.hooks.addAction('vippsCheckoutUnlockSession', 'woo-vipps', unlockSession);
+    }
 
     // Just in case we need to do this by button.
     jQuery('.vipps_checkout_button.button').click(function (e) { initVippsCheckout() });
@@ -93,6 +128,13 @@ jQuery( document ).ready( function() {
       });
     }
 
+    function iframeLoaded() {
+        // Safeguard. This would actually mostly affect *second tabs* opened, so we may not want to call it at all. Insted,
+        // we may want to see here if the session status has changed, and if not, close the page. IOK 2025-04-16
+        // Unfortunately, the session status change thing doesn't happen immediately, so this would need to be with a timeout.
+        jQuery("body").removeClass('processing');
+    }
+
     function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
@@ -101,22 +143,32 @@ jQuery( document ).ready( function() {
                      checkoutFrontendUrl: VippsSessionState['checkoutFrontendUrl'].replace(/\/$/, ''),
                      token:  VippsSessionState['token'],
                      iFrameContainerId: "vippscheckoutframe",
-                     language: VippsConfig['vippslanguage']
-             /* IOK 2024-04-10 future improvements of order management coming 
-                     ,on: {
-                         shipping_option_selected: function (data) { console.log("shipping %j", data); },
-                         total_amount_changed: function (data) { console.log("money %j", data); },
-                         session_status_changed: function (data) { console.log("session status: %j", data); },
-                         shipping_address_changed: function (data) { console.log("shipping address: %j", data); },
-                         customer_information_changed: function (data) { console.log("customer info changed: %j", data); }
+                     language: VippsConfig['vippslanguage'],
+                     on: {
+                         shipping_option_selected: function (data) { pollSessionStatus('shipping_selected', data); },
+                         total_amount_changed: function (data) { pollSessionStatus('total_changed', data); },
+                         session_status_changed: function (data) {
+                             sessionStarted = true; jQuery("body").removeClass('processing');
+                             pollSessionStatus('status_changed', data);
+                         },
+                         shipping_address_changed: function (data) { pollSessionStatus('address_changed', data); } ,
+                         customer_information_changed: function (data) { pollSessionStatus('customer_info_changed', data); }
                      }
-                     */
          };
          let vippsCheckout = VippsCheckout(args);
+         VCO = vippsCheckout;
+
+         // When just loaded, with a slight delay ensure the session is unlocked, just in case it was locked in a different tab which
+         // was then closed. IOK 2025-04-24
+         setTimeout(unlockSession, 5000);
+
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
          jQuery('.vipps_checkout_startdiv').hide();
-         listenToFrame();
+
+         // The iframe should be *present* now, but not loaded, so we get to add an onLoad element. IOK 2025-04-16
+         jQuery('#vippscheckoutframe iframe').on("load", iframeLoaded);
+
          return true;
       }
 
@@ -195,40 +247,34 @@ jQuery( document ).ready( function() {
       initiating = false;
     }
 
-    function listenToFrame() {
-        if (listening) return;
-        var iframe = jQuery('#vippscheckoutframe iframe');
-        if (iframe.length < 1) return;
-        var src = iframe.attr('src');
-        if (!src) return;
-        listening = true;
-        var origin = new URL(src).origin;
-        window.addEventListener( 'message',
-                // Only frameHeight in pixels are sent, but it is sent whenever the frame changes (so, including when address etc is set). 
-                // So poll when this happens. IOK 2021-08-25
-                function (e) {
-                    if (e.origin != origin) return;
-                    jQuery("body").removeClass('processing');
-                    if (!polling && !pollingdone) pollSessionStatus();
-                    },
-                    false
-                );
-    }
-
-    function pollSessionStatus () {
+    function pollSessionStatus (type, pollData) {
         if (polling) return;
         polling=true;
+        locking = 0;
+        if (!type) type="none";
+        if (!pollData) pollData={};
+
+        // For these two, we need to lock the session because VAT calculations can change IOK 2025-04-24        
+        if (type =="address_changed" || type=="customer_info_changed") {
+          locking=1;
+        }
 
         if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-                    wp.hooks.doAction('vippsCheckoutPollingStart');
+                    wp.hooks.doAction('vippsCheckoutPollingStart', type, pollData, VCO);
+        }
+
+        if (locking) {
+           lockSession();
         }
 
         jQuery.ajax(VippsConfig['vippsajaxurl'],
                 {cache:false,
                     timeout: 0,
                     dataType:'json',
-                    data: { 'action': 'vipps_checkout_poll_session', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
+                    data: { 'action': 'vipps_checkout_poll_session', 'lock_held' : locking, 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
+                        setTimeout(unlockSession, 5000); // Allow backend some time to complete actions that would require the lock to be held. IOK 2025-04-24
+
                         // This may happen as a result of a race condition where the user is sent to Vipps
                         //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
                         // It may also be a temporary error, so we do not interrupt polling or notify the user. Just log.
@@ -241,13 +287,10 @@ jQuery( document ).ready( function() {
                     },
                     'complete': function (xhr, statustext, error)  {
                         polling = false;
-                        if (!pollingdone) {
-                            // In case of race conditions, poll at least every 5 seconds 
-                            setTimeout(pollSessionStatus, 10000);
-                        }
                     },
                     method: 'POST', 
                     'success': function (result,statustext, xhr) {
+                        unlockSession();
                         console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
                         if (result['data']['msg'] == 'EXPIRED') {
                             jQuery('#vippscheckoutexpired').show();
@@ -284,8 +327,6 @@ jQuery( document ).ready( function() {
       }
     }
 
-    console.log("Vipps MobilePay Checkout Initialized version 111");
-    
-    listenToFrame(); // Start now if we have an iframe. This will also start the polling.
-    initWhenVisible(); // Or start the session maybe
+    console.log("Vipps MobilePay Checkout Initialized version 115");
+    initWhenVisible(); 
 });

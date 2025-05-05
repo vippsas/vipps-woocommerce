@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 4.0.12
-Stable tag: 4.0.12
+Version: 4.0.13
+Stable tag: 4.0.13
 Requires at least: 6.2
 Tested up to: 6.8.0
 Requires PHP: 7.4
@@ -109,6 +109,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 4.0.13
+Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.
 Version 4.0.11, 4.0.12:
 Add support for Home Delivery, Lead Time and Pickup Points in Vipps Mobilepay Checkout
 Version 4.0.10:
@@ -287,6 +289,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2025-05-05 version 4.0.13 =
+Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.
+
 = 2025-04-23 version 4.0.11, 4.0.12 =
 Add support for pickup points, lead time and home delivery timeslots in Vipps Checkout
 

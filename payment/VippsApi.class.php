@@ -817,6 +817,11 @@ class VippsApi {
         // Required for Checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
+//        $headers['Idempotency-Key'] = $requestid;
+
+        // Object to send.
+        $data = array();
+        $data['reference'] = $vippsorderid;
 
         // The string returned is a prefix ending with callback=, for v3 we need to send a complete URL
         // so we just add the callback type here.
@@ -825,8 +830,8 @@ class VippsApi {
 
         $transaction = array();
         $currency = $order->get_currency();
-        $transaction['reference'] = $vippsorderid;
         // Ignore refOrderId - for child-transactions 
+        $transaction['reference'] = $vippsorderid;
         $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
         $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
@@ -839,23 +844,6 @@ class VippsApi {
           $transaction['paymentDescription'] = substr($transaction['paymentDescription'],0,90); // Add some slack if this happens. IOK 2019-10-17
         }
 
-
-        # This have to exist, but we'll not check it now.
-        if (! function_exists("wc_terms_and_conditions_page_id")) {
-            $msg = sprintf(__('You need a newer version of WooCommerce to use %1$s!', 'woo-vipps'), Vipps::CheckoutName());
-            $this->log($msg, 'error');;
-            throw new Exception($msg);
-        }
-        $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
-        $data = array();
-
-        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackUrl'=>$callback, 'returnUrl'=>$fallback);
-
-        if (!empty($termsAndConditionsUrl)) {
-            $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
-        } else {
-            $this->log(sprintf(__('Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined', 'woo-vipps'), Vipps::CheckoutName()));
-        }
 
         ## Vipps Checkout Shipping
         $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
@@ -903,9 +891,25 @@ class VippsApi {
             $data['logistics'] = $logistics;
         }
 
+        // IOK 2025-03-26 currenlty only legal value
+        $data['type'] = "PAYMENT";
 
         if (!empty($customerinfo)) {
             $data['prefillCustomer'] = $customerinfo;
+        }
+
+        # This have to exist, but we'll not check it now.
+        if (! function_exists("wc_terms_and_conditions_page_id")) {
+            $msg = sprintf(__('You need a newer version of WooCommerce to use %1$s!', 'woo-vipps'), Vipps::CheckoutName());
+            $this->log($msg, 'error');;
+            throw new Exception($msg);
+        }
+        $termsAndConditionsUrl = get_permalink(wc_terms_and_conditions_page_id());
+        $data['merchantInfo'] = array('callbackAuthorizationToken'=>$authtoken, 'callbackUrl'=>$callback, 'returnUrl'=>$fallback);
+        if (!empty($termsAndConditionsUrl)) {
+            $data['merchantInfo']['termsAndConditionsUrl'] = $termsAndConditionsUrl; 
+        } else {
+            $this->log(sprintf(__('Your site does not have a Terms and Conditions page defined - starting %1$s anyway, but this should be defined', 'woo-vipps'), Vipps::CheckoutName()));
         }
 
         // From v3: Certain data moved to a 'configuration' field
@@ -932,7 +936,6 @@ class VippsApi {
                 $configuration['showOrderSummary'] = true;
 
                 // Currently, for checkout, *this counts as a receipt*, even though it lacks shipping.
-                // Probably a bug, must revisit later FIXME IOK 2025-03-20
                 // (As of 2025-03-20, not a bug, but it may be one when modifying the order )
                 $order->update_meta_data('_vipps_receipt_sent', true);
                 $order->save();
@@ -996,13 +999,58 @@ class VippsApi {
         return $res;
     }
 
-    // Poll the sessionPollingURL gotten from the checkout API
-    public function poll_checkout ($pollingurl) {
-        $command = $pollingurl;
-
-        $data = array();
-        $headers = array();
+    // If an order materially changes, we need to call this to change the sum total and order description at Vipps. IOK 2025-04-11
+    public function checkout_modify_session($order) {
+        $command = 'checkout/v3/session';
         $msn = $this->get_merchant_serial();
+        $subkey = $this->get_key($msn);
+        $clientid = $this->get_clientid($msn);
+        $secret = $this->get_secret($msn);
+
+        $orderid = $order->get_id();
+        $vippsorderid = $order->get_meta('_vipps_orderid');
+        $reference = $vippsorderid;
+
+        $headers = $this->get_headers($msn);
+        // Required for Checkout
+        $headers['client_id'] = $clientid;
+        $headers['client_secret'] = $secret;
+
+        // Transaction: amount,  description, orderSummary for modify.
+        $transaction = array();
+        $currency = $order->get_currency();
+        $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
+        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
+        $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
+        $transaction['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
+        $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
+        if ($summarize) {
+            $ordersummary = $this->get_receipt_data($order);
+            // This is different in the receipt api, the epayment api and in checkout.
+            $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
+            unset($ordersummary['bottomLine']);
+
+            // Don't finalize the receipt number - we just want to show this rn.
+            unset($ordersummary['orderBottomLine']['receiptNumber']);
+            if (!empty($ordersummary)) {
+                $transaction['orderSummary'] = $ordersummary;
+            }
+        }
+
+        $data = ['transaction'=>$transaction];
+
+        $res = $this->http_call($msn,$command . "/" . urlencode($reference),$data,'PATCH',$headers,'json'); 
+        return $res;
+    }
+
+    // Returns same data as session poll; we've changed it so 404s and so returns as words
+    public function checkout_get_session_info($order) {
+        $command = 'checkout/v3/session';
+        $vippsid = $order->get_meta('_vipps_orderid');
+        $command .= "/" . $vippsid;
+
+        $msn = $this->get_merchant_serial();
+        $headers = $this->get_headers($msn);
         $clientid = $this->get_clientid($msn);
         $secret = $this->get_secret($msn);
 
@@ -1010,37 +1058,29 @@ class VippsApi {
         // Required for checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
+        $data = [];
 
-
+        $res = "ERROR";
         try {
             $res = $this->http_call($msn,$command,$data,'GET',$headers,'json'); 
-            // This is not a 404, but the session is still expired. IOK 2023-10-16
             if (($res['sessionState'] ?? "") == 'SessionExpired') {
-                return 'EXPIRED';  
+                return 'EXPIRED';
             }
-
         } catch (VippsAPIException $e) {
-            if ($e->responsecode == 400) {
-                // No information yet.
-                return array('sessionState'=>'PaymentInitiated');
-            } else if ($e->responsecode == 404) {
+            if ($e->responsecode == 404) {
                 return 'EXPIRED';
             } else {
                 $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
-                // We can't dom uch more than this so just return ERROR
+                // We can't do much more than this so just return ERROR
                 return 'ERROR';
-
-            } 
+            }
         } catch (Exception $e) {
             $this->log(sprintf(__("Error polling status - error message %1\$s", 'woo-vipps'), $e->getMessage()));
             // We can't dom uch more than this so just return ERROR
             return 'ERROR';
         }
-
         return $res;
     }
-
-
 
     // Capture a payment made. Amount is in cents and required. IOK 2018-05-07
     public function capture_payment($order,$amount,$requestid=1) {
