@@ -2357,16 +2357,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // If we have been using Vipps Checkout, there is no Shipping Details in the normal "get order status" call, so we may need to poll
             if (!isset($paymentdetails['shippingDetails'])) {
                 $session = $order->get_meta('_vipps_checkout_session');
-                $checkoutpoll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
-
-                // This is for compatibility reasons: Earlier versions stored this URL otherwise. This will be removed in a version or two.
-                // IOK 2023-11-10
-                if (!$checkoutpoll) $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
-             
-
-                if ($checkoutpoll) {
+                if ($session) {
                     try {
-                        $polldata =  $this->api->poll_checkout($checkoutpoll);
+                        $polldata =  $this->api->checkout_get_session_info($order);
                         $polldata = $this->ensure_userDetails($polldata, $order);
 
                         if (isset($polldata['userDetails'])) {
@@ -2379,12 +2372,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             // We'll fill out the minimum of info
                             $countries=new WC_Countries();
                             $paymentdetails['shippingDetails'] = array(
-                                'firstName' => $polldata['userDetails']['firstName'],
-                                'lastName' => $polldata['userDetails']['lastName'],
-                                'email' => $polldata['userDetails']['email'],
-                                'phoneNumber' => $polldata['userDetails']['phoneNumber'],
-                                'country' =>  $countries->get_base_country()
-                            );
+                                    'firstName' => $polldata['userDetails']['firstName'],
+                                    'lastName' => $polldata['userDetails']['lastName'],
+                                    'email' => $polldata['userDetails']['email'],
+                                    'phoneNumber' => $polldata['userDetails']['phoneNumber'],
+                                    'country' =>  $countries->get_base_country()
+                                    );
                         } 
 
                         // Also fill out required fields for billing details
@@ -2464,12 +2457,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function get_payment_details($order) {
         $result = array();
         $session = $order->get_meta('_vipps_checkout_session');
-        $checkoutpoll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
-        if (!$checkoutpoll) $checkoutpoll =  $order->get_meta('_vipps_checkout_poll');
 
-        if ($checkoutpoll) {
+        if ($session) {
             try {
-                $result = $this->api->poll_checkout($checkoutpoll);
+                $result = $this->api->checkout_get_session_info($order);
 
                 if ($result == 'EXPIRED') {
                     $result = array('status'=>'CANCEL'); 

@@ -479,8 +479,15 @@ jQuery(document).ready(function () {
     // Check the current status of the current Checkout session for the user.
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
+
+        $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
+        $lock_held = intval($_REQUEST['lock_held'] ?? 0);
+        $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
+
+        // The single current pending order. IOK 2025-04-25
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
+
         $payment_status = $order ?  $this->gateway()->check_payment_status($order) : 'unknown';
         if (in_array($payment_status, ['authorized', 'complete'])) {
             $this->abandonVippsCheckoutOrder(false);
@@ -499,10 +506,9 @@ jQuery(document).ready(function () {
         }
 
         add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-        $status = $this->get_vipps_checkout_status($session);
+        $status = $this->get_vipps_checkout_status($order);
 
         $failed = $status == 'ERROR' || $status == 'EXPIRED' || $status == 'TERMINATED';
-        $complete = false; // We no longer get informed about complete sessions; we only get this info when the order is wholly complete. IOK 2021-09-27
 
         // Disallow sessions that go on for too long.
         if (is_a($order, "WC_Order")) {
@@ -547,6 +553,7 @@ jQuery(document).ready(function () {
         }
 
         // This handles address information data from the poll if present. It is not, currently.  2021-09-27 IOK
+        // it is now! IOK 2024-04-24
         $change = false;
         $vipps_address_hash =  WC()->session->get('vipps_address_hash');
         if ($ok && (isset($status['billingDetails']) || isset($status['shippingDetails'])))  {
@@ -556,7 +563,6 @@ jQuery(document).ready(function () {
                 WC()->session->set('vipps_address_hash', $serialized);
             } 
         }
-        if ($complete) $change = true;
 
         // IOK This is the actual status of the order when this is called, which will
         // include personalia only when available
@@ -582,15 +588,30 @@ jQuery(document).ready(function () {
             $order->set_shipping_country($contact['country']);
 
         }
-        if ($change) $order->save();
+        if ($change) {
+            $order->save();
+        }
 
-        // IOK 2021-09-27 we no longer get informed when the order is complete, but if we did, this would handle it.
-        if ($complete) {
-            // Order is complete! Yay!
-            $this->gateway()->update_vipps_payment_details($order);
-            $this->gateway()->payment_complete($order);
-            wp_send_json_success(array('msg'=>'completed','url' => $this->gateway()->get_return_url($order)));
-            exit();
+        // When the address changes, the VAT/taxes may have changed too. Recalculate the order total if we know the Vipps lock
+        // of the order is held. IOK 2025-04-25
+        if ($change && $lock_held) {
+            $prevtotal = $order->get_total();
+            $newtotal = $order->calculate_totals(true); // With taxes please
+
+            if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
+            if ($newtotal != $prevtotal) {
+                try {
+                    $res = $this->gateway()->api->checkout_modify_session($order);
+                    $order->save();
+                } catch (Exception $e) {
+                    $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
+                    if ($newtotal < $prevtotal) {
+                        // In this case, the orders value will be lower than what is reserved at Vipps, which is OK - the rest will be cancelled
+                        // on order completion. IOK 2025-05-24
+                        $order->save();
+                    }
+                }
+            }
         }
 
         if ($ok && $change) {
@@ -658,8 +679,8 @@ jQuery(document).ready(function () {
         $session = $order ? $order->get_meta('_vipps_checkout_session') : false;
 
         // A single word or array containing session data, containing token and frontendFrameUrl
-        // ERROR EXPIRED FAILED
-        $session_status = $session ? $this->get_vipps_checkout_status($session) : null;
+        // If a word, it will be ERROR EXPIRED FAILED IOK 2025-04-07
+        $session_status = $session ? $this->get_vipps_checkout_status($order) : null;
 
         // If this is the case, there is no redirect, but the session is gone, so wipe the order and session.
         if (in_array($session_status, ['ERROR', 'EXPIRED', 'FAILED'])) {
@@ -782,7 +803,7 @@ jQuery(document).ready(function () {
             // we must ensure that no race or other mechanism kills the order while or after being paid.
             // if order is in the process of being finalized, don't kill it
             if (Vipps::instance()->isLocked($order)) {
-               return false;
+                return false;
             }
             // Get it again to ensure we have all the info, and check status again
             clean_post_cache($order->get_id());
@@ -791,21 +812,21 @@ jQuery(document).ready(function () {
 
             // And to be extra sure, check status at vipps
             $session = $order->get_meta('_vipps_checkout_session');
-            $poll = ($session && isset($session['pollingUrl'])) ? $session['pollingUrl'] : false;
-            if ($poll) {
-               try {
-                    $polldata = $this->gateway()->api->poll_checkout($poll);
-                    $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
-                    $this->log("Checking Checkout status on cart/order change for " . $order->get_id() . " $sessionState ", 'debug');
-                    if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
-                       // If we have started payment, we do not kill the order.
-                       $this->log("Checkout payment started - cannot cancel for " . $order->get_id(), 'debug');
-                       return false;
-                    }
-               } catch (Exception $e) {
-                   $this->log(sprintf(__('Could not get Checkout status for order %1$s in progress while cancelling', 'woo-vipps'), $order->get_id()), 'debug');
-               }
+            if (!$session) return false;
+
+            try {
+                $polldata = $this->gateway()->api->checkout_get_session_info($order);
+                $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                $this->log("Checking Checkout status on cart/order change for " . $order->get_id() . " $sessionState ", 'debug');
+                if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') {
+                    // If we have started payment, we do not kill the order.
+                    $this->log("Checkout payment started - cannot cancel for " . $order->get_id(), 'debug');
+                    return false;
+                }
+            } catch (Exception $e) {
+                $this->log(sprintf(__('Could not get Checkout status for order %1$s in progress while cancelling', 'woo-vipps'), $order->get_id()), 'debug');
             }
+
 
             // NB: This can *potentially* be revived by a callback!
             $this->log(sprintf(__('Cancelling Checkout order because order changed: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
@@ -817,11 +838,9 @@ jQuery(document).ready(function () {
         }
     }
     
-    public function get_vipps_checkout_status($session) {
-        if ($session && isset($session['token'])) {
-            $status = $this->gateway()->api->poll_checkout($session['pollingUrl']);
-            return $status;
-        }
+    public function get_vipps_checkout_status($order) {
+        $status = $this->gateway()->api->checkout_get_session_info($order);
+        return $status;
     }
 
 
@@ -958,19 +977,17 @@ jQuery(document).ready(function () {
 
             // The description is normally only stored only in the shipping method
             if ($shipping_method) {
-               
                 // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
                 if  (isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes') {
                     if (!isset($meta['free_shipping']) || !$meta['free_shipping']) {
                         $m2['amount'] = null;
                     }
                 }
-
-
                 $m2['description'] = $shipping_method->get_option('description', '');
             } else {
                 $m2['description'] = "";
             }
+            
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
             $delivery = [];
