@@ -2742,8 +2742,32 @@ else:
             exit();
         }
 
+        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
+        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
+        // This needs to be done before "calculate totals".
+        // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
+        $is_checkout = false;
+        if ($order->get_meta('_vipps_checkout')) {
+            $is_checkout = true;
+            add_filter('woo_vipps_is_vipps_checkout', '__return_true');
+        }
+
+        // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+        add_action('woocommerce_load_shipping_methods', function () use ($is_checkout) {
+            // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
+            // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
+            // Express checkout does not support this (yet). IOK 2025-05-06
+            // Afterwards, we need to post-process this, because *each* location gets a different rate.
+            if ($is_checkout && class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
+                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
+            }
+            // Action especially for express and checkout IOK 2025-05-06
+            do_action('woo_vipps_express_load_shipping_methods', $order, $result, $vippsorderid, $is_checkout);
+
+        }, 99);
+
         $this->callback_restore_session($orderid);       
-        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid);
+        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $is_checkout);
  
         # Checkout does not have an addressID here, and should not be 'wrapped'
         if (!isset($return['addressId'])) {
@@ -2760,16 +2784,7 @@ else:
         exit();
     }
    
-    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
-        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
-        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
-        // This needs to be done before "calculate totals"
-        $is_checkout = false;
-        if ($order->get_meta('_vipps_checkout')) {
-            $is_checkout = true;
-            add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-        }
-
+    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid, $is_checkout) {
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
        if (isset($vippsdata['streetAddress'])){
@@ -2845,6 +2860,8 @@ else:
 
         $shipping_methods = array();
         $shipping_tax_rates = WC_Tax::get_shipping_tax_rates();
+
+
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
             $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', $shipping_tax_rates);
