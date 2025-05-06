@@ -1096,9 +1096,6 @@ error_log("Res is $res");
                 }
                 if ($ok && !empty($entry)) {
                     $delivery['leadTime'] = $entry;
-                    if ($m2['type'] == 'OTHER') {
-                        $m2['type'] = 'MAILBOX';
-                    }
                 }
             }
 
