@@ -716,7 +716,7 @@ jQuery(document).ready(function () {
            $idattr = $id ? "id='" . esc_attr($id) . "'" : "";
            $classattr = "class='vipps_checkout_widget" . ($class ? " " . esc_attr($class) : "") . "'";
            echo "<div $idattr $classattr>";
-           echo "<div class='vipps_checkout_widget_title'>" . esc_html($title) . "</div>";
+           echo "<div class='vipps_checkout_widget_title accordion'>" . esc_html($title) . "<span class='vipps_checkout_widget_icon'>+</span></div>";
            echo "<div class='vipps_checkout_body'>";
            call_user_func($callback);
            echo "</div>";
