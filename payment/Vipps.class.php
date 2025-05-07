@@ -2221,6 +2221,25 @@ else:
             Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::register();
         }
 
+        // Used for e.g. labels of product/shipping metadata. IOK 2025-05-07
+        add_filter('woocommerce_attribute_label', function ($label, $name, $product) {
+            if ( $product ) {
+                return $label;
+            }
+            switch ( $name ) {
+                case 'brand': // This is for shipping IOK 2025-05-07
+                    return __('Company', 'woo-vipps');
+                case 'type':
+                    return __('Type', 'woo-vipps');
+                case 'vipps_delivery_timeslot':
+                    return __('Timeslot', 'woo-vipps');
+                case 'vipps_delivery_timeslot_id':
+                    return __('Timeslot ID', 'woo-vipps');
+            }
+            return $label;
+        }, 9, 3);
+
+
     }
 
     // IOK 2021-12-09 try to get the current language in the format Vipps wants, one of 'en' and 'no'

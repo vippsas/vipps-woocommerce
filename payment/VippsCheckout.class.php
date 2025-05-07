@@ -724,7 +724,6 @@ jQuery(document).ready(function () {
         }
         echo "</div>";
         $res = ob_get_clean();
-error_log("Res is $res");
         return $res;
     }
 
