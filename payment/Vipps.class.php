@@ -2945,8 +2945,10 @@ else:
 
         if (!$chosen) {
             // Find first method that isn't 'local_pickup'
+            // or pickup_location. IOK 2025-05-07
             foreach($methods as $key=>&$data) {
-              if ($data['rate']->get_method_id() != 'local_pickup') {
+              $mid = $data['rate']->get_method_id();
+              if ($mid != 'local_pickup' && $mid != 'pickup_location') {
                  $chosen = $key;
                  break;
               }
@@ -3144,9 +3146,10 @@ else:
             $priority++;
         }
         // If we don't have free shipping, select the first (cheapest) option, unless that is 'local pickup'. IOK 2019-11-26
+        // Or pickup_location, same thing. IOK 2025-05-07
         if(!$defaultset && !empty($methods)) {
             foreach($methods as &$method) {
-                if (!preg_match("!^local_pickup!",$method['shippingMethodId'])) {
+                if (!preg_match("!^(local_pickup|pickup_location)!",$method['shippingMethodId'])) {
                     $defaultset=1;
                     $method['isDefault'] = 'Y';
                     break;
