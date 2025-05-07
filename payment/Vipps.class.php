@@ -2772,7 +2772,7 @@ else:
         }
 
         // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
-        add_action('woocommerce_load_shipping_methods', function () use ($is_checkout) {
+        add_action('woocommerce_load_shipping_methods', function () use ($order, $result, $vippsorderid, $is_checkout) {
             // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
             // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
             // Express checkout does not support this (yet). IOK 2025-05-06
@@ -2984,6 +2984,7 @@ else:
 
         // We need access to the extended settings of the shipping methods.
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
+        $methods_classes['pickup_location'] = 'Automattic\WooCommerce\Blocks\Shipping\PickupLocation'; // Loaded using the "load" hook, after the registered methods, so we need to add it specially.
 
         foreach($methods as $method) {
            $rate = $method['rate'];

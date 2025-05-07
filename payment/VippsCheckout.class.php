@@ -64,6 +64,32 @@ class VippsCheckout {
         add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
         add_filter( 'woocommerce_order_email_verification_required', array($VippsCheckout, 'allow_other_payment_method_email'), 10, 3);
         add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
+
+
+        add_filter('woo_vipps_shipping_method_pickup_points', function ($points, $rate, $shipping_method, $order) {
+            if ($rate->method_id == 'pickup_location') {
+               // $locations = $shipping_method->pickup_locations ; // Protected attribute. Could wrap, but life is short so
+                $locations = get_option( $shipping_method->id . '_pickup_locations', [] );
+                foreach ( $locations as $index => $location ) {
+                    if ( ! $location['enabled'] ) {
+                        continue;
+                    }
+                    $addr = $location['address'] ?? [];
+
+                    $point = [];
+                    $point['id'] = "foobar";
+                    $point['name'] = $location['name'] ?? "";
+                    $point['address'] = $addr['address_1'] ?? "";
+                    $point['postalCode'] = $addr['postcode'] ?? "";
+                    $point['city'] = $addr['city'] ?? "";
+                    $point['country'] = $addr['country'] ?? "";
+                    $points[] = $point;
+                }
+            }
+            return $points;
+        }, 10, 4);
+
+
     }
 
     public function allow_other_payment_method_email ($email_verification_required, $order, $context ) {
@@ -991,9 +1017,14 @@ jQuery(document).ready(function () {
     // Translate from the Express Checkout shipping method format to the Vipps Checkout shipping
     // format, which is slightly different. The ratemap maps from a method key to its WC_Shipping_Rate, and the method map does
     // the same for WP_Shipping_Method.
+    // IOK 2025-05-07 Also treat PickupLocation specially. We'll return at most one of these, and if there are more than one, we will add the locations available as
+    // metadata.
     public function format_shipping_methods ($return, $ratemap, $methodmap, $order) {
         $translated = array();
         $currency = get_woocommerce_currency();
+        $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07
+        $pickupSpots = [];
+
         foreach ($return['shippingDetails']  as $m) {
             $m2 = array();
 
@@ -1009,6 +1040,17 @@ jQuery(document).ready(function () {
 
             $rate = $ratemap[$m2['id']];
             $shipping_method = $methodmap[$m2['id']];
+
+            // If we have pickup_location-s, only use the first one. IOK 2025-05-07
+            if ($rate->method_id == 'pickup_location') {
+                if (!$pickupLocation) {
+                    $pickupLocation = &$m2;
+                } else {
+                    continue; 
+                }
+            }
+             
+
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
 
@@ -1055,6 +1097,13 @@ jQuery(document).ready(function () {
                 }
                 $delivery['pickupPoints'] = $filtered;
                 $m2['type'] = 'PICKUP_POINT';
+
+                // Remove name of location for PickupLocation if we do have choices. IOK 2025-05-07
+                if ($m2 == $pickupLocation && count($filtered) > 1) {
+                   $m2['title'] = $shipping_method->title;
+                }
+
+
             }
 
             // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
