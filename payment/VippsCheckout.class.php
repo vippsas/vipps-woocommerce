@@ -1029,7 +1029,6 @@ jQuery(document).ready(function () {
         $translated = array();
         $currency = get_woocommerce_currency();
         $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07
-        $pickupSpots = [];
 
         foreach ($return['shippingDetails']  as $m) {
             $m2 = array();
