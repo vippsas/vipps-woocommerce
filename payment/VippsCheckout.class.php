@@ -256,6 +256,8 @@ jQuery(document).ready(function () {
             // Add fonts for the widgets on this page IOK 2025-05-02
             wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
 
+
+
             add_filter('woocommerce_is_checkout', '__return_true');
             add_filter('body_class', function ($classes) {
                     $classes[] = 'vipps-checkout';
@@ -394,11 +396,20 @@ jQuery(document).ready(function () {
             return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$current_pending));
         }
 
+
+        // Now add support for pickup locations when doing static shipping. IOK 2025-05-08
+        add_action('woocommerce_load_shipping_methods', function () {
+            if (class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
+                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
+            }
+        },99);
+
         // Otherwise, create an order and start a new session
         $session = null;
         $current_pending = 0;
         $current_authtoken = "";
         $limited_session = "";
+        error_log("Before try create");
         try {
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
                 if ($current_pending) {
@@ -609,15 +620,17 @@ jQuery(document).ready(function () {
             $order->set_billing_postcode($contact['postalCode']);
             $order->set_billing_country($contact['country']);
         }
-        if ($ok &&  $change && isset($status['shippingDetails']))  {
+        if ($ok &&  $change && $status['shippingDetails']) {
             $contact = $status['shippingDetails'];
-            $countrycode =  Vipps::instance()->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
-            $order->set_shipping_first_name($contact['firstName']);
-            $order->set_shipping_last_name($contact['lastName']);
-            $order->set_shipping_address_1($contact['streetAddress']);
-            $order->set_shipping_city($contact['city']);
-            $order->set_shipping_postcode($contact['postalCode']);
-            $order->set_shipping_country($contact['country']);
+            if ($contact['country'] ?? false) {
+                $countrycode =  Vipps::instance()->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
+                $order->set_shipping_first_name($contact['firstName']);
+                $order->set_shipping_last_name($contact['lastName']);
+                $order->set_shipping_address_1($contact['streetAddress']);
+                $order->set_shipping_city($contact['city']);
+                $order->set_shipping_postcode($contact['postalCode']);
+                $order->set_shipping_country($contact['country']);
+            }
 
         }
         if ($change) {

@@ -2765,28 +2765,24 @@ else:
         // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
         // This needs to be done before "calculate totals".
         // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
-        $is_checkout = false;
-        if ($order->get_meta('_vipps_checkout')) {
-            $is_checkout = true;
-            add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-        }
+        $ischeckout = $order->get_meta('_vipps_checkout');
 
         // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
-        add_action('woocommerce_load_shipping_methods', function () use ($order, $result, $vippsorderid, $is_checkout) {
+        add_action('woocommerce_load_shipping_methods', function () use ($order, $result, $vippsorderid, $ischeckout) {
             // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
             // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
             // Express checkout does not support this (yet). IOK 2025-05-06
             // Afterwards, we need to post-process this, because *each* location gets a different rate.
-            if ($is_checkout && class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
+            if ($ischeckout && class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
                 $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
             }
             // Action especially for express and checkout IOK 2025-05-06
-            do_action('woo_vipps_express_load_shipping_methods', $order, $result, $vippsorderid, $is_checkout);
+            do_action('woo_vipps_express_load_shipping_methods', $order, $result, $vippsorderid, $ischeckout);
 
         }, 99);
 
         $this->callback_restore_session($orderid);       
-        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $is_checkout);
+        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
  
         # Checkout does not have an addressID here, and should not be 'wrapped'
         if (!isset($return['addressId'])) {
@@ -2803,7 +2799,9 @@ else:
         exit();
     }
    
-    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid, $is_checkout) {
+    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid, $ischeckout) {
+        if ($ischeckout) add_filter('woo_vipps_is_vipps_checkout', '__return_true');
+
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
        if (isset($vippsdata['streetAddress'])){
@@ -2831,7 +2829,7 @@ else:
         $postcode= $vippsdata['postCode'];
         $country = $this->country_to_code($vippscountry);
 
-        if (false && $is_checkout && preg_match("!Sofienberggata 12!", $addressline1)) {
+        if (false && $ischeckout && preg_match("!Sofienberggata 12!", $addressline1)) {
             // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
             // This is subject to change and is currently inactive
         } else {
@@ -2893,7 +2891,6 @@ else:
          }
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
-
         if (empty($shipping_methods)) {
             $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order %2$d will fail', 'woo-vipps', 'warning'), Vipps::ExpressCheckoutName(), $order->get_id()), 'debug');
             $this->log(sprintf(__('Address given for %1$s was %2$s', 'woo-vipps'), $order->get_id(), 
@@ -3029,7 +3026,7 @@ else:
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
-        if ($is_checkout) {
+        if ($ischeckout) {
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
         }
 
@@ -3819,27 +3816,19 @@ else:
         $key = $ischeckout ? 'enablestaticshipping_checkout' :  'enablestaticshipping';
         $ok = $gw->get_option($key) == 'yes';
         $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
-	if ($ok) {
-		return $this->add_static_shipping($gw, $orderid);
-	}
+        if ($ok) {
+            return $this->add_static_shipping($gw, $orderid, $ischeckout);
+        }
     }
 
     // And this function adds static shipping no matter what. It may need to be used in plugins, hence visible. IOK 2021-10-22
-    public function add_static_shipping ($gw, $orderid) {
+    public function add_static_shipping ($gw, $orderid, $ischeckout=false) {
         $order = wc_get_order($orderid);
         $prefix  = $gw->get_orderprefix();
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
 	
-
-	// Moved up so as to be able to add pickup locations (IOK FIXME TOOLATE)
-        $is_checkout = false;
-	if ($order->get_meta('_vipps_checkout')) {
-		$is_checkout = true;
-		add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-	}
-
-        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $is_checkout);
+        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $ischeckout);
 
         if ($options) {
             $order->update_meta_data('_vipps_static_shipping', $options);
