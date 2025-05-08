@@ -3819,9 +3819,9 @@ else:
         $key = $ischeckout ? 'enablestaticshipping_checkout' :  'enablestaticshipping';
         $ok = $gw->get_option($key) == 'yes';
         $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
-        if ($ok) {
-            return $this->add_static_shipping($gw, $orderid);
-        }
+	if ($ok) {
+		return $this->add_static_shipping($gw, $orderid);
+	}
     }
 
     // And this function adds static shipping no matter what. It may need to be used in plugins, hence visible. IOK 2021-10-22
@@ -3830,7 +3830,16 @@ else:
         $prefix  = $gw->get_orderprefix();
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
-        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
+	
+
+	// Moved up so as to be able to add pickup locations (IOK FIXME TOOLATE)
+        $is_checkout = false;
+	if ($order->get_meta('_vipps_checkout')) {
+		$is_checkout = true;
+		add_filter('woo_vipps_is_vipps_checkout', '__return_true');
+	}
+
+        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $is_checkout);
 
         if ($options) {
             $order->update_meta_data('_vipps_static_shipping', $options);

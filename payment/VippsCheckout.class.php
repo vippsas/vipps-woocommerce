@@ -74,15 +74,17 @@ class VippsCheckout {
                     if ( ! $location['enabled'] ) {
                         continue;
                     }
+
                     $addr = $location['address'] ?? [];
+		    $default_country = WC()->countries->get_base_country() ?: "NO";
 
                     $point = [];
-                    $point['id'] = "foobar";
-                    $point['name'] = $location['name'] ?? "";
-                    $point['address'] = $addr['address_1'] ?? "";
-                    $point['postalCode'] = $addr['postcode'] ?? "";
-                    $point['city'] = $addr['city'] ?? "";
-                    $point['country'] = $addr['country'] ?? "";
+                    $point['id'] = "$index";
+                    $point['name'] = $location['name'] ?: " ";
+                    $point['address'] = $addr['address_1'] ?: " ";
+                    $point['postalCode'] = $addr['postcode'] ?: " ";
+                    $point['city'] = $addr['city'] ?: " ";
+                    $point['country'] = $addr['country'] ?: $default_country;
                     $points[] = $point;
                 }
             }

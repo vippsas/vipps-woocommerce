@@ -3087,16 +3087,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // along with the shipping ragte
             if (isset($shipping['pickupPoint'])) {
                 $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
-                if ($shipping_rate) {
-                    $pp = $shipping['pickupPoint'];
-                    $addr = [];
-                    foreach(['address', 'postalCode', 'city', 'country'] as $key) {
-                        $addr[] = $pp[$key];
-                    }
-                     $shipping_rate->add_meta_data('pickup_location', $pp['name']);
-                     $shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
-                     $shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07 FIXME
-                }
+		if ($shipping_rate) {
+			$pp = $shipping['pickupPoint'];
+			$addr = [];
+			foreach(['address', 'postalCode', 'city', 'country'] as $key) {
+				$v = trim($pp[$key]);
+				if (!empty($v)) $addr[] = trim($pp[$key]);
+			}
+			$shipping_rate->add_meta_data('pickup_location', $pp['name']);
+			$shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
+			$shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07 FIXME
+		}
             }
             if (isset($shipping['timeslot'])) {
                 $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
