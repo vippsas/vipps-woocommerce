@@ -35,19 +35,6 @@ document.body.addEventListener('wc-blocks_product_list_rendered',
 );
 
 jQuery( document ).ready( function() {
-    // checkout widget accordion. LP 2025-05-07
-    jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
-        console.log("LP");
-        jQuery(this).toggleClass('active');
-        jQuery(this).next('.vipps_checkout_body').toggle();
-        // switch icons
-        const icon = jQuery(this).find('.vipps_checkout_widget_icon');
-        if (jQuery(this).hasClass('active')) {
-            icon.html('&#8963;'); // ^ but wider
-        } else {
-            icon.html('+');
-        }
-    });
 
  // This is for WooCommerce Product Bundles, which potentially have *several* variant-products or configurable products, so
  // the standard Woo hooks don't apply. Luckily, we have other, simpler events to use.
@@ -272,7 +259,6 @@ jQuery( document ).ready( function() {
       wp.hooks.doAction('vippsInit');
    }
  }
-    
  
  vippsInit();
 });

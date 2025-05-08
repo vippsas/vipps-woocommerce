@@ -731,8 +731,27 @@ jQuery(document).ready(function () {
     // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
     function get_checkout_widgets() {
         // Array of tables of [title, id, callback, class].
+        $default_widgets = [];
+
+        // Premade widget: coupon code. LP 2025-05-08
+        $use_coupon_widget = true; // TODO get from settings
+        if ($use_coupon_widget) {
+            $default_widgets[] = [
+                'title' => __('Coupon code', 'woo_vipps'),
+                'id' => 'vipps_checkout_widget_coupon',
+                'class' => 'vipps_checkout_widget_premade',
+                'callback' => function() {
+                    echo '<form id="vipps_checkout_widget_coupon_form">';
+                    echo '<label for="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_small">' . __('Enter your code', 'woo_vipps') . '</label><br>';
+                    echo '<input id="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_input" type="text" name="code"/><br>';
+                    echo '<button type="submit" class="vippspurple2 vipps_checkout_widget_coupon_button">' . __('Add', 'woo_vipps') . '</button>';
+                    echo '</form>';
+                }
+            ];
+        }
+
         // NB: We may not have an order at this point. IOK 2025-05-02
-        $widgets = apply_filters('woo_vipps_checkout_widgets',  []);
+        $widgets = apply_filters('woo_vipps_checkout_widgets',  $default_widgets);
         if (empty($widgets)) return "";
 
         ob_start();

@@ -91,9 +91,6 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
   cursor: pointer;
   transition: 0.4s,
 }
-/* .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_title.accordion:hover { */
-/*   background-color: gray; */
-/* } */
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_title .vipps_checkout_widget_icon{
   float: right;
 }
@@ -114,12 +111,38 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_body {
     display: none;
 }
+.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_coupon_input {
+    border-radius: 8px;
+    height: 56px;
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    outline: none;
+}
+.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_coupon_button {
+    min-width: 5.5em;
+    padding: 7.5px 16px;
+    border-radius: 24px;
+    color: white;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    font-family: "Vipps Text", Arial, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_coupon_small {
+    font-size: 14px;
+}
 .vipps_checkout_widget_wrapper .vipps_checkout_widget:not(:last-child) {
     margin: .5rem;
 }
 @media (min-width: 720px) {
     .vipps_checkout_widget_wrapper .vipps_checkout_widget {
-      width: 624px;
+        width: 624px;
     }
 }
 
@@ -237,6 +260,12 @@ img.inline {
 }
 .vippspurple {
  background-color: #551488;
+}
+.vippspurple2 {
+ background-color: #5E3DC2;
+}
+.vippspurple-light {
+ background-color: #8851F6;
 }
 .vippsdarkgray {
  background-color: #161225;
