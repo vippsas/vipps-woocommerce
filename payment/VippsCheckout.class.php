@@ -396,20 +396,11 @@ jQuery(document).ready(function () {
             return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$current_pending));
         }
 
-
-        // Now add support for pickup locations when doing static shipping. IOK 2025-05-08
-        add_action('woocommerce_load_shipping_methods', function () {
-            if (class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
-                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
-            }
-        },99);
-
         // Otherwise, create an order and start a new session
         $session = null;
         $current_pending = 0;
         $current_authtoken = "";
         $limited_session = "";
-        error_log("Before try create");
         try {
                 $current_pending = $this->gateway()->create_partial_order('ischeckout');
                 if ($current_pending) {

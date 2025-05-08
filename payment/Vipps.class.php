@@ -2688,7 +2688,9 @@ else:
     // IOK 2020-03-18
     public function get_static_shipping_address_data () {
          // This is the format used by the Vipps callback, we are going to mimic this.
+        // IOK 2025-05-08 now also using the format used by Checkout in addition to Express. -- streetAddress, postalCode, region
          $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
+
          $addressok=false;
          if (WC()->customer) {
            $address = WC()->customer->get_shipping();
@@ -2696,9 +2698,10 @@ else:
            if (@$address['country'] && @$address['city'] && @$address['postcode']) {
               $addressok = true;
               $defaultdata['country'] = $address['country'];
-              $defaultdata['city'] = $address['city'];
+              $defaultdata['region'] = $address['city'];
               $defaultdata['postalCode'] = $address['postcode'];
               $defaultdata['postCode'] = $address['postcode'];
+              $defaultdata['streetAddress'] = @$address['address_1'];
               $defaultdata['addressLine1'] = @$address['address_1'];
               $defaultdata['addressLine2'] = @$address['address_2'];
            }
@@ -2707,8 +2710,10 @@ else:
              $countries=new WC_Countries();
              $defaultdata['country'] = $countries->get_base_country();
              $defaultdata['city'] = $countries->get_base_city(); 
+             $defaultdata['region'] = $countries->get_base_city(); 
              $defaultdata['postalCode'] = $countries->get_base_postcode();
              $defaultdata['postCode'] =   $countries->get_base_postcode();
+             $defaultdata['streetAddress'] = $countries->get_base_address();
              $defaultdata['addressLine1'] = $countries->get_base_address();
              // We do not use addressLine2 in default addreses, since it is not used for shipping calculations. IOK 2024-05-21
              $addressok=true;
@@ -2767,19 +2772,11 @@ else:
         // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
         $ischeckout = $order->get_meta('_vipps_checkout');
 
-        // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
-        add_action('woocommerce_load_shipping_methods', function () use ($order, $result, $vippsorderid, $ischeckout) {
-            // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
-            // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
-            // Express checkout does not support this (yet). IOK 2025-05-06
-            // Afterwards, we need to post-process this, because *each* location gets a different rate.
-            if ($ischeckout && class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
-                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
-            }
-            // Action especially for express and checkout IOK 2025-05-06
-            do_action('woo_vipps_express_load_shipping_methods', $order, $result, $vippsorderid, $ischeckout);
-
-        }, 99);
+        if ($ischeckout) {
+            // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+            // here we will add support for PickupLocations. Also called for static shipping.
+            $this->checkout_load_shipping_methods($order, $result);
+        }
 
         $this->callback_restore_session($orderid);       
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
@@ -3827,6 +3824,11 @@ else:
         $prefix  = $gw->get_orderprefix();
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
+
+        if ($ischeckout) {
+            // Add special shipping methods (LocalPickup etc);
+            $this->checkout_load_shipping_methods($order, $addressinfo);
+        }
 	
         $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $ischeckout);
 
@@ -3835,12 +3837,28 @@ else:
             $order->save();
         }
     }
+
+    // Vipps Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
+    // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback. 
+    public function checkout_load_shipping_methods($order, $addressdata) {
+        // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+        add_action('woocommerce_load_shipping_methods', function () use ($order, $addressdata) {
+            // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
+            // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
+            // Express checkout does not support this (yet). IOK 2025-05-06
+            // Afterwards, we need to post-process this, because *each* location gets a different rate. See the VippsCheckout class.
+            if (class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
+                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
+            }
+            do_action('woo_vipps_express_load_shipping_methods', $order, $addressdata);
+        }, 99);
+    }
     
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
-	Vipps::nocache();
+        Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
         $transaction = sanitize_text_field(@$_POST['transaction']);
