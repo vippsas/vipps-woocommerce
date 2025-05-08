@@ -611,7 +611,7 @@ jQuery(document).ready(function () {
             $order->set_billing_postcode($contact['postalCode']);
             $order->set_billing_country($contact['country']);
         }
-        if ($ok &&  $change && $status['shippingDetails']) {
+        if ($ok &&  $change && isset($status['shippingDetails'])) {
             $contact = $status['shippingDetails'];
             if ($contact['country'] ?? false) {
                 $countrycode =  Vipps::instance()->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
