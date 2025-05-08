@@ -741,11 +741,13 @@ jQuery(document).ready(function () {
                 'id' => 'vipps_checkout_widget_coupon',
                 'class' => 'vipps_checkout_widget_premade',
                 'callback' => function() {
-                    echo '<form id="vipps_checkout_widget_coupon_form">';
-                    echo '<label for="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_small">' . __('Enter your code', 'woo_vipps') . '</label><br>';
-                    echo '<input id="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_input" type="text" name="code"/><br>';
-                    echo '<button type="submit" class="vippspurple2 vipps_checkout_widget_coupon_button">' . __('Add', 'woo_vipps') . '</button>';
-                    echo '</form>';
+                    ?>
+                    <form id="vipps_checkout_widget_coupon_form">
+                    <label for="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_small"><?php echo __('Enter your code', 'woo_vipps')?></label><br>
+                        <input required id="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_input" type="text" name="code"/><br>
+                        <button type="submit" class="vippspurple2 vipps_checkout_widget_coupon_button"><?php echo __('Add', 'woo_vipps')?></button>
+                    </form>
+                    <?php
                 }
             ];
         }

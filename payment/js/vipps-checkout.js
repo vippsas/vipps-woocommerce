@@ -30,6 +30,38 @@ SOFTWARE.
 
 
 jQuery( document ).ready( function() {
+        // widget accordion feature. LP 2025-05-07
+        jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
+            jQuery(this).toggleClass('active');
+            jQuery(this).next('.vipps_checkout_body').toggle();
+
+            // switch icons on active. LP 2025-05-08
+            const icon = jQuery(this).find('.vipps_checkout_widget_icon');
+            if (jQuery(this).hasClass('active')) {
+                icon.html('&#8963;'); // is ^ but wider
+            } else {
+                icon.html('+');
+            }
+        });
+
+        // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
+        function togglePurple() {
+            jQuery(this).toggleClass('vippspurple2');
+            jQuery(this).toggleClass('vippspurple-light');
+        };
+        jQuery('.vipps_checkout_widget_coupon_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
+
+        // Coupon code widget submit. LP 2025-05-08
+        jQuery('#vipps_checkout_widget_coupon_form').on('submit', function(e) {
+            e.preventDefault();
+            console.log("submit");
+            const formdata = new FormData(this);
+
+            // Validate code input from woocommerce? TODO. LP 2025-05-08
+            let code = formdata.get('code');
+            console.log(code);
+        });
+
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
     var polling=false;
