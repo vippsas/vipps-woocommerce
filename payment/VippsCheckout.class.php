@@ -743,10 +743,18 @@ jQuery(document).ready(function () {
                 'callback' => function() {
                     ?>
                     <form id="vipps_checkout_widget_coupon_form">
-                    <label for="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_small"><?php echo __('Enter your code', 'woo_vipps')?></label><br>
-                        <input required id="vipps_checkout_widget_couponcode" class="vipps_checkout_widget_coupon_input" type="text" name="code"/><br>
-                        <button type="submit" class="vippspurple2 vipps_checkout_widget_coupon_button"><?php echo __('Add', 'woo_vipps')?></button>
+                        <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo_vipps')?></label><br>
+                        <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><i class="fas fa-cat"></i><?php echo __('Invalid coupon code', 'woo_vipps') ?></span>
+                        <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
+                        <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo_vipps')?></button>
                     </form>
+                    <div id="vipps_checkout_widget_coupon_success" style="display:none;">
+                        <div id="vipps_checkout_widget_coupon_active_container">
+                            <span id="vipps_checkout_widget_coupon_active"></span>
+                            <a href="#" id="vipps_checkout_widget_coupon_delete">✕</a>
+                        </div>
+                        <?php echo __('Your coupon code has been added, providing <span id="vipps_checkout_widget_coupon_percent"></span>% discount on your purchase.', 'woo_vipps') ?>
+                    </div>
                     <?php
                 }
             ];
