@@ -277,6 +277,12 @@ jQuery( document ).ready( function() {
          return true;
       }
 
+        function showWidgets() {
+            console.log("lp showwidgets");
+            jQuery('.vipps_checkout_widget_wrapper').show();
+        }
+
+
       if (!doVippsCheckout()) {
           let data  = {};
           let formdata = jQuery("#vippsdata").serializeArray();
@@ -339,11 +345,6 @@ jQuery( document ).ready( function() {
                         },
                     });
         }
-    }
-
-    function showWidgets() {
-        console.log("lp showwidgets");
-        jQuery('.vipps_checkout_widget_wrapper').show();
     }
 
     // Function to handle errors during the Vipps checkout process NT-2024-09-07

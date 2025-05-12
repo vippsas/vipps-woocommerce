@@ -734,7 +734,7 @@ jQuery(document).ready(function () {
         $default_widgets = [];
 
         // Premade widget: coupon code. LP 2025-05-08
-        $use_widget_coupon = true; // TODO get from settings
+        $use_widget_coupon = $this->gw->get_option('checkout_widget_coupon') === 'yes';
         if ($use_widget_coupon) {
             $default_widgets[] = [
                 'title' => __('Coupon code', 'woo-vipps'),
@@ -761,7 +761,8 @@ jQuery(document).ready(function () {
         }
 
         // Premade widget: order note. LP 2025-05-12
-        $use_widget_ordernotes = true; // TODO get from settings
+        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
+        error_log("lp widgets, coupon: $use_widget_coupon, ordernotes: $use_widget_ordernotes");
         if ($use_widget_ordernotes) {
             $default_widgets[] = [
                 'title' => __('Order notes', 'woo-vipps'),

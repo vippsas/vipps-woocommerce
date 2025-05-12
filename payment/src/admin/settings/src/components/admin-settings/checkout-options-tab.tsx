@@ -183,6 +183,30 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
           />
         </>
       )}
+
+      {/* Checkout widget settings. LP 2025-05-12 */} 
+      <h3 className="vipps-mobilepay-react-tab-description">
+        {fixCheckoutName(gettext("checkout_widgets.title"), paymentMethod)}
+      </h3>
+      <p>{fixCheckoutName(gettext("checkout_widgets.description"), paymentMethod)}</p>
+
+      {/* Coupon code widget checkbox. LP 2025-05-12 */} 
+      <CheckboxFormField
+        name="checkout_widget_coupon"
+        titleKey="checkout_widget_coupon.title"
+        descriptionKey="checkout_widget_coupon.description"
+        labelKey="checkout_widget_coupon.label"
+      />
+
+      {/* Order notes widget checkbox. LP 2025-05-12 */} 
+      <CheckboxFormField
+        name="checkout_widget_ordernotes"
+        titleKey="checkout_widget_ordernotes.title"
+        descriptionKey="checkout_widget_ordernotes.description"
+        labelKey="checkout_widget_ordernotes.label"
+      />
+
+
     </div>
   );
 }
