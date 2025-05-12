@@ -734,27 +734,49 @@ jQuery(document).ready(function () {
         $default_widgets = [];
 
         // Premade widget: coupon code. LP 2025-05-08
-        $use_coupon_widget = true; // TODO get from settings
-        if ($use_coupon_widget) {
+        $use_widget_coupon = true; // TODO get from settings
+        if ($use_widget_coupon) {
             $default_widgets[] = [
-                'title' => __('Coupon code', 'woo_vipps'),
+                'title' => __('Coupon code', 'woo-vipps'),
                 'id' => 'vipps_checkout_widget_coupon',
                 'class' => 'vipps_checkout_widget_premade',
                 'callback' => function() {
                     ?>
                     <form id="vipps_checkout_widget_coupon_form">
-                        <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo_vipps')?></label><br>
-                        <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><i class="fas fa-cat"></i><?php echo __('Invalid coupon code', 'woo_vipps') ?></span>
+                        <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
+                        <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
                         <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
-                        <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo_vipps')?></button>
+                        <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
                     </form>
                     <div id="vipps_checkout_widget_coupon_success" style="display:none;">
                         <div id="vipps_checkout_widget_coupon_active_container">
                             <span id="vipps_checkout_widget_coupon_active"></span>
                             <a href="#" id="vipps_checkout_widget_coupon_delete">✕</a>
                         </div>
-                        <?php echo __('Your coupon code has been added, providing <span id="vipps_checkout_widget_coupon_percent"></span>% discount on your purchase.', 'woo_vipps') ?>
+                        <?php echo __('Your coupon code has been added, providing <span id="vipps_checkout_widget_coupon_percent"></span>% discount on your purchase.', 'woo-vipps') ?>
                     </div>
+                    <?php
+                }
+            ];
+        }
+
+        // Premade widget: order note. LP 2025-05-12
+        $use_widget_ordernotes = true; // TODO get from settings
+        if ($use_widget_ordernotes) {
+            $default_widgets[] = [
+                'title' => __('Order notes', 'woo-vipps'),
+                'id' => 'vipps_checkout_widget_ordernotes',
+                'class' => 'vipps_checkout_widget_premade',
+                'callback' => function() {
+                    ?>
+                    <form id="vipps_checkout_widget_ordernotes_form">
+                        <span for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></span><br>
+                        <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label><br>
+                        <span id="vipps_checkout_widget_ordernotes_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Something went wrong', 'woo-vipps') ?></span>
+                        <span id="vipps_checkout_widget_ordernotes_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Saved', 'woo-vipps') ?></span>
+                        <input required id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes"/><br>
+                        <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>
+                    </form>
                     <?php
                 }
             ];

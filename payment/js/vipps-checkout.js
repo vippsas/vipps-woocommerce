@@ -54,7 +54,6 @@ jQuery( document ).ready( function() {
     // Coupon code widget submit. LP 2025-05-08
     jQuery('#vipps_checkout_widget_coupon_form').on('submit', function(e) {
         e.preventDefault();
-        console.log("submit");
         const formdata = new FormData(this);
         let code = formdata.get('code').trim();
 
@@ -75,7 +74,6 @@ jQuery( document ).ready( function() {
         if (result) {
             error.hide();
             if (input.hasClass('error')) input.removeClass('error');
-            jQuery()
             active.text(code);
             percent.text(discountPercent);
             success.show();
@@ -96,6 +94,45 @@ jQuery( document ).ready( function() {
         jQuery('#vipps_checkout_widget_coupon_active').text('');
         jQuery('#vipps_checkout_widget_coupon_success').hide();
         jQuery('#vipps_checkout_widget_coupon_code').val('');
+    });
+
+    // Order notes widget submit. LP 2025-05-12
+    jQuery('#vipps_checkout_widget_ordernotes_form').on('submit', function(e) {
+        e.preventDefault();
+        const formdata = new FormData(this);
+        let notes = formdata.get('notes').trim();
+
+        // Submit and validate. LP 2025-05-09
+        let result = false;
+        if (notes) {
+            // TODO wooc add ordernotes. simulating for now
+            result = notes === 'valid';
+        }
+
+        const error = jQuery('#vipps_checkout_widget_ordernotes_error');
+        const success = jQuery('#vipps_checkout_widget_ordernotes_success');
+        const input = jQuery('#vipps_checkout_widget_ordernotes_input');
+        if (result) {
+            error.hide();
+            success.show();
+            if (input.hasClass('error')) input.removeClass('error');
+            if (!input.hasClass('success')) input.addClass('success');
+        } else {
+            error.show();
+            success.hide();
+            if (!input.hasClass('error')) input.addClass('error');
+            if (input.hasClass('success')) input.removeClass('success');
+        }
+    });
+
+    jQuery('#vipps_checkout_widget_ordernotes_input').on('input', function() {
+        const success = jQuery('#vipps_checkout_widget_ordernotes_success');
+        const input = jQuery('#vipps_checkout_widget_ordernotes_input');
+        const error = jQuery('#vipps_checkout_widget_ordernotes_error');
+        if (input.hasClass('error')) input.removeClass('error');
+        if (input.hasClass('success')) input.removeClass('success');
+        success.hide();
+        error.hide();
     });
 
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25

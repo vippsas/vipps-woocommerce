@@ -122,9 +122,6 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     box-sizing: border-box;
     outline: none;
 }
-.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_input.error {
-    border-color: #C60000;
-}
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_button {
     min-width: 5.5em;
     padding: 7.5px 16px;
@@ -139,6 +136,7 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_small {
     font-size: 14px;
+    font-weight: bold;
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget:not(:last-child) {
     margin: .5rem;
@@ -166,8 +164,17 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     text-decoration: none;
     margin-left: 1em;
 }
+.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_input.error {
+    border-color: #C60000;
+}
+.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_input.success {
+    border-color: #048a1a;
+}
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_error {
     color: #C60000;
+}
+.vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_success {
+    color: #048a1a;
 }
 @media (min-width: 720px) {
     .vipps_checkout_widget_wrapper .vipps_checkout_widget {
