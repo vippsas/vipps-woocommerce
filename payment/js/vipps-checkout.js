@@ -334,10 +334,16 @@ jQuery( document ).ready( function() {
                             if (result['data']['src']) {
                                 VippsSessionState = { token: result['data']['token'], checkoutFrontendUrl: result['data']['src'] }
                                 doVippsCheckout();
+                                showWidgets();
                             }
                         },
                     });
         }
+    }
+
+    function showWidgets() {
+        console.log("lp showwidgets");
+        jQuery('.vipps_checkout_widget_wrapper').show();
     }
 
     // Function to handle errors during the Vipps checkout process NT-2024-09-07

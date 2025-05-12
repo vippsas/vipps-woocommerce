@@ -787,7 +787,7 @@ jQuery(document).ready(function () {
         if (empty($widgets)) return "";
 
         ob_start();
-        echo "<div class='vipps_checkout_widget_wrapper'>";
+        echo "<div class='vipps_checkout_widget_wrapper' style='display:none;'>"; // starts hidden. is shown when vipps checkout loads successfully. LP 2025-05-12
         foreach ($widgets as $widget) {
            $id = $widget['id'] ?? "";
            $title = $widget['title'] ?? "";
