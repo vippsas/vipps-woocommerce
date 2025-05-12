@@ -64,6 +64,34 @@ class VippsCheckout {
         add_action( 'admin_post_vipps_gw', array($VippsCheckout, 'choose_other_gw'));
         add_filter( 'woocommerce_order_email_verification_required', array($VippsCheckout, 'allow_other_payment_method_email'), 10, 3);
         add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
+
+
+        add_filter('woo_vipps_shipping_method_pickup_points', function ($points, $rate, $shipping_method, $order) {
+            if ($rate->method_id == 'pickup_location') {
+               // $locations = $shipping_method->pickup_locations ; // Protected attribute. Could wrap, but life is short so
+                $locations = get_option( $shipping_method->id . '_pickup_locations', [] );
+                foreach ( $locations as $index => $location ) {
+                    if ( ! $location['enabled'] ) {
+                        continue;
+                    }
+
+                    $addr = $location['address'] ?? [];
+		    $default_country = WC()->countries->get_base_country() ?: "NO";
+
+                    $point = [];
+                    $point['id'] = "$index";
+                    $point['name'] = $location['name'] ?: " ";
+                    $point['address'] = $addr['address_1'] ?: " ";
+                    $point['postalCode'] = $addr['postcode'] ?: " ";
+                    $point['city'] = $addr['city'] ?: " ";
+                    $point['country'] = $addr['country'] ?: $default_country;
+                    $points[] = $point;
+                }
+            }
+            return $points;
+        }, 10, 4);
+
+
     }
 
     public function allow_other_payment_method_email ($email_verification_required, $order, $context ) {
@@ -224,6 +252,12 @@ jQuery(document).ready(function () {
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
         global $post;
         if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
+
+            // Add fonts for the widgets on this page IOK 2025-05-02
+            wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
+
+
+
             add_filter('woocommerce_is_checkout', '__return_true');
             add_filter('body_class', function ($classes) {
                     $classes[] = 'vipps-checkout';
@@ -577,15 +611,17 @@ jQuery(document).ready(function () {
             $order->set_billing_postcode($contact['postalCode']);
             $order->set_billing_country($contact['country']);
         }
-        if ($ok &&  $change && isset($status['shippingDetails']))  {
+        if ($ok &&  $change && isset($status['shippingDetails'])) {
             $contact = $status['shippingDetails'];
-            $countrycode =  Vipps::instance()->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
-            $order->set_shipping_first_name($contact['firstName']);
-            $order->set_shipping_last_name($contact['lastName']);
-            $order->set_shipping_address_1($contact['streetAddress']);
-            $order->set_shipping_city($contact['city']);
-            $order->set_shipping_postcode($contact['postalCode']);
-            $order->set_shipping_country($contact['country']);
+            if ($contact['country'] ?? false) {
+                $countrycode =  Vipps::instance()->country_to_code($contact['country']); // No longer neccessary IOK 2023-01-09
+                $order->set_shipping_first_name($contact['firstName']);
+                $order->set_shipping_last_name($contact['lastName']);
+                $order->set_shipping_address_1($contact['streetAddress']);
+                $order->set_shipping_city($contact['city']);
+                $order->set_shipping_postcode($contact['postalCode']);
+                $order->set_shipping_country($contact['country']);
+            }
 
         }
         if ($change) {
@@ -692,6 +728,39 @@ jQuery(document).ready(function () {
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
+    // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
+    function get_checkout_widgets() {
+        return ""; // IOK temporarily disabled in release FIXME
+
+        // Array of tables of [title, id, callback, class].
+        // NB: We may not have an order at this point. IOK 2025-05-02
+        $widgets = apply_filters('woo_vipps_checkout_widgets',  []);
+        if (empty($widgets)) return "";
+
+        ob_start();
+        echo "<div class='vipps_checkout_widget_wrapper'>";
+        foreach ($widgets as $widget) {
+           $id = $widget['id'] ?? "";
+           $title = $widget['title'] ?? "";
+           $class = $widget['class'] ?? "";
+           $callback = $widget['callback'] ?? "";
+
+           if (!$title || !$callback) continue;
+
+           $idattr = $id ? "id='" . esc_attr($id) . "'" : "";
+           $classattr = "class='vipps_checkout_widget" . ($class ? " " . esc_attr($class) : "") . "'";
+           echo "<div $idattr $classattr>";
+           echo "<div class='vipps_checkout_widget_title accordion'>" . esc_html($title) . "<span class='vipps_checkout_widget_icon'>+</span></div>";
+           echo "<div class='vipps_checkout_body'>";
+           call_user_func($callback);
+           echo "</div>";
+           echo "</div>";
+        }
+        echo "</div>";
+        $res = ob_get_clean();
+        return $res;
+    }
+
     function vipps_checkout_shortcode ($atts, $content) {
         // No point in expanding this unless we are actually doing the checkout. IOK 2021-09-03
         if (is_admin()) return;
@@ -758,7 +827,9 @@ jQuery(document).ready(function () {
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
 
-        // Check that these exist etc
+        // Add widgets above the checkoutframe if required -- added by the woo_vipps_checkout_widgets filter. IOK 2025-05-02
+        $out .= $this->get_checkout_widgets();
+
         $out .= "<div id='vippscheckoutframe'>";
 
         $out .= "</div>";
@@ -954,9 +1025,13 @@ jQuery(document).ready(function () {
     // Translate from the Express Checkout shipping method format to the Vipps Checkout shipping
     // format, which is slightly different. The ratemap maps from a method key to its WC_Shipping_Rate, and the method map does
     // the same for WP_Shipping_Method.
+    // IOK 2025-05-07 Also treat PickupLocation specially. We'll return at most one of these, and if there are more than one, we will add the locations available as
+    // metadata.
     public function format_shipping_methods ($return, $ratemap, $methodmap, $order) {
         $translated = array();
         $currency = get_woocommerce_currency();
+        $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07
+
         foreach ($return['shippingDetails']  as $m) {
             $m2 = array();
 
@@ -972,6 +1047,17 @@ jQuery(document).ready(function () {
 
             $rate = $ratemap[$m2['id']];
             $shipping_method = $methodmap[$m2['id']];
+
+            // If we have pickup_location-s, only use the first one. IOK 2025-05-07
+            if ($rate->method_id == 'pickup_location') {
+                if (!$pickupLocation) {
+                    $pickupLocation = &$m2;
+                } else {
+                    continue; 
+                }
+            }
+             
+
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
 
@@ -1018,6 +1104,13 @@ jQuery(document).ready(function () {
                 }
                 $delivery['pickupPoints'] = $filtered;
                 $m2['type'] = 'PICKUP_POINT';
+
+                // Remove name of location for PickupLocation if we do have choices. IOK 2025-05-07
+                if ($m2 == $pickupLocation && count($filtered) > 1) {
+                   $m2['title'] = $shipping_method->title;
+                }
+
+
             }
 
             // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
@@ -1058,9 +1151,6 @@ jQuery(document).ready(function () {
                 }
                 if ($ok && !empty($entry)) {
                     $delivery['leadTime'] = $entry;
-                    if ($m2['type'] == 'OTHER') {
-                        $m2['type'] = 'MAILBOX';
-                    }
                 }
             }
 

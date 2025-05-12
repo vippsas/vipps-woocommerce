@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 4.0.13
-Stable tag: 4.0.13
+Version: 4.0.14
+Stable tag: 4.0.14
 Requires at least: 6.2
-Tested up to: 6.8.0
+Tested up to: 6.8.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.8.2
+WC tested up to: 9.8.4
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -109,6 +109,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 4.0.14
+Support Pickup Locations in Vipps MobilePay Checkout using the new pickup locations API
 Version 4.0.13
 Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.
 Version 4.0.11, 4.0.12:
@@ -289,6 +291,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2025-05-12 version 4.0.14 =
+Support Pickup Locations in Vipps MobilePay Checkout
 
 = 2025-05-05 version 4.0.13 =
 Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.

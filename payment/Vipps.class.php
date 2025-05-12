@@ -2221,6 +2221,25 @@ else:
             Automattic\WooCommerce\Blocks\Payments\Integrations\Vipps::register();
         }
 
+        // Used for e.g. labels of product/shipping metadata. IOK 2025-05-07
+        add_filter('woocommerce_attribute_label', function ($label, $name, $product) {
+            if ( $product ) {
+                return $label;
+            }
+            switch ( $name ) {
+                case 'brand': // This is for shipping IOK 2025-05-07
+                    return __('Company', 'woo-vipps');
+                case 'type':
+                    return __('Type', 'woo-vipps');
+                case 'vipps_delivery_timeslot':
+                    return __('Timeslot', 'woo-vipps');
+                case 'vipps_delivery_timeslot_id':
+                    return __('Timeslot ID', 'woo-vipps');
+            }
+            return $label;
+        }, 9, 3);
+
+
     }
 
     // IOK 2021-12-09 try to get the current language in the format Vipps wants, one of 'en' and 'no'
@@ -2669,7 +2688,9 @@ else:
     // IOK 2020-03-18
     public function get_static_shipping_address_data () {
          // This is the format used by the Vipps callback, we are going to mimic this.
+        // IOK 2025-05-08 now also using the format used by Checkout in addition to Express. -- streetAddress, postalCode, region
          $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
+
          $addressok=false;
          if (WC()->customer) {
            $address = WC()->customer->get_shipping();
@@ -2677,9 +2698,10 @@ else:
            if (@$address['country'] && @$address['city'] && @$address['postcode']) {
               $addressok = true;
               $defaultdata['country'] = $address['country'];
-              $defaultdata['city'] = $address['city'];
+              $defaultdata['region'] = $address['city'];
               $defaultdata['postalCode'] = $address['postcode'];
               $defaultdata['postCode'] = $address['postcode'];
+              $defaultdata['streetAddress'] = @$address['address_1'];
               $defaultdata['addressLine1'] = @$address['address_1'];
               $defaultdata['addressLine2'] = @$address['address_2'];
            }
@@ -2688,8 +2710,10 @@ else:
              $countries=new WC_Countries();
              $defaultdata['country'] = $countries->get_base_country();
              $defaultdata['city'] = $countries->get_base_city(); 
+             $defaultdata['region'] = $countries->get_base_city(); 
              $defaultdata['postalCode'] = $countries->get_base_postcode();
              $defaultdata['postCode'] =   $countries->get_base_postcode();
+             $defaultdata['streetAddress'] = $countries->get_base_address();
              $defaultdata['addressLine1'] = $countries->get_base_address();
              // We do not use addressLine2 in default addreses, since it is not used for shipping calculations. IOK 2024-05-21
              $addressok=true;
@@ -2742,8 +2766,20 @@ else:
             exit();
         }
 
+        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
+        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
+        // This needs to be done before "calculate totals".
+        // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
+        $ischeckout = $order->get_meta('_vipps_checkout');
+
+        if ($ischeckout) {
+            // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+            // here we will add support for PickupLocations. Also called for static shipping.
+            $this->checkout_load_shipping_methods($order, $result);
+        }
+
         $this->callback_restore_session($orderid);       
-        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid);
+        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
  
         # Checkout does not have an addressID here, and should not be 'wrapped'
         if (!isset($return['addressId'])) {
@@ -2760,15 +2796,8 @@ else:
         exit();
     }
    
-    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid) {
-        // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
-        // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
-        // This needs to be done before "calculate totals"
-        $is_checkout = false;
-        if ($order->get_meta('_vipps_checkout')) {
-            $is_checkout = true;
-            add_filter('woo_vipps_is_vipps_checkout', '__return_true');
-        }
+    public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid, $ischeckout) {
+        if ($ischeckout) add_filter('woo_vipps_is_vipps_checkout', '__return_true');
 
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
@@ -2797,7 +2826,7 @@ else:
         $postcode= $vippsdata['postCode'];
         $country = $this->country_to_code($vippscountry);
 
-        if (false && $is_checkout && preg_match("!Sofienberggata 12!", $addressline1)) {
+        if (false && $ischeckout && preg_match("!Sofienberggata 12!", $addressline1)) {
             // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
             // This is subject to change and is currently inactive
         } else {
@@ -2845,6 +2874,8 @@ else:
 
         $shipping_methods = array();
         $shipping_tax_rates = WC_Tax::get_shipping_tax_rates();
+
+
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
             $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', $shipping_tax_rates);
@@ -2857,7 +2888,6 @@ else:
          }
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
-
         if (empty($shipping_methods)) {
             $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order %2$d will fail', 'woo-vipps', 'warning'), Vipps::ExpressCheckoutName(), $order->get_id()), 'debug');
             $this->log(sprintf(__('Address given for %1$s was %2$s', 'woo-vipps'), $order->get_id(), 
@@ -2909,8 +2939,10 @@ else:
 
         if (!$chosen) {
             // Find first method that isn't 'local_pickup'
+            // or pickup_location. IOK 2025-05-07
             foreach($methods as $key=>&$data) {
-              if ($data['rate']->get_method_id() != 'local_pickup') {
+              $mid = $data['rate']->get_method_id();
+              if ($mid != 'local_pickup' && $mid != 'pickup_location') {
                  $chosen = $key;
                  break;
               }
@@ -2946,6 +2978,7 @@ else:
 
         // We need access to the extended settings of the shipping methods.
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
+        $methods_classes['pickup_location'] = 'Automattic\WooCommerce\Blocks\Shipping\PickupLocation'; // Loaded using the "load" hook, after the registered methods, so we need to add it specially.
 
         foreach($methods as $method) {
            $rate = $method['rate'];
@@ -2990,7 +3023,7 @@ else:
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
-        if ($is_checkout) {
+        if ($ischeckout) {
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
         }
 
@@ -3108,9 +3141,10 @@ else:
             $priority++;
         }
         // If we don't have free shipping, select the first (cheapest) option, unless that is 'local pickup'. IOK 2019-11-26
+        // Or pickup_location, same thing. IOK 2025-05-07
         if(!$defaultset && !empty($methods)) {
             foreach($methods as &$method) {
-                if (!preg_match("!^local_pickup!",$method['shippingMethodId'])) {
+                if (!preg_match("!^(local_pickup|pickup_location)!",$method['shippingMethodId'])) {
                     $defaultset=1;
                     $method['isDefault'] = 'Y';
                     break;
@@ -3780,29 +3814,51 @@ else:
         $ok = $gw->get_option($key) == 'yes';
         $ok = apply_filters('woo_vipps_enable_static_shipping', $ok, $orderid); 
         if ($ok) {
-            return $this->add_static_shipping($gw, $orderid);
+            return $this->add_static_shipping($gw, $orderid, $ischeckout);
         }
     }
 
     // And this function adds static shipping no matter what. It may need to be used in plugins, hence visible. IOK 2021-10-22
-    public function add_static_shipping ($gw, $orderid) {
+    public function add_static_shipping ($gw, $orderid, $ischeckout=false) {
         $order = wc_get_order($orderid);
         $prefix  = $gw->get_orderprefix();
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
-        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid);
+
+        if ($ischeckout) {
+            // Add special shipping methods (LocalPickup etc);
+            $this->checkout_load_shipping_methods($order, $addressinfo);
+        }
+	
+        $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $ischeckout);
 
         if ($options) {
             $order->update_meta_data('_vipps_static_shipping', $options);
             $order->save();
         }
     }
+
+    // Vipps Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
+    // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback. 
+    public function checkout_load_shipping_methods($order, $addressdata) {
+        // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+        add_action('woocommerce_load_shipping_methods', function () use ($order, $addressdata) {
+            // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
+            // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
+            // Express checkout does not support this (yet). IOK 2025-05-06
+            // Afterwards, we need to post-process this, because *each* location gets a different rate. See the VippsCheckout class.
+            if (class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
+                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
+            }
+            do_action('woo_vipps_express_load_shipping_methods', $order, $addressdata);
+        }, 99);
+    }
     
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
-	Vipps::nocache();
+        Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
         $transaction = sanitize_text_field(@$_POST['transaction']);
