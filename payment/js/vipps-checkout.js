@@ -344,6 +344,7 @@ jQuery( document ).ready( function() {
                             }
                         },
                     });
+          showWidgets(); //FIXME debugging, delete. LP 2025-05-12
         }
     }
 
