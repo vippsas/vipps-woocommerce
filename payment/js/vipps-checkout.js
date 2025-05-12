@@ -30,37 +30,73 @@ SOFTWARE.
 
 
 jQuery( document ).ready( function() {
-        // widget accordion feature. LP 2025-05-07
-        jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
-            jQuery(this).toggleClass('active');
-            jQuery(this).next('.vipps_checkout_body').toggle();
+    // widget accordion feature. LP 2025-05-07
+    jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
+        jQuery(this).toggleClass('active');
+        jQuery(this).next('.vipps_checkout_body').toggle();
 
-            // switch icons on active. LP 2025-05-08
-            const icon = jQuery(this).find('.vipps_checkout_widget_icon');
-            if (jQuery(this).hasClass('active')) {
-                icon.html('&#8963;'); // is ^ but wider
-            } else {
-                icon.html('+');
-            }
-        });
+        // switch icons on active. LP 2025-05-08
+        const icon = jQuery(this).find('.vipps_checkout_widget_icon');
+        if (jQuery(this).hasClass('active')) {
+            icon.html('&#8963;'); // is ^ but wider
+        } else {
+            icon.html('+');
+        }
+    });
 
-        // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
-        function togglePurple() {
-            jQuery(this).toggleClass('vippspurple2');
-            jQuery(this).toggleClass('vippspurple-light');
-        };
-        jQuery('.vipps_checkout_widget_coupon_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
+    // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
+    function togglePurple() {
+        jQuery(this).toggleClass('vippspurple2');
+        jQuery(this).toggleClass('vippspurple-light');
+    };
+    jQuery('.vipps_checkout_widget_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
 
-        // Coupon code widget submit. LP 2025-05-08
-        jQuery('#vipps_checkout_widget_coupon_form').on('submit', function(e) {
-            e.preventDefault();
-            console.log("submit");
-            const formdata = new FormData(this);
+    // Coupon code widget submit. LP 2025-05-08
+    jQuery('#vipps_checkout_widget_coupon_form').on('submit', function(e) {
+        e.preventDefault();
+        console.log("submit");
+        const formdata = new FormData(this);
+        let code = formdata.get('code').trim();
 
-            // Validate code input from woocommerce? TODO. LP 2025-05-08
-            let code = formdata.get('code');
-            console.log(code);
-        });
+        // Submit and validate. LP 2025-05-09
+        let result = false;
+        let discountPercent = 0;
+        if (code) {
+            // TODO wooc add coupon. simulating for now
+            result = code === 'valid';
+            discountPercent = '10';
+        }
+
+        const error = jQuery('#vipps_checkout_widget_coupon_error');
+        const input = jQuery('#vipps_checkout_widget_coupon_code');
+        const active = jQuery('#vipps_checkout_widget_coupon_active');
+        const success = jQuery('#vipps_checkout_widget_coupon_success');
+        const percent = jQuery('#vipps_checkout_widget_coupon_percent');
+        if (result) {
+            error.hide();
+            if (input.hasClass('error')) input.removeClass('error');
+            jQuery()
+            active.text(code);
+            percent.text(discountPercent);
+            success.show();
+            jQuery(this).hide();
+        } else {
+            error.show();
+            if (!input.hasClass('error')) input.addClass('error');
+            active.text('');
+            percent.text('');
+            success.hide();
+        }
+    });
+
+    // Coupon code widget remove active coupon code. LP 2025-05-09
+    jQuery('#vipps_checkout_widget_coupon_delete').on('click', function() {
+        // TODO wooc remove coupon. simulating for now
+        jQuery('#vipps_checkout_widget_coupon_form').show();
+        jQuery('#vipps_checkout_widget_coupon_active').text('');
+        jQuery('#vipps_checkout_widget_coupon_success').hide();
+        jQuery('#vipps_checkout_widget_coupon_code').val('');
+    });
 
     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
