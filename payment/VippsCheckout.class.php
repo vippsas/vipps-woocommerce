@@ -730,6 +730,8 @@ jQuery(document).ready(function () {
 
     // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
     function get_checkout_widgets() {
+        return ""; // IOK temporarily disabled in release FIXME
+
         // Array of tables of [title, id, callback, class].
         // NB: We may not have an order at this point. IOK 2025-05-02
         $widgets = apply_filters('woo_vipps_checkout_widgets',  []);
