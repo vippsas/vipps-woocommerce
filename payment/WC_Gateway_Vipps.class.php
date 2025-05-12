@@ -1149,7 +1149,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
            'checkout_widgets' => [
                'title' => sprintf(__('%1$s widgets', 'woo-vipps'), Vipps::CheckoutName()),
                'type'  => 'title',
-               'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality. For developers: widgets can be added with the filter "woo_vipps_checkout_widgets"', 'woo-vipps'), Vipps::CheckoutName()),
+               'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), Vipps::CheckoutName()),
            ],
            'checkout_widget_coupon' => [
                'title'       => __('Coupon code', 'woo-vipps'),
