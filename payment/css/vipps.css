@@ -149,6 +149,7 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     padding: 8px 12px;
     margin-top: 0.2em;
     max-width: fit-content;
+    border-radius: 4px;
 }
 #vipps_checkout_widget_coupon_delete {
     display: flex;
