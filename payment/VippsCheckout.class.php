@@ -380,7 +380,6 @@ jQuery(document).ready(function () {
     // creating the partial order IOK 2021-09-03
     // IOK FIXME: Add support for starting payment *for a given order*. 2023-08-15
     public function vipps_ajax_checkout_start_session () {
-error_log("Starting vipps checkout session");
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $url = ""; 
         $redir = "";
@@ -400,13 +399,11 @@ error_log("Starting vipps checkout session");
         }
         // And if we do, just return what we have. NB: This *should not happen*.
         // IOK 2025-05-04 what are you talking about IOK, this absolutely happens e.g. when using the backbutton to a page starting the orders.
-error_log("we have something");
         if ($url || $redir) {
             $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
             return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$current_pending));
         }
 
-error_log("Creating order");
         // Otherwise, create an order and start a new session
         $session = null;
         $current_pending = 0;
@@ -801,16 +798,14 @@ error_log("Creating order");
                 'title' => __('Coupon code', 'woo-vipps'),
                 'id' => 'vipps_checkout_widget_coupon',
                 'class' => 'vipps_checkout_widget_premade',
-                'callback' => function() {
+                'callback' => function($order) {
                     ?>
                     <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
                         Active codes
                         <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
                         <?php 
                             $cart = WC()->cart;
-                            error_log("LP cart: " . print_r($cart, true));
                             if ($cart):
-                                error_log("LP used coupon codes inside widget". print_r($cart->get_applied_coupons(), true));
                                 foreach ($cart->get_applied_coupons() as $code):?>
                                 <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
                                     <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
@@ -837,7 +832,7 @@ error_log("Creating order");
                 'title' => __('Order notes', 'woo-vipps'),
                 'id' => 'vipps_checkout_widget_ordernotes',
                 'class' => 'vipps_checkout_widget_premade',
-                'callback' => function() {
+                'callback' => function($order) {
                     ?>
                     <form id="vipps_checkout_widget_ordernotes_form">
                         <span for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></span><br>
@@ -871,7 +866,7 @@ error_log("Creating order");
            echo "<div $idattr $classattr>";
            echo "<div class='vipps_checkout_widget_title accordion'>" . esc_html($title) . "<span class='vipps_checkout_widget_icon'>+</span></div>";
            echo "<div class='vipps_checkout_body'>";
-           call_user_func($callback);
+           call_user_func($callback, $order);
            echo "</div>";
            echo "</div>";
         }
