@@ -285,6 +285,10 @@ jQuery(document).ready(function () {
         add_action('wp_ajax_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
 
+        // And for user-defined callbacks in the widgets. These may modify the order.
+        add_action('wp_ajax_vipps_checkout_callback', array($this, 'vipps_ajax_checkout_callback'));
+        add_action('wp_ajax_nopriv_vipps_checkout_callback', array($this, 'vipps_ajax_checkout_callback'));
+
         // Check cart total before initiating Vipps Checkout NT-2024-09-07
         // This allows for real-time validation of the cart before proceeding with the checkout process
         add_action('wp_ajax_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
@@ -507,6 +511,47 @@ jQuery(document).ready(function () {
             return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$order_id));
         } else { 
             return wp_send_json_success(array('ok'=>0, 'msg'=>sprintf(__('Could not start %1$s session'), Vipps::CheckoutName()),'src'=>$url, 'redirect'=>$redir, 'orderid'=>$order_id));
+        }
+    }
+
+    // Handler function for all other callbacks from the Vipps MobilePay checkout screen - adding 
+    // coupons, modifying the order etc. Actions are added with the filter 'woo_vipps_checkout_callback_actions' IOK 2025-05-13
+    // -- they are functions taking the action name and an order object. IOK 2025-05-13
+    public function vipps_ajax_checkout_callback() {
+        check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
+        $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
+        $lock_held = intval($_REQUEST['lock_held'] ?? 0);
+        $action = sanitize_title($_REQUEST['callback_action'] ?? 0);
+
+        $actions = apply_filters('woo_vipps_checkout_callback_actions', []);
+        $handler = $actions[$action] ?? false;
+        if (!$handler) {
+           $msg = sprintf(__("Vipps MobilePay Checkout callback with unknown action: %s", 'woo-vipps'), $action);
+           $this->log($msg, 'DEBUG');
+           return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$msg));
+        }
+        // The single current pending order. IOK 2025-04-25
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $order = $current_pending ? wc_get_order($current_pending) : null;
+        $prevtotal = $order->get_total();
+        try {
+            $ok = $handler($action, $order);
+            if ($ok) {
+                $order = wc_get_order($order->get_id());
+                $newtotal = $order->get_total();
+                if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
+                if ($lock_held && $newtotal != $prevtotal) {
+                    try {
+                        $res = $this->gateway()->api->checkout_modify_session($order);
+                    } catch (Exception $e) {
+                        $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
+                    }
+                }
+                return wp_send_json_success(array('msg'=>$ok));
+            }
+            return wp_send_json_error(array('msg'=>'FAILED', 'error'=>""));
+        } catch (Exception $e) {
+           return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$e->getMessage()));
         }
     }
 
