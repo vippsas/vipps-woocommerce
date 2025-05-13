@@ -477,3 +477,43 @@ jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
         });
 
 });
+
+// Global function defined for widgets
+function wooVippsCheckoutCallback( action, args ) {
+    let successhandler = args['success'] ? args['success'] : function (data) { console.log ("Callback Success: %j", data); };
+    let errorhandler = args['error'] ? args['error'] : function (data) { console.log ("Callback Error: %j", data); };
+    let lock_held = args['lock_held'] ? 1 : 0;
+    let callbackdata = args['data'] ? args['data'] : {};
+
+    let data = { 'action': 'vipps_checkout_callback', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 
+                 'orderid' : jQuery('#vippsorderid').val(),
+                  callbackdata, lock_held};
+
+    if (lock_held) {
+       wp.hooks.doAction('vippsCheckoutLockSession');
+    }
+    jQuery("body").css("cursor", "progress");
+    jQuery("body").addClass('processing');
+
+    jQuery.ajax(VippsConfig['vippsajaxurl'],
+                    {   cache:false,
+                        timeout: 0,
+                        dataType:'json',
+
+                        data: data,
+                        method: 'POST', 
+                        error: function (xhr, statustext, error) {
+                           errorhandler(statustext);
+                        },
+                        'success': function (result,statustext, xhr) {
+                           successhandler(result);
+                        },
+                        'complete': function (xhr, statustext) {
+                           if (lock_held) wp.hooks.doAction('vippsCheckoutUnlockSession');
+                           jQuery("body").css("cursor", "default");
+                           jQuery("body").removeClass('processing');
+                        }
+                    });
+}
+
+

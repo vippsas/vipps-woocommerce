@@ -944,8 +944,8 @@ jQuery(document).ready(function () {
 
         // Mount point for widgets. IOK 2025-05-13
         // starts hidden. is shown when vipps checkout loads successfully. LP 2025-05-12
-        $out .= "<div id='vipps_checkout_widget_mount'></div>";
         $out .= "<div id='vippscheckoutframe'>";
+        $out .= "<div id='vipps_checkout_widget_mount'></div>";
 
         $out .= "</div>";
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
