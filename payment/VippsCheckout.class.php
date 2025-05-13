@@ -742,19 +742,16 @@ jQuery(document).ready(function () {
                 'class' => 'vipps_checkout_widget_premade',
                 'callback' => function() {
                     ?>
+                    <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
+                        Active codes
+                        <div id="vipps_checkout_widget_coupon_active_codes_container_codes"></div>
+                    </div>
                     <form id="vipps_checkout_widget_coupon_form">
                         <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
                         <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
                         <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
                         <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
                     </form>
-                    <div id="vipps_checkout_widget_coupon_success" style="display:none;">
-                        <div id="vipps_checkout_widget_coupon_active_container">
-                            <span id="vipps_checkout_widget_coupon_active"></span>
-                            <a href="#" id="vipps_checkout_widget_coupon_delete">✕</a>
-                        </div>
-                        <?php echo __('Your coupon code has been added, providing <span id="vipps_checkout_widget_coupon_percent"></span>% discount on your purchase.', 'woo-vipps') ?>
-                    </div>
                     <?php
                 }
             ];
@@ -762,7 +759,6 @@ jQuery(document).ready(function () {
 
         // Premade widget: order note. LP 2025-05-12
         $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
-        error_log("lp widgets, coupon: $use_widget_coupon, ordernotes: $use_widget_ordernotes");
         if ($use_widget_ordernotes) {
             $default_widgets[] = [
                 'title' => __('Order notes', 'woo-vipps'),
