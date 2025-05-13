@@ -805,7 +805,19 @@ error_log("Creating order");
                     ?>
                     <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
                         Active codes
-                        <div id="vipps_checkout_widget_coupon_active_codes_container_codes"></div>
+                        <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
+                        <?php 
+                            $cart = WC()->cart;
+                            error_log("LP cart: " . print_r($cart, true));
+                            if ($cart):
+                                error_log("LP used coupon codes inside widget". print_r($cart->get_applied_coupons(), true));
+                                foreach ($cart->get_applied_coupons() as $code):?>
+                                <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
+                                    <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
+                                    <a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>
+                                </div>
+                            <?php endforeach; endif;?>
+                    </div>
                     </div>
                     <form id="vipps_checkout_widget_coupon_form">
                         <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
@@ -819,7 +831,7 @@ error_log("Creating order");
         }
 
         // Premade widget: order note. LP 2025-05-12
-        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
+        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes', 'yes') === 'yes';
         if ($use_widget_ordernotes) {
             $default_widgets[] = [
                 'title' => __('Order notes', 'woo-vipps'),

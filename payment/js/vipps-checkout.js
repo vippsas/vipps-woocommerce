@@ -44,6 +44,10 @@ jQuery( document ).ready( function() {
         }
     });
 
+    if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length > 0) {
+        jQuery('#vipps_checkout_widget_coupon_active_codes_container').show();
+    }
+
     // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
     function togglePurple() {
         jQuery(this).toggleClass('vippspurple2');
@@ -105,6 +109,7 @@ jQuery( document ).ready( function() {
 
         }
     };
+    jQuery('.vipps_checkout_widget_coupon_delete').on('click', deleteActiveCouponCode);
 
     // Order notes widget submit. LP 2025-05-12
     jQuery('#vipps_checkout_widget_ordernotes_form').on('submit', function(e) {
@@ -301,12 +306,6 @@ jQuery( document ).ready( function() {
          return true;
       }
 
-        function showWidgets() {
-            console.log("lp showwidgets");
-            jQuery('.vipps_checkout_widget_wrapper').show();
-        }
-
-
       if (!doVippsCheckout()) {
           let data  = {};
           let formdata = jQuery("#vippsdata").serializeArray();
@@ -364,12 +363,11 @@ jQuery( document ).ready( function() {
                             if (result['data']['src']) {
                                 VippsSessionState = { token: result['data']['token'], checkoutFrontendUrl: result['data']['src'] }
                                 doVippsCheckout();
-                                showWidgets();
+                                jQuery('.vipps_checkout_widget_wrapper').show();
                             }
                         },
                     });
-          showWidgets(); //FIXME debugging, delete. LP 2025-05-12
-        }
+        } else jQuery('.vipps_checkout_widget_wrapper').show(); // show widgets on refresh too. LP 2025-05-13
     }
 
     // Function to handle errors during the Vipps checkout process NT-2024-09-07
