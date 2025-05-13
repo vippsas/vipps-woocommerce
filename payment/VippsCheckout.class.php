@@ -294,6 +294,10 @@ jQuery(document).ready(function () {
         add_action('wp_ajax_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
         add_action('wp_ajax_nopriv_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
 
+        // Retrieve widgets - this is done by ajax so as to ensure that the Order object exists at this point.
+        add_action('wp_ajax_vipps_checkout_get_widgets', array($this, 'vipps_ajax_get_widgets'));
+        add_action('wp_ajax_nopriv_vipps_checkout_get_widgets', array($this, 'vipps_ajax_get_widgets'));
+
         // Prevent previews and prefetches of the Vipps Checkout page starting and creating orders
         add_action('wp_head', array($this, 'wp_head'));
 
@@ -376,6 +380,7 @@ jQuery(document).ready(function () {
     // creating the partial order IOK 2021-09-03
     // IOK FIXME: Add support for starting payment *for a given order*. 2023-08-15
     public function vipps_ajax_checkout_start_session () {
+error_log("Starting vipps checkout session");
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
         $url = ""; 
         $redir = "";
@@ -395,11 +400,13 @@ jQuery(document).ready(function () {
         }
         // And if we do, just return what we have. NB: This *should not happen*.
         // IOK 2025-05-04 what are you talking about IOK, this absolutely happens e.g. when using the backbutton to a page starting the orders.
+error_log("we have something");
         if ($url || $redir) {
             $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
             return wp_send_json_success(array('ok'=>1, 'msg'=>'session started', 'src'=>$url, 'redirect'=>$redir, 'token'=>$token, 'orderid'=>$current_pending));
         }
 
+error_log("Creating order");
         // Otherwise, create an order and start a new session
         $session = null;
         $current_pending = 0;
@@ -773,13 +780,22 @@ jQuery(document).ready(function () {
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
+    // Returns HTML of any widgets for the Checkout page IOK 2025-05-13
+    function vipps_ajax_get_widgets () {
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $order = $current_pending ? wc_get_order($current_pending) : null;
+        if (!$order) return "";
+        print $this->get_checkout_widgets($order);
+        exit();
+    }
+
     // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
-    function get_checkout_widgets() {
+    function get_checkout_widgets($order) {
         // Array of tables of [title, id, callback, class].
         $default_widgets = [];
 
         // Premade widget: coupon code. LP 2025-05-08
-        $use_widget_coupon = $this->gw->get_option('checkout_widget_coupon') === 'yes';
+        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
         if ($use_widget_coupon) {
             $default_widgets[] = [
                 'title' => __('Coupon code', 'woo-vipps'),
@@ -825,11 +841,11 @@ jQuery(document).ready(function () {
         }
 
         // NB: We may not have an order at this point. IOK 2025-05-02
-        $widgets = apply_filters('woo_vipps_checkout_widgets',  $default_widgets);
-        if (empty($widgets)) return "";
+        $widgets = apply_filters('woo_vipps_checkout_widgets',  $default_widgets, $order);
 
+        if (empty($widgets)) return "";
         ob_start();
-        echo "<div class='vipps_checkout_widget_wrapper' style='display:none;'>"; // starts hidden. is shown when vipps checkout loads successfully. LP 2025-05-12
+        echo "<div class='vipps_checkout_widget_wrapper' style='display:none;'></div>";
         foreach ($widgets as $widget) {
            $id = $widget['id'] ?? "";
            $title = $widget['title'] ?? "";
@@ -849,6 +865,7 @@ jQuery(document).ready(function () {
         }
         echo "</div>";
         $res = ob_get_clean();
+
         return $res;
     }
 
@@ -918,14 +935,15 @@ jQuery(document).ready(function () {
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
 
-        // Add widgets above the checkoutframe if required -- added by the woo_vipps_checkout_widgets filter. IOK 2025-05-02
-        $out .= $this->get_checkout_widgets();
-
+        // Mount point for widgets. IOK 2025-05-13
+        // starts hidden. is shown when vipps checkout loads successfully. LP 2025-05-12
+        $out .= "<div id='vipps_checkout_widget_mount'></div>";
         $out .= "<div id='vippscheckoutframe'>";
 
         $out .= "</div>";
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
         $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
+
 
         // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
