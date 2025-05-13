@@ -857,7 +857,7 @@ error_log("Creating order");
 
         if (empty($widgets)) return "";
         ob_start();
-        echo "<div class='vipps_checkout_widget_wrapper' style='display:none;'></div>";
+        echo "<div class='vipps_checkout_widget_wrapper' style='display:none;'>";
         foreach ($widgets as $widget) {
            $id = $widget['id'] ?? "";
            $title = $widget['title'] ?? "";
