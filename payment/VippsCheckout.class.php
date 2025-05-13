@@ -779,7 +779,7 @@ jQuery(document).ready(function () {
         $default_widgets = [];
 
         // Premade widget: coupon code. LP 2025-05-08
-        $use_widget_coupon = $this->gw->get_option('checkout_widget_coupon') === 'yes';
+        $use_widget_coupon = $this->gw->get_option('checkout_widget_coupon', 'yes') === 'yes';
         if ($use_widget_coupon) {
             $default_widgets[] = [
                 'title' => __('Coupon code', 'woo-vipps'),
@@ -789,7 +789,20 @@ jQuery(document).ready(function () {
                     ?>
                     <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
                         Active codes
-                        <div id="vipps_checkout_widget_coupon_active_codes_container_codes"></div>
+                        <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
+                        <?php 
+                            $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;                             
+                            $order = $current_pending ? wc_get_order($current_pending) : null;
+                            error_log("LP order? ". !!$order);
+                            if ($order):
+                                error_log("LP used coupon codes inside widget". print_r($order->get_used_coupons(), true));
+                                foreach ($order->get_used_coupons() as $code):?>
+                                <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
+                                    <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
+                                    <a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>
+                                </div>
+                            <?php endforeach; endif;?>
+                    </div>
                     </div>
                     <form id="vipps_checkout_widget_coupon_form">
                         <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
@@ -803,7 +816,7 @@ jQuery(document).ready(function () {
         }
 
         // Premade widget: order note. LP 2025-05-12
-        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
+        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes', 'yes') === 'yes';
         if ($use_widget_ordernotes) {
             $default_widgets[] = [
                 'title' => __('Order notes', 'woo-vipps'),
