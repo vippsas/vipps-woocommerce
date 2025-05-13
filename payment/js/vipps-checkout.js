@@ -443,27 +443,25 @@ jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
             const formdata = new FormData(this);
             let notes = formdata.get('notes').trim();
 
-            // Submit and validate. LP 2025-05-09
-            let result = false;
-            if (notes) {
-                // TODO wooc add ordernotes. simulating for now
-                result = notes === 'valid';
-            }
-
             const error = jQuery('#vipps_checkout_widget_ordernotes_error');
             const success = jQuery('#vipps_checkout_widget_ordernotes_success');
             const input = jQuery('#vipps_checkout_widget_ordernotes_input');
-            if (result) {
-                error.hide();
-                success.show();
-                if (input.hasClass('error')) input.removeClass('error');
-                if (!input.hasClass('success')) input.addClass('success');
-            } else {
+
+            const args = { lock_held: true, data: { 'notes': notes }   }; 
+            args['error'] = function (result) {
+                console.log("Problem: " + result['error']);
                 error.show();
                 success.hide();
                 if (!input.hasClass('error')) input.addClass('error');
                 if (input.hasClass('success')) input.removeClass('success');
             }
+            args['success'] = function (result) {
+                console.log("Success: %j", result); 
+                error.hide();
+                success.show();
+                if (input.hasClass('error')) input.removeClass('error');
+            }
+            wooVippsCheckoutCallback( "submitnotes", args );
         });
 
         jQuery('#vipps_checkout_widget_ordernotes_input').on('input', function() {
@@ -485,7 +483,7 @@ function wooVippsCheckoutCallback( action, args ) {
     let lock_held = args['lock_held'] ? 1 : 0;
     let callbackdata = args['data'] ? args['data'] : {};
 
-    let data = { 'action': 'vipps_checkout_callback', 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 
+    let data = { 'action': 'vipps_checkout_callback', 'callback_action': action, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 
                  'orderid' : jQuery('#vippsorderid').val(),
                   callbackdata, lock_held};
 
@@ -503,10 +501,11 @@ function wooVippsCheckoutCallback( action, args ) {
                         data: data,
                         method: 'POST', 
                         error: function (xhr, statustext, error) {
-                           errorhandler(statustext);
+                           return errorhandler({error: statustext});
                         },
                         'success': function (result,statustext, xhr) {
-                           successhandler(result);
+                           if (!result['success']) return errorhandler(result['data']);
+                           return successhandler(result['data']);
                         },
                         'complete': function (xhr, statustext) {
                            if (lock_held) wp.hooks.doAction('vippsCheckoutUnlockSession');

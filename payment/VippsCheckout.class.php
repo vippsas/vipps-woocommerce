@@ -527,7 +527,11 @@ jQuery(document).ready(function () {
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $action = sanitize_title($_REQUEST['callback_action'] ?? 0);
 
+        // add some default action handlers IOK  2025-05-13
+        $this->add_widget_callback_actions();
+
         $actions = apply_filters('woo_vipps_checkout_callback_actions', []);
+
         $handler = $actions[$action] ?? false;
         if (!$handler) {
            $msg = sprintf(__("Vipps MobilePay Checkout callback with unknown action: %s", 'woo-vipps'), $action);
@@ -539,21 +543,18 @@ jQuery(document).ready(function () {
         $order = $current_pending ? wc_get_order($current_pending) : null;
         $prevtotal = $order->get_total();
         try {
-            $ok = $handler($action, $order);
-            if ($ok) {
-                $order = wc_get_order($order->get_id());
-                $newtotal = $order->get_total();
-                if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
-                if ($lock_held && $newtotal != $prevtotal) {
-                    try {
-                        $res = $this->gateway()->api->checkout_modify_session($order);
-                    } catch (Exception $e) {
-                        $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
-                    }
+            $result = $handler($action, $order);
+            $order = wc_get_order($order->get_id());
+            $newtotal = $order->get_total();
+            if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
+            if ($lock_held && $newtotal != $prevtotal) {
+                try {
+                    $res = $this->gateway()->api->checkout_modify_session($order);
+                } catch (Exception $e) {
+                    $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
                 }
-                return wp_send_json_success(array('msg'=>$ok));
             }
-            return wp_send_json_error(array('msg'=>'FAILED', 'error'=>""));
+            return wp_send_json_success(array('msg'=>$result));
         } catch (Exception $e) {
            return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$e->getMessage()));
         }
@@ -785,6 +786,19 @@ jQuery(document).ready(function () {
         print $this->get_checkout_widgets($order);
         exit();
     }
+
+    // Define handlers for some default widgets (if active etc). IOK 2025-05-13
+    public function add_widget_callback_actions () {
+      // Just an example FIXME FIXME FIXME
+      add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
+          $filters['submitnotes'] = function ($action, $order) {
+               error_log("Doing $action on order " . $order->get_id());
+               return "Ordrenotat lagt til!";
+          };
+          return $filters;
+      });
+    }
+
 
     // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
     function get_checkout_widgets($order) {
