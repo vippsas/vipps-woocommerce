@@ -292,12 +292,6 @@ jQuery( document ).ready( function() {
          return true;
       }
 
-        function showWidgets() {
-            console.log("lp showwidgets");
-            jQuery('.vipps_checkout_widget_wrapper').show();
-        }
-
-
       if (!doVippsCheckout()) {
           let data  = {};
           let formdata = jQuery("#vippsdata").serializeArray();
@@ -355,12 +349,11 @@ jQuery( document ).ready( function() {
                             if (result['data']['src']) {
                                 VippsSessionState = { token: result['data']['token'], checkoutFrontendUrl: result['data']['src'] }
                                 doVippsCheckout();
-                                showWidgets();
+                                jQuery('.vipps_checkout_widget_wrapper').show();
                             }
                         },
                     });
-          showWidgets(); //FIXME debugging, delete. LP 2025-05-12
-        }
+        } else jQuery('.vipps_checkout_widget_wrapper').show(); // show widgets on refresh too. LP 2025-05-13
     }
 
     // Function to handle errors during the Vipps checkout process NT-2024-09-07

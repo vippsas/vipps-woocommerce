@@ -791,12 +791,11 @@ jQuery(document).ready(function () {
                         Active codes
                         <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
                         <?php 
-                            $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;                             
-                            $order = $current_pending ? wc_get_order($current_pending) : null;
-                            error_log("LP order? ". !!$order);
-                            if ($order):
-                                error_log("LP used coupon codes inside widget". print_r($order->get_used_coupons(), true));
-                                foreach ($order->get_used_coupons() as $code):?>
+                            $cart = WC()->cart;
+                            error_log("LP cart: " . print_r($cart, true));
+                            if ($cart):
+                                error_log("LP used coupon codes inside widget". print_r($cart->get_applied_coupons(), true));
+                                foreach ($cart->get_applied_coupons() as $code):?>
                                 <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
                                     <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
                                     <a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>
