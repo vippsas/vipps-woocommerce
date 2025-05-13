@@ -141,16 +141,22 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
 .vipps_checkout_widget_wrapper .vipps_checkout_widget:not(:last-child) {
     margin: .5rem;
 }
-#vipps_checkout_widget_coupon_active_container {
+#vipps_checkout_widget_coupon_active_codes_container_codes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+.vipps_checkout_widget_coupon_active_code_box {
     display: flex;
     align-items: center;
     background-color: #f0f0f2;
-    border-radius: 10px;
     padding: 8px 12px;
     margin-top: 0.2em;
     max-width: fit-content;
+    border-radius: 4px;
+    gap: 0.5em;
 }
-#vipps_checkout_widget_coupon_delete {
+.vipps_checkout_widget_coupon_delete {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -162,7 +168,6 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     font-size: 12px;
     cursor: pointer;
     text-decoration: none;
-    margin-left: 1em;
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_input.error {
     border-color: #C60000;

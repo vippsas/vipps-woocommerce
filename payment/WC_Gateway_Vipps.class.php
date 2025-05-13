@@ -1156,14 +1156,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'label'       => __('Enable the coupon code widget', 'woo-vipps'),
                'type'        => 'checkbox',
                'description' => __('A widget to activate coupon codes.', 'woo-vipps'),
-               'default'     => 'no'
+               'default'     => 'yes'
            ],
            'checkout_widget_ordernotes' => [
                'title'       => __('Order notes', 'woo-vipps'),
                'label'       => __('Enable the order notes widget', 'woo-vipps'),
                'type'        => 'checkbox',
                'description' => __('A widget to add customer notes with their order.', 'woo-vipps'),
-               'default'     => 'no'
+               'default'     => 'yes'
            ],
        ];
 
