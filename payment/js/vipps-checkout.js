@@ -143,131 +143,40 @@ jQuery( document ).ready( function() {
             cache:false,
             timeout: 0,
             dataType:'html',
-            success: function (data) { 
-                      jQuery('#vipps_checkout_widget_mount').html(data); 
-                      jQuery('.vipps_checkout_widget_wrapper').show();},
-            error: function (eh) { console.log("error loading widgets"); }
-       });
+            error: function (eh) { console.log("error loading widgets"); },
+            success: function (data) {
+              jQuery('#vipps_checkout_widget_mount').html(data); 
+              initializeWidgets();
+              jQuery('.vipps_checkout_widget_wrapper').show();
+              jQuery('body').trigger('woo-vipps-checkout-widgets-loaded');
+            }
+            });
+    }
+        
+
+    // Common initializations for all widgets after load
+    function initializeWidgets() {
         // widget accordion feature. LP 2025-05-07
         jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
-            jQuery(this).toggleClass('active');
-            jQuery(this).next('.vipps_checkout_body').toggle();
+                jQuery(this).toggleClass('active');
+                jQuery(this).next('.vipps_checkout_body').toggle();
 
-            // switch icons on active. LP 2025-05-08
-            const icon = jQuery(this).find('.vipps_checkout_widget_icon');
-            if (jQuery(this).hasClass('active')) {
+                // switch icons on active. LP 2025-05-08
+                const icon = jQuery(this).find('.vipps_checkout_widget_icon');
+                if (jQuery(this).hasClass('active')) {
                 icon.html('&#8963;'); // is ^ but wider
-            } else {
+                } else {
                 icon.html('+');
-            }
-        });
-
-        if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length > 0) {
-            jQuery('#vipps_checkout_widget_coupon_active_codes_container').show();
-        }
-
+                }
+                });
         // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
         function togglePurple() {
             jQuery(this).toggleClass('vippspurple2');
             jQuery(this).toggleClass('vippspurple-light');
         };
         jQuery('.vipps_checkout_widget_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
-
-        // Coupon code widget submit. LP 2025-05-08
-        jQuery('#vipps_checkout_widget_coupon_form').on('submit', function(e) {
-            e.preventDefault();
-            const formdata = new FormData(this);
-            let code = formdata.get('code').trim();
-
-            // Submit and validate. LP 2025-05-09
-            let result = false;
-            if (code) {
-                // TODO wooc add coupon. simulating for now
-                result = code.startsWith('valid');
-            }
-
-            const error = jQuery('#vipps_checkout_widget_coupon_error');
-            const input = jQuery('#vipps_checkout_widget_coupon_code');
-            const activeCodesContainer = jQuery('#vipps_checkout_widget_coupon_active_codes_container');
-            const activeCodes = jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes');
-            const success = jQuery('#vipps_checkout_widget_coupon_success');
-            if (result) {
-                error.hide();
-                success.show();
-                if (input.hasClass('error')) input.removeClass('error');
-
-                const newCode = jQuery(`
-                            <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_${code}">
-                                <span class="vipps_checkout_widget_coupon_active_code">${code}</span>
-                            </div>
-            `);
-                const newCodeDelete = jQuery('<a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>');
-                newCodeDelete.on('click', deleteActiveCouponCode);
-                newCode.append(newCodeDelete);
-                activeCodes.append(newCode);
-                activeCodesContainer.show();
-            } else {
-                error.show();
-                success.hide();
-                if (!input.hasClass('error')) input.addClass('error');
-            }
-        });
-
-        // Coupon code widget remove active coupon code. LP 2025-05-09
-        function deleteActiveCouponCode() {
-            code = jQuery(this).prev().text();
-            // TODO wooc remove coupon. simulating for now
-            let result = true;
-            if (result) {
-                jQuery(this).parent().remove();
-                jQuery('#vipps_checkout_widget_coupon_success').hide();
-                if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length < 1) {
-                    jQuery('#vipps_checkout_widget_coupon_active_codes_container').hide();
-                }
-
-            }
-        };
-        jQuery('.vipps_checkout_widget_coupon_delete').on('click', deleteActiveCouponCode);
-
-        // Order notes widget submit. LP 2025-05-12
-        jQuery('#vipps_checkout_widget_ordernotes_form').on('submit', function(e) {
-            e.preventDefault();
-            const formdata = new FormData(this);
-            let notes = formdata.get('notes').trim();
-
-            // Submit and validate. LP 2025-05-09
-            let result = false;
-            if (notes) {
-                // TODO wooc add ordernotes. simulating for now
-                result = notes === 'valid';
-            }
-
-            const error = jQuery('#vipps_checkout_widget_ordernotes_error');
-            const success = jQuery('#vipps_checkout_widget_ordernotes_success');
-            const input = jQuery('#vipps_checkout_widget_ordernotes_input');
-            if (result) {
-                error.hide();
-                success.show();
-                if (input.hasClass('error')) input.removeClass('error');
-                if (!input.hasClass('success')) input.addClass('success');
-            } else {
-                error.show();
-                success.hide();
-                if (!input.hasClass('error')) input.addClass('error');
-                if (input.hasClass('success')) input.removeClass('success');
-            }
-        });
-
-        jQuery('#vipps_checkout_widget_ordernotes_input').on('input', function() {
-            const success = jQuery('#vipps_checkout_widget_ordernotes_success');
-            const input = jQuery('#vipps_checkout_widget_ordernotes_input');
-            const error = jQuery('#vipps_checkout_widget_ordernotes_error');
-            if (input.hasClass('error')) input.removeClass('error');
-            if (input.hasClass('success')) input.removeClass('success');
-            success.hide();
-            error.hide();
-        });
     }
+
 
     function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
@@ -464,4 +373,107 @@ jQuery( document ).ready( function() {
 
     console.log("Vipps MobilePay Checkout Initialized version 115");
     initWhenVisible(); 
+});
+
+// Custom initialization for default widgets IOK 2025-05-13
+jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
+        if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length > 0) {
+            jQuery('#vipps_checkout_widget_coupon_active_codes_container').show();
+        }
+
+        // Coupon code widget submit. LP 2025-05-08
+        jQuery('#vipps_checkout_widget_coupon_form').on('submit', function(e) {
+            e.preventDefault();
+            const formdata = new FormData(this);
+            let code = formdata.get('code').trim();
+
+            // Submit and validate. LP 2025-05-09
+            let result = false;
+            if (code) {
+                // TODO wooc add coupon. simulating for now
+                result = code.startsWith('valid');
+            }
+
+            const error = jQuery('#vipps_checkout_widget_coupon_error');
+            const input = jQuery('#vipps_checkout_widget_coupon_code');
+            const activeCodesContainer = jQuery('#vipps_checkout_widget_coupon_active_codes_container');
+            const activeCodes = jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes');
+            const success = jQuery('#vipps_checkout_widget_coupon_success');
+            if (result) {
+                error.hide();
+                success.show();
+                if (input.hasClass('error')) input.removeClass('error');
+
+                const newCode = jQuery(`
+                            <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_${code}">
+                                <span class="vipps_checkout_widget_coupon_active_code">${code}</span>
+                            </div>
+            `);
+                const newCodeDelete = jQuery('<a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>');
+                newCodeDelete.on('click', deleteActiveCouponCode);
+                newCode.append(newCodeDelete);
+                activeCodes.append(newCode);
+                activeCodesContainer.show();
+            } else {
+                error.show();
+                success.hide();
+                if (!input.hasClass('error')) input.addClass('error');
+            }
+        });
+
+        // Coupon code widget remove active coupon code. LP 2025-05-09
+        function deleteActiveCouponCode() {
+            code = jQuery(this).prev().text();
+            // TODO wooc remove coupon. simulating for now
+            let result = true;
+            if (result) {
+                jQuery(this).parent().remove();
+                jQuery('#vipps_checkout_widget_coupon_success').hide();
+                if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length < 1) {
+                    jQuery('#vipps_checkout_widget_coupon_active_codes_container').hide();
+                }
+
+            }
+        };
+        jQuery('.vipps_checkout_widget_coupon_delete').on('click', deleteActiveCouponCode);
+
+        // Order notes widget submit. LP 2025-05-12
+        jQuery('#vipps_checkout_widget_ordernotes_form').on('submit', function(e) {
+            e.preventDefault();
+            const formdata = new FormData(this);
+            let notes = formdata.get('notes').trim();
+
+            // Submit and validate. LP 2025-05-09
+            let result = false;
+            if (notes) {
+                // TODO wooc add ordernotes. simulating for now
+                result = notes === 'valid';
+            }
+
+            const error = jQuery('#vipps_checkout_widget_ordernotes_error');
+            const success = jQuery('#vipps_checkout_widget_ordernotes_success');
+            const input = jQuery('#vipps_checkout_widget_ordernotes_input');
+            if (result) {
+                error.hide();
+                success.show();
+                if (input.hasClass('error')) input.removeClass('error');
+                if (!input.hasClass('success')) input.addClass('success');
+            } else {
+                error.show();
+                success.hide();
+                if (!input.hasClass('error')) input.addClass('error');
+                if (input.hasClass('success')) input.removeClass('success');
+            }
+        });
+
+        jQuery('#vipps_checkout_widget_ordernotes_input').on('input', function() {
+            const success = jQuery('#vipps_checkout_widget_ordernotes_success');
+            const input = jQuery('#vipps_checkout_widget_ordernotes_input');
+            const error = jQuery('#vipps_checkout_widget_ordernotes_error');
+            if (input.hasClass('error')) input.removeClass('error');
+            if (input.hasClass('success')) input.removeClass('success');
+            success.hide();
+            error.hide();
+        });
+
 });
