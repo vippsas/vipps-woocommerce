@@ -546,7 +546,6 @@ jQuery(document).ready(function () {
             $result = $handler($action, $order);
             $order = wc_get_order($order->get_id()); // Incase the order has changed since last wc_get_order. LP 2025-05-14
             $newtotal = $order->get_total();
-            if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
             if ($lock_held && $newtotal != $prevtotal) {
                 try {
                     $res = $this->gateway()->api->checkout_modify_session($order);
@@ -675,17 +674,15 @@ jQuery(document).ready(function () {
 
         }
         if ($change) {
-            $order->save();
+          $order->save();
         }
 
         // When the address changes, the VAT/taxes may have changed too. Recalculate the order total if we know the Vipps lock
         // of the order is held. IOK 2025-04-25
-        if ($change && $lock_held) {
+        if ($change) {
             $prevtotal = $order->get_total();
             $newtotal = $order->calculate_totals(true); // With taxes please
-
-            if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
-            if ($newtotal != $prevtotal) {
+            if ($lock_held && $newtotal != $prevtotal) {
                 try {
                     $res = $this->gateway()->api->checkout_modify_session($order);
                     $order->save();

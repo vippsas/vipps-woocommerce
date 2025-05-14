@@ -1019,7 +1019,11 @@ class VippsApi {
         // Transaction: amount,  description, orderSummary for modify.
         $transaction = array();
         $currency = $order->get_currency();
-        $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
+
+        $total = round(wc_format_decimal($order->get_total(),'') * 100);
+        if ($total < 100)  $total = 100; // Vipps requires all orders to be at least this large IOK 2025-05-14
+
+        $transaction['amount'] = array('value' => $total, 'currency' => $currency);
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
         $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
         $transaction['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
