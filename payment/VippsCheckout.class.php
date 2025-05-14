@@ -803,6 +803,13 @@ jQuery(document).ready(function () {
                     }
                 }
 
+
+                // Disable the email that gets sent on new order notes. IOK 2025-05-14 
+                add_filter('woocommerce_mail_callback', function ($mailer, $mailclass) {
+                        return '__return_true';
+                }, 999, 2);
+
+
                 // Add new note. LP 2025-05-14
                 if ($notes) {
                     $order->add_order_note($notes, 1, true);
