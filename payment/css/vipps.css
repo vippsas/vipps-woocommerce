@@ -87,6 +87,14 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     line-height:24px;
     font-weight:500;
 }
+
+.vipps_checkout_widget_title.active .vipps_checkout_widget_icon::before {
+    content: "⌃";
+}
+.vipps_checkout_widget_title .vipps_checkout_widget_icon::before {
+    content: "➕";
+}
+
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_title.accordion {
     cursor: pointer;
     transition: 0.4s,

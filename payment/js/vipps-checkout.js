@@ -160,14 +160,6 @@ jQuery( document ).ready( function() {
         jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
                 jQuery(this).toggleClass('active');
                 jQuery(this).next('.vipps_checkout_body').toggle();
-
-                // switch icons on active. LP 2025-05-08
-                const icon = jQuery(this).find('.vipps_checkout_widget_icon');
-                if (jQuery(this).hasClass('active')) {
-                icon.html('&#8963;'); // is ^ but wider
-                } else {
-                icon.html('&#x2795;'); // + but wider
-                }
                 });
         // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
         function togglePurple() {
