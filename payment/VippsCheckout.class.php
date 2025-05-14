@@ -810,10 +810,10 @@ jQuery(document).ready(function () {
     function maybe_add_widgets() {
         // Premade widget: coupon code. LP 2025-05-08
         $widgets = [];
-        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon', 'yes') === 'yes';
+        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
 
         // Premade widget: order note. LP 2025-05-12
-        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes', 'yes') === 'yes';
+        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
         if ($use_widget_ordernotes) {
         }
         if ($use_widget_coupon || $use_widget_ordernotes) {
