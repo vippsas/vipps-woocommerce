@@ -544,7 +544,7 @@ jQuery(document).ready(function () {
         $prevtotal = $order->get_total();
         try {
             $result = $handler($action, $order);
-            $order = wc_get_order($order->get_id());
+            $order = wc_get_order($order->get_id()); // Incase the order has changed since last wc_get_order. LP 2025-05-14
             $newtotal = $order->get_total();
             if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
             if ($lock_held && $newtotal != $prevtotal) {
@@ -789,19 +789,33 @@ jQuery(document).ready(function () {
 
     // Define handlers for some default widgets (if active etc). IOK 2025-05-13
     public function add_widget_callback_actions () {
-      // Just an example FIXME FIXME FIXME
-      add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
-          $filters['submitnotes'] = function ($action, $order) {
-               error_log("Doing $action on order " . $order->get_id());
-               $notes = isset($_REQUEST['callbackdata']['notes']) ? $_REQUEST['callbackdata']['notes'] : '';
-               if (trim($notes)) {
-                   $order->add_order_note($notes, 1, true);
-                   return 'note added';
-               }
-               return 'note not added';
-          };
-          return $filters;
-      });
+        add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
+            $filters['submitnotes'] = function ($action, $order) {
+                error_log("Doing $action on order " . $order->get_id());
+                $notes = isset($_REQUEST['callbackdata']['notes']) ? $_REQUEST['callbackdata']['notes'] : '';
+
+                // First delete latest customer order note if exists. LP 2025-05-14
+                $order_notes = $order->get_customer_order_notes();
+                $deleted = 0;
+                if ($order_notes) {
+                    $latest_note = $order_notes[0];
+                    if (is_a($latest_note, 'WP_Comment')) {
+                        $deleted = wc_delete_order_note($latest_note->comment_ID);
+                    } else {
+                        error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
+                    }
+                }
+
+                // Add new note. LP 2025-05-14
+                if (trim($notes)) {
+                    $order->add_order_note($notes, 1, true);
+                    return 'note added';
+                }
+                return $deleted ? 'note deleted' : 'note not added';
+            };
+
+            return $filters;
+        });
     }
 
 
@@ -823,8 +837,7 @@ jQuery(document).ready(function () {
                         'title' => __('Coupon code', 'woo-vipps'),
                         'id' => 'vipps_checkout_widget_coupon',
                         'class' => 'vipps_checkout_widget_premade',
-                        'callback' => function($order) {
-                            error_log("LP inside filter order is ". print_r($order, true)); ?>
+                        'callback' => function($order) {?>
                         <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
                             Active codes
                             <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
@@ -859,7 +872,14 @@ jQuery(document).ready(function () {
                         <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label><br>
                         <span id="vipps_checkout_widget_ordernotes_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Something went wrong', 'woo-vipps') ?></span>
                         <span id="vipps_checkout_widget_ordernotes_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Saved', 'woo-vipps') ?></span>
-                        <input required id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes" value="<?php if ($order) error_log(print_r($order->get_customer_order_notes(),true)) ?>"/><br>
+                        <input id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes" value="<?php if ($order) {
+                            $order_notes = $order->get_customer_order_notes();
+                            if ($order_notes) {
+                                $latest_note = $order_notes[0];
+                                if (is_a($latest_note, 'WP_Comment')) echo $latest_note->comment_content;
+                                else error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
+                            }
+                        } ?>"/><br>
                         <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>
                     </form>
                     <?php
