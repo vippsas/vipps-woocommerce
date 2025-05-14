@@ -809,9 +809,9 @@ jQuery(document).ready(function () {
                 // Add new note. LP 2025-05-14
                 if ($notes) {
                     $order->add_order_note($notes, 1, true);
-                    return 'note added';
+                    return 1;
                 }
-                return $deleted ? 'note deleted' : 'note not added';
+                return 0;
             };
 
             $filters['submitcoupon'] = function ($action, $order) {
@@ -824,6 +824,15 @@ jQuery(document).ready(function () {
                 return 0;
             };
 
+            $filters['removecoupon'] = function ($action, $order) {
+                error_log("Doing $action on order " . $order->get_id());
+                $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
+                if ($code) {
+                    $res = $order->remove_coupon($code);
+                    if ($res) return 1;
+                }
+                return 0;
+            };
             return $filters;
         });
     }
@@ -864,6 +873,7 @@ jQuery(document).ready(function () {
                         <form id="vipps_checkout_widget_coupon_form">
                             <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
                             <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
+                            <span id="vipps_checkout_widget_coupon_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Coupon code added!', 'woo-vipps') ?></span>
                             <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
                             <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
                         </form>

@@ -380,10 +380,10 @@ jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
         let code = formdata.get('code').trim();
 
         const error = jQuery('#vipps_checkout_widget_coupon_error');
+        const success = jQuery('#vipps_checkout_widget_coupon_success');
         const input = jQuery('#vipps_checkout_widget_coupon_code');
         const activeCodesContainer = jQuery('#vipps_checkout_widget_coupon_active_codes_container');
         const activeCodes = jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes');
-        const success = jQuery('#vipps_checkout_widget_coupon_success');
         function showError() {
             error.show();
             success.hide();
@@ -429,16 +429,49 @@ jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
 
     // Coupon code widget remove active coupon code. LP 2025-05-09
     function deleteActiveCouponCode() {
-        code = jQuery(this).prev().text();
-        // TODO wooc remove coupon. simulating for now
-        let result = true;
-        if (result) {
-            jQuery(this).parent().remove();
-            jQuery('#vipps_checkout_widget_coupon_success').hide();
+        const el = jQuery(this);
+        const code = el.prev().text();
+
+        const error = jQuery('#vipps_checkout_widget_coupon_error');
+        const success = jQuery('#vipps_checkout_widget_coupon_success');
+        const input = jQuery('#vipps_checkout_widget_coupon_code');
+        const deleteError = jQuery('#vipps_checkout_widget_coupon_delete_error');
+        function showError() {
+            success.hide();
+            error.hide();
+            deleteError.show();
+            if (input.hasClass('error')) input.removeClass('error');
+            if (input.hasClass('success')) input.removeClass('success');
+        }
+
+        function showSuccess() {
+            el.parent().remove();
+            success.hide();
+            error.hide();
+            deleteError.hide();
             if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length < 1) {
                 jQuery('#vipps_checkout_widget_coupon_active_codes_container').hide();
             }
+            if (input.hasClass('error')) input.removeClass('error');
+            if (input.hasClass('success')) input.removeClass('success');
+        }
 
+        if (code) {
+            const args = { lock_held: true, data: { 'code': code }   }; 
+            args['error'] = function (result) {
+                console.log("Problem: " + result['error']);
+                showError();
+            }
+            args['success'] = function (result) {
+                console.log("Success: %j", result); 
+                if (result['msg'] && result['msg'] == 1) {
+                    showSuccess();
+                    return;
+                }
+                showError();
+            }
+
+            wooVippsCheckoutCallback( 'removecoupon', args );
         }
     };
     jQuery('.vipps_checkout_widget_coupon_delete').on('click', deleteActiveCouponCode);
