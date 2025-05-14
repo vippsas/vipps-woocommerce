@@ -792,7 +792,7 @@ jQuery(document).ready(function () {
         add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
             $filters['submitnotes'] = function ($action, $order) {
                 error_log("Doing $action on order " . $order->get_id());
-                $notes = isset($_REQUEST['callbackdata']['notes']) ? $_REQUEST['callbackdata']['notes'] : '';
+                $notes = isset($_REQUEST['callbackdata']['notes']) ? trim($_REQUEST['callbackdata']['notes']) : '';
 
                 // First delete latest customer order note if exists. LP 2025-05-14
                 $order_notes = $order->get_customer_order_notes();
@@ -807,11 +807,21 @@ jQuery(document).ready(function () {
                 }
 
                 // Add new note. LP 2025-05-14
-                if (trim($notes)) {
+                if ($notes) {
                     $order->add_order_note($notes, 1, true);
                     return 'note added';
                 }
                 return $deleted ? 'note deleted' : 'note not added';
+            };
+
+            $filters['submitcoupon'] = function ($action, $order) {
+                error_log("Doing $action on order " . $order->get_id());
+                $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
+                if ($code) {
+                    $res = $order->apply_coupon($code);
+                    if (!is_a($res, 'WP_Error')) return 1;
+                }
+                return 0;
             };
 
             return $filters;
