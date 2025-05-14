@@ -793,76 +793,94 @@ jQuery(document).ready(function () {
       add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
           $filters['submitnotes'] = function ($action, $order) {
                error_log("Doing $action on order " . $order->get_id());
-               return "Ordrenotat lagt til!";
+               $notes = isset($_REQUEST['callbackdata']['notes']) ? $_REQUEST['callbackdata']['notes'] : '';
+               if (trim($notes)) {
+                   $order->add_order_note($notes, 1, true);
+                   return 'note added';
+               }
+               return 'note not added';
           };
           return $filters;
       });
     }
 
 
-    // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
-    function get_checkout_widgets($order) {
-        // Array of tables of [title, id, callback, class].
-        $default_widgets = [];
-
+    // Add premade widgets depending on users settings. LP 2025-05-14
+    // For now, coupon code widget and order notes widget.
+    function maybe_add_widgets() {
         // Premade widget: coupon code. LP 2025-05-08
-        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
-        if ($use_widget_coupon) {
-            $default_widgets[] = [
-                'title' => __('Coupon code', 'woo-vipps'),
-                'id' => 'vipps_checkout_widget_coupon',
-                'class' => 'vipps_checkout_widget_premade',
-                'callback' => function($order) {
-                    ?>
-                    <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
-                        Active codes
-                        <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
-                        <?php 
-                            $cart = WC()->cart;
-                            if ($cart):
-                                foreach ($cart->get_applied_coupons() as $code):?>
-                                <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
-                                    <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
-                                    <a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>
-                                </div>
-                            <?php endforeach; endif;?>
-                    </div>
-                    </div>
-                    <form id="vipps_checkout_widget_coupon_form">
-                        <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
-                        <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
-                        <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
-                        <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
-                    </form>
-                    <?php
-                }
-            ];
-        }
+        $widgets = [];
+        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon', 'yes') === 'yes';
 
         // Premade widget: order note. LP 2025-05-12
         $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes', 'yes') === 'yes';
         if ($use_widget_ordernotes) {
-            $default_widgets[] = [
-                'title' => __('Order notes', 'woo-vipps'),
-                'id' => 'vipps_checkout_widget_ordernotes',
-                'class' => 'vipps_checkout_widget_premade',
-                'callback' => function($order) {
-                    ?>
+        }
+        if ($use_widget_coupon || $use_widget_ordernotes) {
+            add_filter('woo_vipps_checkout_widgets', function ($widgets) use ($use_widget_coupon, $use_widget_ordernotes) {
+                if ($use_widget_coupon) {
+                    $widgets[] = [
+                        'title' => __('Coupon code', 'woo-vipps'),
+                        'id' => 'vipps_checkout_widget_coupon',
+                        'class' => 'vipps_checkout_widget_premade',
+                        'callback' => function($order) {
+                            error_log("LP inside filter order is ". print_r($order, true)); ?>
+                        <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
+                            Active codes
+                            <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
+                            <?php 
+                            if ($order):
+                                foreach ($order->get_coupon_codes() as $code):?>
+                                    <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
+                                        <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
+                                        <a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>
+                                    </div>
+                                <?php endforeach; endif;?>
+                        </div>
+                        </div>
+                        <form id="vipps_checkout_widget_coupon_form">
+                            <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
+                            <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
+                            <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
+                            <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
+                        </form>
+                        <?php
+                        }
+                    ];
+                }
+                if ($use_widget_ordernotes) {
+                    $widgets[] = [
+                        'title' => __('Order notes', 'woo-vipps'),
+                        'id' => 'vipps_checkout_widget_ordernotes',
+                        'class' => 'vipps_checkout_widget_premade',
+                        'callback' => function($order) { ?>
                     <form id="vipps_checkout_widget_ordernotes_form">
                         <span for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></span><br>
                         <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label><br>
                         <span id="vipps_checkout_widget_ordernotes_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Something went wrong', 'woo-vipps') ?></span>
                         <span id="vipps_checkout_widget_ordernotes_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Saved', 'woo-vipps') ?></span>
-                        <input required id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes"/><br>
+                        <input required id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes" value="<?php if ($order) error_log(print_r($order->get_customer_order_notes(),true)) ?>"/><br>
                         <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>
                     </form>
                     <?php
+                        }
+                    ];
                 }
-            ];
+                return $widgets;
+            });
         }
 
+        return $widgets;
+    }
+
+    // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
+    function get_checkout_widgets($order) {
+        // Array of tables of [title, id, callback, class].
+        // $default_widgets = $this->get_checkout_default_widgets($order);
+        $this->maybe_add_widgets();
+
         // NB: We may not have an order at this point. IOK 2025-05-02
-        $widgets = apply_filters('woo_vipps_checkout_widgets',  $default_widgets, $order);
+        $widgets = apply_filters('woo_vipps_checkout_widgets', [], $order);
 
         if (empty($widgets)) return "";
         ob_start();
