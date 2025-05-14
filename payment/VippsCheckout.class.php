@@ -819,7 +819,8 @@ jQuery(document).ready(function () {
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
                     $res = $order->apply_coupon($code);
-                    if (!is_a($res, 'WP_Error')) return 1;
+                    if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
+                    return 1;
                 }
                 return 0;
             };
