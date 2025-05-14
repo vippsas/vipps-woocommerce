@@ -396,6 +396,7 @@ jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
             success.show();
             if (input.hasClass('error')) input.removeClass('error');
             if (!input.hasClass('success')) input.addClass('success');
+            input.val('').blur();
             const newCode = jQuery(`
                             <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_${code}">
                                 <span class="vipps_checkout_widget_coupon_active_code">${code}</span>
