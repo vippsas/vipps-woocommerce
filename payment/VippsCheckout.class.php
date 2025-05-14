@@ -870,7 +870,7 @@ jQuery(document).ready(function () {
                                 foreach ($order->get_coupon_codes() as $code):?>
                                     <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
                                         <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
-                                        <a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>
+                                        <span class="vipps_checkout_widget_coupon_delete">✕</span>
                                     </div>
                                 <?php endforeach; endif;?>
                         </div>

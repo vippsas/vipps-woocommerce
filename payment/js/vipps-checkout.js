@@ -402,7 +402,7 @@ jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
                                 <span class="vipps_checkout_widget_coupon_active_code">${code}</span>
                             </div>
             `);
-            const newCodeDelete = jQuery('<a href="#" class="vipps_checkout_widget_coupon_delete">✕</a>');
+            const newCodeDelete = jQuery('<span class="vipps_checkout_widget_coupon_delete">✕</span>');
             newCodeDelete.on('click', deleteActiveCouponCode);
             newCode.append(newCodeDelete);
             activeCodes.append(newCode);
