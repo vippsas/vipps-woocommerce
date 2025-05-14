@@ -92,20 +92,16 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     transition: 0.4s,
 }
 .vipps_checkout_widget_title.active .vipps_checkout_widget_icon::before {
-    content: "⌃";
+    content: "\2212";
 }
 .vipps_checkout_widget_title .vipps_checkout_widget_icon::before {
-    content: "+";
-}
-.vipps_checkout_widget_title:not(.active) .vipps_checkout_widget_icon {
-   font-size:1.2rem;
+    content: "\002B";
 }
 .vipps_checkout_widget_title .vipps_checkout_widget_icon {
-   font-size: 1rem;
+     font-size: 1.2rem;
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_title .vipps_checkout_widget_icon{
     float: right;
-    font-family: "Arial";
     width: 24px;
     text-align: center;
 }
