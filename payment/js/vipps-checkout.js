@@ -166,7 +166,7 @@ jQuery( document ).ready( function() {
                 if (jQuery(this).hasClass('active')) {
                 icon.html('&#8963;'); // is ^ but wider
                 } else {
-                icon.html('+');
+                icon.html('&#x2795;'); // + but wider
                 }
                 });
         // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
