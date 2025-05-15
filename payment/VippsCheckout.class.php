@@ -822,8 +822,8 @@ jQuery(document).ready(function () {
 
             $filters['submitcoupon'] = function ($action, $order) {
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
-                if ($code) {
 
+                if ($code) {
                     add_filter('woocommerce_add_success', function ($message) { return ""; });
                     add_filter('woocommerce_add_error', function ($message) { return ""; });
                     add_filter('woocommerce_add_notice', function ($message) { return ""; });
@@ -838,13 +838,19 @@ jQuery(document).ready(function () {
 
                     $res = $order->apply_coupon($code);
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
+
+                    // Note that this coupon was added specifically in Vipps Checkout. IOK 2025-05-15
+                    $my_coupons = $order->get_meta('_vipps_checkout_coupons') ?: [];
+                    $my_coupons[$code] = 1;
+                    $order->update_meta_data('_vipps_checkout_coupons', $my_coupons);
+                    $order->save();
+
                     return 1;
                 }
                 return 0;
             };
 
             $filters['removecoupon'] = function ($action, $order) {
-                error_log("Doing $action on order " . $order->get_id());
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
                     // Ensure the cart too loses the coupon
@@ -853,9 +859,18 @@ jQuery(document).ready(function () {
                       // can't do much if this fails so
                     }
                     $res = $order->remove_coupon($code);
+
+                    // This code probably needs to live in a "remove coupon" hook instead so it always
+                    // runs however the coupon is zapped. IOK 2025-05-15
+                    $my_coupons = $order->get_meta('_vipps_checkout_coupons') ?: [];
+                    if (!empty($my_coupons)) {
+                        unset($my_coupons[$code]);
+                        $order->update_meta_data('_vipps_checkout_coupons', $my_coupons); 
+                        $order->save();
+                    }
                     if ($res) return 1;
                 }
-                return 0;
+                return 1; // just do it ? if errors happen here, the coupon *gets stuck*? FIXME IOK 2025-05-15
             };
             return $filters;
         });
