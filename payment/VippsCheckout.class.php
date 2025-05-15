@@ -362,7 +362,8 @@ jQuery(document).ready(function () {
     public function wp_register_scripts () {
         $sdkurl = 'https://checkout.vipps.no/vippsCheckoutSDK.js';
         wp_register_script('vipps-sdk',$sdkurl,array());
-        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
+        wp_register_script('vipps-checkout-widgets', plugins_url('js/vipps-checkout-widgets.js', __FILE__), [], filemtime(dirname(__FILE__) . "/js/vipps-checkout-widgets.js"), 'true');
+        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk', 'vipps-checkout-widgets'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
     }
 
     public function log ($what,$type='info') {
