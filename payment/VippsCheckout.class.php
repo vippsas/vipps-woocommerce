@@ -791,7 +791,6 @@ jQuery(document).ready(function () {
     public function add_widget_callback_actions () {
         add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
             $filters['submitnotes'] = function ($action, $order) {
-                error_log("Doing $action on order " . $order->get_id());
                 $notes = isset($_REQUEST['callbackdata']['notes']) ? trim($_REQUEST['callbackdata']['notes']) : '';
 
                 // First delete latest customer order note if exists. LP 2025-05-14
@@ -822,21 +821,22 @@ jQuery(document).ready(function () {
             };
 
             $filters['submitcoupon'] = function ($action, $order) {
-                error_log("Doing $action on order " . $order->get_id());
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
+
+                    add_filter('woocommerce_add_success', function ($message) { return ""; });
+                    add_filter('woocommerce_add_error', function ($message) { return ""; });
+                    add_filter('woocommerce_add_notice', function ($message) { return ""; });
+
                     if (WC()->cart) {
                       $ok = WC()->cart->apply_coupon($code);
                       if (!$ok || is_wp_error($ok)) {
-error_log("In cart add coupon");
                         // IOK FIXME GET ACTUAL ERROR HERE
                         throw (new Exception("Failed to apply coupon code $code"));
                       }
                     }
 
-error_log("Applying to order");
                     $res = $order->apply_coupon($code);
-error_log("Res is " . print_r($res, true));
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
                     return 1;
                 }
