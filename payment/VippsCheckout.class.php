@@ -527,6 +527,8 @@ jQuery(document).ready(function () {
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $action = sanitize_title($_REQUEST['callback_action'] ?? 0);
 
+        add_filter('woo_vipps_is_checkout_callback', '__return_true'); // Signal that this is a special context.
+
         // add some default action handlers IOK  2025-05-13
         $this->add_widget_callback_actions();
 
@@ -1048,6 +1050,10 @@ jQuery(document).ready(function () {
 
 
     public function cart_changed() {
+        // Don't do this if we are changing the cart in a Vipps Checkout callback. IOK 2025-05-15
+        if (apply_filters('woo_vipps_is_checkout_callback', false)) {
+           return;
+        }
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return;
