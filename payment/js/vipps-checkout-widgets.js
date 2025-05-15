@@ -1,37 +1,3 @@
-// Called when we know the order used to represent the Vipps Session exists
-function loadWidgets() {
-    jQuery.ajax(VippsConfig['vippsajaxurl'], {
-        data: {action: "vipps_checkout_get_widgets"},
-        type: "GET",
-        cache:false,
-        timeout: 0,
-        dataType:'html',
-        error: function (eh) { console.log("error loading widgets"); },
-        success: function (data) {
-            jQuery('#vipps_checkout_widget_mount').html(data); 
-            initializeWidgets();
-            jQuery('.vipps_checkout_widget_wrapper').show();
-            jQuery('body').trigger('woo-vipps-checkout-widgets-loaded');
-        }
-    });
-}
-
-
-// Common initializations for all widgets after load
-function initializeWidgets() {
-    // widget accordion feature. LP 2025-05-07
-    jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
-        jQuery(this).toggleClass('active');
-        jQuery(this).next('.vipps_checkout_body').toggle();
-    });
-    // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
-    function togglePurple() {
-        jQuery(this).toggleClass('vippspurple2');
-        jQuery(this).toggleClass('vippspurple-light');
-    };
-    jQuery('.vipps_checkout_widget_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
-}
-
 // Custom initialization for default widgets IOK 2025-05-13
 jQuery('body').on('woo-vipps-checkout-widgets-loaded', function () {
     if (jQuery('#vipps_checkout_widget_coupon_active_codes_container_codes').children().length > 0) {
@@ -190,33 +156,33 @@ function wooVippsCheckoutCallback( action, args ) {
     let callbackdata = args['data'] ? args['data'] : {};
 
     let data = { 'action': 'vipps_checkout_callback', 'callback_action': action, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 
-                 'orderid' : jQuery('#vippsorderid').val(),
-                  callbackdata, lock_held};
+        'orderid' : jQuery('#vippsorderid').val(),
+        callbackdata, lock_held};
 
     if (lock_held) {
-       wp.hooks.doAction('vippsCheckoutLockSession');
+        wp.hooks.doAction('vippsCheckoutLockSession');
     }
     jQuery("body").css("cursor", "progress");
     jQuery("body").addClass('processing');
 
     jQuery.ajax(VippsConfig['vippsajaxurl'],
-                    {   cache:false,
-                        timeout: 0,
-                        dataType:'json',
+        {   cache:false,
+            timeout: 0,
+            dataType:'json',
 
-                        data: data,
-                        method: 'POST', 
-                        error: function (xhr, statustext, error) {
-                           return errorhandler({error: statustext});
-                        },
-                        'success': function (result,statustext, xhr) {
-                           if (!result['success']) return errorhandler(result['data']);
-                           return successhandler(result['data']);
-                        },
-                        'complete': function (xhr, statustext) {
-                           if (lock_held) wp.hooks.doAction('vippsCheckoutUnlockSession');
-                           jQuery("body").css("cursor", "default");
-                           jQuery("body").removeClass('processing');
-                        }
-                    });
+            data: data,
+            method: 'POST', 
+            error: function (xhr, statustext, error) {
+                return errorhandler({error: statustext});
+            },
+            'success': function (result,statustext, xhr) {
+                if (!result['success']) return errorhandler(result['data']);
+                return successhandler(result['data']);
+            },
+            'complete': function (xhr, statustext) {
+                if (lock_held) wp.hooks.doAction('vippsCheckoutUnlockSession');
+                jQuery("body").css("cursor", "default");
+                jQuery("body").removeClass('processing');
+            }
+        });
 }

@@ -135,6 +135,40 @@ jQuery( document ).ready( function() {
         jQuery("body").removeClass('processing');
     }
 
+    // Called when we know the order used to represent the Vipps Session exists
+    function loadWidgets() {
+        jQuery.ajax(VippsConfig['vippsajaxurl'], {
+            data: {action: "vipps_checkout_get_widgets"},
+            type: "GET",
+            cache:false,
+            timeout: 0,
+            dataType:'html',
+            error: function (eh) { console.log("error loading widgets"); },
+            success: function (data) {
+                jQuery('#vipps_checkout_widget_mount').html(data); 
+                initializeWidgets();
+                jQuery('.vipps_checkout_widget_wrapper').show();
+                jQuery('body').trigger('woo-vipps-checkout-widgets-loaded');
+            }
+        });
+    }
+
+
+    // Common initializations for all widgets after load
+    function initializeWidgets() {
+        // widget accordion feature. LP 2025-05-07
+        jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
+            jQuery(this).toggleClass('active');
+            jQuery(this).next('.vipps_checkout_body').toggle();
+        });
+        // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
+        function togglePurple() {
+            jQuery(this).toggleClass('vippspurple2');
+            jQuery(this).toggleClass('vippspurple-light');
+        };
+        jQuery('.vipps_checkout_widget_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
+    }
+
     function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
