@@ -1019,7 +1019,11 @@ class VippsApi {
         // Transaction: amount,  description, orderSummary for modify.
         $transaction = array();
         $currency = $order->get_currency();
-        $transaction['amount'] = array('value' => round(wc_format_decimal($order->get_total(),'') * 100), 'currency' => $currency);
+
+        $total = round(wc_format_decimal($order->get_total(),'') * 100);
+        if ($total < 100)  $total = 100; // Vipps requires all orders to be at least this large IOK 2025-05-14
+
+        $transaction['amount'] = array('value' => $total, 'currency' => $currency);
         $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
         $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
         $transaction['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
@@ -1524,12 +1528,12 @@ class VippsApi {
         }
 
         // Parse the result, converting it to exceptions if neccessary. IOK 2018-05-11
-        return $this->handle_http_response($response,$headers,$content);
+        return $this->handle_http_response($msn, $response,$headers,$content);
     }
 
     // Read the response from Vipps - if any - and convert errors (null results, results over 299)
     // to Exceptions IOK 2018-05-11
-    private function handle_http_response ($response, $headers, $content) {
+    private function handle_http_response ($msn, $response, $headers, $content) {
         // This would be an error in the URL or something - or a network outage IOK 2018-04-24
         // we will assume it is temporary (ie, no response).
         if (!$response) {
@@ -1543,7 +1547,7 @@ class VippsApi {
         }
 
         // Now errorhandling. Default to use just the error header IOK 2018-05-11
-        $msg = $headers['status'];
+        $msg = "MSN $msn " .  $headers['status'] . " ";
 
         // Sometimes we get one type of error, sometimes another, depending on which layer explodes. IOK 2018-04-24
         if ($content) {
@@ -1555,31 +1559,29 @@ class VippsApi {
                 $msg .= " " . $content['message'];
             // From the receipt api
             } elseif (isset($content['detail'])) {
-                $msg = "$response";
                 $msg .= (isset($content['title'])) ?  (" " . $content['title']) : "";
                 $msg .= ": " .  $content['detail'];
                 if (isset($content['extraDetails'])) {
-                  $msg = "Extra details: " . print_r($content['extraDetails'], true);
+                  $msg .= "Extra details: " . print_r($content['extraDetails'], true);
                 }
             } elseif (isset($content['errors'])) {
-                $msg = print_r($content['errors'], true);
+                $msg .= print_r($content['errors'], true);
             } elseif (isset($content['error'])) {
                 // This seems to be only for the Access Token, which is a separate application IOK 2018-05-11
-                $msg = $content['error'];
+                $msg .= $content['error'];
             } elseif (isset($content['ResponseInfo'])) {
                 // This seems to be an error in the API layer. The error is in this elements' ResponseMessage
-                $msg = $response  . ' ' .  $content['ResponseInfo']['ResponseMessage'];
+                $msg .= $response  . ' ' .  $content['ResponseInfo']['ResponseMessage'];
             } elseif (isset($content['errorInfo'])) {
-                $msg = $response  . ' ' .  $content['errorInfo']['errorMessage'];
+                $msg .= $response  . ' ' .  $content['errorInfo']['errorMessage'];
             } elseif (isset($content['type'])) {
                 // The epayment API, version 1
-                $msg = "$response ";
                 $msg .= $content['title'];
                 if (isset($content['detail'])) $msg .= " - " . $content['detail'];
                 if (isset($content['extraDetails'])) $msg .= " - " . print_r($content['extraDetails'], true);
             } else {
                 // Otherwise, we get a simple array of objects with error messages.  Grab them all.
-                $msg = '';
+                $msg .= '';
                 if (is_array($content)) {
                     foreach($content as $entry) {
                         if (is_string($entry)) {
@@ -1593,7 +1595,7 @@ class VippsApi {
                     }
                 } else {
                     // At this point, we have no idea what we have got, so just stringify it IOK 2021-11-04
-                    $msg = $response . " " .  print_r($msg, true);
+                    $msg .=  print_r($msg, true);
                 }
             }
         }
