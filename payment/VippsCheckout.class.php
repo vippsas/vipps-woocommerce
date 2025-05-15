@@ -880,6 +880,7 @@ jQuery(document).ready(function () {
                         <form id="vipps_checkout_widget_coupon_form">
                             <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
                             <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
+                            <span id="vipps_checkout_widget_coupon_delete_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Could not remove coupon', 'woo-vipps') ?></span>
                             <span id="vipps_checkout_widget_coupon_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Coupon code added!', 'woo-vipps') ?></span>
                             <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
                             <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
