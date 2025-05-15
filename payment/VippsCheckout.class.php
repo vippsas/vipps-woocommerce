@@ -824,7 +824,18 @@ jQuery(document).ready(function () {
                 error_log("Doing $action on order " . $order->get_id());
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
+                    if (WC()->cart) {
+                      $ok = WC()->cart->apply_coupon($code);
+                      if (!$ok || is_wp_error($ok)) {
+error_log("In cart add coupon");
+                        // IOK FIXME GET ACTUAL ERROR HERE
+                        throw (new Exception("Failed to apply coupon code $code"));
+                      }
+                    }
+
+error_log("Applying to order");
                     $res = $order->apply_coupon($code);
+error_log("Res is " . print_r($res, true));
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
                     return 1;
                 }
@@ -835,6 +846,11 @@ jQuery(document).ready(function () {
                 error_log("Doing $action on order " . $order->get_id());
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
+                    // Ensure the cart too loses the coupon
+                    if (WC()->cart) {
+                      $ok = WC()->cart->remove_coupon($code);
+                      // can't do much if this fails so
+                    }
                     $res = $order->remove_coupon($code);
                     if ($res) return 1;
                 }
