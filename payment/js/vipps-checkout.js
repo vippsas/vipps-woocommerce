@@ -71,6 +71,47 @@ jQuery( document ).ready( function() {
                     wp.hooks.addAction('vippsCheckoutUnlockSession', 'woo-vipps', unlockSession);
     }
 
+    // Global function defined for widgets to be able to safely do callbacks to modify the order. IOK 2025-05-15
+    function wooVippsCheckoutCallback( action, args ) {
+        let successhandler = args['success'] ? args['success'] : function (data) { console.log ("Callback Success: %j", data); };
+        let errorhandler = args['error'] ? args['error'] : function (data) { console.log ("Callback Error: %j", data); };
+        let lock_held = args['lock_held'] ? 1 : 0;
+        let callbackdata = args['data'] ? args['data'] : {};
+    
+        let data = { 'action': 'vipps_checkout_callback', 'callback_action': action, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(),
+            'orderid' : jQuery('#vippsorderid').val(),
+            callbackdata, lock_held};
+    
+        if (lock_held) {
+            lockSession();
+        }
+        jQuery("body").css("cursor", "progress");
+        jQuery("body").addClass('processing');
+    
+        jQuery.ajax(VippsConfig['vippsajaxurl'],
+            {   cache:false,
+                timeout: 0,
+                dataType:'json',
+    
+                data: data,
+                method: 'POST',
+                error: function (xhr, statustext, error) {
+                    return errorhandler({error: statustext});
+                },
+                'success': function (result,statustext, xhr) {
+                    if (!result['success']) return errorhandler(result['data']);
+                    return successhandler(result['data']);
+                },
+                'complete': function (xhr, statustext) {
+                    if (lock_held) unlockSession();
+                    jQuery("body").css("cursor", "default");
+                    jQuery("body").removeClass('processing');
+                }
+            });
+    }
+    // and "export" it.
+    window.wooVippsCheckoutCallback = wooVippsCheckoutCallback;
+
     // Just in case we need to do this by button.
     jQuery('.vipps_checkout_button.button').click(function (e) { initVippsCheckout() });
     if (jQuery('.vipps_checkout_startdiv').length>0) {
