@@ -839,12 +839,6 @@ jQuery(document).ready(function () {
                     $res = $order->apply_coupon($code);
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
 
-                    // Note that this coupon was added specifically in Vipps Checkout. IOK 2025-05-15
-                    $my_coupons = $order->get_meta('_vipps_checkout_coupons') ?: [];
-                    $my_coupons[$code] = 1;
-                    $order->update_meta_data('_vipps_checkout_coupons', $my_coupons);
-                    $order->save();
-
                     return 1;
                 }
                 return 0;
@@ -860,14 +854,6 @@ jQuery(document).ready(function () {
                     }
                     $res = $order->remove_coupon($code);
 
-                    // This code probably needs to live in a "remove coupon" hook instead so it always
-                    // runs however the coupon is zapped. IOK 2025-05-15
-                    $my_coupons = $order->get_meta('_vipps_checkout_coupons') ?: [];
-                    if (!empty($my_coupons)) {
-                        unset($my_coupons[$code]);
-                        $order->update_meta_data('_vipps_checkout_coupons', $my_coupons); 
-                        $order->save();
-                    }
                     if ($res) return 1;
                 }
                 return 1; // just do it ? if errors happen here, the coupon *gets stuck*? FIXME IOK 2025-05-15
