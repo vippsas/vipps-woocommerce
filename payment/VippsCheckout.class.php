@@ -281,16 +281,21 @@ jQuery(document).ready(function () {
     // but without the standard, now wrong error message produced in the cart for this. IOK 2025-05-15
     public function prettily_cleanup_coupons_in_cart($silent=false) {
         $cart = WC()->cart;
+        $msgs = [];
+$msgs=["hei", "hopp", "zip"]; // FIXME
         foreach ( $cart->get_applied_coupons() as $code ) {
             $coupon = new WC_Coupon( $code );
             if ( ! $coupon->is_valid() ) {
                 if (!$silent) {
+                    $msg = sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code); 
                     // Will only run in the legacy non-gutenberg cart
-                    wc_add_notice( sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code), 'notice');
+                    wc_add_notice($msg, 'notice');
+                    $msgs[] = $msg;
                 }
                 $cart->remove_coupon( $code );
             }
         }
+        return $msgs;
     }
 
     // If coupons are added in Checkout after the order has been created, we need to change the error message 
@@ -302,8 +307,10 @@ jQuery(document).ready(function () {
             // The gutenberg block checks cart errors *before* calling woocommerce_check_cart_items, so we'll do it in the pre_render_block IOK 2025-05-15
             add_filter('pre_render_block', function ($nothing, $parsed_block, $parent_block) {
                 if ($parsed_block['blockName'] == 'woocommerce/cart') {
-                    $this->prettily_cleanup_coupons_in_cart('silent');
-                }
+                    // There are currently no way to signal notices as opposed to errors in the Gutenberg cart. IOK 2025-05-15
+                    // we therefore need to just silently remove any coupons we can't support.
+                    $msgs = $this->prettily_cleanup_coupons_in_cart('silent');
+                    }
                 return $nothing;
             }, 10, 3);
 
