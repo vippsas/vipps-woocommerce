@@ -77,17 +77,17 @@ jQuery( document ).ready( function() {
                 {   cache:false,
                     timeout: 0,
                     dataType:'json',
-    
-                    data: data,
                     method: 'POST',
+                    data: data,
                     error: function (xhr, statustext, error) {
                         return errorhandler({error: statustext});
                     },
-                    'success': function (result,statustext, xhr) {
+                    success: function (result,statustext, xhr) {
                         if (!result['success']) return errorhandler(result['data']);
                         return successhandler(result['data']);
                     },
-                    'complete': function (xhr, statustext) {
+                    complete: function (xhr, statustext) {
+                        if (lock_held) unlockSession();
                         jQuery("body").css("cursor", "default");
                         jQuery("body").removeClass('processing');
                     }
@@ -95,7 +95,7 @@ jQuery( document ).ready( function() {
         }
 
         if (lock_held) {
-            lockSession().then(doTheCall).catch( (error) => errorhandler({error: statustext})).finally( () => unlockSession());
+            lockSession().then(doTheCall).catch( (error) => errorhandler({error: statustext}));
         } else {
             doTheCall();
         }
@@ -227,7 +227,7 @@ jQuery( document ).ready( function() {
 
          // When just loaded, with a slight delay ensure the session is unlocked, just in case it was locked in a different tab which
          // was then closed. IOK 2025-04-24
-         setTimeout(unlockSession, 5000);
+         setTimeout(unlockSession, 3000);
 
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
@@ -341,6 +341,7 @@ jQuery( document ).ready( function() {
                    {cache:false, timeout: 0, dataType:'json', method: 'POST', 
                     data: { 'action': 'vipps_checkout_poll_session', 'lock_held' : locking, 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
+                        if (locking) setTimeout(unlockSession, 3000); // Allow backend some error recovery time. 
                         // This may happen as a result of a race condition where the user is sent to Vipps
                         //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
                         // It may also be a temporary error, so we do not interrupt polling or notify the user. Just log.
@@ -355,6 +356,7 @@ jQuery( document ).ready( function() {
                         polling = false;
                     },
                     success: function (result,statustext, xhr) {
+                        if (locking) unlockSession();
                         console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
                         if (result['data']['msg'] == 'EXPIRED') {
                             jQuery('#vippscheckoutexpired').show();
@@ -377,7 +379,7 @@ jQuery( document ).ready( function() {
         }
 
         if (locking) {
-            lockSession().then(doTheCall).catch( (error) => errorhandler(error)).finally( () => unlockSession());
+            lockSession().then(doTheCall).catch((error) => errorhandler(error));
         } else {
             doTheCall();
         }
