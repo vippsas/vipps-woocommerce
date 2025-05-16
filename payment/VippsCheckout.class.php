@@ -276,28 +276,36 @@ jQuery(document).ready(function () {
         }
     }
 
+    public function prettily_cleanup_coupons_in_cart() {
+        $cart = WC()->cart;
+        foreach ( $cart->get_applied_coupons() as $code ) {
+            $coupon = new WC_Coupon( $code );
+            if ( ! $coupon->is_valid() ) {
+                wc_add_notice( sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code), 'notice');
+                $cart->remove_coupon( $code );
+            }
+        }
+    }
+
     // If coupons are added in Checkout after the order has been created, we need to change the error message 
     // in the Cart when the coupon is noticed as invalid there and removed. IOK 2025-05-15
     public function handle_coupon_invalidation_in_checkout() {
         $gw = WC_Gateway_Vipps::instance();
         $active =  ($gw->get_option('vipps_checkout_enabled') == 'yes' &&  $gw->get_option('checkout_widget_coupon') === 'yes');
         if ($active) {
-            // Remove the standard validation code which reports an error
-            add_action('woocommerce_check_cart_items', function() {
-                $cart = WC()->cart;
-                remove_action('woocommerce_check_cart_items', [$cart, 'check_cart_coupons'], 1);
-            }, 0);
-            // Then add a new one that adds a different message, also reporting that the vipps session is gone
-            add_action('woocommerce_check_cart_items', function() {
-                $cart = WC()->cart;
-                foreach ( $cart->get_applied_coupons() as $code ) {
-                    $coupon = new WC_Coupon( $code );
-                    if ( ! $coupon->is_valid() ) {
-                        wc_add_notice( sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code), 'notice');
-                        $cart->remove_coupon( $code );
-                    }
+            // The gutenberg block checks cart errors *before* calling woocommerce_check_cart_items, so we'll do it in the pre_render_block IOK 2025-05-15
+            add_filter('pre_render_block', function ($nothing, $parsed_block, $parent_block) {
+                if ($parsed_block['blockName'] == 'woocommerce/cart') {
+                    $this->prettily_cleanup_coupons_in_cart();
                 }
-            }, 1);
+                return $nothing;
+            }, 10, 3);
+
+            // This is for the old shortcode-based cart; doing the remove several times is safe. IOK 2025-05-15
+            // Then add a new one that adds a different message, also reporting that the vipps session is gone
+            // Remove the standard validation code which reports an error
+            remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
+            add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
         }
     }
 
