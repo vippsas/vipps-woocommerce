@@ -3,10 +3,13 @@ add_action( 'woocommerce_shipping_init', function () {
   //add your shipping method to WooCommers list of Shipping methods
   add_filter( 'woocommerce_shipping_methods',  function ($methods) {
       $vc_activated =  get_option('woo_vipps_checkout_activated', false);
-      if (!$vc_activated) return false;
+      if (!$vc_activated) return $methods;
 
       $gw = Vipps::instance()->gateway();
-      if (!$gw) return;
+      if (!$gw) return $methods;
+
+      $vc_enabled =  $gw->get_option('vipps_checkout_enabled') === 'yes';
+      if (!$vc_enabled) return $methods;
 
 //      $methods['vipps_checkout'] = 'VippsCheckout_Shipping_Method';
       if ("yes" == $gw->get_option('vcs_posten'))     $methods['vipps_checkout_posten'] = 'VippsCheckout_Shipping_Method_Posten';
