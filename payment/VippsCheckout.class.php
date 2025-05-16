@@ -276,8 +276,34 @@ jQuery(document).ready(function () {
         }
     }
 
+    // If coupons are added in Checkout after the order has been created, we need to change the error message 
+    // in the Cart when the coupon is noticed as invalid there and removed. IOK 2025-05-15
+    public function handle_coupon_invalidation_in_checkout() {
+        $gw = WC_Gateway_Vipps::instance();
+        $active =  ($gw->get_option('vipps_checkout_enabled') == 'yes' &&  $gw->get_option('checkout_widget_coupon') === 'yes');
+        if ($active) {
+            // Remove the standard validation code which reports an error
+            add_action('woocommerce_check_cart_items', function() {
+                $cart = WC()->cart;
+                remove_action('woocommerce_check_cart_items', [$cart, 'check_cart_coupons'], 1);
+            }, 0);
+            // Then add a new one that adds a different message, also reporting that the vipps session is gone
+            add_action('woocommerce_check_cart_items', function() {
+                $cart = WC()->cart;
+                foreach ( $cart->get_applied_coupons() as $code ) {
+                    $coupon = new WC_Coupon( $code );
+                    if ( ! $coupon->is_valid() ) {
+                        wc_add_notice( sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code), 'notice');
+                        $cart->remove_coupon( $code );
+                    }
+                }
+            }, 1);
+        }
+    }
+
     public function init () {
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
+
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
@@ -300,6 +326,9 @@ jQuery(document).ready(function () {
 
         // Prevent previews and prefetches of the Vipps Checkout page starting and creating orders
         add_action('wp_head', array($this, 'wp_head'));
+
+        // Modify cart coupon validation
+        $this->handle_coupon_invalidation_in_checkout();
 
         // The Vipps Checkout feature which overrides the normal checkout process uses a shortcode
         add_shortcode('vipps_checkout', array($this, 'vipps_checkout_shortcode'));
