@@ -276,12 +276,18 @@ jQuery(document).ready(function () {
         }
     }
 
-    public function prettily_cleanup_coupons_in_cart() {
+    // This will, when visiting the cart or another checkout page and Vipps Mobilepay Checkout is active,
+    // remove any coupons that can't be both in the cart and in our current Checkout order (thus invalidating the order at the same time)
+    // but without the standard, now wrong error message produced in the cart for this. IOK 2025-05-15
+    public function prettily_cleanup_coupons_in_cart($silent=false) {
         $cart = WC()->cart;
         foreach ( $cart->get_applied_coupons() as $code ) {
             $coupon = new WC_Coupon( $code );
             if ( ! $coupon->is_valid() ) {
-                wc_add_notice( sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code), 'notice');
+                if (!$silent) {
+                    // Will only run in the legacy non-gutenberg cart
+                    wc_add_notice( sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code), 'notice');
+                }
                 $cart->remove_coupon( $code );
             }
         }
@@ -296,7 +302,7 @@ jQuery(document).ready(function () {
             // The gutenberg block checks cart errors *before* calling woocommerce_check_cart_items, so we'll do it in the pre_render_block IOK 2025-05-15
             add_filter('pre_render_block', function ($nothing, $parsed_block, $parent_block) {
                 if ($parsed_block['blockName'] == 'woocommerce/cart') {
-                    $this->prettily_cleanup_coupons_in_cart();
+                    $this->prettily_cleanup_coupons_in_cart('silent');
                 }
                 return $nothing;
             }, 10, 3);
