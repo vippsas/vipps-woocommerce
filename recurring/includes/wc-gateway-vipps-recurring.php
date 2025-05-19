@@ -2696,12 +2696,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Create a user if it does not exist
 		if ( ! get_user_by( 'ID', $customer_id ) ) {
-			$email       = WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL;
-			$username    = wc_create_new_customer_username( $email );
-			$customer_id = wc_create_new_customer( $email, $username, null, [
-				'first_name'    => 'Anonymous Vipps MobilePay Customer',
-				'user_nicename' => __( 'Anonymous Vipps MobilePay Customer', 'woo-vipps' ),
-			] );
+			$email = WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL;
+
+			$customer = get_user_by( 'email', $email );
+			if ( ! $customer ) {
+				$username    = wc_create_new_customer_username( $email );
+				$customer_id = wc_create_new_customer( $email, $username, null, [
+					'first_name'    => 'Anonymous Vipps MobilePay Customer',
+					'user_nicename' => __( 'Anonymous Vipps MobilePay Customer', 'woo-vipps' ),
+				] );
+			} else {
+				$customer_id = $customer->ID;
+			}
 
 			update_option( WC_Vipps_Recurring_Helper::OPTION_ANONYMOUS_SYSTEM_CUSTOMER_ID, $customer_id );
 		}
