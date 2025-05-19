@@ -917,7 +917,7 @@ jQuery(document).ready(function () {
         $use_widget_coupon = wc_coupons_enabled() && $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
 
         // Premade widget: order note. LP 2025-05-12
-        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
+        $use_widget_ordernotes = $this->gateway()->get_option('checkout_widget_ordernotes') === 'yes';
         if ($use_widget_coupon || $use_widget_ordernotes) {
             add_filter('woo_vipps_checkout_widgets', function ($widgets) use ($use_widget_coupon, $use_widget_ordernotes) {
                 if ($use_widget_coupon) {
