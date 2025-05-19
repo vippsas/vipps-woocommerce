@@ -30,7 +30,7 @@ SOFTWARE.
 
 
 jQuery( document ).ready( function() {
-    // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
+     // This gets loaded conditionally when the Vipps Checkout page is used IOK 2021-08-25
     var pollingdone=false;
     var polling=false;
     var sessionStarted = false;
@@ -44,32 +44,64 @@ jQuery( document ).ready( function() {
     // can only be locked from a screen like this. IOK 2025-04-24
     function unlockSession() {
        if (VCO) {
-         try {
-          VCO.unlock();
-         } catch (error) {
-         }
+           return VCO.unlock();
        }
     }
     function lockSession(timeout=0) {
        if (VCO) {
-         try {
-          VCO.lock();
+          const lockPromise = VCO.lock();
           if (timeout > 0) {
               setTimeout(unlockSession, timeout);
           }
-         } catch (error) {
-         }
+          return lockPromise;
        }
     }
 
-    // Provide a way for thirdparties to lock the session without exposing internal functions.
-    // Using WPs hooks interface here for historical reasons. IOK 2025-04-25
-    // Ensure you have enqueued wp-hooks and do (for instance) 
-    // wp.hooks.doAction('vippsCheckoutLockSession', 5000);
-    if (typeof wp !== 'undefined' && typeof wp.hooks !== 'undefined') {
-                    wp.hooks.addAction('vippsCheckoutLockSession', 'woo-vipps', lockSession);
-                    wp.hooks.addAction('vippsCheckoutUnlockSession', 'woo-vipps', unlockSession);
+    // Global function defined for widgets to be able to safely do callbacks to modify the order. IOK 2025-05-15
+    function wooVippsCheckoutCallback( action, args ) {
+        let successhandler = args['success'] ? args['success'] : function (data) { console.log ("Callback Success: %j", data); };
+        let errorhandler = args['error'] ? args['error'] : function (data) { console.log ("Callback Error: %j", data); };
+        let lock_held = args['lock_held'] ? 1 : 0;
+        let callbackdata = args['data'] ? args['data'] : {};
+    
+        let data = { 'action': 'vipps_checkout_callback', 'callback_action': action, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(),
+            'orderid' : jQuery('#vippsorderid').val(),
+            callbackdata, lock_held};
+
+        // Abstracted out so we can pass it to the lock promise if neccessary IOK 2025-05-16
+        function doTheCall() {
+            jQuery("body").css("cursor", "progress");
+            jQuery("body").addClass('processing');
+    
+            jQuery.ajax(VippsConfig['vippsajaxurl'],
+                {   cache:false,
+                    timeout: 0,
+                    dataType:'json',
+                    method: 'POST',
+                    data: data,
+                    error: function (xhr, statustext, error) {
+                        return errorhandler({error: statustext});
+                    },
+                    success: function (result,statustext, xhr) {
+                        if (!result['success']) return errorhandler(result['data']);
+                        return successhandler(result['data']);
+                    },
+                    complete: function (xhr, statustext) {
+                        if (lock_held) unlockSession();
+                        jQuery("body").css("cursor", "default");
+                        jQuery("body").removeClass('processing');
+                    }
+                });
+        }
+
+        if (lock_held) {
+            lockSession().then(doTheCall).catch( (error) => errorhandler({error: statustext}));
+        } else {
+            doTheCall();
+        }
     }
+    // and "export" it.
+    window.wooVippsCheckoutCallback = wooVippsCheckoutCallback;
 
     // Just in case we need to do this by button.
     jQuery('.vipps_checkout_button.button').click(function (e) { initVippsCheckout() });
@@ -135,10 +167,45 @@ jQuery( document ).ready( function() {
         jQuery("body").removeClass('processing');
     }
 
+    // Called when we know the order used to represent the Vipps Session exists
+    function loadWidgets() {
+        jQuery.ajax(VippsConfig['vippsajaxurl'], {
+            data: {action: "vipps_checkout_get_widgets"},
+            type: "GET",
+            cache:false,
+            timeout: 0,
+            dataType:'html',
+            error: function (eh) { console.log("error loading widgets"); },
+            success: function (data) {
+                jQuery('#vipps_checkout_widget_mount').html(data); 
+                initializeWidgets();
+                jQuery('.vipps_checkout_widget_wrapper').show();
+                jQuery('body').trigger('woo-vipps-checkout-widgets-loaded');
+            }
+        });
+    }
+
+
+    // Common initializations for all widgets after load
+    function initializeWidgets() {
+        // widget accordion feature. LP 2025-05-07
+        jQuery('.vipps_checkout_widget_title.accordion').on('click', function() {
+            jQuery(this).toggleClass('active');
+            jQuery(this).next('.vipps_checkout_body').toggle();
+        });
+        // Coupon code widget button hover, using the css color classes instead of :hover. LP 2025-08-08
+        function togglePurple() {
+            jQuery(this).toggleClass('vippspurple2');
+            jQuery(this).toggleClass('vippspurple-light');
+        };
+        jQuery('.vipps_checkout_widget_button').on('mouseenter', togglePurple).on('mouseleave', togglePurple);
+    }
+
     function proceedWithCheckout() {
       // Try to start Vipps Checkout with any session provided.
       function doVippsCheckout() {
          if (!VippsSessionState) return false;
+         loadWidgets();
          let args = { 
                      checkoutFrontendUrl: VippsSessionState['checkoutFrontendUrl'].replace(/\/$/, ''),
                      token:  VippsSessionState['token'],
@@ -160,7 +227,7 @@ jQuery( document ).ready( function() {
 
          // When just loaded, with a slight delay ensure the session is unlocked, just in case it was locked in a different tab which
          // was then closed. IOK 2025-04-24
-         setTimeout(unlockSession, 5000);
+         setTimeout(unlockSession, 3000);
 
          jQuery("body").css("cursor", "default");
          jQuery('.vipps_checkout_button.button').css("cursor", "default");
@@ -263,34 +330,33 @@ jQuery( document ).ready( function() {
                     wp.hooks.doAction('vippsCheckoutPollingStart', type, pollData, VCO);
         }
 
-        if (locking) {
-           lockSession();
+        // Just a trivial errorhandler for now. IOK 2025-05-15
+        function errorhandler (error) {
+            console.log(error);
         }
 
-        jQuery.ajax(VippsConfig['vippsajaxurl'],
-                {cache:false,
-                    timeout: 0,
-                    dataType:'json',
+        // Abstracted out so we can pass it to the lock promise if neccessary IOK 2025-05-16
+        function doTheCall() {
+           jQuery.ajax(VippsConfig['vippsajaxurl'],
+                   {cache:false, timeout: 0, dataType:'json', method: 'POST', 
                     data: { 'action': 'vipps_checkout_poll_session', 'lock_held' : locking, 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
-                        setTimeout(unlockSession, 5000); // Allow backend some time to complete actions that would require the lock to be held. IOK 2025-04-24
-
+                        if (locking) setTimeout(unlockSession, 3000); // Allow backend some error recovery time. 
                         // This may happen as a result of a race condition where the user is sent to Vipps
                         //  when the "poll" call still hasn't returned. In this case this error doesn't actually matter, 
                         // It may also be a temporary error, so we do not interrupt polling or notify the user. Just log.
                         // IOK 2022-04-06
                         if (error == 'timeout')  {
-                            console.log('Timeout polling session data hos Vipps');
+                            errorhandler('Timeout polling session data hos Vipps');
                         } else {
-                            console.log('Error polling session data hos Vipps - this may be temporary or because the user has moved on: ' + statustext + " error: " + error);
+                            errorhandler('Error polling session data hos Vipps - this may be temporary or because the user has moved on: ' + statustext + " error: " + error);
                         }
                     },
-                    'complete': function (xhr, statustext, error)  {
+                    complete: function (xhr, statustext, error)  {
                         polling = false;
                     },
-                    method: 'POST', 
-                    'success': function (result,statustext, xhr) {
-                        unlockSession();
+                    success: function (result,statustext, xhr) {
+                        if (locking) unlockSession();
                         console.log('Ok: ' + result['success'] + ' message ' + result['data']['msg'] + ' url ' + result['data']['url']);
                         if (result['data']['msg'] == 'EXPIRED') {
                             jQuery('#vippscheckoutexpired').show();
@@ -310,6 +376,14 @@ jQuery( document ).ready( function() {
                         }
                     },
                 });
+        }
+
+        if (locking) {
+            lockSession().then(doTheCall).catch((error) => errorhandler(error));
+        } else {
+            doTheCall();
+        }
+
     }
 
 

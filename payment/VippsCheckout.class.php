@@ -251,12 +251,14 @@ jQuery(document).ready(function () {
         // nocache headres to any page that uses this shortcode. IOK 2021-08-26
         // Furthermore, sometimes woocommerce calls is_checkout() *before* woocommerce is loaded, so
         global $post;
-        if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
 
+        // Modify cart coupon validation - has to be very early because otherwise we can't show 
+        // notices in gutenberg cart IOK 2025-05-15
+        $this->handle_coupon_invalidation_in_checkout();
+
+        if ($post && is_page() &&  has_shortcode($post->post_content, 'vipps_checkout')) {
             // Add fonts for the widgets on this page IOK 2025-05-02
             wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
-
-
 
             add_filter('woocommerce_is_checkout', '__return_true');
             add_filter('body_class', function ($classes) {
@@ -276,8 +278,10 @@ jQuery(document).ready(function () {
         }
     }
 
+
     public function init () {
         add_action('wp_loaded', array($this, 'wp_register_scripts'));
+
         // For Vipps Checkout, poll for the result of the current session
         add_action('wp_ajax_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_poll_session', array($this, 'vipps_ajax_checkout_poll_session'));
@@ -285,13 +289,22 @@ jQuery(document).ready(function () {
         add_action('wp_ajax_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
         add_action('wp_ajax_nopriv_vipps_checkout_start_session', array($this, 'vipps_ajax_checkout_start_session'));
 
+        // And for user-defined callbacks in the widgets. These may modify the order.
+        add_action('wp_ajax_vipps_checkout_callback', array($this, 'vipps_ajax_checkout_callback'));
+        add_action('wp_ajax_nopriv_vipps_checkout_callback', array($this, 'vipps_ajax_checkout_callback'));
+
         // Check cart total before initiating Vipps Checkout NT-2024-09-07
         // This allows for real-time validation of the cart before proceeding with the checkout process
         add_action('wp_ajax_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
         add_action('wp_ajax_nopriv_vipps_checkout_validate_cart', array($this, 'ajax_vipps_checkout_validate_cart'));
 
+        // Retrieve widgets - this is done by ajax so as to ensure that the Order object exists at this point.
+        add_action('wp_ajax_vipps_checkout_get_widgets', array($this, 'vipps_ajax_get_widgets'));
+        add_action('wp_ajax_nopriv_vipps_checkout_get_widgets', array($this, 'vipps_ajax_get_widgets'));
+
         // Prevent previews and prefetches of the Vipps Checkout page starting and creating orders
         add_action('wp_head', array($this, 'wp_head'));
+
 
         // The Vipps Checkout feature which overrides the normal checkout process uses a shortcode
         add_shortcode('vipps_checkout', array($this, 'vipps_checkout_shortcode'));
@@ -354,7 +367,8 @@ jQuery(document).ready(function () {
     public function wp_register_scripts () {
         $sdkurl = 'https://checkout.vipps.no/vippsCheckoutSDK.js';
         wp_register_script('vipps-sdk',$sdkurl,array());
-        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
+        wp_register_script('vipps-checkout-widgets', plugins_url('js/vipps-checkout-widgets.js', __FILE__), [], filemtime(dirname(__FILE__) . "/js/vipps-checkout-widgets.js"), 'true');
+        wp_register_script('vipps-checkout',plugins_url('js/vipps-checkout.js',__FILE__),array('vipps-gw','vipps-sdk', 'vipps-checkout-widgets'),filemtime(dirname(__FILE__) . "/js/vipps-checkout.js"), 'true');
     }
 
     public function log ($what,$type='info') {
@@ -510,6 +524,49 @@ jQuery(document).ready(function () {
         }
     }
 
+    // Handler function for all other callbacks from the Vipps MobilePay checkout screen - adding 
+    // coupons, modifying the order etc. Actions are added with the filter 'woo_vipps_checkout_callback_actions' IOK 2025-05-13
+    // -- they are functions taking the action name and an order object. IOK 2025-05-13
+    public function vipps_ajax_checkout_callback() {
+        check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
+        $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
+        $lock_held = intval($_REQUEST['lock_held'] ?? 0);
+        $action = sanitize_title($_REQUEST['callback_action'] ?? 0);
+
+        add_filter('woo_vipps_is_checkout_callback', '__return_true'); // Signal that this is a special context.
+
+        // add some default action handlers IOK  2025-05-13
+        $this->add_widget_callback_actions();
+
+        $actions = apply_filters('woo_vipps_checkout_callback_actions', []);
+
+        $handler = $actions[$action] ?? false;
+        if (!$handler) {
+           $msg = sprintf(__("Vipps MobilePay Checkout callback with unknown action: %s", 'woo-vipps'), $action);
+           $this->log($msg, 'DEBUG');
+           return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$msg));
+        }
+        // The single current pending order. IOK 2025-04-25
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $order = $current_pending ? wc_get_order($current_pending) : null;
+        $prevtotal = $order->get_total();
+        try {
+            $result = $handler($action, $order);
+            $order = wc_get_order($order->get_id()); // Incase the order has changed since last wc_get_order. LP 2025-05-14
+            $newtotal = $order->get_total();
+            if ($lock_held && $newtotal != $prevtotal) {
+                try {
+                    $res = $this->gateway()->api->checkout_modify_session($order);
+                } catch (Exception $e) {
+                    $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
+                }
+            }
+            return wp_send_json_success(array('msg'=>$result));
+        } catch (Exception $e) {
+           return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$e->getMessage()));
+        }
+    }
+
     // Check the current status of the current Checkout session for the user.
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
@@ -625,17 +682,15 @@ jQuery(document).ready(function () {
 
         }
         if ($change) {
-            $order->save();
+          $order->save();
         }
 
         // When the address changes, the VAT/taxes may have changed too. Recalculate the order total if we know the Vipps lock
         // of the order is held. IOK 2025-04-25
-        if ($change && $lock_held) {
+        if ($change) {
             $prevtotal = $order->get_total();
             $newtotal = $order->calculate_totals(true); // With taxes please
-
-            if ($newtotal < 1) $newtotal = 1; // Vipps requires this value to be larger than 1
-            if ($newtotal != $prevtotal) {
+            if ($lock_held && $newtotal != $prevtotal) {
                 try {
                     $res = $this->gateway()->api->checkout_modify_session($order);
                     $order->save();
@@ -728,17 +783,220 @@ jQuery(document).ready(function () {
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
-    // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
-    function get_checkout_widgets() {
+    // Returns HTML of any widgets for the Checkout page IOK 2025-05-13
+    function vipps_ajax_get_widgets () {
+        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        $order = $current_pending ? wc_get_order($current_pending) : null;
+        if (!$order) return "";
+        print $this->get_checkout_widgets($order);
+        exit();
+    }
+
+    // This will, when visiting the cart or another checkout page and Vipps Mobilepay Checkout is active,
+    // remove any coupons that can't be both in the cart and in our current Checkout order (thus invalidating the order at the same time)
+    // but without the standard, now wrong error message produced in the cart for this. IOK 2025-05-15
+    public function prettily_cleanup_coupons_in_cart($silent=false) {
+        $cart = WC()->cart;
+        foreach ( $cart->get_applied_coupons() as $code ) {
+            $coupon = new WC_Coupon( $code );
+            if ( ! $coupon->is_valid() ) {
+                if (!$silent) {
+                    $msg = sprintf(__("Your coupon code %s has been removed from your cart and your Checkout session has ended. You can add the code again either here or on the Checkout page", 'woo-vipps'), $code); 
+                    // Will only run in the legacy non-gutenberg cart
+                    wc_add_notice($msg, 'notice');
+                }
+                $cart->remove_coupon( $code );
+            }
+        }
+    }
+
+    // This runs very early, in template-redirect; so we can add notices to the cart page. IOK 2025-05-15
+    // If coupons are added in Checkout after the order has been created, we need to change the error message 
+    // in the Cart when the coupon is noticed as invalid there and removed. IOK 2025-05-15
+    public function handle_coupon_invalidation_in_checkout() {
         return ""; // IOK temporarily disabled in release FIXME
+        global $post;
+        if ($post && is_page()) { 
+            $gw = WC_Gateway_Vipps::instance();
+            $active =  ($gw->get_option('vipps_checkout_enabled') == 'yes' &&  $gw->get_option('checkout_widget_coupon') === 'yes');
+            if ($active && has_block("woocommerce/cart")) {
+                $this->prettily_cleanup_coupons_in_cart();
+            }
+            // This is for the old shortcode-based cart; doing the remove several times is safe. IOK 2025-05-15
+            // Then add a new one that adds a different message, also reporting that the vipps session is gone
+            // Remove the standard validation code which reports an error
+            add_action('init', function () {
+                remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
+                add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
+            });
+        }
+    }
 
+    // Define handlers for some default widgets (if active etc). IOK 2025-05-13
+    public function add_widget_callback_actions () {
+        add_filter('woo_vipps_checkout_callback_actions', function ($filters) {
+            $filters['submitnotes'] = function ($action, $order) {
+                $notes = isset($_REQUEST['callbackdata']['notes']) ? trim($_REQUEST['callbackdata']['notes']) : '';
+
+                // First delete latest customer order note if exists. LP 2025-05-14
+                $order_notes = $order->get_customer_order_notes();
+                $deleted = 0;
+                if ($order_notes) {
+                    $latest_note = $order_notes[0];
+                    if (is_a($latest_note, 'WP_Comment')) {
+                        $deleted = wc_delete_order_note($latest_note->comment_ID);
+                    } else {
+                        error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
+                    }
+                }
+
+
+                // Disable the email that gets sent on new order notes. IOK 2025-05-14 
+                add_filter('woocommerce_mail_callback', function ($mailer, $mailclass) {
+                        return '__return_true';
+                }, 999, 2);
+
+
+                // Add new note. LP 2025-05-14
+                if ($notes) {
+                    $order->add_order_note($notes, 1, true);
+                    return 1;
+                }
+                return 0;
+            };
+
+            $filters['submitcoupon'] = function ($action, $order) {
+                $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
+
+                if ($code) {
+                    add_filter('woocommerce_add_success', function ($message) { return ""; });
+                    add_filter('woocommerce_add_error', function ($message) { return ""; });
+                    add_filter('woocommerce_add_notice', function ($message) { return ""; });
+
+                    if (WC()->cart) {
+                      $ok = WC()->cart->apply_coupon($code);
+                      if (!$ok || is_wp_error($ok)) {
+                        // IOK FIXME GET ACTUAL ERROR HERE
+                        throw (new Exception("Failed to apply coupon code $code"));
+                      }
+                    }
+
+                    $res = $order->apply_coupon($code);
+                    if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
+
+                    return 1;
+                }
+                return 0;
+            };
+
+            $filters['removecoupon'] = function ($action, $order) {
+                $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
+                if ($code) {
+                    // Ensure the cart too loses the coupon
+                    if (WC()->cart) {
+                      $ok = WC()->cart->remove_coupon($code);
+                      // can't do much if this fails so
+                    }
+                    $res = $order->remove_coupon($code);
+
+                    if ($res) return 1;
+                }
+                return 1; // just do it ? if errors happen here, the coupon *gets stuck*? FIXME IOK 2025-05-15
+            };
+            return $filters;
+        });
+    }
+
+
+    // Add premade widgets depending on users settings. LP 2025-05-14
+    // For now, coupon code widget and order notes widget.
+    function maybe_add_widgets() {
+        // Premade widget: coupon code. LP 2025-05-08
+        $widgets = [];
+        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
+
+        // Premade widget: order note. LP 2025-05-12
+        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
+        if ($use_widget_ordernotes) {
+        }
+        if ($use_widget_coupon || $use_widget_ordernotes) {
+            add_filter('woo_vipps_checkout_widgets', function ($widgets) use ($use_widget_coupon, $use_widget_ordernotes) {
+                if ($use_widget_coupon) {
+                    $widgets[] = [
+                        'title' => __('Coupon code', 'woo-vipps'),
+                        'id' => 'vipps_checkout_widget_coupon',
+                        'class' => 'vipps_checkout_widget_premade',
+                        'callback' => function($order) {?>
+                        <div id="vipps_checkout_widget_coupon_active_codes_container" style="display:none;">
+                            Active codes
+                            <div id="vipps_checkout_widget_coupon_active_codes_container_codes">
+                            <?php 
+                            if ($order):
+                                foreach ($order->get_coupon_codes() as $code):?>
+                                    <div class="vipps_checkout_widget_coupon_active_code_box" id="vipps_checkout_widget_coupon_active_code_<?php echo $code;?>">
+                                        <span class="vipps_checkout_widget_coupon_active_code"><?php echo $code;?></span>
+                                        <span class="vipps_checkout_widget_coupon_delete">✕</span>
+                                    </div>
+                                <?php endforeach; endif;?>
+                        </div>
+                        </div>
+                        <form id="vipps_checkout_widget_coupon_form">
+                            <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
+                            <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
+                            <span id="vipps_checkout_widget_coupon_delete_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Could not remove coupon', 'woo-vipps') ?></span>
+                            <span id="vipps_checkout_widget_coupon_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Coupon code added!', 'woo-vipps') ?></span>
+                            <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
+                            <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
+                        </form>
+                        <?php
+                        }
+                    ];
+                }
+                if ($use_widget_ordernotes) {
+                    $widgets[] = [
+                        'title' => __('Order notes', 'woo-vipps'),
+                        'id' => 'vipps_checkout_widget_ordernotes',
+                        'class' => 'vipps_checkout_widget_premade',
+                        'callback' => function($order) { ?>
+                    <form id="vipps_checkout_widget_ordernotes_form">
+                        <span for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></span><br>
+                        <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label><br>
+                        <span id="vipps_checkout_widget_ordernotes_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Something went wrong', 'woo-vipps') ?></span>
+                        <span id="vipps_checkout_widget_ordernotes_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Saved', 'woo-vipps') ?></span>
+                        <input id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes" value="<?php if ($order) {
+                            $order_notes = $order->get_customer_order_notes();
+                            if ($order_notes) {
+                                $latest_note = $order_notes[0];
+                                if (is_a($latest_note, 'WP_Comment')) echo $latest_note->comment_content;
+                                else error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
+                            }
+                        } ?>"/><br>
+                        <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>
+                    </form>
+                    <?php
+                        }
+                    ];
+                }
+                return $widgets;
+            });
+        }
+
+        return $widgets;
+    }
+
+    // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
+    function get_checkout_widgets($order) {
+        return ""; // IOK temporarily disabled in release FIXME
         // Array of tables of [title, id, callback, class].
-        // NB: We may not have an order at this point. IOK 2025-05-02
-        $widgets = apply_filters('woo_vipps_checkout_widgets',  []);
-        if (empty($widgets)) return "";
+        // $default_widgets = $this->get_checkout_default_widgets($order);
+        $this->maybe_add_widgets();
 
+        // NB: We may not have an order at this point. IOK 2025-05-02
+        $widgets = apply_filters('woo_vipps_checkout_widgets', [], $order);
+
+        if (empty($widgets)) return "";
         ob_start();
-        echo "<div class='vipps_checkout_widget_wrapper'>";
+        echo "<div class='vipps_checkout_widget_wrapper' style='display:none;'>";
         foreach ($widgets as $widget) {
            $id = $widget['id'] ?? "";
            $title = $widget['title'] ?? "";
@@ -750,14 +1008,15 @@ jQuery(document).ready(function () {
            $idattr = $id ? "id='" . esc_attr($id) . "'" : "";
            $classattr = "class='vipps_checkout_widget" . ($class ? " " . esc_attr($class) : "") . "'";
            echo "<div $idattr $classattr>";
-           echo "<div class='vipps_checkout_widget_title accordion'>" . esc_html($title) . "<span class='vipps_checkout_widget_icon'>+</span></div>";
+           echo "<div class='vipps_checkout_widget_title accordion'>" . esc_html($title) . "<span class='vipps_checkout_widget_icon'></span></div>";
            echo "<div class='vipps_checkout_body'>";
-           call_user_func($callback);
+           call_user_func($callback, $order);
            echo "</div>";
            echo "</div>";
         }
         echo "</div>";
         $res = ob_get_clean();
+
         return $res;
     }
 
@@ -827,14 +1086,15 @@ jQuery(document).ready(function () {
             $out .= "<script>VippsSessionState = null;</script>\n";
         }
 
-        // Add widgets above the checkoutframe if required -- added by the woo_vipps_checkout_widgets filter. IOK 2025-05-02
-        $out .= $this->get_checkout_widgets();
-
+        // Mount point for widgets. IOK 2025-05-13
+        // starts hidden. is shown when vipps checkout loads successfully. LP 2025-05-12
         $out .= "<div id='vippscheckoutframe'>";
+        $out .= "<div id='vipps_checkout_widget_mount'></div>";
 
         $out .= "</div>";
         $out .= "<div style='display:none' id='vippscheckouterror'><p>$errortext</p></div>";
         $out .= "<div style='display:none' id='vippscheckoutexpired'><p>$expiretext</p></div>";
+
 
         // We impersonate the woocommerce-checkout form here mainly to work with the Pixel Your Site plugin IOK 2022-11-24
         $classlist = apply_filters("woo_vipps_express_checkout_form_classes", "woocommerce-checkout");
@@ -855,6 +1115,10 @@ jQuery(document).ready(function () {
 
 
     public function cart_changed() {
+        // Don't do this if we are changing the cart in a Vipps Checkout callback. IOK 2025-05-15
+        if (apply_filters('woo_vipps_is_checkout_callback', false)) {
+           return;
+        }
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return;
