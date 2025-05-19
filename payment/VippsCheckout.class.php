@@ -821,14 +821,13 @@ jQuery(document).ready(function () {
             if ($active)  {
                 if (has_block("woocommerce/cart")) {
                     $this->prettily_cleanup_coupons_in_cart();
+                } else {
+                    // This is for the old shortcode-based cart; doing the remove several times is safe. IOK 2025-05-15
+                    // Then add a new one that adds a different message, also reporting that the vipps session is gone
+                    // Remove the standard validation code which reports an error
+                    remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
+                    add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
                 }
-                // This is for the old shortcode-based cart; doing the remove several times is safe. IOK 2025-05-15
-                // Then add a new one that adds a different message, also reporting that the vipps session is gone
-                // Remove the standard validation code which reports an error
-                add_action('init', function () {
-                        remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
-                        add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
-                });
             }
         }
     }
