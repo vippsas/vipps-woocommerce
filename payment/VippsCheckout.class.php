@@ -827,7 +827,7 @@ jQuery(document).ready(function () {
                 // Remove the standard validation code which reports an error
                 add_action('init', function () {
                         remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
-                        add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
+                        add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'), 1);
                 });
             }
         }
