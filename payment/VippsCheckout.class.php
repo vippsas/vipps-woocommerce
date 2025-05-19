@@ -814,6 +814,7 @@ jQuery(document).ready(function () {
     // If coupons are added in Checkout after the order has been created, we need to change the error message 
     // in the Cart when the coupon is noticed as invalid there and removed. IOK 2025-05-15
     public function handle_coupon_invalidation_in_checkout() {
+        return ""; // IOK temporarily disabled in release FIXME
         global $post;
         if ($post && is_page()) { 
             $gw = WC_Gateway_Vipps::instance();
@@ -985,6 +986,7 @@ jQuery(document).ready(function () {
 
     // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
     function get_checkout_widgets($order) {
+        return ""; // IOK temporarily disabled in release FIXME
         // Array of tables of [title, id, callback, class].
         // $default_widgets = $this->get_checkout_default_widgets($order);
         $this->maybe_add_widgets();
