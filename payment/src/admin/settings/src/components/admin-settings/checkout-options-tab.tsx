@@ -81,12 +81,15 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
       <p>{fixCheckoutName(gettext("checkout_widgets.description"), paymentMethod)}</p>
 
       {/* Coupon code widget checkbox. LP 2025-05-12 */} 
+      {/* Will only be present if coupons are activated for woo IOK 2025-05-19 */}
+{ gettext("checkout_widget_coupon.title") != "checkout_widget_coupon.title" ?
       <CheckboxFormField
         name="checkout_widget_coupon"
         titleKey="checkout_widget_coupon.title"
         descriptionKey="checkout_widget_coupon.description"
         labelKey="checkout_widget_coupon.label"
       />
+: [] }
 
       {/* Order notes widget checkbox. LP 2025-05-12 */} 
       <CheckboxFormField
