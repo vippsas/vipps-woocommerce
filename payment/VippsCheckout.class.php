@@ -826,7 +826,7 @@ jQuery(document).ready(function () {
                     // Then add a new one that adds a different message, also reporting that the vipps session is gone
                     // Remove the standard validation code which reports an error
                     remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
-                    add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
+                    add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'), 1);
                 }
             }
         }
