@@ -817,7 +817,7 @@ class WC_Vipps_Recurring {
 			// Similarly, if it has a billing email we don't want to delete it.
 			$empty_email = trim( $subscription->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) || ! $subscription->get_billing_email();
 
-			WC_Vipps_Recurring_Logger::log( sprintf( "Checking if order %s should be deleted (status: %s, empty email: %s, is renewal: %s).", $subscription_id, $subscription->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $latest_order ) ? 'Yes' : 'No' ) );
+			WC_Vipps_Recurring_Logger::log( sprintf( "Checking if subscription %s should be deleted (status: %s, empty email: %s, is renewal: %s).", $subscription_id, $subscription->get_status(), $empty_email ? 'Yes' : 'No', wcs_order_contains_renewal( $latest_order ) ? 'Yes' : 'No' ) );
 
 			$allowed_statuses = [
 				'pending',
@@ -828,7 +828,7 @@ class WC_Vipps_Recurring {
 			if ( ! in_array( $subscription->get_status( 'edit' ), $allowed_statuses )
 				 || ! $empty_email
 				 || wcs_order_contains_renewal( $latest_order ) ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( "Removing %s from the deletion queue as it should no longer be deleted.", $subscription_id ) );
+				WC_Vipps_Recurring_Logger::log( sprintf( "Removing subscription %s from the deletion queue as it should no longer be deleted.", $subscription_id ) );
 
 				WC_Vipps_Recurring_Helper::delete_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION );
 				$subscription->save();
@@ -836,11 +836,9 @@ class WC_Vipps_Recurring {
 				continue;
 			}
 
-			if ( ! wcs_order_contains_renewal( $latest_order ) ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( "Deleting subscription %s and latest order %s.", $subscription_id, $latest_order_id ) );
-				$latest_order->delete();
-				$subscription->delete();
-			}
+			WC_Vipps_Recurring_Logger::log( sprintf( "Deleting subscription %s and latest order %s.", $subscription_id, $latest_order_id ) );
+			$latest_order->delete();
+			$subscription->delete();
 		}
 	}
 
