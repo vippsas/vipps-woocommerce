@@ -45,7 +45,6 @@ class WC_Vipps_Recurring_Helper {
 	public const META_ORDER_TRANSACTION_ID = '_transaction_id';
 	public const META_ORDER_INITIAL = '_vipps_recurring_initial';
 	public const META_ORDER_ZERO_AMOUNT = '_vipps_recurring_zero_amount';
-	public const META_ORDER_MARKED_FOR_DELETION = '_vipps_recurring_marked_for_deletion';
 	public const META_ORDER_IDEMPOTENCY_KEY = '_idempotency_key';
 	public const META_ORDER_CHECKOUT_SESSION = '_vipps_recurring_checkout_session';
 	public const META_ORDER_CHECKOUT_SESSION_ID = '_vipps_recurring_checkout_session_id';
@@ -65,6 +64,7 @@ class WC_Vipps_Recurring_Helper {
 	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_REASON = '_vipps_recurring_latest_failed_charge_reason';
 	public const META_SUBSCRIPTION_LATEST_FAILED_CHARGE_DESCRIPTION = '_vipps_recurring_latest_failed_charge_description';
 	public const META_SUBSCRIPTION_RENEWING_WITH_VIPPS = '_vipps_recurring_renewing_with_vipps';
+	public const META_SUBSCRIPTION_MARKED_FOR_DELETION = '_vipps_recurring_marked_for_deletion';
 
 	public const OPTION_CONFIGURED = '_woo_vipps_recurring_configured';
 	public const OPTION_CHECKOUT_ENABLED = '_woo_vipps_recurring_checkout_enabled';
@@ -280,7 +280,10 @@ class WC_Vipps_Recurring_Helper {
 	public static function can_capture_charge_for_order( $order ): bool {
 		return (int) self::get_meta( $order, self::META_CHARGE_PENDING ) === 1
 		       && ! self::is_charge_captured_for_order( $order )
-		       && in_array( self::get_latest_api_status_from_order( $order ), [ WC_Vipps_Charge::STATUS_RESERVED, WC_Vipps_Charge::STATUS_PARTIALLY_CAPTURED ] )
+		       && in_array( self::get_latest_api_status_from_order( $order ), [
+				WC_Vipps_Charge::STATUS_RESERVED,
+				WC_Vipps_Charge::STATUS_PARTIALLY_CAPTURED
+			] )
 		       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT )
 		       && ! wcs_order_contains_renewal( $order );
 	}

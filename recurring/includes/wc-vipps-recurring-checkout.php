@@ -942,7 +942,11 @@ class WC_Vipps_Recurring_Checkout {
 
 			// This is dealt with by a cron schedule
 			if ( $this->gateway()->get_option( 'checkout_cleanup_abandoned_orders' ) === 'yes' ) {
-				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
+				$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+				foreach ( $subscriptions as $subscription ) {
+					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION, 1 );
+					$subscription->save();
+				}
 			}
 
 			$order->save();
@@ -1037,8 +1041,8 @@ class WC_Vipps_Recurring_Checkout {
 		$user = $order->get_user();
 
 		$email = $session['billingDetails']['email'];
-		if ( $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) {
-			$user  = get_user_by( 'email', $email );
+		if ( trim( $order->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
+			$user = get_user_by( 'email', $email );
 		}
 
 		$user_id = $user->ID;
@@ -1110,7 +1114,7 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		if ( $object->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) {
+		if ( trim( $object->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
 			$object->set_billing_email( $contact['email'] );
 		}
 

@@ -185,10 +185,23 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			'append_valid_statuses_for_payment_complete'
 		] );
 
-		add_action( 'woocommerce_order_status_pending_to_cancelled', [ $this, 'maybe_delete_order' ], 99999 );
-		add_action( 'woocommerce_new_order', [ $this, 'maybe_delete_order_later' ] );
-		add_action( 'woocommerce_vipps_recurring_delete_pending_order', [ $this, 'maybe_delete_order' ] );
+		// Auto cancellation flow
+		add_action( 'woocommerce_subscription_status_pending-cancel_to_cancelled', [
+			$this,
+			'maybe_delete_subscription'
+		], 99999 );
+		add_action( 'woocommerce_subscription_status_pending_to_cancelled', [
+			$this,
+			'maybe_delete_subscription'
+		], 99999 );
+		add_action( 'woocommerce_new_subscription', [ $this, 'maybe_delete_subscription_later' ] );
 
+		// Hijack cancellation email
+		remove_action( 'woocommerce_subscription_status_updated', [
+			WC_Subscriptions_Email::class,
+			'send_cancelled_email'
+		], 10 );
+		add_action( 'woocommerce_subscription_status_updated', [ $this, 'overwrite_send_cancelled_email' ], 10, 2 );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [
 			$this,
 			'process_admin_options'
@@ -2880,32 +2893,35 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return $subscriptions;
 	}
 
-	public function maybe_delete_order_later( $order_id ) {
+	public function maybe_delete_subscription_later( $subscription_id ) {
 		if ( $this->get_option( 'checkout_cleanup_abandoned_orders' ) !== 'yes' ) {
 			return;
 		}
 
-		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] ) ) {
-			wp_schedule_single_event( time() + 7200, 'woocommerce_vipps_recurring_delete_pending_order', [ $order_id ] );
+		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_delete_pending_subscription', [ $subscription_id ] ) ) {
+			wp_schedule_single_event( time() + 7200, 'woocommerce_vipps_recurring_delete_pending_subscription', [ $subscription_id ] );
 		}
 	}
 
-	public function maybe_delete_order( $order_id ): bool {
-		$order = wc_get_order( $order_id );
-		if ( ! $order ) {
+	public function maybe_delete_subscription( $subscription_id ): bool {
+		$subscription = wcs_get_subscription( $subscription_id );
+		if ( ! $subscription ) {
 			return false;
 		}
 
-		if ( $this->id !== $order->get_payment_method() ) {
+		if ( $this->id !== $subscription->get_payment_method() ) {
 			return false;
 		}
 
-		$express = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+		$express     = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_ORDER_IS_EXPRESS );
+		$empty_email = trim( $subscription->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) || ! $subscription->get_billing_email();
+
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Running maybe_delete_subscription, (is express: %s, empty email: %s)", $subscription_id, $express ? 'Yes' : 'No', $empty_email ? 'Yes' : 'No' ) );
+
 		if ( ! $express ) {
 			return false;
 		}
 
-		$empty_email = $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL || ! $order->get_billing_email();
 		if ( ! $empty_email ) {
 			return false;
 		}
@@ -2914,12 +2930,33 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Order marked for deletion because it has no billing details after two hours. Billing email was: %s", WC_Vipps_Recurring_Helper::get_id( $order ), $order->get_billing_email() ) );
-		$order->add_order_note( __( 'This order has been automatically marked for deletion as it has no billing details after two hours.', 'woo-vipps' ) );
+		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Subscription marked for deletion because it has no billing details after two hours. Billing email was: %s", WC_Vipps_Recurring_Helper::get_id( $subscription ), $subscription->get_billing_email() ) );
+		$subscription->add_order_note( __( 'This subscription has been automatically marked for deletion as it has no billing details after two hours.', 'woo-vipps' ) );
 
-		WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
-		$order->save();
+		WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION, 1 );
+		$subscription->save();
 
 		return true;
+	}
+
+	// If the subscription is about to be deleted, we do not want to send the cancellation email anymore.
+	public function overwrite_send_cancelled_email( $subscription ) {
+		// Proxy through to the normal flow if the gateway is not ours.
+		if ( $this->id !== $subscription->get_payment_method() ) {
+			WC_Subscriptions_Email::send_cancelled_email( $subscription );
+
+			return;
+		}
+
+		// Check if we should delete this subscription
+		$this->maybe_delete_subscription( $subscription->get_id() );
+		$subscription = wcs_get_subscription( $subscription->get_id() );
+
+		$marked_for_deletion = WC_Vipps_Recurring_Helper::get_meta( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION );
+		if ( $marked_for_deletion ) {
+			return;
+		}
+
+		WC_Subscriptions_Email::send_cancelled_email( $subscription );
 	}
 }
