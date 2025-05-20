@@ -1002,13 +1002,14 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws Exception
 	 */
 	public function handle_payment( WC_Order $order, array $session ): void {
-		$order_id     = WC_Vipps_Recurring_Helper::get_id( $order );
-		$agreement_id = $session['subscriptionDetails']['agreementId'];
-		$status       = $session['sessionState'];
+		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
-		if ( empty( $agreement_id ) ) {
+		if ( empty( $session['subscriptionDetails']['agreementId'] ) ) {
 			return;
 		}
+
+		$agreement_id = $session['subscriptionDetails']['agreementId'];
+		$status       = $session['sessionState'];
 
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
 

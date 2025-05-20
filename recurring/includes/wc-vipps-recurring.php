@@ -156,7 +156,10 @@ class WC_Vipps_Recurring {
 			'check_order_statuses'
 		] );
 
-		add_action( 'woocommerce_vipps_recurring_cancel_subscription', [ $this->gateway(), 'cancel_subscription' ], 10, 2 );
+		add_action( 'woocommerce_vipps_recurring_cancel_subscription', [
+			$this->gateway(),
+			'cancel_subscription'
+		], 10, 2 );
 
 		// Schedule checking if gateway change went through
 		if ( ! wp_next_scheduled( 'woocommerce_vipps_recurring_check_gateway_change_request' ) ) {
@@ -802,7 +805,7 @@ class WC_Vipps_Recurring {
 			$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
 
 			// Check the status of this subscription's latest order charge just in case.
-			$latest_order    = $subscription->get_last_order();
+			$latest_order    = $subscription->get_last_order( 'all' );
 			$latest_order_id = WC_Vipps_Recurring_Helper::get_id( $latest_order );
 
 			do_action( 'wc_vipps_recurring_before_cron_check_order_status', $latest_order_id );
