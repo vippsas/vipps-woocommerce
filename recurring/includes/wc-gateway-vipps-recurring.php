@@ -2939,6 +2939,36 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		return true;
 	}
 
+	/**
+	 * @throws WC_Vipps_Recurring_Config_Exception
+	 * @throws WC_Vipps_Recurring_Exception
+	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 */
+	public function cancel_subscription( $subscription_id, $agreement_id ): void {
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
+
+		// Prevent temporary cancellations from reaching this code
+		$new_status = $subscription->get_status();
+		if ( $new_status !== 'cancelled' ) {
+			return;
+		}
+
+		if ( get_transient( 'cancel_subscription_lock' . $subscription_id ) ) {
+			return;
+		}
+
+		set_transient( 'cancel_subscription_lock' . $subscription_id, uniqid( '', true ), 30 );
+
+		$agreement = $this->api->get_agreement( $agreement_id );
+
+		if ( $agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
+			$idempotency_key = $this->get_idempotency_key( $subscription );
+			$this->api->cancel_agreement( $agreement_id, $idempotency_key );
+		}
+	}
+
 	// If the subscription is about to be deleted, we do not want to send the cancellation email anymore.
 	public function overwrite_send_cancelled_email( $subscription ) {
 		// Proxy through to the normal flow if the gateway is not ours.
