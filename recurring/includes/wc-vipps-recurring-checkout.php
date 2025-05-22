@@ -942,7 +942,11 @@ class WC_Vipps_Recurring_Checkout {
 
 			// This is dealt with by a cron schedule
 			if ( $this->gateway()->get_option( 'checkout_cleanup_abandoned_orders' ) === 'yes' ) {
-				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_MARKED_FOR_DELETION, 1 );
+				$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+				foreach ( $subscriptions as $subscription ) {
+					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION, 1 );
+					$subscription->save();
+				}
 			}
 
 			$order->save();
@@ -998,13 +1002,14 @@ class WC_Vipps_Recurring_Checkout {
 	 * @throws Exception
 	 */
 	public function handle_payment( WC_Order $order, array $session ): void {
-		$order_id     = WC_Vipps_Recurring_Helper::get_id( $order );
-		$agreement_id = $session['subscriptionDetails']['agreementId'];
-		$status       = $session['sessionState'];
+		$order_id = WC_Vipps_Recurring_Helper::get_id( $order );
 
-		if ( empty( $agreement_id ) ) {
+		if ( empty( $session['subscriptionDetails']['agreementId'] ) ) {
 			return;
 		}
+
+		$agreement_id = $session['subscriptionDetails']['agreementId'];
+		$status       = $session['sessionState'];
 
 		WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment for agreement ID %s with status %s", $order_id, $agreement_id, $status ) );
 
@@ -1034,41 +1039,45 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
-		if ( ! $order->get_customer_id( 'edit' ) ) {
-			$user = $order->get_user();
-			if ( $order->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) {
-				$email = $session['billingDetails']['email'];
-				$user  = get_user_by( 'email', $email );
+		$user = $order->get_user();
+
+		$email = $session['billingDetails']['email'];
+		if ( trim( $order->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
+			$user = get_user_by( 'email', $email );
+		}
+
+		$user_id = $user->ID;
+
+		if ( ! $user_id ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: creating a new customer", $order_id ) );
+
+			$username = wc_create_new_customer_username( $email );
+			$user_id  = wc_create_new_customer( $email, $username, null );
+
+			$customer = new WC_Customer( $user_id );
+			$this->maybe_update_billing_and_shipping( $customer, $session );
+
+			// Send a password reset link right away.
+			$user_data = get_user_by( 'ID', $user_id );
+
+			$key = get_password_reset_key( $user_data );
+
+			WC()->mailer();
+			do_action( 'woocommerce_reset_password_notification', $user_data->user_login, $key );
+
+			// Log the user in, if we have a valid session.
+			if ( WC()->session ) {
+				wc_set_customer_auth_cookie( $user_id );
 			}
 
-			$user_id = $user->ID;
-
-			if ( ! $user_id ) {
-				WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: creating a new customer", $order_id ) );
-
-				$username = wc_create_new_customer_username( $email );
-				$user_id  = wc_create_new_customer( $email, $username, null );
-
-				$customer = new WC_Customer( $user_id );
-				$this->maybe_update_billing_and_shipping( $customer, $session );
-
-				// Send a password reset link right away.
-				$user_data = get_user_by( 'ID', $user_id );
-
-				$key = get_password_reset_key( $user_data );
-
-				WC()->mailer();
-				do_action( 'woocommerce_reset_password_notification', $user_data->user_login, $key );
-
-				// Log the user in, if we have a valid session.
-				if ( WC()->session ) {
-					wc_set_customer_auth_cookie( $user_id );
-				}
-			}
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: replacing customer with new id %s", $order_id, $user_id ) );
 
 			$order->set_customer_id( $user_id );
 			$order->save();
 		}
+
+		// Refresh order
+		$order = wc_get_order( $order_id );
 
 		$this->maybe_update_billing_and_shipping( $order, $session );
 
@@ -1106,7 +1115,7 @@ class WC_Vipps_Recurring_Checkout {
 			return;
 		}
 
-		if ( $object->get_billing_email() === WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) {
+		if ( trim( $object->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
 			$object->set_billing_email( $contact['email'] );
 		}
 

@@ -1,5 +1,11 @@
 == Changelog ==
 
+= 2.1.7 =
+* Fixed: No longer cancel agreements in Vipps/MobilePay immediately. Cancel them at the next renewal date instead. This allows reserved payments to be triggered.
+* Fixed: Set our fake anonymous user id from email if we cannot create a user. This prevents potential 500 errors during checkout.
+* Fixed: Moved the deletion logic from orders to subscriptions. This is more uniform with how subscriptions work.
+* Fixed: No longer send the "Cancelled subscription" email when a subscription is cancelled, and due for deletion.
+
 = 2.1.6 =
 * Fixed: Made subscription creations more robust when attempting to pay using Checkout and an early or manual renewal.
 * Added: Support passing an MSN to our webhook API methods.
