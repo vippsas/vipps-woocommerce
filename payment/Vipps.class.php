@@ -2354,12 +2354,16 @@ else:
 
     // This is the main callback from Vipps when payments are returned. IOK 2018-04-20
     public function vipps_callback() {
+        $this->log("Callback received");
+
 	Vipps::nocache();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
+
+        error_log("Raw post: $raw_post");
 
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         // .. and the epayment webhooks 2023-12-19
@@ -2723,16 +2727,24 @@ else:
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
-	Vipps::nocache();
+    	Vipps::nocache();
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
         if (!$result) {
+           if (empty(trim($raw_post))) {
+               status_header(400, "Empty address info");
+               print "No address";
+           } else {
+               status_header(400, "Invalid JSON");
+               print "Invalid JSON";
+           }
            $error = json_last_error_msg();
            $this->log(sprintf(__("Error getting customer data in the %1\$s shipping details callback: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $error));
            $this->log(__("Raw input was ", 'woo-vipps'));
            $this->log($raw_post);
+           exit();
         }
         $callback = sanitize_text_field(@$_REQUEST['callback']);
         do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
@@ -2741,6 +2753,8 @@ else:
         $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
         $orderid = intval(@$_REQUEST['id']);
         if (!$orderid) {
+            status_header(404, "Unknown order");
+            print "Unknown order";
             $this->log(sprintf(__('Could not find %1$s order with id:', 'woo-vipps'), $this->get_payment_method_name()) . " " . $vippsorderid . "\n" . __('Callback was:', 'woo-vipps') . " " . $callback, 'error');
             exit();
         }
