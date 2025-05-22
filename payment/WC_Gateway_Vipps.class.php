@@ -1151,13 +1151,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'type'  => 'title',
                'description' => sprintf(__('Widgets are elements shown above the %1$s frame with extra functionality.', 'woo-vipps'), Vipps::CheckoutName()),
            ],
-           'checkout_widget_coupon' => [
-               'title'       => __('Coupon code', 'woo-vipps'),
-               'label'       => __('Enable the coupon code widget', 'woo-vipps'),
-               'type'        => 'checkbox',
-               'description' => __('A widget to activate coupon codes.', 'woo-vipps'),
-               'default'     => 'yes'
-           ],
            'checkout_widget_ordernotes' => [
                'title'       => __('Order notes', 'woo-vipps'),
                'label'       => __('Enable the order notes widget', 'woo-vipps'),
@@ -1166,7 +1159,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'default'     => 'yes'
            ],
        ];
-
+       if (wc_coupons_enabled()) {
+           $vipps_checkout_widgets_fields['checkout_widget_coupon'] = [
+               'title'       => __('Coupon code', 'woo-vipps'),
+               'label'       => __('Enable the coupon code widget', 'woo-vipps'),
+               'type'        => 'checkbox',
+               'description' => __('A widget to activate coupon codes.', 'woo-vipps'),
+               'default'     => 'yes'
+           ];
+       }
 
         $mainfields = array(
             'main_options'             => array(
