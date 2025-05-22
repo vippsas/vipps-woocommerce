@@ -814,21 +814,21 @@ jQuery(document).ready(function () {
     // If coupons are added in Checkout after the order has been created, we need to change the error message 
     // in the Cart when the coupon is noticed as invalid there and removed. IOK 2025-05-15
     public function handle_coupon_invalidation_in_checkout() {
-        return ""; // IOK temporarily disabled in release FIXME
         global $post;
         if ($post && is_page()) { 
             $gw = WC_Gateway_Vipps::instance();
-            $active =  ($gw->get_option('vipps_checkout_enabled') == 'yes' &&  $gw->get_option('checkout_widget_coupon') === 'yes');
-            if ($active && has_block("woocommerce/cart")) {
-                $this->prettily_cleanup_coupons_in_cart();
+            $active =  (wc_coupons_enabled() && $gw->get_option('vipps_checkout_enabled') == 'yes' &&  $gw->get_option('checkout_widget_coupon') === 'yes');
+            if ($active)  {
+                if (has_block("woocommerce/cart")) {
+                    $this->prettily_cleanup_coupons_in_cart();
+                } else {
+                    // This is for the old shortcode-based cart; doing the remove several times is safe. IOK 2025-05-15
+                    // Then add a new one that adds a different message, also reporting that the vipps session is gone
+                    // Remove the standard validation code which reports an error
+                    remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
+                    add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'), 1);
+                }
             }
-            // This is for the old shortcode-based cart; doing the remove several times is safe. IOK 2025-05-15
-            // Then add a new one that adds a different message, also reporting that the vipps session is gone
-            // Remove the standard validation code which reports an error
-            add_action('init', function () {
-                remove_action('woocommerce_check_cart_items', array(WC()->cart, 'check_cart_coupons'), 1);
-                add_action('woocommerce_check_cart_items', array($this, 'prettily_cleanup_coupons_in_cart'));
-            });
         }
     }
 
@@ -913,12 +913,10 @@ jQuery(document).ready(function () {
     function maybe_add_widgets() {
         // Premade widget: coupon code. LP 2025-05-08
         $widgets = [];
-        $use_widget_coupon = $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
+        $use_widget_coupon = wc_coupons_enabled() && $this->gateway()->get_option('checkout_widget_coupon') === 'yes';
 
         // Premade widget: order note. LP 2025-05-12
-        $use_widget_ordernotes = $this->gw->get_option('checkout_widget_ordernotes') === 'yes';
-        if ($use_widget_ordernotes) {
-        }
+        $use_widget_ordernotes = $this->gateway()->get_option('checkout_widget_ordernotes') === 'yes';
         if ($use_widget_coupon || $use_widget_ordernotes) {
             add_filter('woo_vipps_checkout_widgets', function ($widgets) use ($use_widget_coupon, $use_widget_ordernotes) {
                 if ($use_widget_coupon) {
@@ -986,7 +984,6 @@ jQuery(document).ready(function () {
 
     // This will display widgets like coupon codes, order notes etc on the Vipps Checkout page IOK 2025-05-02
     function get_checkout_widgets($order) {
-        return ""; // IOK temporarily disabled in release FIXME
         // Array of tables of [title, id, callback, class].
         // $default_widgets = $this->get_checkout_default_widgets($order);
         $this->maybe_add_widgets();
