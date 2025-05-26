@@ -1736,7 +1736,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // We need to dispatch on the type of checkout, express checkout uses eCom v2, all others use ePayment
             $express = $order->get_meta('_vipps_express_checkout');
             $content;
-            if ($express) {
+            // FIXME dev override false. LP 2025-05-26
+            if (false && $express) {
                 $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
             } else {
                 $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);

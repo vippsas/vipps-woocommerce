@@ -480,6 +480,7 @@ class VippsApi {
 
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
     public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
+        error_log("LP TEST");
         $command = 'epayment/v1/payments';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
@@ -499,6 +500,7 @@ class VippsApi {
         $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
 
+        // TODO DELETE THIS COMMENT AFTER EXPRESS REVIEW. LP 2025-05-26
         // IOK 2023-12-13 This is currently always false for epayment_initiate_payment but let's think ahead
         // Code for static shipping, shipping callback etc would need to be added. 
         $express = $order->get_meta('_vipps_express_checkout');
@@ -555,11 +557,20 @@ class VippsApi {
         // Values are name, address, email, phoneNumber, birthData and nin, if the company provides this to the merchant. 
         // IOK 2023-12-13
         $scope = array();
+        if ($express) {
+            $scope = ["name", "email", "address"]; 
+        }
         $scope = apply_filters('woo_vipps_payment_scope', $scope, $orderid);
         if (!empty($scope)) {
-                $data['profile'] = [];
-                $data['profile']['scope'] = join(" ", $scope);
+            $data['profile'] = [];
+            $data['profile']['scope'] = join(" ", $scope);
         }
+
+        // Integer [0..100] or null. LP 2025-05-26
+        $minage = intval(apply_filters('woo_vipps_payment_minimum_user_age', null)); // NB: intval returns 0 on fail. LP 2025-05-26
+        if (!is_null($minage) && ($minage < 0 || $minage > 100)) $minage = null; 
+        $data['minimumUserAge'] = $minage;
+
         // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
         // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
         // QR returns a QR code that can be scanned to complete the payment. IOK 2023-12-13
@@ -590,6 +601,16 @@ class VippsApi {
                 $data['receipt'] = $receiptdata;
                 $order->update_meta_data('_vipps_receipt_sent', true);
                 $order->save();
+            }
+
+        } else {
+            if ($static_shipping) {
+                error_log("LP static");
+                $static_shipping_options = [['isDefault' => true, 'priority' => 0], ['testing2' => 1]];
+                $data['shipping']['fixedOptions'] = $static_shipping_options;                
+            } else { // dynamic shipping options for express. LP 2025-05-26
+                error_log("LP dynamic");
+                // TODO. LP 2025-05-26
             }
         }
 
@@ -635,6 +656,10 @@ class VippsApi {
        
         $this->log("Initiating Vipps MobilePay epayment session for $vippsorderid", 'debug');
         $data = apply_filters('woo_vipps_epayment_initiate_payment_data', $data);
+
+        // FIXME deleteme, dev testing. LP 2025-05-26
+        error_log("LP data is " . json_encode($data, JSON_PRETTY_PRINT));
+        return 0;
 
         // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json');
