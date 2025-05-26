@@ -1039,16 +1039,20 @@ class WC_Vipps_Recurring_Checkout {
 		}
 
 		// On success, we might have to create a user as well, if they don't already exist, this is because Woo Subscriptions REQUIRE a user.
-		$user = $order->get_user();
+		$email         = $session['billingDetails']['email'];
+		$has_real_user = trim( $order->get_billing_email() ) !== trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL );
 
-		$email = $session['billingDetails']['email'];
-		if ( trim( $order->get_billing_email() ) === trim( WC_Vipps_Recurring_Helper::FAKE_USER_EMAIL ) ) {
+		if ( ! $has_real_user ) {
 			$user = get_user_by( 'email', $email );
+
+			if ( $user ) {
+				$has_real_user = true;
+				$order->set_customer_id( $user->ID );
+				$order->save();
+			}
 		}
 
-		$user_id = $user->ID;
-
-		if ( ! $user_id ) {
+		if ( ! $has_real_user ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: creating a new customer", $order_id ) );
 
 			$username = wc_create_new_customer_username( $email );
@@ -1087,6 +1091,13 @@ class WC_Vipps_Recurring_Checkout {
 		// Create a subscription if we have no subscription, because it might've been deleted previously if this session has been recovered.
 		if ( empty( $existing_subscriptions ) ) {
 			$existing_subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
+		}
+
+		// If we still have no subscriptions, something is wrong. Log it
+		if ( empty( $existing_subscriptions ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Unable to create a subscription for Checkout order and agreement ID %s", $order_id, $agreement_id ) );
+
+			return;
 		}
 
 		/** @var WC_Subscription $subscription */

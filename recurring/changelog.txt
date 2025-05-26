@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 2.1.8 =
+* Hotfix: Attribute orders and subscriptions to a user when using Checkout.
+* Hotfix: Handle a few edge cases where subscriptions cannot be created properly.
+
 = 2.1.7 =
 * Fixed: No longer cancel agreements in Vipps/MobilePay immediately. Cancel them at the next renewal date instead. This allows reserved payments to be triggered.
 * Fixed: Set our fake anonymous user id from email if we cannot create a user. This prevents potential 500 errors during checkout.
