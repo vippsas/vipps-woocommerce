@@ -552,10 +552,7 @@ class VippsApi {
         $metadata = apply_filters('woo_vipps_payment_metadata', $metadata, $orderid);
         $data['metadata'] = $metadata;
 
-        // User information data to ask for. During normal checkout, we won't ask at all, but for Express Checkout we would do name, email, phoneNumber.
-        // Currently, use a filter to allow merchants to do this. Can also add 'Address', which would give all data but not the shipment flow.
-        // Values are name, address, email, phoneNumber, birthData and nin, if the company provides this to the merchant. 
-        // IOK 2023-12-13
+        // we need name email and address for the new express. LP 2025-05-26
         $scope = array();
         if ($express) {
             $scope = ["name", "email", "address"]; 
@@ -567,8 +564,14 @@ class VippsApi {
         }
 
         // Integer [0..100] or null. LP 2025-05-26
-        $minage = intval(apply_filters('woo_vipps_payment_minimum_user_age', null)); // NB: intval returns 0 on fail. LP 2025-05-26
-        if (!is_null($minage) && ($minage < 0 || $minage > 100)) $minage = null; 
+        $minage = apply_filters('woo_vipps_payment_minimum_user_age', null);
+        $minageint = intval($minage);
+        // intval defaults to 0 when it fails to convert to int, so make sure that case will default to 'null' with is_numeric. LP 2025-05-26
+        if (is_numeric($minage) && $minageint >= 0 && $minageint <= 100) { 
+            $minage = $minageint;
+        } else {
+            $minage = null;
+        }
         $data['minimumUserAge'] = $minage;
 
         // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
@@ -606,11 +609,10 @@ class VippsApi {
         } else {
             if ($static_shipping) {
                 error_log("LP static");
-                $static_shipping_options = [['isDefault' => true, 'priority' => 0], ['testing2' => 1]];
-                $data['shipping']['fixedOptions'] = $static_shipping_options;                
+                $data['shipping']['fixedOptions'] = $static_shipping;                
             } else { // dynamic shipping options for express. LP 2025-05-26
                 error_log("LP dynamic");
-                // TODO. LP 2025-05-26
+                // TODO dynamic options. LP 2025-05-26
             }
         }
 
@@ -793,6 +795,10 @@ class VippsApi {
         $this->log("Initiating Vipps MobilePay ecomm session for $vippsorderid", 'debug');
 
         $data = apply_filters('woo_vipps_initiate_payment_data', $data);
+        // FIXME deleteme, dev testing. LP 2025-05-26
+        error_log("LP data is " . json_encode($data, JSON_PRETTY_PRINT));
+        return ['url' => '#'];
+
 
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;

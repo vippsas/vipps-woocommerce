@@ -2943,8 +2943,7 @@ else:
             $method['rate'] = $rate;
             $methods[$key]= $method;
         }
-        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order);
-        if ($chosen && !isset($methods[$chosen]))  {
+        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order); if ($chosen && !isset($methods[$chosen]))  {
             $chosen = null; // Actually that isn't available
             $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->get_payment_method_name()));
         }
@@ -3037,8 +3036,169 @@ else:
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
         if ($ischeckout) {
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
+        } else { // New express format. LP 2025-05-26
+            $return = $this->express_format_shipping_methods($return, $ratemap, $methodmap, $order);
         }
 
+        return $return;
+    }
+
+    // Translate from the old to the new express format. LP 2025-05-26
+    public function express_format_shipping_methods ($return, $ratemap, $methodmap, $order) {
+        error_log("ratemap is " . print_r($ratemap, true));
+        error_log("methodmap is " . print_r($methodmap, true));
+        $translated = array();
+        $currency = get_woocommerce_currency();
+        $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07
+
+        foreach ($return['shippingDetails']  as $m) {
+            $m2 = array();
+            $options = [];
+
+            $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); 
+            $m2['priority'] = $m['priority'];
+            $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
+            $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
+
+            $id = $m['shippingMethodId'];
+            $rate = $ratemap[$id];
+            $shipping_method = $methodmap[$id];
+
+            // If we have pickup_location-s, only use the first one. IOK 2025-05-07
+            if ($rate->method_id == 'pickup_location') {
+                if (!$pickupLocation) {
+                    $pickupLocation = &$m2;
+                } else {
+                    continue; 
+                }
+            }
+             
+            error_log("LP rate is" . print_r($rate, true));
+
+            // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
+            $meta = $rate->get_meta_data();
+
+            if ($shipping_method) {
+                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
+                if  (isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes') {
+                    if (!isset($meta['free_shipping']) || !$meta['free_shipping']) {
+                        $m2['amount'] = null;
+                    }
+                }
+            }             
+
+            // Allow shipping methods to add pickup points data IOK 2025-04-08
+            $delivery = [];
+            $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
+            if ($pickup_points) {
+                $filtered = [];
+                foreach($pickup_points as $point) {
+                    error_log("LP pickuppoint is " . print_r($point, true));
+                    $ok = true;
+                    $entry = [];
+
+                    // pickup uses the same price for all pickup points. LP 2025-05-26
+                    $entry['amount'] = array(
+                        'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                        'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                    );
+                    foreach(['address', 'city', 'country', 'id', 'name', 'postalCode'] as $key) {
+                        if (!isset($point[$key])) {
+                            $this->log(__('Cannot add pickup point: A pickup point needs to have keys id, name, address, city, postalCode and country: ', 'woo-vipps') . print_r($point, true), 'error');
+                            $ok = false;
+                            break;
+                        } else {
+                            // It needs the above keys, but we should only send id and name to epayment express. LP 2025-05-26
+                            // FIXME should we still check for the above keys, or just id and name? LP 2025-05-26
+                            if ($key === 'id' || $key === 'name') $entry[$key] = $point[$key];
+                        }
+                    }
+                    foreach(['openingHours', 'leadTime'] as $key) {
+                        if (isset($point[$key])) {
+                            $entry[$key] = $point[$key];
+                        }
+                    }
+
+                    if ($ok && !empty($entry)) {
+                        $filtered[] = $entry;
+                    }
+                }
+                $m2['type'] = 'PICKUP_POINT';
+                $options[] = $filtered;
+
+            } else { // non-pickup methods. LP 2025-05-26
+                $options['amount'] = [ 
+                    'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                    'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                ];
+                $options['name'] = $m['shippingMethod']; 
+                $options['id'] = $id;
+            }
+
+            // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
+            // IOK 2025-04-10
+            $timeslots = apply_filters('woo_vipps_shipping_method_timeslots', [], $rate, $shipping_method, $order);
+            if (!empty($timeslots)) {
+                $filtered = [];
+                foreach($timeslots as $timeslot) {
+                    $entry = [];
+                    $ok = true;
+                    foreach(['id', 'date', 'start', 'end'] as $key) {
+                        if (!isset($timeslot[$key])) {
+                            $this->log(__('Cannot add timeslot: A timeslot needs to have keys id, date, start and end: ', 'woo-vipps') . print_r($timeslot, true), 'error');
+                            $ok = false;
+                            break;
+                        } else {
+                            $entry[$key] = $timeslot[$key];
+                        }
+                    }
+                    if ($ok && !empty($entry)) {
+                        $filtered[] = $entry;
+                    }
+                }
+                $delivery['timeslots']=$filtered;
+                $m2['type'] = 'HOME_DELIVERY';
+            }
+            
+            // add leadTime data to "Mailbox" types
+            $leadTime = apply_filters('woo_vipps_shipping_method_lead_time', null, $rate, $shipping_method, $order);
+            if (!empty($leadTime)) {
+                $entry = [];
+                $ok = true;
+                foreach(['earliest', 'latest'] as $key) {
+                    if (!isset($leadTime[$key])) {
+                        $ok = false; break;
+                    }
+                    $entry[$key] = $leadTime[$key];
+                }
+                if ($ok && !empty($entry)) {
+                    $delivery['leadTime'] = $entry;
+                }
+            }
+
+            if (!empty($delivery)) {
+               $m2['delivery'] = $delivery;
+            }
+
+            if (isset($meta['brand'])) {
+                $m2['brand'] = $meta['brand'];
+            } else {
+                // specialcase some known methods so they get brands, and put the label into the description
+                if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                    $m2['brand'] = "POSTEN";
+                }
+                $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
+            }
+
+            if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
+                $m2['type'] = $meta['type'];
+            }
+
+            $m2['options'] = $options;
+            $translated[] = $m2;
+        }
+
+        $return = apply_filters('woo_vipps_checkout_json_shipping_methods', $translated, $order);
         return $return;
     }
 
@@ -3837,7 +3997,8 @@ else:
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
 
-        if ($ischeckout) {
+        // FIXME dev override to load pickup locations always. LP 2025-05-26
+        if (true || $ischeckout) {
             // Add special shipping methods (LocalPickup etc);
             $this->checkout_load_shipping_methods($order, $addressinfo);
         }
