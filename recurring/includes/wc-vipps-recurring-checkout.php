@@ -1093,6 +1093,13 @@ class WC_Vipps_Recurring_Checkout {
 			$existing_subscriptions = $this->gateway()->create_partial_subscriptions_from_order( $order );
 		}
 
+		// If we still have no subscriptions, something is wrong. Log it
+		if ( empty( $existing_subscriptions ) ) {
+			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Unable to create a subscription for Checkout order and agreement ID %s", $order_id, $agreement_id ) );
+
+			return;
+		}
+
 		/** @var WC_Subscription $subscription */
 		$subscription = array_pop( $existing_subscriptions );
 
