@@ -3109,6 +3109,7 @@ else:
                             'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                         );
                     }
+
                     foreach(['address', 'city', 'country', 'id', 'name', 'postalCode'] as $key) {
                         if (!isset($point[$key])) {
                             $this->log(__('Cannot add pickup point: A pickup point needs to have keys id, name, address, city, postalCode and country: ', 'woo-vipps') . print_r($point, true), 'error');
@@ -3140,9 +3141,10 @@ else:
                         'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
                         'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                     ];
-                    if ($delivery_time) {
-                        $options['estimatedDelivery'] = $delivery_time;
-                    }
+                }
+
+                if ($delivery_time) {
+                    $options['estimatedDelivery'] = $delivery_time;
                 }
             }
 
