@@ -3110,19 +3110,19 @@ else:
                         );
                     }
 
+                    // FIXME Should pickup point still need these keys in general (this is from the checkout format, but a pickuppoint should probably need a city etc. in general), or can we simplify the loop to necessary express fields: id,name, address? LP 2025-05-26
                     foreach(['address', 'city', 'country', 'id', 'name', 'postalCode'] as $key) {
                         if (!isset($point[$key])) {
                             $this->log(__('Cannot add pickup point: A pickup point needs to have keys id, name, address, city, postalCode and country: ', 'woo-vipps') . print_r($point, true), 'error');
                             $ok = false;
                             break;
-                        } else {
-                            // It needs the above keys, but we should only send id and name to epayment express. LP 2025-05-26
-                            // FIXME should we still check for the above keys, or just id and name? LP 2025-05-26
-                            if ($key === 'id' || $key === 'name') $entry[$key] = $point[$key];
                         }
                     }
 
-                    if ($ok && !empty($entry)) {
+                    if ($ok) {
+                        $entry['meta'] = apply_filters('woo_vipps_shipping_method_meta', $point['address']);
+                        $entry['id'] = $point['id'];
+                        $entry['name'] = $point['name'];
                         $filtered[] = $entry;
                     }
                 }
@@ -3133,6 +3133,7 @@ else:
             } else { // normal / non-pickup shipping methods. LP 2025-05-26
                 $options['name'] = $m['shippingMethod']; 
                 $options['id'] = $id;
+
                 // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
                 if  ($use_dynamic_cost) {
                     $options['amount'] = null;
@@ -3152,7 +3153,7 @@ else:
             // IOK 2025-04-10
             $timeslots = apply_filters('woo_vipps_shipping_method_timeslots', [], $rate, $shipping_method, $order);
             if (!empty($timeslots)) {
-                // FIXME i dont think below is right to do for this new epress, since date, start, end etc are not fields. LP 2025-05-27
+                // FIXME i dont think below is right to do for this new express, since date, start, end etc are not fields. LP 2025-05-27
                 // $filtered = [];
                 // foreach($timeslots as $timeslot) {
                 //     $entry = [];
