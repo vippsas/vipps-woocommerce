@@ -3058,12 +3058,15 @@ else:
 
             $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); 
             $m2['priority'] = $m['priority'];
+            $options['priority'] $m['priority'];
             $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
             $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
 
             $id = $m['shippingMethodId'];
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
+
+            $delivery_time = $rate->get_delivery_time();
 
             // If we have pickup_location-s, only use the first one. IOK 2025-05-07
             if ($rate->method_id == 'pickup_location') {
@@ -3072,9 +3075,7 @@ else:
                 } else {
                     continue; 
                 }
-            }
              
-            $delivery_time = $rate->get_delivery_time();
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
@@ -3110,17 +3111,9 @@ else:
                         );
                     }
 
-                    // FIXME Should pickup point still need these keys in general (this is from the checkout format, but a pickuppoint should probably need a city etc. in general), or can we simplify the loop to necessary express fields: id,name, address? LP 2025-05-26
-                    foreach(['address', 'city', 'country', 'id', 'name', 'postalCode'] as $key) {
-                        if (!isset($point[$key])) {
-                            $this->log(__('Cannot add pickup point: A pickup point needs to have keys id, name, address, city, postalCode and country: ', 'woo-vipps') . print_r($point, true), 'error');
-                            $ok = false;
-                            break;
-                        }
-                    }
-
                     if ($ok) {
-                        $entry['meta'] = apply_filters('woo_vipps_shipping_method_meta', $point['address']);
+                        $address = trim(apply_filters('woo_vipps_shipping_method_meta', $point['address']));
+                        if ($address) $entry['meta'] = $address;
                         $entry['id'] = $point['id'];
                         $entry['name'] = $point['name'];
                         $filtered[] = $entry;
@@ -3149,32 +3142,6 @@ else:
                 }
             }
 
-            // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
-            // IOK 2025-04-10
-            $timeslots = apply_filters('woo_vipps_shipping_method_timeslots', [], $rate, $shipping_method, $order);
-            if (!empty($timeslots)) {
-                // FIXME i dont think below is right to do for this new express, since date, start, end etc are not fields. LP 2025-05-27
-                // $filtered = [];
-                // foreach($timeslots as $timeslot) {
-                //     $entry = [];
-                //     $ok = true;
-                //     foreach(['id', 'date', 'start', 'end'] as $key) {
-                //         if (!isset($timeslot[$key])) {
-                //             $this->log(__('Cannot add timeslot: A timeslot needs to have keys id, date, start and end: ', 'woo-vipps') . print_r($timeslot, true), 'error');
-                //             $ok = false;
-                //             break;
-                //         } else {
-                //             $entry[$key] = $timeslot[$key];
-                //         }
-                //     }
-                //     if ($ok && !empty($entry)) {
-                //         $filtered[] = $entry;
-                //     }
-                // }
-                // $delivery['timeslots']=$filtered;
-                $m2['type'] = 'HOME_DELIVERY';
-            }
-            
             if (isset($meta['brand'])) {
                 $m2['brand'] = $meta['brand'];
             } else {
@@ -3186,7 +3153,7 @@ else:
             }
 
             if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
-                $m2['type'] = $meta['type'];
+                $m2['type'] = apply_filters('woo_vipps_shipping_method_type', $meta['type']);
             }
 
             $m2['options'] = $options;
