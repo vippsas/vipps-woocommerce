@@ -1738,10 +1738,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $content;
             // FIXME dev override to force epayment. LP 2025-05-26
             if (false && $express) {
+            // if ($express) {
                 $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
             } else {
                 $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
             }
+            error_log("LP content after initiate payment is " . print_r($content,true));
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');

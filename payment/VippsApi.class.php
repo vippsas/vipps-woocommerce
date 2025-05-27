@@ -480,7 +480,6 @@ class VippsApi {
 
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
     public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
-        error_log("LP TEST");
         $command = 'epayment/v1/payments';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
@@ -500,7 +499,7 @@ class VippsApi {
         $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
 
-        // TODO DELETE THIS COMMENT AFTER EXPRESS REVIEW. LP 2025-05-26
+        // TODO DELETE BELOW COMMENT AFTER EXPRESS REVIEW. LP 2025-05-26
         // IOK 2023-12-13 This is currently always false for epayment_initiate_payment but let's think ahead
         // Code for static shipping, shipping callback etc would need to be added. 
         $express = $order->get_meta('_vipps_express_checkout');
@@ -572,7 +571,7 @@ class VippsApi {
         } else {
             $minage = null;
         }
-        $data['minimumUserAge'] = $minage;
+        $data['minimumUserAge'] = $minage; // FIXME remove comment
 
         // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
         // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
@@ -609,7 +608,7 @@ class VippsApi {
         } else {
             if ($static_shipping) {
                 error_log("LP static");
-                $data['shipping']['fixedOptions'] = $static_shipping;                
+                $data['shipping']['fixedOptions'] = $static_shipping; //FIXME remove comment
             } else { // dynamic shipping options for express. LP 2025-05-26
                 error_log("LP dynamic");
                 // TODO dynamic options. LP 2025-05-26
@@ -661,7 +660,7 @@ class VippsApi {
 
         // FIXME deleteme, dev testing. LP 2025-05-26
         error_log("LP data is " . json_encode($data, JSON_PRETTY_PRINT));
-        return 0;
+        return ['url' => '#'];
 
         // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json');
@@ -797,8 +796,7 @@ class VippsApi {
         $data = apply_filters('woo_vipps_initiate_payment_data', $data);
         // FIXME deleteme, dev testing. LP 2025-05-26
         error_log("LP data is " . json_encode($data, JSON_PRETTY_PRINT));
-        return ['url' => '#'];
-
+        // return ['url' => '#'];
 
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
         return $res;
@@ -883,7 +881,7 @@ class VippsApi {
         if ($needs_shipping) {
             $logistics = array();
             if ($static_shipping) {
-                $logistics['fixedOptions'] = $static_shipping["shippingDetails"];
+                $logistics['fixedOptions'] = $static_shipping["shippingDetails"]; 
                 unset($logistics['dynamicOptionsCallback']);
             } else {
                 $logistics['dynamicOptionsCallback'] = $shippingcallback;

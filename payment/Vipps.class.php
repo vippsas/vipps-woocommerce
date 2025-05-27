@@ -3045,7 +3045,7 @@ else:
 
     // Translate from the old to the new express format. LP 2025-05-26
     public function express_format_shipping_methods ($return, $ratemap, $methodmap, $order) {
-        error_log("return is ". print_r($return, true));
+        error_log("return before express format is ". print_r($return, true));
         error_log("ratemap is " . print_r($ratemap, true));
         error_log("methodmap is " . print_r($methodmap, true));
         $translated = array();
@@ -3075,15 +3075,15 @@ else:
             }
              
             $delivery_time = $rate->get_delivery_time();
-            if ($delivery_time) {
-                $options['estimatedDelivery'] = $delivery_time;
-            }
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
+            error_log("LP meta is" . print_r($meta, true));
 
             // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
-            $use_dynamic_cost = $shipping_method && isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes' && !isset($meta['free_shipping']) || !$meta['free_shipping'];
+            $use_dynamic_cost = $shipping_method && isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes' && (!isset($meta['free_shipping']) || !$meta['free_shipping']);
+            error_log("LP use_dynamic_cost is $use_dynamic_cost");
+            error_log("LP shipping_method is " . print_r($shipping_method, true));
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
             $delivery = [];
@@ -3095,11 +3095,20 @@ else:
                     $ok = true;
                     $entry = [];
 
-                    // pickup uses the same price for all pickup points. LP 2025-05-26
-                    $entry['amount'] = array(
-                        'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
-                        'currency' => $currency // May want to use the orders' currency instead here, since it exists.
-                    );
+                    if ($delivery_time) {
+                        $entry['estimatedDelivery'] = $delivery_time;
+                    }
+
+                    // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
+                    if  ($use_dynamic_cost) {
+                        $entry['amount'] = null;
+                    } else {
+                        // pickup uses the same price for all pickup points. LP 2025-05-26
+                        $entry['amount'] = array(
+                            'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                            'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                        );
+                    }
                     foreach(['address', 'city', 'country', 'id', 'name', 'postalCode'] as $key) {
                         if (!isset($point[$key])) {
                             $this->log(__('Cannot add pickup point: A pickup point needs to have keys id, name, address, city, postalCode and country: ', 'woo-vipps') . print_r($point, true), 'error');
@@ -3117,48 +3126,49 @@ else:
                     }
                 }
 
-                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
-                if  ($use_dynamic_cost) {
-                    $options['amount'] = null;
-                }             
                 $m2['type'] = 'PICKUP_POINT';
                 $options[] = $filtered;
 
-            } else { // non-pickup methods. LP 2025-05-26
-                $options['amount'] = [ 
-                    'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
-                    'currency' => $currency // May want to use the orders' currency instead here, since it exists.
-                ];
+            } else { // normal / non-pickup shipping methods. LP 2025-05-26
                 $options['name'] = $m['shippingMethod']; 
                 $options['id'] = $id;
                 // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
                 if  ($use_dynamic_cost) {
                     $options['amount'] = null;
-                }             
+                } else {
+                    $options['amount'] = [ 
+                        'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                        'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                    ];
+                    if ($delivery_time) {
+                        $options['estimatedDelivery'] = $delivery_time;
+                    }
+                }
             }
 
             // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
             // IOK 2025-04-10
             $timeslots = apply_filters('woo_vipps_shipping_method_timeslots', [], $rate, $shipping_method, $order);
             if (!empty($timeslots)) {
-                $filtered = [];
-                foreach($timeslots as $timeslot) {
-                    $entry = [];
-                    $ok = true;
-                    foreach(['id', 'date', 'start', 'end'] as $key) {
-                        if (!isset($timeslot[$key])) {
-                            $this->log(__('Cannot add timeslot: A timeslot needs to have keys id, date, start and end: ', 'woo-vipps') . print_r($timeslot, true), 'error');
-                            $ok = false;
-                            break;
-                        } else {
-                            $entry[$key] = $timeslot[$key];
-                        }
-                    }
-                    if ($ok && !empty($entry)) {
-                        $filtered[] = $entry;
-                    }
-                }
-                $delivery['timeslots']=$filtered;
+                // FIXME i dont think below is right to do for this new epress, since date, start, end etc are not fields. LP 2025-05-27
+                // $filtered = [];
+                // foreach($timeslots as $timeslot) {
+                //     $entry = [];
+                //     $ok = true;
+                //     foreach(['id', 'date', 'start', 'end'] as $key) {
+                //         if (!isset($timeslot[$key])) {
+                //             $this->log(__('Cannot add timeslot: A timeslot needs to have keys id, date, start and end: ', 'woo-vipps') . print_r($timeslot, true), 'error');
+                //             $ok = false;
+                //             break;
+                //         } else {
+                //             $entry[$key] = $timeslot[$key];
+                //         }
+                //     }
+                //     if ($ok && !empty($entry)) {
+                //         $filtered[] = $entry;
+                //     }
+                // }
+                // $delivery['timeslots']=$filtered;
                 $m2['type'] = 'HOME_DELIVERY';
             }
             
