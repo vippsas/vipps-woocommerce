@@ -110,7 +110,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Version 4.1.1
-Hotfixes for the recurring subsystem
+Hotfixes for the recurring subsystem; fix for a possible memory issue
 Version 4.1.0
 Optionally support coupons and order notes in Vipps Checkout 
 Version 4.0.15
