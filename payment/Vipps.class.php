@@ -3045,6 +3045,7 @@ else:
 
     // Translate from the old to the new express format. LP 2025-05-26
     public function express_format_shipping_methods ($return, $ratemap, $methodmap, $order) {
+        error_log("return is ". print_r($return, true));
         error_log("ratemap is " . print_r($ratemap, true));
         error_log("methodmap is " . print_r($methodmap, true));
         $translated = array();
@@ -3073,19 +3074,16 @@ else:
                 }
             }
              
-            error_log("LP rate is" . print_r($rate, true));
+            $delivery_time = $rate->get_delivery_time();
+            if ($delivery_time) {
+                $options['estimatedDelivery'] = $delivery_time;
+            }
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
 
-            if ($shipping_method) {
-                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
-                if  (isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes') {
-                    if (!isset($meta['free_shipping']) || !$meta['free_shipping']) {
-                        $m2['amount'] = null;
-                    }
-                }
-            }             
+            // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
+            $use_dynamic_cost = $shipping_method && isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes' && !isset($meta['free_shipping']) || !$meta['free_shipping'];
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
             $delivery = [];
@@ -3113,16 +3111,16 @@ else:
                             if ($key === 'id' || $key === 'name') $entry[$key] = $point[$key];
                         }
                     }
-                    foreach(['openingHours', 'leadTime'] as $key) {
-                        if (isset($point[$key])) {
-                            $entry[$key] = $point[$key];
-                        }
-                    }
 
                     if ($ok && !empty($entry)) {
                         $filtered[] = $entry;
                     }
                 }
+
+                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
+                if  ($use_dynamic_cost) {
+                    $options['amount'] = null;
+                }             
                 $m2['type'] = 'PICKUP_POINT';
                 $options[] = $filtered;
 
@@ -3133,6 +3131,10 @@ else:
                 ];
                 $options['name'] = $m['shippingMethod']; 
                 $options['id'] = $id;
+                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
+                if  ($use_dynamic_cost) {
+                    $options['amount'] = null;
+                }             
             }
 
             // Timeslots. This is for home delivery options, should have values id (string), date (date), start (time), end (time).
@@ -3160,26 +3162,6 @@ else:
                 $m2['type'] = 'HOME_DELIVERY';
             }
             
-            // add leadTime data to "Mailbox" types
-            $leadTime = apply_filters('woo_vipps_shipping_method_lead_time', null, $rate, $shipping_method, $order);
-            if (!empty($leadTime)) {
-                $entry = [];
-                $ok = true;
-                foreach(['earliest', 'latest'] as $key) {
-                    if (!isset($leadTime[$key])) {
-                        $ok = false; break;
-                    }
-                    $entry[$key] = $leadTime[$key];
-                }
-                if ($ok && !empty($entry)) {
-                    $delivery['leadTime'] = $entry;
-                }
-            }
-
-            if (!empty($delivery)) {
-               $m2['delivery'] = $delivery;
-            }
-
             if (isset($meta['brand'])) {
                 $m2['brand'] = $meta['brand'];
             } else {
@@ -3199,6 +3181,7 @@ else:
         }
 
         $return = apply_filters('woo_vipps_checkout_json_shipping_methods', $translated, $order);
+        error_log("LP return after express format is " . print_r($return, true));
         return $return;
     }
 
