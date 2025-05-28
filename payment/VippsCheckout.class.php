@@ -849,7 +849,8 @@ jQuery(document).ready(function () {
                         error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
                     }
                 }
-
+                $order->set_customer_note(sanitize_text_field($notes));
+                $order->save();
 
                 // Disable the email that gets sent on new order notes. IOK 2025-05-14 
                 add_filter('woocommerce_mail_callback', function ($mailer, $mailclass) {
