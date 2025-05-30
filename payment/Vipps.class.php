@@ -3058,7 +3058,7 @@ else:
 
             $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); 
             $m2['priority'] = $m['priority'];
-            $options['priority'] $m['priority'];
+            $options['priority'] = $m['priority'];
             $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
             $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
 
@@ -3075,7 +3075,7 @@ else:
                 } else {
                     continue; 
                 }
-             
+            } 
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
