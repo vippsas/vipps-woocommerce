@@ -3058,7 +3058,8 @@ else:
 
             $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); 
             $m2['priority'] = $m['priority'];
-	    $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
+            $options['priority'] = $m['priority'];
+            $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
             $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
 
             $id = $m['shippingMethodId'];
@@ -3103,6 +3104,11 @@ else:
                     );
 
                     if ($ok) {
+			    $addr = [];
+			    foreach(['address', 'postalCode', 'city', 'country'] as $key) {
+				    $v = trim($point[$key]);
+				    if (!empty($v)) $addr[] = trim($point[$key]);
+			    }
 			    $meta = '';
 			    $adr = trim($point['address']);
 			    $postal = trim($point['postalCode']);
@@ -3114,18 +3120,10 @@ else:
 					
 			    $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
 			    error_log("LP address is $meta");
-			    if ($meta) $entry['meta'] = $meta;
+			    if ($address) $entry['meta'] = $meta;
 
 			    $entry['id'] = $point['id'];
 			    $entry['name'] = $point['name'];
-			    // Make sure the pickup point option priority is the lowest of the group (all pickup locations). LP 2025-06-02 
-			    error_log("intval of m prio is " . (int)($m['priority']));
-			    error_log("intval of entry prio is " . (int)($entry['priority']));
-			    $is_lower = isset($entry['priority']) && isset($m['priority']) && is_numeric($entry['priority']) && is_numeric($m['priority']) && (int) $entry['priority'] < (int) $m['priority']; // this because int cast defaults to 0 on failure. LP 2025-06-02
-			    error_log("is lower? $is_lower");
-			    if (!isset($entry['priority']) || $is_lower) {
-				    $entry['priority'] = $m['priority'];
-			    }
 			    $filtered[] = $entry;
 		    }
 		}
@@ -3136,7 +3134,6 @@ else:
             } else { // normal / non-pickup shipping methods. LP 2025-05-26
                 $options['name'] = $m['shippingMethod']; 
                 $options['id'] = $id;
-		$options['priority'] = 0;
 
                 // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
                 $options['amount'] = [ 
