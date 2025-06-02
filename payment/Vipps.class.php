@@ -3079,11 +3079,8 @@ else:
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
-            error_log("LP meta is" . print_r($meta, true));
 
             // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
-            $use_dynamic_cost = $shipping_method && isset($shipping_method->instance_settings['dynamic_cost']) && $shipping_method->instance_settings['dynamic_cost'] == 'yes' && (!isset($meta['free_shipping']) || !$meta['free_shipping']);
-            error_log("LP use_dynamic_cost is $use_dynamic_cost");
             error_log("LP shipping_method is " . print_r($shipping_method, true));
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
@@ -3100,16 +3097,11 @@ else:
                         $entry['estimatedDelivery'] = $delivery_time;
                     }
 
-                    // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
-                    if  ($use_dynamic_cost) {
-                        $entry['amount'] = null;
-                    } else {
-                        // pickup uses the same price for all pickup points. LP 2025-05-26
-                        $entry['amount'] = array(
-                            'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
-                            'currency' => $currency // May want to use the orders' currency instead here, since it exists.
-                        );
-                    }
+                    // pickup uses the same price for all pickup points. LP 2025-05-26
+                    $entry['amount'] = array(
+                        'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                        'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                    );
 
                     if ($ok) {
                         $address = trim(apply_filters('woo_vipps_shipping_method_meta', $point['address']));
@@ -3128,14 +3120,10 @@ else:
                 $options['id'] = $id;
 
                 // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
-                if  ($use_dynamic_cost) {
-                    $options['amount'] = null;
-                } else {
-                    $options['amount'] = [ 
-                        'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
-                        'currency' => $currency // May want to use the orders' currency instead here, since it exists.
-                    ];
-                }
+                $options['amount'] = [ 
+                    'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
+                    'currency' => $currency // May want to use the orders' currency instead here, since it exists.
+                ];
 
                 if ($delivery_time) {
                     $options['estimatedDelivery'] = $delivery_time;
