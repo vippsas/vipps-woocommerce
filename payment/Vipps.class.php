@@ -3104,13 +3104,29 @@ else:
                     );
 
                     if ($ok) {
-                        $address = trim(apply_filters('woo_vipps_shipping_method_meta', $point['address']));
-                        if ($address) $entry['meta'] = $address;
-                        $entry['id'] = $point['id'];
-                        $entry['name'] = $point['name'];
-                        $filtered[] = $entry;
-                    }
-                }
+			    $addr = [];
+			    foreach(['address', 'postalCode', 'city', 'country'] as $key) {
+				    $v = trim($point[$key]);
+				    if (!empty($v)) $addr[] = trim($point[$key]);
+			    }
+			    $meta = '';
+			    $adr = trim($point['address']);
+			    $postal = trim($point['postalCode']);
+			    $city = trim($point['city']);
+
+			    if ($adr) $meta .= "$adr, ";
+			    if ($postal) $meta .= "$postal ";
+			    if ($city) $meta .= $city;
+					
+			    $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
+			    error_log("LP address is $meta");
+			    if ($address) $entry['meta'] = $meta;
+
+			    $entry['id'] = $point['id'];
+			    $entry['name'] = $point['name'];
+			    $filtered[] = $entry;
+		    }
+		}
 
                 $m2['type'] = 'PICKUP_POINT';
                 $options[] = $filtered;
