@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 4.1.1
-Stable tag: 4.1.1
+Version: 4.1.2
+Stable tag: 4.1.2
 Requires at least: 6.2
 Tested up to: 6.8.1
 Requires PHP: 7.4
@@ -109,6 +109,8 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 4.1.2
+Put customer order notes from Checkout in the correct place
 Version 4.1.1
 Hotfixes for the recurring subsystem; fix for a possible memory issue
 Version 4.1.0
@@ -291,6 +293,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-06-02 version 4.1.2 =
+Ensure customer order notes from Checkout ends up in the right place
+
 = 2025-05-27 version 4.1.1 =
 Hotfixes for the recurring subsystem
 
