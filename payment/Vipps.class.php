@@ -3075,7 +3075,7 @@ else:
                 } else {
                     continue; 
                 }
-             
+            } 
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
