@@ -1041,7 +1041,9 @@ jQuery(document).ready(function () {
         WC()->session->set( 'chosen_payment_method', 'vipps'); // This is to stop KCO from trying to replace Vipps Checkout with KCO and failing. IOK 2024-05-13
 
         // Previously registered, now enqueue this script which should then appear in the footer.
+        // Then call a hook for people adding custom javascript. This needs to be moved to template redirect. IOK 2025-06-02
         wp_enqueue_script('vipps-checkout');
+        do_action('woo_vipps_checkout_enqueue_scripts');
 
         do_action('vipps_checkout_before_get_session');
 
