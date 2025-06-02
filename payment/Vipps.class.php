@@ -3058,7 +3058,6 @@ else:
 
             $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); 
             $m2['priority'] = $m['priority'];
-            $options['priority'] = $m['priority'];
             $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
             $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
 
@@ -3119,11 +3118,11 @@ else:
 			    if ($city) $meta .= $city;
 					
 			    $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
-			    error_log("LP address is $meta");
 			    if ($address) $entry['meta'] = $meta;
 
 			    $entry['id'] = $point['id'];
 			    $entry['name'] = $point['name'];
+			    $entry['priority'] = $m['priority'];
 			    $filtered[] = $entry;
 		    }
 		}
@@ -3132,6 +3131,7 @@ else:
                 $options[] = $filtered;
 
             } else { // normal / non-pickup shipping methods. LP 2025-05-26
+		$options['priority'] = $m['priority'];
                 $options['name'] = $m['shippingMethod']; 
                 $options['id'] = $id;
 
