@@ -958,7 +958,7 @@ jQuery(document).ready(function () {
                         'class' => 'vipps_checkout_widget_premade',
                         'callback' => function($order) { ?>
                     <form id="vipps_checkout_widget_ordernotes_form">
-                        <span for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></span>
+                        <div for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></div>
                         <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label>
                         <span id="vipps_checkout_widget_ordernotes_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Something went wrong', 'woo-vipps') ?></span>
                         <span id="vipps_checkout_widget_ordernotes_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Saved', 'woo-vipps') ?></span>
