@@ -88,6 +88,7 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     font-size:18px;
     line-height:24px;
     font-weight:500;
+    color:black;
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_title.accordion {
     cursor: pointer;
@@ -129,6 +130,9 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_button {
     min-width: 5.5em;
     padding: 7.5px 16px;
+    font-size: 14px;
+    line-height:20px;
+    text-transform: none;
     border-radius: 24px;
     color: white;
     margin-top: 0.5em;
