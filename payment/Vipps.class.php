@@ -3075,7 +3075,6 @@ else:
             // Allow shipping methods to add pickup points data IOK 2025-04-08
             $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
             if ($pickup_points) {
-                $filtered = [];
                 foreach($pickup_points as $point) {
                     error_log("LP pickuppoint is " . print_r($point, true));
                     $ok = true;
@@ -3112,23 +3111,23 @@ else:
                         $entry['id'] = $id . ":" . $point['id'];
                         $entry['name'] = $point['name'];
                         $entry['priority'] = $m['priority'];
-                        $filtered[] = $entry;
+                        $options[] = $entry;
                     }
                 }
 
                 $m2['type'] = 'PICKUP_POINT';
-                $options[] = $filtered;
 
             } else { // normal / non-pickup shipping methods. LP 2025-05-26
-                $options['priority'] = $m['priority'];
-                $options['name'] = $m['shippingMethod']; 
-                $options['id'] = $id;
-
-                $options['amount'] = [ 
+                $option = [];
+                $option['priority'] = $m['priority'];
+                $option['name'] = $m['shippingMethod']; 
+                $option['id'] = $id;
+                $option['amount'] = [ 
                     'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
                     'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                 ];
-                if ($delivery_time) $options['estimatedDelivery'] = $delivery_time;
+                if ($delivery_time) $option['estimatedDelivery'] = $delivery_time;
+                $options[] = $option;
             }
 
             if (isset($meta['brand'])) {
@@ -3158,11 +3157,12 @@ else:
     // Group certain static shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
     public function express_group_shipping_methods ($return, $ratemap, $methodmap, $order) {
         $new_return = $return;
-        $group = [
+        $group = [ // these values will be updated in the loop. LP 2025-06-04
             'isDefault' => false,
             'brand' => 'OTHER',
             'type' => 'OTHER',
             'options' => [],
+            'priority' => 0,
         ];
         foreach ($return as $index => $method) {
             error_log("LP method is" . print_r($method, true));
@@ -3173,9 +3173,10 @@ else:
             $should_group = apply_filters('woo_vipps_checkout_group_shipping_methods', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
             error_log("LP should_group: $should_group");
             if ($should_group) {
-                $group['options'][] = $method;
+                $group['options'][] = $method['options'][0]; // these methods should only have one option at this point. LP 2025-06-04
                 if ($method['isDefault']) $group['isDefault'] = true;
                 $group['type'] = apply_filters('woo_vipps_checkout_group_shipping_methods_type', 'PICKUP_POINT', $shipping_method, $rate);
+                if ($method['priority'] < $group['priority']) $group['priority'] = $method['priority'];
                 unset($new_return[$index]);
             }
             error_log("LP group is " . print_r($group, true));
@@ -3197,7 +3198,7 @@ else:
         // if ($should_group) $group[] = $first;
         // $new_return = [$group, $this->express_group_shipping_methods($rest, $ratemap, $methodmap, $order)];
         // error_log("group is " . print_r($group, true));
-        $new_return = [$group, $new_return];
+        $new_return[] = $group;
         error_log("new return is " . print_r($new_return,true));
         return $new_return;
     }
