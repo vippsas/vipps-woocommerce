@@ -3050,7 +3050,6 @@ else:
         error_log("methodmap is " . print_r($methodmap, true));
         $translated = array();
         $currency = get_woocommerce_currency();
-        $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07
 
         foreach ($return['shippingDetails']  as $m) {
             $m2 = array();
@@ -3068,14 +3067,6 @@ else:
 
             $delivery_time = $rate->get_delivery_time();
 
-            // If we have pickup_location-s, only use the first one. IOK 2025-05-07
-            if ($rate->method_id == 'pickup_location') {
-                if (!$pickupLocation) {
-                    $pickupLocation = &$m2;
-                } else {
-                    continue; 
-                }
-            } 
 
             // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
             $meta = $rate->get_meta_data();
@@ -3110,16 +3101,19 @@ else:
                             'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                         );
                     }
-
                     if ($ok) {
                         $address = trim(apply_filters('woo_vipps_shipping_method_meta', $point['address']));
                         if ($address) $entry['meta'] = $address;
-                        $entry['id'] = $point['id'];
+                        // If we are using the Pickup locations filter for a single shipping rate,
+                        // the entry ID should be the rate ID plus a suffix; the suffix is stripped in
+                        // gw->set_order_shipping_details() so that we have many Express rates mapping to one single
+                        // Woo rate.
+                        $entry['id'] = $id . ":" . $point['id'];
+
                         $entry['name'] = $point['name'];
                         $filtered[] = $entry;
                     }
                 }
-
                 $m2['type'] = 'PICKUP_POINT';
                 $options[] = $filtered;
 

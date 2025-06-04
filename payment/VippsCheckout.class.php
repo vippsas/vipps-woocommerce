@@ -67,7 +67,7 @@ class VippsCheckout {
 
 
         add_filter('woo_vipps_shipping_method_pickup_points', function ($points, $rate, $shipping_method, $order) {
-            if ($rate->method_id == 'pickup_location') {
+            if ($rate->method_id == 'pickup_location' && $order->get_meta('_vipps_checkout')) {
                // $locations = $shipping_method->pickup_locations ; // Protected attribute. Could wrap, but life is short so
                 $locations = get_option( $shipping_method->id . '_pickup_locations', [] );
                 foreach ( $locations as $index => $location ) {

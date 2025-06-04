@@ -3097,9 +3097,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (substr($method,0,1) != '$') {
                 $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
             } else { 
+                // Strip suffixes if we have several Express rates mapping to the same Woo rate (eg. for Posten). IOK 2025-05-04
+                $key = preg_replace("!:.*!", "", $method);
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-                if (is_array($shipping_table) && isset($shipping_table[$method])) {
-                    $shipping_rate = @unserialize($shipping_table[$method]);
+                if (is_array($shipping_table) && isset($shipping_table[$key])) {
+                    $shipping_rate = @unserialize($shipping_table[$key]);
                     if (!$shipping_rate) {
                         $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error');
                     } else {
