@@ -3066,10 +3066,9 @@ else:
 
             $delivery_time = $rate->get_delivery_time();
 
-            // Some data must be visible in the Order screen, so add meta data, also, for dynamic pricing check that free shipping hasn't been reached
+            // Some data must be visible in the Order screen, so add meta data
             $meta = $rate->get_meta_data();
 
-            // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
             error_log("LP shipping_method is " . print_r($shipping_method, true));
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
@@ -3082,9 +3081,7 @@ else:
                     $ok = true;
                     $entry = [];
 
-                    if ($delivery_time) {
-                        $entry['estimatedDelivery'] = $delivery_time;
-                    }
+                    if ($delivery_time) $entry['estimatedDelivery'] = $delivery_time;
 
                     // pickup uses the same price for all pickup points. LP 2025-05-26
                     $entry['amount'] = array(
@@ -3093,49 +3090,45 @@ else:
                     );
 
                     if ($ok) {
-			    $addr = [];
-			    foreach(['address', 'postalCode', 'city', 'country'] as $key) {
-				    $v = trim($point[$key]);
-				    if (!empty($v)) $addr[] = trim($point[$key]);
-			    }
-			    $meta = '';
-			    $adr = trim($point['address']);
-			    $postal = trim($point['postalCode']);
-			    $city = trim($point['city']);
+                        $addr = [];
+                        foreach(['address', 'postalCode', 'city', 'country'] as $key) {
+                            $v = trim($point[$key]);
+                            if (!empty($v)) $addr[] = trim($point[$key]);
+                        }
+                        $meta = '';
+                        $adr = trim($point['address']);
+                        $postal = trim($point['postalCode']);
+                        $city = trim($point['city']);
 
-			    if ($adr) $meta .= "$adr, ";
-			    if ($postal) $meta .= "$postal ";
-			    if ($city) $meta .= $city;
-					
-			    $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
-			    if ($address) $entry['meta'] = $meta;
+                        if ($adr) $meta .= "$adr, ";
+                        if ($postal) $meta .= "$postal ";
+                        if ($city) $meta .= $city;
 
-                            // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
-                            // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
-			    $entry['id'] = $id . ":" . $point['id'];
-			    $entry['name'] = $point['name'];
-			    $entry['priority'] = $m['priority'];
-			    $filtered[] = $entry;
-		    }
-		}
+                        $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
+                        if ($address) $entry['meta'] = $meta;
+
+                        // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
+                        // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
+                        $entry['id'] = $id . ":" . $point['id'];
+                        $entry['name'] = $point['name'];
+                        $entry['priority'] = $m['priority'];
+                        $filtered[] = $entry;
+                    }
+                }
 
                 $m2['type'] = 'PICKUP_POINT';
                 $options[] = $filtered;
 
             } else { // normal / non-pickup shipping methods. LP 2025-05-26
-		$options['priority'] = $m['priority'];
+                $options['priority'] = $m['priority'];
                 $options['name'] = $m['shippingMethod']; 
                 $options['id'] = $id;
 
-                // Support dynamic cost alongside free shipping using the new api where NULL is dynamic pricing 2023-07-17 
                 $options['amount'] = [ 
                     'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
                     'currency' => $currency // May want to use the orders' currency instead here, since it exists.
                 ];
-
-                if ($delivery_time) {
-                    $options['estimatedDelivery'] = $delivery_time;
-                }
+                if ($delivery_time) $options['estimatedDelivery'] = $delivery_time;
             }
 
             if (isset($meta['brand'])) {
