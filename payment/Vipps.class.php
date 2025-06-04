@@ -3038,7 +3038,7 @@ else:
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
         } else { // New express format. LP 2025-05-26
             $return = $this->express_format_shipping_methods($return, $ratemap, $methodmap, $order);
-            // $return = $this->express_group_shipping_methods($return, $ratemap, $methodmap, $order);
+            $return = $this->express_group_shipping_methods($return, $ratemap, $methodmap, $order);
         }
 
         return $return;
@@ -3162,14 +3162,16 @@ else:
             'brand' => 'OTHER',
             'type' => 'OTHER',
             'options' => [],
-            'priority' => 0,
+            'priority' => 999,
         ];
         foreach ($return as $index => $method) {
             error_log("LP method is" . print_r($method, true));
-            $id = $method['options']['id'];
+            $id = $method['options'][0]['id'];
             error_log("LP id is $id");
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
+            // error_log("LP shipping_method is" . print_r($shipping_method, true));
+            // error_log("LP rate is" . print_r($rate, true));
             $should_group = apply_filters('woo_vipps_checkout_group_shipping_methods', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
             error_log("LP should_group: $should_group");
             if ($should_group) {
@@ -3181,24 +3183,9 @@ else:
             }
             error_log("LP group is " . print_r($group, true));
         }
-        // if (!$return) return $return;
-        
-        // $group = [];
-        // $first = $return[0];
-        // $rest = array_slice($return, 1);
-        // error_log("LP first is " . print_r($first, true));
-        // error_log("LP rest is " . print_r($rest, true));
 
-        // $id = $first['options']['id'];
-        // error_log("LP id is $id");
-        // $rate = $ratemap[$id];
-        // $shipping_method = $methodmap[$id];
-        // $should_group = apply_filters('woo_vipps_checkout_group_shipping_methods', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
-        // error_log("LP should_group: $should_group");
-        // if ($should_group) $group[] = $first;
-        // $new_return = [$group, $this->express_group_shipping_methods($rest, $ratemap, $methodmap, $order)];
-        // error_log("group is " . print_r($group, true));
         $new_return[] = $group;
+        $new_return = array_values($new_return); // reindex array cus php json encode. LP 2025-06-04
         error_log("new return is " . print_r($new_return,true));
         return $new_return;
     }
