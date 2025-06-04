@@ -3155,12 +3155,12 @@ else:
 
 
     // Group certain static shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
-    public function express_group_shipping_methods ($return, $ratemap, $methodmap, $order) {
+    public function express_group_shipping_methods($return, $ratemap, $methodmap, $order) {
         $new_return = $return;
         $group = [ // these values will be updated in the loop. LP 2025-06-04
             'isDefault' => false,
             'brand' => 'OTHER',
-            'type' => 'OTHER',
+            'type' => 'PICKUP_POINT',
             'options' => [],
             'priority' => 999,
         ];
@@ -3172,12 +3172,13 @@ else:
             $shipping_method = $methodmap[$id];
             // error_log("LP shipping_method is" . print_r($shipping_method, true));
             // error_log("LP rate is" . print_r($rate, true));
-            $should_group = apply_filters('woo_vipps_checkout_group_shipping_methods', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
+            $should_group = apply_filters('woo_vipps_express_should_group_shipping_method', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
             error_log("LP should_group: $should_group");
             if ($should_group) {
                 $group['options'][] = $method['options'][0]; // these methods should only have one option at this point. LP 2025-06-04
                 if ($method['isDefault']) $group['isDefault'] = true;
-                $group['type'] = apply_filters('woo_vipps_checkout_group_shipping_methods_type', 'PICKUP_POINT', $shipping_method, $rate);
+                $group['type'] = apply_filters('woo_vipps_express_group_shipping_method_type', 'PICKUP_POINT', $shipping_method, $rate);
+                $group['brand'] = apply_filters('woo_vipps_express_group_shipping_method_brand', 'OTHER', $shipping_method, $rate);
                 if ($method['priority'] < $group['priority']) $group['priority'] = $method['priority'];
                 unset($new_return[$index]);
             }
