@@ -3038,6 +3038,7 @@ else:
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
         } else { // New express format. LP 2025-05-26
             $return = $this->express_format_shipping_methods($return, $ratemap, $methodmap, $order);
+            // $return = $this->express_group_shipping_methods($return, $ratemap, $methodmap, $order);
         }
 
         return $return;
@@ -3055,7 +3056,7 @@ else:
             $m2 = array();
             $options = [];
 
-            $m2['isDefault'] = (bool) (($m['isDefault']=='Y') ? true : false); 
+            $m2['isDefault'] = ($m['isDefault']=='Y') ? true : false; 
             $m2['priority'] = $m['priority'];
             $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
             $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
@@ -3072,7 +3073,6 @@ else:
             error_log("LP shipping_method is " . print_r($shipping_method, true));
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
-            $delivery = [];
             $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
             if ($pickup_points) {
                 $filtered = [];
@@ -3152,6 +3152,54 @@ else:
         $return = apply_filters('woo_vipps_checkout_json_shipping_methods', $translated, $order);
         error_log("LP return after express format is " . print_r($return, true));
         return $return;
+    }
+
+
+    // Group certain static shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
+    public function express_group_shipping_methods ($return, $ratemap, $methodmap, $order) {
+        $new_return = $return;
+        $group = [
+            'isDefault' => false,
+            'brand' => 'OTHER',
+            'type' => 'OTHER',
+            'options' => [],
+        ];
+        foreach ($return as $index => $method) {
+            error_log("LP method is" . print_r($method, true));
+            $id = $method['options']['id'];
+            error_log("LP id is $id");
+            $rate = $ratemap[$id];
+            $shipping_method = $methodmap[$id];
+            $should_group = apply_filters('woo_vipps_checkout_group_shipping_methods', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
+            error_log("LP should_group: $should_group");
+            if ($should_group) {
+                $group['options'][] = $method;
+                if ($method['isDefault']) $group['isDefault'] = true;
+                $group['type'] = apply_filters('woo_vipps_checkout_group_shipping_methods_type', 'PICKUP_POINT', $shipping_method, $rate);
+                unset($new_return[$index]);
+            }
+            error_log("LP group is " . print_r($group, true));
+        }
+        // if (!$return) return $return;
+        
+        // $group = [];
+        // $first = $return[0];
+        // $rest = array_slice($return, 1);
+        // error_log("LP first is " . print_r($first, true));
+        // error_log("LP rest is " . print_r($rest, true));
+
+        // $id = $first['options']['id'];
+        // error_log("LP id is $id");
+        // $rate = $ratemap[$id];
+        // $shipping_method = $methodmap[$id];
+        // $should_group = apply_filters('woo_vipps_checkout_group_shipping_methods', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
+        // error_log("LP should_group: $should_group");
+        // if ($should_group) $group[] = $first;
+        // $new_return = [$group, $this->express_group_shipping_methods($rest, $ratemap, $methodmap, $order)];
+        // error_log("group is " . print_r($group, true));
+        $new_return = [$group, $new_return];
+        error_log("new return is " . print_r($new_return,true));
+        return $new_return;
     }
 
 
