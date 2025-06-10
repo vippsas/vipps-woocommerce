@@ -13,6 +13,9 @@ class WC_Vipps_Recurring_All_Products_Support {
 		], 10, 2 );
 
 		add_filter( 'wc_vipps_recurring_item_is_subscription', [ __CLASS__, 'item_is_subscription' ], 10, 2 );
+
+		add_filter('wc_vipps_recurring_checkout_product_billing_period', [ __CLASS__, 'product_billing_period' ], 10, 2);
+		add_filter('wc_vipps_recurring_checkout_product_billing_interval', [ __CLASS__, 'product_billing_interval' ], 10, 2);
 	}
 
 	public static function cart_has_subscription_product( $has_subscription_product, $cart_content ) {
@@ -36,5 +39,21 @@ class WC_Vipps_Recurring_All_Products_Support {
 		}
 
 		return $item_is_subscription;
+	}
+
+	public static function product_billing_period( $period, $product ) {
+		if ( class_exists( 'WCS_ATT_Product' ) ) {
+			return WCS_ATT_Product::get_runtime_meta($product, 'subscription_period');
+		}
+
+		return $period;
+	}
+
+	public static function product_billing_interval( $interval, $product ) {
+		if ( class_exists( 'WCS_ATT_Product' ) ) {
+			return WCS_ATT_Product::get_runtime_meta($product, 'subscription_period_interval');
+		}
+
+		return $interval;
 	}
 }
