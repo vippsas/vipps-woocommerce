@@ -342,7 +342,7 @@ class VippsCheckout_Shipping_Method extends WC_Shipping_Method {
         }
 
         $cost = apply_filters('woo_vipps_vipps_checkout_shipping_cost', $cost, $this);
-        return $cost;
+        return $cost ?: 0;
     }
 
     // Add free shipping trigger etc?

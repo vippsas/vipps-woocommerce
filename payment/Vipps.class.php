@@ -2928,7 +2928,11 @@ else:
             return $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $acart);
         }
         // Default 'priority' is based on cost, so sort this thing
-        uasort($shipping_methods, function($a, $b) { return $a->get_cost() - $b->get_cost(); });
+        uasort($shipping_methods, function($a, $b) { 
+                $acost = $a->get_cost() ?: 0;
+                $bcost = $b->get_cost() ?: 0;
+                return $acost - $bcost;
+                });
 
         // IOK 2020-02-13 Ok, new method!  We are going to provide a list full of metadata for the users to process this time, which we will massage into the final
         // Vipps method list
@@ -2999,8 +3003,8 @@ else:
            $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
            $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
 
-           $tax  = $rate->get_shipping_tax();
-           $cost = $rate->get_cost();
+           $tax  = $rate->get_shipping_tax() ?: 0;
+           $cost = $rate->get_cost() ?: 0;
            $label = $rate->get_label();
            // We need to store the WC_Shipping_Rate object with all its meta data in the database until return from Vipps. IOK 2020-02-17
            $serialized = '';
@@ -3121,8 +3125,8 @@ else:
         foreach ($shipping_methods as  $rate) {
             $method = array();
             $method['priority'] = 0;
-            $tax  = $rate->get_shipping_tax();
-            $cost = $rate->get_cost();
+            $tax  = $rate->get_shipping_tax() ?: 0;
+            $cost = $rate->get_cost() ?: 0;
 
             $method['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
             $method['shippingMethod'] = $rate->get_label();
