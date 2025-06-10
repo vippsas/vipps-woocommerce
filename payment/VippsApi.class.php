@@ -562,16 +562,16 @@ class VippsApi {
             $data['profile']['scope'] = join(" ", $scope);
         }
 
-        // Integer [0..100] or null. LP 2025-05-26
+        // minimumUserAge: Integer [0..100] or null. LP 2025-05-26
         $minage = apply_filters('woo_vipps_payment_minimum_user_age', null);
         $minageint = intval($minage);
-        // intval defaults to 0 when it fails to convert to int, so make sure that case will default to 'null' with is_numeric. LP 2025-05-26
+        // intval defaults to 0 when it fails to convert to int, so make sure this case will default to null, by is_numeric. LP 2025-05-26
         if (is_numeric($minage) && $minageint >= 0 && $minageint <= 100) { 
             $minage = $minageint;
         } else {
             $minage = null;
         }
-        $data['minimumUserAge'] = $minage; // FIXME remove comment
+        $data['minimumUserAge'] = $minage; 
 
         // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
         // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
