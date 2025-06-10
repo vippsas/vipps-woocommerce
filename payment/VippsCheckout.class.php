@@ -849,7 +849,8 @@ jQuery(document).ready(function () {
                         error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
                     }
                 }
-
+                $order->set_customer_note(sanitize_text_field($notes));
+                $order->save();
 
                 // Disable the email that gets sent on new order notes. IOK 2025-05-14 
                 add_filter('woocommerce_mail_callback', function ($mailer, $mailclass) {
@@ -939,11 +940,11 @@ jQuery(document).ready(function () {
                         </div>
                         </div>
                         <form id="vipps_checkout_widget_coupon_form">
-                            <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label><br>
+                            <label for="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_small"><?php echo __('Enter your code', 'woo-vipps')?></label>
                             <span id="vipps_checkout_widget_coupon_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Invalid coupon code', 'woo-vipps') ?></span>
                             <span id="vipps_checkout_widget_coupon_delete_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Could not remove coupon', 'woo-vipps') ?></span>
                             <span id="vipps_checkout_widget_coupon_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Coupon code added!', 'woo-vipps') ?></span>
-                            <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/><br>
+                            <input required id="vipps_checkout_widget_coupon_code" class="vipps_checkout_widget_input" type="text" name="code"/>
                             <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Add', 'woo-vipps')?></button>
                         </form>
                         <?php
@@ -957,8 +958,8 @@ jQuery(document).ready(function () {
                         'class' => 'vipps_checkout_widget_premade',
                         'callback' => function($order) { ?>
                     <form id="vipps_checkout_widget_ordernotes_form">
-                        <span for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></span><br>
-                        <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label><br>
+                        <div for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_info"><?php echo __('Is there anything you wish to inform the store about? Include it here', 'woo-vipps')?></div>
+                        <label for="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_small"><?php echo __('Notes', 'woo-vipps')?></label>
                         <span id="vipps_checkout_widget_ordernotes_error" class="vipps_checkout_widget_error" style="display:none;"><?php echo __('Something went wrong', 'woo-vipps') ?></span>
                         <span id="vipps_checkout_widget_ordernotes_success" class="vipps_checkout_widget_success" style="display:none;"><?php echo __('Saved', 'woo-vipps') ?></span>
                         <input id="vipps_checkout_widget_ordernotes_input" class="vipps_checkout_widget_input" type="text" name="notes" value="<?php if ($order) {
@@ -968,7 +969,7 @@ jQuery(document).ready(function () {
                                 if (is_a($latest_note, 'WP_Comment')) echo $latest_note->comment_content;
                                 else error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
                             }
-                        } ?>"/><br>
+                        } ?>"/>
                         <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>
                     </form>
                     <?php
@@ -1040,7 +1041,9 @@ jQuery(document).ready(function () {
         WC()->session->set( 'chosen_payment_method', 'vipps'); // This is to stop KCO from trying to replace Vipps Checkout with KCO and failing. IOK 2024-05-13
 
         // Previously registered, now enqueue this script which should then appear in the footer.
+        // Then call a hook for people adding custom javascript. This needs to be moved to template redirect. IOK 2025-06-02
         wp_enqueue_script('vipps-checkout');
+        do_action('woo_vipps_checkout_enqueue_scripts');
 
         do_action('vipps_checkout_before_get_session');
 

@@ -1159,7 +1159,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'default'     => 'yes'
            ],
        ];
-       if (wc_coupons_enabled()) {
+/* This seems to have broken some sites with OOM during plugin activation. 2025-05-27 */
+//       if (wc_coupons_enabled()) {
            $vipps_checkout_widgets_fields['checkout_widget_coupon'] = [
                'title'       => __('Coupon code', 'woo-vipps'),
                'label'       => __('Enable the coupon code widget', 'woo-vipps'),
@@ -1167,7 +1168,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                'description' => __('A widget to activate coupon codes.', 'woo-vipps'),
                'default'     => 'yes'
            ];
-       }
+//       }
 
         $mainfields = array(
             'main_options'             => array(

@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 4.1.0
-Stable tag: 4.1.0
+Version: 4.1.3
+Stable tag: 4.1.3
 Requires at least: 6.2
 Tested up to: 6.8.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 9.9.0
+WC tested up to: 9.9.3
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -109,6 +109,12 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 4.1.3
+Make CSS for Checkout widgets more specific
+Version 4.1.2
+Put customer order notes from Checkout in the correct place
+Version 4.1.1
+Hotfixes for the recurring subsystem; fix for a possible memory issue
 Version 4.1.0
 Optionally support coupons and order notes in Vipps Checkout 
 Version 4.0.15
@@ -117,7 +123,6 @@ Version 4.0.14
 Support Pickup Locations in Vipps MobilePay Checkout using the new pickup locations API
 Version 4.0.13
 Support recalculation of order value in Vipps Checkout when address/customer information changes, recalculating correct VAT in certain situations.
-Version 4.0.11, 4.0.12:
 
 == Frequently Asked Questions ==
 
@@ -290,6 +295,15 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-06-02 version 4.1.3 =
+Make CSS for Checkout Widgets more specific, add hook for enqueing scripts for checkout
+
+= 2025-06-02 version 4.1.2 =
+Ensure customer order notes from Checkout ends up in the right place
+
+= 2025-05-27 version 4.1.1 =
+Hotfixes for the recurring subsystem
+
 = 2025-05-26 version 4.1.0 =
 Support order notes and coupons in Vipps Checkout. This can be turned off in the Vipps Checkout settings.
 Developers can add more widgets using filters; including for actions that modify the session.

@@ -474,7 +474,11 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		return $this->api->get_agreement( $agreement_id );
+		try {
+			return $this->api->get_agreement( $agreement_id );
+		} catch ( Exception $e ) {
+			return false;
+		}
 	}
 
 	/**
