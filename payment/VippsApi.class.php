@@ -271,11 +271,11 @@ class VippsApi {
             foreach ($order->get_items() as $key => $order_item) {
                 $orderline = [];
                 $prodid = $order_item->get_product_id(); // sku can be tricky
-                $totalNoTax = $order_item->get_total();
-                $tax = $order_item->get_total_tax();
+                $totalNoTax = $order_item->get_total() ?: "0";
+                $tax = $order_item->get_total_tax() ?: "0";
                 $total = $tax+$totalNoTax;
-                $subtotalNoTax = $order_item->get_subtotal();
-                $subtotalTax = $order_item->get_subtotal_tax();
+                $subtotalNoTax = $order_item->get_subtotal() ?: "0";
+                $subtotalTax = $order_item->get_subtotal_tax() ?: "0";
                 $subtotal = $subtotalNoTax + $subtotalTax;
                 $quantity = $order_item->get_quantity();
                 $unitprice = $subtotal/$quantity;
@@ -313,8 +313,8 @@ class VippsApi {
 
             foreach($order->get_items('fee') as $key=>$order_item) {
                 $orderline = [];
-                $totalNoTax = $order_item->get_total();
-                $tax = $order_item->get_total_tax();
+                $totalNoTax = $order_item->get_total() ?: "0";
+                $tax = $order_item->get_total_tax() ?: "0";
                 $total = $tax+$totalNoTax;
                 $quantity = 1;
                 $taxpercentageraw = 0;
@@ -345,8 +345,8 @@ class VippsApi {
                     $orderline['id'] .= ":" . strval($order_item->get_instance_id());
                 }
 
-                $totalNoTax = $order_item->get_total();
-                $tax = $order_item->get_total_tax();
+                $totalNoTax = $order_item->get_total() ?: "0";
+                $tax = $order_item->get_total_tax() ?: "0";
                 $total = $tax+$totalNoTax;
                 $subtotalNoTax =$totalNoTax;
                 $subtotalTax = $tax;
