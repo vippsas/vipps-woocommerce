@@ -3146,7 +3146,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             if ($shipping_rate) {
                 // We may need the order total early on, so start with that
-                $ordertotal = $order->get_total();
+                $ordertotal = $order->get_total() ?: 0;
 
                 // Recover the Shipping Method class
                 $methods_classes = WC()->shipping->get_shipping_method_class_names();
@@ -3182,8 +3182,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 $order->add_item($it);
 
-                $total_shipping = $it->get_total();
-                $total_shipping_tax = $it->get_total_tax();
+                $total_shipping = $it->get_total() ?: 0;
+                $total_shipping_tax = $it->get_total_tax() ?: 0;
 
                 // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
                 // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the

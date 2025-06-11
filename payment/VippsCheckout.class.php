@@ -549,11 +549,11 @@ jQuery(document).ready(function () {
         // The single current pending order. IOK 2025-04-25
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
-        $prevtotal = $order->get_total();
+        $prevtotal = $order->get_total() ?: 0;
         try {
             $result = $handler($action, $order);
             $order = wc_get_order($order->get_id()); // Incase the order has changed since last wc_get_order. LP 2025-05-14
-            $newtotal = $order->get_total();
+            $newtotal = $order->get_total() ?: 0;
             if ($lock_held && $newtotal != $prevtotal) {
                 try {
                     $res = $this->gateway()->api->checkout_modify_session($order);
@@ -688,7 +688,7 @@ jQuery(document).ready(function () {
         // When the address changes, the VAT/taxes may have changed too. Recalculate the order total if we know the Vipps lock
         // of the order is held. IOK 2025-04-25
         if ($change) {
-            $prevtotal = $order->get_total();
+            $prevtotal = $order->get_total() ?: 0;
             $newtotal = $order->calculate_totals(true); // With taxes please
             if ($lock_held && $newtotal != $prevtotal) {
                 try {
@@ -722,7 +722,7 @@ jQuery(document).ready(function () {
     // Also any other checks we might want to do in the future. This will validate the cart each time the
     //  checkout page loads, even if a session is already in progress.  IOK 2024-09-09
     public function ajax_vipps_checkout_validate_cart() {
-        $cart_total = WC()->cart->get_total('edit');
+        $cart_total = WC()->cart->get_total('edit') ?: 0;
         $minimum_amount = 1; // 1 in the store currency
 
         if ($cart_total < $minimum_amount) {
