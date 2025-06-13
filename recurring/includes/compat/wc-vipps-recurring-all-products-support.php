@@ -20,8 +20,8 @@ class WC_Vipps_Recurring_All_Products_Support {
 
 	public static function cart_has_subscription_product( $has_subscription_product, $cart_content ) {
 		if ( class_exists( 'WCS_ATT_Cart' ) ) {
-			foreach ( $cart_content as $values ) {
-				$is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme( $values );
+			foreach ( $cart_content as $cart_item ) {
+				$is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme( $cart_item );
 				if ( $is_wcs_att_sub !== null ) {
 					$has_subscription_product = ! is_bool( $is_wcs_att_sub );
 				}
