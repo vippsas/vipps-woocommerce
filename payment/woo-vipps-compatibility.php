@@ -205,27 +205,21 @@ add_action('after_setup_theme', function () {
     }
 
     // Disable Vipps checkout/express in cart - for carts with products from the plugin: all-products-for-woocommerce-subscriptions. LP 2025-06-13
-    if (true || class_exists('WCS_ATT_Cart')) {
+    if (class_exists('WCS_ATT_Cart')) {
         add_filter('woo_vipps_cart_supports_checkout', function ($supports, $cart) {
             foreach ($cart->get_cart_contents() as $values) {
+                // below returns instance if product is subscription -> we dont support it, else false (not subscription). LP 2025-06-13
                 $is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme($values);
-                if ( $is_wcs_att_sub !== null ) {
-                    // this var is false if the cart item is a one-time purchase, ie. not subscription. LP 2025-06-13
-                    $supports = is_bool($is_wcs_att_sub); 
-                    break;
-                }
+                if ($is_wcs_att_sub) return false;
             }
             return $supports;
         }, 10, 2);
 
         add_filter('woo_vipps_cart_supports_express_checkout', function ($supports, $cart) {
             foreach ($cart->get_cart_contents() as $values) {
+                // below returns instance if product is subscription -> we dont support it, else false (not subscription). LP 2025-06-13
                 $is_wcs_att_sub = WCS_ATT_Cart::get_subscription_scheme($values);
-                if ( $is_wcs_att_sub !== null ) {
-                    // this var is false if the cart item is a one-time purchase, ie. not subscription. LP 2025-06-13
-                    $supports = is_bool($is_wcs_att_sub); 
-                    break;
-                }
+                if ($is_wcs_att_sub) return false;
             }
             return $supports;
         }, 10, 2);
