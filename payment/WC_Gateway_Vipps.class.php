@@ -1733,17 +1733,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();
-
-            // We need to dispatch on the type of checkout, express checkout uses eCom v2, all others use ePayment
-            $express = $order->get_meta('_vipps_express_checkout');
-            $content;
-            // FIXME dev override to force epayment. LP 2025-05-26
-            if (false && $express) {
-            // if ($express) {
-                $content =  $this->api->initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
-            } else {
-                $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
-            }
+            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
             error_log("LP content after initiate payment is " . print_r($content,true));
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
