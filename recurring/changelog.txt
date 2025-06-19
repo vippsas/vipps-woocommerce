@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.1.9 =
+* Fix: Checkout compatibility for "All Products for Woo Subscriptions".
+
 = 2.1.8 =
 * Hotfix: Attribute orders and subscriptions to a user when using Checkout.
 * Hotfix: Handle a few edge cases where subscriptions cannot be created properly.

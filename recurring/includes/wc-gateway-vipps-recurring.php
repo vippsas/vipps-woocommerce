@@ -2782,8 +2782,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'created_via'      => $order->get_created_via( 'edit' ),
 				'start_date'       => $start_date,
 				'status'           => $order->is_paid() ? 'active' : 'pending',
-				'billing_period'   => WC_Subscriptions_Product::get_period( $product ),
-				'billing_interval' => WC_Subscriptions_Product::get_interval( $product ),
+				'billing_period'   => apply_filters('wc_vipps_recurring_checkout_product_billing_period', WC_Subscriptions_Product::get_period( $product ), $product),
+				'billing_interval' => apply_filters('wc_vipps_recurring_checkout_product_billing_interval', WC_Subscriptions_Product::get_interval( $product ), $product),
 				'customer_note'    => $order->get_customer_note(),
 			] );
 
