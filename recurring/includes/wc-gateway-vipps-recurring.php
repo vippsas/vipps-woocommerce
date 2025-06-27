@@ -1619,6 +1619,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 					$existing_agreement = $this->api->get_agreement( $new_agreement_id );
 				}
 
+				if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_PENDING ) {
+					return [
+						'result'   => 'success',
+						'redirect' => $existing_agreement->vipps_confirmation_url,
+					];
+				}
+
 				if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
 					throw new WC_Vipps_Recurring_Temporary_Exception( __( 'This subscription is already active in Vipps/MobilePay. You can leave this page.', 'woo-vipps' ) );
 				}
@@ -2782,8 +2789,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'created_via'      => $order->get_created_via( 'edit' ),
 				'start_date'       => $start_date,
 				'status'           => $order->is_paid() ? 'active' : 'pending',
-				'billing_period'   => apply_filters('wc_vipps_recurring_checkout_product_billing_period', WC_Subscriptions_Product::get_period( $product ), $product),
-				'billing_interval' => apply_filters('wc_vipps_recurring_checkout_product_billing_interval', WC_Subscriptions_Product::get_interval( $product ), $product),
+				'billing_period'   => apply_filters( 'wc_vipps_recurring_checkout_product_billing_period', WC_Subscriptions_Product::get_period( $product ), $product ),
+				'billing_interval' => apply_filters( 'wc_vipps_recurring_checkout_product_billing_interval', WC_Subscriptions_Product::get_interval( $product ), $product ),
 				'customer_note'    => $order->get_customer_note(),
 			] );
 
@@ -2954,6 +2961,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
 
 		// Prevent temporary cancellations from reaching this code
+		if ( ! $subscription ) {
+			return;
+		}
+
 		$new_status = $subscription->get_status();
 		if ( $new_status !== 'cancelled' ) {
 			return;

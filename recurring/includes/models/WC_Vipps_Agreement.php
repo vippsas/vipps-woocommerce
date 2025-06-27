@@ -51,6 +51,7 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 	public ?bool $skip_landing_page = null;
 	public ?string $sub = null;
 	public ?string $userinfo_url = null;
+	public ?string $vipps_confirmation_url = null;
 
 	/**
 	 * @throws WC_Vipps_Recurring_Invalid_Value_Exception
@@ -204,6 +205,12 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 		return $this;
 	}
 
+	public function set_vipps_confirmation_url( string $vipps_confirmation_url ): self {
+		$this->vipps_confirmation_url = $vipps_confirmation_url;
+
+		return $this;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
@@ -234,6 +241,7 @@ class WC_Vipps_Agreement extends WC_Vipps_Model {
 			$this->conditional( "skipLandingPage", $this->skip_landing_page ),
 			$this->conditional( "sub", $this->sub ),
 			$this->conditional( "userinfoUrl", $this->userinfo_url ),
+			$this->conditional( "vippsConfirmationUrl", $this->vipps_confirmation_url ),
 		);
 	}
 }
