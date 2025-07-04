@@ -276,8 +276,6 @@ class WC_Vipps_Recurring_Checkout {
 			$checkout = WC_Vipps_Recurring_Checkout::get_instance();
 			$gateway  = $checkout->gateway();
 
-			$order_prefix = $gateway->order_prefix;
-
 			// hack - fake "Anonymous Vipps/MobilePay User"
 			$fake_user = false;
 			if ( ! $order->get_customer_id( 'edit' ) ) {
@@ -360,7 +358,7 @@ class WC_Vipps_Recurring_Checkout {
 				->set_configuration( $configuration );
 
 			if ( $agreement->initial_charge ) {
-				$reference = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $order_prefix );
+				$reference = $agreement->initial_charge->order_id;
 
 				$checkout_transaction = ( new WC_Vipps_Checkout_Session_Transaction() )
 					->set_reference( $reference )
