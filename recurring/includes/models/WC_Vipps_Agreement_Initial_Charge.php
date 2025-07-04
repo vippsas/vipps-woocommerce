@@ -17,6 +17,7 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 	public ?string $description = null;
 	public ?string $transaction_type = null;
 	public ?string $order_id = null;
+	public ?string $external_id = null;
 
 	public function set_amount( int $amount ): self {
 		$this->amount = $amount;
@@ -54,6 +55,12 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
+	public function set_external_id( string $external_id ): self {
+		$this->external_id = $external_id;
+
+		return $this;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
@@ -68,7 +75,8 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 				"description"     => $this->description,
 				"transactionType" => $this->transaction_type,
 			],
-			$this->conditional( "orderId", $this->order_id )
+			$this->conditional( "orderId", $this->order_id ),
+			$this->conditional( "externalId", $this->external_id )
 		);
 	}
 }
