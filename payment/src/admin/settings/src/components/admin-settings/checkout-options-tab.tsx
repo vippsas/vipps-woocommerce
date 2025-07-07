@@ -42,7 +42,7 @@ export function AdminSettingsCheckoutOptionsTab(): JSX.Element {
         descriptionKey="checkoutcreateuser.description"
       />
 
-      {/* Renders a checkbox to enable dynamic shipping */}
+      {/* Renders a checkbox to enable static shipping */}
       <CheckboxFormField
         name="enablestaticshipping_checkout"
         titleKey="enablestaticshipping_checkout.title"
