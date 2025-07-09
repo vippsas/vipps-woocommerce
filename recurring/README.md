@@ -35,7 +35,7 @@ With Vipps/MobilePay recurring payments you can:
 * Offer subscription services
 
 See
-[How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/)
+[How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/)
 for an overview.
 
 <!-- START_COMMENT -->
