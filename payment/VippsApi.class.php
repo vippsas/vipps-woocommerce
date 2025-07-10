@@ -261,10 +261,19 @@ class VippsApi {
             $orderlines = [];
             $bottomline = ['tipAmount'=>0, 'giftCardAmount'=>0, 'terminalId'=>'woocommerce'];
             $bottomline['currency'] = $order->get_currency();
+
+            // 'receipt.bottomLine.giftCardAmount' is deprecated in epayment: https://developer.vippsmobilepay.com/api/epayment/#tag/CreatePayments 
+            // and same for 'bottomLine.giftCardAmount' in order management api: https://developer.vippsmobilepay.com/api/order-management/#tag/Orderlines/operation/post-receipt-v2
+            // LP 2025-07-10
             $giftcardamount = apply_filters('woo_vipps_order_giftcard_amount', 0, $order);
             $tipamount = apply_filters('woo_vipps_order_tip_amount', 0, $order);
             $bottomline['tipAmount'] = round($tipamount*100);
             $bottomline['giftCardAmount'] = round($giftcardamount*100);
+
+            // 'receipt.bottomLine.terminalId' is deprecated in epayment: https://developer.vippsmobilepay.com/api/epayment/#tag/CreatePayments/operation/createPayment
+            // and same for 'bottomLine.terminalId' in order management api: https://developer.vippsmobilepay.com/api/order-management/#tag/Orderlines/operation/post-receipt-v2
+            // ----> use 'posId' instead. 
+            // LP 2025-07-10 
             $bottomline['terminalId'] = apply_filters('woo_vipps_order_terminalid', 'woocommerce', $order);
             $bottomline['receiptNumber'] = strval($order->get_id());
 
@@ -534,6 +543,7 @@ class VippsApi {
         $data['returnUrl'] = $fallback;
 
         $data['customer'] = [];
+
         // Allow filters to use CUSTOMER_PRESENT if using in store situation with the user physically present IOK 2023-12-13
         $data['customer']['customerInteraction'] = apply_filters('woo_vipps_customerInteraction', 'CUSTOMER_NOT_PRESENT', $orderid);
         if ($phone) {
@@ -886,7 +896,8 @@ class VippsApi {
                $integrations['helthjem'] = $helthjem;
             }
             if (!empty($integrations))  {
-               $logistics['integrations'] = $integrations;
+                // 'logistics.integrations' deprecated in Checkout: https://developer.vippsmobilepay.com/api/checkout/#tag/Session/paths/~1checkout~1v3~1session/post. LP 2025-07-10
+               $logistics['integrations'] = $integrations; 
             }
             $data['logistics'] = $logistics;
         }
