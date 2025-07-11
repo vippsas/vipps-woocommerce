@@ -3108,7 +3108,7 @@ else:
                         if ($city) $meta .= $city;
 
                         $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
-                        if ($address) $entry['meta'] = $meta;
+                        if ($meta) $entry['meta'] = $meta;
 
                         // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
                         // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
