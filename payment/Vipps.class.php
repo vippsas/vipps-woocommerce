@@ -3093,11 +3093,6 @@ else:
                     );
 
                     if ($ok) {
-                        $addr = [];
-                        foreach(['address', 'postalCode', 'city', 'country'] as $key) {
-                            $e = trim($point[$key]);
-                            if (!empty($e)) $addr[] = $e;
-                        }
                         $meta = '';
                         $adr = trim($point['address']);
                         $postal = trim($point['postalCode']);
