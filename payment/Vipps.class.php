@@ -1261,7 +1261,11 @@ jQuery('a.webhook-adder').click(function (e) {
     public function wp_enqueue_scripts() {
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
-        wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+        $badges = get_option('vipps_badge_options');
+        // Only enqueue in the front-end if badges are actually on. IOK 2025-07-25
+        if ($badges && ($badges['badgeon'] ?? false)) {
+            wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+        }
     }
 
 
