@@ -49,7 +49,7 @@ for an overview.
 * [Extending the plugin](#extending-the-plugin)
   * [Constants](#constants)
   * [Filters](#filters)
-* [Frequently Asked Questions](#frequently-asked-questions)
+* [Frequently asked questions](#frequently-asked-questions)
 <!-- END_COMMENT -->
 
 ## Requirements
@@ -72,11 +72,11 @@ for an overview.
 1. Download and activate the plugin from this GitHub repository or [Vipps/MobilePay recurring payments on WordPress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
 2. Enable the *Vipps/MobilePay recurring payment* method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
-4. Proceed to [Retrieving Vipps MobilePay API Keys](#retrieving-vipps-mobilepay-api-keys).
+4. Proceed to [Retrieving Vipps MobilePay API keys](#retrieving-vipps-mobilepay-api-keys).
 
 ![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-1.png)
 
-### Retrieving Vipps MobilePay API Keys
+### Retrieving Vipps MobilePay API keys
 
 Log-in to [portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
@@ -163,7 +163,7 @@ Some filters include:
   Allows you to modify the Vipps MobilePay agreement before we send the request to the Vipps MobilePay API.
   Includes subscription and order in case you need to make some custom logic.
 
-## Frequently Asked Questions
+## Frequently asked questions
 
 ### How can I get help?
 
