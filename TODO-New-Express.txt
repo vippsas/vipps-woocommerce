@@ -1,0 +1,4 @@
+1. static shipping virker
+2. dynamic virker ikke
+3. poll/callback virker ikke
+4. prisene på frakt er feil
