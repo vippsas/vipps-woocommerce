@@ -2,3 +2,11 @@
 2. dynamic virker ikke
 3. poll/callback virker ikke
 4. prisene på frakt er feil
+
+Logget (med statisk):
+
+2025-08-08T12:46:20+00:00 DEBUG Initiating Vipps MobilePay epayment session for woodigitalt4707
+2025-08-08T12:47:38+00:00 INFO Feil ved oppretting av bruker i hurtigkassen: Vennligst oppgi en gyldig e-postadresse.
+2025-08-08T12:47:38+00:00 INFO Kunne ikke hente e-post til brukeren før takk-siden
+2025-08-08T12:47:40+00:00 INFO Callback received
+2025-08-08T12:47:40+00:00 DEBUG Mottok webhook-callback for checkout/hurtigkasseordre 4707 - ignorerer denne siden en fullstending callback skal komme
