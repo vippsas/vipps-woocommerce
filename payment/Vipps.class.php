@@ -3188,7 +3188,12 @@ else:
             error_log("LP group is " . print_r($group, true));
         }
 
-        $new_return[] = $group;
+        // FIXME
+        if (empty($group['options'])) {
+            error_log("Empty options group " .  print_r($group, true));
+        } else {
+            $new_return[] = $group;
+        }
         $new_return = array_values($new_return); // reindex array cus php json encode. LP 2025-06-04
         error_log("new return is " . print_r($new_return,true));
         return $new_return;
