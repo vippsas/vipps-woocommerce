@@ -1360,6 +1360,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			$subscription = $order;
 		}
 
+		$subscription_id = WC_Vipps_Recurring_Helper::get_id( $subscription );
+
 		// This supports not yet having a subscription, purely because of Express and Checkout orders
 		if ( is_a( $subscription, 'WC_Subscription' ) ) {
 			$subscription_period   = $subscription->get_billing_period();
@@ -1449,7 +1451,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$agreement = ( new WC_Vipps_Agreement() )
-			->set_external_id( $order_id )
+			->set_external_id( $subscription_id )
 			->set_pricing(
 				( new WC_Vipps_Agreement_Pricing() )
 					->set_type( WC_Vipps_Agreement_Pricing::TYPE_LEGACY )
@@ -1485,11 +1487,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
+			$reference = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $this->order_prefix );
+
 			$agreement = $agreement->set_initial_charge(
 				( new WC_Vipps_Agreement_Initial_Charge() )
 					->set_amount( apply_filters( 'wc_vipps_recurring_agreement_initial_charge_amount', WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ), $order ) )
 					->set_description( empty( $initial_charge_description ) ? $subscription_item->get_name() : $initial_charge_description )
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
+					->set_order_id( $reference )
+					->set_external_id( $order_id )
 			);
 
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, $capture_immediately ? WC_Vipps_Recurring_Helper::META_ORDER_DIRECT_CAPTURE : WC_Vipps_Recurring_Helper::META_ORDER_RESERVED_CAPTURE, true );
@@ -1617,6 +1623,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				} else {
 					$new_agreement_id   = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_new_agreement_id' );
 					$existing_agreement = $this->api->get_agreement( $new_agreement_id );
+				}
+
+				if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_PENDING ) {
+					return [
+						'result'   => 'success',
+						'redirect' => $existing_agreement->vipps_confirmation_url,
+					];
 				}
 
 				if ( $existing_agreement->status === WC_Vipps_Agreement::STATUS_ACTIVE ) {
@@ -2782,8 +2795,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				'created_via'      => $order->get_created_via( 'edit' ),
 				'start_date'       => $start_date,
 				'status'           => $order->is_paid() ? 'active' : 'pending',
-				'billing_period'   => apply_filters('wc_vipps_recurring_checkout_product_billing_period', WC_Subscriptions_Product::get_period( $product ), $product),
-				'billing_interval' => apply_filters('wc_vipps_recurring_checkout_product_billing_interval', WC_Subscriptions_Product::get_interval( $product ), $product),
+				'billing_period'   => apply_filters( 'wc_vipps_recurring_checkout_product_billing_period', WC_Subscriptions_Product::get_period( $product ), $product ),
+				'billing_interval' => apply_filters( 'wc_vipps_recurring_checkout_product_billing_interval', WC_Subscriptions_Product::get_interval( $product ), $product ),
 				'customer_note'    => $order->get_customer_note(),
 			] );
 
@@ -2954,6 +2967,10 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		WC_Vipps_Recurring_Logger::log( sprintf( '[%s] cancel_subscription for agreement: %s', $subscription_id, $agreement_id ) );
 
 		// Prevent temporary cancellations from reaching this code
+		if ( ! $subscription ) {
+			return;
+		}
+
 		$new_status = $subscription->get_status();
 		if ( $new_status !== 'cancelled' ) {
 			return;

@@ -1,5 +1,10 @@
 == Changelog ==
 
+= 2.1.10 =
+* Fix: Redirect users back to an already created agreement when attempting to checkout on an incomplete order, if the agreement is still in the PENDING state. Vipps MobilePay does not obey idempotency keys when hitting the create agreement endpoint.
+* Fix: If a subscription does not exist we will no longer attempt to cancel it in Vipps.
+* Fix: Make charge ids consistent between Vipps MobilePay Checkout and the regular checkout.
+
 = 2.1.9 =
 * Fix: Checkout compatibility for "All Products for Woo Subscriptions".
 

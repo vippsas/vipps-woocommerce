@@ -51,13 +51,6 @@ return apply_filters(
 			'type'    => 'checkbox',
 			'default' => 'no',
 		],
-		'order_prefix'                     => [
-			'type'        => 'text',
-			'title'       => __( 'OrderId prefix', 'woo-vipps' ),
-			'label'       => __( 'OrderId prefix', 'woo-vipps' ),
-			'description' => __( 'An alphanumeric text string to use as a prefix on checkout orders from your shop, to avoid duplicate order ids.', 'woo-vipps' ),
-			'default'     => ''
-		],
 		'checkout_cleanup_abandoned_orders'  => [
 			'title'       => __( 'Cleanup changed/abandoned orders', 'woo-vipps' ),
 			'label'       => __( 'Cleanup changed/abandoned orders', 'woo-vipps' ),
@@ -102,6 +95,13 @@ return apply_filters(
 			'type'        => 'title',
 			'title'       => __( 'Order settings', 'woo-vipps' ),
 			'description' => __( 'Orders, renewals and status settings.', 'woo-vipps' ),
+		],
+		'order_prefix'                     => [
+			'type'        => 'text',
+			'title'       => __( 'OrderId prefix', 'woo-vipps' ),
+			'label'       => __( 'OrderId prefix', 'woo-vipps' ),
+			'description' => __( 'An alphanumeric text string to use as a prefix on checkout orders from your shop, to avoid duplicate order ids.', 'woo-vipps' ),
+			'default'     => ''
 		],
 		'continue_shopping_link_page'      => [
 			'type'             => 'page_dropdown',
