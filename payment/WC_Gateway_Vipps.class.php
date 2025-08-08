@@ -2719,6 +2719,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
     private function ensure_userDetails($vippsdata, $order) {
+
+        // In the new epayment-api, shippingDetails and userDetails have been moved into *paymentDetails* . IOK 2025-08-08
+        $moved_keys = ['userDetails', 'shippingDetails', 'billingDetails'];
+        foreach($moved_keys as $k) {
+            if ($vippsdata['paymentDetails'][$k] ?? false) {
+                $vippsdata[$k] = $vippsdata['paymentDetails'][$k];
+            }
+        }
+
         // If we have userDetails, return it
         if (isset($vippsdata['userDetails'])) return $vippsdata;
  
