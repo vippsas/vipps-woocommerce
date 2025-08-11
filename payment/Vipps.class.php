@@ -2367,6 +2367,8 @@ else:
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
+error_log("iverok: disabling callbacks while debugging, callback was " . print_r($result, true)); exit(); // FIXME 
+
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         // .. and the epayment webhooks 2023-12-19
         $ischeckout = false;
