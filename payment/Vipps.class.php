@@ -1796,20 +1796,6 @@ else:
             print __('Mobile Number', 'woo-vipps') . ": " . htmlspecialchars(@$us['mobileNumber']) . "<br>";
             print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
         }
-        if (!empty(@$details['transactionLogHistory'])) {
-            print "<h3>" . __('Transaction Log', 'woo-vipps') . "</h3>";
-            $i = count($details['transactionLogHistory'])+1; 
-            foreach ($details['transactionLogHistory'] as $td) {
-                print "<br>";
-                print __('Operation','woo-vipps') . ": " . htmlspecialchars(@$td['operation']) . "<br>";
-                print __('Amount','woo-vipps') . ": " . htmlspecialchars(@$td['amount']) . "<br>";
-                print __('Success','woo-vipps') . ": " . @$td['operationSuccess'] . "<br>";
-                print __('Timestamp','woo-vipps') . ": " . htmlspecialchars(@$td['timeStamp']) . "<br>";
-                print __('Transaction text','woo-vipps') . ": " . htmlspecialchars(@$td['transactionText']) . "<br>";
-                print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['transactionId']) . "<br>";
-                print __('Request ID','woo-vipps') . ": " . htmlspecialchars(@$td['requestId']) . "<br>";
-            }
-        }
         if (!empty(@$details['epaymentLog']) && is_array($details['epaymentLog'])) {
             print "<h3>" . __('Transaction Log', 'woo-vipps') . "</h3>";
             $i = count($details['epaymentLog'])+1; 

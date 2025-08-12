@@ -2207,7 +2207,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Statuses still in use are annotated. IOK 2025-08-12
     public function interpret_vipps_order_status($status) {
         switch ($status) { 
-            case 'INITIATE':
+            case 'INITIATE': // legacy, used by us to indicate a fresh order
             case 'REGISTER':
             case 'REGISTERED':
             case 'CREATED': // Checkout, Epayment
@@ -2307,22 +2307,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $paymentdetails = array();
         try {
             $paymentdetails = $this->get_payment_details($order);
-            $newvippsstatus = $this->get_vipps_order_status($order,$paymentdetails);
-
-error_log("Payment details in poll is " . print_r($paymentdetails, true));
-
-            if (!$newvippsstatus) {
-                throw new Exception(sprintf(__("Could not interpret %1\$s order status", 'woo-vipps'), Vipps::CompanyName()));
-            }
+            $newvippsstatus = $paymentdetails['status'];
+            $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
 
             // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
             // IOK 2024-01-09 ensure this is called only when order is complete/authorized
-            if (in_array($this->interpret_vipps_order_status($newvippsstatus), ['authorized', 'complete'])) {
+            if (in_array($vippsstatus, ['authorized', 'complete'])) {
                 $this->reset_erroneous_payment_method($order);
             }
 
             $order->update_meta_data('_vipps_status',$newvippsstatus);
-            $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
 
             // Modify payment method name if neccessary
             if (isset($paymentdetails['paymentMethod']) && $paymentdetails['paymentMethod'] == 'Card') {
@@ -2338,22 +2332,8 @@ error_log("Payment details in poll is " . print_r($paymentdetails, true));
                 }
             }
 
-# IOK 2022-01-19 this is for the old ecom api, there is no transactionInfo for the new epayment API. Yet. 
-            $transaction = $paymentdetails['transactionInfo'] ?? "";
-            if ($transaction) {
-                $vippsstamp = strtotime($transaction['timeStamp']);
-                $amount  = $transaction['amount'];
-                if (is_array($amount)) {
-                    $vippsamount= $amount['value'];
-                } else {
-                    $vippsamount= $amount;
-                }
-                $order->update_meta_data('_vipps_callback_timestamp',$vippsstamp);
-                $order->update_meta_data('_vipps_amount',$vippsamount);
-                $order->update_meta_data('_vipps_currency', $order->get_currency());
-            } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
-error_log("Payment details ecom branch ");                
-                // IOK 2022-01-20 the epayment API does it differently
+            if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
+                // IOK 2022-01-20 No timestamp in the epayment API, but we used to have that, so add it now.
                 $vippsstamp = time();
                 $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
                 $vippscurrency = $paymentdetails['paymentDetails']['amount']['currency'];
@@ -2371,58 +2351,28 @@ error_log("Payment details ecom branch ");
 
         $statuschange = 0;
         if ($oldvippsstatus != $vippsstatus) {
+error_log("oldvipps status $oldvippsstatus new $vippsstatus that is a state change");            
             $statuschange = 1;
         }
         if ($oldstatus == 'pending' && $vippsstatus != 'initiated') {
+error_log("weird pending issue status $oldstatus status $oldvippsstatus new $vippsstatus that is a state change");            
             $statuschange = 1; // This is not supposed to happen, but if it does: The vippsstatus changed without the woo status changing.
         }
 
+error_log("Before check of status and so forth, $vippsstatus and " . $order->get_meta('_vipps_express_checkout'));
+
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
-            // If we have been using Vipps Checkout, there is no Shipping Details in the normal "get order status" call, so we may need to poll
-            if (!isset($paymentdetails['shippingDetails'])) {
-                $session = $order->get_meta('_vipps_checkout_session');
-                if ($session) {
-                    try {
-                        $polldata =  $this->api->checkout_get_session_info($order);
-                        $polldata = $this->ensure_userDetails($polldata, $order);
 
-                        if (isset($polldata['userDetails'])) {
-                            $paymentdetails['userDetails'] = $polldata['userDetails'];
-                        } 
-                        if (isset($polldata['shippingDetails'])) {
-                            $paymentdetails['shippingDetails'] = $polldata['shippingDetails'];
-                        } else {
-                            // It is possible to drop shipping details from Checkout!
-                            // We'll fill out the minimum of info
-                            $countries=new WC_Countries();
-                            $paymentdetails['shippingDetails'] = array(
-                                    'firstName' => $polldata['userDetails']['firstName'],
-                                    'lastName' => $polldata['userDetails']['lastName'],
-                                    'email' => $polldata['userDetails']['email'],
-                                    'phoneNumber' => $polldata['userDetails']['phoneNumber'],
-                                    'country' =>  $countries->get_base_country()
-                                    );
-                        } 
-
-                        // Also fill out required fields for billing details
-                        if (isset($paymentdetails['billingDetails']) && !isset($paymentdetails['billingDetails']['country'])) {
-                            $paymentdetails['billingDetails']['country'] = $paymentdetails['shippingDetails']['country'];
-                        }
-
-
-                    } catch (Exception $e) {
-                        $this->log(sprintf(__("Cannot get address information for %1\$s order:",'woo-vipps'), Vipps::CheckoutName()) . $orderid . "\n" . $e->getMessage(), 'error');
-                    }
-                }
-            }
+error_log("This is the statuschange and payment details branch - this is express checkout");
 
             do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
             $address_set = $order->get_meta('_vipps_shipping_set');
 
             if ($address_set) {
+error_log("address was set, so we can abort handling checkout now");
                // Callback has handled the situation, do nothing
-            } elseif (@$paymentdetails['shippingDetails']) {
+            } elseif ($paymentdetails['shippingDetails'] ?? "") {
 
 error_log("payment details before set_order_shipping_details is " . print_r($paymentdetails, true));
 
@@ -2431,6 +2381,9 @@ error_log("payment details before set_order_shipping_details is " . print_r($pay
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
             } else {
+
+error_log("This is a weird branch to find oneself in");
+
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! 
                 // Cancel any orders where the Checkout session is dead and there is no address info available
@@ -2485,12 +2438,11 @@ error_log("payment details before set_order_shipping_details is " . print_r($pay
     //   so old hooks and filters can get the input they expect.
     public function get_payment_details($order) {
         $result = array();
-        $session = $order->get_meta('_vipps_checkout_session');
+        $checkout_session = $order->get_meta('_vipps_checkout_session');
 
         // IOK 2025-08-12: Three cases; either this is Checkout, in which case we need to get user/shipping-data from the checkout session,
         // or it is Express Checkout or normal payment, in which cases we just retrieve the payment from the epayment API - possibly containing user data
-        if ($session) {
-error_log("get_payment_details: Is checkout ");
+        if ($checkout_session) {
             try {
                 $result = $this->api->checkout_get_session_info($order);
 
@@ -2498,6 +2450,50 @@ error_log("get_payment_details: Is checkout ");
                     $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
                     return $result;
                 }
+
+                // For checkout, we are really handling *session states* which we map to *order states*, but sometimes 
+                // these indicate a failed order. This is maybe not the right place to handle this, FIXME by moving order modification for this over to some other place. IOK 2025-08-12
+                // 'state' can be missing for Checkout, first case is if this is because the session is invalid.
+                // The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
+                if (isset($result['sessionState']) && ($result['sessionState'] == 'SessionTerminated' || $result['sessionState'] == 'SessionExpired')) {
+                    $result['state'] = 'CANCEL';
+                    $result['status'] = 'CANCEL';
+                    $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
+                    $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+                    $order->save();
+                    return $result;
+                }
+
+                // IOK 2023-12-14 at some point, apparently SessionStarted became SessionCreated
+                if (isset($result['sessionState']) && ($result['sessionState'] == 'SessionStarted' || $result['sessionState'] == 'SessionCreated')) {
+                    // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
+                    $result['status'] = "INITIATE";
+                    $result['state'] = "INITIATE";
+                    $created = $order->get_date_created();
+                    $timestamp = 0;
+                    $now = time();
+                    try {
+                        $timestamp = $created->getTimestamp();
+                    } catch (Exception $e) {
+                        // PHP 8 gives ValueError for certain older versions of WooCommerce here. 
+                        $timestamp = intval($created->format('U'));
+                    }
+                    $passed = $now - $timestamp;
+                    $minutes = ($passed / 60);
+
+                    // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
+                    if ($minutes > 120) {
+                        $this->log(sprintf(__('Checkout order older than 120 minutes with no order status - cancelled as abandoned: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
+                        $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
+                        $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
+                        $order->save();
+                        $result['status'] = 'CANCEL';
+                        $result['state'] = 'CANCEL';
+                    }
+                    return $result;
+                }
+
+
             } catch (VippsAPIException $e) {
                 $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
@@ -2511,7 +2507,7 @@ error_log("get_payment_details: Is checkout ");
             error_log("get_payment_details: Is epayment");
             try {
                 $result = $this->api->epayment_get_payment($order);
-error_log("epayment result is " . print_r($result, true));
+                error_log("epayment result is " . print_r($result, true));
             } catch (VippsAPIException $e) {
                 $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
@@ -2533,154 +2529,86 @@ error_log("epayment result is " . print_r($result, true));
             wp_die(sprintf(__("Could not get payment results for order %1\$s - you may have the wrong MSN for the order. Please check logs for more information", 'woo-vipps'), $order->get_id()));
         }
 
-        # We now have a result which will contain user and shipping data, which we will need to normalize because it is slightly different in the different
-        # APIs, and we have provided filters/hooks that receive this information. IOK 2025-08-12
-        # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
-        # We now only need to map Checkout and epayment to the same format, but we will try to keep the normalized result compatible with 
-        # ecom, in case consumers have created filters/hooks. IOK 2025-08-12
-        if (!empty($result)) {
-            // if Checkout, the result will have a sessionState, reference etc, userInfo, shippingDetails, billingDetails and the payment details in a paymentDetails member.
-            // if not, the result will *be* a paymentDetails field, but with user*Details* and shippingDetails added. No billingDetails.
-            // The end result should have state/status (not neccessarily present with Checkout), userDetails, paymentDetails, shippingDetails and billingDetails, and a transactionSummary.
-            // Because that's what the code depending on this has been expecting. IOK 2025-08-12
-            if (!$checkout) {
-               // This should be an ecom result, so move all data (for simplicitys sake) into paymentDetails
-               $result['paymentDetails'] = $result;
-            } else {
-                // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
-                $result = $this->normalizePaymentDetails($result);
-            }
+        // We now have a result which will contain user and shipping data, which we will need to normalize because it is slightly different in the different
+        // APIs, and we have provided filters/hooks that receive this information. IOK 2025-08-12
+        // If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
+        // We now only need to map Checkout and epayment to the same format, but we will try to keep the normalized result compatible with 
+        // ecom, in case consumers have created filters/hooks. IOK 2025-08-12
 
-            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-            $result = $this->ensure_userDetails($result, $order);
+        // if Checkout, the result will have a sessionState, reference etc, userInfo, shippingDetails, billingDetails and the payment details in a paymentDetails member.
+        // if not, the result will *be* a paymentDetails field, but with user*Details* and shippingDetails added. No billingDetails.
+        // The end result should have state/status (not neccessarily present with Checkout), userDetails, paymentDetails, shippingDetails and billingDetails, and a transactionSummary.
+        // Because that's what the code depending on this has been expecting. IOK 2025-08-12
+        if (!$checkout_session) {
+            // This should be an ecom result, so move all data (for simplicitys sake) into paymentDetails
+            $result['paymentDetails'] = $result;
+        } 
 
-            if (isset($result['shippingDetails'])) {
-                $addr  = $result['shippingDetails'];
-                unset($addr['shippingMethodId']);
-                $result['shippingDetails']['address'] = $addr;
-            }
-            if (isset($result['userDetails'])) {
-                $result['userDetails']['mobileNumber'] = $result['userDetails']['phoneNumber'];
-                $result['userDetails']['userId'] = $result['userDetails']['phoneNumber'];
-            }
+        // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
+        // Also add keys and transform for backwards compatibility.
+        $result = $this->normalizePaymentDetails($result);
+error_log("After normalize payment " . print_r($result, true));
 
-# IOK 2022-06-16 Not user for epayment; a separate call is available and used for debugging in Vipps.class.php
-            $result['transactionLogHistory'] = array();
-# IOK 2022-06-16 And this is called on-demand, if "is-array" then we're good.
-            $result['epaymentLog'] = null;
+        // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+        // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
+        $result = $this->ensure_userDetails($result, $order);
+error_log("After ensure user " . print_r($result, true));
 
-# IOK 2022-02-20 Try to always return a status
-           if (!isset($result['status']) && isset($result['sessionState']) && ($result['sessionState'] == 'SessionTerminated' || $result['sessionState'] == 'SessionExpired')) {
-                $result['status'] = 'CANCEL';
-                $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
-                $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
-                $order->save();
-            }
+        // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
+        $result = $this->normalizeShippingDetails($result, $order);
 
-# IOK 2022-02-20 Try to always return a status
-           # IOK 2023-12-14 at some point, apparently SessionStarted became SessionCreated
-           # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
-           if (!isset($result['status']) && isset($result['sessionState']) && ($result['sessionState'] == 'SessionStarted' || $result['sessionState'] == 'SessionCreated')) {
-                // We have no order info, only the session data (this is a checkout order). Therefore, assume it has been started at least.
-                $result['status'] = "INITIATE";
-                $created = $order->get_date_created();
-                $timestamp = 0;
-                $now = time();
-                try {
-                    $timestamp = $created->getTimestamp();
-                } catch (Exception $e) {
-                    // PHP 8 gives ValueError for certain older versions of WooCommerce here. 
-                    $timestamp = intval($created->format('U'));
-                }
-                $passed = $now - $timestamp;
-                $minutes = ($passed / 60);
+error_log("After normalize shipping " . print_r($result, true));
 
-                // Give up after 120 minutes. Actually, 60 minutes is probably enough: We expire live sessions after 50 mins.
-                if ($minutes > 120) {
-                   $this->log(sprintf(__('Checkout order older than 120 minutes with no order status - cancelled as abandoned: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
-                    $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
-                    $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
-                    $order->save();
-                    $result['status'] = 'CANCEL';
-                }
-            }
-            return $result;
+        return $result;
+    }
+
+    // IOK 2025-08-12 Normalize the shippingDetails field for backwards compatibility, since this is different from old express, new express and checkout.
+    function normalizeShippingDetails($result, $order) {
+        if (!isset($result['shippingDetails'])) return $result;
+        $details = $result['shippingDetails'];
+
+        $user = $result['userDetails']; // Normalized earlier
+        $address = $details['address'] ?? array();
+
+        // Checkout has address info inside shippingDetails, whereas Express Checkout now has it in an address field IOK 2025-08-12
+        if (empty($address)) {
+            $address['firstName']  = $details['firstName'] ?? "";
+            $address['lastName']  = $details['lastName'] ?? ""; 
+            $address['email']  = $details['email'] ??  "";
+            $address['mobileNumber'] = $details['phoneNumber'] ?? "";
+            $address['addressLine1'] = $details['streetAddress'] ?? "";
+            $address['addressLine2'] =  "";
+            $address['city'] = $details['city'];
+            $address['postCode'] =  $details['postalCode'];
+            $address['country'] = $details['country'];
+
         }
 
-        // If we get here, this is an ECOM order, which uses the older API IOK 2022-02-21
+        // Normalize from user details when neccessary (mostly for new express)
+        
+error_log("Normalizing keys, " . print_r($address, true) . " vs " . print_r($user, true));       
+        
+        $address['firstName'] =  ($address['firstName'] ?? "") ?: $user['firstName'];
+        $address['lastName'] =  ($address['lastName'] ?? "")  ?: $user['lastName'];
+        $address['email'] =  ($address['email'] ?? "") ?: $user['email'];
+        $address['mobileNumber'] =  ($address['mobileNumber'] ?? "") ?: $user['mobileNumber'];
 
-        // Then the details, which include the transaction history
-        try {
-            $result = $this->api->payment_details($order);
+        // phoneNumber is checkout, mobileNumber is epayment
+        $address['phoneNumber'] = $address['mobileNumber'];
+        // addressline1 and 2 are epayment, streetAddress is checkout
+        $address['streetAddress'] =  $address['addressLine1'];
+        // postCode is epayment, postalCode is checkout
+        $address['postalCode'] =  $address['postCode'];
 
-            // Express Checkout orders with no shipping, will now be done using normal, regular checkout and fetching the user
-            // data using the userInfo api instead IOK 2023-03-10
-            if (!isset($result['userDetails']) && $order->get_meta('_vipps_express_checkout') && isset($result['sub'])) {
-               $userinfo = array();
-               try {
-                   $userinfo = $this->api->get_userinfo($result['sub']);
-               } catch (Exception $e) {
-                $this->log(sprintf(__("Could not get user info for order %1\$d using the userinfo API: %2\$s. Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage()), "error");
-               }
-               if ($userinfo) {
-                 $userDetails = array(
-                    'bankIdVerified' => $userinfo['email_verified'],
-                    'email' => $userinfo['email'],
-                    'firstName' => $userinfo['given_name'] ?? '',
-                    'lastName' => $userinfo['family_name'] ?? '',
-                    'mobileNumber' => $userinfo['phone_number'] ?? '',
-                    'phoneNumber' => $userinfo['phone_number'] ?? '',
-                    'userId' => $userinfo['phone_number'] ?? '',
-                    'sub' => $userinfo['sub']
-                 );
-                 $countries=new WC_Countries();
-                 $shippingDetails = array(
-                                'firstName' => $userDetails['firstName'],
-                                'lastName' => $userDetails['lastName'],
-                                'email' => $userDetails['email'],
-                                'phoneNumber' => $userDetails['phoneNumber'],
-                                'address' => array(),
-                                'country' =>  $countries->get_base_country()
-                            );
-                 $billingDetails = $shippingDetails;
 
-                 if (isset($userinfo['address'])) {
-                    $shippingDetails['address'] = $userinfo['address'];
-                    foreach($userinfo['address'] as $key=>$value) {
-                        $billingDetails[$key] = $value;
-                    }
-                 }
-                 $result['userDetails'] = $userDetails;
-                 $result['shippingDetails'] = $shippingDetails;
-                 $result['billingDetails'] = $billingDetails;
+        // Ensure we have 'address' as in Express/epayment
+        $details['address'] = $address;
 
-               }
-            }
+        // Name change from Checkout/Express to new Express from MethodId to OptionId IOK 2025-08-12
+        $details['shippingMethodId'] = $details['shippingMethodId'] ?? $details['shippingOptionId'];
+        $details['shippingOptionId'] = $details['shippingMethodId'];
 
-        } catch (VippsAPIException $e) {
-            $resp = intval($e->responsecode);
-            if ($resp == 402 || $resp == 404) {
-                $result['status'] = 'CANCEL';
-                return $result;
-            } else {
-                throw $e;
-            }
-        }
-
-        if ($result) {
-            // We would like e to have a single enum as the payment status like in the old API or v2 before march 2021, so find one and store it. IOK 2021-01-20
-            // For epayment, this is 'state'
-            $result['status'] = $this->get_payment_status_from_payment_details($result);
-
-            // Add for backwards compatibility from the old order_status interface - last operations transactionInfo IOK 2021-01-20
-            if (isset($result['transactionLogHistory'])){
-                $log = $result['transactionLogHistory'];
-                if (!empty($log)) {
-                    $result['transactionInfo'] = $log[0];
-                }
-            }
-        }
-
+        $result['shippingDetails'] = $details;
         return $result;
     }
 
@@ -2707,8 +2635,9 @@ error_log("epayment result is " . print_r($result, true));
             $details['aggregate'] = $aggregate;
             $result['paymentDetails'] = $details;
         }
-        // After this, the result will contain a 'state' which used to be a 'status' - map back for compatibility
-        $result['status'] = $result['state'];
+        // After this, the result will contain a 'state' which used to be a 'status' - map back for compatibility.
+        // The reason for the method is that in ecom v2 we needed to calculate this from the transaction history. IOK 2025-08-12
+        $result['status'] = $this->get_payment_status_from_payment_details($result);
 
         // Now, if we don't have payment details, we should have a dead session or something like it. If we do, we can cretae
         // a normalized result. IOK 2023-12-13
@@ -2721,8 +2650,9 @@ error_log("epayment result is " . print_r($result, true));
             // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
             // IOK 2025-08-12: This is never true anymore - directCapture is never set and the SALE state does not seem to exist.
             //  this was an extra feature for merchants with special products however, so keep the logic just in case.
-            if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
-                $result['status'] = "SALE";
+            if (($result['state'] == 'AUTHORISED' || $result['state'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
+                $result['state'] = "SALE";
+                $result['status']  = 'SALE';
             }
 
             # the transactionSummary used to contain the information now present in 'aggregate', so map it back for compatibility.
@@ -2741,6 +2671,11 @@ error_log("epayment result is " . print_r($result, true));
             $result['transactionSummary'] = $transactionSummary;
         }
 
+        // No longer used; was used in later versions of ecom to deduce order status. Added for typewise compatibility.
+        $result['transactionLogHistory'] = array();
+        // The corresponding epayment log. Filled on-demand by debugging code.
+        $result['epaymentLog'] = null;
+
         return $result;
     }
 
@@ -2748,54 +2683,70 @@ error_log("epayment result is " . print_r($result, true));
     // for anonymous purchases, in which case there is *no* user details. In this case we provide an anonymous user so we can actually create an order.
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
+    // Also, epayment uses mobileNumber and checkout uses phoneNumber, so normalize.
     private function ensure_userDetails($vippsdata, $order) {
+        $userDetails = [];
 
-        // In the new epayment-api, shippingDetails and userDetails have been moved into *paymentDetails* . IOK 2025-08-08
-        $moved_keys = ['userDetails', 'shippingDetails', 'billingDetails'];
-        foreach($moved_keys as $k) {
-            if ($vippsdata['paymentDetails'][$k] ?? false) {
-                $vippsdata[$k] = $vippsdata['paymentDetails'][$k];
+        // If we have userDetails, use it (ecom API with user data requested - Express Checkout
+        if (isset($vippsdata['userDetails'])) {
+            $userDetails = $vippsdata['userDetails'];
+            // This is the verified user information from the app - this is always the customer for Express Checkout, but not for Checkout IOK 2025-08-12
+            $sub = "";
+            if (isset($vippsdata['profile']) && isset($vippsdata['profile']['sub'])) {
+                $sub = $vippsdata['profile']['sub'];
             }
-        }
+            $userDetails['sub'] = $sub;
 
-        // If we have userDetails, return it
-        if (isset($vippsdata['userDetails'])) return $vippsdata;
- 
-       
-        // Otherwise prefer to get it from billing
-        if (isset($vippsdata['billingDetails'])) {
+        } else if (isset($vippsdata['billingDetails'])) {
+            // Otherwise this is now Checkout, and we want to get it from billingDetails preferrably
             $addr = $vippsdata['billingDetails'];
-            $phone = $addr['phoneNumber'] ? $addr['phoneNumber'] : ($addr['mobileNumber'] ? $addr['mobileNumber'] : "");
-            $vippsdata['userDetails'] = array(
+            $phone = $addr['phoneNumber'];
+            $userDetails = array(
                     'firstName' => $addr['firstName'],
                     'lastName' => $addr['lastName'],
                     'email' => $addr['email'],
                     'phoneNumber' => $phone,
-                    'mobileNumber' => $phone
+                    // This is the verified user information from the app - this is always the customer for Express Checkout, but not for Checkout IOK 2025-08-12
+                    'sub' => ""
                     );
 
-        // But use shipping if there is no other
+        // Or use shippingDetails - this is still Checkout
         } else if (isset($vippsdata['shippingDetails'])) {
             $addr = $vippsdata['shippingDetails'];
-            $phone = $addr['phoneNumber'] ? $addr['phoneNumber'] : ($addr['mobileNumber'] ? $addr['mobileNumber'] : "");
-            $vippsdata['userDetails'] = array(
+            $phone = $addr['phoneNumber'];
+            $userDetails = array(
                     'firstName' => $addr['firstName'],
                     'lastName' => $addr['lastName'],
                     'email' => $addr['email'],
                     'phoneNumber' => $phone,
-                    'mobileNumber' => $phone
+                    // This is the verified user information from the app - this is always the customer for Express Checkout, but not for Checkout IOK 2025-08-12
+                    'sub' => ""
                     );
 
-        // And it is possible to not require user details in Checkout at all
+        // And it is possible to not require user details in Checkout at all (or if not using express)
         } else {
-            $vippsdata['userDetails'] = array(
+            $userDetails = array(
                     
                     'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
                     'lastName' => apply_filters('woo_vipps_anon_customer_last_name', "", $order),
                     'email' => apply_filters('woo_vipps_anon_customer_email', '', $order),
-                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order)
+                    'phoneNumber' => apply_filters('woo_vipps_anon_customer_phone_number', '', $order),
+                    'sub' => ""
                     );
         }
+
+        //Normalize the result
+        $phone = $userDetails['phoneNumber'] ?? ($userDetails['mobileNumber'] ?? "");
+        $userDetails['phoneNumber'] = $phone;
+        $userDetails['mobileNumber'] = $phone;
+
+     
+        // No longer used, but try to provide it for backwards compatibility
+        $userDetails['userId'] = $userDetails['phoneNumber'];
+        // This is possible to get iff we have the 'sub', unfortunately it is not passed directly. IOK 2025-08-12 FIXME
+        $userDetails['email_verified'] = false;
+
+        $vippsdata['userDetails'] = $userDetails;
 
         return $vippsdata;
     }
@@ -2851,87 +2802,11 @@ error_log("epayment result is " . print_r($result, true));
     // IOK 2021-01-20 from March 2021 the order_status interface is removed; so we now need to interpret the payment history to find
     // out the order status.
     // IOK 2022-01-19 With the epayment API on the other hand, the payment status is back as 'state'.
+    // IOK 2025-08-12 Except for certain payment methods in Checkout. So.
+    // IOK 2025-08-12 Removing the ecom support now, so all code will use 'state', as normalized by normalizePaymentDetails
     public function get_payment_status_from_payment_details($details) {
-
-       // The epayment api reintroduces a single value for the state of the order.
-       if (isset($details['state'])) {
-           $status = $this->interpret_vipps_order_status($details['state']);
+           $status = $details['state'];
            return $status;
-       }
-
-       // ecom v2: getting the order status is not allowed, so we need to check the transactionLogHistory and *deduce* the status. IOK 2021-01-20
-       $status = 'INITIATE';
-       $statusknown = false;
-       // We have to assume there is an transaction log history, but protect against having it missing anyway
-       $log = isset($details['transactionLogHistory']) ? $details['transactionLogHistory'] : array();
-       $synchronously = array_reverse($log);
-
-
-       foreach ($synchronously as $op) {
-         if ($statusknown) break; // Last iteration determined ths status
-
-         $type = $op['operation'];
-         $success = intval($op['operationSuccess']);
-         switch($type) {
-           case 'INITIATE': // Payment initiated, by merchant
-                if (!$success) {
-                   $status = 'FAILED';
-                   $statusknown = true;
-                }
-                break;
-           case 'RESERVE':  // Payment reserved, customer has completed payment
-                if ($success) {
-                   $status = 'RESERVE';        // 'authorized', but we need to check later ops
-                } else {
-                   $status = 'RESERVE_FAILED'; // a 'cancel' status, probably the last but need to check
-                }
-                break;
-           case 'CAPTURE':  // Payment captured by merchant (after RESERVE, but can be partial)
-                if ($success) {
-                   $status = 'RESERVE';        // we know this at least. If the entire sum is captured, we could do a 'complete' status
-                } else {
-                   // This means nothing.
-                } 
-                break;
-           case 'REFUND':   // Payment refunded, by merchant (after CAPTURE, but can be partial)
-                if ($success) {
-                   $status = 'RESERVE';        // we know this at least. If the entire sum is refunded, we could do a 'cancelled/refunded' status
-                } else {
-                   // This means nothing.
-                } 
-                break;
-           case 'CANCEL':   // Payment cancelled by user in Vipps
-                if ($success) {
-                   $status = 'CANCEL';        // Successfully cancelled by user
-                   $statusknown = true;
-                } else {
-                   // Is this even possible? I guess so! but we can't guess the state of the transaction here.
-                } 
-
-                break;
-           case 'SALE':     // Payment captured with direct capture, by merchant (and is total)
-                if ($success) {
-                   $status = 'SALE';  // An order-complete status. However, final status isn't known because it may be refunded or cancelled after
-                } else {
-                    $status = 'FAILED'; // So direct capture didn't succed. Does this end the transaction though?
-                } 
-                break;
-           case 'VOID':     // Payment cancelled by merchant, is total
-                if ($success) {
-                   $status = 'VOID';        // Successfully cancelled by merchant
-                   $statusknown = true;
-                } else {
-                   // Is this even possible? I guess so! but we can't guess the state of the transaction here.
-                } 
-                break;
-           default: 
-                $this->log(sprintf("Unknown operation %1\$s in transaction log for %2\$s!", $op, $details['orderId']));
-                break;
-         }
-       }
-
-
-       return $status;
     }
 
     // Get the order status as defined by Vipps; if you have the payment details already, pass them. Will modify the order. IOK 2021-01-20
@@ -2987,15 +2862,22 @@ error_log("epayment result is " . print_r($result, true));
         if (!isset($address['lastName']) or !$address['lastName']) {
             $address['lastName'] = $lastname;
         }
+        // checkout uses phonenumber
         if (!isset($address['phoneNumber']) or !$address['phoneNumber']) {
             $address['phoneNumber'] = $phone;
+        }
+        // epayment uses mobileNumber
+        if (!isset($address['mobileNumber']) or !$address['mobileNumber']) {
+            $address['mobileNumber'] = $phone;
         }
         if (!isset($address['email']) or !$address['email']) {
             $address['email'] = $email;
         }
 
+        // epayment
         $addressline1 = isset($address['addressLine1']) ? $address['addressLine1'] : "";
         $addressline2 = isset($address['addressLine2']) ? $address['addressLine2'] : "";
+        // checkout
         if (isset($address['streetAddress'])) {
             $addressline1 = $address['streetAddress'];
         }
@@ -3003,45 +2885,30 @@ error_log("epayment result is " . print_r($result, true));
             $addressline1 = $address['street_address'];
         }
         if ($addressline1 == $addressline2) $addressline2 = '';
-        $address['addressLine1'] = $addressline1;
+        $address['addressLine1'] = $addressline1; // epayment
         $address['addressline2'] = $addressline2;
-        $address['streetAddress'] = $addressline1;
+        $address['streetAddress'] = $addressline1; // Checkout
 
         $city = "";
-        if (isset($address['city'])) {
+        if (isset($address['city'])) { // checkout and epayment
             $city = $address['city'];
-        } elseif (isset($address['region'])) {
+        } elseif (isset($address['region'])) { // ecom
             $city = $address['region'];
         }
         $address['city'] = $city;
         $address['region'] = $city;
 
         $postcode= "";
-        if (isset($address['zipCode'])) {
-           $postcode = $address['zipCode'];
-        } elseif (isset($address['postCode'])) {
-            $postcode= $address['postCode'];
+         if (isset($address['postCode'])) {
+            $postcode= $address['postCode']; // epayment
         } elseif (isset($address['postalCode'])){
-            $postcode= $address['postalCode'];
+            $postcode= $address['postalCode']; // checkout
         } elseif (isset($address['postal_code'])) {
-            $postcode= $address['postal_code'];
+            $postcode= $address['postal_code']; // userinfo
         }
-        $address['postCode'] = $postcode;
-        $address['zipCode'] = $postcode;
-        $address['postalCode'] = $postcode;
-
-        // eCom returns "NORWAY", while Checkout returns "NO". Woo requires the two-letter country code.
-        $country = ""; 
-        if (isset($address['country'])) {
-            $vippscountry = $address['country'];
-            if (strlen($vippscountry) == 2) {
-                $country = strtoupper($vippscountry);
-            } else {
-                global $Vipps;
-                $country = $Vipps->country_to_code($vippscountry);
-            }
-        }
-        $address['country'] = $country;
+        $address['postCode'] = $postcode; // epayment
+        $address['zipCode'] = $postcode; // ecom
+        $address['postalCode'] = $postcode; // checkout
 
         // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
         return apply_filters('woo_vipps_canonicalize_checkout_address', $address, $user);
@@ -3049,7 +2916,7 @@ error_log("epayment result is " . print_r($result, true));
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
 
-error_log("got alldata" . print_r($user, true));
+error_log("got alldata" . print_r($alldata, true));
 error_log("got shipping " . print_r($shipping, true));
 error_log("got billing" . print_r($billing, true));
 error_log("got user" . print_r($user, true));
@@ -3059,19 +2926,21 @@ error_log("got user" . print_r($user, true));
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
         $order->update_meta_data('_vipps_shipping_set', true);
+        $order->save(); // Limit the window for double shipping as much as possible.
 
         // This is for handling a custom consent checkbox for mailing lists etc. IOK 2023-02-09
         if ($alldata && isset($alldata['customConsentProvided'])) {
            $order->update_meta_data('_vipps_custom_consent_provided', intval($alldata['customConsentProvided']));
         }
 
-        $order->save(); // Limit the window for double shipping as much as possible.
 
         // We get different values from the normal callback and the Checkout callback, so be prepared for several results. IOK 2021-09-02
+        // IOK VERIFY this should be normalized now or soon at any rate
         $address = isset($shipping['address']) ? $shipping['address'] : $shipping;;
 
         // Sometimes we get an empty shipping address! In this case, fill the details with the billing address.
         // This only happens with ecommerce though, so we need to check before canonicalizing. IOK 2022-03-21
+        // billing is only present in Checkout, which uses phoneNumber, streetAddress, postalCode etc.
         $shipping_empty = true;
         if ($billing && array_key_exists('streetAddress', $address)) {
             $keys = ['firstName', 'lastName', 'email', 'phoneNumber', 'streetAddress', 'postalCode', 'city', 'country'];
@@ -3091,25 +2960,25 @@ error_log("got user" . print_r($user, true));
 
         # Billing.
         $order->set_billing_email($billing['email']);
-        $order->set_billing_phone($billing['phoneNumber']);
+        $order->set_billing_phone($billing['mobileNumber']);
         $order->set_billing_first_name($billing['firstName']);
         $order->set_billing_last_name($billing['lastName']);
-        $order->set_billing_address_1($billing['streetAddress']);
-        if ($billing['addressline2']) $order->set_billing_address_2($billing['addressline2']);
-        $order->set_billing_city($billing['region']);
-        $order->set_billing_postcode($billing['postalCode']);
+        $order->set_billing_address_1($billing['addressLine1']);
+        if ($billing['addressLine2']) $order->set_billing_address_2($billing['addressLine2']);
+        $order->set_billing_city($billing['city']);
+        $order->set_billing_postcode($billing['postCode']);
         $order->set_billing_country($billing['country']);
 
         # Shipping.
         $order->set_shipping_first_name($address['firstName']);
         $order->set_shipping_last_name($address['lastName']);
         if (version_compare(WC_VERSION, '5.6.0', '>=')) {
-            $order->set_shipping_phone($address['phoneNumber']);
+            $order->set_shipping_phone($address['mobileNumber']);
         }
-        $order->set_shipping_address_1($address['streetAddress']);
-        if ($address['addressline2']) $order->set_shipping_address_2($address['addressline2']);
-        $order->set_shipping_city($address['region']);
-        $order->set_shipping_postcode($address['postalCode']);
+        $order->set_shipping_address_1($address['addressLine1']);
+        if ($address['addressLine2']) $order->set_shipping_address_2($address['addressLine2']);
+        $order->set_shipping_city($address['city']);
+        $order->set_shipping_postcode($address['postCode']);
         $order->set_shipping_country($address['country']);
 
         $order->save();
@@ -3124,10 +2993,6 @@ error_log("got user" . print_r($user, true));
 
         // Now do shipping, if it exists IOK 2021-09-02
         $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
- 
-        // Different APIs and versions
-        if (!$method && isset($shipping['ShippingMethodId'])) $method = $shipping['ShippingMethodId'];
-        if (!$method && isset($shipping['id'])) $method = $shipping['id'];
 
         if ($method) {
             $shipping_rate=null;
@@ -3264,6 +3129,7 @@ error_log("got user" . print_r($user, true));
         if ($customer) {
             // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
             // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
+            // FIXME FIXME FIXME
             if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
                 update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
                 // update_user_meta($userid, '_vipps_id', $sub);
@@ -3429,6 +3295,7 @@ error_log("got user" . print_r($user, true));
             // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
             // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+            // TODO FIXME FIXME FIXME
             if ($express && !isset($result['userDetails'])) {
                 $result = $this->get_payment_details($order);
             }
