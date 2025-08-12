@@ -2306,6 +2306,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $paymentdetails = $this->get_payment_details($order);
             $newvippsstatus = $this->get_vipps_order_status($order,$paymentdetails);
 
+error_log("Payment details in poll is " . print_r($paymentdetails, true));
+
             if (!$newvippsstatus) {
                 throw new Exception(sprintf(__("Could not interpret %1\$s order status", 'woo-vipps'), Vipps::CompanyName()));
             }
@@ -2347,6 +2349,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_meta_data('_vipps_amount',$vippsamount);
                 $order->update_meta_data('_vipps_currency', $order->get_currency());
             } else if ($paymentdetails && isset($paymentdetails['paymentDetails']) && isset($paymentdetails['paymentDetails']['amount']))  {
+error_log("Payment details ecom branch ");                
                 // IOK 2022-01-20 the epayment API does it differently
                 $vippsstamp = time();
                 $vippsamount = $paymentdetails['paymentDetails']['amount']['value'];
@@ -2418,6 +2421,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                // Callback has handled the situation, do nothing
             } elseif (@$paymentdetails['shippingDetails']) {
 
+error_log("payment details before set_order_shipping_details is " . print_r($paymentdetails, true));
+
 
                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
@@ -2473,34 +2478,41 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2021-11-24 Because of this, we need to handle 402 and 404 errors differently here now - these *are* results, meaning there is
     // no payment details because the order doesn't exist.
     // IOK 2022-01-19 And now, with the epayment API in use by checkout, we also need to use the poll api because the epayment API does not return user- and shipping data. We do get an order status though.
+    // IOK 2025-08-12 And now, with epayment used for Express Checkout also, there *is* user- and shipping-data when using Express Checkout, so we can simplify. We still need to transform the data 
+    //   so old hooks and filters can get the input they expect.
     public function get_payment_details($order) {
         $result = array();
         $session = $order->get_meta('_vipps_checkout_session');
 
+        // IOK 2025-08-12: Three cases; either this is Checkout, in which case we need to get user/shipping-data from the checkout session,
+        // or it is Express Checkout or normal payment, in which cases we just retrieve the payment from the epayment API - possibly containing user data
         if ($session) {
+error_log("get_payment_details: Is checkout ");
             try {
                 $result = $this->api->checkout_get_session_info($order);
 
                 if ($result == 'EXPIRED') {
-                    $result = array('status'=>'CANCEL'); 
+                    $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
                     return $result;
                 }
             } catch (VippsAPIException $e) {
                 $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
-                    $result = array('status'=>'CANCEL'); 
+                    $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
                     return $result;
                 } else {
                     throw $e;
                 }
             }
-        } elseif ($order->get_meta('_vipps_api') == 'epayment') {
+        } else {
+            error_log("get_payment_details: Is epayment");
             try {
                 $result = $this->api->epayment_get_payment($order);
+error_log("epayment result is " . print_r($result, true));
             } catch (VippsAPIException $e) {
                 $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
-                    $result = array('status'=>'CANCEL');
+                    $result = array('status'=>'CANCEL', 'state'=>'CANCEL');
                     return $result;
                 } else {
                     $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
@@ -2508,58 +2520,32 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             } catch (Exception $e) {
                 $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
-                $result = array('status'=>'CANCEL'); 
+                $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
                 return $result;
             }
         }
 
-        # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
-        if ($result == "ERROR") {
+        if (!$result || $result == "ERROR") {
             $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
             wp_die(sprintf(__("Could not get payment results for order %1\$s - you may have the wrong MSN for the order. Please check logs for more information", 'woo-vipps'), $order->get_id()));
-        } 
+        }
 
+        # We now have a result which will contain user and shipping data, which we will need to normalize because it is slightly different in the different
+        # APIs, and we have provided filters/hooks that receive this information. IOK 2025-08-12
+        # If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
+        # We now only need to map Checkout and epayment to the same format, but we will try to keep the normalized result compatible with 
+        # ecom, in case consumers have created filters/hooks. IOK 2025-08-12
         if (!empty($result)) {
-            $result['orderId']  = $result['reference']; 
-
-            // Now, if we got this via Vipps Checkout, the paymentDetails field will contain our data *including the status/state*. 
-            // IOK 2024-01-09 - no longer true, because we *do not get state* from some payment methods in Checkout. This is fixed below,
-            // in the 'normalizePaymentDetails' call.
-            // If we didn't, what we got here is actually the payment details, so map it in. IOK 2023-12-23
-            if (isset($result['state']) && !isset($result['paymentDetails'])) {
-                $result = ['orderId' => $result['reference'], 'reference' => $result['reference'], 'status' => $result['state'], 'paymentDetails' => $result];
-            }
-
-            // Now, if we don't have payment details, we should have a dead session or something like it. If we do, we can cretae
-            // a normalized result. IOK 2023-12-13
-            if (isset($result['paymentDetails'])) {
-
-                // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer IOK 2024-01-09
+            // if Checkout, the result will have a sessionState, reference etc, userInfo, shippingDetails, billingDetails and the payment details in a paymentDetails member.
+            // if not, the result will *be* a paymentDetails field, but with user*Details* and shippingDetails added. No billingDetails.
+            // The end result should have state/status (not neccessarily present with Checkout), userDetails, paymentDetails, shippingDetails and billingDetails, and a transactionSummary.
+            // Because that's what the code depending on this has been expecting. IOK 2025-08-12
+            if (!$checkout) {
+               // This should be an ecom result, so move all data (for simplicitys sake) into paymentDetails
+               $result['paymentDetails'] = $result;
+            } else {
+                // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
                 $result = $this->normalizePaymentDetails($result);
-                $details = $result['paymentDetails'];
-
-# IOK 2022-01-19 for this, the docs and experience does not agree, so check both
-                $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
-                $result['status'] = $details['state'];
-
-                // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
-                if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
-                    $result['status'] = "SALE";
-                }
-
-                $transactionSummary = array();
-                // Always NOK at this point, but we also don't care because the order has the currency
-                // IOK 2024-03-22 Now supports other currencies, but we still don't care.
-                $transactionSummary['capturedAmount'] = isset($aggregate['capturedAmount']) ?   $aggregate['capturedAmount']['value'] : 0;
-                $transactionSummary['refundedAmount'] = isset($aggregate['refundedAmount']) ? $aggregate['refundedAmount']['value'] : 0; 
-                $transactionSummary['cancelledAmount'] =isset($aggregate['cancelledAmount']) ? $aggregate['cancelledAmount']['value'] : 0; 
-                $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0; 
-                $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
-                $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
-                // now also reducing remainingAmmountToCancel with cancelledAmount PMB 2024-11-21
-                $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'] - $transactionSummary['cancelledAmount'];
-
-                $result['transactionSummary'] = $transactionSummary;
             }
 
             // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
@@ -2699,19 +2685,60 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2024-01-09 If using Vipps Checkout with the BankTransfer method, which is eg. used in Finland,
     //  we are (currently) not receiving any  'state' or 'aggregate', so add this iff the payment is successful.
     // The reason for this is that this payment type does not actually use the epayment API at all (!)
+    // Also moved some other compatibility code here - 
+    //  --- reference used to be orderId
+    //  --- state used to be status
+    //  --- there used to be a transactionSummary field
+    //  --- at one point there was a 'transactionAggregate' instead of an 'aggregate'
     private function normalizePaymentDetails($result) {
-            if (isset($result['sessionState']) && $result['sessionState'] == 'PaymentSuccessful' && $result['paymentMethod'] == 'BankTransfer') {
-                $details = $result['paymentDetails'];
-                $details['state'] = 'SALE'; // Payment is actually complete at this point
-                $aggregate=[];
-                $aggregate['capturedAmount'] = $details['amount'];
-                $aggregate['authorizedAmount'] = $details['amount'];
-                $aggregate['refundedAmount'] = ['value'=>0, 'currency'=>$details['amount']['currency']];
-                $aggregate['cancelledAmount'] = ['value'=>0, 'currency'=>$details['amount']['currency']];
-                $details['aggregate'] = $aggregate;
-                $result['paymentDetails'] = $details;
+        // the 'reference' used to be an 'orderId', keep for compatibility.
+        $result['orderId']  = $result['reference'];
+        if (isset($result['sessionState']) && $result['sessionState'] == 'PaymentSuccessful' && $result['paymentMethod'] == 'BankTransfer') {
+            $details = $result['paymentDetails'];
+            $details['state'] = 'SALE'; // Payment is actually complete at this point
+            $aggregate=[];
+            $aggregate['capturedAmount'] = $details['amount'];
+            $aggregate['authorizedAmount'] = $details['amount'];
+            $aggregate['refundedAmount'] = ['value'=>0, 'currency'=>$details['amount']['currency']];
+            $aggregate['cancelledAmount'] = ['value'=>0, 'currency'=>$details['amount']['currency']];
+            $details['aggregate'] = $aggregate;
+            $result['paymentDetails'] = $details;
+        }
+        // After this, the result will contain a 'state' which used to be a 'status' - map back for compatibility
+        $result['status'] = $result['state'];
+
+        // Now, if we don't have payment details, we should have a dead session or something like it. If we do, we can cretae
+        // a normalized result. IOK 2023-12-13
+        if (isset($result['paymentDetails'])) {
+            $details = $result['paymentDetails'];
+
+            # IOK 2022-01-19 for this, the docs and experience does not agree, so check both
+            $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
+
+            // if 'AUTHORISED' and directCapture is set and true, set to SALE which will set the order to complete
+            // IOK 2025-08-12: This is never true anymore - directCapture is never set and the SALE state does not seem to exist.
+            //  this was an extra feature for merchants with special products however, so keep the logic just in case.
+            if (($result['status'] == 'AUTHORISED' || $result['status'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
+                $result['status'] = "SALE";
             }
-            return $result;
+
+            # the transactionSummary used to contain the information now present in 'aggregate', so map it back for compatibility.
+            $transactionSummary = array();
+            // Always NOK at this point, but we also don't care because the order has the currency
+            // IOK 2024-03-22 Now supports other currencies, but we still don't care.
+            $transactionSummary['capturedAmount'] = isset($aggregate['capturedAmount']) ?   $aggregate['capturedAmount']['value'] : 0;
+            $transactionSummary['refundedAmount'] = isset($aggregate['refundedAmount']) ? $aggregate['refundedAmount']['value'] : 0;
+            $transactionSummary['cancelledAmount'] =isset($aggregate['cancelledAmount']) ? $aggregate['cancelledAmount']['value'] : 0;
+            $transactionSummary['authorizedAmount'] =isset($aggregate['authorizedAmount']) ? $aggregate['authorizedAmount']['value'] : 0;
+            $transactionSummary['remainingAmountToCapture'] = $transactionSummary['authorizedAmount'] - $transactionSummary['cancelledAmount'] - $transactionSummary['capturedAmount'];
+            $transactionSummary['remainingAmountToRefund'] = $transactionSummary['capturedAmount'] -  $transactionSummary['refundedAmount'];
+            // now also reducing remainingAmmountToCancel with cancelledAmount PMB 2024-11-21
+            $transactionSummary['remainingAmountToCancel'] = $transactionSummary['authorizedAmount'] -  $transactionSummary['capturedAmount'] - $transactionSummary['cancelledAmount'];
+
+            $result['transactionSummary'] = $transactionSummary;
+        }
+
+        return $result;
     }
 
     // Vipps Checkout v3 does *not* provide userDetails. Vipps Checkout v2 and epayment *does*. But Checkout additionally allows
@@ -3018,6 +3045,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
+
+error_log("got alldata" . print_r($user, true));
+error_log("got shipping " . print_r($shipping, true));
+error_log("got billing" . print_r($billing, true));
+error_log("got user" . print_r($user, true));
+
+
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
