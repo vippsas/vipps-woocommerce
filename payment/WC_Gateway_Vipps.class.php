@@ -2408,6 +2408,7 @@ error_log("This is a weird branch to find oneself in");
     public function get_payment_details($order) {
         $result = array();
         $checkout_session = $order->get_meta('_vipps_checkout_session');
+        $express = $order->get_meta('_vipps_express_checkout');
 
         // IOK 2025-08-12: Three cases; either this is Checkout, in which case we need to get user/shipping-data from the checkout session,
         // or it is Express Checkout or normal payment, in which cases we just retrieve the payment from the epayment API - possibly containing user data
@@ -2498,7 +2499,7 @@ error_log("This is a weird branch to find oneself in");
             wp_die(sprintf(__("Could not get payment results for order %1\$s - you may have the wrong MSN for the order. Please check logs for more information", 'woo-vipps'), $order->get_id()));
         }
 
-        // We now have a result which will contain user and shipping data, which we will need to normalize because it is slightly different in the different
+        // We now have a result which maybe  will contain user and shipping data, which we will need to normalize because it is slightly different in the different
         // APIs, and we have provided filters/hooks that receive this information. IOK 2025-08-12
         // If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
         // We now only need to map Checkout and epayment to the same format, but we will try to keep the normalized result compatible with 
@@ -2512,11 +2513,60 @@ error_log("This is a weird branch to find oneself in");
             // This should be an ecom result, so move all data (for simplicitys sake) into paymentDetails
             $result['paymentDetails'] = $result;
         } 
-
         // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
         // Also add keys and transform for backwards compatibility.
         $result = $this->normalizePaymentDetails($result);
 error_log("After normalize payment " . print_r($result, true));
+
+        // if this is *checkout* and there is no user information, this is probably because we only get that when adding the 'address' scope.
+        // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
+        // FIXME do this also if login with express checkout is required
+        if ($express && !isset($result['userDetails'])) {
+            $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
+            $userinfo = [];
+            if (!$sub) {
+                // This should never happen, but be prepared
+                $message = sprintf(__("Could not get user info for express checkout order %1\$d using the userinfo API: %2\$s - no user 'sub' id passed.  Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage());
+                $order->add_order_note($message);
+                $this->log($message , "error");
+            } else {
+                // If this happens, the merchant *may* be able to retrieve the information from Vipps so add a note for it.
+                try {
+                    $userinfo = $this->api->get_userinfo($sub);
+                } catch (Exception $e) {
+                    $message = sprintf(__("Could not get user info for order %1\$d using the userinfo API: %2\$s. Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage());
+                    $order->add_order_note($message);
+                    $this->log($message, 'woo-vipps', "error");
+                }
+            }
+            if ($userinfo) {
+error_log("userinfo is  " . print_r($userinfo, true));
+                $userDetails = array(
+                    'email_verified' => $userinfo['email_verified'],
+                    'email' => $userinfo['email'],
+                    'firstName' => $userinfo['given_name'] ?? '',
+                    'lastName' => $userinfo['family_name'] ?? '',
+                    'mobileNumber' => $userinfo['phone_number'] ?? '',
+                    'phoneNumber' => $userinfo['phone_number'] ?? '',
+                    'userId' => $userinfo['phone_number'] ?? '',
+                    'sub' => $userinfo['sub']
+                );
+
+                $result['userDetails'] = $userDetails;
+
+                // And if no shipping details, add a dummy
+                if (!isset($result['shippingDetails'])) {
+                    $countries=new WC_Countries();
+                    $address =[];
+                    $address['addressLine1'] = "";
+                    $address['addressLine2'] = "";
+                    $address['city']  ="";
+                    $address['postCode'] = "";
+                    $address['country'] = $countries->get_base_country();
+                    $result['shippingDetails'] = ['address' => $address];
+                }
+            }
+        }
 
         // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
         // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
@@ -2694,6 +2744,7 @@ error_log("Normalizing keys, " . print_r($address, true) . " vs " . print_r($use
 
         // And it is possible to not require user details in Checkout at all (or if not using express)
         } else {
+error_log("This is a completely anonymous customer");
             $userDetails = array(
                     
                     'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
@@ -2713,7 +2764,7 @@ error_log("Normalizing keys, " . print_r($address, true) . " vs " . print_r($use
         // No longer used, but try to provide it for backwards compatibility
         $userDetails['userId'] = $userDetails['phoneNumber'];
         // This is possible to get iff we have the 'sub', unfortunately it is not passed directly. IOK 2025-08-12 FIXME
-        $userDetails['email_verified'] = false;
+        $userDetails['email_verified'] = ($userDetails['email_verified'] ?? false);
 
         $vippsdata['userDetails'] = $userDetails;
 
