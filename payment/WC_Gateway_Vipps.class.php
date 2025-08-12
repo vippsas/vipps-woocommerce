@@ -2204,25 +2204,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Collapse several statuses to a known list IOK 2019-01-23
+    // Statuses still in use are annotated. IOK 2025-08-12
     public function interpret_vipps_order_status($status) {
         switch ($status) { 
             case 'INITIATE':
             case 'REGISTER':
             case 'REGISTERED':
-            case 'CREATED':
+            case 'CREATED': // Checkout, Epayment
                 return 'initiated';
                 break;
             case 'RESERVE':
             case 'RESERVED':
             case 'AUTHORISED':
-            case 'AUTHORIZED':
+            case 'AUTHORIZED': // Checkout, Epayment
+            case 'CAPTURED': // Epayment
+            case 'REFUNDED':   // epayment - this is probably authorized, because it will have had that state *before* it was refuned. IOK 2025-08-12
                 return 'authorized';
                 break;
             case 'SALE':
                 return 'complete';
                 break;
             case 'CANCEL':
-            case 'CANCELLED':
+            case 'CANCELLED': // Epayment
             case 'VOID':
             case 'AUTOREVERSAL':
             case 'AUTOCANCEL':
@@ -2230,9 +2233,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'RESERVE_FAILED':
             case 'FAILED':
             case 'REJECTED':
-            case 'TERMINATED':
-            case 'ABORTED':
-            case 'EXPIRED':
+            case 'TERMINATED': // Checkout, Epayment
+            case 'ABORTED':   // Epayment
+            case 'EXPIRED':   // Epayment
                 return 'cancelled';
                 break;
             }
