@@ -3206,17 +3206,6 @@ error_log("setting transaction data " . print_r($transaction, true));
         $express = $order->get_meta('_vipps_express_checkout');
         $checkout_session = $order->get_meta('_vipps_checkout_session');
 
-        // This is for Checkout - some added protection
-        // Webhooks are already authenticated IOK 2023-12-20
-        if (!$iswebhook) {
-            $authtoken = $order->get_meta('_vipps_authtoken');
-            if ($authtoken && !wp_check_password($_REQUEST['tk'], $authtoken)) {
-                $this->log(sprintf(__("Wrong auth token in callback from %1\$s - possibly an attempt to fake a callback", 'woo-vipps'), Vipps::CompanyName()), 'warning');
-                clean_post_cache($order->get_id());
-                exit();
-            }
-        }
-
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
             $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), Vipps::CompanyName()), 'warning');
             clean_post_cache($order->get_id());

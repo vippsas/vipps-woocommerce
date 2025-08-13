@@ -2396,7 +2396,6 @@ error_log("iverok: parsed callback was " . print_r($result, true));
         // If this is a webhook call, we need to verify it, check that it is one of the 'callback' webhooks, check that we still have a pending
         // order for it, normalize the callback data and then handle the callback. IOK 2023-12-21
         if ($iswebhook) {
-error_log("This is in fact a webhook");            
             // The webhook payloads spell the msn differently. IOK 2023-12-21
             $msn = ($result['msn'] ?? '') ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
             if ($msn) {
@@ -2455,6 +2454,14 @@ error_log("This is in fact a webhook");
             // This will run for all events, not just the one this handler handles IOK 2023-12-21
             do_action('woo_vipps_webhook_event', $result, $order);
 
+            // We are not interested in Checkout orders - they have their own callback systems
+            if ($order && $order->get_meta('_vipps_checkout')) {
+error_log("it is a webhook for checkout, ignoring that");
+                $this->log(sprintf(__('Received webhook callback for Checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
+                return;
+            }
+error_log("Not a checkout webhook order is " . ($order ? " present " : " not present "));
+
             // Now we will handle everything that is a callback event. IOK 2023-12-21
             if (!in_array($event, $callback_events)) {
                 return;
@@ -2464,11 +2471,6 @@ error_log("This is in fact a webhook");
                 // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
                 $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
                 return; 
-            }
-            // We are not interested in Checkout orders - they have their own callback systems
-            if ($order->get_meta('_vipps_checkout')) {
-                $this->log(sprintf(__('Received webhook callback for Checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
-                return;
             }
             do_action('woo_vipps_callback_webhook', $result);
 
@@ -2482,10 +2484,9 @@ error_log("Doing handle callback with webhook " . print_r($result, true));
 
             exit();
         }
+
+        // This branch is only for non-webhook callbacks; which currently means Checkout. IOK 2025-08-13
 error_log("This is not a webhook call - checkout $ischeckout");
-
-        // Non-webhook path follows IOK 2023-12-20
-
         $orderid = intval(@$_REQUEST['id']);
 
         if (!$orderid) {
@@ -2504,19 +2505,12 @@ error_log("This is not a webhook call - checkout $ischeckout");
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
-        if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
-            $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), $this->get_payment_method_name()), 'warning');
-            exit();
-        }
 
-        if ($ischeckout) {
-             do_action('woo_vipps_callback_checkout', $result);
-        } else {
-             do_action('woo_vipps_callback', $result);
-        }
+        do_action('woo_vipps_callback_checkout', $result);
 
         $gw = $this->gateway();
 
+error_log("Handling callback for checkout non-webhook " . print_r($result, true));
         // If neccessary, the order session will be restored in this method, and if so it will be reset before the exit happens
         // to reduce issues with users simultaneously returning to the store. IOK 2023-07-18
         $ok = $gw->handle_callback($result, $order, $ischeckout);
