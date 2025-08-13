@@ -2561,20 +2561,31 @@ error_log("whops, we are in the wrong branch");
                 }
             }
         }
-
         // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
         // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
         $result = $this->ensure_userDetails($result, $order);
 
-        // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
-        $result = $this->normalizeShippingDetails($result, $order);
+error_log("After ensure user details " . print_r($result, true));
+
+        if (($express || $checkout_session)) {
+            // After, we need to normalize shipping details or even add them if e.g. using Checkout without address or contact info IOK 2025-08-13
+            // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
+            $result = $this->normalizeShippingDetails($result, $order);
+        }
+
+
+        error_log("after normalize shipping " . print_r($result, true));
 
         return $result;
     }
 
     // IOK 2025-08-12 Normalize the shippingDetails field for backwards compatibility, since this is different from old express, new express and checkout.
     function normalizeShippingDetails($result, $order) {
-        if (!isset($result['shippingDetails'])) return $result;
+
+        // We may actually get no shipping details eg. for Checkout when not asking for addresses etc.
+        if (!isset($result['shippingDetails'])) {
+            $result['shippingDetails']  = ['address' => [] ];
+        }
         $details = $result['shippingDetails'];
 
         $user = $result['userDetails']; // Normalized earlier
@@ -2588,10 +2599,15 @@ error_log("whops, we are in the wrong branch");
             $address['mobileNumber'] = $details['phoneNumber'] ?? "";
             $address['addressLine1'] = $details['streetAddress'] ?? "";
             $address['addressLine2'] =  "";
-            $address['city'] = $details['city'];
-            $address['postCode'] =  $details['postalCode'];
-            $address['country'] = $details['country'];
+            $address['city'] = $details['city'] ?? "";
+            $address['postCode'] =  $details['postalCode'] ?? "";
+            $address['country'] = $details['country'] ?? "";
+        }
 
+        // Need at least a country for VAT so add our own.
+        if (!$address['country']) {
+            $countries=new WC_Countries();
+            $address['country'] = $countries->get_base_country();
         }
 
         // Normalize from user details when neccessary (mostly for new express)
@@ -2974,9 +2990,9 @@ error_log("whops, we are in the wrong branch");
         $order->set_billing_last_name($billing['lastName']);
         $order->set_billing_address_1($billing['addressLine1']);
         if ($billing['addressLine2'] ?? false) $order->set_billing_address_2($billing['addressLine2']);
-        $order->set_billing_city($billing['city']);
-        $order->set_billing_postcode($billing['postCode']);
-        $order->set_billing_country($billing['country']);
+        $order->set_billing_city($billing['city'] ?? "");
+        $order->set_billing_postcode($billing['postCode'] ?? "");
+        $order->set_billing_country($billing['country'] ?? "");
 
         # Shipping.
         $order->set_shipping_first_name($address['firstName']);
@@ -2996,7 +3012,9 @@ error_log("whops, we are in the wrong branch");
         if (WC()->customer) {
             WC()->customer->set_billing_email($billing['email']);
             WC()->customer->set_email($billing['email']);
-            WC()->customer->set_billing_location($billing['country'],'',$billing['postalCode'],$billing['region']);
+
+            $country = $billing['country'] ?? ($address['country'] ?? "");
+            WC()->customer->set_billing_location($country,'',$billing['postalCode'],$billing['region']);
             WC()->customer->set_shipping_location($address['country'],'',$address['postalCode'],$address['region']);
         }
 
