@@ -2566,7 +2566,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $details = $result['shippingDetails'];
 
         $user = $result['userDetails']; // Normalized earlier
-        $address = $details['address'] ?? array();
+        $address = $details['address'] ?? [];
 
         // Checkout has address info inside shippingDetails, whereas Express Checkout now has it in an address field IOK 2025-08-12
         if (empty($address)) {
@@ -2801,6 +2801,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // IOK 2025-08-12 Except for certain payment methods in Checkout. So.
     // IOK 2025-08-12 Removing the ecom support now, so all code will use 'state', as normalized by normalizePaymentDetails
     public function get_payment_status_from_payment_details($details) {
+        if (!isset($details['state'])) {
+            error_log(print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true)); // FIXME
+        }
            $status = $details['state'];
            return $status;
     }
@@ -2953,7 +2956,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->set_billing_first_name($billing['firstName']);
         $order->set_billing_last_name($billing['lastName']);
         $order->set_billing_address_1($billing['addressLine1']);
-        if ($billing['addressLine2']) $order->set_billing_address_2($billing['addressLine2']);
+        if ($billing['addressLine2'] ?? false) $order->set_billing_address_2($billing['addressLine2']);
         $order->set_billing_city($billing['city']);
         $order->set_billing_postcode($billing['postCode']);
         $order->set_billing_country($billing['country']);
@@ -3226,27 +3229,37 @@ error_log("setting transaction data " . print_r($transaction, true));
             $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
         }
 
-        // Checkout has this as a field, ecom passes some of the neccessary values directly in the result.
-        if (!isset($result['paymentDetails'])) {
+        // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
+        // depending on which one we are IOK 2025-08-13
+        $details = [];
+        // Checkout has this as a field, containing *some* of the neccessary data
+        if (isset($result['paymentDetails'])) {
+            // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
+            // -- we should only get callbacks for successful sessions actually.
+            $details = $result['paymentDetails'];
+            $result['state'] = $result['sessionState'] == 'PaymentSuccessful' ? 'AUTHORIZED' : ($result['sessionState'] == 'PaymentTerminated' ? 'TERMINATED' : 'CREATED');
+            $details['state']  = $result['state'];
+            $details['paymentMethod'] = $result['paymentMethod'];
+        } else {
             // This should be an ecom callback; which we need to add a lot of data for to get a valid "paymentDetails".
             $details = [];
             $result['state'] = $result['name'];  // The name of the callback - which should be AUTHORIZED, TERMINATED etc
             $details['state']  = $result['name'];
             $details['amount'] = $result['amount']; // currency, value
             $details['paymentMethod'] = 'epayment';
-
             $currency = $details['amount']['currency'];
             $nothing  = [ 'currency' => $currency, 'value' => 0];
+        } 
 
-            $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
-            if ($details['state'] == 'AUTHORIZED') {
-                $aggregate['authorizedAmount'] = $details['amount'];
-            }
-            $details['aggregate'] = $aggregate;
-
-            $result['paymentDetails'] = $details;
-
+        // For both callbacks, set 'aggregate' 
+        $currency = $details['amount']['currency'];
+        $nothing  = [ 'currency' => $currency, 'value' => 0];
+        $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
+        if ($details['state'] == 'AUTHORIZED') {
+           $aggregate['authorizedAmount'] = $details['amount'];
         }
+        $details['aggregate'] = $aggregate;
+        $result['paymentDetails'] = $details;
 
         error_log("Before normalize, result is " . print_r($result, true));
 
@@ -3257,7 +3270,8 @@ error_log("setting transaction data " . print_r($transaction, true));
 
         // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
         $transaction = array();
-        $transaction['timeStamp'] = date('Y-m-d H:i:s', strtotime($result['timestamp']) ??  time());
+        $stamp = ($result['timestamp'] ?? false) ? strtotime($result['timestamp']) : time(); 
+        $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
         $transaction['amount'] = $details['amount']['value'];
         $transaction['currency'] = $details['amount']['currency'];
         $transaction['status'] = ($result['state'] ?? $details['state']);
@@ -3305,26 +3319,26 @@ error_log("setting transaction data " . print_r($transaction, true));
 
 
         if ($express || $ischeckout) {
+            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+            // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
+            if ($ischeckout) {
+                $result = $this->ensure_userDetails($result, $order);
+            }
             // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
             // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
-            if ($express && !isset($result['userDetails'])) {
+            if (!isset($result['userDetails'])) {
 error_log("No user details in express checkout, we call get_payment_details");
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
                 $result = $this->get_payment_details($order);
-            } else {
-error_log("User details are present in express checkout, or this is actually checkout: $ischeckout");
-                // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-                // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
-                $result = $this->ensure_userDetails($result, $order);
-                // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
-                $result = $this->normalizeShippingDetails($result, $order);
-            }
+            } 
+            // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
+            $result = $this->normalizeShippingDetails($result, $order);
 
             // We should now always have shipping details.
             if (isset($result['shippingDetails'])) {
                 $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-error_log("Calling set order shipping details");
+error_log("Calling set order shipping details , final resul tis " . print_r($result, true) );
                 $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
             }
         }

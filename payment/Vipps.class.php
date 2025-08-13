@@ -2346,14 +2346,14 @@ else:
     public function vipps_callback() {
         $this->log("Callback received");
 
-	Vipps::nocache();
+      	Vipps::nocache();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-error_log("iverok: disabling callbacks while debugging, callback was " . print_r($result, true)); exit(); // FIXME 
+error_log("iverok: parsed callback was " . print_r($result, true));
 
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         // .. and the epayment webhooks 2023-12-19
@@ -2396,8 +2396,9 @@ error_log("iverok: disabling callbacks while debugging, callback was " . print_r
         // If this is a webhook call, we need to verify it, check that it is one of the 'callback' webhooks, check that we still have a pending
         // order for it, normalize the callback data and then handle the callback. IOK 2023-12-21
         if ($iswebhook) {
+error_log("This is in fact a webhook");            
             // The webhook payloads spell the msn differently. IOK 2023-12-21
-            $msn = $result['msn'] ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
+            $msn = ($result['msn'] ?? '') ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
             if ($msn) {
                 $result['msn'] = $msn;
                 $result['merchantSerialNumber'] = $msn;
@@ -2464,12 +2465,15 @@ error_log("iverok: disabling callbacks while debugging, callback was " . print_r
                 $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
                 return; 
             }
-            // We are not interested in Checkout or Express orders - they have their own callback systems
-            if ($order->get_meta('_vipps_checkout') or $order->get_meta('_vipps_express_checkout')) {
-                $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
+            // We are not interested in Checkout orders - they have their own callback systems
+            if ($order->get_meta('_vipps_checkout')) {
+                $this->log(sprintf(__('Received webhook callback for Checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
             }
             do_action('woo_vipps_callback_webhook', $result);
+
+error_log("Doing handle callback with webhook " . print_r($result, true));            
+
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
             if ($ok) {
                 // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
@@ -2478,6 +2482,7 @@ error_log("iverok: disabling callbacks while debugging, callback was " . print_r
 
             exit();
         }
+error_log("This is not a webhook call - checkout $ischeckout");
 
         // Non-webhook path follows IOK 2023-12-20
 
@@ -4678,6 +4683,7 @@ error_log("iverok: disabling callbacks while debugging, callback was " . print_r
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
         $do_poll = true;
+        $do_poll = false; // IOK ENSURE WE DO NOT POLL FIXME WE ARE TESTING THE CALLBACK
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
