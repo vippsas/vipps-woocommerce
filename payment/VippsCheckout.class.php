@@ -223,6 +223,25 @@ jQuery(document).ready(function () {
 
         # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
         $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+
+        // Unless the order actually somehow doesn't exist anymore - this should not be possible but let's handle it
+        if ($paymentdetails && isset($paymentdetails['status']) && $paymentdetails['status'] == 'CANCEL') {
+            // IOK this cannot actually happen, but if it *does*, cancel the order 
+            clean_post_cache($order->get_id());
+            if (WC()->session) {
+                WC()->session->set('vipps_checkout_current_pending',0);
+                WC()->session->set('vipps_address_hash', false);
+            }
+            $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+            // Also mark for deletion and remove stored session
+            $order->delete_meta_data('_vipps_checkout_session');
+            $order->update_meta_data('_vipps_delendum',1);
+            $order->save();
+            $url = $order->get_checkout_payment_url();
+            wp_redirect($url);
+            exit();
+        }
+
         $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
         # Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
         $assignuser = is_user_logged_in();

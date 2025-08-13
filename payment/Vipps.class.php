@@ -1716,7 +1716,7 @@ else:
         try {
             $details = $gw->get_payment_details($order);
 
-            if ($details && $order->get_meta('_vipps_api') == 'epayment') {
+            if ($details) {
                try {
                    $details['epaymentLog'] =  $gw->api->epayment_get_payment_log ($order);
                } catch (Exception $e) {
@@ -2179,7 +2179,7 @@ else:
             if ($order->get_payment_method() != 'vipps') return $cancel;
             // For Vipps, all unpaid orders must be pending.
             if ($order->get_status() != 'pending') return $cancel;
-            // We do need to check the order status, because this could be called very frequently on some sites.
+            // We do need to check the order status, because this could be called very soon after order creation on some sites.
             try {
               $details = $this->gateway()->get_payment_details($order);
               if ($details && isset($details['status']) && $details['status'] == 'CANCEL') {

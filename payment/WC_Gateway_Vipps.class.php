@@ -1734,7 +1734,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $requestid = $order->get_order_key();
             $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
-            error_log("LP content after initiate payment is " . print_r($content,true));
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
@@ -2268,7 +2267,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return $oldstatus;
         }
 
-
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
 
@@ -2314,45 +2312,33 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting payment details from %1\$s for order_id:",'woo-vipps'), $this->get_payment_method_name()) . $orderid . "\n" . $e->getMessage(), 'error');
             clean_post_cache($order->get_id());
+            $Vipps->unlockOrder($order);
             return $oldstatus;
         }
         $order->save();
 
         $statuschange = 0;
         if ($oldvippsstatus != $vippsstatus) {
-error_log("oldvipps status $oldvippsstatus new $vippsstatus that is a state change");            
             $statuschange = 1;
         }
         if ($oldstatus == 'pending' && $vippsstatus != 'initiated') {
-error_log("weird pending issue status $oldstatus status $oldvippsstatus new $vippsstatus that is a state change");            
+error_log("vippsstatus in weird branch is $vippsstatus");
             $statuschange = 1; // This is not supposed to happen, but if it does: The vippsstatus changed without the woo status changing.
         }
 
-error_log("Before check of status and so forth, $vippsstatus and " . $order->get_meta('_vipps_express_checkout'));
-
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
-
-error_log("This is the statuschange and payment details branch - this is express checkout");
 
             do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
             $address_set = $order->get_meta('_vipps_shipping_set');
 
             if ($address_set) {
-error_log("address was set, so we can abort handling checkout now");
                // Callback has handled the situation, do nothing
             } elseif ($paymentdetails['shippingDetails'] ?? "") {
-
-error_log("payment details before set_order_shipping_details is " . print_r($paymentdetails, true));
-
-
                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
             } else {
-
-error_log("This is a weird branch to find oneself in");
-
                 //  IN THIS CASE we actually need to cancel the order as we have no way of determining whose order this is.
                 //  But first check to see if it has customer info! 
                 // Cancel any orders where the Checkout session is dead and there is no address info available
@@ -2370,6 +2356,7 @@ error_log("This is a weird branch to find oneself in");
                     }
                 }
                 clean_post_cache($order->get_id());
+                $Vipps->unlockOrder($order);
                 return $oldstatus; 
             }
         }
@@ -2429,8 +2416,6 @@ error_log("This is a weird branch to find oneself in");
                     $result['state'] = 'CANCEL';
                     $result['status'] = 'CANCEL';
                     $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
-                    $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
-                    $order->save();
                     return $result;
                 }
 
@@ -2455,8 +2440,6 @@ error_log("This is a weird branch to find oneself in");
                     if ($minutes > 120) {
                         $this->log(sprintf(__('Checkout order older than 120 minutes with no order status - cancelled as abandoned: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
                         $order->add_order_note(sprintf(__('%1$s Order with no order status, so session was never completed; setting status to cancelled', 'woo-vipps'), Vipps::CheckoutName()));
-                        $order->set_status('cancelled', __("Abandonded by customer", 'woo-vipps') . __(" - no status retrievable", 'woo-vipps'), false);
-                        $order->save();
                         $result['status'] = 'CANCEL';
                         $result['state'] = 'CANCEL';
                     }
@@ -2474,10 +2457,8 @@ error_log("This is a weird branch to find oneself in");
                 }
             }
         } else {
-            error_log("get_payment_details: Is epayment");
             try {
                 $result = $this->api->epayment_get_payment($order);
-                error_log("epayment result is " . print_r($result, true));
             } catch (VippsAPIException $e) {
                 $resp = intval($e->responsecode);
                 if ($resp == 402 || $resp == 404) {
@@ -2516,7 +2497,6 @@ error_log("This is a weird branch to find oneself in");
         // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
         // Also add keys and transform for backwards compatibility.
         $result = $this->normalizePaymentDetails($result);
-error_log("After normalize payment " . print_r($result, true));
 
         // if this is *checkout* and there is no user information, this is probably because we only get that when adding the 'address' scope.
         // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
@@ -2578,12 +2558,9 @@ error_log("After normalize payment " . print_r($result, true));
         // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
         // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
         $result = $this->ensure_userDetails($result, $order);
-error_log("After ensure user " . print_r($result, true));
 
         // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
         $result = $this->normalizeShippingDetails($result, $order);
-
-error_log("After normalize shipping " . print_r($result, true));
 
         return $result;
     }
@@ -2611,9 +2588,6 @@ error_log("After normalize shipping " . print_r($result, true));
         }
 
         // Normalize from user details when neccessary (mostly for new express)
-        
-error_log("Normalizing keys, " . print_r($address, true) . " vs " . print_r($user, true));       
-        
         $address['firstName'] =  ($address['firstName'] ?? "") ?: $user['firstName'];
         $address['lastName'] =  ($address['lastName'] ?? "")  ?: $user['lastName'];
         $address['email'] =  ($address['email'] ?? "") ?: $user['email'];
@@ -2751,7 +2725,6 @@ error_log("Normalizing keys, " . print_r($address, true) . " vs " . print_r($use
 
         // And it is possible to not require user details in Checkout at all (or if not using express)
         } else {
-error_log("This is a completely anonymous customer");
             $userDetails = array(
                     
                     'firstName' => apply_filters('woo_vipps_anon_customer_first_name', __('Anonymous customer', 'woo-vipps'), $order),
@@ -2942,13 +2915,6 @@ error_log("This is a completely anonymous customer");
     }
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
-
-error_log("got alldata" . print_r($alldata, true));
-error_log("got shipping " . print_r($shipping, true));
-error_log("got billing" . print_r($billing, true));
-error_log("got user" . print_r($user, true));
-
-
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
