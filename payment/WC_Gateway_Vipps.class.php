@@ -2322,8 +2322,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $statuschange = 1;
         }
         if ($oldstatus == 'pending' && $vippsstatus != 'initiated') {
-error_log("vippsstatus in weird branch is $vippsstatus");
-            $statuschange = 1; // This is not supposed to happen, but if it does: The vippsstatus changed without the woo status changing.
+            $statuschange = 1; // Probably handled by case above always IOK 2025-08-13
         }
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
