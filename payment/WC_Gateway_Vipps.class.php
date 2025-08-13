@@ -2520,7 +2520,7 @@ error_log("After normalize payment " . print_r($result, true));
 
         // if this is *checkout* and there is no user information, this is probably because we only get that when adding the 'address' scope.
         // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
-        // FIXME do this also if login with express checkout is required
+        // This is also the only way to get "email_verified", so we may want to add a setting that always calls this if neccessary. IOK 2025-08-13
         if ($express && !isset($result['userDetails'])) {
             $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
             $userinfo = [];
@@ -2540,7 +2540,6 @@ error_log("After normalize payment " . print_r($result, true));
                 }
             }
             if ($userinfo) {
-error_log("userinfo is  " . print_r($userinfo, true));
                 $userDetails = array(
                     'email_verified' => $userinfo['email_verified'],
                     'email' => $userinfo['email'],
@@ -2554,7 +2553,7 @@ error_log("userinfo is  " . print_r($userinfo, true));
 
                 $result['userDetails'] = $userDetails;
 
-                // And if no shipping details, add a dummy
+                // We may have asked for the address of the customer, so add that too, or a dummy.
                 if (!isset($result['shippingDetails'])) {
                     $countries=new WC_Countries();
                     $address =[];
@@ -2563,6 +2562,14 @@ error_log("userinfo is  " . print_r($userinfo, true));
                     $address['city']  ="";
                     $address['postCode'] = "";
                     $address['country'] = $countries->get_base_country();
+
+                    // This uses other keys than both epayment and checkout, but we'll normalize it later. IOK 2025-08-13
+                    if (isset($userinfo['address'])) {
+                        $address['addressLine1'] = $userinfo['address']['street_address'];
+                        $address['city'] = $userinfo['address']['region'];
+                        $address['country'] = $userinfo['address']['country'];
+                        $address['postCode'] = $userinfo['address']['postal_code'];
+                    }
                     $result['shippingDetails'] = ['address' => $address];
                 }
             }
@@ -2624,7 +2631,7 @@ error_log("Normalizing keys, " . print_r($address, true) . " vs " . print_r($use
         $details['address'] = $address;
 
         // Name change from Checkout/Express to new Express from MethodId to OptionId IOK 2025-08-12
-        $details['shippingMethodId'] = $details['shippingMethodId'] ?? $details['shippingOptionId'];
+        $details['shippingMethodId'] = $details['shippingMethodId'] ?? ($details['shippingOptionId'] ?? "");
         $details['shippingOptionId'] = $details['shippingMethodId'];
 
         $result['shippingDetails'] = $details;
