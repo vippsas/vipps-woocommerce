@@ -2291,16 +2291,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                 // checkout has a string, epayment has an array with upper case "type" and apparently, cardBin IOK 2025-08-12
                 $paymentMethod = $paymentdetails['paymentMethod'] ?? "epayment";
+                // After normalization, all APIs will have data here.
+                $details = $paymentdetails['paymentDetails'];
+                if (isset($details['paymentMethod'])) {
+                    $paymentMethod = $details['paymentMethod'];
+                }
                 if (!is_string($paymentMethod)) {
                     // should be WALLET
                     $paymentMethod = $paymentMethod['type'] ?? "epayment";
                 }
+                error_log("paymentdetails " . print_r($paymentdetails, true));
 
                 $transaction = array();
                 $transaction['timeStamp'] = date('Y-m-d H:i:s', time());
-                $transaction['amount'] = $paymentdetails['amount']['value'];
-                $transaction['currency'] = $paymentdetails['amount']['currency'];
-                $transaction['status'] = $paymentdetails['state'];
+                $transaction['amount'] = $details['amount']['value'];
+                $transaction['currency'] = $details['amount']['currency'];
+                $transaction['status'] = $details['state'];
                 $transaction['paymentmethod'] = $paymentMethod;
                 $this->order_set_transaction_metadata($order, $transaction);
             }
@@ -2475,6 +2481,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             wp_die(sprintf(__("Could not get payment results for order %1\$s - you may have the wrong MSN for the order. Please check logs for more information", 'woo-vipps'), $order->get_id()));
         }
 
+
         // We now have a result which maybe  will contain user and shipping data, which we will need to normalize because it is slightly different in the different
         // APIs, and we have provided filters/hooks that receive this information. IOK 2025-08-12
         // If we now have epayment data, we want to translate this to the ecom 'view' for now. Later, we will do the opposite.
@@ -2489,14 +2496,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This should be an ecom result, so move all data (for simplicitys sake) into paymentDetails
             $result['paymentDetails'] = $result;
         } 
+error_log("result is " . print_r($result, true));        
         // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
         // Also add keys and transform for backwards compatibility.
         $result = $this->normalizePaymentDetails($result);
 
-        // if this is *checkout* and there is no user information, this is probably because we only get that when adding the 'address' scope.
+error_log("normalized result is " . print_r($result, true));        
+
+
+        // if this is *express - not checkout * and there is no user information, this is probably because we only get that when adding the 'address' scope.
         // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
         // This is also the only way to get "email_verified", so we may want to add a setting that always calls this if neccessary. IOK 2025-08-13
-        if ($express && !isset($result['userDetails'])) {
+        if ($express && !$checkout_session && !isset($result['userDetails'])) {
+error_log("whops, we are in the wrong branch");
             $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
             $userinfo = [];
             if (!$sub) {
@@ -2630,14 +2642,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $details['aggregate'] = $aggregate;
             $result['paymentDetails'] = $details;
         }
-        // After this, the result will contain a 'state' which used to be a 'status' - map back for compatibility.
-        // The reason for the method is that in ecom v2 we needed to calculate this from the transaction history. IOK 2025-08-12
-        $result['status'] = $this->get_payment_status_from_payment_details($result);
+
+        // Sometimes we get the state at top level, sometimes in paymentDetails.
+        $state = $result['state'] ?? false;
 
         // Now, if we don't have payment details, we should have a dead session or something like it. If we do, we can cretae
         // a normalized result. IOK 2023-12-13
         if (isset($result['paymentDetails'])) {
             $details = $result['paymentDetails'];
+            $state = $state ?: $details['state'];
+            $result['state'] = $state;
+            $details['state'] = $state;
 
             # IOK 2022-01-19 for this, the docs and experience does not agree, so check both
             $aggregate =  (isset($details['transactionAggregate']))  ? $details['transactionAggregate'] : $details['aggregate'];
@@ -2647,7 +2662,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             //  this was an extra feature for merchants with special products however, so keep the logic just in case.
             if (($result['state'] == 'AUTHORISED' || $result['state'] == "AUTHORIZED") && isset($result['directCapture']) && $result['directCapture']) {
                 $result['state'] = "SALE";
-                $result['status']  = 'SALE';
             }
 
             # the transactionSummary used to contain the information now present in 'aggregate', so map it back for compatibility.
@@ -2665,6 +2679,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             $result['transactionSummary'] = $transactionSummary;
         }
+        // After this, the result will contain a 'state' which used to be a 'status' - map back for compatibility.
+        // The reason for the method is that in ecom v2 we needed to calculate this from the transaction history. IOK 2025-08-12
+        $result['status'] = $this->get_payment_status_from_payment_details($result);
 
         // No longer used; was used in later versions of ecom to deduce order status. Added for typewise compatibility.
         $result['transactionLogHistory'] = array();
