@@ -2506,7 +2506,7 @@ error_log("vippsstatus in weird branch is $vippsstatus");
             $userinfo = [];
             if (!$sub) {
                 // This should never happen, but be prepared
-                $message = sprintf(__("Could not get user info for express checkout order %1\$d using the userinfo API: %2\$s - no user 'sub' id passed.  Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage());
+                $message = sprintf(__("Could not get user info for express checkout order %1\$d using the userinfo API: %2\$s - no user 'sub' id passed.  Please use the 'get complete transaction details' on the button to try to recover this. ", 'woo-vipps'), $order->get_id(),  $e->getMessage()); // FIXME: $e undefined, probably copied from a catch statement? LP 2025-08-13
                 $order->add_order_note($message);
                 $this->log($message , "error");
             } else {
