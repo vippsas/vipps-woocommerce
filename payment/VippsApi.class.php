@@ -692,7 +692,7 @@ class VippsApi {
         // Now for QR, this value will be an URL to the QR code, or the target URL. If the flow is PUSH_MESSAGE, nothing will be returned.
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json');
 
-        error_log("Result from Vipps is " . json_encode($res, JSON_PRETTY_PRINT));
+        error_log("LP Result from Vipps is " . json_encode($res, JSON_PRETTY_PRINT));
 
         // Backwards compatibility: Previous API returned this as an URL. We also get a 'reference' back, the Vipps Order Id
         $res['url'] = $res['redirectUrl'] ?? false;

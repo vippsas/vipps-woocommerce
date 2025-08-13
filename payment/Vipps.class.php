@@ -3041,9 +3041,6 @@ error_log("Handling callback for checkout non-webhook " . print_r($result, true)
 
     // Translate from the old to the new express format. LP 2025-05-26
     public function express_format_shipping_methods ($return, $ratemap, $methodmap, $order) {
-        error_log("return before express format is ". print_r($return, true));
-        error_log("ratemap is " . print_r($ratemap, true));
-        error_log("methodmap is " . print_r($methodmap, true));
         $translated = array();
         $currency = get_woocommerce_currency();
 
@@ -3065,13 +3062,10 @@ error_log("Handling callback for checkout non-webhook " . print_r($result, true)
             // Some data must be visible in the Order screen, so add meta data
             $meta = $rate->get_meta_data();
 
-            error_log("LP shipping_method is " . print_r($shipping_method, true));
-
             // Allow shipping methods to add pickup points data IOK 2025-04-08
             $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
             if ($pickup_points) {
                 foreach($pickup_points as $point) {
-                    error_log("LP pickuppoint is " . print_r($point, true));
                     $ok = true;
                     $entry = [];
 
@@ -3155,15 +3149,10 @@ error_log("Handling callback for checkout non-webhook " . print_r($result, true)
             'priority' => 999,
         ];
         foreach ($return as $index => $method) {
-            error_log("LP method is" . print_r($method, true));
             $id = $method['options'][0]['id'];
-            error_log("LP id is $id");
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
-            // error_log("LP shipping_method is" . print_r($shipping_method, true));
-            // error_log("LP rate is" . print_r($rate, true));
             $should_group = apply_filters('woo_vipps_express_should_group_shipping_method', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
-            error_log("LP should_group: $should_group");
             if ($should_group) {
                 $group['options'][] = $method['options'][0]; // these methods should only have one option at this point. LP 2025-06-04
                 if ($method['isDefault']) $group['isDefault'] = true;
@@ -3172,17 +3161,13 @@ error_log("Handling callback for checkout non-webhook " . print_r($result, true)
                 if ($method['priority'] < $group['priority']) $group['priority'] = $method['priority'];
                 unset($new_return[$index]);
             }
-            error_log("LP group is " . print_r($group, true));
         }
 
         // FIXME
-        if (empty($group['options'])) {
-            error_log("Empty options group " .  print_r($group, true));
-        } else {
+        if (!empty($group['options'])) {
             $new_return[] = $group;
         }
         $new_return = array_values($new_return); // reindex array cus php json encode. LP 2025-06-04
-        error_log("new return is " . print_r($new_return,true));
         return $new_return;
     }
 
