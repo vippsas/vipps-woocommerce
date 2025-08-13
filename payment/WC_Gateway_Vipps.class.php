@@ -2300,8 +2300,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     // should be WALLET
                     $paymentMethod = $paymentMethod['type'] ?? "epayment";
                 }
-                error_log("paymentdetails " . print_r($paymentdetails, true));
-
                 $transaction = array();
                 $transaction['timeStamp'] = date('Y-m-d H:i:s', time());
                 $transaction['amount'] = $details['amount']['value'];
@@ -2410,7 +2408,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
 
                 // For checkout, we are really handling *session states* which we map to *order states*, but sometimes 
-                // these indicate a failed order. This is maybe not the right place to handle this, FIXME by moving order modification for this over to some other place. IOK 2025-08-12
+                // these indicate a failed order.
                 // 'state' can be missing for Checkout, first case is if this is because the session is invalid.
                 // The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
                 if (isset($result['sessionState']) && ($result['sessionState'] == 'SessionTerminated' || $result['sessionState'] == 'SessionExpired')) {
@@ -2496,19 +2494,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This should be an ecom result, so move all data (for simplicitys sake) into paymentDetails
             $result['paymentDetails'] = $result;
         } 
-error_log("result is " . print_r($result, true));        
         // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
         // Also add keys and transform for backwards compatibility.
         $result = $this->normalizePaymentDetails($result);
-
-error_log("normalized result is " . print_r($result, true));        
-
 
         // if this is *express - not checkout * and there is no user information, this is probably because we only get that when adding the 'address' scope.
         // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
         // This is also the only way to get "email_verified", so we may want to add a setting that always calls this if neccessary. IOK 2025-08-13
         if ($express && !$checkout_session && !isset($result['userDetails'])) {
-error_log("whops, we are in the wrong branch");
             $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
             $userinfo = [];
             if (!$sub) {
@@ -2565,17 +2558,11 @@ error_log("whops, we are in the wrong branch");
         // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
         $result = $this->ensure_userDetails($result, $order);
 
-error_log("After ensure user details " . print_r($result, true));
-
         if (($express || $checkout_session)) {
             // After, we need to normalize shipping details or even add them if e.g. using Checkout without address or contact info IOK 2025-08-13
             // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
             $result = $this->normalizeShippingDetails($result, $order);
         }
-
-
-        error_log("after normalize shipping " . print_r($result, true));
-
         return $result;
     }
 
@@ -2771,7 +2758,7 @@ error_log("After ensure user details " . print_r($result, true));
      
         // No longer used, but try to provide it for backwards compatibility
         $userDetails['userId'] = $userDetails['phoneNumber'];
-        // This is possible to get iff we have the 'sub', unfortunately it is not passed directly. IOK 2025-08-12 FIXME
+        // This is possible to get iff we have the 'sub', unfortunately it is not passed directly in several of the apis. IOK 2025-08-12
         $userDetails['email_verified'] = ($userDetails['email_verified'] ?? false);
 
         $vippsdata['userDetails'] = $userDetails;
@@ -2834,9 +2821,6 @@ error_log("After ensure user details " . print_r($result, true));
     // IOK 2025-08-12 Except for certain payment methods in Checkout. So.
     // IOK 2025-08-12 Removing the ecom support now, so all code will use 'state', as normalized by normalizePaymentDetails
     public function get_payment_status_from_payment_details($details) {
-        if (!isset($details['state'])) {
-            error_log(print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), true)); // FIXME
-        }
            $status = $details['state'];
            return $status;
     }
@@ -3055,7 +3039,7 @@ error_log("After ensure user details " . print_r($result, true));
 			}
 			$shipping_rate->add_meta_data('pickup_location', $pp['name']);
 			$shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
-			$shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07 FIXME
+			$shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07
 		}
             }
             if (isset($shipping['timeslot'])) {
@@ -3156,11 +3140,14 @@ error_log("After ensure user details " . print_r($result, true));
         if ($customer) {
             // This would have been used to ensure that we 'enroll' the users the same way as in the Login plugin. Unfortunately, the userId from express checkout isn't
             // the same as the 'sub' we get in Login so that must be a future feature. IOK 2020-10-09
-            // FIXME FIXME FIXME
+            // IOK 2025-08-13 we do get the 'sub' now, at least for express checkout. For Checkout, we would have to compare the email of the user with the verified email
+            // after calling get_userinfo, so we'll leave that be.
             if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
                 update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
-                // update_user_meta($userid, '_vipps_id', $sub);
-                // update_user_meta($userid, '_vipps_just_connected', 1);
+                if (isset($user['sub'])) {
+                    update_user_meta($userid, '_vipps_id', $user['sub']);
+                    update_user_meta($userid, '_vipps_just_connected', 1);
+                }
             }
 
             // Ensure we get any changes made to the order, as it will be re-saved later
@@ -3190,9 +3177,6 @@ error_log("After ensure user details " . print_r($result, true));
 
     // Used by both callback_check_order_status and handle_callback - sets the neccessary order metadata after a successful (or not vipps transaction). IOK 2025-08-13
     public function order_set_transaction_metadata($order, $transaction) {
-
-error_log("setting transaction data " . print_r($transaction, true));
-
         // Set Vipps metadata as early as possible
         $vippsstamp = strtotime($transaction['timeStamp']);
         $vippsamount = $transaction['amount'] ?? '';
@@ -3285,11 +3269,9 @@ error_log("setting transaction data " . print_r($transaction, true));
         $details['aggregate'] = $aggregate;
         $result['paymentDetails'] = $details;
 
-        error_log("Before normalize, result is " . print_r($result, true));
-
         $result = $this->normalizePaymentDetails($result);
         $details = $result['paymentDetails'];
- error_log("result after normalize is " . print_r($result, true));
+
         $vippsstatus = $result['status']; // Will exist now, because of the normalization IOK 2025-08-13
 
         // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
@@ -3352,7 +3334,6 @@ error_log("setting transaction data " . print_r($transaction, true));
             // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
             if (!isset($result['userDetails'])) {
-error_log("No user details in express checkout, we call get_payment_details");
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
                 $result = $this->get_payment_details($order);
             } 
@@ -3362,14 +3343,12 @@ error_log("No user details in express checkout, we call get_payment_details");
             // We should now always have shipping details.
             if (isset($result['shippingDetails'])) {
                 $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-error_log("Calling set order shipping details , final resul tis " . print_r($result, true) );
                 $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
             }
         }
 
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
         if ($vippsstatus == 'AUTHORIZED') {
-error_log("calling payment complete");           
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
@@ -3378,7 +3357,6 @@ error_log("calling payment complete");
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-error_log("calling cancel order");           
             $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
         }
         $order->save();
@@ -3396,7 +3374,6 @@ error_log("calling cancel order");
         }
 
         // Signal that we in fact handled the order.
-error_log("callback handling done");
         return true;
     }
 

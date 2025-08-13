@@ -682,10 +682,10 @@ jQuery(document).ready(function () {
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
-            $order->set_billing_address_1($contact['streetAddress']);
-            $order->set_billing_city($contact['city']);
-            $order->set_billing_postcode($contact['postalCode']);
-            $order->set_billing_country($contact['country']);
+            $order->set_billing_address_1($contact['streetAddress'] ?? "");
+            $order->set_billing_city($contact['city'] ?? "");
+            $order->set_billing_postcode($contact['postalCode'] ?? "");
+            $order->set_billing_country($contact['country'] ?? "");
         }
         if ($ok &&  $change && isset($status['shippingDetails'])) {
             $contact = $status['shippingDetails'];
@@ -864,9 +864,7 @@ jQuery(document).ready(function () {
                     $latest_note = $order_notes[0];
                     if (is_a($latest_note, 'WP_Comment')) {
                         $deleted = wc_delete_order_note($latest_note->comment_ID);
-                    } else {
-                        error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
-                    }
+                    } 
                 }
                 $order->set_customer_note(sanitize_text_field($notes));
                 $order->save();
@@ -985,8 +983,9 @@ jQuery(document).ready(function () {
                             $order_notes = $order->get_customer_order_notes();
                             if ($order_notes) {
                                 $latest_note = $order_notes[0];
-                                if (is_a($latest_note, 'WP_Comment')) echo $latest_note->comment_content;
-                                else error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
+                                if (is_a($latest_note, 'WP_Comment')) {
+                                    echo $latest_note->comment_content;
+                                }
                             }
                         } ?>"/>
                         <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>

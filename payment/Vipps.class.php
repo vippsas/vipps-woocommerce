@@ -2353,8 +2353,6 @@ else:
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 
-error_log("iverok: parsed callback was " . print_r($result, true));
-
         // This handler handles both Vipps Checkout and Vipps ECom IOK 2021-09-02
         // .. and the epayment webhooks 2023-12-19
         $ischeckout = false;
@@ -2456,12 +2454,9 @@ error_log("iverok: parsed callback was " . print_r($result, true));
 
             // We are not interested in Checkout orders - they have their own callback systems
             if ($order && $order->get_meta('_vipps_checkout')) {
-error_log("it is a webhook for checkout, ignoring that");
                 $this->log(sprintf(__('Received webhook callback for Checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
                 return;
             }
-error_log("Not a checkout webhook order is " . ($order ? " present " : " not present "));
-
             // Now we will handle everything that is a callback event. IOK 2023-12-21
             if (!in_array($event, $callback_events)) {
                 return;
@@ -2474,8 +2469,6 @@ error_log("Not a checkout webhook order is " . ($order ? " present " : " not pre
             }
             do_action('woo_vipps_callback_webhook', $result);
 
-error_log("Doing handle callback with webhook " . print_r($result, true));            
-
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
             if ($ok) {
                 // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
@@ -2485,8 +2478,7 @@ error_log("Doing handle callback with webhook " . print_r($result, true));
             exit();
         }
 
-        // This branch is only for non-webhook callbacks; which currently means Checkout. IOK 2025-08-13
-error_log("This is not a webhook call - checkout $ischeckout");
+        // This branch is only for non-webhook callbacks; which currently means Checkout only. IOK 2025-08-13
         $orderid = intval(@$_REQUEST['id']);
 
         if (!$orderid) {
@@ -2510,7 +2502,6 @@ error_log("This is not a webhook call - checkout $ischeckout");
 
         $gw = $this->gateway();
 
-error_log("Handling callback for checkout non-webhook " . print_r($result, true));
         // If neccessary, the order session will be restored in this method, and if so it will be reset before the exit happens
         // to reduce issues with users simultaneously returning to the store. IOK 2023-07-18
         $ok = $gw->handle_callback($result, $order, $ischeckout);
@@ -3483,17 +3474,23 @@ error_log("Handling callback for checkout non-webhook " . print_r($result, true)
 
         if ($order_status != 'pending') return $order_status;
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
+        // We can't use the vipps init timestamp here, because that may be  in the past for Checkout at least. IOK 2025-08-13
         if ($order_status == 'pending') {
-
-
-            $now = time();
-            $then= $order->get_meta('_vipps_init_timestamp');
-
-            if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
+            if (WC()->session) {
+                $now = time();
+                $then = WC()->session->get('_vipps_check_' . $order->get_id());
+                if (!$then) {
+                    $then = $now;
+                    WC()->session->set('_vipps_check_' . $order->get_id(), $then);
+                }
+                if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
+                    return $order_status;
+                }
+            } else {
+                // No session shouldn't be possible, but if it is..
                 return $order_status;
             }
         }
-
         $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
         return $this->check_status_of_pending_order($order);
     }
@@ -4662,7 +4659,6 @@ error_log("Handling callback for checkout non-webhook " . print_r($result, true)
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
         $do_poll = true;
-        $do_poll = false; // IOK ENSURE WE DO NOT POLL FIXME WE ARE TESTING THE CALLBACK
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
