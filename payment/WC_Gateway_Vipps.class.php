@@ -3313,7 +3313,7 @@ error_log("No user details in express checkout, we call get_payment_details");
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
                 $result = $this->get_payment_details($order);
             } else {
-                error_log("User details are present in express checkout, or this is actually checkout: $ischeckout");
+error_log("User details are present in express checkout, or this is actually checkout: $ischeckout");
                 // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
                 // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
                 $result = $this->ensure_userDetails($result, $order);
@@ -3324,12 +3324,14 @@ error_log("No user details in express checkout, we call get_payment_details");
             // We should now always have shipping details.
             if (isset($result['shippingDetails'])) {
                 $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
+error_log("Calling set order shipping details");
                 $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
             }
         }
 
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
-        if ($vippsstatus == 'AUTHORIZED') { // Apparently, the API uses *both* ! IOK 2018-05-03 And from 2023 on, the spelling changed to IZED for checkout  IOK 2023-01-09
+        if ($vippsstatus == 'AUTHORIZED') {
+error_log("calling payment complete");           
             $this->payment_complete($order);
         } else if ($vippsstatus == 'SALE') {
           // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
@@ -3338,6 +3340,7 @@ error_log("No user details in express checkout, we call get_payment_details");
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
+error_log("calling cancel order");           
             $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
         }
         $order->save();
@@ -3355,6 +3358,7 @@ error_log("No user details in express checkout, we call get_payment_details");
         }
 
         // Signal that we in fact handled the order.
+error_log("callback handling done");
         return true;
     }
 
