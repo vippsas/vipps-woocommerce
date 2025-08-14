@@ -2670,40 +2670,21 @@ else:
     // the Express Checkout static shipping feature
     // This is neccessary because WC()->customer->set_shipping_address_to_base() only sets country and state.
     // IOK 2020-03-18
-    public function get_static_shipping_address_data () {
-         // This is the format used by the Vipps callback, we are going to mimic this.
-        // IOK 2025-05-08 now also using the format used by Checkout in addition to Express. -- streetAddress, postalCode, region
-         $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
-
-         $addressok=false;
-         if (WC()->customer) {
-           $address = WC()->customer->get_shipping();
-           if (empty(@$address['country']) || empty(@$address['city']) || empty(@$address['postcode'])) $address = WC()->customer->get_billing();
-           if (@$address['country'] && @$address['city'] && @$address['postcode']) {
-              $addressok = true;
-              $defaultdata['country'] = $address['country'];
-              $defaultdata['region'] = $address['city'];
-              $defaultdata['postalCode'] = $address['postcode'];
-              $defaultdata['postCode'] = $address['postcode'];
-              $defaultdata['streetAddress'] = @$address['address_1'];
-              $defaultdata['addressLine1'] = @$address['address_1'];
-              $defaultdata['addressLine2'] = @$address['address_2'];
-           }
-         } 
-         if (!$addressok) {
-             $countries=new WC_Countries();
-             $defaultdata['country'] = $countries->get_base_country();
-             $defaultdata['city'] = $countries->get_base_city(); 
-             $defaultdata['region'] = $countries->get_base_city(); 
-             $defaultdata['postalCode'] = $countries->get_base_postcode();
-             $defaultdata['postCode'] =   $countries->get_base_postcode();
-             $defaultdata['streetAddress'] = $countries->get_base_address();
-             $defaultdata['addressLine1'] = $countries->get_base_address();
-             // We do not use addressLine2 in default addreses, since it is not used for shipping calculations. IOK 2024-05-21
-             $addressok=true;
-         }
-         return $defaultdata;
-    }
+   public function get_static_shipping_address_data () {
+       // This is the format used by the Vipps callback, we are going to mimic this.
+       // IOK 2025-05-08 now also using the format used by Checkout in addition to Express. -- streetAddress, postalCode, region
+       $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "streetAddress"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"Home"); 
+       // IOK 2025-08-14 previously this used the customers' address if logged in or available, but that I think was a mistake - since this is intended to be static, ensure we use the base address only.
+       $countries=new WC_Countries();
+       $defaultdata['country'] = $countries->get_base_country();
+       $defaultdata['city'] = $countries->get_base_city(); 
+       $defaultdata['region'] = $countries->get_base_city(); 
+       $defaultdata['postalCode'] = $countries->get_base_postcode();
+       $defaultdata['postCode'] =   $countries->get_base_postcode();
+       $defaultdata['streetAddress'] = $countries->get_base_address();
+       $defaultdata['addressLine1'] = $countries->get_base_address();
+       return $defaultdata;
+   }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
@@ -2766,13 +2747,14 @@ else:
         // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
         $ischeckout = $order->get_meta('_vipps_checkout');
 
-        if ($ischeckout) {
-            // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
-            // here we will add support for PickupLocations. Also called for static shipping.
-            $this->checkout_load_shipping_methods($order, $result);
-        }
 
         $this->callback_restore_session($orderid);       
+
+        // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+        // here we will add support for PickupLocations. Also called for static shipping.
+        // IOK 2025-08-14 now also supported for Express Checkout
+        $this->load_shipping_methods($order, $result, $ischeckout);
+
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
  
         # Checkout does not have an addressID here, and should not be 'wrapped'
@@ -3963,11 +3945,9 @@ else:
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
 
-        // FIXME dev override to load pickup locations always. LP 2025-05-26
-        if (true || $ischeckout) {
-            // Add special shipping methods (LocalPickup etc);
-            $this->checkout_load_shipping_methods($order, $addressinfo);
-        }
+        // Both Checkout and new Express Checkout supports LocalPickup, so add it (it is normally only present for Gutenberg checkout)
+        // Add special shipping methods (LocalPickup etc);
+        $this->load_extra_shipping_methods($order, $addressinfo, $ischeckout);
 	
         $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $ischeckout);
 
@@ -3977,9 +3957,9 @@ else:
         }
     }
 
-    // Vipps Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
+    // Vipps Checkout and Express Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
     // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback. 
-    public function checkout_load_shipping_methods($order, $addressdata) {
+    public function load_extra_shipping_methods($order, $addressdata, $ischeckout=false) {
         // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
         add_action('woocommerce_load_shipping_methods', function () use ($order, $addressdata) {
             // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
