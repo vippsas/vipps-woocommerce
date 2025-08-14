@@ -2554,15 +2554,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             }
         }
-        // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-        // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
-        $result = $this->ensure_userDetails($result, $order);
 
-        if (($express || $checkout_session)) {
+        if ($express || $checkout_session) {
+            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+            // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
+            $result = $this->ensure_userDetails($result, $order);
+
             // After, we need to normalize shipping details or even add them if e.g. using Checkout without address or contact info IOK 2025-08-13
             // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
             $result = $this->normalizeShippingDetails($result, $order);
         }
+
         return $result;
     }
 
