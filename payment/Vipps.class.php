@@ -3067,6 +3067,7 @@ error_log("return before reformatting" . print_r($return, true));
 error_log("return formatted for express" . print_r($return, true));
             $return = $this->express_group_shipping_methods($return, $ratemap, $methodmap, $order);
 error_log("return, with grouped options for pickup locations etc." . print_r($return, true));
+           $return = apply_filters('woo_vipps_express_json_shipping_methods', $translated, $order);
         }
 
         return $return;
@@ -3165,8 +3166,6 @@ error_log("return, with grouped options for pickup locations etc." . print_r($re
             $translated[] = $m2;
         }
 
-        $return = apply_filters('woo_vipps_checkout_json_shipping_methods', $translated, $order);
-        error_log("LP return after express format is " . print_r($return, true));
         return $return;
     }
 
