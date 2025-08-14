@@ -2793,7 +2793,10 @@ error_log("got shipping methods, about to call the handler");
             error_log("in the weird checkout branch");
            $return = $return['shippingDetails'];
         }
-
+        // The new express checkout has *another format* for callbacks than for static shipping. IOK 2025-08-14
+        if (!$ischeckout) {
+         $return = [ "groups" => $return ];
+        }
 
         #$json = json_encode($return);
         $json = json_encode($return, JSON_PRETTY_PRINT);
@@ -3066,8 +3069,8 @@ error_log("return before reformatting" . print_r($return, true));
             $return = $this->express_format_shipping_methods($return, $ratemap, $methodmap, $order);
 error_log("return formatted for express" . print_r($return, true));
             $return = $this->express_group_shipping_methods($return, $ratemap, $methodmap, $order);
+            $return = apply_filters('woo_vipps_express_json_shipping_methods', $return, $order); // wat
 error_log("return, with grouped options for pickup locations etc." . print_r($return, true));
-           $return = apply_filters('woo_vipps_express_json_shipping_methods', $translated, $order);
         }
 
         return $return;
@@ -3166,7 +3169,7 @@ error_log("return, with grouped options for pickup locations etc." . print_r($re
             $translated[] = $m2;
         }
 
-        return $return;
+        return $translated;
     }
 
 
@@ -3181,7 +3184,12 @@ error_log("return, with grouped options for pickup locations etc." . print_r($re
             'priority' => 999,
         ];
         foreach ($return as $index => $method) {
+            error_log("method $index is " . print_r($method, true));
             $id = $method['options'][0]['id'];
+
+            if (!$id) { // FIXME
+                error_log("method " . print_r($method, true));
+            }
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
             $should_group = apply_filters('woo_vipps_express_should_group_shipping_method', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
