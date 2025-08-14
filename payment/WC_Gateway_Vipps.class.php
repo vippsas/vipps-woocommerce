@@ -2769,7 +2769,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // Update the order with Vipps payment details, either passed or called using the API.
-    // FIXME check that this still works
     public function update_vipps_payment_details ($order, $details = null) {
        if (!$details) $details = $this->get_payment_details($order);
 
