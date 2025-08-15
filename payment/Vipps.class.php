@@ -2104,6 +2104,35 @@ else:
             $button .= '</div>';
             return $stripped . $button . "</li>";
         }, 10, 3);
+
+        // If local pickup has been added to express/checkout by filters, add this to emails/confirmation pages. IOK 2025-08-15
+        add_filter('woocommerce_order_shipping_to_display', function($shipping, $order, $tax_display) {
+                if (!is_a($order, 'WC_Order')) return $shipping;
+                if ($order->get_payment_method() != 'vipps') return $shipping;
+                $shipping_method = current( $order->get_shipping_methods() );
+
+                if (empty($shipping_method))  return $shipping;
+
+                // Handled by Woo Central IOK 2025-08-15
+                if ('pickup_location' == $shipping_method->get_method_id()) {
+                    return $shipping;
+                }
+
+
+                $details         = trim($shipping_method->get_meta( 'pickup_details' ));
+                $location        = trim($shipping_method->get_meta( 'pickup_location' ));
+                $address         = trim($shipping_method->get_meta( 'pickup_address' ));
+
+                if (!empty($location) || !empty($address)) {
+                   $shipping .= "<br><strong>" .  __( 'Pickup location', 'woocommerce' ) . ":</strong>";
+                }
+                if (!empty($location))  $shipping .= esc_html($location);
+                if (!empty($address)) $shipping .= "<br>" . esc_html($address);
+                if (!empty($details)) $shipping .= "<br><small>" . esc_html($details) . "</small>";
+
+                return $shipping;
+            }, 10, 3);
+
     }
 
     public function get_payment_method_name() {
@@ -2722,12 +2751,8 @@ else:
         } elseif (isset($result['reference'])) {
             $vippsorderid = $result['reference'];
         }
-
-        error_log(print_r($_REQUEST,true));
-        error_log(print_r($result, true));
         
         $orderid = intval($_REQUEST['id'] ?? 0);
-error_log("orderid $orderid");
         if (!$orderid) {
             status_header(404, "Unknown order");
             print "Unknown order";
@@ -2737,7 +2762,6 @@ error_log("orderid $orderid");
 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
-error_log("Pre order get");
         $order = wc_get_order($orderid);
         if (!$order) {
             status_header(404, "Unknown order");
@@ -2764,7 +2788,6 @@ error_log("Pre order get");
             $this->log(sprintf(__("Wrong %1\$s Orderid on shipping details callback", 'woo-vipps'), $this->get_payment_method_name()), 'warning');
             exit();
         }
-error_log("post finding the dude");
 
         // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
         // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
@@ -2781,8 +2804,6 @@ error_log("post finding the dude");
 
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
 
-error_log("return pre " . print_r($return, true));
- 
         // Express checkout wants the data wrapped in a object with a 'groups' attribute, Checkout wants thing unwrapped.
         // Dispatch on the known type. IOK 2025-08-15
         if ($ischeckout) {
@@ -2792,8 +2813,7 @@ error_log("return pre " . print_r($return, true));
            $return = [ "groups" => $return ];
         }
 
-        $json = json_encode($return, JSON_PRETTY_PRINT);
-error_log("doing $json");
+        $json = json_encode($return);
 
         header("Content-type: application/json; charset=UTF-8");
         print $json;
@@ -3113,6 +3133,7 @@ error_log("doing $json");
                         $v = trim($point[$key]);
                         if (!empty($v)) $addr[$key] = $v;
                     }
+                    // To avoid confusion, force the keys to be strings. IOK 2025-08-15
                     $pickup_point_table["i".$index] = $addr;
 
              
@@ -3130,7 +3151,6 @@ error_log("doing $json");
                 }
                 // If we have pickup points added, then store them in a table in the rate itself. We'll strip that value when finalizing the order. IOK 2025-08-15
                 if (!empty($pickup_point_table)) {
-                    error_log("We have points " . print_r($pickup_point_table, true));
                    $rate->add_meta_data('_vipps_pickupPoints', $pickup_point_table);
                    $ratemap[$id] = $rate;
                 }

@@ -3017,7 +3017,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 preg_match("!^(?P<key>[^:]+):?(?P<option_index>.+)?$!", $method, $matches);
                 $key = $matches['key'] ?? "";
                 $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
-error_log("method $method Key $key option index $option_index");
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
                 if (is_array($shipping_table) && isset($shipping_table[$key])) {
                     $shipping_rate = @unserialize($shipping_table[$key]);
@@ -3025,18 +3024,14 @@ error_log("method $method Key $key option index $option_index");
                         $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error');
                     } else {
                         if ($option_index) {
-error_log("Got option index $option_index");
                            $meta = $shipping_rate->get_meta_data();
                            $option_table = $meta['_vipps_pickupPoints'] ?? [];
-error_log("Table is " . print_r($option_table, true));
+                           // force string table IOK 2025-08-15
                            $point =  $option_table["i".$option_index] ?? "";
-                           error_log("point is for $option_index " . print_r($point, true));
                            if ($point) {
-                               error_log("Setting it");
                                $shipping['pickupPoint'] = $point;
                            }
                            $shipping_rate->add_meta_data('_vipps_pickupPoints', null);
-error_log("Shipping is now " . print_r($shipping, true));
                         }
                         // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
                         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
@@ -3057,10 +3052,6 @@ error_log("Shipping is now " . print_r($shipping, true));
 				$v = trim($pp[$key]);
 				if (!empty($v)) $addr[] = trim($pp[$key]);
 			}
-
-            error_log("pp is " . print_r($pp, true));
-            error_log("Address is " .print_r($addr, true));
-
 
 			$shipping_rate->add_meta_data('pickup_location', $pp['name']);
 			$shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
