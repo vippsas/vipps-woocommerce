@@ -1307,9 +1307,10 @@ jQuery(document).ready(function () {
     // Translate from the Express Checkout shipping method format to the Vipps Checkout shipping
     // format, which is slightly different. The ratemap maps from a method key to its WC_Shipping_Rate, and the method map does
     // the same for WP_Shipping_Method.
+    // The ratemap will in the end be stored in the order and used to retrieve the selected shipping method. IOK 2025-08-15
     // IOK 2025-05-07 Also treat PickupLocation specially. We'll return at most one of these, and if there are more than one, we will add the locations available as
     // metadata.
-    public function format_shipping_methods ($return, $ratemap, $methodmap, $order) {
+    public function format_shipping_methods ($return, &$ratemap, $methodmap, $order) {
         $translated = array();
         $currency = get_woocommerce_currency();
         $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07

@@ -1737,7 +1737,8 @@ else:
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
         if (isset($details['paymentMethod'])) {
-            print __("Payment method", 'woo-vipps') . ":" . $details['paymentMethod'] . "<br>";
+            $method = (is_array($details['paymentMethod'])) ? $details['paymentMethod']['type'] : $method;
+            print __("Payment method", 'woo-vipps') . ":" . $method . "<br>";
         } else {
             print __("Payment method", 'woo-vipps') . ": Vipps <br>";
         }
@@ -2721,8 +2722,12 @@ else:
         } elseif (isset($result['reference'])) {
             $vippsorderid = $result['reference'];
         }
+
+        error_log(print_r($_REQUEST,true));
+        error_log(print_r($result, true));
         
         $orderid = intval($_REQUEST['id'] ?? 0);
+error_log("orderid $orderid");
         if (!$orderid) {
             status_header(404, "Unknown order");
             print "Unknown order";
@@ -2732,6 +2737,7 @@ else:
 
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
+error_log("Pre order get");
         $order = wc_get_order($orderid);
         if (!$order) {
             status_header(404, "Unknown order");
@@ -2758,6 +2764,7 @@ else:
             $this->log(sprintf(__("Wrong %1\$s Orderid on shipping details callback", 'woo-vipps'), $this->get_payment_method_name()), 'warning');
             exit();
         }
+error_log("post finding the dude");
 
         // If we are doing this for Vipps Checkout after version 3, communicate to any shipping methods with
         // special support for Vipps Checkout that this is in fact happening. IOK 2023-01-19
@@ -2773,6 +2780,8 @@ else:
         $this->load_extra_shipping_methods($order, $result, $ischeckout);
 
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
+
+error_log("return pre " . print_r($return, true));
  
         // Express checkout wants the data wrapped in a object with a 'groups' attribute, Checkout wants thing unwrapped.
         // Dispatch on the known type. IOK 2025-08-15
@@ -2783,7 +2792,8 @@ else:
            $return = [ "groups" => $return ];
         }
 
-        $json = json_encode($return);
+        $json = json_encode($return, JSON_PRETTY_PRINT);
+error_log("doing $json");
 
         header("Content-type: application/json; charset=UTF-8");
         print $json;
@@ -2972,11 +2982,10 @@ else:
         }
 
         $vippsmethods = array();
-        $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-        if (!$storedmethods) $storedmethods= array();
 
         // Just a utility from shippingMethodIds to the non-serialized rates, and from the same to the non-serialized 
         // shipping methods - the last stores settings, the first store metadata
+        // The ratemap will be used to store a table in the order from an arbitrary ID key to the calculated shipping rate IOK 2025-08-15
         $ratemap = array();
         $methodmap = array();
 
@@ -2995,19 +3004,15 @@ else:
            $tax  = $rate->get_shipping_tax() ?: 0;
            $cost = $rate->get_cost() ?: 0;
            $label = $rate->get_label();
-           // We need to store the WC_Shipping_Rate object with all its meta data in the database until return from Vipps. IOK 2020-02-17
-           $serialized = '';
-           try {
-               $serialized = serialize($rate);
-           } catch (Exception $e) {
-               $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
-               continue;
-           }
 
-           // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
-           // IOK 2025-08-14 "new" method is the current system; the legacy system has shipping method ids with different naming conventions. Again, to be deprecated. FIXME.
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
-           $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
+           // Actually, we probably *can* use the method id, because other addresses are irellevant. But still, add a random factor 
+           $methodid = $rate->get_method_id();
+           $rand = md5($methodid . bin2hex(random_bytes(32))); // Random enough, 32 chars
+           // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
+           // Reserve 8 chars to contain a : and an option index for Express Checkout IOK 2025-08-15
+           // IOK 2025-08-14 "new" method is the current system; the legacy system has shipping method ids with different naming conventions. Again, to be deprecated. FIXME.
+           $key = '$' . substr($methodid,0,58) . '$' . $rand;
            $vippsmethod = array();
            $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
@@ -3015,15 +3020,14 @@ else:
            $vippsmethod['shippingMethod'] = $rate->get_label();
            $vippsmethod['shippingMethodId'] = $key;
            $vippsmethods[]=$vippsmethod;
-           // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
-           $storedmethods[$key] = $serialized;
 
            // Metadata and settings stored for later use for Vipps Checkout
+           // and express checkout - basically, for each *key* have the corresponding object. IOK 2025-08-15
+           // In the end, this data will be serialized and stored in the Order, and used in the gateways method set_order_shipping_details to
+           // finalize the order. IOK 2025-08-15
            $ratemap[$key]=$rate;
            $methodmap[$key]=$shipping_method;
         }
-        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
-        $order->save();
 
         // This then is the old Express Checkout format, which we have exposed in filters. IOK 2025-08-14 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
@@ -3031,6 +3035,7 @@ else:
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
         // IOK 2025-08-15 and new Express yet another slightly different format.
+        // IOK 2025-08-15 pass the ratemap as a reference, so transforms can update them
         if ($ischeckout) {
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
         } else { // New express format. LP 2025-05-26
@@ -3039,13 +3044,28 @@ else:
             $return = apply_filters('woo_vipps_express_json_shipping_methods', $return, $order); // wat
         }
 
+        // We need to store the WC_Shipping_Rate objects with all its meta data in the database until return from Vipps. IOK 2020-02-17
+        $storedmethods = array(); 
+        foreach($ratemap as $key => $rate) {
+            $serialized = '';
+            try {
+                $serialized = serialize($rate);
+            } catch (Exception $e) {
+                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
+                continue;
+            }
+            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
+            $storedmethods[$key] = $serialized;
+        }
+        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
+        $order->save_meta_data();
         return $return;
     }
 
     // Translate from the old to the new express format. LP 2025-05-26
-    public function express_format_shipping_methods ($return, $ratemap, $methodmap, $order) {
+    public function express_format_shipping_methods ($return, &$ratemap, $methodmap, $order) {
         $translated = array();
-        $currency = get_woocommerce_currency();
+        $currency = $order->get_currency();
 
         foreach ($return['shippingDetails']  as $m) {
             $m2 = array();
@@ -3060,48 +3080,60 @@ else:
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
 
-            $delivery_time = $rate->get_delivery_time();
+            // Each shipping method needs a list of options at this point.
+            $options = []; 
 
-            // Some data must be visible in the Order screen, so add meta data
+
+            // A rate can have a delivery time as a string in both Woo and Express
+            $delivery_time = $rate->get_delivery_time();
+            // And some rates have metadata, such as pickup locations (local_delivery).
             $meta = $rate->get_meta_data();
+            // We can also support descriptions, in the "meta" field
+            $description = $rate->get_description();
 
             // Allow shipping methods to add pickup points data IOK 2025-04-08
+            // This will create multiple pointers to the same shipping rate, which will be extended with a metadata field containing the pickup point.
+            // That is, this is *not* for local_pickup, but for legacy local pickup and other shipping methods that have the same rate price, but 
+            // allows the user to select a location. IOK 2025-08-15
             $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
             if ($pickup_points) {
+                $index = 0;
+                $pickup_point_table = [];
                 foreach($pickup_points as $point) {
-                    $ok = true;
+                    $index++; // Start at 1
                     $entry = [];
 
                     if ($delivery_time) $entry['estimatedDelivery'] = $delivery_time;
 
-                    // pickup uses the same price for all pickup points. LP 2025-05-26
-                    $entry['amount'] = array(
-                        'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
-                        'currency' => $currency // May want to use the orders' currency instead here, since it exists.
-                    );
+                    // This way of adding pickup points uses the same price for all pickup points. LP 2025-05-26
+                    $entry['amount'] = array( 'value' => round(100*$m['shippingCost']), 'currency' => $currency);
 
-                    if ($ok) {
-                        $meta = '';
-                        $adr = trim($point['address']);
-                        $postal = trim($point['postalCode']);
-                        $city = trim($point['city']);
-
-                        if ($adr) $meta .= "$adr, ";
-                        if ($postal) $meta .= "$postal ";
-                        if ($city) $meta .= $city;
-
-                        $meta = trim(apply_filters('woo_vipps_shipping_method_meta', trim($meta, " ,")));
-                        if ($meta) $entry['meta'] = $meta;
-
-                        // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
-                        // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
-                        $entry['id'] = $id . ":" . $point['id'];
-                        $entry['name'] = $point['name'];
-                        $entry['priority'] = $m['priority'];
-                        $options[] = $entry;
+                    $addr = [];
+                    foreach(['name', 'address', 'postalCode', 'city', 'country'] as $key) {
+                        $v = trim($point[$key]);
+                        if (!empty($v)) $addr[$key] = $v;
                     }
-                }
+                    $pickup_point_table["i".$index] = $addr;
 
+             
+                    // This is for display in the App only IOK 2025-08-15
+                    $description = join(", ", array_values($addr));
+                    $description = trim(apply_filters('woo_vipps_shipping_option_meta', trim($description, " ,"), $rate, $shipping_method, $order));
+                    if ($description) $entry['meta'] = $description;
+
+                    // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
+                    // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
+                    $entry['id'] = $id . ":" . $index;
+                    $entry['name'] = $point['name'];
+                    $entry['priority'] = $m['priority'];
+                    $options[] = $entry;
+                }
+                // If we have pickup points added, then store them in a table in the rate itself. We'll strip that value when finalizing the order. IOK 2025-08-15
+                if (!empty($pickup_point_table)) {
+                    error_log("We have points " . print_r($pickup_point_table, true));
+                   $rate->add_meta_data('_vipps_pickupPoints', $pickup_point_table);
+                   $ratemap[$id] = $rate;
+                }
                 $m2['type'] = 'PICKUP_POINT';
 
             } else { // normal / non-pickup shipping methods. LP 2025-05-26
@@ -3109,11 +3141,9 @@ else:
                 $option['priority'] = $m['priority'];
                 $option['name'] = $m['shippingMethod']; 
                 $option['id'] = $id;
-                $option['amount'] = [ 
-                    'value' => round(100*$m['shippingCost']), // Unlike eComm, this uses cents
-                    'currency' => $currency // May want to use the orders' currency instead here, since it exists.
-                ];
+                $option['amount'] = [ 'value' => round(100*$m['shippingCost']), 'currency' => $currency ];
                 if ($delivery_time) $option['estimatedDelivery'] = $delivery_time;
+                if ($description) $entry['meta'] = $description;
                 $options[] = $option;
             }
 
@@ -3140,7 +3170,7 @@ else:
 
 
     // Group certain static shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
-    public function express_group_shipping_methods($return, $ratemap, $methodmap, $order) {
+    public function express_group_shipping_methods($return, &$ratemap, $methodmap, $order) {
         $new_return = $return;
         $group = [ // these values will be updated in the loop. LP 2025-06-04
             'isDefault' => false,
