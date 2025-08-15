@@ -3100,6 +3100,10 @@ else:
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
 
+            if ($rate->method_id == 'pickup_location') {
+                $m2['type'] = 'PICKUP_POINT';
+            } 
+
             // Each shipping method needs a list of options at this point.
             $options = []; 
 
@@ -3199,8 +3203,10 @@ else:
             'options' => [],
             'priority' => 999,
         ];
+
         foreach ($return as $index => $method) {
-            $id = $method['options'][0]['id'];
+            if (count($method['options']) > 1) continue; // Don't regroup options here - we only want to coalesce single methods.
+            $id = preg_replace("!:.+$!", "",  $method['options'][0]['id']); // strip option index from 'augmented' methods.
             $rate = $ratemap[$id];
             $shipping_method = $methodmap[$id];
             $should_group = apply_filters('woo_vipps_express_should_group_shipping_method', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
