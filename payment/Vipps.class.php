@@ -3194,37 +3194,88 @@ else:
 
 
     // Group certain static shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
-    public function express_group_shipping_methods($return, &$ratemap, $methodmap, $order) {
-        $new_return = $return;
-        $group = [ // these values will be updated in the loop. LP 2025-06-04
-            'isDefault' => false,
-            'brand' => 'OTHER',
-            'type' => 'PICKUP_POINT',
-            'options' => [],
-            'priority' => 999,
-        ];
+    // $order not used, will keep for now so to have a similar signature to express_format_shipping_methods, also it might be used in future change of this method. LP 2025-08-18
+    public function express_group_shipping_methods($return, &$ratemap, $methodmap, $order) { 
+        if (!$return) return $return;
+error_log('LP return before grouping: ' . print_r($return, true));
 
-        foreach ($return as $index => $method) {
-            if (count($method['options']) > 1) continue; // Don't regroup options here - we only want to coalesce single methods.
-            $id = preg_replace("!:.+$!", "",  $method['options'][0]['id']); // strip option index from 'augmented' methods.
-            $rate = $ratemap[$id];
-            $shipping_method = $methodmap[$id];
-            $should_group = apply_filters('woo_vipps_express_should_group_shipping_method', $rate->method_id === 'pickup_location', $shipping_method, $rate); 
-            if ($should_group) {
-                $group['options'][] = $method['options'][0]; // these methods should only have one option at this point. LP 2025-06-04
-                if ($method['isDefault']) $group['isDefault'] = true;
-                $group['type'] = apply_filters('woo_vipps_express_group_shipping_method_type', 'PICKUP_POINT', $shipping_method, $rate);
-                $group['brand'] = apply_filters('woo_vipps_express_group_shipping_method_brand', 'OTHER', $shipping_method, $rate);
-                if ($method['priority'] < $group['priority']) $group['priority'] = $method['priority'];
-                unset($new_return[$index]);
+        // $return[] = [ // FIXME: DELETE PLS. add method with more options already.
+        //     'type' => 'test',
+// 'priority' => 80,
+// 'brand' => 'testbrand', 
+        //     'options' => [
+        //         [
+        //             'priority' => 10,
+        //             'name' => 'testoption1',
+        //             'id' => 'testoption1id',
+        //             'amount' => ['value' => 9900, 'currency' => 'NOK'],
+        //         ],
+        //         [
+        //             'priority' => 6,
+        //             'name' => 'testoption2',
+        //             'id' => 'testoption2id',
+        //             'amount' => ['value' => 9900, 'currency' => 'NOK'],
+        //         ],
+        //         [
+        //             'priority' => 999,
+        //             'name' => 'testoption3',
+        //             'id' => 'testoption3id',
+        //             'amount' => ['value' => 9900, 'currency' => 'NOK'],
+        //         ],
+        //     ],
+        // ];
+
+        $new_return = [];
+        $maybe_groupable_methods = $return;
+        while (!empty($maybe_groupable_methods)) {
+            $first = array_shift($maybe_groupable_methods);
+            if (count($first['options']) > 1) { // Don't regroup options here - we only want to coalesce single methods. IOK. FIXME: please review if this is now correct on new grouping logic. LP 2025-08-18
+                $new_return[] = $first;
+                continue; 
             }
+
+            $first_id = preg_replace("!:.+$!", "",  $first['options'][0]['id']); // strip option index from 'augmented' methods.
+            $first_rate = $ratemap[$first_id];
+            $first_method = $methodmap[$first_id];
+
+            $rest = [];
+
+
+            // this new group will get its default values from the first method, so copy it. 
+            // 'options' subarray will be appended to if groupable method is found.
+            // other keys will update value if conditions are found, like a lower priority or type string. LP 2025-08-18
+            $current_group = $first; 
+
+            foreach ($maybe_groupable_methods as $candidate) {
+                $candidate_id = preg_replace("!:.+$!", "",  $candidate['options'][0]['id']); // strip option index from 'augmented' methods.
+                $candidate_rate = $ratemap[$candidate_id];
+                $candidate_method = $methodmap[$candidate_id];
+
+                $is_pickup = $first_rate->method_id === $candidate_rate->method_id && $first_rate->method_id === 'pickup_location'; // default condition: group pickup locations. LP 2025-08-18
+// $test_is_flat_rate = $first_rate->method_id === $candidate_rate->method_id && $first_rate->method_id === 'flat_rate'; // FIXME: DELETE PLZ
+// $is_pickup = $is_pickup || $test_is_flat_rate; // FIXME: DELETE PLS
+                $should_group = apply_filters('woo_vipps_express_should_group_shipping_methods', $is_pickup, $first_rate, $first_method, $candidate_rate, $candidate_method); 
+
+                if ($should_group) {
+                    $current_group['options'][] = $candidate['options'][0];
+
+                    if ($candidate['isDefault']) $current_group['isDefault'] = true;
+                    $current_group['type'] = apply_filters('woo_vipps_express_group_shipping_method_type', 'PICKUP_POINT', $first_rate, $first_method, $candidate_rate, $candidate_method);
+                    $current_group['brand'] = apply_filters('woo_vipps_express_group_shipping_method_brand', 'OTHER', $first_rate, $first_method, $candidate_rate, $candidate_method);    
+                    if ($candidate['priority'] < $current_group['priority']) $current_group['priority'] = $candidate['priority'];
+
+                } else {
+                    $rest[] = $candidate;
+                }
+
+            }
+            $new_return[] = $current_group;
+
+            // Start over again with the ones who weren't grouped to the first method of the list. LP 2025-08-18
+            $maybe_groupable_methods = $rest;
         }
 
-        // FIXME
-        if (!empty($group['options'])) {
-            $new_return[] = $group;
-        }
-        $new_return = array_values($new_return); // reindex array cus php json encode. LP 2025-06-04
+error_log('LP new_return after grouping: ' . print_r($new_return, true));
         return $new_return;
     }
 
