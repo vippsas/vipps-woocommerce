@@ -3197,7 +3197,6 @@ else:
     // $order not used, will keep for now so to have a similar signature to express_format_shipping_methods, also it might be used in future change of this method. LP 2025-08-18
     public function express_group_shipping_methods($methods, &$ratemap, $methodmap, $order) { 
         if (!$methods) return $methods;
-error_log('LP return before grouping: ' . print_r($methods, true));
         $grouped = [];
         $maybe_groupable_methods = $methods;
         while (!empty($maybe_groupable_methods)) {
@@ -3217,7 +3216,6 @@ error_log('LP return before grouping: ' . print_r($methods, true));
                 $should_group = apply_filters('woo_vipps_express_should_group_shipping_methods', $is_pickup, $first_rate, $first_method, $candidate_rate, $candidate_method); 
 
                 if ($should_group) {
-error_log("Should group " . print_r($first, true) . " with " . print_r($candidate, true));
                     $first_options = $first['options'];
                     $second_options = $candidate['options'];
 
@@ -3238,7 +3236,6 @@ error_log("Should group " . print_r($first, true) . " with " . print_r($candidat
             $maybe_groupable_methods = $rest;
         }
 
-error_log('LP new_return after grouping: ' . print_r($grouped, true));
         return $grouped;
     }
 
