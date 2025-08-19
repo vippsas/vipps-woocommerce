@@ -3193,90 +3193,53 @@ else:
     }
 
 
-    // Group certain static shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
+    // Group certain shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
     // $order not used, will keep for now so to have a similar signature to express_format_shipping_methods, also it might be used in future change of this method. LP 2025-08-18
-    public function express_group_shipping_methods($return, &$ratemap, $methodmap, $order) { 
-        if (!$return) return $return;
-error_log('LP return before grouping: ' . print_r($return, true));
-
-        // $return[] = [ // FIXME: DELETE PLS. add method with more options already.
-        //     'type' => 'test',
-// 'priority' => 80,
-// 'brand' => 'testbrand', 
-        //     'options' => [
-        //         [
-        //             'priority' => 10,
-        //             'name' => 'testoption1',
-        //             'id' => 'testoption1id',
-        //             'amount' => ['value' => 9900, 'currency' => 'NOK'],
-        //         ],
-        //         [
-        //             'priority' => 6,
-        //             'name' => 'testoption2',
-        //             'id' => 'testoption2id',
-        //             'amount' => ['value' => 9900, 'currency' => 'NOK'],
-        //         ],
-        //         [
-        //             'priority' => 999,
-        //             'name' => 'testoption3',
-        //             'id' => 'testoption3id',
-        //             'amount' => ['value' => 9900, 'currency' => 'NOK'],
-        //         ],
-        //     ],
-        // ];
-
-        $new_return = [];
-        $maybe_groupable_methods = $return;
+    public function express_group_shipping_methods($methods, &$ratemap, $methodmap, $order) { 
+        if (!$methods) return $methods;
+error_log('LP return before grouping: ' . print_r($methods, true));
+        $grouped = [];
+        $maybe_groupable_methods = $methods;
         while (!empty($maybe_groupable_methods)) {
             $first = array_shift($maybe_groupable_methods);
-            if (count($first['options']) > 1) { // Don't regroup options here - we only want to coalesce single methods. IOK. FIXME: please review if this is now correct on new grouping logic. LP 2025-08-18
-                $new_return[] = $first;
-                continue; 
-            }
-
             $first_id = preg_replace("!:.+$!", "",  $first['options'][0]['id']); // strip option index from 'augmented' methods.
             $first_rate = $ratemap[$first_id];
             $first_method = $methodmap[$first_id];
 
             $rest = [];
-
-
-            // this new group will get its default values from the first method, so copy it. 
-            // 'options' subarray will be appended to if groupable method is found.
-            // other keys will update value if conditions are found, like a lower priority or type string. LP 2025-08-18
-            $current_group = $first; 
-
             foreach ($maybe_groupable_methods as $candidate) {
                 $candidate_id = preg_replace("!:.+$!", "",  $candidate['options'][0]['id']); // strip option index from 'augmented' methods.
                 $candidate_rate = $ratemap[$candidate_id];
                 $candidate_method = $methodmap[$candidate_id];
 
-                $is_pickup = $first_rate->method_id === $candidate_rate->method_id && $first_rate->method_id === 'pickup_location'; // default condition: group pickup locations. LP 2025-08-18
-// $test_is_flat_rate = $first_rate->method_id === $candidate_rate->method_id && $first_rate->method_id === 'flat_rate'; // FIXME: DELETE PLZ
-// $is_pickup = $is_pickup || $test_is_flat_rate; // FIXME: DELETE PLS
+                // By default, we will group all rates that are pickup_location-s. LP 2025-08-18
+                $is_pickup = $first_rate->method_id === $candidate_rate->method_id && $first_rate->method_id === 'pickup_location';
                 $should_group = apply_filters('woo_vipps_express_should_group_shipping_methods', $is_pickup, $first_rate, $first_method, $candidate_rate, $candidate_method); 
 
                 if ($should_group) {
-                    $current_group['options'][] = $candidate['options'][0];
+error_log("Should group " . print_r($first, true) . " with " . print_r($candidate, true));
+                    $first_options = $first['options'];
+                    $second_options = $candidate['options'];
 
-                    if ($candidate['isDefault']) $current_group['isDefault'] = true;
-                    $current_group['type'] = apply_filters('woo_vipps_express_group_shipping_method_type', 'PICKUP_POINT', $first_rate, $first_method, $candidate_rate, $candidate_method);
-                    $current_group['brand'] = apply_filters('woo_vipps_express_group_shipping_method_brand', 'OTHER', $first_rate, $first_method, $candidate_rate, $candidate_method);    
-                    if ($candidate['priority'] < $current_group['priority']) $current_group['priority'] = $candidate['priority'];
+                    $first['options'] = array_merge($first_options, $second_options);
+
+                    // Reset default-ness and priority to the highest value from the merged methods.
+                    if ($candidate['isDefault']) $first['isDefault'] = true;
+                    if ($candidate['priority'] < $first['priority']) $first['priority'] = $candidate['priority'];
 
                 } else {
                     $rest[] = $candidate;
                 }
 
             }
-            $new_return[] = $current_group;
+            $grouped[] = $first;
 
             // Start over again with the ones who weren't grouped to the first method of the list. LP 2025-08-18
             $maybe_groupable_methods = $rest;
         }
 
-error_log('LP new_return after grouping: ' . print_r($new_return, true));
-        return $new_return;
+error_log('LP new_return after grouping: ' . print_r($grouped, true));
+        return $grouped;
     }
 
 
