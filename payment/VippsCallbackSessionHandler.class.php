@@ -101,13 +101,10 @@ class VippsCallbackSessionHandler extends WC_Session_Handler {
         if (empty($sessiondata)) return false;
         list($customer_id, $session_expiration, $session_expiring, $cookie_hash) = $sessiondata;
         if (empty($customer_id)) return false;
-        // Validate hash.
-        $to_hash = $customer_id . '|' . $session_expiration;
-        $hash    = hash_hmac( 'md5', $to_hash, wp_hash( $to_hash ) );
-        if ( empty( $cookie_hash ) || ! hash_equals( $hash, $cookie_hash ) ) {
-            return false;
-        }
         $this->sessiondata = $sessiondata;
+        // If passed as an actual cookie, we would verify the cookie_hash here, but since this is
+        // stored in the order object to which the user has no access, we don't. 
+        // (Change triggered by change of logic here for Woo.) IOK 2025-08-26
         return array($customer_id, $session_expiration, $session_expiring, $cookie_hash); 
     }
 
