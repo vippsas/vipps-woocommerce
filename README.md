@@ -71,7 +71,7 @@ Shareable links and QR codes can be generated from the Vipps tab on the product 
 
 Express checkout buttons is only available with Vipps. Coming in 2025 for MobilePay.
 
-## Single Payments
+## Single payments
 
 When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the standard WooCommerce checkout.
 There is no need to go via a third party payment method.
@@ -119,7 +119,7 @@ Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with min
 
 ![Enable Checkout](./payment/docs/images/turn-on-checkout.png)
 
-## Frequently Asked Questions
+## Frequently asked questions
 
 ### In which countries can I use Vipps MobilePay?
 
