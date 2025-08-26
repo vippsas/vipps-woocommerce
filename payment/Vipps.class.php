@@ -1716,7 +1716,7 @@ else:
         try {
             $details = $gw->get_payment_details($order);
 
-            if ($details && $order->get_meta('_vipps_api') == 'epayment') {
+            if ($details) {
                try {
                    $details['epaymentLog'] =  $gw->api->epayment_get_payment_log ($order);
                } catch (Exception $e) {
@@ -1737,7 +1737,8 @@ else:
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
         if (isset($details['paymentMethod'])) {
-            print __("Payment method", 'woo-vipps') . ":" . $details['paymentMethod'] . "<br>";
+            $method = (is_array($details['paymentMethod'])) ? $details['paymentMethod']['type'] : $method;
+            print __("Payment method", 'woo-vipps') . ":" . $method . "<br>";
         } else {
             print __("Payment method", 'woo-vipps') . ": Vipps <br>";
         }
@@ -1795,20 +1796,6 @@ else:
             print __('Last Name', 'woo-vipps') . ": " . htmlspecialchars(@$us['lastName']) . "<br>";
             print __('Mobile Number', 'woo-vipps') . ": " . htmlspecialchars(@$us['mobileNumber']) . "<br>";
             print __('Email', 'woo-vipps') . ": " . htmlspecialchars(@$us['email']) . "<br>";
-        }
-        if (!empty(@$details['transactionLogHistory'])) {
-            print "<h3>" . __('Transaction Log', 'woo-vipps') . "</h3>";
-            $i = count($details['transactionLogHistory'])+1; 
-            foreach ($details['transactionLogHistory'] as $td) {
-                print "<br>";
-                print __('Operation','woo-vipps') . ": " . htmlspecialchars(@$td['operation']) . "<br>";
-                print __('Amount','woo-vipps') . ": " . htmlspecialchars(@$td['amount']) . "<br>";
-                print __('Success','woo-vipps') . ": " . @$td['operationSuccess'] . "<br>";
-                print __('Timestamp','woo-vipps') . ": " . htmlspecialchars(@$td['timeStamp']) . "<br>";
-                print __('Transaction text','woo-vipps') . ": " . htmlspecialchars(@$td['transactionText']) . "<br>";
-                print __('Transaction ID','woo-vipps') . ": " . htmlspecialchars(@$td['transactionId']) . "<br>";
-                print __('Request ID','woo-vipps') . ": " . htmlspecialchars(@$td['requestId']) . "<br>";
-            }
         }
         if (!empty(@$details['epaymentLog']) && is_array($details['epaymentLog'])) {
             print "<h3>" . __('Transaction Log', 'woo-vipps') . "</h3>";
@@ -2117,6 +2104,35 @@ else:
             $button .= '</div>';
             return $stripped . $button . "</li>";
         }, 10, 3);
+
+        // If local pickup has been added to express/checkout by filters, add this to emails/confirmation pages. IOK 2025-08-15
+        add_filter('woocommerce_order_shipping_to_display', function($shipping, $order, $tax_display) {
+                if (!is_a($order, 'WC_Order')) return $shipping;
+                if ($order->get_payment_method() != 'vipps') return $shipping;
+                $shipping_method = current( $order->get_shipping_methods() );
+
+                if (empty($shipping_method))  return $shipping;
+
+                // Handled by Woo Central IOK 2025-08-15
+                if ('pickup_location' == $shipping_method->get_method_id()) {
+                    return $shipping;
+                }
+
+
+                $details         = trim($shipping_method->get_meta( 'pickup_details' ));
+                $location        = trim($shipping_method->get_meta( 'pickup_location' ));
+                $address         = trim($shipping_method->get_meta( 'pickup_address' ));
+
+                if (!empty($location) || !empty($address)) {
+                   $shipping .= "<br><strong>" .  __( 'Pickup location', 'woocommerce' ) . ":</strong>";
+                }
+                if (!empty($location))  $shipping .= esc_html($location);
+                if (!empty($address)) $shipping .= "<br>" . esc_html($address);
+                if (!empty($details)) $shipping .= "<br><small>" . esc_html($details) . "</small>";
+
+                return $shipping;
+            }, 10, 3);
+
     }
 
     public function get_payment_method_name() {
@@ -2193,7 +2209,7 @@ else:
             if ($order->get_payment_method() != 'vipps') return $cancel;
             // For Vipps, all unpaid orders must be pending.
             if ($order->get_status() != 'pending') return $cancel;
-            // We do need to check the order status, because this could be called very frequently on some sites.
+            // We do need to check the order status, because this could be called very soon after order creation on some sites.
             try {
               $details = $this->gateway()->get_payment_details($order);
               if ($details && isset($details['status']) && $details['status'] == 'CANCEL') {
@@ -2360,7 +2376,7 @@ else:
     public function vipps_callback() {
         $this->log("Callback received");
 
-	Vipps::nocache();
+      	Vipps::nocache();
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
@@ -2409,7 +2425,7 @@ else:
         // order for it, normalize the callback data and then handle the callback. IOK 2023-12-21
         if ($iswebhook) {
             // The webhook payloads spell the msn differently. IOK 2023-12-21
-            $msn = $result['msn'] ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
+            $msn = ($result['msn'] ?? '') ? $result['msn'] : ($result['merchantSerialNumber'] ?? '');
             if ($msn) {
                 $result['msn'] = $msn;
                 $result['merchantSerialNumber'] = $msn;
@@ -2466,6 +2482,11 @@ else:
             // This will run for all events, not just the one this handler handles IOK 2023-12-21
             do_action('woo_vipps_webhook_event', $result, $order);
 
+            // We are not interested in Checkout orders - they have their own callback systems
+            if ($order && $order->get_meta('_vipps_checkout')) {
+                $this->log(sprintf(__('Received webhook callback for Checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
+                return;
+            }
             // Now we will handle everything that is a callback event. IOK 2023-12-21
             if (!in_array($event, $callback_events)) {
                 return;
@@ -2476,12 +2497,8 @@ else:
                 $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
                 return; 
             }
-            // We are not interested in Checkout or Express orders - they have their own callback systems
-            if ($order->get_meta('_vipps_checkout') or $order->get_meta('_vipps_express_checkout')) {
-                $this->log(sprintf(__('Received webhook callback for checkout/express checkout order %1$d - ignoring since full callback should come', 'woo-vipps'), $order->get_id()), 'debug');
-                return;
-            }
             do_action('woo_vipps_callback_webhook', $result);
+
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
             if ($ok) {
                 // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
@@ -2491,8 +2508,7 @@ else:
             exit();
         }
 
-        // Non-webhook path follows IOK 2023-12-20
-
+        // This branch is only for non-webhook callbacks; which currently means Checkout only. IOK 2025-08-13
         $orderid = intval(@$_REQUEST['id']);
 
         if (!$orderid) {
@@ -2511,16 +2527,8 @@ else:
             $this->log("Wrong authtoken on Vipps payment details callback", 'error');
             exit();
         }
-        if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
-            $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), $this->get_payment_method_name()), 'warning');
-            exit();
-        }
 
-        if ($ischeckout) {
-             do_action('woo_vipps_callback_checkout', $result);
-        } else {
-             do_action('woo_vipps_callback', $result);
-        }
+        do_action('woo_vipps_callback_checkout', $result);
 
         $gw = $this->gateway();
 
@@ -2692,40 +2700,21 @@ else:
     // the Express Checkout static shipping feature
     // This is neccessary because WC()->customer->set_shipping_address_to_base() only sets country and state.
     // IOK 2020-03-18
-    public function get_static_shipping_address_data () {
-         // This is the format used by the Vipps callback, we are going to mimic this.
-        // IOK 2025-05-08 now also using the format used by Checkout in addition to Express. -- streetAddress, postalCode, region
-         $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"H"); 
-
-         $addressok=false;
-         if (WC()->customer) {
-           $address = WC()->customer->get_shipping();
-           if (empty(@$address['country']) || empty(@$address['city']) || empty(@$address['postcode'])) $address = WC()->customer->get_billing();
-           if (@$address['country'] && @$address['city'] && @$address['postcode']) {
-              $addressok = true;
-              $defaultdata['country'] = $address['country'];
-              $defaultdata['region'] = $address['city'];
-              $defaultdata['postalCode'] = $address['postcode'];
-              $defaultdata['postCode'] = $address['postcode'];
-              $defaultdata['streetAddress'] = @$address['address_1'];
-              $defaultdata['addressLine1'] = @$address['address_1'];
-              $defaultdata['addressLine2'] = @$address['address_2'];
-           }
-         } 
-         if (!$addressok) {
-             $countries=new WC_Countries();
-             $defaultdata['country'] = $countries->get_base_country();
-             $defaultdata['city'] = $countries->get_base_city(); 
-             $defaultdata['region'] = $countries->get_base_city(); 
-             $defaultdata['postalCode'] = $countries->get_base_postcode();
-             $defaultdata['postCode'] =   $countries->get_base_postcode();
-             $defaultdata['streetAddress'] = $countries->get_base_address();
-             $defaultdata['addressLine1'] = $countries->get_base_address();
-             // We do not use addressLine2 in default addreses, since it is not used for shipping calculations. IOK 2024-05-21
-             $addressok=true;
-         }
-         return $defaultdata;
-    }
+   public function get_static_shipping_address_data () {
+       // This is the format used by the Vipps callback, we are going to mimic this.
+       // IOK 2025-05-08 now also using the format used by Checkout in addition to Express. -- streetAddress, postalCode, region
+       $defaultdata = array('addressId'=>0, "addressLine1"=>"", "addressLine2"=>"", "streetAddress"=>"", "country"=>"NO", "city"=>"", "postalCode"=>"", "postCode"=>"", "addressType"=>"Home"); 
+       // IOK 2025-08-14 previously this used the customers' address if logged in or available, but that I think was a mistake - since this is intended to be static, ensure we use the base address only.
+       $countries=new WC_Countries();
+       $defaultdata['country'] = $countries->get_base_country();
+       $defaultdata['city'] = $countries->get_base_city(); 
+       $defaultdata['region'] = $countries->get_base_city(); 
+       $defaultdata['postalCode'] = $countries->get_base_postcode();
+       $defaultdata['postCode'] =   $countries->get_base_postcode();
+       $defaultdata['streetAddress'] = $countries->get_base_address();
+       $defaultdata['addressLine1'] = $countries->get_base_address();
+       return $defaultdata;
+   }
 
     // Getting shipping methods/costs for a given order to Vipps for express checkout
     public function vipps_shipping_details_callback() {
@@ -2748,12 +2737,22 @@ else:
            $this->log($raw_post);
            exit();
         }
-        $callback = sanitize_text_field(@$_REQUEST['callback']);
-        do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback);
 
-        $data = array_reverse(explode("/",$callback));
-        $vippsorderid = @$data[1]; // Second element - callback is /v2/payments/{orderId}/shippingDetails
-        $orderid = intval(@$_REQUEST['id']);
+        // IOK 2025-08-15 Express Checkout (now) passes the reference/order-id in the data, but Checkout passes it in the URL, which we
+        // capture in a callback= parameter added at the end. Format is
+        //  '/v3/checkout/woodigitalt4780/shippingDetails'
+        $vippsorderid = "";
+        $callback = sanitize_text_field($_REQUEST['callback'] ?? "");
+        do_action('woo_vipps_shipping_details_callback', $result,$raw_post,$callback); // This is for debugging. IOK 2025-08-15
+
+        if ($callback) {
+            $data = array_reverse(explode("/",$callback));
+            $vippsorderid = !empty($data) ? ($data[1] ?? "") : ""; // Second element - callback is  /v3/checkout/woodigitalt4780/shippingDetails
+        } elseif (isset($result['reference'])) {
+            $vippsorderid = $result['reference'];
+        }
+        
+        $orderid = intval($_REQUEST['id'] ?? 0);
         if (!$orderid) {
             status_header(404, "Unknown order");
             print "Unknown order";
@@ -2765,19 +2764,27 @@ else:
 
         $order = wc_get_order($orderid);
         if (!$order) {
+            status_header(404, "Unknown order");
+            print "Unknown order";
             $this->log(__('Could not find Woo order with id:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
         if ($order->get_payment_method() != 'vipps') {
+            status_header(400, "Invalid order");
+            print "Invalid order";
             $this->log(__('Invalid order for shipping callback:', 'woo-vipps') . " " . $orderid, 'error');
             exit();
         }
         // a small bit of security
         if (!$order->get_meta('_vipps_authtoken') || (!wp_check_password($_REQUEST['tk'], $order->get_meta('_vipps_authtoken')))) {
+            status_header(403, "Wrong auth");
+            print "Wrong auth";
             $this->log("Wrong authtoken on shipping details callback", 'error');
             exit();
         }
         if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
+            status_header(400, "Invalid order id");
+            print "Invalid order id";
             $this->log(sprintf(__("Wrong %1\$s Orderid on shipping details callback", 'woo-vipps'), $this->get_payment_method_name()), 'warning');
             exit();
         }
@@ -2788,20 +2795,23 @@ else:
         // Moved from "vipps_shipping_details_callback_handler" because we need it before restoring sessions. IOK 2025-05-06
         $ischeckout = $order->get_meta('_vipps_checkout');
 
-        if ($ischeckout) {
-            // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
-            // here we will add support for PickupLocations. Also called for static shipping.
-            $this->checkout_load_shipping_methods($order, $result);
-        }
-
         $this->callback_restore_session($orderid);       
-        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
- 
-        # Checkout does not have an addressID here, and should not be 'wrapped'
-        if (!isset($return['addressId'])) {
-           $return = $return['shippingDetails'];
-        }
 
+        // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
+        // here we will add support for PickupLocations. Also called for static shipping.
+        // IOK 2025-08-14 now also supported for Express Checkout
+        $this->load_extra_shipping_methods($order, $result, $ischeckout);
+
+        $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
+
+        // Express checkout wants the data wrapped in a object with a 'groups' attribute, Checkout wants thing unwrapped.
+        // Dispatch on the known type. IOK 2025-08-15
+        if ($ischeckout) {
+           $return = $return['shippingDetails'];
+        } else {
+            // Note that this is of course different from both Checkout and static shipping.
+           $return = [ "groups" => $return ];
+        }
 
         $json = json_encode($return);
 
@@ -2811,8 +2821,13 @@ else:
         if (is_a(WC()->session, 'WC_Session_Handler')) WC()->session->save_data();
         exit();
     }
-   
+  
+    // This function calculates and returns one of two possible JSON representations to Vipps MobilePay, one for Express and one for Checkout.
+    // First, an intermediate representation is created, based on the original Express API. This is kept because users may still have filters
+    // that expects this representation. Later, these are transformed and augmented for the newer APIs.  IOK 2025-08-14
+    // Also used for Static Shipping for both representations.  IOK 2025-08-14
     public function vipps_shipping_details_callback_handler($order, $vippsdata,$vippsorderid, $ischeckout) {
+        // This filter is used in sub-functions to keep track of what we are calculating for, without having to set globals or pass arguments. IOK 2025-08-14
         if ($ischeckout) add_filter('woo_vipps_is_vipps_checkout', '__return_true');
 
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
@@ -2837,10 +2852,9 @@ else:
         if ($addressline1 == $addressline2) $addressline2 = '';
         if (!$addressline2) $addressline2 = '';
 
-        $vippscountry = $vippsdata['country'];
+        $country = $vippsdata['country'];
         $city = $vippsdata['city'];
         $postcode= $vippsdata['postCode'];
-        $country = $this->country_to_code($vippscountry);
 
         if (false && $ischeckout && preg_match("!Sofienberggata 12!", $addressline1)) {
             // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
@@ -2911,10 +2925,10 @@ else:
             ), 'debug');
 
         }
-
        
         // Add shipping tax rates to the *order* so we can calculate this correctly when using Vipps Checkouts 
         // 'dynamic pricing' 2023-01-26 
+        // Which may be deprecated, but anyway, for future use IOK 2025-08-14
         $taxrate = 0;
         if (is_array($shipping_tax_rates) && !empty($shipping_tax_rates)) {
           $taxrate = current($shipping_tax_rates)['rate'];
@@ -2926,11 +2940,12 @@ else:
             $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
             if (!empty($all_chosen)) $chosen= $all_chosen[0];
         }
-
         // Merchant is using the old 'woo_vipps_shipping_methods' filter, and hasn't chosen to disable it. Use legacy methd.
+        // IOK 2025-08-14 I think we should add a deprecation notice to this now. It really should not be used anymore. FIXME
         if (has_action('woo_vipps_shipping_methods') &&  $this->gateway()->get_option('newshippingcallback') != 'new') {
             return $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $acart);
         }
+
         // Default 'priority' is based on cost, so sort this thing
         uasort($shipping_methods, function($a, $b) { 
                 $acost = $a->get_cost() ?: 0;
@@ -2951,8 +2966,7 @@ else:
             $method['rate'] = $rate;
             $methods[$key]= $method;
         }
-        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order);
-        if ($chosen && !isset($methods[$chosen]))  {
+        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order); if ($chosen && !isset($methods[$chosen]))  {
             $chosen = null; // Actually that isn't available
             $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->get_payment_method_name()));
         }
@@ -2988,15 +3002,15 @@ else:
         }
 
         $vippsmethods = array();
-        $storedmethods = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-        if (!$storedmethods) $storedmethods= array();
 
         // Just a utility from shippingMethodIds to the non-serialized rates, and from the same to the non-serialized 
         // shipping methods - the last stores settings, the first store metadata
+        // The ratemap will be used to store a table in the order from an arbitrary ID key to the calculated shipping rate IOK 2025-08-15
         $ratemap = array();
         $methodmap = array();
 
         // We need access to the extended settings of the shipping methods.
+        // This is for the 'new' local pickup feature for Woo. IOK 2025-08-14
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
         $methods_classes['pickup_location'] = 'Automattic\WooCommerce\Blocks\Shipping\PickupLocation'; // Loaded using the "load" hook, after the registered methods, so we need to add it specially.
 
@@ -3010,18 +3024,15 @@ else:
            $tax  = $rate->get_shipping_tax() ?: 0;
            $cost = $rate->get_cost() ?: 0;
            $label = $rate->get_label();
-           // We need to store the WC_Shipping_Rate object with all its meta data in the database until return from Vipps. IOK 2020-02-17
-           $serialized = '';
-           try {
-               $serialized = serialize($rate);
-           } catch (Exception $e) {
-               $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
-               continue;
-           }
 
-           // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
-           $key = '$' . substr($rate->get_method_id(),0,58) . '$' . sha1($serialized);
+           // Actually, we probably *can* use the method id, because other addresses are irellevant. But still, add a random factor 
+           $methodid = $rate->get_method_id();
+           $rand = md5($methodid . bin2hex(random_bytes(32))); // Random enough, 32 chars
+           // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
+           // Reserve 8 chars to contain a : and an option index for Express Checkout IOK 2025-08-15
+           // IOK 2025-08-14 "new" method is the current system; the legacy system has shipping method ids with different naming conventions. Again, to be deprecated. FIXME.
+           $key = '$' . substr($methodid,0,58) . '$' . $rand;
            $vippsmethod = array();
            $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
@@ -3029,25 +3040,203 @@ else:
            $vippsmethod['shippingMethod'] = $rate->get_label();
            $vippsmethod['shippingMethodId'] = $key;
            $vippsmethods[]=$vippsmethod;
-           // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
-           $storedmethods[$key] = $serialized;
 
            // Metadata and settings stored for later use for Vipps Checkout
+           // and express checkout - basically, for each *key* have the corresponding object. IOK 2025-08-15
+           // In the end, this data will be serialized and stored in the Order, and used in the gateways method set_order_shipping_details to
+           // finalize the order. IOK 2025-08-15
            $ratemap[$key]=$rate;
            $methodmap[$key]=$shipping_method;
         }
-        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
-        $order->save();
- 
+
+        // This then is the old Express Checkout format, which we have exposed in filters. IOK 2025-08-14 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
         $return = apply_filters('woo_vipps_vipps_formatted_shipping_methods', $return); // Mostly for debugging
 
         // IOK 2021-11-16 Vipps Checkout uses a slightly different syntax and format.
+        // IOK 2025-08-15 and new Express yet another slightly different format.
+        // IOK 2025-08-15 pass the ratemap as a reference, so transforms can update them
         if ($ischeckout) {
             $return = VippsCheckout::instance()->format_shipping_methods($return, $ratemap, $methodmap, $order);
+        } else { // New express format. LP 2025-05-26
+            $return = $this->express_format_shipping_methods($return, $ratemap, $methodmap, $order);
+            $return = $this->express_group_shipping_methods($return, $ratemap, $methodmap, $order);
+            $return = apply_filters('woo_vipps_express_json_shipping_methods', $return, $order); // wat
         }
 
+        // We need to store the WC_Shipping_Rate objects with all its meta data in the database until return from Vipps. IOK 2020-02-17
+        $storedmethods = array(); 
+        foreach($ratemap as $key => $rate) {
+            $serialized = '';
+            try {
+                $serialized = serialize($rate);
+            } catch (Exception $e) {
+                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
+                continue;
+            }
+            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
+            $storedmethods[$key] = $serialized;
+        }
+        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
+        $order->save_meta_data();
         return $return;
+    }
+
+    // Translate from the old to the new express format. LP 2025-05-26
+    public function express_format_shipping_methods ($return, &$ratemap, $methodmap, $order) {
+        $translated = array();
+        $currency = $order->get_currency();
+
+        foreach ($return['shippingDetails']  as $m) {
+            $m2 = array();
+            $options = [];
+
+            $m2['isDefault'] = ($m['isDefault']=='Y') ? true : false; 
+            $m2['priority'] = $m['priority'];
+            $m2['brand'] = 'OTHER'; // the default. This is replaced for certain brands. LP 2025-05-26
+            $m2['type'] = 'OTHER'; // default, replaced for certain types. LP 2025-05-26
+
+            $id = $m['shippingMethodId'];
+            $rate = $ratemap[$id];
+            $shipping_method = $methodmap[$id];
+
+            if ($rate->method_id == 'pickup_location') {
+                $m2['type'] = 'PICKUP_POINT';
+            } 
+
+            // Each shipping method needs a list of options at this point.
+            $options = []; 
+
+
+            // A rate can have a delivery time as a string in both Woo and Express
+            $delivery_time = $rate->get_delivery_time();
+            // And some rates have metadata, such as pickup locations (local_delivery).
+            $meta = $rate->get_meta_data();
+            // We can also support descriptions, in the "meta" field
+            $description = $rate->get_description();
+
+            // Allow shipping methods to add pickup points data IOK 2025-04-08
+            // This will create multiple pointers to the same shipping rate, which will be extended with a metadata field containing the pickup point.
+            // That is, this is *not* for local_pickup, but for legacy local pickup and other shipping methods that have the same rate price, but 
+            // allows the user to select a location. IOK 2025-08-15
+            $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
+            if ($pickup_points) {
+                $index = 0;
+                $pickup_point_table = [];
+                foreach($pickup_points as $point) {
+                    $index++; // Start at 1
+                    $entry = [];
+
+                    if ($delivery_time) $entry['estimatedDelivery'] = $delivery_time;
+
+                    // This way of adding pickup points uses the same price for all pickup points. LP 2025-05-26
+                    $entry['amount'] = array( 'value' => round(100*$m['shippingCost']), 'currency' => $currency);
+
+                    $addr = [];
+                    foreach(['name', 'address', 'postalCode', 'city', 'country'] as $key) {
+                        $v = trim($point[$key]);
+                        if (!empty($v)) $addr[$key] = $v;
+                    }
+                    // To avoid confusion, force the keys to be strings. IOK 2025-08-15
+                    $pickup_point_table["i".$index] = $addr;
+
+             
+                    // This is for display in the App only IOK 2025-08-15
+                    $description = join(", ", array_values($addr));
+                    $description = trim(apply_filters('woo_vipps_shipping_option_meta', trim($description, " ,"), $rate, $shipping_method, $order));
+                    if ($description) $entry['meta'] = $description;
+
+                    // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
+                    // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
+                    $entry['id'] = $id . ":" . $index;
+                    $entry['name'] = $point['name'];
+                    $entry['priority'] = $m['priority'];
+                    $options[] = $entry;
+                }
+                // If we have pickup points added, then store them in a table in the rate itself. We'll strip that value when finalizing the order. IOK 2025-08-15
+                if (!empty($pickup_point_table)) {
+                   $rate->add_meta_data('_vipps_pickupPoints', $pickup_point_table);
+                   $ratemap[$id] = $rate;
+                }
+                $m2['type'] = 'PICKUP_POINT';
+
+            } else { // normal / non-pickup shipping methods. LP 2025-05-26
+                $option = [];
+                $option['priority'] = $m['priority'];
+                $option['name'] = $m['shippingMethod']; 
+                $option['id'] = $id;
+                $option['amount'] = [ 'value' => round(100*$m['shippingCost']), 'currency' => $currency ];
+                if ($delivery_time) $option['estimatedDelivery'] = $delivery_time;
+                if ($description) $entry['meta'] = $description;
+                $options[] = $option;
+            }
+
+            if (isset($meta['brand'])) {
+                $m2['brand'] = $meta['brand'];
+            } else {
+                // specialcase some known methods so they get brands, and put the label into the description
+                if ($shipping_method && is_a($shipping_method, 'WC_Shipping_Method') && get_class($shipping_method) == 'WC_Shipping_Method_Bring_Pro') {
+                    $m2['brand'] = "POSTEN";
+                }
+                $m2['brand'] = apply_filters('woo_vipps_shipping_method_brand', $m2['brand'],$shipping_method, $rate);
+            }
+
+            if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
+                $m2['type'] = apply_filters('woo_vipps_shipping_method_type', $meta['type']);
+            }
+
+            $m2['options'] = $options;
+            $translated[] = $m2;
+        }
+
+        return $translated;
+    }
+
+
+    // Group certain shipping methods together in the new express format, into a group of options for one method (for example pickup locations). LP 2025-06-04
+    // $order not used, will keep for now so to have a similar signature to express_format_shipping_methods, also it might be used in future change of this method. LP 2025-08-18
+    public function express_group_shipping_methods($methods, &$ratemap, $methodmap, $order) { 
+        if (!$methods) return $methods;
+        $grouped = [];
+        $maybe_groupable_methods = $methods;
+        while (!empty($maybe_groupable_methods)) {
+            $first = array_shift($maybe_groupable_methods);
+            $first_id = preg_replace("!:.+$!", "",  $first['options'][0]['id']); // strip option index from 'augmented' methods.
+            $first_rate = $ratemap[$first_id];
+            $first_method = $methodmap[$first_id];
+
+            $rest = [];
+            foreach ($maybe_groupable_methods as $candidate) {
+                $candidate_id = preg_replace("!:.+$!", "",  $candidate['options'][0]['id']); // strip option index from 'augmented' methods.
+                $candidate_rate = $ratemap[$candidate_id];
+                $candidate_method = $methodmap[$candidate_id];
+
+                // By default, we will group all rates that are pickup_location-s. LP 2025-08-18
+                $is_pickup = $first_rate->method_id === $candidate_rate->method_id && $first_rate->method_id === 'pickup_location';
+                $should_group = apply_filters('woo_vipps_express_should_group_shipping_methods', $is_pickup, $first_rate, $first_method, $candidate_rate, $candidate_method); 
+
+                if ($should_group) {
+                    $first_options = $first['options'];
+                    $second_options = $candidate['options'];
+
+                    $first['options'] = array_merge($first_options, $second_options);
+
+                    // Reset default-ness and priority to the highest value from the merged methods.
+                    if ($candidate['isDefault']) $first['isDefault'] = true;
+                    if ($candidate['priority'] < $first['priority']) $first['priority'] = $candidate['priority'];
+
+                } else {
+                    $rest[] = $candidate;
+                }
+
+            }
+            $grouped[] = $first;
+
+            // Start over again with the ones who weren't grouped to the first method of the list. LP 2025-08-18
+            $maybe_groupable_methods = $rest;
+        }
+
+        return $grouped;
     }
 
 
@@ -3362,17 +3551,23 @@ else:
 
         if ($order_status != 'pending') return $order_status;
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
+        // We can't use the vipps init timestamp here, because that may be  in the past for Checkout at least. IOK 2025-08-13
         if ($order_status == 'pending') {
-
-
-            $now = time();
-            $then= $order->get_meta('_vipps_init_timestamp');
-
-            if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
+            if (WC()->session) {
+                $now = time();
+                $then = WC()->session->get('_vipps_check_' . $order->get_id());
+                if (!$then) {
+                    $then = $now;
+                    WC()->session->set('_vipps_check_' . $order->get_id(), $then);
+                }
+                if (($then + (1 * 30)) > $now) { // more than half a minute? Start checking at Vipps
+                    return $order_status;
+                }
+            } else {
+                // No session shouldn't be possible, but if it is..
                 return $order_status;
             }
         }
-
         $this->log("Checking order status on Vipps for order id: " . $order->get_id(), 'info');
         return $this->check_status_of_pending_order($order);
     }
@@ -3845,10 +4040,9 @@ else:
         $vippsorderid =  apply_filters('woo_vipps_orderid', $prefix.$orderid, $prefix, $order);
         $addressinfo = $this->get_static_shipping_address_data();
 
-        if ($ischeckout) {
-            // Add special shipping methods (LocalPickup etc);
-            $this->checkout_load_shipping_methods($order, $addressinfo);
-        }
+        // Both Checkout and new Express Checkout supports LocalPickup, so add it (it is normally only present for Gutenberg checkout)
+        // Add special shipping methods (LocalPickup etc);
+        $this->load_extra_shipping_methods($order, $addressinfo, $ischeckout);
 	
         $options = $this->vipps_shipping_details_callback_handler($order, $addressinfo,$vippsorderid, $ischeckout);
 
@@ -3858,9 +4052,9 @@ else:
         }
     }
 
-    // Vipps Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
+    // Vipps Checkout and Express Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
     // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback. 
-    public function checkout_load_shipping_methods($order, $addressdata) {
+    public function load_extra_shipping_methods($order, $addressdata, $ischeckout=false) {
         // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
         add_action('woocommerce_load_shipping_methods', function () use ($order, $addressdata) {
             // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the

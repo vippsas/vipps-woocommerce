@@ -1,0 +1,97 @@
+1. static shipping virker
+2. dynamic virker ikke
+3. poll/callback virker ikke
+4. prisene på frakt er feil
+
+Logget (med statisk):
+
+2025-08-08T12:46:20+00:00 DEBUG Initiating Vipps MobilePay epayment session for woodigitalt4707
+2025-08-08T12:47:38+00:00 INFO Feil ved oppretting av bruker i hurtigkassen: Vennligst oppgi en gyldig e-postadresse.
+2025-08-08T12:47:38+00:00 INFO Kunne ikke hente e-post til brukeren før takk-siden
+2025-08-08T12:47:40+00:00 INFO Callback received
+2025-08-08T12:47:40+00:00 DEBUG Mottok webhook-callback for checkout/hurtigkasseordre 4707 - ignorerer denne siden en fullstending callback skal komme
+
+callback ser ut å være
+{
+  "msn": "287262",
+  "reference": "woodigitalt4708",
+  "pspReference": "10001082454",
+  "name": "AUTHORIZED",
+  "amount": {
+    "currency": "NOK",
+    "value": 2600
+  },
+  "timestamp": "2025-08-08T13:40:13.126Z",
+  "idempotencyKey": "wc_order_5yvKiIBWFbb3M",
+  "success": true,
+  "shippingDetails": {
+    "address": {
+      "addressLine1": "Observatorie terrasse 4a",
+      "addressLine2": "",
+      "city": "OSLO",
+      "country": "NO",
+      "postCode": "0254"
+    },
+    "shippingCost": 2500,
+    "shippingOptionId": "$flat_rate$5bacd3e21720a5bb5986d303932294b07e7f077d",
+    "shippingOptionName": "Fastpris"
+  },
+  "userDetails": {
+    "email": "iver+test@wp-hosting.no",
+    "firstName": "Iver Odin",
+    "lastName": "Kvello",
+    "mobileNumber": "97125562"
+  }
+}
+-- og dette er den som forkastes fordi "full callback will come. Så det må fjernes; her har vi shippingDetails og userDetails, hurra.
+
+i poll; der brukes epayment korrekt, men userDetails og shippingDetails (og billingDetails?) har blitt *flyttet inn i paymentDetails*. Toucher opp dette i 
+ensureUserDetails. NB: paymentDetails inneholder også "sub" som er vippsid inne i en [profiler] og  metadata med ordreid.
+
+2025-08-08T13:40:14+00:00 INFO payment_details: This is epayment
+2025-08-08T13:40:14+00:00 INFO payment_details: epayment result is Array
+
+de relevante bitene:
+
+   [profile] => Array
+        (
+            [sub] => 2117c344-9776-4014-b7eb-150580318a30
+        )
+
+    [pspReference] => c230b8f7-f5b1-4d8e-a4ad-1a652f006a8e
+    [redirectUrl] => https://apitest.vipps.no/dwo-api-application/v1/deeplink/vippsgateway?v=2&token=eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJhcHAiOiJlUGF5bWVudCIsInV1aWQiOiJjMjMwYjhmNy1mNWIxLTRkOGUtYTRhZC0xY
+TY1MmYwMDZhOGUiLCJ0eXBlIjoiRVhQUkVTU19DSEVDS09VVCIsIm1lcmNoYW50U2VyaWFsTnVtYmVyIjoiMjg3MjYyIiwiMWZhIjoidHJ1ZSIsInVybCI6Imh0dHBzOi8vYXBpdGVzdC52aXBwcy5uby92aXBwcy1lcGF5bWVudC1sZWdhY3ktbW9iaWxlLWFwaS9sYW5kaW5n
+LXBhZ2UiLCJicmFuZCI6IlZJUFBTIiwibWFya2V0IjoiTk8iLCJleHAiOjE3NTQ2NjA5ODUsImlhdCI6MTc1NDY2MDM4NiwiaXNzIjoiaHR0cHM6Ly9hcGl0ZXN0LnZpcHBzLm5vL2VwYXltZW50LWFwaS8iLCJhdWQiOiJlcGF5bWVudCJ9.hDmO8zR0vIhd0G8MkJIlegqfly
+QroNvfSQWKOoxjE08DT4Q2qv2q9Y8bisX13Lxkackdo75mfGZdiKlzHBqZEY0b0wI8yOWN-VNT7B5dU-DMzyglk2AH4lj2dwR1YywShdIXExvz-1MkeRkIsO1ue950KYU1sRaYjtpFrYFIxvuN-EWdi-gAXoBdEzGu9EdUf_SwG8FY4Oos29l24WwOsmCekZqcyRrMCQGgJRN7P
+ujXcSZlXAmC8tabD6WRuHPUORRLJjsoc_7hgqe_AS8Ybc-o1w2ZYqgbN8dOYc1RNnlkjDZpkspKfw_jOBkM0nut7_GTOKrk2o6BuUU1kSEtLw
+    [reference] => woodigitalt4708
+    [metadata] => Array
+        (
+            [orderid] => 4708
+        )
+
+    [shippingDetails] => Array
+        (
+            [address] => Array
+                (
+                    [addressLine1] => Observatorie terrasse 4a
+                    [addressLine2] => 
+                    [city] => OSLO
+                    [country] => NO
+                    [postCode] => 0254
+                )
+
+            [shippingCost] => 2500
+            [shippingOptionId] => $flat_rate$5bacd3e21720a5bb5986d303932294b07e7f077d
+            [shippingOptionName] => Fastpris
+        )
+
+    [userDetails] => Array
+        (
+            [email] => iver+test@wp-hosting.no
+            [firstName] => Iver Odin
+            [lastName] => Kvello
+            [mobileNumber] => 97125562
+        )
+
+

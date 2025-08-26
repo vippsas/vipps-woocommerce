@@ -488,6 +488,7 @@ class VippsApi {
     # End Order Management API functions
 
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
+    // Not any more: Express Checkout is started if the logistics parameters are set. IOK 2025-06-19
     public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
         $command = 'epayment/v1/payments';
         $msn = $this->get_merchant_serial();
@@ -508,8 +509,6 @@ class VippsApi {
         $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
 
-        // IOK 2023-12-13 This is currently always false for epayment_initiate_payment but let's think ahead
-        // Code for static shipping, shipping callback etc would need to be added. 
         $express = $order->get_meta('_vipps_express_checkout');
 
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
@@ -560,16 +559,47 @@ class VippsApi {
         $metadata = apply_filters('woo_vipps_payment_metadata', $metadata, $orderid);
         $data['metadata'] = $metadata;
 
-        // User information data to ask for. During normal checkout, we won't ask at all, but for Express Checkout we would do name, email, phoneNumber.
-        // Currently, use a filter to allow merchants to do this. Can also add 'Address', which would give all data but not the shipment flow.
-        // Values are name, address, email, phoneNumber, birthData and nin, if the company provides this to the merchant. 
-        // IOK 2023-12-13
+        // We will not normally ask for user info, but if this is an express checkout order, we do want name, email, phone and maybe address.
+        // A filter will allow advanced users to add scope for their own usage.
+        // When scope has been added, it is possible to get a 'sub' value from the payment details, which for several weeks
+        // can be used to retrieve user information from the user info API. IOK 2023-03-10
+        // IOK 2023-03-10 'scope' determines for what data we ask the customer.
+        // possible values, name, address, email, phoneNumber, birthDate, nin and accountNumbers (last ones are of course restricted)
+        // we need name, email and maybe address for the new express. LP 2025-05-26
         $scope = array();
+        if ($express) {
+            // The old "explicit shipping" option which is now the only option - if set to "yes", always ask for address
+            $explicit_option = ($this->gateway->get_option('useExplicitCheckoutFlow') == "yes");
+            // Merchant may always need the address, so if so chosen, ask for it
+            $always_address = ($this->gateway->get_option('expresscheckout_always_address') == "yes");
+            $ask_for_address = apply_filters('woo_vipps_express_checkout_ask_for_address', ($needs_shipping || $always_address || $explicit_option), $order);
+
+            // Otherwise we are going for name, email, phone.
+            if ($ask_for_address) {
+                $scope = ["name", "email", "phoneNumber", "address"]; 
+            } else {
+                $scope = ["name", "email", "phoneNumber"]; 
+            }
+            $scope = apply_filters('woo_vipps_express_checkout_scope', $scope, $order);
+        }
+
         $scope = apply_filters('woo_vipps_payment_scope', $scope, $orderid);
         if (!empty($scope)) {
-                $data['profile'] = [];
-                $data['profile']['scope'] = join(" ", $scope);
+            $data['profile'] = [];
+            $data['profile']['scope'] = join(" ", $scope);
         }
+
+        // minimumUserAge: Integer [0..100] or null. LP 2025-05-26
+        $minage = apply_filters('woo_vipps_payment_minimum_user_age', null);
+        $minageint = intval($minage);
+        // intval defaults to 0 when it fails to convert to int, so make sure this case will default to null, by is_numeric. LP 2025-05-26
+        if (is_numeric($minage) && $minageint >= 0 && $minageint <= 100) { 
+            $minage = $minageint;
+        } else {
+            $minage = null;
+        }
+        $data['minimumUserAge'] = $minage; 
+
         // WEB_REDIRECT is the normal flow; requires a returnUrl. PUSH_MESSAGE requires a valid customer (phone number)
         // NATIVE_REDIRECT is for automatic app switch between a native app and the Vipps MobilePay app.
         // QR returns a QR code that can be scanned to complete the payment. IOK 2023-12-13
@@ -594,12 +624,22 @@ class VippsApi {
         }
 
         // Epayment can send the receipt already in the initiate call, so lets do it. IOK 2023-12-23
-        if (!$express) {
-            $receiptdata = $this->get_receipt_data($order);
-            if (!empty($receiptdata)) {
+        $receiptdata = $this->get_receipt_data($order);
+        if (!empty($receiptdata)) {
                 $data['receipt'] = $receiptdata;
                 $order->update_meta_data('_vipps_receipt_sent', true);
                 $order->save();
+        }
+
+        // The 'shipping' setting is to be set if and only if we are using Express Checkout *and* the order does in fact 
+        // need shipping. IOK 2025-06-09
+        if ($express && $needs_shipping) {
+            if ($static_shipping) {
+                $data['shipping']['fixedOptions'] = $static_shipping; 
+            } else { // dynamic shipping options for express. LP 2025-05-26
+                $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
+                $shippingoptions = ['callbackUrl' => $shippingcallback, 'callbackAuthorizationToken' => $authtoken];
+                $data['shipping']['dynamicOptions'] = $shippingoptions;
             }
         }
 
@@ -654,134 +694,6 @@ class VippsApi {
         return $res;
     }
 
-
-
-    public function initiate_payment($phone,$order,$returnurl,$authtoken,$requestid) {
-        $command = 'Ecomm/v2/payments';
-        $msn = $this->get_merchant_serial();
-        $subkey = $this->get_key($msn);
-
-        $prefix = $this->get_orderprefix();
-        $static_shipping = $order->get_meta('_vipps_static_shipping');
-        $needs_shipping = $order->get_meta('_vipps_needs_shipping');
-
-        // Don't go on with the order, but don't tell the customer too much. IOK 2018-04-24
-        if (!$subkey) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        if (!$msn) {
-            throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
-            $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
-        }
-        // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
-        // This is really for the new epayment api only, but we do this to ensure we use the same logic. For short prefixes and order numbers.
-        // Pad orderid with 0 to the left so the entire vipps-orderid/reference is at least 8 chars long. IOk 2022-04-06
-        $orderid = $order->get_id();
-        $woovippsid = $prefix . $orderid;
-        $len = strlen($woovippsid);
-        if ($len < 8) { # max is 50 so that would probably not be an issue
-            $padwith =  8  - strlen($prefix);
-            $paddedid = str_pad("".$orderid, $padwith, "0", STR_PAD_LEFT);
-            $woovippsid = $prefix . $paddedid;
-        }
-        $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
-
-        $order->update_meta_data('_vipps_prefix',$prefix);
-        $order->update_meta_data('_vipps_orderid', $vippsorderid);
-        $order->set_transaction_id($vippsorderid); // The Vipps order id is probably the clossest we are getting to a transaction ID IOK 2019-03-04
-        $order->save();
-
-        $headers = $this->get_headers($msn);
-
-        $headers['X-Request-Id'] = $requestid;
-
-        $callback = $this->gateway->payment_callback_url($authtoken, $orderid);
-        $fallback = $returnurl;
-
-        $transaction = array();
-        $transaction['orderId'] = $vippsorderid;
-        // Ignore refOrderId - for child-transactions 
-        $transaction['amount'] = round(wc_format_decimal($order->get_total(),'') * 100); 
-        $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
-        $transactionText =  __('Your order from','woo-vipps') . ' ' . $shop_identification;
-        $transaction['transactionText'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
-
-        // The limit for the transaction text is 100. Ensure we don't go over. Thanks to Marco1970 on wp.org for reporting this. IOK 2019-10-17
-        $length = strlen($transaction['transactionText']);
-        if ($length>99) {
-          $this->log(__('The transaction text is too long! We are using a shorter transaction text to allow the transaction text to go through, but please check the \'woo_vipps_transaction_text_shop_id\' filter so that you can use a shorter name for your store', 'woo-vipps'));
-          $transaction['transactionText'] = substr($transaction['transactionText'],0,90); // Add some slack if this happens. IOK 2019-10-17
-        }
-        $date = gmdate('c');
-        $transaction['timeStamp'] = $date;
-
-
-        $data = array();
-        $data['customerInfo'] = array('mobileNumber' => $phone); 
-        $data['merchantInfo'] = array('merchantSerialNumber' => $msn, 'callbackPrefix'=>$callback, 'fallBack'=>$fallback);
-
-        $express = $order->get_meta('_vipps_express_checkout');
-
-        // If we are not to ask for the address, we must change this to a normal "eComm Regular Payment" and add a scope,
-        // which will give us a sub from which we can get user data from the userInfo api. This is a temporary situation. IOK 2023-03-10
-        //
-        // The old "explicit shipping" option which is now the only option - if set to "yes", always ask for address
-        $explicit_option = ($this->gateway->get_option('useExplicitCheckoutFlow') == "yes");
-        // Merchant may always need it
-        $always_address = ($this->gateway->get_option('expresscheckout_always_address') == "yes");
-
-        $ask_for_address = apply_filters('woo_vipps_express_checkout_ask_for_address', ($needs_shipping || $always_address || $explicit_option), $order); 
-
-        if ($express && $ask_for_address) {
-
-            // Express Checkout! Except if this order doesn't need shipping, and the merchant doesn't care about the
-            // address. If so, we'll just add a scope to the initiate_payment branch which will allow us to fetch
-            // user data (except address then) from getDetails and then userInfo. This is then via the eCommerce api, and not the
-            // eCom api so that's interesting too.
-            
-
-            $shippingcallback = $this->gateway->shipping_details_callback_url($authtoken, $orderid);
-            if ($authtoken) {
-                $data['merchantInfo']['authToken'] = "Basic " . base64_encode("Vipps" . ":" . $authtoken);
-            }
-            $data['merchantInfo']["paymentType"] = "eComm Express Payment";
-            $data['merchantInfo']["consentRemovalPrefix"] = $this->gateway->consent_removal_callback_url();
-            $data['merchantInfo']['shippingDetailsPrefix'] = $shippingcallback;
-
-            if ($static_shipping) {
-                $data['merchantInfo']['staticShippingDetails'] = $static_shipping["shippingDetails"];
-            }
-
-        } else {
-             $data['merchantInfo']["paymentType"] = "eComm Regular Payment";
-
-             // We will not normally ask for user info, but if this is an express checkout order, where we don't 
-             // want the address, then we have to add "name", "email" and "phoneNumber" to the scope. A filter will allow
-             // advanced users to add scope for their own usage.
-             // When scope has been added, it is possible to get a 'sub' value from the payment details, which for several weeks
-             // can be used to retrieve user information from the user info API. IOK 2023-03-10
-            // IOK 2023-03-10 'scope' deterines for what data we ask the customer.
-            // possible values, name, address, email, phoneNumber, birthDate, nin and accountNumbers (last ones are of course restricted)
-             $scope = array();
-             if ($express) {
-                $scope = ["name", "email", "phoneNumber"]; // And not 'address'
-             }
-             $scope = apply_filters('woo_vipps_express_checkout_scope', $scope, $order);
-             if (!empty($scope)) {
-                $transaction['scope'] = join(" ", $scope);
-             }
-        }
-        $data['transaction'] = $transaction;
-
-
-        $this->log("Initiating Vipps MobilePay ecomm session for $vippsorderid", 'debug');
-
-        $data = apply_filters('woo_vipps_initiate_payment_data', $data);
-
-        $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
-        return $res;
-    }
 
     // This is Vipps Checkout IOK 2021-06-19
     // Updated for V3 2023-01-09
@@ -862,7 +774,7 @@ class VippsApi {
         if ($needs_shipping) {
             $logistics = array();
             if ($static_shipping) {
-                $logistics['fixedOptions'] = $static_shipping["shippingDetails"];
+                $logistics['fixedOptions'] = $static_shipping["shippingDetails"]; 
                 unset($logistics['dynamicOptionsCallback']);
             } else {
                 $logistics['dynamicOptionsCallback'] = $shippingcallback;

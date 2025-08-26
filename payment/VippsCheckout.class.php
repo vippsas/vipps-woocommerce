@@ -67,7 +67,7 @@ class VippsCheckout {
 
 
         add_filter('woo_vipps_shipping_method_pickup_points', function ($points, $rate, $shipping_method, $order) {
-            if ($rate->method_id == 'pickup_location') {
+            if ($rate->method_id == 'pickup_location' && $order->get_meta('_vipps_checkout')) {
                // $locations = $shipping_method->pickup_locations ; // Protected attribute. Could wrap, but life is short so
                 $locations = get_option( $shipping_method->id . '_pickup_locations', [] );
                 foreach ( $locations as $index => $location ) {
@@ -223,6 +223,25 @@ jQuery(document).ready(function () {
 
         # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
         $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+
+        // Unless the order actually somehow doesn't exist anymore - this should not be possible but let's handle it
+        if ($paymentdetails && isset($paymentdetails['status']) && $paymentdetails['status'] == 'CANCEL') {
+            // IOK this cannot actually happen, but if it *does*, cancel the order 
+            clean_post_cache($order->get_id());
+            if (WC()->session) {
+                WC()->session->set('vipps_checkout_current_pending',0);
+                WC()->session->set('vipps_address_hash', false);
+            }
+            $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+            // Also mark for deletion and remove stored session
+            $order->delete_meta_data('_vipps_checkout_session');
+            $order->update_meta_data('_vipps_delendum',1);
+            $order->save();
+            $url = $order->get_checkout_payment_url();
+            wp_redirect($url);
+            exit();
+        }
+
         $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
         # Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
         $assignuser = is_user_logged_in();
@@ -663,10 +682,10 @@ jQuery(document).ready(function () {
             $order->set_billing_phone($contact['phoneNumber']);
             $order->set_billing_first_name($contact['firstName']);
             $order->set_billing_last_name($contact['lastName']);
-            $order->set_billing_address_1($contact['streetAddress']);
-            $order->set_billing_city($contact['city']);
-            $order->set_billing_postcode($contact['postalCode']);
-            $order->set_billing_country($contact['country']);
+            $order->set_billing_address_1($contact['streetAddress'] ?? "");
+            $order->set_billing_city($contact['city'] ?? "");
+            $order->set_billing_postcode($contact['postalCode'] ?? "");
+            $order->set_billing_country($contact['country'] ?? "");
         }
         if ($ok &&  $change && isset($status['shippingDetails'])) {
             $contact = $status['shippingDetails'];
@@ -845,9 +864,7 @@ jQuery(document).ready(function () {
                     $latest_note = $order_notes[0];
                     if (is_a($latest_note, 'WP_Comment')) {
                         $deleted = wc_delete_order_note($latest_note->comment_ID);
-                    } else {
-                        error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
-                    }
+                    } 
                 }
                 $order->set_customer_note(sanitize_text_field($notes));
                 $order->save();
@@ -966,8 +983,9 @@ jQuery(document).ready(function () {
                             $order_notes = $order->get_customer_order_notes();
                             if ($order_notes) {
                                 $latest_note = $order_notes[0];
-                                if (is_a($latest_note, 'WP_Comment')) echo $latest_note->comment_content;
-                                else error_log('Latest customer order note in checkout widget was not a WP_Comment, but a ' . get_class($latest_note));
+                                if (is_a($latest_note, 'WP_Comment')) {
+                                    echo $latest_note->comment_content;
+                                }
                             }
                         } ?>"/>
                         <button type="submit" class="vippspurple2 vipps_checkout_widget_button"><?php echo __('Save', 'woo-vipps')?></button>
@@ -1289,9 +1307,10 @@ jQuery(document).ready(function () {
     // Translate from the Express Checkout shipping method format to the Vipps Checkout shipping
     // format, which is slightly different. The ratemap maps from a method key to its WC_Shipping_Rate, and the method map does
     // the same for WP_Shipping_Method.
+    // The ratemap will in the end be stored in the order and used to retrieve the selected shipping method. IOK 2025-08-15
     // IOK 2025-05-07 Also treat PickupLocation specially. We'll return at most one of these, and if there are more than one, we will add the locations available as
     // metadata.
-    public function format_shipping_methods ($return, $ratemap, $methodmap, $order) {
+    public function format_shipping_methods ($return, &$ratemap, $methodmap, $order) {
         $translated = array();
         $currency = get_woocommerce_currency();
         $pickupLocation = null; // if we have a pickup_location rate, set this to be the first one. IOK 2025-05-07
