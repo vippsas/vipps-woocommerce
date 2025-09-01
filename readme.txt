@@ -26,7 +26,7 @@ Vipps and MobilePay are payment methods offered by Vipps MobilePay.
 
 When you enable this plugin, you will choose between offering either Vipps or MobilePay as a payment method for your customers - hence "Vipps/MobilePay" going forward.
 
-This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps Express Checkout (*Vipps Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
+This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express Checkout (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
@@ -57,7 +57,7 @@ For details, please read the [developer FAQ](https://developer.vippsmobilepay.co
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to "Completed" as is the standard WooCommerce rule.
 
-=== Vipps Express Checkout ===
+=== Vipps MobilePay Express Checkout ===
 When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
 
 Since Vipps knows who the customers are, they don't have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
@@ -386,7 +386,7 @@ Fix wrapper of Express Checkout button on the terms-and-condition page
 Preliminary Swedish translations
 
 = 2024-12-09 version 3.0.8 =
-Support for the Product Collection block with the new Buy-now block for Vipps Express checkout. This new block being standard from Woo 9.5, support for the old "All products" block is removed. The other legacy collection blocks are still supported, since the framework for those is rather easier to maintain. If you are using the All Products block and want support for Express Checkout, we suggest moving on to the new Product Collection block.
+Support for the Product Collection block with the new Buy-now block for Vipps MobilePay Express checkout. This new block being standard from Woo 9.5, support for the old "All products" block is removed. The other legacy collection blocks are still supported, since the framework for those is rather easier to maintain. If you are using the All Products block and want support for Express Checkout, we suggest moving on to the new Product Collection block.
 
 = 2024-12-02 version 3.0.7 =
 If an order has been edited so that its value is less than the reserved amount, cancel the rest of the reserved amount after capture
