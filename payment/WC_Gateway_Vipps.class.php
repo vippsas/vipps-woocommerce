@@ -581,8 +581,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check to see if the product in question can be bought with express checkout IOK 2018-12-04
     public function product_supports_express_checkout($product) {
-        // IOK 2023-12-12 Can only support express checkout for Vipps - not MobilePay (yet!)
-        if ($this->get_payment_method_name() != 'Vipps') return false;
         return apply_filters('woo_vipps_product_supports_express_checkout', $this->product_supports_checkout($product), $product);
     }
 
