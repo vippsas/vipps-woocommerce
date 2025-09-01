@@ -66,6 +66,7 @@ class VippsWCProductEditorV2
     {
         add_action('wp_ajax_vipps_generate_unused_shareable_meta_key', array($this, 'ajax_vipps_generate_unused_shareable_meta_key'));
         // Only enable the product editor extensions when the payment method is Vipps, since MobilePay is not supported as of now.
+        // IOK 2025-09-01 no longer the case.
         // Inject some extra data to the product object when it is returned from the REST API.
         // This is useful for the product editor blocks, especially when we want to show/hide blocks based on the product's properties and/or the global settings.
         add_filter('woocommerce_rest_prepare_product_object', function ($response, $product) {
