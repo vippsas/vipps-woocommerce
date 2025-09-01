@@ -111,6 +111,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 == Upgrade Notice ==
 Version 5.0.0
 Support for the new Express Checkout mechanism and the removal of the old code. Customers will need the updated app.
+Express Checkout now supported for MobilePay
 Express Checkout now supports Local Pickup locations.
 Fix in the session handling of Express Checkout and Checkout shipping
 Version 4.1.7
