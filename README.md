@@ -69,8 +69,6 @@ The express checkout can be done in the following ways:
 Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
 Shareable links and QR codes can be generated from the Vipps tab on the product page.
 
-Express checkout buttons is only available with Vipps. Coming in 2025 for MobilePay.
-
 ## Single payments
 
 When you enable this plugin, your customers will be able to choose Vipps or MobilePay as a payment method directly in the standard WooCommerce checkout.

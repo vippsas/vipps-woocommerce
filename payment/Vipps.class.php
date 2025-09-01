@@ -297,12 +297,11 @@ class Vipps {
         });
 
         // Custom product properties
-        // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps - FIXME
-        if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "Vipps") {
-            add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
-            add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
-            add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
-        }
+        // IOK 2024-01-17 temporary: The special product properties are currenlty only active for Vipps
+        // IOK 2025-09-01 now available for all
+        add_filter('woocommerce_product_data_tabs', array($this,'woocommerce_product_data_tabs'),99);
+        add_action('woocommerce_product_data_panels', array($this,'woocommerce_product_data_panels'),99);
+        add_action('woocommerce_process_product_meta', array($this, 'process_product_meta'), 10, 2);
 
         add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
 
@@ -1405,12 +1404,11 @@ jQuery('a.webhook-adder').click(function (e) {
     public function woocommerce_product_data_panels() {
         global $post;
         echo "<div id='woo-vipps' class='panel woocommerce_options_panel'>";
-        // IOK 2024-01-17 Temporary: Only Vipps supports express checkout, shareable links (express checkout) and badges FIXME
-        if (WC_Gateway_Vipps::instance()->get_payment_method_name() == "Vipps") {
-            $this->product_options_vipps();
-            $this->product_options_vipps_badges();
-            $this->product_options_vipps_shareable_link();
-        }
+        // IOK 2024-01-17 Temporary: Only Vipps supports express checkout, shareable links (express checkout) and badges
+        // IOK 2025-09-01 Now available for all
+        $this->product_options_vipps();
+        $this->product_options_vipps_badges();
+        $this->product_options_vipps_shareable_link();
         echo "</div>";
     }
     // Product data specific to Vipps - mostly the use of the 'Buy now!' button
