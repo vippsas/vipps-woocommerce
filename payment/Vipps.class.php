@@ -1355,9 +1355,10 @@ jQuery('a.webhook-adder').click(function (e) {
     public function cart_express_checkout_button_html() {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
-        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
-        $button = "<a href='$url' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
+        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo('short'));
+        $method = $this->get_payment_method_name();
+        $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
+        $button = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
         $button = apply_filters('woo_vipps_cart_express_checkout_button', $button, $url);
         echo $button;
     }
@@ -2112,7 +2113,7 @@ else:
             $stripped = preg_replace("!</li>$!", "", $html);
             $pid = $product->get_id();
             $button = '<div class="wp-block-button wc-block-components-product-button wc-block-button-vipps">';
-            $button .= $this->get_buy_now_button($pid,false);
+            $button .= $this->get_buy_now_button($pid,false, null, false, '', 'short');
             $button .= '</div>';
             return $stripped . $button . "</li>";
         }, 10, 3);
@@ -2244,7 +2245,7 @@ else:
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
-        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo();
+        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo('short');
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
@@ -4198,13 +4199,13 @@ else:
             return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
     // Get payment logo based on payment method, then language NT 2023-11-30
-    private function get_payment_logo() {
+    private function get_payment_logo($short=false) {
         $logo = null;
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
         // If the payment method is MobilePay, get the MobilePay logo with correct language
         if($payment_method === "MobilePay"){
-            $logo = $this->get_mobilepay_logo($lang);
+            $logo = $this->get_mobilepay_logo($lang, $short);
         }
         // If the payment method is Vipps, get the Vipps logo with correct language
         if($payment_method === "Vipps"){
@@ -4228,15 +4229,19 @@ else:
     }
 
     // Get MobilePay logo with correct language NT 2023-11-30
-    private function get_mobilepay_logo($lang) {
+    private function get_mobilepay_logo($lang, $short=false) {
         // if language is Danish
         if($lang === "dk") {
             // get Danish logo
             return plugins_url('img/mobilepay-rectangular-pay-DK.svg',__FILE__);
         // if language is Finnish
         } else if($lang === "fi") {
-            // get Finnish logo
-            return plugins_url('img/mobilepay-rectangular-pay-FI.svg',__FILE__);
+            // get Finnish logo(s)
+            if ($short) {
+                return plugins_url('img/mobilepay-rectangular-pay-short-FI.svg',__FILE__);
+            } else {
+                return plugins_url('img/mobilepay-rectangular-pay-FI.svg',__FILE__);
+            }
         // otherwise
         } else {
             // get English logo by default
@@ -4262,7 +4267,7 @@ else:
     }
 
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
-    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='') {
+    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $short=false) {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
 
@@ -4277,10 +4282,11 @@ else:
             $buttoncode .= " data-$key='$value' ";
         }
 
-        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $this->get_payment_method_name());
+        $method_name = $this->get_payment_method_name();
+        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $method_name);
         
         $payment_method = $this->get_payment_method_name();
-        $logo = $this->get_payment_logo();
+        $logo = $this->get_payment_logo($short);
 
         $message =" <img border=0 src='$logo' alt='$payment_method'/>";
 
@@ -4289,8 +4295,9 @@ else:
             $classes = join(" ", $classes);
         }
         if ($classes) $classes = " $classes";
+        if ($short) $classes = "short $classes";
 
-        $buttoncode .=  " class='single-product button vipps-buy-now $disabled$classes' title='$title'>$message</a>";
+        $buttoncode .=  " class='single-product button vipps-buy-now $method_name $disabled$classes' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
     }
 
@@ -4369,8 +4376,7 @@ else:
         if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return;
        
         $sku = $product->get_sku();
-
-        $button = $this->get_buy_now_button($product->get_id(),false,$sku);
+        $button = $this->get_buy_now_button($product->get_id(),false,$sku, false, '', 'short');
         echo "<div class='vipps_buy_now_wrapper loop'>$button</div>";
     }
 
