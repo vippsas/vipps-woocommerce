@@ -4222,7 +4222,8 @@ else:
         if($payment_method === "Vipps"){
             return plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__); 
         } else if($payment_method === "MobilePay"){
-            return plugins_url('img/mobilepay-logo.png',__FILE__); 
+            return plugins_url('img/mobilepay.svg',__FILE__); 
+            // return plugins_url('img/MobilePay_paymark_logo.svg',__FILE__); 
             // return plugins_url('img/MobilePay_logo_horizontal.svg',__FILE__); 
         }
         return null;

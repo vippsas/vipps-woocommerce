@@ -324,16 +324,22 @@ a.button.vipps-login {
 .express-banner-logo {
   margin-left: 1ex;
   margin-right: 1ex;
+}
+.express-banner-logo.vipps-logo {
   margin-bottom: -1px;
+}
+.express-banner-logo.mobilepay-logo {
+  vertical-align: middle;
+  height: 2em;
 }
 img.inline {
  height: 2ex;
  display:inline;
  vertical-align: text-bottom;
 }
-img.mobilepay-logo {
-  height: 100%;
-}
+/* img.mobilepay-logo { */
+/*   height: 100%; */
+/* } */
 
 .vippsorange {
  background-color: #fe5b24;
