@@ -1319,13 +1319,24 @@ jQuery('a.webhook-adder').click(function (e) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
         $text = __('Skip entering your address and just checkout using', 'woo-vipps');
-        $linktext = __('express checkout','woo-vipps');
-        $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
+        $linktext = __('Express','woo-vipps');
+        $logo = $this->get_express_banner_logo();
 
-        $message = $text . "<a href='$url'> <img class='inline vipps-logo negative' border=0 src='$logo' alt='Vipps'/> $linktext!</a>";
-        $message = apply_filters('woo_vipps_express_checkout_banner', $message, $url);
+        $payment_method = $this->get_payment_method_name();
+        $img_classes = 'inline';
+        $div_classes = 'woocommerce-info';
+        if ($payment_method === 'Vipps') {
+            $img_classes .= ' vipps-logo negative';
+            $div_classes .= ' vipps-info';
+        } else if ($payment_method === 'MobilePay') {
+            $img_classes .= ' mobilepay-logo';
+            $div_classes .= ' mobilepay-info';
+        }
+
+        $message = $text . "<a href='$url'> <img class='$img_classes' border=0 src='$logo' alt='$payment_method'/> $linktext!</a>";
+        $message = apply_filters('woo_vipps_express_checkout_banner', $message, $url, $payment_method);
         ?>
-            <div class="woocommerce-info vipps-info"><?php echo $message;?></div>
+        <div class="<?php echo $div_classes;?>"><?php echo $message;?></div>
             <?php
     }
 
@@ -4199,6 +4210,19 @@ else:
             $logo = $this->get_vipps_logo($lang);
         }
         return $logo;
+    }
+
+    // Get express banner logo based on payment method. LP 2025-09-03
+    private function get_express_banner_logo() {
+        $payment_method = $this->get_payment_method_name();
+
+        if($payment_method === "Vipps"){
+            return plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__); 
+        } else if($payment_method === "MobilePay"){
+            // return plugins_url('img/mobilepay-logo.png',__FILE__); 
+            return plugins_url('img/MobilePay_logo_horizontal.svg',__FILE__); 
+        }
+        return null;
     }
 
     // Get MobilePay logo with correct language NT 2023-11-30

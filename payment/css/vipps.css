@@ -44,6 +44,15 @@ SOFTWARE.
     vertical-align: text-bottom;
 }
 
+.wc-block-grid__product .single-product.button.vipps-buy-now .inline.mobilepay-logo {
+    display: inline-block;
+    margin: 0 .2em;
+    height: 2ex;
+    max-width: 100%;
+    width: auto;
+    vertical-align: text-bottom;
+}
+
 /* This is for the badge block IOK 2022-11-16 */
 .vipps-badge-wrapper.aligncenter {
   text-align: center;
@@ -298,6 +307,20 @@ a.button.vipps-login {
 .woocommerce-info.vipps-info {
  background-color: #fe5b24;
 }
+.woocommerce-info.mobilepay-info {
+ background-color: #5a78ff;
+  /* background-color: #f5f5f2; */
+  /* color: #5a78ff; */
+/* } */
+/* .woocommerce-info.mobilepay-info a { */
+  /* color: #5a78ff; */
+/* } */
+/* .woocommerce-info.mobilepay-info a:hover { */
+  /* color: #5a78ff; */
+/* } */
+/* .woocommerce-info.mobilepay-info::before { */
+  /* color: #5a78ff */
+/* } */
 img.inline {
  height: 2ex;
  display:inline;
