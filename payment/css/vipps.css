@@ -44,7 +44,7 @@ SOFTWARE.
     vertical-align: text-bottom;
 }
 
-.wc-block-grid__product .single-product.button.vipps-buy-now .inline.mobilepay-logo {
+.wc-block-grid__product .single-product.button.vipps-buy-now .inline.mobilepay-logo.negative {
     display: inline-block;
     margin: 0 .2em;
     height: 2ex;
@@ -311,38 +311,17 @@ a.button.vipps-login {
  background-color: #fe5b24;
 }
 .woocommerce-info.mobilepay-info {
- /* background-color: #5a78ff; */
-  background-color: #f5f5f2;
-  color: #5a78ff;
-}
-.woocommerce-info.mobilepay-info a {
-  color: #5a78ff;
-}
-.woocommerce-info.mobilepay-info a:hover {
-  color: #5a78ff;
-}
-.woocommerce-info.mobilepay-info::before {
-  color: #5a78ff
+ background-color: #5a78ff;
 }
 .express-banner-logo {
   margin-left: 1ex;
   margin-right: 1ex;
-}
-.express-banner-logo.vipps-logo {
-  margin-bottom: -1px;
-}
-.express-banner-logo.mobilepay-logo {
   vertical-align: middle;
-  height: 2em;
 }
 img.inline {
  height: 2ex;
  display:inline;
- vertical-align: text-bottom;
 }
-/* img.mobilepay-logo { */
-/*   height: 100%; */
-/* } */
 
 .vippsorange {
  background-color: #fe5b24;

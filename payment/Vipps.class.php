@@ -1321,20 +1321,11 @@ jQuery('a.webhook-adder').click(function (e) {
         $text = __('Skip entering your address and just checkout using', 'woo-vipps');
         $linktext = __('Express','woo-vipps');
         $logo = $this->get_express_banner_logo();
-
         $payment_method = $this->get_payment_method_name();
-        $img_classes = 'express-banner-logo inline';
-        $div_classes = 'woocommerce-info';
-        $a_classes = 'express-banner-link';
-        if ($payment_method === 'Vipps') {
-            $img_classes .= ' vipps-logo negative';
-            $div_classes .= ' vipps-info';
-            $a_classes .= ' vipps-link';
-        } else if ($payment_method === 'MobilePay') {
-            $img_classes .= ' mobilepay-logo';
-            $div_classes .= ' mobilepay-info';
-            $a_classes .= ' mobilepay-link';
-        }
+
+        $img_classes = 'express-banner-logo inline negative ' . strtolower($payment_method) . '-logo';
+        $div_classes = 'woocommerce-info ' . strtolower($payment_method) . '-info';
+        $a_classes = 'express-banner-link ' . strtolower($payment_method) . '-link';
 
         $message = $text . "<a href='$url' class='$a_classes'><img class='$img_classes' border=0 src='$logo' alt='$payment_method'/>$linktext!</a>";
         $message = apply_filters('woo_vipps_express_checkout_banner', $message, $url, $payment_method);
@@ -4221,9 +4212,7 @@ else:
         if($payment_method === "Vipps"){
             return plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__); 
         } else if($payment_method === "MobilePay"){
-            return plugins_url('img/mobilepay.svg',__FILE__); 
-            // return plugins_url('img/MobilePay_paymark_logo.svg',__FILE__); 
-            // return plugins_url('img/MobilePay_logo_horizontal.svg',__FILE__); 
+            return plugins_url('img/mobilepay-white.svg',__FILE__); 
         }
         return null;
     }
