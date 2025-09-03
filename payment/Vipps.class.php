@@ -1319,7 +1319,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
         $text = __('Skip entering your address and just checkout using', 'woo-vipps');
-        $linktext = __('Express','woo-vipps');
+        $linktext = 'Express'; // dont translate. LP 2025-09-03
         $logo = $this->get_express_banner_logo();
         $payment_method = $this->get_payment_method_name();
 
