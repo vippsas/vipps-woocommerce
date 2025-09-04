@@ -44,7 +44,7 @@ Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can a
 
 ![Posten and Checkout shared functionality](./payment/docs/images/Posten_woocommerce_guide.png)
 
-If you use [Posten Bring Checkout plugin for Woocommerce](https://wordpress.org/plugins/posten-bring-checkout/) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
+If you use [Posten Bring Checkout plugin for WooCommerce](https://wordpress.org/plugins/posten-bring-checkout/) together with Vipps MobilePay Checkout, you will get a streamlined shipping process tightly integrated with the market leading Vipps MobilePay Checkout. Both plugins are free to use, and easy to install.
 
 You can offer your customers a variety of delivery methods, track shipments, print shipping labels, and calculate shipping costs automatically at checkout. Both plugins are designed for simple installation and management through the WooCommerce dashboard and supports both smaller and larger shops looking to streamline their payments with Vipps MobilePay and logistics with Bring.
 
@@ -54,9 +54,9 @@ Psst! If you’re thinking about e-commerce for small or medium businesses, this
 
 ## Express Checkout
 
-When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps app.
+When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps or MobilePay app.
 
-Since Vipps knows who the customers are, they don’t have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
+Since we know who the customers are, they don’t have to enter all their personal information. The customer just chooses the shipping method and accepts the payment. We will send all the necessary info back to the store. Easy, fast and secure.
 
 The express checkout can be done in the following ways:
 
@@ -79,7 +79,7 @@ They then confirm the payment in the Vipps or MobilePay app.
 ## How to get started
 
 * Sign up to use [*Checkout*](https://vippsmobilepay.com/online/checkout) or [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
-* After 1-2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
+* After 1–2 days, you will get an email with login details to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
 
