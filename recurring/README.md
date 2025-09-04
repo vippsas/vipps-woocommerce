@@ -94,17 +94,14 @@ Configuring products for use with the *Vipps/MobilePay recurring payment* plugin
 different from default WooCommerce, with one exception: The configuration for
 whether the product is virtual or physical is important to consider.
 
-If a product is virtual the customer will be charged immediately but if the
-product is physical you will have to capture the payment manually through the
+If a product is virtual, the customer will be charged immediately, but if the
+product is physical, you will have to capture the payment manually through the
 order in WooCommerce when you have shipped the product.
 
-In most cases your products should be virtual when using subscriptions, but it is
-possible to use the plugin with physical products if you need to do so.
+In most cases, your products should be virtual when using subscriptions, but it is
+possible to use the plugin with physical products, if you need to do so.
 
-See the
-[Vipps/MobilePay Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
-for more details:
-[What is the difference between "Reserve Capture" and "Direct Capture"?](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#what-is-the-difference-between-reserve-capture-and-direct-capture).
+See [Reserve capture vs direct capture](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#reserve-capture-vs-direct-capture).
 
 ## Extending the plugin
 
@@ -143,7 +140,7 @@ Some filters include:
   It is however not recommended unless it follows Vipps MobilePay's design specifications.
 
 * `wc_vipps_recurring_show_capture_button(bool $show_capture_button, WC_Order $order)` - Decides whether the direct capture button shall be displayed on an order or not.
-  Prior to version 1.2.1 this filter was called   `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current value for displaying the capture button or not. `$order` contains the current `WC_Order` being viewed.
+  Prior to version 1.2.1 this filter was called `woocommerce_vipps_recurring_show_capture_button`. `$show_capture_button` contains the current value for displaying the capture button or not. `$order` contains the current `WC_Order` being viewed.
 
 * `wc_vipps_recurring_merchant_agreement_url(string $url)` - Allows you to modify the merchant agreement URL.
 
