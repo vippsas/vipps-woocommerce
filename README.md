@@ -52,11 +52,11 @@ You can offer your customers a variety of delivery methods, track shipments, pri
 
 Psst! If you’re thinking about e-commerce for small or medium businesses, this sort of automation can really help keep things simple!
 
-## Express Checkout
+## Vipps MobilePay Express
 
-When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout process is done in the Vipps or MobilePay app.
+When you enable Vipps MobilePay Express, your customers can choose between the regular checkout or to go directly to Vipps or MobilePay. If they choose Vipps or MobilePay, they just submit their phone number, and the rest of the checkout process is done in the Vipps or MobilePay app.
 
-Since we know who the customers are, they don’t have to enter all their personal information. The customer just chooses the shipping method and accepts the payment. We will send all the necessary info back to the store. Easy, fast and secure.
+Since Vipps MobilePay knows who the customers are, they don’t have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps MobilePay will send all the necessary info back to the store. Easy, fast and secure.
 
 The express checkout can be done in the following ways:
 
@@ -66,8 +66,9 @@ The express checkout can be done in the following ways:
 * From shareable links distributed by email, banners, etc.
 * From QR codes distributed digitally or in print
 
-Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
-Shareable links and QR codes can be generated from the Vipps tab on the product page.
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps Mobilepay payment gateway.
+
+Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on the product page.
 
 ## Single payments
 

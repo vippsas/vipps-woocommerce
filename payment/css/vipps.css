@@ -44,6 +44,15 @@ SOFTWARE.
     vertical-align: text-bottom;
 }
 
+.wc-block-grid__product .single-product.button.vipps-buy-now .inline.mobilepay-logo.negative {
+    display: inline-block;
+    margin: 0 .2em;
+    height: 2ex;
+    max-width: 100%;
+    width: auto;
+    vertical-align: text-bottom;
+}
+
 /* This is for the badge block IOK 2022-11-16 */
 .vipps-badge-wrapper.aligncenter {
   text-align: center;
@@ -61,14 +70,14 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.s
     padding-top:0;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
-    max-width: 10rem;
+    max-width: 9rem;
     margin-bottom:0;
 }
 div.vipps_buy_now_wrapper.loop {
     text-align:center;
 }
 div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
-    max-width: 10rem;
+    max-width: 9rem;
 }
 
 /* end block stuff for now */
@@ -214,6 +223,9 @@ a.button.vipps-express-checkout img {
     max-height: 100%;
     filter: drop-shadow( 0px 1px 2px #d7d7d7);
 }
+a.button.vipps-express-checkout.MobilePay.short img {
+    width: 9rem;
+}
 a.button.vipps-express-checkout:hover img {
     opacity: 0.9;
 }
@@ -298,12 +310,18 @@ a.button.vipps-login {
 .woocommerce-info.vipps-info {
  background-color: #fe5b24;
 }
+.woocommerce-info.mobilepay-info {
+ background-color: #5a78ff;
+}
+.express-banner-logo {
+  margin-left: 1ex;
+  margin-right: 1ex;
+  vertical-align: middle;
+}
 img.inline {
  height: 2ex;
  display:inline;
- vertical-align: text-bottom;
 }
-
 
 .vippsorange {
  background-color: #fe5b24;

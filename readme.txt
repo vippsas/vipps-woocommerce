@@ -26,7 +26,7 @@ Vipps and MobilePay are payment methods offered by Vipps MobilePay.
 
 When you enable this plugin, you will choose between offering either Vipps or MobilePay as a payment method for your customers - hence "Vipps/MobilePay" going forward.
 
-This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express Checkout (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
+This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayments (*Vipps Nettbetaling*), Vipps MobilePay Express (*Vipps MobilePay Hurtigkasse*) and Vipps/MobilePay recurring payments. Increase your conversion rate by letting your customers choose Vipps/MobilePay directly in the checkout or even do an Express Checkout (Vipps only) from the cart or a product page directly.
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
@@ -57,22 +57,22 @@ For details, please read the [developer FAQ](https://developer.vippsmobilepay.co
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to "Completed" as is the standard WooCommerce rule.
 
-=== Vipps MobilePay Express Checkout ===
-When you enable Express Checkout, your customers can choose between the regular checkout or to go directly to Vipps. If they choose Vipps, they just submit their phone number, and the rest of the checkout is done in the Vipps app.
+=== Vipps MobilePay Express ===
+When you enable Vipps MobilePay Express, your customers can choose between the regular checkout or to go directly to Vipps or MobilePay. If they choose Vipps or MobilePay, they just submit their phone number, and the rest of the checkout process is done in the Vipps or MobilePay app.
 
-Since Vipps knows who the customers are, they don't have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps will send all the necessary info back to the store. Easy, fast and secure.
+Since Vipps MobilePay knows who the customers are, they don’t have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps MobilePay will send all the necessary info back to the store. Easy, fast and secure.
 
 The express checkout can be done in the following ways:
 
 * From the cart
 * From the category pages
 * From the product page
-* From shareable links distributed by email, banners etc
+* From shareable links distributed by email, banners, etc.
 * From QR codes distributed digitally or in print
 
-Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps payment gateway.
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps Mobilepay payment gateway.
 
-Shareable links and QR codes can be generated from the Vipps tab on the product page.
+Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on the product page.
 
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
