@@ -923,7 +923,7 @@ class VippsApi {
     }
 
     // If an order materially changes, we need to call this to change the sum total and order description at Vipps. IOK 2025-04-11
-    public function checkout_modify_session($order) {
+    public function checkout_modify_session($order, $updated_shipping=null) {
         $command = 'checkout/v3/session';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
@@ -963,9 +963,11 @@ class VippsApi {
                 $transaction['orderSummary'] = $ordersummary;
             }
         }
-
         $data = ['transaction'=>$transaction];
-
+        // Probably mostly because free shipping has been added or removed using coupons. IOK 2025-09-12
+        if ($updated_shipping_options) {
+           $data['logisticOptions'] = $updated_shipping;
+        }
         $res = $this->http_call($msn,$command . "/" . urlencode($reference),$data,'PATCH',$headers,'json'); 
         return $res;
     }
