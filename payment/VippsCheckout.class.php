@@ -892,7 +892,27 @@ jQuery(document).ready(function () {
                     add_filter('woocommerce_add_notice', function ($message) { return ""; });
 
                     if (WC()->cart) {
+     $package =  (WC()->cart->get_shipping_packages())[0];
+     $methods = WC()->shipping()->load_shipping_methods($package);
+     foreach($methods as $m) {
+         if (is_a($m, 'WC_Shipping_Free_Shipping')) {
+              error_log( "got free shipping pre " .  $m->get_title() .  " " . $m->get_instance_id() . " avail " . $m->is_available($package));
+         }
+     }
+    
                       $ok = WC()->cart->apply_coupon($code);
+
+     $package =  (WC()->cart->get_shipping_packages())[0];
+     $methods = WC()->shipping()->load_shipping_methods($package);
+     foreach($methods as $m) {
+         if (is_a($m, 'WC_Shipping_Free_Shipping')) {
+              error_log( "got free shipping post " .  $m->get_title() .  " " . $m->get_instance_id() . " avail " . $m->is_available($package));
+         }
+     }
+
+
+
+
                       if (!$ok || is_wp_error($ok)) {
                         // IOK FIXME GET ACTUAL ERROR HERE
                         throw (new Exception("Failed to apply coupon code $code"));
