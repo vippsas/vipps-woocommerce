@@ -965,7 +965,7 @@ class VippsApi {
         }
         $data = ['transaction'=>$transaction];
         // Probably mostly because free shipping has been added or removed using coupons. IOK 2025-09-12
-        if ($updated_shipping_options) {
+        if ($updated_shipping) {
            $data['logisticOptions'] = $updated_shipping;
         }
         $res = $this->http_call($msn,$command . "/" . urlencode($reference),$data,'PATCH',$headers,'json'); 

@@ -900,6 +900,10 @@ jQuery(document).ready(function () {
                     }
 
                     $res = $order->apply_coupon($code);
+
+error_log("coupon billing address " . $order->get_formatted_billing_address());
+error_log("coupon shipping address " . $order->get_formatted_shipping_address());
+
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
 
                     return 1;

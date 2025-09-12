@@ -2858,6 +2858,9 @@ else:
         $city = $vippsdata['city'];
         $postcode= $vippsdata['postCode'];
 
+
+error_log("order has address: " . $order->has_shipping_address());
+
         if (false && $ischeckout && preg_match("!Sofienberggata 12!", $addressline1)) {
             // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
             // This is subject to change and is currently inactive
@@ -2876,6 +2879,8 @@ else:
         }
 
         // This is *essential* to get VAT calculated correctly. That calculation uses the customer, which uses the session.IOK 2019-10-25
+        // We don't *save* this to the customer, because this may happen in a callback from Checkout where the customers' session is live and
+        // the address info is from Checkout (and not necessarily the customers real address). IOK 2025-09-12
         if (WC()->customer) {  
             WC()->customer->set_billing_location($country,'',$postcode,$city);
             WC()->customer->set_shipping_location($country,'',$postcode,$city);
@@ -2907,12 +2912,26 @@ else:
         $shipping_methods = array();
         $shipping_tax_rates = WC_Tax::get_shipping_tax_rates();
 
+        $destination = [ 'country' => $order->get_shipping_country(), 'state' => $order->get_shipping_state(), 'postcode' => $order->get_shipping_postcode(), 'city'=> $order->get_shipping_city(), 'address' => $order->get_shipping_address_1(), 'address_1' => $order->get_shipping_address_1(), 'address_2' => $order->get_shipping_address_2() ];
+
+error_log("destination is " . print_r($destination, true));
 
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
             $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', $shipping_tax_rates);
             $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,$no_shipping_taxes, 'none_required', 0);
         } else {
+
+            // Ensure the shipping packages we use has the current order address IOK 2025-09-12
+            add_filter('woocommerce_cart_shipping_packages', function ($packages)  use($destination) {
+               $new = [];
+               foreach($packages as $package) {
+                   $package['destination'] =  $destination;
+                   $new[] = $package;
+               }
+               return $new;
+            });
+
             $packages = apply_filters('woo_vipps_shipping_callback_packages', WC()->cart->get_shipping_packages());
             $shipping =  WC()->shipping->calculate_shipping($packages);
 
