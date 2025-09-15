@@ -118,7 +118,7 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     text-align: center;
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget {
-    width: 486px;
+    width: 100%;
     font-weight:400;
     border-bottom: 1px solid lightgrey;
 }
