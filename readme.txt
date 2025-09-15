@@ -110,6 +110,7 @@ This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerc
 
 == Upgrade Notice ==
 Version 5.0.2
+Fix phone numbers being stripped when using external payment methods
 Fix Checkout widgets on mobile
 Version 5.0.1
 Fix MobilePay buttons for Express for Finland
@@ -292,6 +293,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 == Changelog ==
 = 2025-09-15 version 5.0.2 =
 Fix Checkout widgets on mobile
+Fix phone numbers being stripped when using external payment methods
 
 = 2025-09-01 version 5.0.1 =
 Fix buttons for Express for finland
