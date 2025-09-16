@@ -561,74 +561,74 @@ jQuery(document).ready(function () {
 
         $handler = $actions[$action] ?? false;
         if (!$handler) {
-           $msg = sprintf(__("Vipps MobilePay Checkout callback with unknown action: %s", 'woo-vipps'), $action);
-           $this->log($msg, 'DEBUG');
-           return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$msg));
+            $msg = sprintf(__("Vipps MobilePay Checkout callback with unknown action: %s", 'woo-vipps'), $action);
+            $this->log($msg, 'DEBUG');
+            return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$msg));
         }
         // The single current pending order. IOK 2025-04-25
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
+        if (!$order) {
+            return wp_send_json_error(array('msg'=>'FAILED', 'error'=>'Unknown order'));
+        }
         $prevtotal = $order->get_total() ?: 0;
         try {
             $result = $handler($action, $order);
             $order = wc_get_order($order->get_id()); // Incase the order has changed since last wc_get_order. LP 2025-05-14
             $newtotal = $order->get_total() ?: 0;
-            if ($lock_held && $newtotal != $prevtotal) {
-                try {
-                    $res = $this->gateway()->api->checkout_modify_session($order);
-                } catch (Exception $e) {
-                    $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
+
+            if ($lock_held) {
+                // If the order total has changed, we may want to recalculate shipping methods.
+                list($new_shipping, $old_table) = $this->maybe_recalc_shipping_methods($order, $prevtotal, $newtotal);
+                if ($new_shipping || $newtotal != $prevtotal) {
+                    try {
+                        $res = $this->gateway()->api->checkout_modify_session($order, $new_shipping);
+                    } catch (Exception $e) {
+                        $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
+                        if ($new_shipping) {
+                            $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $old_table);
+                            $order->save_meta_data();
+                        }
+                    }
                 }
             }
             return wp_send_json_success(array('msg'=>$result));
         } catch (Exception $e) {
-           return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$e->getMessage()));
+            return wp_send_json_error(array('msg'=>'FAILED', 'error'=>$e->getMessage()));
         }
     }
 
     // We call this in the *modify* branch of Vipps Checkout if the customer adds a coupon or changes the value
     // of the order so that free shipping may be added or removed. IOK 2029-09-16
     // On successful return, we will return both the new set of shipping rates and the old table so any errors can be reverted.
-    public function maybe_recalc_shipping_methods ($order) {
+    private function maybe_recalc_shipping_methods ($order, $old_price, $new_price) {
         // We will only recalculate if we already have a shipping table; and because the "modify" call may fail,
         // we'll return the previous table so that we can then revert to the previous table. IOK 2025-09-16
         $existing_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
         if (empty($existing_table)) return [false, false];
 
-        // We will load the shipping methods for the package of the current cart (which is in session) with the orders current address
-        // as the package address. "vipps_shipping_details_callback_handler"  will add a filter here too, but removing the filter is probably pointless.
-        $country = $order->get_shipping_country();
-        $postcode = $order->get_shipping_postcode();
-        $city = $order->get_shipping_city();
-        $addressline1 = $order->get_shipping_address_1();
-        $addressline2 = $order->get_shipping_address_2();
-        $destination = [ 'country' => $country, 'state' => '', 'postcode' => $postcode, 'city'=> $city, 'address' => $addressline1, 'address_1' => $addressline1, 'address_2' => $addressline2 ];
-        $get_packages_for_order = function ($packages)  use($destination) {
-            $new = [];
-            foreach($packages as $package) {
-                $package['destination'] =  $destination;
-                $new[] = $package;
-            }
-            return $new;
-        };
-        if (!WC()->cart) return [false, false];
-        add_filter('woocommerce_cart_shipping_packages',$get_packages_for_order);
-        $packages = WC()->cart->get_shipping_packages();
-        remove_filter('woocommerce_cart_shipping_packages',$get_packages_for_order);
-        $package =  (WC()->cart->get_shipping_packages())[0];
-        $methods = WC()->shipping()->load_shipping_methods($package);
+        // This is any shipping method with zero cost which is *not* local pickup. We are not going to try to find "free shipping" rates or methods
+        // using load_shipping_methods or anything like that, because any shipping method can implement free shipping and we can't know which 
+        // until we recalculate shipping for the package, which could be costly. Instead we'll look at the price of the order and any coupons that have been added.
+        // IOK 2025-09-16
+        $had_free_shipping = ($existing_table['_meta_has_free_shipping']  ?? false);
 
-        $has_free_shipping = false;
-        foreach($methods as $m) {
-            if (is_a($m, 'WC_Shipping_Free_Shipping')) { // WC_Shipping_Legacy_Free_Shipping
-                $has_free_shipping = $m->is_available($package);
-                if ($has_free_shipping) break;
-            }
-        }
+        // We *should* recalc primarily if we did have free shipping, but the new price of the order is lower than the old one,
+        // or if we did *not* have free shipping but the new price is *larger*. This is because free shipping is typically linked to 
+        // the cart value. IOK 2025-09-16
+        $should_recalc = ($had_free_shipping && ($old_price > $new_price)) || (!$had_free_shipping && ($old_price < $new_price));
+error_log("should recalc $should_recalc, had free: $had_free_shipping  old price $old_price new price $new_price");
+        // Then we run a filter on this so that forexample adding or removing a free-shipping coupont will have the neccessary effect. IOK 2025-09-16
+        $should_recalc = apply_filters('woo_vipps_checkout_recalculate_shipping', $should_recalc, $had_free_shipping, $order, $old_price);
+error_log("After filters, should recalc is $should_recalc");
 
-// free_shipping is a meta value of the Vipps Checkout Shipping methods. --  public $supports_free_shipping = true;
+        if (!$should_recalc) return [false, false];
 
         $new_return = Vipps::instance()->vipps_shipping_details_callback_handler($order, [],$vippsorderid, 'ischeckout');
+        $new_return = $new_return['shippingDetails'];
+
+error_log("new shipping return is " . print_r($new_return, true));
+
         return [$new_return, $existing_table];
     }
 
@@ -938,38 +938,28 @@ jQuery(document).ready(function () {
                     add_filter('woocommerce_add_notice', function ($message) { return ""; });
 
                     if (WC()->cart) {
-     $package =  (WC()->cart->get_shipping_packages())[0];
-     $methods = WC()->shipping()->load_shipping_methods($package);
-     foreach($methods as $m) {
-         if (is_a($m, 'WC_Shipping_Free_Shipping')) {
-              error_log( "got free shipping pre " .  $m->get_title() .  " " . $m->get_instance_id() . " avail " . $m->is_available($package));
-         }
-     }
-    
-                      $ok = WC()->cart->apply_coupon($code);
-
-     $package =  (WC()->cart->get_shipping_packages())[0];
-     $methods = WC()->shipping()->load_shipping_methods($package);
-     foreach($methods as $m) {
-         if (is_a($m, 'WC_Shipping_Free_Shipping')) {
-              error_log( "got free shipping post " .  $m->get_title() .  " " . $m->get_instance_id() . " avail " . $m->is_available($package));
-         }
-     }
 
 
+                        $ok = WC()->cart->apply_coupon($code);
+                        if (!$ok || is_wp_error($ok)) {
+                            // IOK FIXME GET ACTUAL ERROR HERE
+                            throw (new Exception("Failed to apply coupon code $code"));
+                        }
 
+                        $coupon = new WC_Coupon($code);
+                        $has_free = $coupon->get_free_shipping();
+                        add_filter('woo_vipps_checkout_recalculate_shipping', function ($should_recalc, $had_free_shipping, $order, $old_price) use ($has_free) {
+                                if ($has_free && !$had_free) {
+                                    error_log("Adding a free shipping coupon to an order with no free shipping");
+                                    return true;
+                                }
+                                return $should_recalc;
+                        }, 10, 4);
 
-                      if (!$ok || is_wp_error($ok)) {
-                        // IOK FIXME GET ACTUAL ERROR HERE
-                        throw (new Exception("Failed to apply coupon code $code"));
-                      }
                     }
 
+
                     $res = $order->apply_coupon($code);
-
-error_log("coupon billing address " . $order->get_formatted_billing_address());
-error_log("coupon shipping address " . $order->get_formatted_shipping_address());
-
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
 
                     return 1;
@@ -986,6 +976,17 @@ error_log("coupon shipping address " . $order->get_formatted_shipping_address())
                       // can't do much if this fails so
                     }
                     $res = $order->remove_coupon($code);
+
+                    $coupon = new WC_Coupon($code);
+                    $has_free = $coupon->get_free_shipping();
+                    add_filter('woo_vipps_checkout_recalculate_shipping', function ($should_recalc, $had_free_shipping, $order, $old_price) use ($has_free) {
+                                if ($has_free && $had_free) {
+                                    error_log("Removing a free shipping coupon to an order with free shipping");
+                                    return true;
+                                }
+                                return $should_recalc;
+                    }, 10, 4);
+
 
                     if ($res) return 1;
                 }

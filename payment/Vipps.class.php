@@ -3039,20 +3039,25 @@ else:
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
         $methods_classes['pickup_location'] = 'Automattic\WooCommerce\Blocks\Shipping\PickupLocation'; // Loaded using the "load" hook, after the registered methods, so we need to add it specially.
 
+        $has_free_shipping = false;
         foreach($methods as $method) {
            $rate = $method['rate'];
+           $methodid = $rate->get_method_id();
 
            // Extended settings are stored in these objects
-           $methodclass = $methods_classes[$rate->get_method_id()] ?? null;
+           $methodclass = $methods_classes[$methodid] ?? null;
            $shipping_method = $methodclass ? new $methodclass($rate->get_instance_id()) : null;
 
            $tax  = $rate->get_shipping_tax() ?: 0;
            $cost = $rate->get_cost() ?: 0;
            $label = $rate->get_label();
+  
+           if ($cost == 0 && ($methodid == 'local_pickup' || $methodid == 'pickup_location')) {
+              $has_free_shipping = true;
+           }
 
            // We can't just use the method id, because the customer may have different addresses. Just to be sure, hash the entire method and use as a key.
            // Actually, we probably *can* use the method id, because other addresses are irellevant. But still, add a random factor 
-           $methodid = $rate->get_method_id();
            $rand = md5($methodid . bin2hex(random_bytes(32))); // Random enough, 32 chars
            // Ensure this never is over 100 chars. Use a dollar sign to indicate 'new method' IOK 2020-02-14
            // Reserve 8 chars to contain a : and an option index for Express Checkout IOK 2025-08-15
@@ -3102,6 +3107,9 @@ else:
             // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
             $storedmethods[$key] = $serialized;
         }
+        // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
+        $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
+
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save_meta_data();
         return $return;
