@@ -580,14 +580,12 @@ jQuery(document).ready(function () {
             if ($lock_held) {
                 // If the order total has changed, we may want to recalculate shipping methods.
                 list($new_shipping, $old_table) = $this->maybe_recalc_shipping_methods($order, $prevtotal, $newtotal);
-error_log("We have got new shipping, yes : " . (!!$new_shipping));
                 if ($new_shipping || $newtotal != $prevtotal) {
                     try {
                         $res = $this->gateway()->api->checkout_modify_session($order, $new_shipping);
                     } catch (Exception $e) {
                         $this->log(__("Problem modifying Checkout session: ", 'woo-vipps')  . $e->getMessage());
                         if ($new_shipping) {
-error_log("Could not update shipping, setting to old_table");
                             $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $old_table);
                             $order->save_meta_data();
                         }
@@ -615,16 +613,12 @@ error_log("Could not update shipping, setting to old_table");
         // IOK 2025-09-16
         $had_free_shipping = ($existing_table['_meta_has_free_shipping']  ?? false);
 
-error_log("had: $had_free_shipping table: {$existing_table['_meta_has_free_shipping']}");
-
         // We *should* recalc primarily if we did have free shipping, but the new price of the order is lower than the old one,
         // or if we did *not* have free shipping but the new price is *larger*. This is because free shipping is typically linked to 
         // the cart value. IOK 2025-09-16
         $should_recalc = ($had_free_shipping && ($old_price > $new_price)) || (!$had_free_shipping && ($old_price < $new_price));
-error_log("should recalc $should_recalc, had free: $had_free_shipping  old price $old_price new price $new_price");
         // Then we run a filter on this so that forexample adding or removing a free-shipping coupont will have the neccessary effect. IOK 2025-09-16
         $should_recalc = apply_filters('woo_vipps_checkout_recalculate_shipping', $should_recalc, $had_free_shipping, $order, $old_price);
-error_log("After filters, should recalc is $should_recalc");
 
         if (!$should_recalc) return [false, false];
 
@@ -953,7 +947,6 @@ error_log("After filters, should recalc is $should_recalc");
                         $has_free = $coupon->get_free_shipping();
                         add_filter('woo_vipps_checkout_recalculate_shipping', function ($should_recalc, $had_free, $order, $old_price) use ($has_free) {
                                 if ($has_free && !$had_free) {
-                                    error_log("Adding a free shipping coupon to an order with no free shipping");
                                     return true;
                                 }
                                 return $should_recalc;
@@ -984,7 +977,6 @@ error_log("After filters, should recalc is $should_recalc");
                     $has_free = $coupon->get_free_shipping();
                     add_filter('woo_vipps_checkout_recalculate_shipping', function ($should_recalc, $had_free, $order, $old_price) use ($has_free) {
                                 if ($has_free && $had_free) {
-                                    error_log("Removing a free shipping coupon to an order with free shipping");
                                     return true;
                                 }
                                 return $should_recalc;
