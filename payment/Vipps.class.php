@@ -3052,7 +3052,8 @@ else:
            $cost = $rate->get_cost() ?: 0;
            $label = $rate->get_label();
   
-           if ($cost == 0 && ($methodid == 'local_pickup' || $methodid == 'pickup_location')) {
+           if ($cost == 0 && ($methodid != 'local_pickup' && $methodid != 'pickup_location')) {
+              error_log("cost-free method which isn't local pickup detected");
               $has_free_shipping = true;
            }
 
@@ -3109,6 +3110,8 @@ else:
         }
         // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
         $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
+
+error_log("meta is " . $storedmethods['_meta_has_free_shipping']);
 
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save_meta_data();
