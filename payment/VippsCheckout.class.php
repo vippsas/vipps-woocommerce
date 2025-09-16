@@ -586,6 +586,52 @@ jQuery(document).ready(function () {
         }
     }
 
+    // We call this in the *modify* branch of Vipps Checkout if the customer adds a coupon or changes the value
+    // of the order so that free shipping may be added or removed. IOK 2029-09-16
+    // On successful return, we will return both the new set of shipping rates and the old table so any errors can be reverted.
+    public function maybe_recalc_shipping_methods ($order) {
+        // We will only recalculate if we already have a shipping table; and because the "modify" call may fail,
+        // we'll return the previous table so that we can then revert to the previous table. IOK 2025-09-16
+        $existing_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+        if (empty($existing_table)) return [false, false];
+
+        // We will load the shipping methods for the package of the current cart (which is in session) with the orders current address
+        // as the package address. "vipps_shipping_details_callback_handler"  will add a filter here too, but removing the filter is probably pointless.
+        $country = $order->get_shipping_country();
+        $postcode = $order->get_shipping_postcode();
+        $city = $order->get_shipping_city();
+        $addressline1 = $order->get_shipping_address_1();
+        $addressline2 = $order->get_shipping_address_2();
+        $destination = [ 'country' => $country, 'state' => '', 'postcode' => $postcode, 'city'=> $city, 'address' => $addressline1, 'address_1' => $addressline1, 'address_2' => $addressline2 ];
+        $get_packages_for_order = function ($packages)  use($destination) {
+            $new = [];
+            foreach($packages as $package) {
+                $package['destination'] =  $destination;
+                $new[] = $package;
+            }
+            return $new;
+        };
+        if (!WC()->cart) return [false, false];
+        add_filter('woocommerce_cart_shipping_packages',$get_packages_for_order);
+        $packages = WC()->cart->get_shipping_packages();
+        remove_filter('woocommerce_cart_shipping_packages',$get_packages_for_order);
+        $package =  (WC()->cart->get_shipping_packages())[0];
+        $methods = WC()->shipping()->load_shipping_methods($package);
+
+        $has_free_shipping = false;
+        foreach($methods as $m) {
+            if (is_a($m, 'WC_Shipping_Free_Shipping')) { // WC_Shipping_Legacy_Free_Shipping
+                $has_free_shipping = $m->is_available($package);
+                if ($has_free_shipping) break;
+            }
+        }
+
+// free_shipping is a meta value of the Vipps Checkout Shipping methods. --  public $supports_free_shipping = true;
+
+        $new_return = Vipps::instance()->vipps_shipping_details_callback_handler($order, [],$vippsorderid, 'ischeckout');
+        return [$new_return, $existing_table];
+    }
+
     // Check the current status of the current Checkout session for the user.
     public function vipps_ajax_checkout_poll_session () {
         check_ajax_referer('do_vipps_checkout','vipps_checkout_sec');
