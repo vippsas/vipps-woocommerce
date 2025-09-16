@@ -601,7 +601,7 @@ error_log("Could not update shipping, setting to old_table");
     }
 
     // We call this in the *modify* branch of Vipps Checkout if the customer adds a coupon or changes the value
-    // of the order so that free shipping may be added or removed. IOK 2029-09-16
+    // of the order so that free shipping may be added or removed. IOK 2025-09-16
     // On successful return, we will return both the new set of shipping rates and the old table so any errors can be reverted.
     private function maybe_recalc_shipping_methods ($order, $old_price, $new_price) {
         // We will only recalculate if we already have a shipping table; and because the "modify" call may fail,
