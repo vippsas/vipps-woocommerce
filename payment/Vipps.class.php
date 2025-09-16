@@ -2832,6 +2832,17 @@ else:
         // This filter is used in sub-functions to keep track of what we are calculating for, without having to set globals or pass arguments. IOK 2025-08-14
         if ($ischeckout) add_filter('woo_vipps_is_vipps_checkout', '__return_true');
 
+        // We may have an address already in the Order, and no *new* address, when recalculating shipping options after modifying the order.
+        // We'll still create a $vippsdata struct so that old filters can do whatever is neccessary. IOK 2025-09-16
+        $new_address = !empty($vippsdata);
+        if (!$new_address) {
+            $vippsdata['addressLine1'] =  $order->get_shipping_address_1();
+            $vippsdata['addressLine2'] =  $order->get_shipping_address_2();
+            $vippsdata['postCode'] = $order->get_shipping_postcode();
+            $vippsdata['city'] = $order->get_shipping_city();
+            $vippsdata['country'] = $order->get_shipping_country();
+        }
+
        // Since we have legacy users that may have filters defined on these values, we will translate newer apis to the older ones.
        // so filters will continue to work for newer apis/checkout
        if (isset($vippsdata['streetAddress'])){
@@ -2858,13 +2869,9 @@ else:
         $city = $vippsdata['city'];
         $postcode= $vippsdata['postCode'];
 
-
-error_log("order has address: " . $order->has_shipping_address());
-
-        if (false && $ischeckout && preg_match("!Sofienberggata 12!", $addressline1)) {
-            // Default address used to produce a proforma set of shipping options in Vipps Checkout. IOK 2023-07-28
-            // This is subject to change and is currently inactive
-        } else {
+        // Old code here treated "Sofienberggata 12" as a special Vipps pro-forma address; this is no longer necessary.
+        // If we have gotten a new address from Express or Checkout, update the order. IOK 2025-09-16.
+        if ($new_address) {
             $order->set_billing_address_1($addressline1);
             $order->set_billing_address_2($addressline2);
             $order->set_billing_city($city);
@@ -2912,17 +2919,14 @@ error_log("order has address: " . $order->has_shipping_address());
         $shipping_methods = array();
         $shipping_tax_rates = WC_Tax::get_shipping_tax_rates();
 
-        $destination = [ 'country' => $order->get_shipping_country(), 'state' => $order->get_shipping_state(), 'postcode' => $order->get_shipping_postcode(), 'city'=> $order->get_shipping_city(), 'address' => $order->get_shipping_address_1(), 'address_1' => $order->get_shipping_address_1(), 'address_2' => $order->get_shipping_address_2() ];
-
-error_log("destination is " . print_r($destination, true));
 
         // If no shipping is required (for virtual products, say) ensure we send *something* back IOK 2018-09-20 
         if (!$acart->needs_shipping()) {
             $no_shipping_taxes = WC_Tax::calc_shipping_tax('0', $shipping_tax_rates);
             $shipping_methods['none_required:0'] = new WC_Shipping_Rate('none_required:0',__('No shipping required','woo-vipps'),0,$no_shipping_taxes, 'none_required', 0);
         } else {
-
             // Ensure the shipping packages we use has the current order address IOK 2025-09-12
+            $destination = [ 'country' => $country, 'state' => '', 'postcode' => $postcode, 'city'=> $city, 'address' => $addressline1, 'address_1' => $addressline1, 'address_2' => $addressline2 ];
             add_filter('woocommerce_cart_shipping_packages', function ($packages)  use($destination) {
                $new = [];
                foreach($packages as $package) {
