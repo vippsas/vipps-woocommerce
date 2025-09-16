@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.1
-Stable tag: 5.0.1
+Version: 5.0.2
+Stable tag: 5.0.2
 Requires at least: 6.2
 Tested up to: 6.8.2
 Requires PHP: 7.4
@@ -109,6 +109,9 @@ Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.0.2
+Fix phone numbers being stripped when using external payment methods
+Fix Checkout widgets on mobile
 Version 5.0.1
 Fix MobilePay buttons for Express for Finland
 Version 5.0.0
@@ -116,20 +119,6 @@ Support for the new Express Checkout mechanism and the removal of the old code. 
 Express Checkout now supported for MobilePay
 Express Checkout now supports Local Pickup locations.
 Fix in the session handling of Express Checkout and Checkout shipping
-Version 4.1.7
-Minor bugfixes
-Version 4.1.6
-Added support for All Products for WooCommerce Subscriptions
-Version 4.1.4,4.1.5
-Handle issue with tax being an empty string for free shipping methods
-Version 4.1.3
-Make CSS for Checkout widgets more specific
-Version 4.1.2
-Put customer order notes from Checkout in the correct place
-Version 4.1.1
-Hotfixes for the recurring subsystem; fix for a possible memory issue
-Version 4.1.0
-Optionally support coupons and order notes in Vipps Checkout 
 
 == Frequently Asked Questions ==
 
@@ -302,6 +291,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-09-15 version 5.0.2 =
+Fix Checkout widgets on mobile
+Fix phone numbers being stripped when using external payment methods
+
 = 2025-09-01 version 5.0.1 =
 Fix buttons for Express for finland
 

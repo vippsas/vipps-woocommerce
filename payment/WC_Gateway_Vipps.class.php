@@ -2869,8 +2869,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $firstname = $user['firstName'];
         $lastname = $user['lastName'];
         $email = $user['email'];
+
         $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
         if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
+        if (!$phone && ($address['phoneNumber'] ?? "")) $phone = $address['phoneNumber'];
+        if (!$phone && ($address['mobileNumber'] ?? "")) $phone = $address['mobileNumber'];
 
         if (!isset($address['firstName']) or !$address['firstName']) {
             $address['firstName'] = $firstname;
@@ -2985,7 +2988,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->set_shipping_phone($address['mobileNumber']);
         }
         $order->set_shipping_address_1($address['addressLine1']);
-        if ($address['addressLine2']) $order->set_shipping_address_2($address['addressLine2']);
+        if ($address['addressLine2'] ?? "") $order->set_shipping_address_2($address['addressLine2']);
         $order->set_shipping_city($address['city']);
         $order->set_shipping_postcode($address['postCode']);
         $order->set_shipping_country($address['country']);
