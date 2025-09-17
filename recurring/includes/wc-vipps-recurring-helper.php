@@ -538,6 +538,18 @@ class WC_Vipps_Recurring_Helper {
 		return is_a( WC()->session, 'WC_Session' ) ? WC()->session->get( self::SESSION_CHECKOUT_PENDING_ORDER_ID ) : false;
 	}
 
+	public static function get_failed_retries_amount_for_order( $order ): int {
+		$failed_retries = \WCS_Retry_Manager::store()->get_retries(
+			[
+				'status'   => 'failed',
+				'order_id' => $order->get_id(),
+			],
+			'ids'
+		);
+
+		return count( $failed_retries );
+	}
+
 	public static function generate_vipps_order_id( $order, $prefix ) {
 		$order_id       = self::get_id( $order );
 		$vipps_order_id = $prefix . $order_id;
@@ -547,6 +559,13 @@ class WC_Vipps_Recurring_Helper {
 			$pad_width      = 8 - strlen( $prefix );
 			$padded_id      = str_pad( "" . $order_id, $pad_width, "0", STR_PAD_LEFT );
 			$vipps_order_id = $prefix . $padded_id;
+		}
+
+		// To prevent re-using an existing order id, we need to check if the order has failed retries.
+		// Append the number of retries if there are.
+		$failed_renewals = self::get_failed_retries_amount_for_order( $order );
+		if ( $failed_renewals > 0 ) {
+			$vipps_order_id = $vipps_order_id . "-" . ( $failed_renewals + 1 );
 		}
 
 		return apply_filters( 'wc_vipps_recurring_order_id', $vipps_order_id, $prefix, $order );
