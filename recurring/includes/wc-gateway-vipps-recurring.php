@@ -451,9 +451,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$charge = null;
-		if ( $charges ) {
-			$charge = array_reverse( $charges )[0];
+		$charge     = null;
+		$latestDate = null;
+
+		// find the latest charge by due date
+		foreach ( $charges as $row ) {
+			$currentDate = $row->due;
+
+			if ( $latestDate === null || $currentDate > $latestDate ) {
+				$latestDate = $currentDate;
+				$charge     = $row;
+			}
 		}
 
 		return $charge;
