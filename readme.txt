@@ -125,7 +125,7 @@ Fix in the session handling of Express Checkout and Checkout shipping
 == Frequently Asked Questions ==
 
 = In which countries can I use Vipps/MobilePay? =
-Vipps is currently only available in Norway (77 % user adoption in 2022)
+Vipps is currently only available in Norway (77 % user adoption in 2022) and Sweden.
 MobilePay is currently only available in Denmark and Finland (75 % and 36 % user adoption in 2022, respectively).
 
 = How can I get help if I have any issues? =
