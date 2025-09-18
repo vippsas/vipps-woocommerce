@@ -198,6 +198,7 @@ class WC_Vipps_Recurring_Api {
 		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
 		$charge = ( new WC_Vipps_Charge() )->set_order_id( $vipps_order_id )
+		                                   ->set_external_id( $order_id )
 		                                   ->set_amount( $amount )
 		                                   ->set_description( $agreement->product_name ?? get_bloginfo() )
 		                                   ->set_transaction_type( WC_Vipps_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE )
