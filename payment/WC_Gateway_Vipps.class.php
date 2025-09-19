@@ -2267,6 +2267,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return $oldstatus;
         }
 
+        $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
+
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
 
