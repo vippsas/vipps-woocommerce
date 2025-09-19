@@ -2279,9 +2279,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $newvippsstatus = $paymentdetails['status'];
             $vippsstatus = $this->interpret_vipps_order_status($newvippsstatus);
 
+            $ready = false; // True if money is authorized or complete
+            if (in_array($vippsstatus, ['authorized', 'complete'])) {
+                $ready = true;
+            }
+
             // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
             // IOK 2024-01-09 ensure this is called only when order is complete/authorized
-            if (in_array($vippsstatus, ['authorized', 'complete'])) {
+            if ($ready) {
                 $this->reset_erroneous_payment_method($order);
             }
 
@@ -2498,11 +2503,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Ensure we get payment details with state + aggregate, which we do not if the payment method is bank transfer for checkout. IOK 2024-01-09
         // Also add keys and transform for backwards compatibility.
         $result = $this->normalizePaymentDetails($result);
+        $newstatus = $this->interpret_vipps_order_status($result['status']);
+        $ready = false;
+        if (in_array($newstatus, ['authorized', 'complete'])) {
+            $ready = true;
+        }
 
         // if this is *express - not checkout * and there is no user information, this is probably because we only get that when adding the 'address' scope.
         // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
         // This is also the only way to get "email_verified", so we may want to add a setting that always calls this if neccessary. IOK 2025-08-13
-        if ($express && !$checkout_session && !isset($result['userDetails'])) {
+        // Also we don't get this when the state is different from AUTHORIZED. Especially not ABORTED.
+        if ($ready && $express && !$checkout_session && !isset($result['userDetails'])) {
+
             $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
             $userinfo = [];
             if (!$sub) {
@@ -2556,7 +2568,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        if ($express || $checkout_session) {
+        if ($ready && ($express || $checkout_session)) {
             // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
             // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
             $result = $this->ensure_userDetails($result, $order);
@@ -3294,6 +3306,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $details = $result['paymentDetails'];
 
         $vippsstatus = $result['status']; // Will exist now, because of the normalization IOK 2025-08-13
+        $newstatus = $this->interpret_vipps_order_status($vippsstatus);
 
         // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
         $transaction = array();
@@ -3338,14 +3351,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->log(sprintf(__("%1\$s callback: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
-        // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
-        // IOK 2024-01-09 ensure this is called only when order is complete/authorized
-        if (in_array($this->interpret_vipps_order_status($vippsstatus), ['authorized', 'complete'])) {
+      
+        // This order is ready to set order shipping details etc for IOK 2025-09-19
+        $ready = false;
+        if (in_array($newstatus, ['authorized', 'complete'])) {
+            $ready = true;
+        }
+        if ($ready) {
+            // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+            // IOK 2024-01-09 ensure this is called only when order is complete/authorized
             $this->reset_erroneous_payment_method($order);
         }
 
-
-        if ($express || $ischeckout) {
+        if ($ready && ($express || $ischeckout)) {
             // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
             // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
             if ($ischeckout) {
