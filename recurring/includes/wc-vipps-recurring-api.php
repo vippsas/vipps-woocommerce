@@ -182,7 +182,7 @@ class WC_Vipps_Recurring_Api {
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
 	 * @throws Exception
 	 */
-	public function create_charge( WC_Vipps_Agreement $agreement, string $idempotency_key, ?int $amount = null ): array {
+	public function create_charge( WC_Vipps_Agreement $agreement, string $idempotency_key, string $order_id, string $vipps_order_id, ?int $amount = null ): array {
 		$token = $this->get_access_token();
 
 		$headers = [
@@ -197,13 +197,15 @@ class WC_Vipps_Recurring_Api {
 		// minimum of 2 days
 		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
 
-		$charge = ( new WC_Vipps_Charge() )->set_amount( $amount )
+		$charge = ( new WC_Vipps_Charge() )->set_order_id( $vipps_order_id )
+		                                   ->set_external_id( $order_id )
+		                                   ->set_amount( $amount )
 		                                   ->set_description( $agreement->product_name ?? get_bloginfo() )
 		                                   ->set_transaction_type( WC_Vipps_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE )
 		                                   ->set_due( $due_at )
 		                                   ->set_retry_days( $this->retry_days );
 
-		$data = apply_filters( 'wc_vipps_recurring_create_charge_data', $charge->to_array() );
+		$data = apply_filters( 'wc_vipps_recurring_create_charge_data', $charge->to_array(), $agreement->id, $order_id );
 
 		return $this->http_call( 'recurring/v3/agreements/' . $agreement->id . '/charges', 'POST', $data, $headers );
 	}

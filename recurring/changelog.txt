@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 2.2.0 =
+* Fix: `get_latest_charge_for_agreement` was returning the first charge instead of the latest charge. The display order in this API endpoint seems to have changed with time.
+* Added: Renewal charges now use the order id prefix as well, as intended. No more unpredictable chr_ transaction ids.
+
 = 2.1.10 =
 * Fix: Redirect users back to an already created agreement when attempting to checkout on an incomplete order, if the agreement is still in the PENDING state. Vipps MobilePay does not obey idempotency keys when hitting the create agreement endpoint.
 * Fix: If a subscription does not exist we will no longer attempt to cancel it in Vipps.

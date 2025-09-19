@@ -451,9 +451,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$charge = null;
-		if ( $charges ) {
-			$charge = array_reverse( $charges )[0];
+		$charge     = null;
+		$latestDate = null;
+
+		// find the latest charge by due date
+		foreach ( $charges as $row ) {
+			$currentDate = $row->due;
+
+			if ( $latestDate === null || $currentDate > $latestDate ) {
+				$latestDate = $currentDate;
+				$charge     = $row;
+			}
 		}
 
 		return $charge;
@@ -1028,12 +1036,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 	/**
 	 * @param $amount
-	 * @param $renewal_order
+	 * @param WC_Order $renewal_order
 	 *
 	 * @return bool
 	 * @throws WC_Vipps_Recurring_Config_Exception
 	 * @throws WC_Vipps_Recurring_Exception
 	 * @throws WC_Vipps_Recurring_Temporary_Exception
+	 * @throws WC_Data_Exception
 	 */
 	public function process_subscription_payment( $amount, $renewal_order ): bool {
 		$renewal_order_id = WC_Vipps_Recurring_Helper::get_id( $renewal_order );
@@ -1081,7 +1090,9 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		$idempotency_key = $this->get_idempotency_key( $renewal_order );
-		$charge          = $this->api->create_charge( $agreement, $idempotency_key, $amount );
+
+		$vipps_order_id = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $renewal_order, $this->order_prefix );
+		$charge         = $this->api->create_charge( $agreement, $idempotency_key, $renewal_order_id, $vipps_order_id, $amount );
 
 		WC_Vipps_Recurring_Helper::update_meta_data( $renewal_order, WC_Vipps_Recurring_Helper::META_CHARGE_ID, $charge['chargeId'] );
 		WC_Vipps_Recurring_Helper::set_order_as_pending( $renewal_order, $charge['chargeId'] );
@@ -1487,14 +1498,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				}
 			}
 
-			$reference = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $this->order_prefix );
+			$vipps_order_id = WC_Vipps_Recurring_Helper::generate_vipps_order_id( $order, $this->order_prefix );
 
 			$agreement = $agreement->set_initial_charge(
 				( new WC_Vipps_Agreement_Initial_Charge() )
 					->set_amount( apply_filters( 'wc_vipps_recurring_agreement_initial_charge_amount', WC_Vipps_Recurring_Helper::get_vipps_amount( $order->get_total() ), $order ) )
 					->set_description( empty( $initial_charge_description ) ? $subscription_item->get_name() : $initial_charge_description )
 					->set_transaction_type( $capture_immediately ? WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_DIRECT_CAPTURE : WC_Vipps_Agreement_Initial_Charge::TRANSACTION_TYPE_RESERVE_CAPTURE )
-					->set_order_id( $reference )
+					->set_order_id( $vipps_order_id )
 					->set_external_id( $order_id )
 			);
 

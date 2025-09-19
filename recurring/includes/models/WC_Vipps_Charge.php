@@ -47,12 +47,14 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 
 	protected array $required_fields = [
 		"amount",
+		"order_id",
 		"description",
 		"due",
 		"retry_days"
 	];
 
 	public ?string $id = null;
+	public ?string $order_id = null;
 	public ?string $status = null;
 	public ?string $type = null;
 	public ?int $amount = null;
@@ -60,6 +62,7 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 	public ?string $transaction_type = null;
 	public ?string $description = null;
 	public ?string $currency = null;
+	public ?string $external_id = null;
 
 	/**
 	 * @var DateTime|string $due
@@ -73,6 +76,12 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 
 	public function set_id( string $id ): self {
 		$this->id = $id;
+
+		return $this;
+	}
+
+	public function set_order_id( string $order_id ): self {
+		$this->order_id = $order_id;
 
 		return $this;
 	}
@@ -163,6 +172,12 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 		return $this;
 	}
 
+	public function set_external_id( string $external_id ): self {
+		$this->external_id = $external_id;
+
+		return $this;
+	}
+
 	/**
 	 * @throws WC_Vipps_Recurring_Missing_Value_Exception
 	 */
@@ -173,14 +188,16 @@ class WC_Vipps_Charge extends WC_Vipps_Model {
 
 		return array_merge(
 			[
+				"orderId"     => $this->order_id,
 				"amount"      => $this->amount,
 				"description" => $this->description,
-				"due"         => $this->serialize_value($this->due, 'Y-m-d'),
+				"due"         => $this->serialize_value( $this->due, 'Y-m-d' ),
 				"retryDays"   => $this->retry_days
 			],
 			$this->conditional( "type", $this->type ),
 			$this->conditional( "transactionType", $this->transaction_type ),
-			$this->conditional( "transactionId", $this->transaction_id )
+			$this->conditional( "transactionId", $this->transaction_id ),
+			$this->conditional( "externalId", $this->external_id )
 		);
 	}
 }
