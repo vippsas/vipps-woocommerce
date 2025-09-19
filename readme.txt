@@ -30,10 +30,10 @@ This is the official plugin for Vipps/MobilePay Checkout, Vipps/MobilePay ePayme
 
 You can also do important back office tasks such as capture and refund directly from WooCommerce. Easy for your customer and easy for you.
 
-Read [information from Vipps](https://developer.vippsmobilepay.com/docs/plugins/woocommerce/) about the plugin.
+Read [information from Vipps MobilePay](https://developer.vippsmobilepay.com/docs/plugins/woocommerce/) about the plugin.
 
 === Vipps/MobilePay Checkout ===
-With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps Checkout here](https://vippsmobilepay.com/en/online/checkout)
+With Vipps/MobilePay Checkout enabled in the plugin, you will get a complete checkout in your webshop, designed by Vipps MobilePay. It contains regular Vipps/MobilePay payments, a card payment option for those that can't or won't use Vipps/MobilePay, as well as the ability to get the shipping address of the customer in an easy way. Read more about [Vipps MobilePay Checkout here](https://vippsmobilepay.com/en/online/checkout)
 
 === Vipps/MobilePay ePayment ===
 When you enable this plugin, your customers will be able to choose Vipps/MobilePay as a payment method in the checkout. There is no need to go via a third party payment method. If your customer choose Vipps/MobilePay, they fill in their name and address and is then asked to enter their phone number in the Vipps/MobilePay dialogue. They then confirms the payment in the Vipps/MobilePay app. Customer info like name and address is sent to the store from Vipps MobilePay.
@@ -76,32 +76,32 @@ Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on th
 
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
-* After 1-2 days you will get an email with login details to Vipps Business Portal, where you can get the API credentials
+* After 1-2 days you will get an email with login details to Vipps MobilePay Business Portal, where you can get the API credentials
 * Download and install the plugin
 * Configure the plugin
 
 === How to install the plugin ===
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Business Portal (detailed info in the section below)
+3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps/MobilePay.
+4. Go the settings page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the Vipps Business Portal (detailed info in the section below)
 
 
 == Installation ==
 1.  Install the plugin using WordPress’ [built-in installer](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins). The plugin can also be installed manually by upload the plugin files to the /wp-content/plugins/ directory. 
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps.
-4. Go the settings page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Business Portal (detailed info in the section below)
+3. Go to the WooCommerce Settings page and choose Payment Gateways (Betalinger) and enable Vipps/MobilePay.
+4. Go the settings page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the Vipps MobilePay Business Portal (detailed info in the section below)
 
-=== How to get Vipps account keys from Vipps Business Portal ===
-1. Sign in to the Vipps Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
+=== How to get Vipps MobilePay account keys from Vipps MobilePay Business Portal ===
+1. Sign in to the Vipps MobilePay Portal at [https://portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) using Bank ID
 2. Select the "Utvikler" ("Developer") tab and choose Production Keys. Here you can find the merchant serial number (6 figures)
-3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps Subscription Key”
+3. Click on "Show keys" under the API keys column to see “Client ID”, “Client Secret” and “Vipps MobilePay Subscription Key”
 
 == Screenshots ==
-1. Enable Vipps Checkout as your checkout.
-2. Enable Vipps as a payment method.
-3. Enter your Vipps account keys and configure the plugin.
+1. Enable Vipps/MobilePay Checkout as your checkout.
+2. Enable Vipps/MobilePay as a payment method.
+3. Enter your Vipps MobilePay account keys and configure the plugin.
 4. Setup and activate the recurring payment gateway in WooCommerce.
 5. Configure the plugin settings for recurring payments.
 
@@ -142,13 +142,13 @@ There is an exception for orders where all items are both virtual and downloadab
 
 = Can I refund orders or part of orders using Vipps/MobilePay =
 Yes, you can do refunds, including partial refunds, using the standard WooCommerce mechanism (https://docs.woocommerce.com/document/woocommerce-refunds/). Additionally, if you cancel an order that was already captured, the money will be refunded for the whole order if the order is not too old. For older orders, you must use the refund mechanism explicitly. This is a safety feature.
- If automatic refund through the Vipps API should fail, you will need to refund manually; in this case an error message to this effect will be displayed and the order annotated.
+ If automatic refund through the Vipps MobilePay API should fail, you will need to refund manually; in this case an error message to this effect will be displayed and the order annotated.
 
 = What is 'compatibility mode' in the settings? =
 Some plugins add new features to products or entirely new product types to WooCommerce; which the 'Express Checkout' function may not be able to handle. It can be possible to fix this using hooks and filters, but if you choose this feature, express checkout will be done in a different manner which is very much more likely to work for a given plugin. The cost is that the process will be _slightly_ less smooth.
 
 = Why is my shipping wrong when using express checkout? =
-It may be that the shipping method you are using some how does not work when calculated from the Vipps app, where the customer is somewhat anonymous. However, since version 1.4.0 this problem ought to be greatly reduced, so if you still have this problem, report this on the forum and we'll try to fix it. 
+It may be that the shipping method you are using some how does not work when calculated from the Vipps/MobilePay app, where the customer is somewhat anonymous. However, since version 1.4.0 this problem ought to be greatly reduced, so if you still have this problem, report this on the forum and we'll try to fix it. 
 
 If you have shipping methods that add additional information on the 'normal' checkout page they will not be able to provide that information to Express Checkout plugin, since that page is bypassed. You may be able to add those options on a different page; but you may want to remove those options when using Express Checkout.
 
@@ -156,8 +156,8 @@ Formerly, there was a filter used to work around this, namely 'woo_vipps_shippin
 
 To be sure, you should test your shipping methods in Express Checkout before going live.
 
-= I'd like to use sequential order numbers at Vipps instead of the WooCommerce order-ids using a sequential order number plugin. Does this plugins support that?
-Yes, though you need to ensure that the order-id's you produce like this are unique for your Vipps account, and you currently have to use a filter in your themes' functions.php file. We recommend using a prefix for your order ids, so a filter that will work with sequential order numbers would look like
+= I'd like to use sequential order numbers at Vipps MobilePay instead of the WooCommerce order-ids using a sequential order number plugin. Does this plugins support that?
+Yes, though you need to ensure that the order-id's you produce like this are unique for your Vipps MobilePay account, and you currently have to use a filter in your themes' functions.php file. We recommend using a prefix for your order ids, so a filter that will work with sequential order numbers would look like
 
 `add_filter('woo_vipps_orderid', function ($default, $prefix, $order) {
     return $prefix . $order->get_order_number();
@@ -197,13 +197,13 @@ After 2 days it will move to the "Processing" status. You can however change the
 Alternatively you could look into using WooCommerce "Early renewals": [https://docs.woocommerce.com/document/subscriptions/early-renewal/](https://docs.woocommerce.com/document/subscriptions/early-renewal/) if ensuring the status of a charge is fully completed before a specific date is of up-most importance.
 
 = Firewall ports =
-Ensure *outgoing* traffic to port 443 is open. This is used to communicate with Vipps servers.
+Ensure *outgoing* traffic to port 443 is open. This is used to communicate with Vipps MobilePay servers.
 
-= Does Vipps offer a test environment for Vipps for WooCommerce? =
+= Does Vipps MobilePay offer a test environment for Vipps MobilePay for WooCommerce? =
 
-Yes, but you will need a separate account, and you will need to install a special test version of the Vipps app, available trough Testflight. For your test account, the keys will be at https://portal-test.vipps.no; you will configure these in the developer mode settings.
+Yes, but you will need a separate account, and you will need to install a special test version of the Vipps/MobilePay app, available trough Testflight. For your test account, the keys will be at https://portal-test.vipps.no; you will configure these in the developer mode settings.
 
-Contact Vipps for access to the test app. This app must be installed on a device that does not have the normal Vipps app installed, or there will be conflicts.
+Contact Vipps MobilePay for access to the test app. This app must be installed on a device that does not have the normal Vipps/MobilePay app installed, or there will be conflicts.
 
 To use test mode, switch "Developer mode" on. There you can input the test keys from portal-test.vipps.no and turn test mode on and off.
 
@@ -226,39 +226,39 @@ There are several filters and hooks you can use to customize the behaviour of th
  * Filter: 'woo_vipps_show_single_product_buy_now' - Takes a boolean and a product, returns true if the product should show a 'buy now with vipps' button
  * Filter: 'woo_vipps_show_single_product_buy_now_in_loop' - Like above, but especially for products shown in the loop - catalog pages, archives and so forth
  * Filter: 'woo_vipps_spinner': takes one argument which is a 'wait' spinner for certain pages
- * Filter 'woo_vipps_express_checkout_shipping_rates' which replaces the 'woo_vipps_shipping_methods'. It takes a list of shipping methods, and order, and a cart. The format of the shipping methods is an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
+ * Filter 'woo_vipps_express_checkout_shipping_rates' which replaces the 'woo_vipps_shipping_methods'. It takes a list of shipping methods, and order, and a cart. The format of the shipping methods is an array of 'rate' which is a WC_Shipping_Rate object, 'priority' which is an integer and the sort-order Vipps MobilePay will use to display the alternatives, and 'default', which is a boolean: This will be the default choice
  * Filter: 'woo_vipps_default_shipping_method' taking the default shipping method ID, a list of the shipping methods available (as a table from method id to WC_Shipping_Rate object) and the order. Return a shipping rate id, like 'local_pickup:5'
- * Filter:  'woo_vipps_vipps_formatted_shipping_methods'. This will take an array of the methods to be sent to Vipps, formatted as required by Vipps. This is mostly for debugging.
+ * Filter:  'woo_vipps_vipps_formatted_shipping_methods'. This will take an array of the methods to be sent to Vipps MobilePay, formatted as required by Vipps MobilePay. This is mostly for debugging.
  * Filter: 'woo_vipps_shipping_callback_packages': Takes the 'packages' from the cart used to calculate shipping in the shipping details callback
- * Filter  'woo_vipps_express_checkout_final_shipping_rate': Takes an WC_Shipping_Rate object, the order, and the shipping info from Vipps. Must return a WC_Shipping_Rate object which will be added to the order.
+ * Filter  'woo_vipps_express_checkout_final_shipping_rate': Takes an WC_Shipping_Rate object, the order, and the shipping info from Vipps MobilePay. Must return a WC_Shipping_Rate object which will be added to the order.
  * Filter: 'woo_vipps_country_to_code': Takes a country code and a country name.  Should return a two-letter ISO-3166 country code from a given country name
  * Filter: 'woo_vipps_show_capture_button': Takes a boolean and an order and returns whether or not to show the capture button in the backend
- * Filter: 'woo_vipps_captured_statuses': Returns a list of the statuses for which Vipps should try a capture when transitioning to them.
- * Filter: 'woo_vipps_transaction_text': Takes a transaction text and an order object, must return a text to be passed to Vipps and displayed to the user along the lines of "Please confirm your order"
- * Filter: 'woo_vipps_special_page_template': Takes a (complete) template path as returned by locate_template and the ID of the Vipps special page, should return a new template path (using locate_template or similar).
+ * Filter: 'woo_vipps_captured_statuses': Returns a list of the statuses for which Vipps MobilePay should try a capture when transitioning to them.
+ * Filter: 'woo_vipps_transaction_text': Takes a transaction text and an order object, must return a text to be passed to Vipps MobilePay and displayed to the user along the lines of "Please confirm your order"
+ * Filter: 'woo_vipps_special_page_template': Takes a (complete) template path as returned by locate_template and the ID of the Vipps MobilePay special page, should return a new template path (using locate_template or similar).
  * Filter: 'woo_vipps_order_failed_redirect': Takes an empty string or an url and an order id. If URL is returned, go there on cancelled or failed orders.
  * Filter: 'woo_vipps_product_supports_express_checkout': Takes a boolean and a product, returns true if the product can be bought with express checkout
  * Filter: 'woo_vipps_cart_supports_express_checkout': Takes a boolean and a cart, returns true if the cart can be bought with express checkout
  * Filter: 'woo_vipps_express_checkout_supported_product_types': Returns a list of product types (as strings) that can be bought with express checkout
- * Filter: 'woo_vipps_orderid': Takes default Vipps orderid, the order prefix, and an order object. Must return an unique (at Vipps) order ID with 30 chars or less. Default is the prefix + orderid, e.g. 'Woo364'.
+ * Filter: 'woo_vipps_orderid': Takes default Vipps MobilePay orderid, the order prefix, and an order object. Must return an unique (at Vipps MobilePay) order ID with 30 chars or less. Default is the prefix + orderid, e.g. 'Woo364'.
  * Action: 'woo_vipps_shipping_details_callback_order': Takes an order-id and the corresponding vipps order id. Run at the start of the shipping methods callback.
  * Action: 'woo_vipps_restoring_cart': Takes an order and a saved cart contents array, ran after the order has failed or is aborted
  * Action: 'woo_vipps_cart_restored':  Runs after the cart has been restored after the order has been aborted of failed
- ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
- * Action: 'woo_vipps_before_redirect_to_vipps': Takes an order-id, called at the end of process_payment right before the redirect to Vipps
+ ' Action: 'woo_vipps_cart_saved': When redirecting to Vipps MobilePay, the cart is saved so it can be restored in case the order isn't completed. This action is ran after this has happened.
+ * Action: 'woo_vipps_before_redirect_to_vipps': Takes an order-id, called at the end of process_payment right before the redirect to Vipps MobilePay
  * Action: 'woo_vipps_before_create_express_checkout_order': Takes the cart to do express checkout for, run before the order is created 
  * Filter : 'woo_vipps_create_express_checkout_cart_contents': Takes a cart contents array from which an express checkout order will be created . Should return a like array.
  * Action: 'woo_vipps_express_checkout_order_created': Takes an order ID, run right after an express checkout order has been created, but before it is processed'
  * Action: 'woo_vipps_before_process_payment': Takes an order-id, called at the start of process_payment
- * Action: 'woo_vipps_wait_for_payment_page': Run on the page shown on return from Vipps
- * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipp
- * Action: 'woo_vipps_set_order_shipping_details': Takes an order object, shipping details from Vipps and user details from Vipps. Runs after shipping details have been added to the order on return from express checkout.
- * Action: 'woo_vipps_callback': Runs when Vipps does the callback on a successful payment, takes Vipps' data as input. Useful for logging/debugging the callback.
- * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps - called when the Vipps callback hasn't happened and we need the order status. Useful for logging.
- * Action: 'woo_vipps_vipps_callback': Is ran when the Vipps callback happen, with the decoded and raw POST from Vipps. Useful for logging. 
- * Action: 'woo_vipps_shipping_details_callback': Is ran when Vipps does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps, and the callback args. For debugging.
- * Action: 'woo_vipps_shipping_details_before_cart_creation': Run after order is updated but before a cart is created to do shipping calculations. Takes an order, The order-id at Vipps and the callback arguments from Vipps
- * Filter: 'woo_vipps_transaction_text_shop_id': This is used to identify your shop in the transaction texts sent to Vipps (and shown to the user). Default is home_url(), but there is a length limit, so this filter allows you to keep it short.
+ * Action: 'woo_vipps_wait_for_payment_page': Run on the page shown on return from Vipps MobilePay
+ * Action: 'woo_vipps_express_checkout_page': Run on the express checkout page, before redirect to Vipps MobilePay
+ * Action: 'woo_vipps_set_order_shipping_details': Takes an order object, shipping details from Vipps MobilePay and user details from Vipps MobilePay. Runs after shipping details have been added to the order on return from express checkout.
+ * Action: 'woo_vipps_callback': Runs when Vipps MobilePay does the callback on a successful payment, takes Vipps MobilePay data as input. Useful for logging/debugging the callback.
+ * Action: 'woo_vipps_express_checkout_get_order_status': Takes the order status returned by Vipps MobilePay - called when the Vipps MobilePay callback hasn't happened and we need the order status. Useful for logging.
+ * Action: 'woo_vipps_vipps_callback': Is ran when the Vipps MobilePay callback happen, with the decoded and raw POST from Vipps MobilePay. Useful for logging. 
+ * Action: 'woo_vipps_shipping_details_callback': Is ran when Vipps MobilePay does the shipping details callback on express checkout. Takes decoded and raw POST from Vipps MobilePay, and the callback args. For debugging.
+ * Action: 'woo_vipps_shipping_details_before_cart_creation': Run after order is updated but before a cart is created to do shipping calculations. Takes an order, The order-id at Vipps MobilePay and the callback arguments from Vipps MobilePay
+ * Filter: 'woo_vipps_transaction_text_shop_id': This is used to identify your shop in the transaction texts sent to Vipps MobilePay (and shown to the user). Default is home_url(), but there is a length limit, so this filter allows you to keep it short.
 
 = Shortcodes =
  * [woo_vipps_express_checkout_button] will print the express checkout button if valid
@@ -266,7 +266,7 @@ There are several filters and hooks you can use to customize the behaviour of th
  * [woo_vipps_buy_now sku=<SKU> id=<productid> variant=<variant id>] prints a "buy now" button given a SKU or an (product or variant) id. Just the SKU is sufficient.
 
 == Extending the Order Management API integration ==
-From version 1.10.0, this plugin implements the Vipps Order Management API, sending a receipt to the customers' app, and sending the order confirmation link as the Order Confirmation link category.  You can, using this api, send over an image and a link for the categories receipt (RECEIPT), ticket (TICKET), shipping (DELIVERY), booking (BOOKING) and a general category (GENERAL).
+From version 1.10.0, this plugin implements the Vipps MobilePay Order Management API, sending a receipt to the customers' app, and sending the order confirmation link as the Order Confirmation link category.  You can, using this api, send over an image and a link for the categories receipt (RECEIPT), ticket (TICKET), shipping (DELIVERY), booking (BOOKING) and a general category (GENERAL).
 
 For instance, if you have a page or url for tracking shipping, you can add this to the customers' app by extending the 'woo_vipps_add_order_categories' filter like so:
 
@@ -286,10 +286,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsBuySingleProduct' - action which is run whenever a customer tries to buy a single product using express checkout
  * 'vippsBuySingleProductCompatMode' - filter which should return true or false, if true, the compatibility mode action will be run instead of the standard ajax.
  * 'vippsBuySingleProductCompatModeAction' - filter which should return a javascript function to run when buying a product and compatibility mode is on. Will normally press the "Buy" button for you.
- * 'vippsRemoveErrorMessages' - runs when Vipps error messages are to be removed.
- * 'vippsErrorMessage' - runs for every Vipps error message added with Javascript. Takes the message as an argument
+ * 'vippsRemoveErrorMessages' - runs when Vipps MobilePay error messages are to be removed.
+ * 'vippsErrorMessage' - runs for every Vipps MobilePay error message added with Javascript. Takes the message as an argument
  * 'vippsAddErrorMessage' - runs when an error message is about to be added. Takes the message as an argument
- * 'vippsInit'  - runs when a page with a Vipps button is initialzed
+ * 'vippsInit'  - runs when a page with a Vipps MobilePay button is initialzed
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
