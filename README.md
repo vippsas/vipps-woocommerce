@@ -24,7 +24,7 @@ For support, contact the
 
 *Official Vipps/MobilePay payment plugin for WooCommerce.*
 
-*Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.*
+*Branded locally as MobilePay in Denmark and Finland, and as Vipps in Norway and Sweden. One platform gathering more than 11 million users and more than 400,000 merchants across the Nordics. Give your users an easy, fast and familiar shopping experience.*
 
 This is the official Vipps/MobilePay plugin for payments, a complete Checkout and Express checkout buttons. Increase your conversion rate by letting your customers pay with a fast, secure and convenient payment method. Vipps MobilePay allows users to make quick and easy payments using their mobile phone, without the need for entering credit card details or other sensitive information.
 
@@ -32,7 +32,7 @@ You can do important back-office tasks, such as capture and refund directly from
 
 For more information, see:
 
-* [Pay with Vipps for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
+* [Pay with Vipps and MobilePay for WooCommerce](https://wordpress.org/plugins/woo-vipps/)
 
 ## Checkout
 
@@ -90,14 +90,14 @@ They then confirm the payment in the Vipps or MobilePay app.
    The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the *Plugins* screen on WordPress.
 3. Go to the *WooCommerce Settings* page, choose *Payments*, and enable Vipps MobilePay.
-4. Go the *Settings* page for the Vipps plugin and enter your Vipps account keys. Your account keys are available in the Vipps Merchant Portal. For information, see [How to get account keys from Merchant Portal](#how-to-get-account-keys-from-merchant-portal).
-5. (Optional, but recommended) Activate *Checkout* by clicking on the *Checkout* tab and selecting the *Enable Alternative Vipps Checkout screen, replacing the standard checkout page* option.
+4. Go the *Settings* page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the Vipps MobilePay Merchant Portal. For information, see [How to get account keys from Merchant Portal](#how-to-get-account-keys-from-merchant-portal).
+5. (Optional, but recommended) Activate *Checkout* by clicking on the *Checkout* tab and selecting the *Enable Alternative Vipps/MobilePay Checkout screen, replacing the standard checkout page* option.
 
 ## How to get account keys from Merchant Portal
 
 1. Sign in to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/).
 2. In the *Developer* section, choose *Production Keys*. Here you can find the merchant serial number (6 figures).
-3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret* and *Vipps Subscription Key*.
+3. Click on *Show keys* under the API keys column to see *Client ID*, *Client Secret* and *0cp Apim Subscription Key*.
 
 See:
 
@@ -122,7 +122,7 @@ Remember to enable Vipps MobilePay Checkout, if you want maximum dazzle with min
 
 ### In which countries can I use Vipps MobilePay?
 
-You can get paid by users who have Vipps in Norway, or who have MobilePay in Denmark or Finland.
+You can get paid by users who have Vipps in Norway and Sweden, or who have MobilePay in Denmark or Finland.
 
 ### How do I set the default language?
 

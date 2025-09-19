@@ -47,7 +47,7 @@ With Vipps/MobilePay recurring payments you can:
 * Sell recurring products (virtual and physical)
 * Offer subscription services
 
-See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/recurring-api-howitworks/) for an overview.
+See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/how-it-works/) for an overview.
 
 Recurring payments requires [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/) and a Vipps MobilePay MSN with recurring payments added.
 
