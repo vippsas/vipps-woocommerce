@@ -18,9 +18,9 @@ Official Vipps MobilePay payment plugin for WooCommerce.
 == Description ==
 *Official Vipps MobilePay payment plugin for WooCommerce. Let your Norwegian, Danish, and Finnish customers pay with Vipps and MobilePay for an easy, fast, and familiar shopping experience* 
 
-Vipps is used by more than 77 % of Norway's population (4.2 million users).
+Vipps is used by more than 93 % of Norway's population (4.2 million users).
 
-MobilePay is used by more than 75 % of Denmark's population (4.4 million users), and approximately 50 % of Finland's population (2.8 million users).
+MobilePay is used by more than 92 % of Denmark's population (4.4 million users), and approximately 59 % of Finland's population (2.8 million users).
 
 Vipps and MobilePay are payment methods offered by Vipps MobilePay. 
 
@@ -126,8 +126,8 @@ Fix in the session handling of Express Checkout and Checkout shipping
 == Frequently Asked Questions ==
 
 = In which countries can I use Vipps/MobilePay? =
-Vipps is currently only available in Norway (77 % user adoption in 2022) and Sweden.
-MobilePay is currently only available in Denmark and Finland (75 % and 36 % user adoption in 2022, respectively).
+Vipps is currently only available in Norway (93 % user adoption in 2022) and Sweden.
+MobilePay is currently only available in Denmark and Finland (92 % and 59 % user adoption in 2025, respectively).
 
 = How can I get help if I have any issues? =
 For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
