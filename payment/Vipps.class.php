@@ -2209,7 +2209,7 @@ else:
         // We want it to work with Vipps Checkout and Express Checkout orders too IOK 2021-11-24 
         // Also trigger Checkout expire call for unpaid checkout orders. LP 2025-09-25
         add_filter('woocommerce_cancel_unpaid_order', function ($cancel, $order) {
-            // if ($cancel) return $cancel; // cant use this anymore if we want to send expire call to checkout on cancel, as $cancel for me is 1 even for vipps checkout orders. LP 2025-09-25
+            // if ($cancel) return $cancel; // FIXME: DELETE. cant use this anymore if we want to send expire call to checkout on cancel, as $cancel for me is 1 even for vipps checkout orders. LP 2025-09-25
             // Only check Vipps orders
             if ($order->get_payment_method() != 'vipps') return $cancel;
             // For Vipps, all unpaid orders must be pending.
