@@ -1254,7 +1254,6 @@ jQuery(document).ready(function () {
             // Expire the Checkout session. LP 2025-09-25
             $expire_result = $this->gateway()->api->checkout_expire_session($order);
             $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug');
-            $this->log(sprintf(__('Checkout expire post returned: %1$s', 'woo-vipps'), print_r($expire_result, true)), 'debug'); // TODO: remove this logging line after expire settles ok? LP 2025-09-25
 
             // Also mark for deletion and remove stored session
             $order->delete_meta_data('_vipps_checkout_session');
