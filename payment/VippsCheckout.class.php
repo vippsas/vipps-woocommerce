@@ -1250,10 +1250,15 @@ jQuery(document).ready(function () {
             // NB: This can *potentially* be revived by a callback!
             $this->log(sprintf(__('Cancelling Checkout order because order changed: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
             $order->set_status('cancelled', __("Order specification changed - this order abandoned by customer in Checkout  ", 'woo-vipps'), false);
+
+            // Expire the Checkout session. LP 2025-09-25
+            $this->gateway()->api->checkout_expire_session($order);
+
             // Also mark for deletion and remove stored session
             $order->delete_meta_data('_vipps_checkout_session');
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
+
         }
     }
     
