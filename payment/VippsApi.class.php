@@ -989,36 +989,6 @@ class VippsApi {
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
 
-        // // Transaction: amount,  description, orderSummary for modify.
-        // $transaction = array();
-        // $currency = $order->get_currency();
-
-        // $total = round(wc_format_decimal($order->get_total(),'') * 100);
-        // if ($total < 100)  $total = 100; // Vipps requires all orders to be at least this large IOK 2025-05-14
-
-        // $transaction['amount'] = array('value' => $total, 'currency' => $currency);
-        // $shop_identification = apply_filters('woo_vipps_transaction_text_shop_id', home_url());
-        // $transactionText =  __('Confirm your order from','woo-vipps') . ' ' . $shop_identification;
-        // $transaction['paymentDescription'] = apply_filters('woo_vipps_transaction_text', $transactionText, $order);
-        // $summarize = apply_filters('woo_vipps_checkout_show_order_summary', true, $order);
-        // if ($summarize) {
-        //     $ordersummary = $this->get_receipt_data($order);
-        //     // This is different in the receipt api, the epayment api and in checkout.
-        //     $ordersummary['orderBottomLine'] = $ordersummary['bottomLine'];
-        //     unset($ordersummary['bottomLine']);
-
-        //     // Don't finalize the receipt number - we just want to show this rn.
-        //     unset($ordersummary['orderBottomLine']['receiptNumber']);
-        //     if (!empty($ordersummary)) {
-        //         $transaction['orderSummary'] = $ordersummary;
-        //     }
-        // }
-        // $data = ['transaction'=>$transaction];
-        // // Probably mostly because free shipping has been added or removed using coupons. IOK 2025-09-12
-        // if ($updated_shipping) {
-        //    $data['logisticOptions'] = $updated_shipping;
-        // }
-
         $res = $this->http_call($msn, $command, [], 'POST', $headers, 'json'); 
         return $res;
     }

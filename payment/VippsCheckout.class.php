@@ -1252,8 +1252,13 @@ jQuery(document).ready(function () {
             $order->set_status('cancelled', __("Order specification changed - this order abandoned by customer in Checkout  ", 'woo-vipps'), false);
 
             // Expire the Checkout session. LP 2025-09-25
-            $this->gateway()->api->checkout_expire_session($order);
-            $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug');
+            try {
+                $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug');
+                $this->gateway()->api->checkout_expire_session($order);
+            } catch (Exception $e) {
+                $this->log(sprintf(__('Error when attempting to expire Checkout session for order %1$s.', 'woo-vipps'), $order->get_id()), 'error');
+                $this->log($e->getMessage(), 'error');
+            }
 
             // Also mark for deletion and remove stored session
             $order->delete_meta_data('_vipps_checkout_session');
