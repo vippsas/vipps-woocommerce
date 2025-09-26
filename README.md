@@ -173,7 +173,7 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ### How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the
+For issues with your WooCommerce installation, use the
 [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
 For business-related issues, such as a deactivated sales unit, contact [Vipps MobilePay business support](https://help.vippsmobilepay.com).
 
