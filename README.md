@@ -2,7 +2,7 @@
 ---
 title: "Vipps/MobilePay for WooCommerce plugin"
 sidebar_position: 1
-description: Provide Vipps, MobilePay and card payments for WooCommerce.
+description: Official WooCommerce payment plugin for Vipps/MobilePay - Nordic's leading mobile payment solution with complete checkout integration.
 pagination_next: null
 pagination_prev: null
 ---
@@ -10,8 +10,7 @@ END_METADATA -->
 
 # Vipps/MobilePay for WooCommerce
 
-![Support and development by WP Hosting](./payment/docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./payment/docs/images/wphosting_dark.svg#gh-dark-mode-only)
-
+![Support and development by WP Hosting ](./payment/docs/images/wphosting.svg#gh-light-mode-only)![Support and development by WP Hosting](./payment/docs/images/wphosting_dark.svg#gh-dark-mode-only)
 
 *This plugin is built and maintained by [WP Hosting](https://www.wp-hosting.no/)
 and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).
@@ -39,7 +38,6 @@ For more information, see:
 With Checkout enabled in the plugin, you will get a complete checkout in your web shop, designed and run by Vipps MobilePay.
 Your customers can pay with Vipps, MobilePay, VISA or MasterCard, and they can also provide their shipping address and choose their preferred shipping method in a simple manner.
 
-
 ### NEW! Posten/Bring plugin and Checkout plugin
 
 ![Posten and Checkout shared functionality](./payment/docs/images/Posten_woocommerce_guide.png)
@@ -56,7 +54,7 @@ Psst! If you’re thinking about e-commerce for small or medium businesses, this
 
 When you enable Vipps MobilePay Express, your customers can choose between the regular checkout or to go directly to Vipps or MobilePay. If they choose Vipps or MobilePay, they just submit their phone number, and the rest of the checkout process is done in the Vipps or MobilePay app.
 
-Since Vipps MobilePay knows who the customers are, they don’t have to enter all their personal information. The customer just choose the shipping method and accepts the payment. Vipps MobilePay will send all the necessary info back to the store. Easy, fast and secure.
+Since Vipps MobilePay knows who the customers are, they don’t have to enter all their personal information. The customer just chooses the shipping method and accepts the payment. Vipps MobilePay will send all the necessary info back to the store. Easy, fast and secure.
 
 The express checkout can be done in the following ways:
 
@@ -66,9 +64,9 @@ The express checkout can be done in the following ways:
 * From shareable links distributed by email, banners, etc.
 * From QR codes distributed digitally or in print
 
-Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps Mobilepay payment gateway.
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps MobilePay payment gateway.
 
-Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on the product page.
+Shareable links and QR codes can be generated from the Vipps/MobilePay tab on the product page.
 
 ## Single payments
 
@@ -152,7 +150,7 @@ You will need an account for direct integration with the payment APIs, which can
 
 If you already have a Vipps or MobilePay account for WooCommerce and want to contribute to
 the development of the plugin, contact
-[customer service](https://vippsmobilepay.com/info/help)
+[customer service](https://help.vippsmobilepay.com)
 to *upgrade* your account with access to the test environment.
 
 You will also need to install a special test version of the Vipps MobilePay app, available
@@ -175,9 +173,9 @@ with a small amount, like 2 NOK. Just refund or cancel the purchase as needed.
 
 ### How can I get help if I have any issues?
 
-For issues with your WooCommerce installation you should use the
+For issues with your WooCommerce installation, use the
 [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps).
-For business-related issues, such as a deactivated sales unit, contact [Vipps MobilePay business support](https://vippsmobilepay.com/info/help).
+For business-related issues, such as a deactivated sales unit, contact [Vipps MobilePay business support](https://help.vippsmobilepay.com).
 
 ### General questions
 
