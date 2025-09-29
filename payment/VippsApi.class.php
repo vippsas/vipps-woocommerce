@@ -974,14 +974,10 @@ class VippsApi {
     public function checkout_expire_session($order) {
         error_log("lp checkout_expire_session starting for order " . $order->get_id());
         $msn = $this->get_merchant_serial();
-        // $subkey = $this->get_key($msn);
         $clientid = $this->get_clientid($msn);
         $secret = $this->get_secret($msn);
-
-        // $orderid = $order->get_id();
         $vippsorderid = $order->get_meta('_vipps_orderid');
         $reference = $vippsorderid;
-
         $command = "checkout/v3/session/$reference/expire";
 
         $headers = $this->get_headers($msn);

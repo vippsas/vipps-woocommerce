@@ -1211,7 +1211,6 @@ jQuery(document).ready(function () {
     } 
     
     public function abandonVippsCheckoutOrder($order) {
-
         if (WC()->session) {
             WC()->session->set('vipps_checkout_current_pending',0);
             WC()->session->set('vipps_address_hash', false);
