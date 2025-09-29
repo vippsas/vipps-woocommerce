@@ -2382,6 +2382,7 @@ else:
         // Required for Checkout, we send this early as error recovery here will be tricky anyhow.
         status_header(202, "Accepted");
 
+
         $raw_post = @file_get_contents( 'php://input' );
         $result = @json_decode($raw_post,true);
 

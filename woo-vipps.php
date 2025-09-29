@@ -7,8 +7,8 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 5.0.3
-   Stable tag: 5.0.3
+   Version: 5.0.4
+   Stable tag: 5.0.4
    Requires at least: 6.2
    Tested up to: 6.8.2
    Requires PHP: 7.4
