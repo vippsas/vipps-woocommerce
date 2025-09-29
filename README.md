@@ -66,9 +66,9 @@ The express checkout can be done in the following ways:
 * From shareable links distributed by email, banners, etc.
 * From QR codes distributed digitally or in print
 
-Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps Mobilepay payment gateway.
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps MobilePay payment gateway.
 
-Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on the product page.
+Shareable links and QR codes can be generated from the Vipps/MobilePay tab on the product page.
 
 ## Single payments
 
