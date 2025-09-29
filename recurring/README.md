@@ -2,7 +2,7 @@
 ---
 title: Vipps/MobilePay recurring payments
 sidebar_position: 1
-description: Provide Vipps recurring payments for WooCommerce.
+description: WooCommerce subscription plugin for Vipps/MobilePay recurring payments - automated billing and subscription management for Nordic merchants.
 pagination_next: null
 pagination_prev: null
 ---
