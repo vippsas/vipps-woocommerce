@@ -2207,31 +2207,20 @@ else:
 
         // The normal 'cancel unpaid order' thing for Woo only works for orders created via normal checkout
         // We want it to work with Vipps Checkout and Express Checkout orders too IOK 2021-11-24 
-        // Also trigger Checkout expire call for unpaid checkout orders. LP 2025-09-25
         add_filter('woocommerce_cancel_unpaid_order', function ($cancel, $order) {
-            // if ($cancel) return $cancel; // FIXME: DELETE. cant use this anymore if we want to send expire call to checkout on cancel, as $cancel for me is 1 even for vipps checkout orders. LP 2025-09-25
+            if ($cancel) return $cancel;
             // Only check Vipps orders
             if ($order->get_payment_method() != 'vipps') return $cancel;
             // For Vipps, all unpaid orders must be pending.
             if ($order->get_status() != 'pending') return $cancel;
             // We do need to check the order status, because this could be called very soon after order creation on some sites.
-            error_log("Lp woocommerce_cancel_unpaid_order VIPPS PENDING for order " . $order->get_id());
             try {
-                $details = $this->gateway()->get_payment_details($order);
-                error_log("lp woocommerce_cancel_unpaid status is " . print_r($details['status'],true));
-                if (!$details || !isset($details['status']) ) return $cancel;
-                if ($details['status'] == 'CANCEL') return true;
-
-                // Expire Checkout session upon cancel. LP 2025-09-25
-                // Don't expire if they have gone to payments, the status will then be CREATED. LP 2025-09-25
-                // (as of now the expire call will anyways fail if checkout session is anything other than SessionCreated which is converted to INITIATE in get_payment_details()). LP 2025-09-29
-                $is_checkout = $order->get_meta('_vipps_checkout_session'); 
-                if ($details['status'] == 'INITIATE' && $is_checkout) {
-                    error_log("lp woocommerce_cancel_unpaid this is checkout with status initiate. Sending expire...");
-                    $this->gateway()->api->checkout_expire_session($order); 
-                }
+              $details = $this->gateway()->get_payment_details($order);
+              if ($details && isset($details['status']) && $details['status'] == 'CANCEL') {
+                  return true;
+              }
             } catch (Exception $e) {
-                // Don't do anything here at this point. IOK 2021-11-24
+              // Don't do anything here at this point. IOK 2021-11-24
             } 
             return $cancel;
         }, 20, 2);

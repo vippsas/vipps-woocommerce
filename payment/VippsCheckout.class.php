@@ -65,6 +65,19 @@ class VippsCheckout {
         add_filter( 'woocommerce_order_email_verification_required', array($VippsCheckout, 'allow_other_payment_method_email'), 10, 3);
         add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
 
+        // Expire the Checkout session on order cancel. LP 2025-09-25
+        add_action('woocommerce_order_status_cancelled', function ($order) {
+            try {
+                $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug'); // FIXME debug, delete. LP 2025-09-29
+                $this->gateway()->api->checkout_expire_session($order);
+            } catch (Exception $e) {
+                // FIXME: debug, delete this. LP 2025-09-29
+                $this->log(sprintf(__('Error when attempting to expire Checkout session for order %1$s.', 'woo-vipps'), $order->get_id()), 'error');
+                $this->log($e->getMessage(), 'error');
+            }
+
+        });
+
 
         add_filter('woo_vipps_shipping_method_pickup_points', function ($points, $rate, $shipping_method, $order) {
             if ($rate->method_id == 'pickup_location' && $order->get_meta('_vipps_checkout')) {
@@ -1210,7 +1223,8 @@ jQuery(document).ready(function () {
         $this->abandonVippsCheckoutOrder($order);
     } 
     
-    public function abandonVippsCheckoutOrder($order) {
+     public function abandonVippsCheckoutOrder($order) {
+
         if (WC()->session) {
             WC()->session->set('vipps_checkout_current_pending',0);
             WC()->session->set('vipps_address_hash', false);
@@ -1249,23 +1263,10 @@ jQuery(document).ready(function () {
             // NB: This can *potentially* be revived by a callback!
             $this->log(sprintf(__('Cancelling Checkout order because order changed: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
             $order->set_status('cancelled', __("Order specification changed - this order abandoned by customer in Checkout  ", 'woo-vipps'), false);
-
-            // Expire the Checkout session. LP 2025-09-25
-            try {
-                $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug');
-                $this->gateway()->api->checkout_expire_session($order);
-            } catch (Exception $e) {
-                $this->log(sprintf(__('Error when attempting to expire Checkout session for order %1$s.', 'woo-vipps'), $order->get_id()), 'error');
-                $this->log($e->getMessage(), 'error');
-            }
-
             // Also mark for deletion and remove stored session
             $order->delete_meta_data('_vipps_checkout_session');
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
-
-            $this->log(sprintf(__('Checkout status for order %1$s is %2$s', 'woo-vipps'), $order->get_id(), print_r($this->get_vipps_checkout_status($order), true)), 'debug'); // FIXME: delete. For debug. LP 2025-09-25
-
         }
     }
     
