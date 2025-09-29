@@ -130,7 +130,7 @@ Vipps is currently only available in Norway (93 % user adoption in 2022) and Swe
 MobilePay is currently only available in Denmark and Finland (92 % and 59 % user adoption in 2025, respectively).
 
 = How can I get help if I have any issues? =
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
+For issues with your WooCommerce installation, use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
 
 = Why are orders put on-hold and not processing or completed? =
 This was the old default of this plugin until version 2.0. The newer default is now 'processing', but this also means that orders that are 'processing' will have their payment reserved, but not transferred to the merchant. You can still choose the status on-hold in the options screen.
