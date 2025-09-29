@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.3
-Stable tag: 5.0.3
+Version: 5.0.4
+Stable tag: 5.0.4
 Requires at least: 6.2
 Tested up to: 6.8.2
 Requires PHP: 7.4
@@ -18,9 +18,9 @@ Official Vipps MobilePay payment plugin for WooCommerce.
 == Description ==
 *Official Vipps MobilePay payment plugin for WooCommerce. Let your Norwegian, Danish, and Finnish customers pay with Vipps and MobilePay for an easy, fast, and familiar shopping experience* 
 
-Vipps is used by more than 77 % of Norway's population (4.2 million users).
+Vipps is used by more than 93 % of Norway's population (4.2 million users).
 
-MobilePay is used by more than 75 % of Denmark's population (4.4 million users), and approximately 50 % of Finland's population (2.8 million users).
+MobilePay is used by more than 92 % of Denmark's population (4.4 million users), and approximately 59 % of Finland's population (2.8 million users).
 
 Vipps and MobilePay are payment methods offered by Vipps MobilePay. 
 
@@ -51,8 +51,8 @@ See [How it works](https://developer.vippsmobilepay.com/docs/APIs/recurring-api/
 
 Recurring payments requires [WooCommerce Subscriptions](https://woocommerce.com/products/woocommerce-subscriptions/) and a Vipps MobilePay MSN with recurring payments added.
 
-=== Mobilepay Reservations are currently for 14 days ===
-When a payment is completed with Vipps Mobilepay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For Mobilepay, this reservation period is 14 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
+=== MobilePay Reservations are currently for 14 days ===
+When a payment is completed with Vipps MobilePay, the money will be reserved, but only transferred to the merchant when the order is set to "Complete" or the money is captured manually. *For MobilePay, this reservation period is 14 days*, so you will need to ship and fulfill orders before this; or to make an agreement with the customer to capture the money before this period is over. For Vipps, the period is 180 days. For payments made by credit card in Vipps/MobilePay Checkout, the period can again be as short as 7 days.
 For details, please read the [developer FAQ](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#reserve-and-capture-faq).
 
 If the order only contains virtual and downloadable products, the plugin will capture the order automatically and set the order to "Completed" as is the standard WooCommerce rule.
@@ -70,9 +70,9 @@ The express checkout can be done in the following ways:
 * From shareable links distributed by email, banners, etc.
 * From QR codes distributed digitally or in print
 
-Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps Mobilepay payment gateway.
+Settings for the cart, category and product pages can be found in the WooCommerce settings for the Vipps MobilePay payment gateway.
 
-Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on the product page.
+Shareable links and QR codes can be generated from the Vipps/MobilePay tab on the product page.
 
 === How to get started ===
 * Sign up in the [Vipps MobilePay portal](https://portal.vippsmobilepay.com) and choose your product.
@@ -109,6 +109,8 @@ Shareable links and QR codes can be generated from the Vipps/Mobilepay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.0.4
+Make express checkout provide addresses for virtual orders again (if requested)
 Version 5.0.3
 Properly handle shipping when coupons are added
 Fix spurious error logs when express checkout orders are cancelled.
@@ -126,11 +128,11 @@ Fix in the session handling of Express Checkout and Checkout shipping
 == Frequently Asked Questions ==
 
 = In which countries can I use Vipps/MobilePay? =
-Vipps is currently only available in Norway (77 % user adoption in 2022) and Sweden.
-MobilePay is currently only available in Denmark and Finland (75 % and 36 % user adoption in 2022, respectively).
+Vipps is currently only available in Norway (93 % user adoption in 2022) and Sweden.
+MobilePay is currently only available in Denmark and Finland (92 % and 59 % user adoption in 2025, respectively).
 
 = How can I get help if I have any issues? =
-For issues with your WooCommerce installation you should use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
+For issues with your WooCommerce installation, use the support forum here on wordpress.org. For other issues you should contact Vipps MobilePay.
 
 = Why are orders put on-hold and not processing or completed? =
 This was the old default of this plugin until version 2.0. The newer default is now 'processing', but this also means that orders that are 'processing' will have their payment reserved, but not transferred to the merchant. You can still choose the status on-hold in the options screen.
@@ -294,6 +296,9 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-09-xx version 5.0.4 =
+Make express checkout provide addresses for virtual orders again (if requested)
+
 = 2025-09-22 version 5.0.3 =
 Properly handle shipping when coupons are added
 Fix spurious error logs when express checkout orders are cancelled.

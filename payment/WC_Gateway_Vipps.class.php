@@ -2509,10 +2509,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $ready = true;
         }
 
+
         // if this is *express - not checkout * and there is no user information, this is probably because we only get that when adding the 'address' scope.
         // if we didn't want the address, we now need to ask for user details using the login get_userinfo api. IOK 2025-08-12
         // This is also the only way to get "email_verified", so we may want to add a setting that always calls this if neccessary. IOK 2025-08-13
         // Also we don't get this when the state is different from AUTHORIZED. Especially not ABORTED.
+        // IOK 2025-09-29: This is *no longer the case* . We actually now get userDetails every time we add the relevant scopes,
+        // so this is now probably dead code.
         if ($ready && $express && !$checkout_session && !isset($result['userDetails'])) {
 
             $sub = isset($result['profile']) && isset($result['profile']['sub']) ? $result['profile']['sub'] : null;
@@ -2592,6 +2595,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $user = $result['userDetails']; // Normalized earlier
         $address = $details['address'] ?? [];
+
+        // No address, but we have a list of addresses in the userDetails field. This is ecom with the address scope added. 
+        // We will use the first one.
+        if (empty($address) && isset($result['userDetails']) && isset($result['userDetails']['addresses']) && !empty($result['userDetails']['addresses'])) {
+           $address = $result['userDetails']['addresses'][0];
+        }
 
         // Checkout has address info inside shippingDetails, whereas Express Checkout now has it in an address field IOK 2025-08-12
         if (empty($address)) {
@@ -3366,16 +3375,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($ready && ($express || $ischeckout)) {
             // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
             // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
-            if ($ischeckout) {
-                $result = $this->ensure_userDetails($result, $order);
-            }
+            $result = $this->ensure_userDetails($result, $order);
+
             // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
             // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+            // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
+            // we have added a scope of any kind. This is therefore probably dead code.
             if (!isset($result['userDetails'])) {
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
                 $result = $this->get_payment_details($order);
             } 
+
             // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
             $result = $this->normalizeShippingDetails($result, $order);
 
