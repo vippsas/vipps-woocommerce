@@ -66,12 +66,17 @@ class VippsCheckout {
         add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
 
         // Expire the Checkout session on order cancel. LP 2025-09-25
-        add_action('woocommerce_order_status_cancelled', function ($order) {
+        add_action('woocommerce_order_status_cancelled', function ($orderid, $order) {
+            error_log("LP parameters are " . print_r($orderid,true) . " , " . print_r($order,true));
+            $is_checkout = $order->get_meta('_vipps_checkout_session');
+            error_log('VippsCheckout.class.php:70: is_checkout='. print_r($is_checkout, true));
+            if (!$is_checkout) return;
             try {
-                $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug'); // FIXME debug, delete. LP 2025-09-29
+                error_log("LP expiring session in try-catch"); // FIXME: delete
+                $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug'); // FIXME: delete. LP 2025-09-29
                 $this->gateway()->api->checkout_expire_session($order);
             } catch (Exception $e) {
-                // FIXME: debug, delete this. LP 2025-09-29
+                // FIXME: delete this. LP 2025-09-29
                 $this->log(sprintf(__('Error when attempting to expire Checkout session for order %1$s.', 'woo-vipps'), $order->get_id()), 'error');
                 $this->log($e->getMessage(), 'error');
             }
