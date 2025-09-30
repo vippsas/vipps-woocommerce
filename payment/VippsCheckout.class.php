@@ -66,22 +66,7 @@ class VippsCheckout {
         add_action('wp_footer', array($VippsCheckout, 'maybe_proceed_to_payment'));
 
         // Expire the Checkout session on order cancel. LP 2025-09-25
-        add_action('woocommerce_order_status_cancelled', function ($orderid, $order) {
-            error_log("LP parameters are " . print_r($orderid,true) . " , " . print_r($order,true));
-            $is_checkout = $order->get_meta('_vipps_checkout_session');
-            error_log('VippsCheckout.class.php:70: is_checkout='. print_r($is_checkout, true));
-            if (!$is_checkout) return;
-            try {
-                error_log("LP expiring session in try-catch"); // FIXME: delete
-                $this->log(sprintf(__('Expiring the Checkout session because the order was cancelled: %1$s.', 'woo-vipps'), $order->get_id()), 'debug'); // FIXME: delete. LP 2025-09-29
-                $this->gateway()->api->checkout_expire_session($order);
-            } catch (Exception $e) {
-                // FIXME: delete this. LP 2025-09-29
-                $this->log(sprintf(__('Error when attempting to expire Checkout session for order %1$s.', 'woo-vipps'), $order->get_id()), 'error');
-                $this->log($e->getMessage(), 'error');
-            }
-
-        });
+        add_action('woocommerce_order_status_cancelled', array($VippsCheckout, 'woocommerce_order_status_cancelled'));
 
 
         add_filter('woo_vipps_shipping_method_pickup_points', function ($points, $rate, $shipping_method, $order) {
@@ -110,6 +95,15 @@ class VippsCheckout {
         }, 10, 4);
 
 
+    }
+
+    function woocommerce_order_status_cancelled ($orderid) {
+        $order = wc_get_order($orderid);
+        $is_checkout = $order->get_meta('_vipps_checkout');
+        if (!$is_checkout) return;
+        try {
+            $this->gateway()->api->checkout_expire_session($order);
+        } catch (Exception $e) { }
     }
 
     public function allow_other_payment_method_email ($email_verification_required, $order, $context ) {
