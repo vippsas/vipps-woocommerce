@@ -1741,7 +1741,7 @@ else:
         print __('Order id', 'woo-vipps') . ": " . @$details['orderId'] . "<br>";
         print __('Order status', 'woo-vipps') . ": " .@$details['status'] . "<br>";
         if (isset($details['paymentMethod'])) {
-            $method = (is_array($details['paymentMethod'])) ? $details['paymentMethod']['type'] : $method;
+            $method = (is_array($details['paymentMethod'])) ? $details['paymentMethod']['type'] : "";
             print __("Payment method", 'woo-vipps') . ":" . $method . "<br>";
         } else {
             print __("Payment method", 'woo-vipps') . ": Vipps <br>";
@@ -3067,7 +3067,16 @@ else:
            $vippsmethod = array();
            $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
-           $vippsmethod['shippingCost'] = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
+
+           // It seems woo actually computes rounding of prices and taxes *separately* when computing
+           // shipping costs, but we can't really assume this (or that all plugins do this, and so on.)
+           // Therefore we compute shipping cost with rounding *both ways* and choose the more expensive one -
+           // this way we should reserve enough money to complete the order in all cases. IOK 2025-09-30
+           $shippingcostA = sprintf("%.2F",wc_format_decimal($cost+$tax,''));
+           $shippingcostB = sprintf("%.2F",wc_format_decimal($cost, '') + wc_format_decimal($tax,''));
+           $shippingcost = max($shippingcostA, $shippingcostB);
+
+           $vippsmethod['shippingCost'] = $shippingcost;
            $vippsmethod['shippingMethod'] = $rate->get_label();
            $vippsmethod['shippingMethodId'] = $key;
            $vippsmethods[]=$vippsmethod;
