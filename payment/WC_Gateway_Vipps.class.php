@@ -245,6 +245,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ok = true;
 
         $remaining = intval($order->get_meta('_vipps_capture_remaining'));
+
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
             $currency = $order->get_currency();
@@ -1827,7 +1828,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(__("Error getting payment details before doing capture: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-
         try {
             $ok = $this->capture_payment($order);
         } catch (Exception $e) {
@@ -1838,6 +1838,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->update_meta_data('_vipps_capture_complete',true);
             $order->save();
         } else  {
+            $order->update_meta_data('_vipps_capture_complete',false);
             $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), $this->get_payment_method_name());
             $order->add_order_note($msg);
             $order->save();
