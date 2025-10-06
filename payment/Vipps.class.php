@@ -3555,18 +3555,30 @@ else:
 
     // We have added some hooks to wp-cron; remove these. IOK 2020-04-01
     public static function deactivate() {
-       $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
-       wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
+        $timestamp = wp_next_scheduled('vipps_cron_cleanup_hook');
+        wp_unschedule_event($timestamp, 'vipps_cron_cleanup_hook');
         $timestamp = wp_next_scheduled('vipps_cron_missing_callback_hook');
-       wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
-       // IOK 2023-12-20 Delete all webhooks for this instance
-       WC_Gateway_Vipps::instance()->delete_all_webhooks();
+        wp_unschedule_event($timestamp, 'vipps_cron_missing_callback_hook');
+        // IOK 2023-12-20 Delete all webhooks for this instance
+        $gw = WC_Gateway_Vipps::instance();
+        $gw->delete_all_webhooks();
 
-       // Run deactivation logic for recurring
-       if (class_exists('WC_Vipps_Recurring')) {
-           WC_Vipps_Recurring::get_instance()->deactivate();
-       }
-       delete_option('woo_vipps_recurring_payments_activation');
+        // Delete all settings if checked in settings menu. LP 2025-10-06
+        $should_delete = $gw->get_option( 'delete_settings_on_deactivation' ) === 'yes';
+        if ( ($should_delete)) {
+            // Delete options.
+            $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
+            foreach($options as $option) {
+                error_log("Deleting woo-vipps option: $option");
+                delete_option($option);
+            }
+        }
+
+        // Run deactivation logic for recurring
+        if (class_exists('WC_Vipps_Recurring')) {
+            WC_Vipps_Recurring::get_instance()->deactivate();
+        }
+        delete_option('woo_vipps_recurring_payments_activation');
 
     }
 
