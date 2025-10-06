@@ -1448,6 +1448,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             'default'     => 'no',
                             ),
 
+                'delete_settings_on_uninstall' => array (
+                            'title'       => __('Delete plugin settings on uninstall', 'woo-vipps'),
+                            'label'       => __('Delete plugin settings on uninstall', 'woo-vipps'),
+                            'type'        => 'checkbox',
+                            'description' => __('If set, all plugin settings will be deleted upon plugin uninstall. Warning: there is no recovery option after deletion.', 'woo-vipps'),
+                            'default'     => 'no',
+                            ),
+
                  'developermode' => array ( // DEVELOPERS! DEVELOPERS! DEVELOPERS! DEVE
                      'title'       => __('Enable developer mode', 'woo-vipps'),
                      'label'       => __('Enable developer mode', 'woo-vipps'),
