@@ -69,7 +69,7 @@ for an overview.
 
 ### Installation
 
-1. Download and activate the plugin from this GitHub repository or [Vipps/MobilePay recurring payments on WordPress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
+1. Download and activate the plugin from [Vipps/MobilePay recurring payments on WordPress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
 2. Enable the *Vipps/MobilePay recurring payment* method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
 4. Proceed to [Retrieving Vipps MobilePay API keys](#retrieving-vipps-mobilepay-api-keys).
