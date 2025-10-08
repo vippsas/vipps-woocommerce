@@ -1921,11 +1921,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $amount = $total-$captured-$noncapturable; // IOK subtract any amount not to be captured here
         
         // Do partial capture instead. LP 2025-10-08
-        if (is_numeric($partialamount) && $partialamount <= $amount) {
+        if (is_numeric($partialamount)) {
+            if ($partialamount < 0) {
+                $this->log("Attempted partial capture of less than zero ($partialamount). Stopping capture.", 'error');
+                return false;
+            }
             error_log("LP partial amount");
             $partialamount = round(wc_format_decimal($partialamount,'')*100);
             if ($partialamount > $amount) {
-                $this->log("Attempted partial capture amount ($partialamount) was greater than remaining capturable amount ($amount). Stopping", 'error');
+                $this->log("Attempted partial capture amount ($partialamount) was greater than remaining capturable amount ($amount). Stopping capture.", 'error');
                 return false;
             }
             $amount = $partialamount;
