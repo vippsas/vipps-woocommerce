@@ -99,11 +99,19 @@ class VippsCheckout {
 
     function woocommerce_order_status_cancelled ($orderid) {
         $order = wc_get_order($orderid);
-        $is_checkout = $order->get_meta('_vipps_checkout');
+        // Do this only if we have a checkout saved in the order
+        $is_checkout = $order->get_meta('_vipps_checkout_session');
         if (!$is_checkout) return;
         try {
+            error_log("Expiring checkout session for $orderid");
+            // If the order isn't in the right state, this will do nothing. IOK 2025-10-08
             $this->gateway()->api->checkout_expire_session($order);
-        } catch (Exception $e) { }
+        } catch (Exception $e) {
+            error_log("Cannot expire checkout session: " . $e->getMessage());
+        }
+        // Cleanup the order, and ensure that we don't do this twice by deleting the old session
+        $order->delete_meta_data('_vipps_checkout_session');
+        $order->save_meta_data();
     }
 
     public function allow_other_payment_method_email ($email_verification_required, $order, $context ) {
@@ -246,7 +254,6 @@ jQuery(document).ready(function () {
             }
             $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
             // Also mark for deletion and remove stored session
-            $order->delete_meta_data('_vipps_checkout_session');
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
             $url = $order->get_checkout_payment_url();
@@ -1262,8 +1269,7 @@ jQuery(document).ready(function () {
             // NB: This can *potentially* be revived by a callback!
             $this->log(sprintf(__('Cancelling Checkout order because order changed: %1$s', 'woo-vipps'), $order->get_id()), 'debug');
             $order->set_status('cancelled', __("Order specification changed - this order abandoned by customer in Checkout  ", 'woo-vipps'), false);
-            // Also mark for deletion and remove stored session
-            $order->delete_meta_data('_vipps_checkout_session');
+            // Also mark for deletion.
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
         }

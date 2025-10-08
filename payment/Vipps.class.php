@@ -2220,6 +2220,8 @@ else:
             // For Vipps, all unpaid orders must be pending. IOK FIXME ADD FAILED
             if ($order->get_status() != 'pending') return $cancel;
 
+error_log("Checking if we should cancel unpaid vipps order");
+
             // Handle this separately, in the Checkout class. IOK 2025-10-08
             $checkout_session = $order->get_meta('_vipps_checkout_session');
             if ($checkout_session) {
