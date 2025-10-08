@@ -3565,7 +3565,7 @@ else:
 
         // Delete all settings if checked in settings menu. LP 2025-10-06
         $should_delete = $gw->get_option( 'delete_settings_on_deactivation' ) === 'yes';
-        if ( ($should_delete)) {
+        if ( $should_delete ) {
             // Delete options.
             $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
             foreach($options as $option) {
