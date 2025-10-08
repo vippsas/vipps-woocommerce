@@ -2205,24 +2205,52 @@ else:
         add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
         add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
 
-        // The normal 'cancel unpaid order' thing for Woo only works for orders created via normal checkout
-        // We want it to work with Vipps Checkout and Express Checkout orders too IOK 2021-11-24 
+        // Handle the cancel unpaid order action when the "hold stock" times out.
+        // For *normal* vipps orders, we run another cronjob every 5. minute which checks order status,
+        // therefore here it suffices to check if the order is 'cancelled' at Vipps, and if so we return.
+        // For Checkout the rules are different though.
         add_filter('woocommerce_cancel_unpaid_order', function ($cancel, $order) {
-            if ($cancel) return $cancel;
+
+            // If we can't cancel for some other reason, don't.  
+            if (!$cancel) return $cancel;
+
             // Only check Vipps orders
             if ($order->get_payment_method() != 'vipps') return $cancel;
-            // For Vipps, all unpaid orders must be pending.
+
+            // For Vipps, all unpaid orders must be pending. IOK FIXME ADD FAILED
             if ($order->get_status() != 'pending') return $cancel;
-            // We do need to check the order status, because this could be called very soon after order creation on some sites.
+
+            // Handle this separately, in the Checkout class. IOK 2025-10-08
+            $checkout_session = $order->get_meta('_vipps_checkout_session');
+            if ($checkout_session) {
+                try {
+                     $polldata = $this->gateway()->api->checkout_get_session_info($order);
+                     $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                     // We can cancel the order iff we haven't started payment yet.
+                     if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') return false; 
+                     return true;
+                } catch (Exception $e) {
+                     // If Vipps is unreachable, go ahead and kill it
+                     return true;
+                }
+                return false; 
+            }
+  
             try {
-              $details = $this->gateway()->get_payment_details($order);
-              if ($details && isset($details['status']) && $details['status'] == 'CANCEL') {
-                  return true;
-              }
+                $result = $this->gateway()->api->epayment_get_payment($order);
             } catch (Exception $e) {
-              // Don't do anything here at this point. IOK 2021-11-24
-            } 
-            return $cancel;
+                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, allowing deletion", 'woo-vipps'), $order->get_id(), Vipps::CompanyName()));
+                return true;
+            }
+
+            // We should now have an object with the 'state' in one of the Vipps states. We'll translate all of them to 
+            // cancelled or nah, and if cancelled, we allow deletion. IOK 2025-10-07
+            if (empty($result)) return true; 
+            $state = $this->gateway()->interpret_vipps_order_status($result['state'] ?? 'CANCEL');
+            if (empty($state) || $state == 'cancelled') return true;
+            
+            return false;
+
         }, 20, 2);
 
         // Used both in admin and non-admin-scripts, load as quick as possible IOK 2020-09-03
