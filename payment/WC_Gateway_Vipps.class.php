@@ -218,6 +218,38 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // if so, we need to cancel this amount PMB 2024-11-21
         // nb: note very late priority - we must have captured before, please
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+
+        add_action( 'woocommerce_fulfillment_after_fulfill', array($this, 'capture_order_fulfillment')); // FIXME: is prio important here? Idk. LP 2025-10-08 
+    }
+
+    /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08 */
+    public function capture_order_fulfillment($fulfillment) {
+        error_log("LP after fulfill test, fulfillment is " . print_r($fulfillment,true));
+        $order = $fulfillment->get_order();
+        if (!$order) return false;
+        error_log("LP Order id is " . $order->get_id());
+        // $order = wc_get_order($orderid);
+
+        $items = $fulfillment->get_items();
+        error_log("LP items are " . print_r($items,true));
+        $sum = 0;
+        foreach ($items as $item) {
+            $item_id = $item['item_id'];
+            $item_quantity = $item['qty'];
+            $order_item = $order->get_item($item_id);
+
+            // Calculate unit price of product. LP 2025-10-08
+            $total_no_tax = $order_item->get_total() ?: "0";
+            $tax = $order_item->get_total_tax() ?: "0";
+            $total = $tax+$total_no_tax;
+            $product_quantity = $order_item->get_quantity();
+            $unitprice = $total/$product_quantity;
+
+            $item_sum = $unitprice * $item_quantity;
+            error_log("LP sum for item*quantity $item_sum"); $sum += $item_sum;
+            error_log('LP unitprice: ' . print_r($unitprice, true));
+        }
+        $this->capture_payment($order, $sum);
     }
 
     // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
@@ -1865,7 +1897,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
     // Except that we *do* note that money "refunded" through vipps before capture should be "uncapturable". IOK 2024-11-25
-    public function capture_payment($order) {
+    // Now supports partial capture, used in fulfillment as of now. LP 2025-10-08
+    public function capture_payment($order, $partialamount = null) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $this->log(sprintf(__('Trying to capture payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
@@ -1886,6 +1919,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $total = round(wc_format_decimal($order->get_total(),'')*100);
         $amount = $total-$captured-$noncapturable; // IOK subtract any amount not to be captured here
+        
+        // Do partial capture instead. LP 2025-10-08
+        if (is_numeric($partialamount) && $partialamount <= $amount) {
+            error_log("LP partial amount");
+            $partialamount = round(wc_format_decimal($partialamount,'')*100);
+            if ($partialamount > $amount) {
+                $this->log("Attempted partial capture amount ($partialamount) was greater than remaining capturable amount ($amount). Stopping", 'error');
+                return false;
+            }
+            $amount = $partialamount;
+            error_log("LP partial succeeded, sending to capture amount of $amount...");
+        }
 
         if ($amount<=0) {
             $order->add_order_note(__('Payment already captured','woo-vipps'));
