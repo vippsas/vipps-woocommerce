@@ -228,7 +228,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = $fulfillment->get_order();
         if (!$order) return false;
         error_log("LP Order id is " . $order->get_id());
-        // $order = wc_get_order($orderid);
 
         $items = $fulfillment->get_items();
         error_log("LP items are " . print_r($items,true));
@@ -241,13 +240,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Calculate unit price of product. LP 2025-10-08
             $total_no_tax = $order_item->get_total() ?: "0";
             $tax = $order_item->get_total_tax() ?: "0";
-            $total = $tax+$total_no_tax;
+            $total = $tax + $total_no_tax;
             $product_quantity = $order_item->get_quantity();
-            $unitprice = $total/$product_quantity;
+            $unit_price = $total/$product_quantity;
+            error_log('LP unit_price: ' . print_r($unit_price, true));
 
-            $item_sum = $unitprice * $item_quantity;
-            error_log("LP sum for item*quantity $item_sum"); $sum += $item_sum;
-            error_log('LP unitprice: ' . print_r($unitprice, true));
+            $item_sum = $unit_price * $item_quantity;
+            error_log("LP sum for item*quantity $item_sum");
+            $sum += $item_sum;
         }
         $this->capture_payment($order, $sum);
     }
@@ -1922,8 +1922,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
         // Do partial capture instead. LP 2025-10-08
         if (is_numeric($partialamount)) {
-            if ($partialamount < 0) {
-                $this->log("Attempted partial capture of less than zero ($partialamount). Stopping capture.", 'error');
+            if ($partialamount <= 0) {
+                $this->log("Attempted partial capture is zero or less ($partialamount). Stopping capture.", 'error');
                 return false;
             }
             error_log("LP partial amount");
