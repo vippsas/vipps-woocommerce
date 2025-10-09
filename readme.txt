@@ -302,6 +302,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 == Changelog ==
 = 2025-10-xx version 5.0.6 =
 New feature for deleting all settings when deactivating plugin (under settings/advanced).
+Changed loading of certain web component scripts to async.
 
 = 2025-09-30 version 5.0.5 =
 Handle edge-case for rounding of shipping prices in checkout and express
