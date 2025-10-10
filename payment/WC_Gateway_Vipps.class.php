@@ -234,6 +234,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $items = $fulfillment->get_items();
+        error_log('LP fulfillment items: ' . print_r($items, true));
         $sum = 0;
         foreach ($items as $item) {
             $item_id = $item['item_id'];
@@ -250,6 +251,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_sum = $unit_price * $item_quantity;
             $sum += $item_sum;
         }
+        error_log('LP fulfillment sum: ' . print_r($sum, true));
         $ok = $this->capture_payment($order, $sum);
         error_log('LP before_fulfillment capture returned ok: ' . print_r($ok, true));
         if (!$ok) {
