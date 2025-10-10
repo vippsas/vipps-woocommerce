@@ -1150,6 +1150,7 @@ class VippsApi {
     // Cancel a reserved but not captured payment IOK 2018-05-07
     // Currently must cancel the entire amount, but partial cancel will be possible.
     public function epayment_cancel_payment($order,$requestid=1) {
+        error_log("LP epayment_cancel_payment");
         $orderid = $order->get_meta('_vipps_orderid');
         $command = 'epayment/v1/payments/'.$orderid.'/cancel';
         $msn = $this->get_merchant_serial();
@@ -1171,6 +1172,7 @@ class VippsApi {
         $data = array('cancelTransactionOnly' => false); 
      
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
+        error_log('LP api epayment_cancel_payment - res: ' . print_r($res, true));
         return $res;
     }
 
@@ -1209,6 +1211,7 @@ class VippsApi {
     // Refund (a part of) captured payment IOK 2018-05-07
     public function epayment_refund_payment($order, $requestid, $amount, $cents) {
         $orderid = $order->get_meta('_vipps_orderid');
+        error_log("LP epayment_refund_payment");
         $command = 'epayment/v1/payments/'.$orderid.'/refund';
 
         # null amount means the entire thing
@@ -1241,6 +1244,7 @@ class VippsApi {
         $data['modificationAmount'] =  array('value'=>$modificationAmount, 'currency'=>$modificationCurrency);
 
         $res = $this->http_call($msn,$command,$data,'POST',$headers,'json'); 
+        error_log('LP api epayment_refund_payment res: ' . print_r($res, true));
         return $res;
     }
 

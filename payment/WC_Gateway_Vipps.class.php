@@ -219,18 +219,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // nb: note very late priority - we must have captured before, please
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
 
-        add_action( 'woocommerce_fulfillment_after_fulfill', array($this, 'capture_order_fulfillment')); // FIXME: is prio important here? Idk. LP 2025-10-08 
+        add_action( 'woocommerce_fulfillment_before_fulfill', array($this, 'woocommerce_fulfillment_before_fulfill')); // FIXME: is prio important here? Idk. LP 2025-10-08 
     }
 
     /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08 */
-    public function capture_order_fulfillment($fulfillment) {
-        error_log("LP after fulfill test, fulfillment is " . print_r($fulfillment,true));
+    public function woocommerce_fulfillment_before_fulfill($fulfillment) {
         $order = $fulfillment->get_order();
-        if (!$order) return false;
-        error_log("LP Order id is " . $order->get_id());
+        if (!$order) {
+            $msg = __('Cannot find order', 'woo-vipps');
+            if (class_exists('Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException')) {
+                throw new Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException($msg); // This exception will show the error message in the user form
+            }
+            throw new Exception($msg);
+        }
 
         $items = $fulfillment->get_items();
-        error_log("LP items are " . print_r($items,true));
         $sum = 0;
         foreach ($items as $item) {
             $item_id = $item['item_id'];
@@ -243,13 +246,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $total = $tax + $total_no_tax;
             $product_quantity = $order_item->get_quantity();
             $unit_price = $total/$product_quantity;
-            error_log('LP unit_price: ' . print_r($unit_price, true));
 
             $item_sum = $unit_price * $item_quantity;
-            error_log("LP sum for item*quantity $item_sum");
             $sum += $item_sum;
         }
-        $this->capture_payment($order, $sum);
+        $ok = $this->capture_payment($order, $sum);
+        error_log('LP before_fulfillment capture returned ok: ' . print_r($ok, true));
+        if (!$ok) {
+            /* translators: %1$s = number, %2$s = this payment method company name */
+            $msg = sprintf(__('Cannot capture the fulfillment sum of %1$s at %2$s. Please check the logs for more information', 'woo-vipps'), $sum, Vipps::companyName()); 
+            if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
+                throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg); // This exception will show the error message in the admin fulfillment form
+            }
+            throw new Exception($msg);
+        }
+        return $fulfillment;
     }
 
     // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
@@ -689,6 +700,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Called when orders reach the 'cancelled'-status. When this happens, orders will be *refunded*
     // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
     public function order_status_cancelled_wrapper($order_id) {
+        error_log("LP order_status_cancelled_wrapper");
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
 
@@ -697,6 +709,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $days_since_order = (time() - $order_date->getTimestamp()) / (60 * 60 * 24);
 
         $captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP order_status_cancelled_wrapper captured: ' . print_r($captured, true));
 
         // This will just cancel the order, including at Vipps. No funds have been captured.
         if ($captured == 0) {
@@ -725,21 +738,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
+        error_log('LP maybe_cancel_payment');
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP captured: ' . print_r($captured, true));
         $vippsstatus = $order->get_meta('_vipps_status');
+        error_log('LP vippsstatus: ' . print_r($vippsstatus, true));
         if ($captured || $vippsstatus == 'SALE') {
             return $this->maybe_refund_payment($orderid);
         }
 
         try {
             $order = $this->update_vipps_payment_details($order); 
+            error_log("LP updated vipps payment details");
         } catch (Exception $e) {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
         $payment = $this->check_payment_status($order);
+        error_log('LP payment: ' . print_r($payment, true));
         if ($payment == 'initiated' || $payment == 'cancelled') {
            return true; // Can't cancel these
         }
@@ -749,6 +767,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } catch (Exception $e) {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         } 
+        error_log('LP ok after cancel attempt: ' . print_r($ok, true));
         if (!$ok) {
             // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
             $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
@@ -782,6 +801,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
+        error_log("LP maybe_refund_payment");
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
@@ -793,8 +813,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $vippsstatus = $order->get_meta('_vipps_status');
+        error_log('LP maybe_refund_payment - vippsstatus: ' . print_r($vippsstatus, true));
+        $capture_remaining = intval($order->get_meta('_vipps_capture_remaining'));
+        error_log('LP maybe_refund_payment - capture_remaining: ' . print_r($capture_remaining, true));
         $captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP maybe_refund_payment - captured: ' . print_r($captured, true));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
+        error_log('LP maybe_refund_payment - to_refund: ' . print_r($to_refund, true));
 
         if (!$captured) {
             return $this->maybe_cancel_payment($orderid);
@@ -802,7 +827,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($to_refund == 0) return true;
 
         try {
+            if ($capture_remaining > 0) {
+                // First capture the remaining outstanding, then refund it all. LP 2025-10-10
+                $capture_ok = $this->capture_payment($order);
+                error_log('LP maybe_refund - remaining capture_ok: ' . print_r($capture_ok, true));
+                if (!$capture_ok) throw new Exception(__('Error when capturing the rest of the order before proceeding to refund it all'));
+                error_log("LP maybe_refund - captured rest of order, proceeding to refund attempt");
+                $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
+                error_log('LP maybe_refund udpated to_refund to: ' . print_r($to_refund, true));
+            }
             $ok = $this->refund_payment($order,$to_refund,'exact');
+            error_log("LP is ok after refund_payment");
         } catch (TemporaryVippsAPIException $e) {
             $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
             $this->adminerr($e->getMessage());
@@ -1919,22 +1954,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $total = round(wc_format_decimal($order->get_total(),'')*100);
         $amount = $total-$captured-$noncapturable; // IOK subtract any amount not to be captured here
+        error_log('LP capture_payment amount nr 1: ' . print_r($amount, true));
         
         // Do partial capture instead. LP 2025-10-08
         if (is_numeric($partialamount)) {
             if ($partialamount <= 0) {
-                $this->log("Attempted partial capture is zero or less ($partialamount). Stopping capture.", 'error');
+                /* translators: %1$s = number */
+                $this->log(sprintf(__('Attempted partial capture must be greater than zero; got %1$s. Stopping capture.', 'woo-vipps'), $partialamount), 'error');
                 return false;
             }
-            error_log("LP partial amount");
             $partialamount = round(wc_format_decimal($partialamount,'')*100);
             if ($partialamount > $amount) {
-                $this->log("Attempted partial capture amount ($partialamount) was greater than remaining capturable amount ($amount). Stopping capture.", 'error');
+                /* translators: %1$s and %1$s are numbers */
+                $this->log(sprintf(__('Attempted partial capture amount of %1$s was greater than remaining capturable amount of %2$s. Stopping capture.', 'woo-vipps'), $partialamount, $amount), 'error');
                 return false;
             }
             $amount = $partialamount;
-            error_log("LP partial succeeded, sending to capture amount of $amount...");
         }
+        error_log('LP capture_payment amount nr 2: ' . print_r($amount, true));
 
         if ($amount<=0) {
             $order->add_order_note(__('Payment already captured','woo-vipps'));
@@ -2088,6 +2125,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // If we have captured the order, we can't cancel it. IOK 2018-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP cancel_payment - captured: ' . print_r($captured, true));
         if ($captured) {
             $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), $this->get_payment_method_name());
             $this->adminerr($msg);
@@ -2148,6 +2186,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // The caller must handle the errors.
     public function refund_payment($order,$amount=0,$cents=false) {
         $pm = $order->get_payment_method();
+        error_log("LP refund_payment");
         if ($pm != 'vipps') {
             $msg = sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id();
             $this->log($msg,'error');
