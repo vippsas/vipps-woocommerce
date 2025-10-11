@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.5
-Stable tag: 5.0.5
+Version: 5.0.6
+Stable tag: 5.0.6
 Requires at least: 6.2
 Tested up to: 6.8.2
 Requires PHP: 7.4
@@ -109,8 +109,12 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.0.6
+Version 5.0.7
 Add feature for deleting all settings when deactivating plugin (Under settings/advanced)
+Changed loading of certain web component scripts to async.
+Fix more logging print bugs
+Version 5.0.6
+Fix a bug in a rare logging print
 Version 5.0.5
 Fix an edge case concerning rounding of shipping prices
 Version 5.0.4
@@ -300,9 +304,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2025-10-xx version 5.0.6 =
+= 2025-10-xx version 5.0.7 =
 New feature for deleting all settings when deactivating plugin (under settings/advanced).
 Changed loading of certain web component scripts to async.
+Fix more logging print bugs
+
+= 2025-10-10 version 5.0.6 =
+Fix a bug in a rare logging print
 
 = 2025-09-30 version 5.0.5 =
 Handle edge-case for rounding of shipping prices in checkout and express
