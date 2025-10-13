@@ -226,9 +226,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function woocommerce_fulfillment_before_fulfill($fulfillment) {
         $order = $fulfillment->get_order();
         if (!$order) {
-            $msg = __('Cannot find order', 'woo-vipps');
+            $msg = __('Something went wrong, could not find order', 'woo-vipps');
+            // Return fail message to fulfillment admin interface - is done by throwing FulfillmentException
             if (class_exists('Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException')) {
-                throw new Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException($msg); // This exception will show the error message in the user form
+                throw new Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException($msg);
             }
             throw new Exception($msg);
         }
@@ -255,7 +256,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ok = $this->capture_payment($order, $sum);
         error_log('LP before_fulfillment capture returned ok: ' . print_r($ok, true));
         if (!$ok) {
-            /* translators: %1$s = number, %2$s = this payment method company name */
+            /* translators: %1$s = sum (number), %2$s = this payment method company name */
             $msg = sprintf(__('Cannot capture the fulfillment sum of %1$s at %2$s. Please check the logs for more information', 'woo-vipps'), $sum, Vipps::companyName()); 
             if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
                 throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg); // This exception will show the error message in the admin fulfillment form
@@ -747,7 +748,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $order->get_meta('_vipps_status');
         error_log('LP vippsstatus: ' . print_r($vippsstatus, true));
         if ($captured || $vippsstatus == 'SALE') {
-            return $this->maybe_refund_payment($orderid);
+            error_log("LP running maybe_refund_payment before continuing cancel");
+            $this->maybe_refund_payment($orderid); // first refund, then continue cancel logic. Previously we only did one or the other (before partial capture support). LP 2025-10-13
         }
 
         try {
@@ -759,12 +761,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $payment = $this->check_payment_status($order);
-        error_log('LP payment: ' . print_r($payment, true));
+        error_log('LP maybe_cancel payment: ' . print_r($payment, true));
         if ($payment == 'initiated' || $payment == 'cancelled') {
            return true; // Can't cancel these
         }
 
         try {
+            error_log("LP running the actual cancel");
             $ok = $this->cancel_payment($order);
         } catch (Exception $e) {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
@@ -798,12 +801,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
+    // TODO: delete this method after mergin it with maybe_cancel_payment(). LP 2025-10-13
     // Handle the transition from anything to "refund"
     public function maybe_refund_payment($orderid) {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
-        error_log("LP maybe_refund_payment");
+        error_log("LP maybe_refund_payment."); 
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
@@ -829,17 +833,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($to_refund == 0) return true;
 
         try {
-            if ($capture_remaining > 0) {
-                // First capture the remaining outstanding, then refund it all. LP 2025-10-10
-                $capture_ok = $this->capture_payment($order);
-                error_log('LP maybe_refund - remaining capture_ok: ' . print_r($capture_ok, true));
-                if (!$capture_ok) throw new Exception(__('Error when capturing the rest of the order before proceeding to refund it all'));
-                error_log("LP maybe_refund - captured rest of order, proceeding to refund attempt");
-                $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-                error_log('LP maybe_refund udpated to_refund to: ' . print_r($to_refund, true));
-            }
             $ok = $this->refund_payment($order,$to_refund,'exact');
-            error_log("LP is ok after refund_payment");
+            error_log("LP is ok after refund_payment api call");
         } catch (TemporaryVippsAPIException $e) {
             $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
             $this->adminerr($e->getMessage());
@@ -2125,14 +2120,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr(sprintf(__('Cannot cancel payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
         }
-        // If we have captured the order, we can't cancel it. IOK 2018-05-07
-        $captured = intval($order->get_meta('_vipps_captured'));
-        error_log('LP cancel_payment - captured: ' . print_r($captured, true));
-        if ($captured) {
-            $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr($msg);
-            return false;
-        }
+        error_log("LP cancel_payment");
+        
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         // For epayment, partial cancellations will be possible. IOK 2022-11-12
         $api = $order->get_meta('_vipps_api');
