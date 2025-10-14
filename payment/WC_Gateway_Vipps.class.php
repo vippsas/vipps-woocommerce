@@ -1910,7 +1910,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $partialamount = round(wc_format_decimal($partialamount,'')*100);
             if ($partialamount > $amount) {
                 /* translators: %1$s and %1$s are numbers */
-                $this->log(sprintf(__('Attempted partial capture amount of %1$s was greater than remaining capturable amount of %2$s. Stopping capture.', 'woo-vipps'), $partialamount, $amount), 'error');
+                $msg = sprintf(__('Attempted partial capture amount of %1$s was greater than remaining capturable amount of %2$s. Stopping capture.', 'woo-vipps'), $partialamount, $amount);
+                $this->log($msg, 'error');
+                $this->add_order_note($msg);
                 return false;
             }
             $amount = $partialamount;
