@@ -1632,7 +1632,6 @@ else:
 
     // A metabox for showing Vipps information about the order. IOK 2018-05-07
     public function add_vipps_metabox ($post_or_order_object) {
-        error_log("LP add_vipps_metabox");
         $order = ( $post_or_order_object instanceof WP_Post ) ? wc_get_order( $post_or_order_object->ID ) : $post_or_order_object;
         $order = wc_get_order($post_or_order_object);
         $pm = $order->get_payment_method();
@@ -1650,8 +1649,6 @@ else:
         $captured = intval($order->get_meta('_vipps_captured'));
         $refunded = intval($order->get_meta('_vipps_refunded'));
         $cancelled = intval($order->get_meta('_vipps_cancelled'));
-        error_log('LP metabox, meta _vipps_cancelled= ' . print_r($order->get_meta('_vipps_cancelled'), true));
-        error_log('LP metabox, intval of meta _vipps_cancelled= ' . print_r($cancelled, true));
 
         $capremain = intval($order->get_meta('_vipps_capture_remaining'));
         $refundremain = intval($order->get_meta('_vipps_refund_remaining'));
