@@ -741,6 +741,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ('vipps' != $order->get_payment_method()) return false;
         $ok = 0;
 
+
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+            error_log("LP maybe_cancel updated vipps payment details");
+            error_log("LP maybe_cancel after update meta '_vipps_cancelled': " . print_r($order->get_meta('_vipps_cancelled'), true));
+            error_log("LP maybe_cancel after update meta '_vipps_refunded': " . print_r($order->get_meta('_vipps_refunded'), true));
+            error_log("LP maybe_cancel after update meta '_vipps_refund_remaining': " . print_r($order->get_meta('_vipps_refund_remaining'), true));
+        } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
         error_log('LP maybe_cancel_payment');
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
         $captured = intval($order->get_meta('_vipps_captured'));
@@ -750,18 +761,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($captured || $vippsstatus == 'SALE') {
             error_log("LP running maybe_refund_payment before continuing cancel");
             $this->maybe_refund_payment($orderid); // first refund, then continue cancel logic. Previously we only did one or the other (before partial capture support). LP 2025-10-13
+            error_log("LP maybe_cancel done with maybe_refund call");
+            $order = wc_get_order($orderid);
         }
 
-        try {
-            $order = $this->update_vipps_payment_details($order); 
-            error_log("LP updated vipps payment details");
-        } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
-        }
 
         $payment = $this->check_payment_status($order);
-        error_log('LP maybe_cancel payment: ' . print_r($payment, true));
+        error_log('LP maybe_cancel payment status' . print_r($payment, true));
         if ($payment == 'initiated' || $payment == 'cancelled') {
            return true; // Can't cancel these
         }
@@ -801,7 +807,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
-    // TODO: delete this method after mergin it with maybe_cancel_payment(). LP 2025-10-13
+    // TODO: delete this method after merging it with maybe_cancel_payment(). LP 2025-10-13
     // Handle the transition from anything to "refund"
     public function maybe_refund_payment($orderid) {
         $order = wc_get_order($orderid);
@@ -827,14 +833,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
         error_log('LP maybe_refund_payment - to_refund: ' . print_r($to_refund, true));
 
-        if (!$captured) {
-            return $this->maybe_cancel_payment($orderid);
-        }
+        // TODO: delete, dont send back to maybe cancel anymore
+        // if (!$captured) {
+        //     return $this->maybe_cancel_payment($orderid);
+        // }
         if ($to_refund == 0) return true;
 
         try {
             $ok = $this->refund_payment($order,$to_refund,'exact');
-            error_log("LP is ok after refund_payment api call");
+            error_log("LP maybe_refund_payment is ok after refund_payment call: " . error_log($ok, true));
         } catch (TemporaryVippsAPIException $e) {
             $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
             $this->adminerr($e->getMessage());
@@ -2152,22 +2159,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Removed epay branch 2025-08-12 IOK
         $total = intval($order->get_meta('_vipps_amount'));
         $captured = intval($order->get_meta('_vipps_captured'));
-#            $cancelled =  $amount + intval($order->get_meta('_vipps_cancelled');
-        $cancelled = $total;
-        $remaining = $total - $captured - $cancelled;
+        $new_cancelled = $total - $captured;
+        error_log('LP after cancel_payment $new_cancelled= ' . print_r($new_cancelled, true));
+        $total_cancelled = $new_cancelled + intval($order->get_meta('_vipps_cancelled'));
+        error_log('LP after cancel_payment total_cancelled: ' . print_r($total_cancelled, true));
+        $remaining = $total - $captured - $total_cancelled; // until we support partial cancel this will just be zero since we cancel everything. LP 2025-10-14
+        error_log('LP after cancel_payment remaining: ' . print_r($remaining, true));
 
         // We need to assume it worked. Also, we can't do partial cancels yet, so just cancel everything.
-        $order->update_meta_data('_vipps_cancel_timestamp',time());
-        $order->update_meta_data('_vipps_cancelled', $cancelled);
+        $order->update_meta_data('_vipps_cancel_timestamp', time());
+        $order->update_meta_data('_vipps_cancelled', $total_cancelled);
         $order->update_meta_data('_vipps_cancel_remaining', $remaining);
-
+        error_log("LP after cancel_payment meta '_vipps_cancelled' = " . $order->get_meta('_vipps_cancelled'));
+        error_log("LP after cancel_payment meta '_vipps_cancel_remaining' = " . $order->get_meta('_vipps_cancel_remaining'));
 
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
-        $status = $this->get_vipps_order_status($order);
-        if ($status) $order->update_meta_data('_vipps_status',$status);
-        $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), $this->get_payment_method_name()));
-        $order->save();
+            $status = $this->get_vipps_order_status($order);
+            if ($status) $order->update_meta_data('_vipps_status',$status);
+            $currency = $order->get_currency();
+            $order->add_order_note(sprintf(__('%1$s Payment cancelled: ','woo-vipps'), $this->get_payment_method_name()) .  sprintf("%0.2f", $new_cancelled / 100) . ' ' . $currency);
+            $order->save();
+            error_log("LP after cancel_payment saving order");
         } catch (Exception $e)  {
         }
         return true;
@@ -2225,17 +2238,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $amount = round($amount * 100);
         }
 
-        $refunded_now  = $amount;
         $refunded = intval($order->get_meta('_vipps_refunded')) + $amount;
+        error_log('LP after refund_payment refunded: ' . print_r($refunded, true));
         $remaining = $captured - $refunded; 
+        error_log('LP after refund_payment remaining: ' . print_r($remaining, true));
 
         $order->update_meta_data('_vipps_refunded', $refunded);
+        error_log("LP after refund_payment meta '_vipps_refunded': " . print_r($order->get_meta('_vipps_refunded'), true));
         $order->update_meta_data('_vipps_refund_remaining', $remaining);
+        error_log("LP after refund_payment meta '_vipps_refund_remaining': " . print_r($order->get_meta('_vipps_refund_remaining'), true));
         $order->update_meta_data('_vipps_refund_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . $currency );
 
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
+        error_log("LP refund_payment saving order");
         $order->save();
         return true;
     }
@@ -2892,6 +2909,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                $order->update_meta_data('_vipps_refund_remaining',$transactionSummary['remainingAmountToRefund']);
                if (isset($details['transactionSummary']['cancelledAmount'])) {
                    $order->update_meta_data('_vipps_cancelled',$transactionSummary['cancelledAmount']);
+                   error_log("LP update_vipps_payment_details meta '_vipps_cancelled' = " . $order->get_meta('_vipps_cancelled'));
                    $order->update_meta_data('_vipps_cancel_remaining',$transactionSummary['remainingAmountToCancel']);
                }
            }
