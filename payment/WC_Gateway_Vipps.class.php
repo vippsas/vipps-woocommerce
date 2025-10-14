@@ -1907,11 +1907,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
         // Do partial capture instead. LP 2025-10-08
         if (is_numeric($partialamount)) {
-            if ($partialamount <= 0) {
-                /* translators: %1$s = number */
-                $this->log(sprintf(__('Attempted partial capture must be greater than zero; got %1$s. Stopping capture.', 'woo-vipps'), $partialamount), 'error');
-                return false;
-            }
             $partialamount = round(wc_format_decimal($partialamount,'')*100);
             if ($partialamount > $amount) {
                 /* translators: %1$s and %1$s are numbers */
@@ -1935,6 +1930,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return true;
             }
         }
+        $currency = $order->get_currency();
 
         // Each time we succeed, we'll increase the 'capture' transaction id so we don't just capture the same amount again and again. IOK 2018-05-07
         // (but on failre, we don't increase it - and also, we don't really support partial capture yet.) IOK 2018-05-07
@@ -1954,6 +1950,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $api = $order->get_meta('_vipps_api');
 
+
+            // Stop if amount too small for capture
+            $minamount = $this->get_min_capture_amount($api, $currency); // might return null
+            error_log("LP min capture amount for api $api with currency $currency is: $minamount");
+            if (is_numeric($minamount) && $amount < $minamount) {
+                /* translators: placeholders are integers */
+                $msg = sprintf(__('Could not capture amount lower than the minimum of %1$s; got %2$s.', 'woo-vipps'), $minamount, $amount);
+                $this->log($msg);
+                $this->adminerr($msg);
+                return false;
+            }
 
             if ($api == 'banktransfer') {
                 // This is an error - we should not ever get to the 'capture' branch if we are a banktransfer payment.
@@ -1981,7 +1988,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        $currency = $order->get_currency();
 
         // Previously, we got this from the transactionInfo field of the Vipps data - this is no longer provided. IOK 2025-08-12 
         //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
@@ -2002,6 +2008,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->save();
 
         return true;
+    }
+
+
+    /** Minimum allowed amount for different currencies in epayment and ecommerce as of 2025-10-14 LP 
+     *  Returns in minor units (øre / cents)
+     * */
+    public function get_min_capture_amount($api, $currency) {
+        if ($api === 'ecommerce') return 100; // i think only supports nok, and its 100 øre. LP 2025-10-14
+        if ($api === 'epayment') {
+            switch ($currency) {
+                case 'DKK': // øre
+                    return 1;
+                case 'NOK': // øre
+                    return 100;
+                case 'EUR': // cents
+                    return 1;
+            }
+        }
+        return null;
     }
 
     public function refund_superfluous_capture($order) {
