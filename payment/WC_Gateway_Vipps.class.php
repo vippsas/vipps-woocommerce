@@ -1892,8 +1892,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Partial capture can happen if the order is edited IOK 2017-12-19
         $captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP capture_payment captured: ' . print_r($captured, true));
         $vippsstatus = $order->get_meta('_vipps_status');
         $noncapturable = intval($order->get_meta('_vipps_noncapturable'));  // This money has been marked as not-to-be-captured. It will be cancelled on complete.
+        error_log('LP capture_payment noncapturable: ' . print_r($noncapturable, true));
 
         // Ensure 'SALE' direct captured orders work
         if (!$captured && $vippsstatus == 'SALE') { 
