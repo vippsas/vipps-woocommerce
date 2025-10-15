@@ -224,14 +224,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08 */
     public function woocommerce_fulfillment_before_fulfill($fulfillment) {
-        $order = $fulfillment->get_order();
-        if (!$order) {
-            $msg = __('Something went wrong, could not find order', 'woo-vipps');
-            // Return fail message to fulfillment admin interface - is done by throwing FulfillmentException
+        /* Return fail message to fulfillment admin interface - is done by throwing FulfillmentException. LP 2025-10-15 */
+        function fulfillment_fail($msg = "") {
             if (class_exists('Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException')) {
                 throw new Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException($msg);
             }
             throw new Exception($msg);
+        }
+
+        $order = $fulfillment->get_order();
+        if (!$order) {
+            fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
         }
 
         $items = $fulfillment->get_items();
@@ -241,6 +244,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_id = $item['item_id'];
             $item_quantity = $item['qty'];
             $order_item = $order->get_item($item_id);
+            if (!$order_item) fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
 
             // Calculate unit price of product. LP 2025-10-08
             $total_no_tax = $order_item->get_total() ?: "0";
@@ -257,11 +261,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP before_fulfillment capture returned ok: ' . print_r($ok, true));
         if (!$ok) {
             /* translators: %1$s = sum (number), %2$s = this payment method company name */
-            $msg = sprintf(__('Cannot capture the fulfillment sum of %1$s at %2$s. Please check the logs for more information', 'woo-vipps'), $sum, Vipps::companyName()); 
-            if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
-                throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg); // This exception will show the error message in the admin fulfillment form
-            }
-            throw new Exception($msg);
+            fulfillment_fail(sprintf(__('Cannot capture the fulfillment sum of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $sum, Vipps::companyName()));
         }
         return $fulfillment;
     }
