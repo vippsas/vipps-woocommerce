@@ -124,6 +124,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return ob_get_clean();
     }
 
+
     // Attempts to detect the current country based on the store's currency NT-2024-10-15
     private function detect_country_from_currency() {
         $currency = get_woocommerce_currency();
@@ -222,47 +223,91 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action( 'woocommerce_fulfillment_before_fulfill', array($this, 'woocommerce_fulfillment_before_fulfill')); // FIXME: is prio important here? Idk. LP 2025-10-08 
     }
 
-    /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08 */
-    public function woocommerce_fulfillment_before_fulfill($fulfillment) {
-        /* Return fail message to fulfillment admin interface - is done by throwing FulfillmentException. LP 2025-10-15 */
+
+    /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
+     *
+     *  This hook will also run on fulfillments edits, after the hook '...before_update'
+     *  therefore here we loop over all fulfillments and only capture if the total sum is more than what is already captured. 
+     *  Else stop fulfillment with failure message. 
+     */
+    public function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
+        error_log("LP running woocommerce_fulfillment_before_fulfill");
+        /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
         function fulfillment_fail($msg = "") {
-            if (class_exists('Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException')) {
-                throw new Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException\FulfillmentException($msg);
+            if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
+                throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
             }
+            $this->log(__('FulfillmentException does not exist', 'woo-vipps'), 'debug');
             throw new Exception($msg);
         }
 
-        $order = $fulfillment->get_order();
+        $order = $new_fulfillment->get_order();
         if (!$order) {
             fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
         }
 
-        $items = $fulfillment->get_items();
-        error_log('LP fulfillment items: ' . print_r($items, true));
+        try {
+            $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
+            $fulfillments = $data_store->read_fulfillments('WC_Order', $order->get_id());
+        } catch (Exception $e) {
+            $this->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
+            fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
+        }
+
+        // Add new to array of all fulfillments, but check it first so as to stop duplicate captures. LP 2025-10-15
+        array_unshift($fulfillments, $new_fulfillment);
+        error_log("LP fulfill_update total number of fulfillments is " . count($fulfillments));
+
         $sum = 0;
-        foreach ($items as $item) {
-            $item_id = $item['item_id'];
-            $item_quantity = $item['qty'];
-            $order_item = $order->get_item($item_id);
-            if (!$order_item) fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+        $is_update = false;
+        foreach ($fulfillments as $fulfillment) {
+            $items = $fulfillment->get_items();
 
-            // Calculate unit price of product. LP 2025-10-08
-            $total_no_tax = $order_item->get_total() ?: "0";
-            $tax = $order_item->get_total_tax() ?: "0";
-            $total = $tax + $total_no_tax;
-            $product_quantity = $order_item->get_quantity();
-            $unit_price = $total/$product_quantity;
+            // Make sure to don't capture duplicate if this is a fulfillment update by skipping the second old one! LP 2025-10-15
+            if ($fulfillment->get_id() === $new_fulfillment->get_id()) {
+                error_log("LP This is a fulfillment UPDATE, has already been handled?: $is_update");
+                if ($is_update) continue;
+                $is_update = true;
+            }
 
-            $item_sum = $unit_price * $item_quantity;
-            $sum += $item_sum;
+            foreach ($items as $item) {
+                $item_id = $item['item_id'];
+                $item_quantity = $item['qty'];
+                $order_item = $order->get_item($item_id);
+                if (!$order_item) fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+
+                // Calculate unit price of product. LP 2025-10-08
+                $total_no_tax = $order_item->get_total() ?: "0";
+                $tax = $order_item->get_total_tax() ?: "0";
+                $total = $tax + $total_no_tax;
+                $product_quantity = $order_item->get_quantity();
+                $unit_price = $total / $product_quantity;
+
+                $item_sum = $unit_price * $item_quantity;
+                $sum += $item_sum;
+            }
         }
-        error_log('LP fulfillment sum: ' . print_r($sum, true));
-        $ok = $this->capture_payment($order, $sum);
-        error_log('LP before_fulfillment capture returned ok: ' . print_r($ok, true));
+        $sum = round(wc_format_decimal($sum, '') * 100);
+        error_log('LP before_fulfill sum: ' . print_r($sum, true));
+        $captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP before_fulfill captured: ' . print_r($captured, true));
+
+        if ($sum === $captured) return $fulfillment;
+
+        // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
+        /* translators: %1$s = this payment method company name */
+        if ($sum < $captured) fulfillment_fail(sprintf(__('New sum is less than already captured sum at %1$s', 'woo-vipps'), Vipps::companyName()));
+
+        // New sum is greater than already captured, send capture. LP 2025-10-15
+        $to_capture = $sum - $captured;
+        error_log('LP before_fulfill new capture' . print_r($to_capture, true));
+        $ok = $this->capture_payment($order, $to_capture);
         if (!$ok) {
-            /* translators: %1$s = sum (number), %2$s = this payment method company name */
-            fulfillment_fail(sprintf(__('Cannot capture the fulfillment sum of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $sum, Vipps::companyName()));
+            error_log("LP before_fulfill capture was not ok!");
+            /* translators: %1$s = number, %2$s = this payment method company name */
+            fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::companyName()));
         }
+        error_log("LP before_fulfillment capture ok! Accepting fulfillment");
         return $fulfillment;
     }
 
@@ -749,6 +794,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
+        $total = intval($order->get_meta('_vipps_amount'));
         $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
         $captured = intval($order->get_meta('_vipps_captured'));
@@ -770,7 +816,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // CANCEL REMAINING AMOUNT
         $payment = $this->check_payment_status($order);
-        if ($payment == 'initiated' || $payment == 'cancelled') {
+        if ($payment == 'initiated' || $payment == 'cancelled' || $total == $captured) {
            return true; // Can't cancel these
         }
 
@@ -1881,7 +1927,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Capture (possibly partially) the order. Only full capture really supported by plugin at this point. IOK 2018-05-07
     // Except that we *do* note that money "refunded" through vipps before capture should be "uncapturable". IOK 2024-11-25
-    // Now supports partial capture, used in fulfillment as of now. LP 2025-10-08
+    // Now supports partial capture (in minor units like cents/øre), used in fulfillment as of now. LP 2025-10-08
     public function capture_payment($order, $partialamount = null) {
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
@@ -1909,7 +1955,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
         // Do partial capture instead. LP 2025-10-08
         if (is_numeric($partialamount)) {
-            $partialamount = round(wc_format_decimal($partialamount,'')*100);
             if ($partialamount > $amount) {
                 /* translators: %1$s and %1$s are numbers */
                 $msg = sprintf(__('Attempted partial capture amount of %1$s was greater than remaining capturable amount of %2$s. Stopping capture.', 'woo-vipps'), $partialamount, $amount);
@@ -1959,10 +2004,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $minamount = $this->get_min_capture_amount($api, $currency); // might return null
             error_log("LP min capture amount for api $api with currency $currency is: $minamount");
             if (is_numeric($minamount) && $amount < $minamount) {
+                error_log("LP capture amount too low!");
                 /* translators: placeholders are integers */
-                $msg = sprintf(__('Could not capture amount lower than the minimum of %1$s; got %2$s.', 'woo-vipps'), $minamount, $amount);
-                $this->log($msg);
-                $this->adminerr($msg);
+                $msg = sprintf(__('Cannot not capture amount lower than the minimum of %1$s, got %2$s.', 'woo-vipps'), $minamount, $amount);
+                $this->log($msg, 'error');
+                $order->add_order_note($msg);
+                $order->save();
                 return false;
             }
 
