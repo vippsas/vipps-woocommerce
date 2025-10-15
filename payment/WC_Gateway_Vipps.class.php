@@ -296,7 +296,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
         /* translators: %1$s = this payment method company name */
-        if ($sum < $captured) fulfillment_fail(sprintf(__('New sum is less than already captured sum at %1$s', 'woo-vipps'), Vipps::companyName()));
+        if ($sum < $captured) fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s. You can only fulfill more products than before', 'woo-vipps'), Vipps::companyName()));
 
         // New sum is greater than already captured, send capture. LP 2025-10-15
         $to_capture = $sum - $captured;
