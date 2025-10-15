@@ -2070,12 +2070,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($api === 'ecommerce') return 100; // i think only supports nok, and its 100 øre. LP 2025-10-14
         if ($api === 'epayment') {
             switch ($currency) {
-                case 'DKK': // øre
-                    return 1;
-                case 'NOK': // øre
-                    return 100;
-                case 'EUR': // cents
-                    return 1;
+                case 'DKK': return 1;
+                case 'NOK': return 100;
+                case 'EUR': return 1;
             }
         }
         return null;
