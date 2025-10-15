@@ -811,7 +811,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 global $Vipps;
                 $Vipps->store_admin_notices();
             }
-            // order could now be changed
+            // order could now be refunded, so update it
             $order = wc_get_order($orderid);
         }
 
@@ -2002,7 +2002,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
             // Stop if amount too small for capture
-            $minamount = $this->get_min_capture_amount($api, $currency); // might return null
+            $minamount = $this->get_min_capture_amount($api, $currency);
             error_log("LP min capture amount for api $api with currency $currency is: $minamount");
             if (is_numeric($minamount) && $amount < $minamount) {
                 error_log("LP capture amount too low!");
