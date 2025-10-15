@@ -700,7 +700,6 @@ jQuery('a.webhook-adder').click(function (e) {
                      'purple'=> __('Purple', 'woo-vipps')];
 
         ?>
-        <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script>
         <div class='wrap vipps-badge-settings'>
 
           <h1><?php echo sprintf(__('%1$s On-Site Messaging', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
@@ -1181,7 +1180,11 @@ jQuery('a.webhook-adder').click(function (e) {
         wp_enqueue_style('vipps-fonts');
         wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
 
-        wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+        wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION,
+            array(
+                'in_footer' => true,
+                'strategy'  => 'async',
+            ));
     }
 
 
@@ -1263,7 +1266,11 @@ jQuery('a.webhook-adder').click(function (e) {
         $badges = get_option('vipps_badge_options');
         // Only enqueue in the front-end if badges are actually on. IOK 2025-07-25
         if ($badges && ($badges['badgeon'] ?? false)) {
-            wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+            wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION,
+           array(
+                'in_footer' => true,
+                'strategy'  => 'async',
+            ));
         }
     }
 
