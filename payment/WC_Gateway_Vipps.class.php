@@ -2067,7 +2067,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
      *  Returns in minor units (øre / cents)
      * */
     public function get_min_capture_amount($api, $currency) {
-        if ($api === 'ecommerce') return 100; // i think only supports nok, and its 100 øre. LP 2025-10-14
         if ($api === 'epayment') {
             switch ($currency) {
                 case 'DKK': return 1;
@@ -2075,7 +2074,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 case 'EUR': return 1;
             }
         }
-        return null;
+        // Default is old-style ecommerce, which is 100 øre. LP 2025-10-15
+        return 100;
     }
 
     public function refund_superfluous_capture($order) {
