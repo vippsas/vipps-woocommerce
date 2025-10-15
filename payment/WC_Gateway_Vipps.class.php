@@ -799,7 +799,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
-        if (($captured || $vippsstatus == 'SALE') && $to_refund > 0) {
+        if (($captured || $vippsstatus == 'SALE') && $to_refund > 0 && $this->can_refund_order($order)) {
             // REFUND CAPTURED AMOUNT
             $ok = $this->refund_payment($order, $to_refund, 'exact');
             if (!$ok) {
