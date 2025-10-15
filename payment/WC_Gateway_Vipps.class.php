@@ -242,10 +242,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $order = $new_fulfillment->get_order();
-        if (!$order) {
-            fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
-        }
+        if (!$order) fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
 
+        // Get all previous fulfillments for this order
         try {
             $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
             $fulfillments = $data_store->read_fulfillments('WC_Order', $order->get_id());
@@ -254,7 +253,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
         }
 
-        // Add new to array of all fulfillments, but check it first so as to stop duplicate captures. LP 2025-10-15
+        // Add new to array of all fulfillments to first position, to stop duplicate captures for cases with updated/edited fulfillments. LP 2025-10-15
         array_unshift($fulfillments, $new_fulfillment);
         error_log("LP fulfill_update total number of fulfillments is " . count($fulfillments));
 
@@ -263,7 +262,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         foreach ($fulfillments as $fulfillment) {
             $items = $fulfillment->get_items();
 
-            // Make sure to don't capture duplicate if this is a fulfillment update by skipping the second old one! LP 2025-10-15
+            // Make sure to don't capture duplicate if this is a fulfillment update, by skipping the old one. LP 2025-10-15
             if ($fulfillment->get_id() === $new_fulfillment->get_id()) {
                 error_log("LP This is a fulfillment UPDATE, has already been handled?: $is_update");
                 if ($is_update) continue;
@@ -296,7 +295,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
         /* translators: %1$s = this payment method company name */
-        if ($sum < $captured) fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s. You can only fulfill more products than before', 'woo-vipps'), Vipps::companyName()));
+        if ($sum < $captured) fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s. Cannot fulfill less products than before', 'woo-vipps'), Vipps::companyName()));
 
         // New sum is greater than already captured, send capture. LP 2025-10-15
         $to_capture = $sum - $captured;
@@ -799,6 +798,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $order->get_meta('_vipps_status');
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
+
         if (($captured || $vippsstatus == 'SALE') && $to_refund > 0) {
             // REFUND CAPTURED AMOUNT
             $ok = $this->refund_payment($order, $to_refund, 'exact');
@@ -811,6 +811,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 global $Vipps;
                 $Vipps->store_admin_notices();
             }
+            // order could now be changed
             $order = wc_get_order($orderid);
         }
 
