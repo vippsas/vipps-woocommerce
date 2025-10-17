@@ -479,10 +479,10 @@ class VippsCheckout_Shipping_Method_Posten extends VippsCheckout_Shipping_Method
 
 class VippsCheckout_Shipping_Method_Posti extends VippsCheckout_Shipping_Method {
     public $id = 'vipps_checkout_posti';
-    public $delivery_types = ['MAILBOX','PICKUP_POINT'];
+    public $delivery_types = ['PICKUP_POINT'];
     public $brand = "POSTI";
     public $no_type_needed = false;
-    public $default_delivery_method = "MAILBOX";
+    public $default_delivery_method = "PICKUP_POINT";
 
     // Called by the parent constructor before loading settings
     function preinit() {
