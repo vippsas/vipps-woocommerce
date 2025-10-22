@@ -223,22 +223,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // nb: note very late priority - we must have captured before, please
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
 
+        // Store active refund data for fulfillment checking in process_refund(). LP 2025-10-22
         add_action('woocommerce_create_refund', function($refund) {
-            // error_log("LP refund " . print_r($refund,true));
-            // $sum = 0;
-            // foreach ($refund->get_items() as $item) {
-            //     // $price = $refund->get_item_total($item, true, false);
-            //     // error_log("LP price " . $price);
-            //     // $quantity = $item->get_quantity() * -1;
-            //     // error_log('LP quantity: ' . print_r($quantity, true));
-            //     // $sum += $price * $quantity;
-            // }
             add_filter('woo_vipps_currently_active_refund', function($oldrefund) use ($refund) {
                 return $refund;
             });
-            // if ($sum <= 0) return;
-            // error_log("LP manual sum is $sum");
-
         });
     }
 
@@ -818,38 +807,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason='') {
         $order = wc_get_order($orderid);
-        add_action( 'woocommerce_create_refund', function($refund, $args ) {
-            error_log("LP refund " . print_r($refund,true));
-            error_log("LP args " . print_r($args,true));
-
-        });
-        $refunds = $order->get_refunds();
-        error_log("LP refund number: " . count($refunds));
-        foreach ($refunds as $refund) {
-            error_log("LP refund id " . $refund->get_id());
-            foreach ($refund->get_items() as $item)
-                error_log("LP refund item " . $item->get_id() . " with total " . $item->get_total());
-        }
-        $active_refund = apply_filters('woo_vipps_currently_active_refund', []);
-        error_log('LP active_refund: ' . print_r($active_refund, true));
-        $sum = 0;
-        foreach ($partial_refund_items as $item) {
-            // This refund item total price will be the sum, since it returns 'unit_price * quantity_refunded'. LP 2025-10-08
-            $total_no_tax = $item->get_total() ?: "0";
-            $tax = $item->get_total_tax() ?: "0";
-            $total = $tax + $total_no_tax * -1; // refund quantities are negative, so invert it. LP 2025-10-21
-            if ($total <= 0) continue;
-            error_log('LP total: ' . print_r($total, true));
-            // $product_quantity = $item->get_quantity();
-            // error_log('LP product_quantity: ' . print_r($product_quantity, true));
-            // $unit_price = $total / $product_quantity;
-            // $item_quantity = $item->get_quantity() * -1; // refund item quantity is negative :). LP 2025-10-21
-
-            // $item_sum = $unit_price * $item_quantity;
-            // error_log('LP item_sum: ' . print_r($item_sum, true));
-            // $sum += $item_sum;
-        }
-        error_log("LP item sum after filter is $sum");
 
         $currency = $order->get_currency();
 
@@ -881,9 +838,49 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         } 
 
+        if (VippsFulfillments::is_enabled()) {
+            $active_refund = apply_filters('woo_vipps_currently_active_refund', []);
+            // error_log('LP active_refund: ' . print_r($active_refund, true));
+
+            // Then reset active refund just in case... LP 2025-10-22
+            add_filter('woo_vipps_currently_active_refund', function($active_refund) {
+                return null;
+            });
+
+            /* translators: %1$s = the payment method name */
+            if (!$active_refund) return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access the refund object.', 'woo-vipps'), $this->get_payment_method_name()));
+
+            try {
+                $order_id = $active_refund->get_parent_id(); 
+                error_log('LP parent order_id: ' . print_r($order_id, true));
+                $fulfillments = VippsFulfillments::get_order_fulfillments(wc_get_order($order_id));
+                error_log('LP fulfillments count: ' . count($fulfillments));
+                $fulfilled_item_ids = VippsFulfillments::get_fulfillments_item_ids($fulfillments);
+                error_log('LP fulfilled_item_ids: ' . print_r($fulfilled_item_ids, true));
+
+                // Check each refund item if it has already been fulfilled (captured), then add item price to the sum. LP 2025-10-22
+                $sum = 0;
+                foreach ($active_refund->get_items() as $item) {
+                    // error_log('LP refund item: ' . print_r($item, true));
+                    error_log('LP refund item id: ' . print_r($item->get_id(), true));
+                    if (in_array($item->get_id(), $fulfilled_item_ids)) {
+                        // NB: refund items have negative quantity. LP 2025-10-22
+                        $item_sum = $refund->get_item_total($item, true, false) * $item->get_quantity() * -1;
+                        error_log('LP item_sum: ' . print_r($item_sum, true));
+                        $sum += $item_sum;
+                    };
+                }
+
+            } catch (Exception $e) {
+                $this->log(sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $order_id) . $e->getMessage(), 'error');
+                return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access fulfillment data, please check the logs.', 'woo-vipps'), $this->get_payment_method_name()));
+            }
+        }
+
         if ($amount*100 > $to_refund) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
+
         $ok = 0;
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
@@ -1895,6 +1892,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Except that we *do* note that money "refunded" through vipps before capture should be "uncapturable". IOK 2024-11-25
     // Now supports partial capture (in minor units like cents/øre), used in fulfillment as of now. LP 2025-10-08
     public function capture_payment($order, $partialamount = null) {
+        error_log("LP capture_payment for order " . $order->get_id() . " with partialamount: $partialamount" );
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') {
             $this->log(sprintf(__('Trying to capture payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
