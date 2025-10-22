@@ -32,6 +32,7 @@ if ( ! defined('ABSPATH') ) {
     exit; // Exit if accessed directly
 }
 require_once(dirname(__FILE__) . "/VippsApi.class.php");
+require_once(dirname(__FILE__) . "/VippsFulfillments.class.php");
 
 class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $form_fields = null;
@@ -180,6 +181,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
+        VippsFulfillments::init();
+
         // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
         $supported_types= array('simple','variable','variation','bundle', 'yith_bundle', 'gift-card');
@@ -220,95 +223,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // nb: note very late priority - we must have captured before, please
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
 
-        add_action( 'woocommerce_fulfillment_before_fulfill', array($this, 'woocommerce_fulfillment_before_fulfill')); // FIXME: is prio important here? Idk. LP 2025-10-08 
+        add_action('woocommerce_create_refund', function($refund) {
+            // error_log("LP refund " . print_r($refund,true));
+            // $sum = 0;
+            // foreach ($refund->get_items() as $item) {
+            //     // $price = $refund->get_item_total($item, true, false);
+            //     // error_log("LP price " . $price);
+            //     // $quantity = $item->get_quantity() * -1;
+            //     // error_log('LP quantity: ' . print_r($quantity, true));
+            //     // $sum += $price * $quantity;
+            // }
+            add_filter('woo_vipps_currently_active_refund', function($oldrefund) use ($refund) {
+                return $refund;
+            });
+            // if ($sum <= 0) return;
+            // error_log("LP manual sum is $sum");
+
+        });
     }
 
-
-    /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
-     *
-     *  This hook will also run on fulfillments edits, after the hook '...before_update'
-     *  therefore here we loop over all fulfillments and only capture if the total sum is more than what is already captured. 
-     *  Else stop fulfillment with failure message. 
-     */
-    public function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
-        error_log("LP running woocommerce_fulfillment_before_fulfill");
-        /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
-        function fulfillment_fail($msg = "") {
-            if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
-                throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
-            }
-            $this->log(__('FulfillmentException does not exist', 'woo-vipps'), 'debug');
-            throw new Exception($msg);
-        }
-
-        $order = $new_fulfillment->get_order();
-        if (!$order) fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
-
-        // Get all previous fulfillments for this order
-        try {
-            $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
-            $fulfillments = $data_store->read_fulfillments('WC_Order', $order->get_id());
-        } catch (Exception $e) {
-            $this->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
-            fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
-        }
-
-        // Add new to array of all fulfillments to first position, to stop duplicate captures for cases with updated/edited fulfillments. LP 2025-10-15
-        array_unshift($fulfillments, $new_fulfillment);
-        error_log("LP fulfill_update total number of fulfillments is " . count($fulfillments));
-
-        $sum = 0;
-        $is_update = false;
-        foreach ($fulfillments as $fulfillment) {
-            $items = $fulfillment->get_items();
-
-            // Make sure to don't capture duplicate if this is a fulfillment update, by skipping the old one. LP 2025-10-15
-            if ($fulfillment->get_id() === $new_fulfillment->get_id()) {
-                error_log("LP This is a fulfillment UPDATE, has already been handled?: $is_update");
-                if ($is_update) continue;
-                $is_update = true;
-            }
-
-            foreach ($items as $item) {
-                $item_id = $item['item_id'];
-                $item_quantity = $item['qty'];
-                $order_item = $order->get_item($item_id);
-                if (!$order_item) fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
-
-                // Calculate unit price of product. LP 2025-10-08
-                $total_no_tax = $order_item->get_total() ?: "0";
-                $tax = $order_item->get_total_tax() ?: "0";
-                $total = $tax + $total_no_tax;
-                $product_quantity = $order_item->get_quantity();
-                $unit_price = $total / $product_quantity;
-
-                $item_sum = $unit_price * $item_quantity;
-                $sum += $item_sum;
-            }
-        }
-        $sum = round(wc_format_decimal($sum, '') * 100);
-        error_log('LP before_fulfill sum: ' . print_r($sum, true));
-        $captured = intval($order->get_meta('_vipps_captured'));
-        error_log('LP before_fulfill captured: ' . print_r($captured, true));
-
-        if ($sum === $captured) return $fulfillment;
-
-        // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
-        /* translators: %1$s = this payment method company name */
-        if ($sum < $captured) fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s. Cannot fulfill less products than before', 'woo-vipps'), Vipps::companyName()));
-
-        // New sum is greater than already captured, send capture. LP 2025-10-15
-        $to_capture = $sum - $captured;
-        error_log('LP before_fulfill new capture' . print_r($to_capture, true));
-        $ok = $this->capture_payment($order, $to_capture);
-        if (!$ok) {
-            error_log("LP before_fulfill capture was not ok!");
-            /* translators: %1$s = number, %2$s = this payment method company name */
-            fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::companyName()));
-        }
-        error_log("LP before_fulfillment capture ok! Accepting fulfillment");
-        return $fulfillment;
-    }
 
     // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
@@ -885,6 +818,38 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason='') {
         $order = wc_get_order($orderid);
+        add_action( 'woocommerce_create_refund', function($refund, $args ) {
+            error_log("LP refund " . print_r($refund,true));
+            error_log("LP args " . print_r($args,true));
+
+        });
+        $refunds = $order->get_refunds();
+        error_log("LP refund number: " . count($refunds));
+        foreach ($refunds as $refund) {
+            error_log("LP refund id " . $refund->get_id());
+            foreach ($refund->get_items() as $item)
+                error_log("LP refund item " . $item->get_id() . " with total " . $item->get_total());
+        }
+        $active_refund = apply_filters('woo_vipps_currently_active_refund', []);
+        error_log('LP active_refund: ' . print_r($active_refund, true));
+        $sum = 0;
+        foreach ($partial_refund_items as $item) {
+            // This refund item total price will be the sum, since it returns 'unit_price * quantity_refunded'. LP 2025-10-08
+            $total_no_tax = $item->get_total() ?: "0";
+            $tax = $item->get_total_tax() ?: "0";
+            $total = $tax + $total_no_tax * -1; // refund quantities are negative, so invert it. LP 2025-10-21
+            if ($total <= 0) continue;
+            error_log('LP total: ' . print_r($total, true));
+            // $product_quantity = $item->get_quantity();
+            // error_log('LP product_quantity: ' . print_r($product_quantity, true));
+            // $unit_price = $total / $product_quantity;
+            // $item_quantity = $item->get_quantity() * -1; // refund item quantity is negative :). LP 2025-10-21
+
+            // $item_sum = $unit_price * $item_quantity;
+            // error_log('LP item_sum: ' . print_r($item_sum, true));
+            // $sum += $item_sum;
+        }
+        error_log("LP item sum after filter is $sum");
 
         $currency = $order->get_currency();
 
