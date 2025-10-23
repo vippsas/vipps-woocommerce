@@ -710,15 +710,10 @@ class WC_Vipps_Recurring {
 
 		$options = [
 			'limit'          => $limit,
-			'meta_query'     => [
-				[
-					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
-					'compare' => '=',
-					'value'   => 1
-				]
-			],
 			'payment_method' => $this->gateway()->id
 		];
+
+		$options = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $options, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, '=', 1, $this->gateway()->use_high_performance_order_storage() );
 
 		if ( $this->gateway()->check_charges_sort_order === 'rand' ) {
 			$options['orderby'] = 'rand';
@@ -745,16 +740,13 @@ class WC_Vipps_Recurring {
 	 * Check the status of gateway change requests
 	 */
 	public function check_gateway_change_agreement_statuses() {
-		$subscriptions = wcs_get_subscriptions( [
+		$args = [
 			'subscription_status' => [ 'active', 'pending', 'on-hold' ],
-			'meta_query'          => [
-				[
-					'key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE,
-					'compare' => '=',
-					'value'   => 1
-				]
-			]
-		] );
+		];
+
+		$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $args, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_WAITING_FOR_GATEWAY_CHANGE, '=', 1, $this->gateway()->use_high_performance_order_storage() );
+
+		$subscriptions = wcs_get_subscriptions( $args );
 
 		foreach ( $subscriptions as $subscription ) {
 			// check charge status
@@ -766,17 +758,14 @@ class WC_Vipps_Recurring {
 	 * Update a subscription's details in the app
 	 */
 	public function update_subscription_details_in_app() {
-		$subscriptions = wcs_get_subscriptions( [
+		$args = [
 			'subscriptions_per_page' => 5,
 			'subscription_status'    => [ 'active', 'pending-cancel', 'cancelled', 'on-hold' ],
-			'meta_query'             => [
-				[
-					'key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP,
-					'compare' => '=',
-					'value'   => 1,
-				]
-			]
-		] );
+		];
+
+		$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $args, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_UPDATE_IN_APP, '=', 1, $this->gateway()->use_high_performance_order_storage() );
+
+		$subscriptions = wcs_get_subscriptions( $args );
 
 		foreach ( $subscriptions as $subscription ) {
 			// check charge status
@@ -788,14 +777,9 @@ class WC_Vipps_Recurring {
 		$options = [
 			'limit'          => 25,
 			'payment_method' => $this->gateway()->id,
-			'meta_query'     => [
-				[
-					'key'     => WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION,
-					'compare' => '=',
-					'value'   => 1
-				]
-			]
 		];
+
+		$options = WC_Vipps_Recurring_Helper::add_meta_query_to_args($options, WC_Vipps_Recurring_Helper::META_SUBSCRIPTION_MARKED_FOR_DELETION, '=', 1, $this->gateway()->use_high_performance_order_storage());
 
 		$subscriptions = wcs_get_subscriptions( $options );
 

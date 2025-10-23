@@ -540,6 +540,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order->save();
 
 		$agreement = $this->get_agreement_from_order( $order );
+
 		if ( ! $agreement ) {
 			// If there is no agreement we can't complete Checkout orders. Let Checkout deal with this through an action.
 			$order_initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
@@ -2489,17 +2490,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( isset( $webhook_data['agreementId'] ) ) {
 			$agreement_id = $webhook_data['agreementId'];
 
-			$subscriptions = wcs_get_subscriptions( [
+			$args = [
 				'subscriptions_per_page' => 1,
 				'subscription_status'    => [ 'active', 'pending', 'on-hold' ],
-				'meta_query'             => [
-					[
-						'key'     => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
-						'compare' => '=',
-						'value'   => $agreement_id
-					]
-				]
-			] );
+			];
+
+			$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $args, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, '=', $agreement_id, $this->use_high_performance_order_storage() );
+
+			$subscriptions = wcs_get_subscriptions( $args );
 
 			if ( ! empty( $subscriptions ) ) {
 				return array_pop( $subscriptions );
@@ -2528,18 +2526,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		] ) ) {
 			$order_id = null;
 
-			$orders = wc_get_orders( [
+			$args = [
 				'limit'          => 1,
-				'meta_query'     => [
-					[
-						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
-						'compare' => '=',
-						'value'   => $webhook_data['chargeId']
-					]
-				],
 				'payment_method' => $this->id,
 				'order_by'       => 'post_date'
-			] );
+			];
+
+			$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $args, WC_Vipps_Recurring_Helper::META_CHARGE_ID, '=', $webhook_data['chargeId'], $this->use_high_performance_order_storage() );
+
+			$orders = wc_get_orders( $args );
 
 			$order = array_pop( $orders );
 
