@@ -44,7 +44,7 @@ class VippsFulfillments {
 
     /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
     public static function is_enabled() {
-        // TODO:
+        // TODO: check our setting for enabling this, (check wc version and potentially the wc option you need to do to active the beta support, but this will change if out of beta etc. Then we could e.g. push a new version that removes this check and is marketed as the version fully supporting fulfillments etc.) LP 2025-10-23
         return true;
     }
 
@@ -88,7 +88,9 @@ class VippsFulfillments {
         // static::fulfillment_fail("LP debug");
 
         $order = $new_fulfillment->get_order();
-        if (!$order) static::fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
+        if (!$order) {
+            static::fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
+        }
 
         $fulfillments = static::get_order_fulfillments($order);
 
@@ -112,7 +114,9 @@ class VippsFulfillments {
                 $item_quantity = $item['qty'];
                 $order_item = $order->get_item($item_id);
                 error_log('LP item_name: ' . print_r($order_item->get_name(), true));
-                if (!$order_item) static::fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+                if (!$order_item) {
+                    static::fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+                }
 
                 $item_sum = $order->get_item_total($order_item, true, false) * $item_quantity;
                 error_log('LP item_sum: ' . print_r($item_sum, true));
@@ -127,13 +131,17 @@ class VippsFulfillments {
 
         // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
         /* translators: %1$s = this payment gateways company name */
-        if ($sum < $captured) static::fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::companyName()));
+        if ($sum < $captured) {
+            static::fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::companyName()));
+        }
 
 
         // New sum is greater than already captured, send capture. LP 2025-10-15
         $to_capture = $sum - $captured;
         error_log('LP before_fulfill new capture ' . print_r($to_capture, true));
-        if ($to_capture == 0) return $new_fulfillment;
+        if ($to_capture == 0) {
+            return $new_fulfillment;
+        }
 
         global $Vipps;
         $ok = $Vipps->gateway()->capture_payment($order, $to_capture);
@@ -146,15 +154,33 @@ class VippsFulfillments {
         return $new_fulfillment;
     }
 
-    public static function get_fulfillments_item_ids($fulfillments) {
-        $item_ids = [];
+    // /** Returns list of the unique order item product id's. LP 2025-10-23 */
+    // public static function get_fulfillments_item_ids($fulfillments) {
+    //     $item_ids = [];
+    //     foreach ($fulfillments as $fulfillment) {
+    //         error_log('LP loop fulfillment items: ' . print_r($fulfillment->get_items(), true));
+    //         foreach ($fulfillment->get_items() as $item) {
+    //             error_log('LP loop fulfillment item: ' . print_r($item, true));
+    //             $item_ids[] = $item['item_id'];
+    //         }
+    //     }
+    //     return array_unique($item_ids);
+    // }
+
+    /** Returns associative array ['item_id' => 'quantity'] for all items in the fulfillments array of Fulfillment objects. LP 2025-10-23 */
+    public static function get_fulfillments_item_quantities($fulfillments) {
+        $items = [];
         foreach ($fulfillments as $fulfillment) {
-            error_log('LP loop fulfillment items: ' . print_r($fulfillment->get_items(), true));
             foreach ($fulfillment->get_items() as $item) {
-                error_log('LP loop fulfillment item: ' . print_r($item, true));
-                $item_ids[] = $item['item_id'];
+                $id = $item['item_id'];
+                $quantity = $item['qty'];
+                if (array_key_exists($id, $items)) {
+                    $items[$id] += $quantity;
+                    continue;
+                }
+                $items[$id] = $quantity;
             }
+            return $items;
         }
-        return array_unique($item_ids);
     }
 }
