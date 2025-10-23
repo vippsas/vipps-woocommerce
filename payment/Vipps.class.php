@@ -700,7 +700,6 @@ jQuery('a.webhook-adder').click(function (e) {
                      'purple'=> __('Purple', 'woo-vipps')];
 
         ?>
-        <script src="https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js"></script>
         <div class='wrap vipps-badge-settings'>
 
           <h1><?php echo sprintf(__('%1$s On-Site Messaging', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
@@ -1181,7 +1180,11 @@ jQuery('a.webhook-adder').click(function (e) {
         wp_enqueue_style('vipps-fonts');
         wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
 
-        wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+        wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION,
+            array(
+                'in_footer' => true,
+                'strategy'  => 'async',
+            ));
     }
 
 
@@ -1263,7 +1266,11 @@ jQuery('a.webhook-adder').click(function (e) {
         $badges = get_option('vipps_badge_options');
         // Only enqueue in the front-end if badges are actually on. IOK 2025-07-25
         if ($badges && ($badges['badgeon'] ?? false)) {
-            wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION );
+            wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION,
+           array(
+                'in_footer' => true,
+                'strategy'  => 'async',
+            ));
         }
     }
 
@@ -2466,12 +2473,12 @@ error_log("Checking if we should cancel unpaid vipps order");
             $hookdata = $this->gateway()->get_local_webhook($msn);
             $secret = $hookdata ? ($hookdata['secret'] ?? false) : false;
             if (!$secret) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.', 'woo-vipps'), $vippsorderid), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$s - this shop does not know the secret. You should delete all unwanted webhooks. If you are using the same MSN on several shops, this callback is probably for one of the others.', 'woo-vipps'), $vippsorderid), 'debug');
                 return false;
             }
             $verified = $this->verify_webhook($raw_post, $secret);
             if (!$verified) {
-                $this->log(sprintf(__('Cannot verify webhook callback for order %1$d - signature does not match. This may be an attempt to forge callbacks', 'woo-vipps'), $vippsorderid), 'debug');
+                $this->log(sprintf(__('Cannot verify webhook callback for order %1$s - signature does not match. This may be an attempt to forge callbacks', 'woo-vipps'), $vippsorderid), 'debug');
                 return;
             }
 
@@ -2527,7 +2534,7 @@ error_log("Checking if we should cancel unpaid vipps order");
 
             if (!$pending) {
                 // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
-                $this->log(sprintf(__('Received webhook callback for order %1$d but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
+                $this->log(sprintf(__('Received webhook callback for order %1$s but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
                 return; 
             }
             do_action('woo_vipps_callback_webhook', $result);

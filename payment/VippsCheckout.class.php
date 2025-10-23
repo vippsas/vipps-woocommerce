@@ -1538,6 +1538,9 @@ jQuery(document).ready(function () {
 
             if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
                 $m2['type'] = $meta['type'];
+                if ($m2['brand'] === 'POSTI') {
+                    $m2['type'] = 'PICKUP_POINT'; // Temp fix. Posti only supports pickup point now. LP 2025-10-17
+                }
             }
 
             // Old filter kept for backwards compatibility
