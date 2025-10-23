@@ -1,5 +1,9 @@
 == Changelog ==
 
+= 2.2.2 =
+* Fix: Improved compatibility with legacy WooCommerce order storage.
+* Fix: Stop checking orders where the charge was cancelled in cron.
+
 = 2.2.1 =
 * Fix: No longer cancel an agreement that has pending charges while the customer is swapping payment gateways.
 

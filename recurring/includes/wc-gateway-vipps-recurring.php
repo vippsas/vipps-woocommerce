@@ -595,6 +595,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
+			$this->unlock_order( $order );
+
+			return 'CANCELLED';
+		}
+
 		// If payment has already been captured, this function is redundant, unless the charge failed
 		if ( ! $pending_charge && ! $did_fail ) {
 			$this->unlock_order( $order );
