@@ -570,4 +570,22 @@ class WC_Vipps_Recurring_Helper {
 
 		return apply_filters( 'wc_vipps_recurring_order_id', $vipps_order_id, $prefix, $order );
 	}
+
+	public static function add_meta_query_to_args( array $args, string $key, string $compare, $value, bool $hpos ): array {
+		if ( $hpos ) {
+			$args['meta_query'] = [
+				[
+					'key'     => $key,
+					'compare' => $compare,
+					'value'   => $value
+				]
+			];
+		} else {
+			$args['meta_key']     = $key;
+			$args['meta_compare'] = $compare;
+			$args['meta_value']   = $value;
+		}
+
+		return $args;
+	}
 }
