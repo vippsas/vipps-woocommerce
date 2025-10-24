@@ -845,10 +845,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } 
 
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
-        // Else; order has been partially captured and we need to check fulfillments. LP 2025-10-23
-        // else if (VippsFulfillments::is_enabled()) { // FIXME: maybe this is not right,i think we need to check fulfillments as long as order has any - even if the admin has disabled fulfillment support. LP 2025-10-23
         $all_captured = $captured == $order->get_total() * 100;
-        if (!$all_captured && VippsFulfillments::is_enabled()) { // FIXME: checking fulfillments enabled i dont think is correct,i think we need to check fulfillments as long as order has any - even if the admin has disabled fulfillment support potentially afterwards. LP 2025-10-23
+
+        // FIXME: checking fulfillments enabled below i dont think is correct,i think we need to check fulfillments as long as order has any - even if the admin has disabled fulfillment support potentially afterwards. LP 2025-10-23
+        if (!$all_captured && VippsFulfillments::is_enabled()) { 
+            // These are now all partial capture cases, we need to check fulfillments. LP 2025-10-24
+
+
             $active_refund = apply_filters('woo_vipps_currently_active_refund', []);
             // error_log('LP active_refund: ' . print_r($active_refund, true));
             // Reset just in case...
@@ -871,7 +874,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 error_log('LP fulfilled_item_quantitites: ' . print_r($fulfilled_item_quantities, true));
                 $fulfilled_item_ids = array_keys($fulfilled_item_quantities);
 
-                foreach ($active_refund->get_items() as $refund_item) { // items are WC_Order_Item (_Product for products)
+                // These refund items are WC_Order_Item (WC_Order_Item_Product for products)
+                foreach ($active_refund->get_items() as $refund_item) {
                     // error_log('LP refund refund_item: ' . print_r($refund_item, true)); // this is a WC_Order_Item_Product
                     // error_log('LP refund refund_item object id: ' . print_r($refund_item->get_id(), true));
                     $item_id = $refund_item->get_meta('_refunded_item_id');
@@ -880,40 +884,66 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                     error_log('LP refund order item id: ' . print_r($item_id, true));
 
-                    $item_price = $active_refund->get_item_total($refund_item, true, false);
-                    error_log('LP item_price: ' . print_r($item_price, true));
                     // NB: refund items have negative quantity. LP 2025-10-22
                     $refund_item_quantity = $refund_item->get_quantity() * -1;
-                    error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
+                    $item_price = $active_refund->get_item_total($refund_item, true, false);
                     $refund_item_sum = $item_price * $refund_item_quantity;
-                    error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
 
-                    // Case: refund item has no fulfillments, safe to mark noncapturable for this item. LP 2025-10-23
+                    // Case 1: refund item has no fulfillments, safe to mark noncapturable for this item. LP 2025-10-23
+                    // TODO: evaluate: this case and case 3 are the same, they could merge but it might be even less readable even though the number of cases decreased... LP 2025-10-24
                     if (!in_array($item_id, $fulfilled_item_ids)) {
                         error_log("LP case refund item has no fulfillments, mark all as noncaptureable");
+                        $amount -= $refund_item_sum;
                         mark_as_noncapturable($refund_item_sum);
                         continue;
                     };
 
                     $order_item = $order_items[$item_id];
                     $order_item_quantity = $order_item->get_quantity();
-                    $fulfilled_item_sum = $fulfilled_item_quantities[$item_id] * $item_price;
+                    $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
+                    $fulfilled_item_sum = $fulfilled_item_quantity * $item_price;
+
+                    error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
+                    error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
+                    error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
+
+                    error_log('LP item_price: ' . print_r($item_price, true));
+                    error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
                     error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
 
-                    // Case: refunding the whole quantity of this item, need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
-                    error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
-                    if ($order_item_quantity == $refund_item_quantity) {
+                    // Case 2: refunding the whole quantity of this item,
+                    // need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
+                    // TODO: evaluate: this case and case 4 are the same, they could merge but it might be even less digestible even though the number of cases decreased... LP 2025-10-24
+                    //
+                    if ($refund_item_quantity == $order_item_quantity) {
                         error_log("LP Case refunding the whole quantity, old amount is $amount");
                         $noncapture_sum = $refund_item_sum - $fulfilled_item_sum;
                         $amount -= $noncapture_sum;
-                        mark_as_noncapturable($refund_item_sum);
+                        mark_as_noncapturable($noncapture_sum);
                         error_log("LP Case refunding the whole quantity, new refund amount is $amount, set noncapturable of $noncapture_sum");
+                        continue;
                     }
-                    return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
 
-                    // $amount += $item_sum;
+                    // Case 3: There are enough of this item left in the order not captured/fulfilled for this refund,
+                    // we are safe to set all of this item to noncapturable. LP 2025-10-24
+                    if ($refund_item_quantity <= ($order_item_quantity - $fulfilled_item_quantity)) {
+                        error_log('LP case there are enough items left nonfulfilled, so safe to mark rest as noncapture');
+                        $amount -= $refund_item_sum;
+                        mark_as_noncapturable($refund_item_sum);
+                        continue;
+                    }
+
+                    // Final case 4: There are NOT enough quantity of item left in the order to mark all as noncapture,
+                    // we need to set noncapture of all we can, then refund the remaining item amount. LP 2025-10-24
+                    error_log("LP case not enough items left nonfulfilled, need to refund+noncapture. Old amount is $amount");
+                    $noncapture_sum = $refund_item_sum - $fulfilled_item_sum;
+                    error_log('LP noncapture_sum: ' . print_r($noncapture_sum, true));
+                    $amount -= $noncapture_sum;
+                    error_log("LP case not enough items left nonfulfilled, need to refund+noncapture. new amount is $amount");
+                    mark_as_noncapturable($noncapture_sum);
+
                 }
-                // error_log('LP total sum: ' . print_r($sum, true));
+                return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
 
             } catch (Exception $e) {
                 $msg = sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $orderid) . $e->getMessage();
