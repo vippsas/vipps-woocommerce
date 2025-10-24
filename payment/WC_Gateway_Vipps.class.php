@@ -886,8 +886,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     }
                     error_log('LP refund order item id: ' . print_r($item_id, true));
 
-
-                    // First calculate some stuff
                     $refund_item_quantity = $refund_item->get_quantity() * -1; // NB: refund items have negative quantity. LP 2025-10-22
                     $item_price = $active_refund->get_item_total($refund_item, true, false);
                     $refund_item_sum = $item_price * $refund_item_quantity;
@@ -895,14 +893,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $order_item_quantity = $order_item->get_quantity();
                     $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
                     $fulfilled_item_sum = $fulfilled_item_quantity * $item_price;
-                    error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
+                    $remaining_item_quantity = $order_item_quantity - $fulfilled_item_quantity;
                     error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
                     error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
+                    error_log('LP remaining_item_quantity: ' . print_r($remaining_item_quantity, true));
+                    error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
                     error_log('LP item_price: ' . print_r($item_price, true));
                     error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
                     error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
 
-                    // Then handle the partial capture cases:
+                    // The different partial capture cases:
 
                     // Case 1: refund item has no fulfillments, safe to mark noncapturable for this item. LP 2025-10-23
                     // TODO: evaluate: this case and case 3 are the same, they could merge but it might be even less readable even though the number of cases decreased... LP 2025-10-24
@@ -915,27 +915,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                     // Case 2: refunding the whole quantity of this item,
                     // need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
-                    // TODO: evaluate: this case and case 4 are the same, they could merge but it might be even less digestible even though the number of cases decreased... LP 2025-10-24
                     //
                     if ($refund_item_quantity == $order_item_quantity) {
                         $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
-                        error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, noncapture+=$to_noncapture");
+                        error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $fulfilled_item_sum  . ", to_noncapture=$to_noncapture");
                         $noncapturable_sum += $to_noncapture;
                         continue;
                     }
 
                     // Case 3: There are enough of this item left in the order not captured/fulfilled for this refund,
                     // we are safe to set all of this item to noncapturable. LP 2025-10-24
-                    if ($refund_item_quantity <= ($order_item_quantity - $fulfilled_item_quantity)) {
+                    if ($refund_item_quantity <= $remaining_item_quantity) {
                         error_log("LP case there are enough items left nonfulfilled, so safe to mark the entire quantity as noncapturable, noncapture+=$refund_item_sum");
                         $noncapturable_sum += $refund_item_sum;
                         continue;
                     }
 
-                    // Final case 4: There are NOT enough quantity of item left in the order to mark all as noncapture,
-                    // we need to set noncapture of all we can, then refund the remaining item amount. LP 2025-10-24
-                    $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
-                    error_log("LP case not enough items left nonfulfilled, need to refund fulfilled + set rest noncapturable, noncapture+=$to_noncapture");
+                    // Final case 4: There are NOT enough of this item left in the order to mark all as noncapture,
+                    // we need to set noncapture of all we can, then refund the difference. LP 2025-10-24
+                    $to_refund = ($refund_item_quantity - $remaining_item_quantity) * $item_price;
+                    $to_noncapture = $refund_item_sum - $to_refund;
+                    error_log("LP case not enough items left nonfulfilled, need to refund fulfilled + set rest noncapturable. to_refund=$to_refund, to_noncapture=$to_noncapture");
                     $noncapturable_sum += $to_noncapture;
 
                 }
