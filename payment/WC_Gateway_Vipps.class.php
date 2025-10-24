@@ -820,14 +820,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        mark_as_noncapturable = function($noncapture_amount) use ($order) {
-            // return; // FIXME: delete this
+        $mark_as_noncapturable = function($noncapture_amount) use ($order) {
             $noncapturable = round($noncapture_amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
-
-            $order->update_meta_data('_vipps_noncapturable', $uncapturable);
-            $order->add_order_note($msg);
+            $order->update_meta_data('_vipps_noncapturable', $noncapturable);
             $order->save();
-        }
+        };
 
 
         $captured = intval($order->get_meta('_vipps_captured'));
@@ -838,8 +835,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ('epayment' != $order->get_meta('_vipps_api')) {
                 return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
             }
-            $this->log(sprintf(__('The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $amount, $currency), 'info');
-            mark_as_noncapturable($amount);
+            $msg = sprintf(__('The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $amount, $currency);
+            $this->log($msg, 'info');
+            $order->add_order_note($msg);
+            $mark_as_noncapturable($amount);
             return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
             return true;
         } 
@@ -906,15 +905,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                     $has_no_fulfillments = !in_array($item_id, $fulfilled_item_ids);
                     $enough_items_remaining = $refund_item_quantity <= $remaining_item_quantity;
+                    error_log('LP has_no_fulfillments: ' . print_r($has_no_fulfillments, true));
+                    error_log('LP enough_items_remaining: ' . print_r($enough_items_remaining, true));
                     // Safe to set all of this item to noncapturable. LP 2025-10-24
                     if ($has_no_fulfillments || $enough_items_remaining) {
                         $noncapturable_sum += $refund_item_sum;
-                        error_log("LP case refund item has no fulfillments, mark all as noncaptureable, noncapturable+=$refund_item_sum");
+                        error_log("LP case no fulfillments/enough items remaining, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                         continue;
                     };
 
 
                     $refunding_whole_quantity = $refund_item_quantity == $order_item_quantity;
+                    error_log('LP refunding_whole_quantity: ' . print_r($refunding_whole_quantity, true));
                     // Need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
                     if ($refunding_whole_quantity) {
                         $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
@@ -933,7 +935,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
                 $this->log(sprintf(__('Some funds from the refund has not been captured, only reserved.  %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable_sum, $currency), 'info');
                 error_log("LP finished item loop, noncapturable_sum=$noncapturable_sum, and OLD amount is $amount");
-                mark_as_noncapturable($noncapturable_sum);
+                $mark_as_noncapturable($noncapturable_sum);
                 $amount -= $noncapturable_sum;
                 error_log("LP finished item loop, NEW amount is $amount");
                 // return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
