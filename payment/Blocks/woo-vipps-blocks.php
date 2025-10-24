@@ -61,7 +61,8 @@ add_action('enqueue_block_editor_assets', function () {
         'before');
 
     // Inject config from Vipps.class.php to buy-now editor script. LP 29.11.2024
-    if (version_compare(WC_VERSION, '9.4', '>=')) {
+    // But not in the admin area - there VippsConfig is already set! IOK 2025-10-24
+    if (!is_admin() && version_compare(WC_VERSION, '9.4', '>=')) {
         wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const VippsConfig = ' . json_encode(Vipps::instance()->vippsJSConfig), 'before');
     }
 });
