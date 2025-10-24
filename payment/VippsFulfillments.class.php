@@ -62,7 +62,7 @@ class VippsFulfillments {
     /** Disable deletion for vipps fulfillments, since we capture fulfillments and don't want to refund (they can't be recaptured). LP 2025-10-22 */
     public static function woocommerce_fulfillment_before_delete($fulfillment) {
         error_log("LP woocommerce_fulfillment_before_delete. Stopping...");
-        static::fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete this fulfillment.', 'woo-vipps'), Vipps::companyName()));
+        static::fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete this fulfillment.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
     public static function get_order_fulfillments($order) {
@@ -84,6 +84,7 @@ class VippsFulfillments {
      *  Else stop fulfillment with failure message. 
      */
     public static function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
+        global $Vipps;
         error_log("LP running woocommerce_fulfillment_before_fulfill");
         // static::fulfillment_fail("LP debug");
 
@@ -132,7 +133,7 @@ class VippsFulfillments {
         // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
         /* translators: %1$s = this payment gateways company name */
         if ($sum < $captured) {
-            static::fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::companyName()));
+            static::fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::CompanyName()));
         }
 
 
@@ -143,12 +144,11 @@ class VippsFulfillments {
             return $new_fulfillment;
         }
 
-        global $Vipps;
         $ok = $Vipps->gateway()->capture_payment($order, $to_capture);
         if (!$ok) {
             error_log("LP before_fulfill capture was not ok!");
             /* translators: %1$s = number, %2$s = this payment method company name */
-            static::fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::companyName()));
+            static::fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::CompanyName()));
         }
         error_log("LP before_fulfillment capture ok! Accepting fulfillment");
         return $new_fulfillment;
@@ -181,6 +181,115 @@ class VippsFulfillments {
                 $items[$id] = $quantity;
             }
             return $items;
+        }
+    }
+
+    /** Handles the different refund cases for partially captured orders. It is not as simple since order items may have
+     * different quantities of fulfillments compared to quantity in the current refund and the total quantity in the order. LP 2025-10-24
+     */
+    public static function handle_refund($order, $amount) {
+        global $Vipps;
+
+        $current_refund = apply_filters('woo_vipps_currently_active_refund', []);
+        // error_log('LP current_refund: ' . print_r($current_refund, true));
+        // Reset just in case...
+        add_filter('woo_vipps_currently_active_refund', function($current_refund) {
+            return null;
+        });
+
+        /* translators: %1$s = the payment method name */
+        if (!$current_refund) {
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access the refund object.', 'woo-vipps'), $this->get_payment_method_name()));
+        }
+
+        try {
+            $orderid = $order->get_id();
+            error_log("LP order id for refund is $orderid");
+            $currency = $order->get_currency();
+            $order_items = $order->get_items();
+
+            $fulfillments = static::get_order_fulfillments(wc_get_order($orderid));
+            error_log('LP fulfillments count: ' . count($fulfillments));
+            $fulfilled_item_quantities = static::get_fulfillments_item_quantities($fulfillments);
+            error_log('LP fulfilled_item_quantitites: ' . print_r($fulfilled_item_quantities, true));
+            $fulfilled_item_ids = array_keys($fulfilled_item_quantities);
+
+            $noncapturable_sum = 0;
+
+            // These refund items are WC_Order_Item (WC_Order_Item_Product for products)
+            foreach ($current_refund->get_items() as $refund_item) {
+                // error_log('LP refund refund_item: ' . print_r($refund_item, true)); // this is a WC_Order_Item_Product
+                // error_log('LP refund refund_item object id: ' . print_r($refund_item->get_id(), true));
+                $item_id = $refund_item->get_meta('_refunded_item_id');
+                if (!$item_id) {
+                    return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $this->get_payment_method_name()));
+                }
+                error_log('LP refund order item id: ' . print_r($item_id, true));
+
+                $refund_item_quantity = $refund_item->get_quantity() * -1; // NB: refund items have negative quantity. LP 2025-10-22
+                $item_price = $current_refund->get_item_total($refund_item, true, false);
+                $refund_item_sum = $item_price * $refund_item_quantity;
+                $order_item = $order_items[$item_id];
+                $order_item_quantity = $order_item->get_quantity();
+                $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
+                $fulfilled_item_sum = $fulfilled_item_quantity * $item_price;
+                $remaining_item_quantity = $order_item_quantity - $fulfilled_item_quantity;
+                error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
+                error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
+                error_log('LP remaining_item_quantity: ' . print_r($remaining_item_quantity, true));
+                error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
+                error_log('LP item_price: ' . print_r($item_price, true));
+                error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
+                error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
+
+                // The different partial capture cases:
+
+                $has_no_fulfillments = !in_array($item_id, $fulfilled_item_ids);
+                $enough_items_remaining = $refund_item_quantity <= $remaining_item_quantity;
+                error_log('LP has_no_fulfillments: ' . print_r($has_no_fulfillments, true));
+                error_log('LP enough_items_remaining: ' . print_r($enough_items_remaining, true));
+                // Safe to set all of this item to noncapturable. LP 2025-10-24
+                if ($has_no_fulfillments || $enough_items_remaining) {
+                    $noncapturable_sum += $refund_item_sum;
+                    error_log("LP case no fulfillments/enough items remaining, mark all as noncaptureable, noncapturable+=$refund_item_sum");
+                    continue;
+                };
+
+
+                $refunding_whole_quantity = $refund_item_quantity == $order_item_quantity;
+                error_log('LP refunding_whole_quantity: ' . print_r($refunding_whole_quantity, true));
+                // Need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
+                if ($refunding_whole_quantity) {
+                    $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
+                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $fulfilled_item_sum  . ", to_noncapture=$to_noncapture");
+                    $noncapturable_sum += $to_noncapture;
+                    continue;
+                }
+
+                // Final case: There are NOT enough of this item left in the order to mark all as noncapture,
+                // we need to set noncapture of all we can, then refund the difference. LP 2025-10-24
+                $to_refund = ($refund_item_quantity - $remaining_item_quantity) * $item_price;
+                $to_noncapture = $refund_item_sum - $to_refund;
+                error_log("LP case not enough items left nonfulfilled, need to refund fulfilled + set rest noncapturable. to_refund=$to_refund, to_noncapture=$to_noncapture");
+                $noncapturable_sum += $to_noncapture;
+
+            }
+            error_log("LP finished item loop, noncapturable_sum=$noncapturable_sum, and OLD amount is $amount");
+            $amount -= $noncapturable_sum;
+            $noncapturable = round($noncapturable_sum * 100) + intval($order->get_meta('_vipps_noncapturable'));
+            $order->update_meta_data('_vipps_noncapturable', $noncapturable);
+            $order->save();
+            error_log("LP finished item loop, NEW amount is $amount");
+
+            $msg = sprintf(__('Some funds from the refund has not been captured, only reserved.  %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable_sum, $currency);
+            $Vipps->gateway()->log($msg, 'info');
+            $order->add_order_note($msg);
+            return $amount;
+
+        } catch (Exception $e) {
+            $msg = sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $orderid) . $e->getMessage();
+            $Vipps->gateway()->log($msg, 'error');
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access fulfillment data for the order.', 'woo-vipps'), $this->get_payment_method_name()));
         }
     }
 }
