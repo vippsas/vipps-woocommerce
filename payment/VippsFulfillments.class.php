@@ -199,7 +199,7 @@ class VippsFulfillments {
 
         /* translators: %1$s = the payment method name */
         if (!$current_refund) {
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access the refund object.', 'woo-vipps'), $this->get_payment_method_name()));
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access the refund object.', 'woo-vipps'), $Vipps->gateway()->get_payment_method_name()));
         }
 
         try {
@@ -222,7 +222,7 @@ class VippsFulfillments {
                 // error_log('LP refund refund_item object id: ' . print_r($refund_item->get_id(), true));
                 $item_id = $refund_item->get_meta('_refunded_item_id');
                 if (!$item_id) {
-                    return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $this->get_payment_method_name()));
+                    return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $Vipps->gateway()->get_payment_method_name()));
                 }
                 error_log('LP refund order item id: ' . print_r($item_id, true));
 
@@ -289,7 +289,7 @@ class VippsFulfillments {
         } catch (Exception $e) {
             $msg = sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $orderid) . $e->getMessage();
             $Vipps->gateway()->log($msg, 'error');
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access fulfillment data for the order.', 'woo-vipps'), $this->get_payment_method_name()));
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access fulfillment data for the order.', 'woo-vipps'), $Vipps->gateway()->get_payment_method_name()));
         }
     }
 }
