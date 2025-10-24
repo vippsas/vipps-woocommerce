@@ -187,7 +187,7 @@ class VippsFulfillments {
     /** Handles the different refund cases for partially captured orders. It is not as simple since order items may have
      * different quantities of fulfillments compared to quantity in the current refund and the total quantity in the order. LP 2025-10-24
      */
-    public static function handle_refund($order, $amount) {
+    public static function handle_refund($order, $refund_amount) {
         global $Vipps;
 
         $current_refund = apply_filters('woo_vipps_currently_active_refund', []);
@@ -216,9 +216,9 @@ class VippsFulfillments {
 
             $noncapturable_sum = 0;
 
-            // These refund items are WC_Order_Item (WC_Order_Item_Product for products)
+            // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
             foreach ($current_refund->get_items() as $refund_item) {
-                // error_log('LP refund refund_item: ' . print_r($refund_item, true)); // this is a WC_Order_Item_Product
+                // error_log('LP refund refund_item: ' . print_r($refund_item, true));
                 // error_log('LP refund refund_item object id: ' . print_r($refund_item->get_id(), true));
                 $item_id = $refund_item->get_meta('_refunded_item_id');
                 if (!$item_id) {
@@ -274,17 +274,19 @@ class VippsFulfillments {
                 $noncapturable_sum += $to_noncapture;
 
             }
-            error_log("LP finished item loop, noncapturable_sum=$noncapturable_sum, and OLD amount is $amount");
-            $amount -= $noncapturable_sum;
+
+            // Finally update noncapturable meta and subtract the same from the actual refund amount output. LP 2025-10-24
+            error_log("LP finished item loop, noncapturable_sum=$noncapturable_sum, and OLD refund_amount is $refund_amount");
+            $refund_amount -= $noncapturable_sum;
             $noncapturable = round($noncapturable_sum * 100) + intval($order->get_meta('_vipps_noncapturable'));
             $order->update_meta_data('_vipps_noncapturable', $noncapturable);
             $order->save();
-            error_log("LP finished item loop, NEW amount is $amount");
+            error_log("LP finished item loop, NEW refund_amount is $refund_amount");
 
-            $msg = sprintf(__('Some funds from the refund has not been captured, only reserved.  %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable_sum, $currency);
+            $msg = sprintf(__('Some funds from the refund were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable_sum, $currency);
             $Vipps->gateway()->log($msg, 'info');
             $order->add_order_note($msg);
-            return $amount;
+            return $refund_amount;
 
         } catch (Exception $e) {
             $msg = sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $orderid) . $e->getMessage();

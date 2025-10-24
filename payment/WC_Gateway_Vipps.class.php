@@ -839,10 +839,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
         $all_captured = $captured == $order->get_total() * 100;
-
         if (!$all_captured) {
+            error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
             // These are now all partial capture cases, we need to check fulfillments. LP 2025-10-24
             $amount = VippsFulfillments::handle_refund($order, $amount);
+            error_log('LP amount after handling partial capture refund: ' . print_r($amount, true));
             if (is_wp_error($amount)) {
                 return $amount;
             }
@@ -877,9 +878,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return new WP_Error('Vipps',$msg);
         }
 
+        // FIXME: I say we remove this success order log because refund_payment() actually already logs on success, result is double order notes for the admin. LP 2025-10-24
+        /*
         if ($ok) {
             $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
         } 
+         */
         return $ok;
     }
 
