@@ -986,6 +986,7 @@ class VippsApi {
         $headers['client_secret'] = $secret;
 
         $res = $this->http_call($msn, $command, [], 'POST', $headers, 'json'); 
+error_log("Expire result: " . print_r($res, true));
         return $res;
     }
 

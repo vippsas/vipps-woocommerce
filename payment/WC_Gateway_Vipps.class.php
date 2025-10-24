@@ -2270,8 +2270,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Only do work when the orders woo status is pending
         if ($oldstatus != 'pending') return $oldstatus;
 
-        $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
-
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
 
@@ -2291,8 +2289,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($vippsstatus == $oldvippsstatus) {
                 return $oldstatus;
             }
-
             // Something changed, so we are now going to sideeffect the order. IOK 2025-10-15
+            $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
             // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
             // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 

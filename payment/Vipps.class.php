@@ -2248,7 +2248,7 @@ error_log("Checking if we should cancel unpaid vipps order");
             try {
                 $result = $this->gateway()->api->epayment_get_payment($order);
             } catch (Exception $e) {
-                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, allowing deletion", 'woo-vipps'), $order->get_id(), Vipps::CompanyName()));
+                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $e->getMessage()));
                 return true;
             }
 
@@ -3554,8 +3554,9 @@ error_log("Checking if we should cancel unpaid vipps order");
         try {
             // FIXME Rewrite this so the order is only modified *when the status changes* !
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
+error_log("In the periodic job, checking order status for " . $order->get_id());
             $order_status = $gw->callback_check_order_status($order);
-            $order->save();
+error_log("Order status is now $order_status for " . $order->get_id());
             $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting order status at %1\$s for order %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id()), 'error'); 
