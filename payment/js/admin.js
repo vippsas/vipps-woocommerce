@@ -347,6 +347,8 @@ SOFTWARE.
           button.addClass('disabled');
  
           let nonce = VippsConfig['vippssecnonce'];
+
+
           let orderid  = jQuery(this).data('orderid');
           let action = jQuery(this).data('action');
  

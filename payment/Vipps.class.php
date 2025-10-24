@@ -1170,10 +1170,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
-        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
-        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-
-        wp_localize_script('vipps-admin', 'VippsConfig', $this->vippsJSConfig);
+        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
         wp_enqueue_script('vipps-admin');
 
         wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
@@ -1254,6 +1251,9 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+        if (is_admin()) {
+            $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
+        }
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
         $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()));
