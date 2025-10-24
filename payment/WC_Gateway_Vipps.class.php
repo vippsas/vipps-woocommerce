@@ -820,9 +820,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        function mark_as_noncapturable($amount) {
-            return; // FIXME: delete this
-            $noncapturable = round($amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
+        mark_as_noncapturable = function($noncapture_amount) use ($order) {
+            // return; // FIXME: delete this
+            $noncapturable = round($noncapture_amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
 
             $order->update_meta_data('_vipps_noncapturable', $uncapturable);
             $order->add_order_note($msg);
@@ -904,34 +904,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
                     // The different partial capture cases:
 
-                    // Case 1: refund item has no fulfillments, safe to mark noncapturable for this item. LP 2025-10-23
-                    // TODO: evaluate: this case and case 3 are the same, they could merge but it might be even less readable even though the number of cases decreased... LP 2025-10-24
-                    if (!in_array($item_id, $fulfilled_item_ids)) {
+                    $has_no_fulfillments = !in_array($item_id, $fulfilled_item_ids);
+                    $enough_items_remaining = $refund_item_quantity <= $remaining_item_quantity;
+                    // Safe to set all of this item to noncapturable. LP 2025-10-24
+                    if ($has_no_fulfillments || $enough_items_remaining) {
                         $noncapturable_sum += $refund_item_sum;
                         error_log("LP case refund item has no fulfillments, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                         continue;
                     };
 
 
-                    // Case 2: refunding the whole quantity of this item,
-                    // need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
-                    //
-                    if ($refund_item_quantity == $order_item_quantity) {
+                    $refunding_whole_quantity = $refund_item_quantity == $order_item_quantity;
+                    // Need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
+                    if ($refunding_whole_quantity) {
                         $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
                         error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $fulfilled_item_sum  . ", to_noncapture=$to_noncapture");
                         $noncapturable_sum += $to_noncapture;
                         continue;
                     }
 
-                    // Case 3: There are enough of this item left in the order not captured/fulfilled for this refund,
-                    // we are safe to set all of this item to noncapturable. LP 2025-10-24
-                    if ($refund_item_quantity <= $remaining_item_quantity) {
-                        error_log("LP case there are enough items left nonfulfilled, so safe to mark the entire quantity as noncapturable, noncapture+=$refund_item_sum");
-                        $noncapturable_sum += $refund_item_sum;
-                        continue;
-                    }
-
-                    // Final case 4: There are NOT enough of this item left in the order to mark all as noncapture,
+                    // Final case: There are NOT enough of this item left in the order to mark all as noncapture,
                     // we need to set noncapture of all we can, then refund the difference. LP 2025-10-24
                     $to_refund = ($refund_item_quantity - $remaining_item_quantity) * $item_price;
                     $to_noncapture = $refund_item_sum - $to_refund;
@@ -944,7 +936,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 mark_as_noncapturable($noncapturable_sum);
                 $amount -= $noncapturable_sum;
                 error_log("LP finished item loop, NEW amount is $amount");
-                return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
+                // return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
 
             } catch (Exception $e) {
                 $msg = sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $orderid) . $e->getMessage();
@@ -953,6 +945,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
+        // just in case because of subtracting from amount. LP 2025-10-24
         if ($amount < 0) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - got a negative refund amount, something unexpected occured.", 'woo-vipps'), $this->get_payment_method_name()));
         }
@@ -962,7 +955,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $ok = 0;
-        return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
+        // return new WP_Error('Vipps', 'lp debug stop'); // FIXME: delete plox
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
         if (is_numeric($amount) && $amount == 0) {
