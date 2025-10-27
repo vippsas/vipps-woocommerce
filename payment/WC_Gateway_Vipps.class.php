@@ -181,7 +181,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
-        VippsFulfillments::init();
+        if (VippsFulfillments::is_enabled()) {
+            VippsFulfillments::register_hooks();
+        }
 
         // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
@@ -837,11 +839,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         }
 
+        
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
         $all_captured = $captured == $order->get_total() * 100;
-        if (!$all_captured) {
+        
+        $fulfillments = VippsFulfillments::get_order_fulfillments($order);
+        error_log("LP process_refund order fulfillments count is " . count($fulfillments));
+        if (!$all_captured && $fulfillments) { // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
             error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
-            // These are now all partial capture cases, we need to check fulfillments. LP 2025-10-24
             $amount = VippsFulfillments::handle_refund($order, $amount);
             error_log('LP amount after handling partial capture refund: ' . print_r($amount, true));
             if (is_wp_error($amount)) {

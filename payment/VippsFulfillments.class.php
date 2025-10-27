@@ -33,11 +33,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-// use Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException;
-// use Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore;
-
 class VippsFulfillments {
-    public static function init() {
+    public static function register_hooks() {
         add_action('woocommerce_fulfillment_before_fulfill', array('VippsFulfillments', 'woocommerce_fulfillment_before_fulfill')); // FIXME: is prio important here? Idk. LP 2025-10-08
         add_action('woocommerce_fulfillment_before_delete', array('VippsFulfillments', 'woocommerce_fulfillment_before_delete')); // FIXME: is prio important here? Idk. LP 2025-10-08
     }
@@ -50,9 +47,8 @@ class VippsFulfillments {
 
     /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
     public static function fulfillment_fail($msg = "") {
-        // throw new FulfillmentException($msg);
         if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
-            throw new FulfillmentException($msg);
+            throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
         }
         global $Vipps;
         $Vipps->gateway()->log(__('FulfillmentException does not exist', 'woo-vipps'), 'debug');
@@ -66,22 +62,15 @@ class VippsFulfillments {
     }
 
     public static function get_order_fulfillments($order) {
-        try {
-            // $data_store = wc_get_container()->get(FulfillmentsDataStore::class);
-            $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
-            return $data_store->read_fulfillments('WC_Order', $order->get_id());
-        } catch (Exception $e) {
-            global $Vipps;
-            $Vipps->gateway()->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
-            static::fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
-        }
+        $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
+        return $data_store->read_fulfillments('WC_Order', $order->get_id());
     }
 
     /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
      *
      *  This hook will also run on fulfillments edits, after the hook '...before_update'
-     *  therefore here we loop over all fulfillments and only capture if the total sum is more than what is already captured. 
-     *  Else stop fulfillment with failure message. 
+     *  therefore here we loop over all fulfillments and only capture if the total sum is more than what is already captured.
+     *  Else stop fulfillment with failure message.
      */
     public static function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
         global $Vipps;
@@ -93,7 +82,13 @@ class VippsFulfillments {
             static::fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
         }
 
-        $fulfillments = static::get_order_fulfillments($order);
+        try {
+            $fulfillments = static::get_order_fulfillments($order);
+        } catch (Exception $e) {
+            global $Vipps;
+            $Vipps->gateway()->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
+            static::fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
+        }
 
         // Add new to array of all fulfillments to first position, to stop duplicate captures for cases with updated/edited fulfillments. LP 2025-10-15
         array_unshift($fulfillments, $new_fulfillment);
@@ -153,19 +148,6 @@ class VippsFulfillments {
         error_log("LP before_fulfillment capture ok! Accepting fulfillment");
         return $new_fulfillment;
     }
-
-    // /** Returns list of the unique order item product id's. LP 2025-10-23 */
-    // public static function get_fulfillments_item_ids($fulfillments) {
-    //     $item_ids = [];
-    //     foreach ($fulfillments as $fulfillment) {
-    //         error_log('LP loop fulfillment items: ' . print_r($fulfillment->get_items(), true));
-    //         foreach ($fulfillment->get_items() as $item) {
-    //             error_log('LP loop fulfillment item: ' . print_r($item, true));
-    //             $item_ids[] = $item['item_id'];
-    //         }
-    //     }
-    //     return array_unique($item_ids);
-    // }
 
     /** Returns associative array ['item_id' => 'quantity'] for all items in the fulfillments array of Fulfillment objects. LP 2025-10-23 */
     public static function get_fulfillments_item_quantities($fulfillments) {
