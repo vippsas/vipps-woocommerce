@@ -2239,8 +2239,8 @@ error_log("Checking if we should cancel unpaid vipps order");
                      if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') return false; 
                      return true;
                 } catch (Exception $e) {
-                     // If Vipps is unreachable, go ahead and kill it
-                     return true;
+                     // If Vipps is unreachable, be safe and don't delete
+                     return false;
                 }
                 return false; 
             }
@@ -2248,8 +2248,8 @@ error_log("Checking if we should cancel unpaid vipps order");
             try {
                 $result = $this->gateway()->api->epayment_get_payment($order);
             } catch (Exception $e) {
-                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $e->getMessage()));
-                return true;
+                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $e->getMessage()));
+                return false;
             }
 
             // We should now have an object with the 'state' in one of the Vipps states. We'll translate all of them to 
