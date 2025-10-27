@@ -109,7 +109,7 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
 
       {/* Renders a checkbox to enable WooCommerce order fulfillment support for Vipps Mobilepay. LP 2025-10-27 */}
       {fulfillmentsSupported && 
-        <CheckboxFormField name="fulfillments_enabled" titleKey="fulfillments_enabled.title" labelKey="fulfillments_enabled.label" />
+        <CheckboxFormField name="fulfillments_enabled" titleKey="fulfillments_enabled.title" labelKey="fulfillments_enabled.label" descriptionKey="fulfillments_enabled.description" />
       }
     </div>
   );

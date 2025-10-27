@@ -1300,7 +1300,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'label'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'type'        => 'checkbox',
-                'description' => sprintf(__('Enable this to support %1$s in WooCommerce order fulfillments.', 'woo-vipps'), $payment_method_name),
+                'description' => sprintf(__('Enable WooCommerce order fulfillment support for %1$s.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'no',
             ];
         }
