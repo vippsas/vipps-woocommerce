@@ -184,7 +184,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->fulfillments = new VippsFulfillments($this);
         if ($this->fulfillments->is_enabled()) {
-            error_log('LP fulfillments is enabled, registering hooks');
             $this->fulfillments->register_hooks();
         }
 
@@ -1295,7 +1294,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         );
 
         if (VippsFulfillments::is_supported()) {
-            error_log("LP wc init form fields, fulfillments is supported");
             $mainfields['fulfillments_enabled'] = [
                 'title'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'label'       => __('Enable support for order fulfillments', 'woo-vipps'),
