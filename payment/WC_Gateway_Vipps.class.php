@@ -182,6 +182,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $this->supports = array('products','refunds');
 
         if (VippsFulfillments::is_enabled()) {
+            error_log('LP fulfillments is enabled, registering hooks');
             VippsFulfillments::register_hooks();
         }
 
@@ -1294,8 +1295,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'description' => sprintf(__('Enable this to use %1$s as the default payment method on the checkout page, regardless of order.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'yes',
             ),
-
         );
+
+        if (VippsFulfillments::is_supported()) {
+            error_log("LP wc init form fields, fulfillments is supported");
+            $mainfields['fulfillments_enabled'] = [
+            'title'       => __('Enable support for order fulfillments', 'woo-vipps'),
+            'label'       => __('Enable support for order fulfillments', 'woo-vipps'),
+            'type'        => 'checkbox',
+            'description' => sprintf(__('Enable this to support %1$s in WooCommerce order fulfillments.', 'woo-vipps'), $payment_method_name),
+            'default'     => 'no',
+            ];
+        }
 
          $expressfields = array(  
                 'express_options' => array(

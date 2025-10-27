@@ -39,12 +39,15 @@ class VippsFulfillments {
         add_action('woocommerce_fulfillment_before_delete', array('VippsFulfillments', 'woocommerce_fulfillment_before_delete')); // FIXME: is prio important here? Idk. LP 2025-10-08
     }
 
+    /** Whether fulfillments is supported in the WC version and is an enabled feature. LP 2025-10-27 */
+    public static function is_supported() {
+        return version_compare(WC_VERSION, '10.2', '>=') && get_option('woocommerce_feature_fulfillments_enabled') == 'yes';
+    }
+
     /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
     public static function is_enabled() {
         global $Vipps;
-        return version_compare(WC_VERSION, '10.2', '>=') && 
-            get_option('woocommerce_feature_fulfillments_enabled') == 'yes' &&
-            $Vipps->gateway()->get_option('fulfillments_enabled') == 'yes';
+        return static::is_supported() && $Vipps->gateway()->get_option('fulfillments_enabled') == 'yes';
     }
 
     /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */

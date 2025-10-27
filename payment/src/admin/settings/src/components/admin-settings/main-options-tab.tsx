@@ -10,6 +10,7 @@ import { CheckboxFormField, InputFormField, SelectFormField, TextareaFormField }
  */
 export function AdminSettingsMainOptionsTab(): JSX.Element {
   const { setOption, getOption } = useWP();
+  const fulfillmentsSupported = !!getOption('fulfillments_enabled');
   return (
     <div>
       <p className="vipps-mobilepay-react-tab-description"></p>
@@ -105,6 +106,11 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
 
       {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
       <CheckboxFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
+
+      {/* Renders a checkbox to enable WooCommerce order fulfillment support for Vipps Mobilepay. LP 2025-10-27 */}
+      {fulfillmentsSupported && 
+        <CheckboxFormField name="fulfillments_enabled" titleKey="fulfillments_enabled.title" labelKey="fulfillments_enabled.label" />
+      }
     </div>
   );
 }
