@@ -200,30 +200,38 @@ class VippsFulfillments {
                 $refund_item_sum = $item_price * $refund_item_quantity;
                 $order_item = $order_items[$item_id];
                 $order_item_quantity = $order_item->get_quantity();
-                $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
-                $fulfilled_item_sum = $fulfilled_item_quantity * $item_price;
-                $remaining_item_quantity = $order_item_quantity - $fulfilled_item_quantity;
                 error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
-                error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
-                error_log('LP remaining_item_quantity: ' . print_r($remaining_item_quantity, true));
                 error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
                 error_log('LP item_price: ' . print_r($item_price, true));
                 error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
-                error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
 
                 // The different partial capture cases:
 
                 $has_no_fulfillments = !in_array($item_id, $fulfilled_item_ids);
-                $enough_items_remaining = $refund_item_quantity <= $remaining_item_quantity;
                 error_log('LP has_no_fulfillments: ' . print_r($has_no_fulfillments, true));
-                error_log('LP enough_items_remaining: ' . print_r($enough_items_remaining, true));
                 // Safe to set all of this item to noncapturable. LP 2025-10-24
-                if ($has_no_fulfillments || $enough_items_remaining) {
+                if ($has_no_fulfillments) {
                     $noncapturable_sum += $refund_item_sum;
-                    error_log("LP case no fulfillments/enough items remaining, mark all as noncaptureable, noncapturable+=$refund_item_sum");
+                    error_log("LP case no fulfillments, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                     continue;
                 };
 
+                $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
+                $fulfilled_item_sum = $fulfilled_item_quantity * $item_price;
+                $remaining_item_quantity = $order_item_quantity - $fulfilled_item_quantity;
+                error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
+                error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
+                error_log('LP remaining_item_quantity: ' . print_r($remaining_item_quantity, true));
+
+
+                $enough_items_remaining = $refund_item_quantity <= $remaining_item_quantity;
+                error_log('LP enough_items_remaining: ' . print_r($enough_items_remaining, true));
+                // Same as no fulfillments case above, safe to set all of this item to noncapturable. LP 2025-10-24
+                if ($enough_items_remaining) {
+                    $noncapturable_sum += $refund_item_sum;
+                    error_log("LP case enough items remaining, mark all as noncaptureable, noncapturable+=$refund_item_sum");
+                    continue;
+                };
 
                 $refunding_whole_quantity = $refund_item_quantity == $order_item_quantity;
                 error_log('LP refunding_whole_quantity: ' . print_r($refunding_whole_quantity, true));

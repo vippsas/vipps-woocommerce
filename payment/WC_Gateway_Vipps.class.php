@@ -854,7 +854,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (is_wp_error($amount)) {
                 return $amount;
             }
+            error_log("LP amount returned after fulfillment handling is $amount");
         }
+
 
         if ($amount*100 > $refund_remaining) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
@@ -864,7 +866,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
         if (is_numeric($amount) && $amount == 0) {
-            $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+            // FIXME: i dont think the should add order note that 0 was refunded anymore, now there is an order note explaining that the funds were only reserved and they will be release upon order completion. LP 2025-10-27
+            // $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
             return true;
         }
 
