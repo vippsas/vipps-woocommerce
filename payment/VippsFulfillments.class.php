@@ -41,8 +41,10 @@ class VippsFulfillments {
 
     /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
     public static function is_enabled() {
-        // TODO: check our setting for enabling this, (check wc version and potentially the wc option you need to do to active the beta support, but this will change if out of beta etc. Then we could e.g. push a new version that removes this check and is marketed as the version fully supporting fulfillments etc.) LP 2025-10-23
-        return true;
+        global $Vipps;
+        return version_compare(WC_VERSION, '10.2', '>=') && 
+            get_option('woocommerce_feature_fulfillments_enabled') == 'yes' &&
+            $Vipps->gateway()->get_option('fulfillments_enabled') == 'yes';
     }
 
     /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
