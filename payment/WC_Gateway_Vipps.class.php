@@ -48,6 +48,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public $api = null;
     public $supports = null;
     public $express_checkout_supported_product_types;
+    public $fulfillments = null;
 
     public $captured_statuses;
 
@@ -181,9 +182,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
-        if (VippsFulfillments::is_supported() && $this->get_option('fulfillments_enabled')) {
+        $this->fulfillments = new VippsFulfillments($this);
+        if ($this->fulfillments->is_enabled()) {
             error_log('LP fulfillments is enabled, registering hooks');
-            VippsFulfillments::register_hooks();
+            $this->fulfillments->register_hooks();
         }
 
         // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
@@ -840,24 +842,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return true;
         }
 
-        
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
         $all_captured = $captured == $order->get_total() * 100;
-        
-        $fulfillments = VippsFulfillments::get_order_fulfillments($order);
-        error_log("LP process_refund order fulfillments count is " . count($fulfillments));
-        if (!$all_captured && $fulfillments) { // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
+
+        $order_fulfillments = $this->fulfillments->get_order_fulfillments($order);
+        error_log("LP process_refund order fulfillments count is " . count($order_fulfillments));
+        if (!$all_captured && $order_fulfillments) { 
+            // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
             error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
-            $amount = VippsFulfillments::handle_refund($order, $amount);
+            $amount = $this->fulfillments->handle_refund($order, $amount);
             error_log('LP amount after handling partial capture refund: ' . print_r($amount, true));
             if (is_wp_error($amount)) {
                 return $amount;
             }
-        }
-
-        // just in case because of subtracting from amount. LP 2025-10-24
-        if ($amount < 0) {
-            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - got a negative refund amount, something unexpected occured.", 'woo-vipps'), $this->get_payment_method_name()));
         }
 
         if ($amount*100 > $refund_remaining) {

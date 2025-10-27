@@ -29,38 +29,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
  */
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
 class VippsFulfillments {
-    public static function register_hooks() {
-        add_action('woocommerce_fulfillment_before_fulfill', array('VippsFulfillments', 'woocommerce_fulfillment_before_fulfill')); // FIXME: is prio important here? Idk. LP 2025-10-08
-        add_action('woocommerce_fulfillment_before_delete', array('VippsFulfillments', 'woocommerce_fulfillment_before_delete')); // FIXME: is prio important here? Idk. LP 2025-10-08
+    private $gateway;
+
+    public function __construct($gateway) {
+        $this->gateway = $gateway;
     }
 
-    /** Whether fulfillments is supported in the WC version and is an enabled feature. LP 2025-10-27 */
-    public static function is_supported() {
-        return version_compare(WC_VERSION, '10.2', '>=') && get_option('woocommerce_feature_fulfillments_enabled') == 'yes';
+    public function register_hooks() {
+        add_action('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']); // FIXME: is prio important here? Idk. LP 2025-10-08
+        add_action('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']); // FIXME: is prio important here? Idk. LP 2025-10-08
     }
 
-    /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
-    public static function fulfillment_fail($msg = "") {
-        if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
-            throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
-        }
-        global $Vipps;
-        $Vipps->gateway()->log(__('FulfillmentException does not exist', 'woo-vipps'), 'debug');
-        throw new Exception($msg);
+    /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
+    public function is_enabled() {
+        return static::is_supported() && $this->gateway->get_option('fulfillments_enabled') == 'yes';
     }
+
 
     /** Disable deletion for vipps fulfillments, since we capture fulfillments and don't want to refund (they can't be recaptured). LP 2025-10-22 */
-    public static function woocommerce_fulfillment_before_delete($fulfillment) {
+    public function woocommerce_fulfillment_before_delete($fulfillment) {
         error_log("LP woocommerce_fulfillment_before_delete. Stopping...");
-        static::fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete this fulfillment.', 'woo-vipps'), Vipps::CompanyName()));
+        $this->fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete this fulfillment.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
-    public static function get_order_fulfillments($order) {
+    public function get_order_fulfillments($order) {
         $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
         return $data_store->read_fulfillments('WC_Order', $order->get_id());
     }
@@ -71,22 +68,20 @@ class VippsFulfillments {
      *  therefore here we loop over all fulfillments and only capture if the total sum is more than what is already captured.
      *  Else stop fulfillment with failure message.
      */
-    public static function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
-        global $Vipps;
+    public function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
         error_log("LP running woocommerce_fulfillment_before_fulfill");
-        // static::fulfillment_fail("LP debug");
+        // $this->fulfillment_fail("LP debug");
 
         $order = $new_fulfillment->get_order();
         if (!$order) {
-            static::fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
+            $this->fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
         }
 
         try {
-            $fulfillments = static::get_order_fulfillments($order);
+            $fulfillments = $this->get_order_fulfillments($order);
         } catch (Exception $e) {
-            global $Vipps;
-            $Vipps->gateway()->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
-            static::fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
+            $this->gateway->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
+            $this->fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
         }
 
         // Add new to array of all fulfillments to first position, to stop duplicate captures for cases with updated/edited fulfillments. LP 2025-10-15
@@ -99,7 +94,9 @@ class VippsFulfillments {
             // Make sure to don't capture duplicate if this is a fulfillment update, by skipping the old one. LP 2025-10-15
             if ($fulfillment->get_id() === $new_fulfillment->get_id()) {
                 error_log("LP This is the new fulfillment, has already been handled (update/edit fulfillment)?: $new_is_handled");
-                if ($new_is_handled) continue;
+                if ($new_is_handled) {
+                    continue;
+                }
                 $new_is_handled = true;
             }
 
@@ -110,7 +107,7 @@ class VippsFulfillments {
                 $order_item = $order->get_item($item_id);
                 error_log('LP item_name: ' . print_r($order_item->get_name(), true));
                 if (!$order_item) {
-                    static::fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+                    $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
                 }
 
                 $item_sum = $order->get_item_total($order_item, true, false) * $item_quantity;
@@ -127,7 +124,7 @@ class VippsFulfillments {
         // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
         /* translators: %1$s = this payment gateways company name */
         if ($sum < $captured) {
-            static::fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::CompanyName()));
+            $this->fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::CompanyName()));
         }
 
 
@@ -138,49 +135,40 @@ class VippsFulfillments {
             return $new_fulfillment;
         }
 
-        $ok = $Vipps->gateway()->capture_payment($order, $to_capture);
+        $ok = $this->gateway->capture_payment($order, $to_capture);
         if (!$ok) {
             error_log("LP before_fulfill capture was not ok!");
             /* translators: %1$s = number, %2$s = this payment method company name */
-            static::fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::CompanyName()));
+            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::CompanyName()));
         }
         error_log("LP before_fulfillment capture ok! Accepting fulfillment");
         return $new_fulfillment;
     }
 
-    /** Returns associative array ['item_id' => 'quantity'] for all items in the fulfillments array of Fulfillment objects. LP 2025-10-23 */
-    public static function get_fulfillments_item_quantities($fulfillments) {
-        $items = [];
-        foreach ($fulfillments as $fulfillment) {
-            foreach ($fulfillment->get_items() as $item) {
-                $id = $item['item_id'];
-                $quantity = $item['qty'];
-                if (array_key_exists($id, $items)) {
-                    $items[$id] += $quantity;
-                    continue;
-                }
-                $items[$id] = $quantity;
-            }
-            return $items;
+    /** Returns failure message to fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
+    public function fulfillment_fail($msg = "") {
+        if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
+            throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
         }
+        $this->gateway->log(__('FulfillmentException does not exist', 'woo-vipps'), 'debug');
+        throw new Exception($msg);
     }
+
 
     /** Handles the different refund cases for partially captured orders. It is not as simple since order items may have
      * different quantities of fulfillments compared to quantity in the current refund and the total quantity in the order. LP 2025-10-24
      */
-    public static function handle_refund($order, $refund_amount) {
-        global $Vipps;
-
+    public function handle_refund($order, $refund_amount) {
         $current_refund = apply_filters('woo_vipps_currently_active_refund', []);
         // error_log('LP current_refund: ' . print_r($current_refund, true));
         // Reset just in case...
-        add_filter('woo_vipps_currently_active_refund', function($current_refund) {
+        add_filter('woo_vipps_currently_active_refund', function ($current_refund) {
             return null;
         });
 
         /* translators: %1$s = the payment method name */
         if (!$current_refund) {
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access the refund object.', 'woo-vipps'), $Vipps->gateway()->get_payment_method_name()));
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access the refund object.', 'woo-vipps'), $this->gateway->get_payment_method_name()));
         }
 
         try {
@@ -189,9 +177,9 @@ class VippsFulfillments {
             $currency = $order->get_currency();
             $order_items = $order->get_items();
 
-            $fulfillments = static::get_order_fulfillments(wc_get_order($orderid));
+            $fulfillments = $this->get_order_fulfillments(wc_get_order($orderid));
             error_log('LP fulfillments count: ' . count($fulfillments));
-            $fulfilled_item_quantities = static::get_fulfillments_item_quantities($fulfillments);
+            $fulfilled_item_quantities = $this->get_fulfillments_item_quantities($fulfillments);
             error_log('LP fulfilled_item_quantitites: ' . print_r($fulfilled_item_quantities, true));
             $fulfilled_item_ids = array_keys($fulfilled_item_quantities);
 
@@ -203,7 +191,7 @@ class VippsFulfillments {
                 // error_log('LP refund refund_item object id: ' . print_r($refund_item->get_id(), true));
                 $item_id = $refund_item->get_meta('_refunded_item_id');
                 if (!$item_id) {
-                    return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $Vipps->gateway()->get_payment_method_name()));
+                    return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $this->gateway->get_payment_method_name()));
                 }
                 error_log('LP refund order item id: ' . print_r($item_id, true));
 
@@ -256,23 +244,52 @@ class VippsFulfillments {
 
             }
 
+
             // Finally update noncapturable meta and subtract the same from the actual refund amount output. LP 2025-10-24
             error_log("LP finished item loop, noncapturable_sum=$noncapturable_sum, and OLD refund_amount is $refund_amount");
             $refund_amount -= $noncapturable_sum;
+            // just in case, because of subtraction. LP 2025-10-24
+            if ($refund_amount < 0) {
+                return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - got a negative refund amount, something unexpected occured.", 'woo-vipps'), $this->gateway->get_payment_method_name()));
+            }
+
             $noncapturable = round($noncapturable_sum * 100) + intval($order->get_meta('_vipps_noncapturable'));
             $order->update_meta_data('_vipps_noncapturable', $noncapturable);
             $order->save();
             error_log("LP finished item loop, NEW refund_amount is $refund_amount");
 
             $msg = sprintf(__('Some funds from the refund were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable_sum, $currency);
-            $Vipps->gateway()->log($msg, 'info');
+            $this->gateway->log($msg, 'info');
             $order->add_order_note($msg);
             return $refund_amount;
 
         } catch (Exception $e) {
             $msg = sprintf(__('Could not retrieve fulfillments or fulfilled items for order %1$s: ', 'woo-vipps'), $orderid) . $e->getMessage();
-            $Vipps->gateway()->log($msg, 'error');
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access fulfillment data for the order.', 'woo-vipps'), $Vipps->gateway()->get_payment_method_name()));
+            $this->gateway->log($msg, 'error');
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not access fulfillment data for the order.', 'woo-vipps'), $this->gateway->get_payment_method_name()));
+        }
+
+    }
+
+    /** Whether fulfillments is supported in the WC version and is an enabled feature. LP 2025-10-27 */
+    public static function is_supported() {
+        return version_compare(WC_VERSION, '10.2', '>=') && get_option('woocommerce_feature_fulfillments_enabled') == 'yes';
+    }
+
+    /** Returns associative array ['item_id' => 'quantity'] for all items in the fulfillments array of Fulfillment objects. LP 2025-10-23 */
+    public static function get_fulfillments_item_quantities($fulfillments) {
+        $items = [];
+        foreach ($fulfillments as $fulfillment) {
+            foreach ($fulfillment->get_items() as $item) {
+                $id = $item['item_id'];
+                $quantity = $item['qty'];
+                if (array_key_exists($id, $items)) {
+                    $items[$id] += $quantity;
+                    continue;
+                }
+                $items[$id] = $quantity;
+            }
+            return $items;
         }
     }
 }
