@@ -70,11 +70,16 @@ class VippsFulfillments {
      */
     public function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
         error_log("LP running woocommerce_fulfillment_before_fulfill");
-        // $this->fulfillment_fail("LP debug");
 
         $order = $new_fulfillment->get_order();
         if (!$order) {
             $this->fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
+        }
+
+        // This is handled in gateway->capture_payment(), but might as well return early here if not Vipps MobilePay. LP 2025-10-27
+        $pm = $order->get_payment_method();
+        if ($pm != 'vipps') {
+            return $new_fulfillment;
         }
 
         try {
@@ -122,8 +127,8 @@ class VippsFulfillments {
         error_log('LP before_fulfill captured: ' . print_r($captured, true));
 
         // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
-        /* translators: %1$s = this payment gateways company name */
         if ($sum < $captured) {
+            /* translators: %1$s = company name */
             $this->fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::CompanyName()));
         }
 
@@ -160,7 +165,6 @@ class VippsFulfillments {
      */
     public function handle_refund($order, $refund_amount) {
         $current_refund = apply_filters('woo_vipps_currently_active_refund', []);
-        // error_log('LP current_refund: ' . print_r($current_refund, true));
         // Reset just in case...
         add_filter('woo_vipps_currently_active_refund', function ($current_refund) {
             return null;
@@ -187,8 +191,6 @@ class VippsFulfillments {
 
             // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
             foreach ($current_refund->get_items() as $refund_item) {
-                // error_log('LP refund refund_item: ' . print_r($refund_item, true));
-                // error_log('LP refund refund_item object id: ' . print_r($refund_item->get_id(), true));
                 $item_id = $refund_item->get_meta('_refunded_item_id');
                 if (!$item_id) {
                     return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $this->gateway->get_payment_method_name()));
