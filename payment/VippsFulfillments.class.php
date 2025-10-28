@@ -41,8 +41,8 @@ class VippsFulfillments {
     }
 
     public function register_hooks() {
-        add_action('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']); // FIXME: is prio important here? Idk. LP 2025-10-08
-        add_action('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']); // FIXME: is prio important here? Idk. LP 2025-10-08
+        add_action('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
+        add_action('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
     }
 
     /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
@@ -162,13 +162,18 @@ class VippsFulfillments {
 
     /** Handles the different refund cases for partially captured orders. It is not as simple since order items may have
      * different quantities of fulfillments compared to quantity in the current refund and the total quantity in the order. LP 2025-10-24
+     *
+     * When refunding a partially captured (via fulfilments) order, we need to see if the actual refund to be processed is one of the
+     * items captured in fulfilments or not.  If it *is*, then we can process this amount normally in process refund. If it is *not*, then we
+     * have to note that the sum in question is "noncapturable" instead - so we need to split the incoming "amount to refund" into these two values.
+     * It will also be neccessary to pay attention to the quantities of the items being refunded and so forth. IOK 2025-10-27
+     * Note also that doing partial capture through the portal probably will *not* be compatible with this, so if partial capture has been done 
+     * *outside* fulfilments, that's an error. IOK 2025-10-27
      */
     public function handle_refund($order, $refund_amount) {
-        $current_refund = apply_filters('woo_vipps_currently_active_refund', []);
-        // Reset just in case...
-        add_filter('woo_vipps_currently_active_refund', function ($current_refund) {
-            return null;
-        });
+        // When not refunding the entire order, we'll receive what is being refunded as an 
+        // order-like refund object with items with value, quantity etc. We capture this with a filter. IOK 2025-10-27
+        $current_refund = apply_filters('woo_vipps_currently_active_refund', null);
 
         /* translators: %1$s = the payment method name */
         if (!$current_refund) {
