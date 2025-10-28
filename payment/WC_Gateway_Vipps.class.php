@@ -825,6 +825,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $captured = intval($order->get_meta('_vipps_captured'));
+        $reserved = intval($order->get_meta('_vipps_amount'));
         $refund_remaining =  intval($order->get_meta('_vipps_refund_remaining'));
 
         // No funds captured, by epayment can do cancel of partial capture, so let's note that we are not to capture this.
@@ -842,21 +843,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
-        $all_captured = $captured == $order->get_total() * 100;
+        $all_captured = ($captured == $reserved);
 
-        $order_fulfillments = $this->fulfillments->get_order_fulfillments($order);
-        error_log("LP process_refund order fulfillments count is " . count($order_fulfillments));
-        if (!$all_captured && $order_fulfillments) { 
-            // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
-            error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
-            $amount = $this->fulfillments->handle_refund($order, $amount);
-            error_log('LP amount after handling partial capture refund: ' . print_r($amount, true));
-            if (is_wp_error($amount)) {
-                return $amount;
+        // If not, check if we have done partial capture via fulfillments. IOK 2025-10-28
+        if (!$all_captured) { 
+            $order_fulfillments = $this->fulfillments->get_order_fulfillments($order);
+            error_log("LP process_refund order fulfillments count is " . count($order_fulfillments));
+            if (!empty($order_fulfillments)) {
+                // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
+                error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
+                $amount = $this->fulfillments->handle_refund($order, $amount);
+                error_log('LP amount after handling partial capture refund: ' . print_r($amount, true));
+                if (is_wp_error($amount)) {
+                    return $amount;
+                }
+                error_log("LP amount returned after fulfillment handling is $amount");
             }
-            error_log("LP amount returned after fulfillment handling is $amount");
         }
-
 
         if ($amount*100 > $refund_remaining) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
@@ -866,8 +869,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
         if (is_numeric($amount) && $amount == 0) {
-            // FIXME: i dont think the should add order note that 0 was refunded anymore, now there is an order note explaining that the funds were only reserved and they will be release upon order completion. LP 2025-10-27
-            // $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
             return true;
         }
 
@@ -883,12 +884,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return new WP_Error('Vipps',$msg);
         }
 
-        // FIXME: I say we remove this success order log because refund_payment() actually already logs on success, result is double order notes for the admin. LP 2025-10-24
-        /*
         if ($ok) {
-            $order->add_order_note($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+            // Simplify debugging by adding the success of this to the vipps log so merchants can quote this to us. IOK 2025-10-28
+            $this->log($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
         } 
-         */
         return $ok;
     }
 
