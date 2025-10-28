@@ -60,15 +60,11 @@ class WC_Vipps_Recurring_Admin_List_Pending_Charges extends WP_List_Table {
 			'offset'         => ( $paged - 1 ) * $orders_per_page,
 			'search'         => $ordersearch,
 			'paginate'       => true,
-			'meta_query'     => [
-				[
-					'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_PENDING,
-					'compare' => '=',
-					'value'   => 1
-				]
-			],
 			'payment_method' => 'vipps_recurring'
 		];
+
+		$gateway = WC_Vipps_Recurring::get_instance()->gateway();
+		$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args($args, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, '=', 1, $gateway->use_high_performance_order_storage());
 
 		if ( isset( $_REQUEST['orderby'] ) ) {
 			$args['orderby'] = $_REQUEST['orderby'];

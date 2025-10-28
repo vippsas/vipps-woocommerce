@@ -13,8 +13,8 @@ END_METADATA -->
 ![Support and development by Everyday ](./docs/images/everyday.svg#gh-light-mode-only)![Support and development by Everyday](./docs/images/everyday_dark.svg#gh-dark-mode-only)
 
 *This plugin is built and maintained by [Everyday AS](https://everyday.no)
-and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/).
-For support, use the [support forum on WordPress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/).*
+and can be downloaded from the [WordPress plugin site](https://wordpress.org/plugins/woo-vipps/).
+For support, use the [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps/).*
 
 <!-- START_COMMENT -->
 💥 Please use the plugin pages on [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com/docs/plugins-ext/recurring-woocommerce/). 💥
@@ -46,6 +46,7 @@ for an overview.
   * [Retrieving Vipps/MobilePay API keys](#retrieving-vipps-mobilepay-api-keys)
   * [Configuration of the plugin](#configuration-of-the-plugin)
   * [Configuring products](#configuring-products)
+* [Migrating from another webshop](#migrating-from-another-webshop)
 * [Extending the plugin](#extending-the-plugin)
   * [Constants](#constants)
   * [Filters](#filters)
@@ -69,12 +70,12 @@ for an overview.
 
 ### Installation
 
-1. Download and activate the plugin from [Vipps/MobilePay recurring payments on WordPress.org](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/)
+1. Download and activate the plugin from [Pay with Vipps and MobilePay for WooCommerce on WordPress.org](https://wordpress.org/plugins/woo-vipps/)
 2. Enable the *Vipps/MobilePay recurring payment* method in WooCommerce: *Settings* > *Payments*.
 3. Click *Manage* on the payment method.
 4. Proceed to [Retrieving Vipps MobilePay API keys](#retrieving-vipps-mobilepay-api-keys).
 
-![Setup](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-1.png)
+![Setup](./docs/installation/screenshot-1.png)
 
 ### Retrieving Vipps MobilePay API keys
 
@@ -86,7 +87,7 @@ Log-in to [portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) and g
 1. Fill in the `client_id`, `client_secret` and `Ocp-Apim-Subscription-Key` found in the previous step.
 2. That's it! You can now move on to [Configuring products](#configuring-products).
 
-![Settings](https://raw.githubusercontent.com/vippsas/vipps-recurring-woocommerce/master/.wordpress-org/screenshot-2.png)
+![Settings](./docs/installation/screenshot-2.png)
 
 ### Configuring products
 
@@ -102,6 +103,24 @@ In most cases, your products should be virtual when using subscriptions, but it 
 possible to use the plugin with physical products, if you need to do so.
 
 See [Reserve capture vs direct capture](https://developer.vippsmobilepay.com/docs/knowledge-base/reserve-and-capture/#reserve-capture-vs-direct-capture).
+
+## Migrating from another webshop
+
+While you can of course migrate your existing webshop to WooCommerce Subscriptions using your own custom migration scripts, there is an easier way that covers most use cases.
+
+### WooCommerce Subscriptions Importer and Exporter
+
+The [WooCommerce Subscriptions Importer and Exporter plugin](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#subscriptions-importer) is the absolute easiest way to migrate your existing webshop to WooCommerce Subscriptions.
+
+After installing the plugin you need to first and foremost familiarize yourself with the [Importer Usage Guide](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importer-usage-guide).
+
+While creating your CSV file, you need to make sure that you are mapping the fields as specific in the [column docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#column-mapping). For Vipps MobilePay specifically, you need to set the following fields for subscriptions to work properly:
+
+1. The `payment_method` field needs to be set to `vipps_recurring`.
+2. The `_agreement_id` field needs to be set to the agreement ID from Vipps MobilePay.
+3. The `payment_method_post_meta` field in your CSV needs to be mapped to the _`agreement_id` column. ([docs](https://github.com/woocommerce/woocommerce-subscriptions-importer-exporter?tab=readme-ov-file#importing-payment-gateway-meta-data)).
+
+After successfully importing your subscriptions you should now be able to use WooCommerce Subscriptions as normal.
 
 ## Extending the plugin
 
@@ -166,8 +185,8 @@ Some filters include:
 
 If your question is not answered on this page:
 
-* For help with the plugin, use the [support forum on WordPress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/)
-  or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
+* For help with the plugin, use the [support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps/)
+  or [submit an issue](https://github.com/vippsas/vipps-woocommerce/issues) on GitHub.
 
 * The
   [Vipps MobilePay Knowledge base](https://developer.vippsmobilepay.com/docs/knowledge-base/)
@@ -229,20 +248,12 @@ if ensuring the status of a charge is fully completed before a specific date is 
 ### How do I activate recurring payments in Vipps Checkout on WooCommerce?
 
 1. If you don't have a customer relationship with Vipps, you need to register as a Vipps MobilePay merchant first. Follow the [Getting Started guide](https://developer.vippsmobilepay.com/docs/getting-started/).
-2. Download our [recurring plugin](https://wordpress.org/plugins/vipps-recurring-payments-gateway-for-woocommerce/).
+2. Download our [plugin](https://wordpress.org/plugins/woo-vipps/).
 3. Activate the plugin
-
-### Can I use this plugin for single payments as well?
-
-If you offer both recurring and single payments, we recommend using our Recurring checkout plugin alongside our
-[standard checkout plugin](https://developer.vippsmobilepay.com/docs/plugins-ext/woocommerce/).
-
-The Recurring checkout plugin will allow you to process single payments and recurring payments in the same checkout,
-but you still need our standard checkout plugin to process single payments when no recurring product is present in your shopping cart.
 
 ### What shipping options are available for this checkout?
 
-For recurring payments, we only offer static shipping options at the moment. We do not support location based dynamic shipping, yet.
+For recurring payments, we only offer static shipping options at the moment. We do not support location-based dynamic shipping, yet.
 
 ### What payments methods are available for this checkout?
 
@@ -251,5 +262,5 @@ At the moment, it only supports Vipps MobilePay.
 ## Support
 
 For issues with your plugin, use the
-[support forum on WordPress.org](https://wordpress.org/support/plugin/vipps-recurring-payments-gateway-for-woocommerce/)
-or [submit an issue](https://github.com/vippsas/vipps-recurring-woocommerce/issues) on GitHub.
+[support forum on WordPress.org](https://wordpress.org/support/plugin/woo-vipps/)
+or [submit an issue](https://github.com/vippsas/vipps-woocommerce/issues) on GitHub.

@@ -540,6 +540,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order->save();
 
 		$agreement = $this->get_agreement_from_order( $order );
+
 		if ( ! $agreement ) {
 			// If there is no agreement we can't complete Checkout orders. Let Checkout deal with this through an action.
 			$order_initial = WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_INITIAL );
@@ -593,6 +594,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 						  && ! wcs_order_contains_renewal( $order );
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
+
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
+			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
+			$this->unlock_order( $order );
+
+			return 'CANCELLED';
+		}
 
 		// If payment has already been captured, this function is redundant, unless the charge failed
 		if ( ! $pending_charge && ! $did_fail ) {
@@ -1254,11 +1262,24 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 				$old_agreement_id = WC_Vipps_Recurring_Helper::get_meta( $subscription, '_old_agreement_id' );
 
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Processing subscription gateway change with new agreement id: %s and old agreement id: %s', WC_Vipps_Recurring_Helper::get_id( $subscription ), $new_agreement_id, $old_agreement_id ) );
-				if ( ! empty( $old_agreement_id ) && $new_agreement_id !== $old_agreement_id ) {
-					WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling old agreement id: %s in Vipps/MobilePay due to gateway change', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
 
-					$idempotency_key = $this->get_idempotency_key( $subscription );
-					$this->api->cancel_agreement( $old_agreement_id, $idempotency_key );
+				if ( ! empty( $old_agreement_id ) && $new_agreement_id !== $old_agreement_id ) {
+					$charges         = $this->api->get_charges_for( $old_agreement_id );
+					$pending_charges = array_filter( $charges, function ( WC_Vipps_Charge $charge ) {
+						return in_array( $charge->status, [
+							WC_Vipps_Charge::STATUS_PENDING,
+							WC_Vipps_Charge::STATUS_RESERVED,
+							WC_Vipps_Charge::STATUS_DUE
+						] );
+					} );
+
+					// We should not under any circumstances cancel agreements that still have pending charges when changing gateways.
+					if ( empty( $pending_charges ) ) {
+						WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Cancelling old agreement id: %s in Vipps/MobilePay due to gateway change', WC_Vipps_Recurring_Helper::get_id( $subscription ), $old_agreement_id ) );
+
+						$idempotency_key = $this->get_idempotency_key( $subscription );
+						$this->api->cancel_agreement( $old_agreement_id, $idempotency_key );
+					}
 				}
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $new_agreement_id );
@@ -2476,17 +2497,14 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		if ( isset( $webhook_data['agreementId'] ) ) {
 			$agreement_id = $webhook_data['agreementId'];
 
-			$subscriptions = wcs_get_subscriptions( [
+			$args = [
 				'subscriptions_per_page' => 1,
 				'subscription_status'    => [ 'active', 'pending', 'on-hold' ],
-				'meta_query'             => [
-					[
-						'key'     => WC_Vipps_Recurring_Helper::META_AGREEMENT_ID,
-						'compare' => '=',
-						'value'   => $agreement_id
-					]
-				]
-			] );
+			];
+
+			$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $args, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, '=', $agreement_id, $this->use_high_performance_order_storage() );
+
+			$subscriptions = wcs_get_subscriptions( $args );
 
 			if ( ! empty( $subscriptions ) ) {
 				return array_pop( $subscriptions );
@@ -2515,18 +2533,15 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		] ) ) {
 			$order_id = null;
 
-			$orders = wc_get_orders( [
+			$args = [
 				'limit'          => 1,
-				'meta_query'     => [
-					[
-						'key'     => WC_Vipps_Recurring_Helper::META_CHARGE_ID,
-						'compare' => '=',
-						'value'   => $webhook_data['chargeId']
-					]
-				],
 				'payment_method' => $this->id,
 				'order_by'       => 'post_date'
-			] );
+			];
+
+			$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( $args, WC_Vipps_Recurring_Helper::META_CHARGE_ID, '=', $webhook_data['chargeId'], $this->use_high_performance_order_storage() );
+
+			$orders = wc_get_orders( $args );
 
 			$order = array_pop( $orders );
 

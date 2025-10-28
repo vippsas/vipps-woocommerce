@@ -1,5 +1,12 @@
 == Changelog ==
 
+= 2.2.2 =
+* Fix: Improved compatibility with legacy WooCommerce order storage.
+* Fix: Stop checking orders where the charge was cancelled in cron.
+
+= 2.2.1 =
+* Fix: No longer cancel an agreement that has pending charges while the customer is swapping payment gateways.
+
 = 2.2.0 =
 * Fix: `get_latest_charge_for_agreement` was returning the first charge instead of the latest charge. The display order in this API endpoint seems to have changed with time.
 * Added: Renewal charges now use the order id prefix as well, as intended. No more unpredictable chr_ transaction ids.

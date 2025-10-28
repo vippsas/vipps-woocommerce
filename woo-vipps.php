@@ -7,14 +7,14 @@
    Author URI: https://www.wp-hosting.no/
    Text-domain: woo-vipps
    Domain Path: /languages
-   Version: 5.0.7
-   Stable tag: 5.0.7
+   Version: 5.0.9
+   Stable tag: 5.0.9
    Requires at least: 6.2
    Tested up to: 6.8.2
    Requires PHP: 7.4
    Requires Plugins: woocommerce
    WC requires at least: 3.3.4
-   WC tested up to: 10.2.2
+   WC tested up to: 10.3.2
 
    License: MIT
    License URI: https://choosealicense.com/licenses/mit/
@@ -76,5 +76,6 @@ if ($woo_active) {
 add_action( 'before_woocommerce_init', function() {
         if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
                 \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_VIPPS_MAIN_FILE, true );
+                \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', WC_VIPPS_MAIN_FILE, true );
         }
 });

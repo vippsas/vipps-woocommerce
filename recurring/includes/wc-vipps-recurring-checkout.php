@@ -960,15 +960,9 @@ class WC_Vipps_Recurring_Checkout {
 	public function handle_callback( array $body, string $authorization_token ): void {
 		WC_Vipps_Recurring_Logger::log( sprintf( "Handling Vipps/MobilePay Checkout callback with body: %s", json_encode( $body ) ) );
 
-		$orders = wc_get_orders( [
-			'meta_query' => [
-				[
-					'key'     => WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID,
-					'compare' => '=',
-					'value'   => $body['sessionId']
-				]
-			]
-		] );
+		$args = WC_Vipps_Recurring_Helper::add_meta_query_to_args( [], WC_Vipps_Recurring_Helper::META_ORDER_CHECKOUT_SESSION_ID, '=', $body['sessionId'], $this->gateway()->use_high_performance_order_storage() );
+
+		$orders = wc_get_orders( $args );
 
 		if ( empty( $orders ) ) {
 			WC_Vipps_Recurring_Logger::log( sprintf( "Found no order ids in Vipps/MobilePay Checkout callback for session id: %s", $body['sessionId'] ) );
