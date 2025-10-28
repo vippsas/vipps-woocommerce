@@ -823,6 +823,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
+        
+        $refund_amount = $amount;
 
         $captured = intval($order->get_meta('_vipps_captured'));
         $reserved = intval($order->get_meta('_vipps_amount'));
@@ -833,14 +835,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ('epayment' != $order->get_meta('_vipps_api')) {
                 return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
             }
-            $msg = sprintf(__('The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $amount, $currency);
+            $msg = sprintf(__('The money for order %1$d has not been captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $refund_amount, $currency);
             $this->log($msg, 'info');
             $order->add_order_note($msg);
-            $noncapturable = round($amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
+            $noncapturable = round($refund_amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
             $order->update_meta_data('_vipps_noncapturable', $noncapturable);
             $order->save();
             return true;
         }
+
+        $noncapturable_amount = 0;
 
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
         $all_captured = ($captured == $reserved);
@@ -852,28 +856,29 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (!empty($order_fulfillments)) {
                 // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
                 error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
-                $amount = $this->fulfillments->handle_refund($order, $amount);
-                error_log('LP amount after handling partial capture refund: ' . print_r($amount, true));
-                if (is_wp_error($amount)) {
-                    return $amount;
+                $new_amounts = $this->fulfillments->handle_refund($order, $refund_amount);
+                if (is_wp_error($new_amounts)) {
+                    return $new_amounts;
                 }
-                error_log("LP amount returned after fulfillment handling is $amount");
+                [$refund_amount, $noncapturable_amount] = $new_amounts;
+                error_log("LP new refund_amount after fulfillment handler: $refund_amount");
+                error_log("LP new noncapturable_amount after fulfillment handler: $noncapturable_amount");
             }
         }
 
-        if ($amount*100 > $refund_remaining) {
+        if ($refund_amount*100 > $refund_remaining) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
 
         $ok = 0;
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
-        if (is_numeric($amount) && $amount == 0) {
+        if (is_numeric($refund_amount) && $refund_amount == 0) {
             return true;
         }
 
         try {
-            $ok = $this->refund_payment($order,$amount);
+            $ok = $this->refund_payment($order,$refund_amount);
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . "\n" .$e->getMessage(),'error');
             return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::CompanyName()) . ' ' . $e->getMessage());
@@ -886,7 +891,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($ok) {
             // Simplify debugging by adding the success of this to the vipps log so merchants can quote this to us. IOK 2025-10-28
-            $this->log($amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+            $this->log($refund_amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+
+            if ($noncapturable_amount) {
+                $noncapturable = round($noncapturable_amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
+                $order->update_meta_data('_vipps_noncapturable', $noncapturable);
+                $msg = sprintf(__('Some funds from the refund were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable, $currency);
+                $this->log($msg, 'info');
+                $order->add_order_note($msg);
+                $order->save();
+            }
+
         } 
         return $ok;
     }
@@ -2212,7 +2227,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refunded', $refunded);
         $order->update_meta_data('_vipps_refund_remaining', $remaining);
         $order->update_meta_data('_vipps_refund_timestamp', time());
-        $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$refunded/100) . ' ' . $currency );
+        $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency );
 
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
