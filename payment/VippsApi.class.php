@@ -511,6 +511,11 @@ class VippsApi {
 
         $express = $order->get_meta('_vipps_express_checkout');
 
+        // Make it easier to find express checkout orders in Vipps' backend IOK 2025-10-29
+        if ($express) {
+           $headers['Vipps-System-Plugin-Name'] = 'woo-vipps-express';
+        }
+
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         // This is really for the new epayment api only, but we do this to ensure we use the same logic. For short prefixes and order numbers.
         // Pad orderid with 0 to the left so the entire vipps-orderid/reference is at least 8 chars long. IOK 2022-04-06
