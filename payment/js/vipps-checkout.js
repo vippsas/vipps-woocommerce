@@ -177,6 +177,7 @@ jQuery( document ).ready( function() {
             dataType:'html',
             error: function (eh) { console.log("error loading widgets"); },
             success: function (data) {
+                if (data === "0") return;
                 jQuery('#vipps_checkout_widget_mount').html(data); 
                 initializeWidgets();
                 jQuery('.vipps_checkout_widget_wrapper').show();
