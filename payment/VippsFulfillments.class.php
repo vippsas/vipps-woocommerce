@@ -186,7 +186,7 @@ class VippsFulfillments {
         try {
             $orderid = $order->get_id();
             error_log("LP order id for refund is $orderid");
-            $order_items = $order->get_items();
+            // $order_items = $order->get_items();
 
             $fulfillments = $this->get_order_fulfillments(wc_get_order($orderid));
             error_log('LP fulfillments count: ' . count($fulfillments));
@@ -195,65 +195,100 @@ class VippsFulfillments {
             $fulfilled_item_ids = array_keys($fulfilled_item_quantities);
 
 
-            // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
-            foreach ($current_refund->get_items() as $refund_item) {
-                $item_id = $refund_item->get_meta('_refunded_item_id');
+            // Create a table of refund sums for each refunded item in the order. LP 2025-10-29
+            $previous_refund_totals = [];
+            foreach($order->get_refunds() as $refund) {
+                // NB: the current refund being created is also in this get_refunds() array! Skip here and handle it later. LP 2025-10-29
+                if ($refund->get_id() === $current_refund->get_id()) {
+                    continue;
+                }
+                foreach($refund->get_items() as $refund_item) {
+                    $refund_item_id = $refund_item->get_meta('_refunded_item_id');
+                    $refund_item_sum = $refund_item->get_total() + $refund_item->get_total_tax();
+                    if (!in_array($refund_item_id, array_keys($previous_refund_totals))) {
+                        $previous_refund_totals[$refund_item_id] = $refund_item_sum;
+                        continue;
+                    }
+                    $previous_refund_totals[$refund_item_id] += $refund_item_sum;
+                }
+            }
+            error_log('LP previous_refund_totals after calculation: ' . print_r($previous_refund_totals, true));
+ 
+            // Now loop over the new current refund and then handle the different refund cases. LP 2025-10-29
+            foreach ($current_refund->get_items() as $current_refund_item) {
+                // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
+                $item_id = $current_refund_item->get_meta('_refunded_item_id');
                 if (!$item_id) {
                     return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read the refund item id.', 'woo-vipps'), $this->gateway->get_payment_method_name()));
                 }
-                error_log('LP refund order item id: ' . print_r($item_id, true));
+                error_log('LP refund item id: ' . print_r($item_id, true));
 
-                $refund_item_quantity = $refund_item->get_quantity() * -1; // NB: refund items have negative quantity. LP 2025-10-22
-                $item_price = $current_refund->get_item_total($refund_item, true, false);
-                $refund_item_sum = $item_price * $refund_item_quantity;
-                $order_item = $order_items[$item_id];
+                $refund_item_sum = ($current_refund_item->get_total() + $current_refund_item->get_total_tax()) * -1; // NB: refund prices are negative. LP 2025-10-29
+                error_log('LP refund_item_total: ' . print_r($refund_item_sum, true));
+
+                $order_item = $order->get_item($item_id);
+                if (!$order_item) { // This should not happen since the refund object is based on the order. LP 2025-10-29
+                    return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read order item in refund.', 'woo-vipps'), $this->gateway->get_payment_method_name()));
+                }
+
+                $order_item_total = $order->get_item_total($order_item, true, false);
                 $order_item_quantity = $order_item->get_quantity();
+                $order_item_sum = $order_item_total * $order_item_quantity;
                 error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
-                error_log('LP refund_item_quantity: ' . print_r($refund_item_quantity, true));
-                error_log('LP item_price: ' . print_r($item_price, true));
-                error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
+                error_log('LP order_item_price: ' . print_r($order_item_total, true));
+                error_log('LP order_item_sum: ' . print_r($order_item_sum, true));
 
-                // The different partial capture cases:
 
+                // Now, the different refund cases:
+
+                // If the item has no fulfillments, easy: we are safe to set all of this item from the refund to noncapturable. LP 2025-10-24
                 $has_no_fulfillments = !in_array($item_id, $fulfilled_item_ids);
                 error_log('LP has_no_fulfillments: ' . print_r($has_no_fulfillments, true));
-                // Safe to set all of this item to noncapturable. LP 2025-10-24
                 if ($has_no_fulfillments) {
                     $noncapturable_sum += $refund_item_sum;
                     error_log("LP case no fulfillments, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                     continue;
                 };
 
+
+                // If fulfillments, calculate some values for the next cases. LP 2025-10-29
                 $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
-                $fulfilled_item_sum = $fulfilled_item_quantity * $item_price;
-                $remaining_item_quantity = $order_item_quantity - $fulfilled_item_quantity;
+                $fulfilled_item_total = $fulfilled_item_quantity * $order_item_total;
                 error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
-                error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
-                error_log('LP remaining_item_quantity: ' . print_r($remaining_item_quantity, true));
+                error_log('LP fulfilled_item_total: ' . print_r($fulfilled_item_total, true));
+
+                $remaining_item_sum = $order_item_total * $order_item_quantity;
+                // If this item has previous refunds, we have to subtract the refunded total. LP 2025-10-29
+                if (in_array($item_id, array_keys($previous_refund_totals))) {
+                    error_log("LP this item has had refunds!, the remaining_total is changed from $remaining_item_sum");
+                    $remaining_item_sum += $previous_refund_totals[$item_id]; // NB: refund totals are negative. LP 2025-10-29
+                    error_log("LP to $remaining_item_sum");
+                }
+                error_log('LP remaining_item_total: ' . print_r($remaining_item_sum, true));
 
 
-                $enough_items_remaining = $refund_item_quantity <= $remaining_item_quantity;
+                // If there is enough money remaining not captured for this item sum, then we are safe to set all of this item to noncapturable. LP 2025-10-24
+                $enough_items_remaining = $refund_item_sum <= $remaining_item_sum;
                 error_log('LP enough_items_remaining: ' . print_r($enough_items_remaining, true));
-                // Same as no fulfillments case above, safe to set all of this item to noncapturable. LP 2025-10-24
                 if ($enough_items_remaining) {
                     $noncapturable_sum += $refund_item_sum;
                     error_log("LP case enough items remaining, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                     continue;
                 };
 
-                $refunding_whole_quantity = $refund_item_quantity == $order_item_quantity;
-                error_log('LP refunding_whole_quantity: ' . print_r($refunding_whole_quantity, true));
-                // Need to refund all the item fulfillments and then set noncapture for the quantity not already fulfilled. LP 2025-10-23
-                if ($refunding_whole_quantity) {
-                    $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
-                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $fulfilled_item_sum  . ", to_noncapture=$to_noncapture");
+                // If this refund is refunding the whole amount of this item, then set noncapture for the amount not already fulfilled. LP 2025-10-23
+                $refunding_whole_item_sum = $refund_item_sum == $order_item_sum;
+                error_log('LP refunding_whole_quantity: ' . print_r($refunding_whole_item_sum, true));
+                if ($refunding_whole_item_sum) {
+                    $to_noncapture = $refund_item_sum - $fulfilled_item_total;
+                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $fulfilled_item_total  . ", to_noncapture=$to_noncapture");
                     $noncapturable_sum += $to_noncapture;
                     continue;
                 }
 
                 // Final case: There are NOT enough of this item left in the order to mark all as noncapture,
                 // we need to set noncapture of all we can, then refund the difference. LP 2025-10-24
-                $to_refund = ($refund_item_quantity - $remaining_item_quantity) * $item_price;
+                $to_refund = $refund_item_sum - $remaining_item_sum;
                 $to_noncapture = $refund_item_sum - $to_refund;
                 error_log("LP case not enough items left nonfulfilled, need to refund fulfilled + set rest noncapturable. to_refund=$to_refund, to_noncapture=$to_noncapture");
                 $noncapturable_sum += $to_noncapture;
