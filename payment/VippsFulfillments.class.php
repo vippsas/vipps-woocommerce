@@ -170,10 +170,7 @@ class VippsFulfillments {
      * Note also that doing partial capture through the portal probably will *not* be compatible with this, so if partial capture has been done 
      * *outside* fulfilments, that's an error. IOK 2025-10-27
      */
-    public function handle_refund($order, $refund_amount) {
-        // When not refunding the entire order, we'll receive what is being refunded as an 
-        // order-like refund object with items with value, quantity etc. We capture this with a filter. IOK 2025-10-27
-        $current_refund = apply_filters('woo_vipps_currently_active_refund', null);
+    public function handle_refund($order, $refund_amount, $current_refund) {
 
         $noncapturable_sum = 0;
         $refund_sum = $refund_amount;

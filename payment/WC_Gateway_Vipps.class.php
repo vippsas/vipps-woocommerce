@@ -823,6 +823,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
+
+        // When not refunding the entire order, we'll receive what is being refunded as an 
+        // order-like refund object with items with value, quantity etc. We capture this with a filter. IOK 2025-10-27
+        $current_refund = apply_filters('woo_vipps_currently_active_refund', null);
         
         $refund_amount = $amount;
 
@@ -851,12 +855,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // If not, check if we have done partial capture via fulfillments. IOK 2025-10-28
         if (!$all_captured) { 
+            // IOK FIXME first check that we have done partial capture on this order via fulfilments! 2025-10-30
             $order_fulfillments = $this->fulfillments->get_order_fulfillments($order);
             error_log("LP process_refund order fulfillments count is " . count($order_fulfillments));
             if (!empty($order_fulfillments)) {
                 // These are all partial capture cases with fulfillments, we need to handle the fulfillments before potentially refunding. LP 2025-10-24
                 error_log("LP order is not fully captured, sending to fulfillments to handle partial capture refund");
-                $new_amounts = $this->fulfillments->handle_refund($order, $refund_amount);
+                $new_amounts = $this->fulfillments->handle_refund($order, $refund_amount, $current_refund);
                 if (is_wp_error($new_amounts)) {
                     return $new_amounts;
                 }
