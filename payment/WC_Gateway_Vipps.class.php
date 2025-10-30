@@ -896,7 +896,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($noncapturable_amount) {
                 $noncapturable = round($noncapturable_amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
                 $order->update_meta_data('_vipps_noncapturable', $noncapturable);
-                $msg = sprintf(__('Some funds from the refund were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable, $currency);
+                $msg = sprintf(__('Some funds from the refund were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $noncapturable_amount, $currency);
                 $this->log($msg, 'info');
                 $order->add_order_note($msg);
                 $order->save();
