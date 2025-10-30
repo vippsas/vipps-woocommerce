@@ -1936,7 +1936,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 /* translators: %1$s and %1$s are numbers */
                 $msg = sprintf(__('Attempted partial capture amount of %1$s was greater than remaining capturable amount of %2$s. Stopping capture.', 'woo-vipps'), $partialamount, $amount);
                 $this->log($msg, 'error');
-                $this->add_order_note($msg);
+                $order->add_order_note($msg);
                 return false;
             }
             $amount = $partialamount;
