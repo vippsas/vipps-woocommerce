@@ -96,7 +96,7 @@ class VippsFulfillments {
 
             // Stop here and give the user a fail message if they try to remove already-captured amounts for this order item.
             // This is for fulfillment edits. LP 2025-10-31
-            $already_captured = intval($order_item->get_meta('_vipps_partially_captured'));
+            $already_captured = intval($order_item->get_meta('_vipps_item_captured'));
             if ($item_sum < $already_captured) {
                 /* translators: %1 = item product name, %2 = company name */
                 $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, cannot fulfill less products than before', 'woo-vipps'), $order_item->get_name(), Vipps::CompanyName()));
@@ -125,7 +125,7 @@ class VippsFulfillments {
         error_log("LP before_fulfillment capture ok! Updating item metas, then accepting fulfillment");
         // Everything ok, now we need to update captured meta for each item. LP 2025-10-31
         foreach ($new_item_sums as $order_item => $new_sum) {
-            $order_item->update_meta('_vipps_partially_captured', $new_sum);
+            $order_item->update_meta('_vipps_item_captured', $new_sum);
         }
 
         return $new_fulfillment;
@@ -144,8 +144,8 @@ class VippsFulfillments {
     /** Handles the different refund cases for partially captured orders. It is not as simple since order items may have
      * different quantities of fulfillments compared to quantity in the current refund and the total quantity in the order. LP 2025-10-24
      *
-     * When refunding a partially captured (via fulfilments) order, we need to see if the actual refund to be processed is one of the
-     * items captured in fulfilments or not.  If it *is*, then we can process this amount normally in process refund. If it is *not*, then we
+     * When refunding a partially captured (via fulfillments) order, we need to see if the actual refund to be processed is one of the
+     * items captured in fulfillments or not. If it *is*, then we can process this amount normally in process refund. If it is *not*, then we
      * have to note that the sum in question is "noncapturable" instead - so we need to split the incoming "amount to refund" into these two values.
      * It will also be neccessary to pay attention to the quantities of the items being refunded and so forth. IOK 2025-10-27
      * Note also that doing partial capture through the portal probably will *not* be compatible with this, so if partial capture has been done 
@@ -164,34 +164,13 @@ class VippsFulfillments {
             $orderid = $order->get_id();
             error_log("LP order id for refund is $orderid");
 
-            $fulfillments = $this->get_order_fulfillments(wc_get_order($orderid));
-            error_log('LP fulfillments count: ' . count($fulfillments));
-            $fulfilled_item_quantities = $this->get_fulfillments_item_quantities($fulfillments);
-            error_log('LP fulfilled_item_quantitites: ' . print_r($fulfilled_item_quantities, true));
+            // $fulfillments = $this->get_order_fulfillments(wc_get_order($orderid));
+            // error_log('LP fulfillments count: ' . count($fulfillments));
+            // $fulfilled_item_quantities = $this->get_fulfillments_item_quantities($fulfillments);
+            // error_log('LP fulfilled_item_quantitites: ' . print_r($fulfilled_item_quantities, true));
 
 
-            // Create a table of refund sums for each refunded item in the order. LP 2025-10-29
-            $previous_refund_sums = [];
-            foreach($order->get_refunds() as $refund) {
-                // Note: the current refund being created is also in this get_refunds() array! We need to skip here. LP 2025-10-29
-                if ($refund->get_id() === $current_refund->get_id()) {
-                    continue;
-                }
-                foreach($refund->get_items() as $refund_item) {
-                    $refund_item_id = $refund_item->get_meta('_refunded_item_id');
-                    $refund_item_total = $refund_item->get_total() + $refund_item->get_total_tax();
-
-                    // NB: refund totals are negative. LP 2025-10-30
-                    if (!array_key_exists($refund_item_id, $previous_refund_sums)) {
-                        $previous_refund_sums[$refund_item_id] = -$refund_item_total;
-                        continue;
-                    }
-                    $previous_refund_sums[$refund_item_id] -= $refund_item_total;
-                }
-            }
-            error_log('LP previous_refund_sums after calculation: ' . print_r($previous_refund_sums, true));
- 
-            // Now loop over the new current refund and then handle the different refund cases. LP 2025-10-29
+            // Loop over the new current refund and handle the different refund cases for each item. LP 2025-10-29
             foreach ($current_refund->get_items() as $refund_item) {
                 // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
                 $item_id = $refund_item->get_meta('_refunded_item_id');
@@ -201,8 +180,8 @@ class VippsFulfillments {
                 error_log('LP refund item id: ' . print_r($item_id, true));
                 error_log('LP refund item name: ' . print_r($refund_item->get_name(), true));
 
-                // This is actually the sum, not the unit price total, for this refund item. Not to be confused with getting
-                // the item total for order or fulfillment, which then is the unit price. LP 2025-10-30
+                // This is actually the sum for the refund item, not the item's unit price. Not to be confused with getting
+                // the item total for an order item, which then actually is the unit price. LP 2025-10-30
                 $refund_item_sum = ($refund_item->get_total() + $refund_item->get_total_tax()) * -1; // NB: refund prices are negative. LP 2025-10-29
                 error_log('LP refund_item_sum: ' . print_r($refund_item_sum, true));
 
@@ -217,60 +196,57 @@ class VippsFulfillments {
                 error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
                 error_log('LP order_item_total: ' . print_r($order_item_total, true));
                 error_log('LP order_item_sum: ' . print_r($order_item_sum, true));
+                $already_captured = intval($order_item->get_meta('_vipps_item_captured'));
+                error_log('LP already_captured: ' . print_r($already_captured, true));
 
 
-                // Now, the different refund cases:
+                // Now, the different refund cases are:
 
-                // If the item has no fulfillments, easy: we are safe to set all of this item from the refund to noncapturable. LP 2025-10-24
-                $has_no_fulfillments = !array_key_exists($item_id, $fulfilled_item_quantities);
-                error_log('LP has_no_fulfillments: ' . print_r($has_no_fulfillments, true));
-                if ($has_no_fulfillments) {
+                // If the item has nothing captured - easy: we are safe to set all of this item from the refund to noncapturable. LP 2025-10-24
+                if (!$already_captured) {
                     $noncapturable_sum += $refund_item_sum;
-                    error_log("LP case no fulfillments, mark all as noncaptureable, noncapturable+=$refund_item_sum");
+                    error_log("LP case items has nothing captured, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                     continue;
                 };
 
-                // If fulfillments, calculate some values for the next cases. LP 2025-10-29
-                $fulfilled_item_quantity = $fulfilled_item_quantities[$item_id];
-                $fulfilled_item_sum = $fulfilled_item_quantity * $order_item_total;
-                error_log('LP fulfilled_item_quantity: ' . print_r($fulfilled_item_quantity, true));
-                error_log('LP fulfilled_item_sum: ' . print_r($fulfilled_item_sum, true));
+                // If item has anything captured, calculate some values for the next cases. LP 2025-10-29
+                $already_refunded = intval($order_item->get_meta('_vipps_item_refunded'));
+                error_log('LP already_refunded: ' . print_r($already_refunded, true));
 
-                // If this item has previous refunds, we have to subtract the previously refunded total. LP 2025-10-29
-                $previous_refund_sum = array_key_exists($item_id, $previous_refund_sums) ? $previous_refund_sums[$item_id] : 0;
-                error_log('LP previous_refund_sum: ' . print_r($previous_refund_sum, true));
-
-                // Stop if the total sum for all refunds is more than the actual order items sum. LP 2025-10-30
-                if ($previous_refund_sum + $refund_item_sum >= $order_item_sum) {
+                // Stop if there is not enough remaining in the entire order line. LP 2025-10-30
+                // FIXME: move this logic out to the gateway. Therefore we also have to move the loop logic, but keep this separate from fulfillment logic. LP 2025-10-31
+                $remaining_amount = $order_item_sum - $already_refunded;
+                if ($refund_item_sum >= $remaining_amount) {
                     /* translators: %1 = payment method name, %2 = item product name */
                     return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large for item '%2\$s'.", 'woo-vipps'), $this->gateway->get_payment_method_name(), $refund_item->get_name()));
                 }
 
-                $remaining_item_sum = $order_item_sum - $previous_refund_sum - $fulfilled_item_sum;
-                if ($remaining_item_sum < 0) {
+                $available_refund = $remaining_amount - $already_captured;
+                if ($available_refund < 0) {
                     // This will happen if the wole item sum has been fulfilled i.e there is nothing remaining, but there exists previous refund(s) - the result 
                     // is subtracting a refund sum from zero giving a negative value. 
                     // Just reset it to zero, it should be handled correctly in the cases below. LP 2025-10-30
-                    error_log("LP remaining_item_sum was negative $remaining_item_sum, setting it to zero");
-                    $remaining_item_sum = 0;
+                    // FIXME: check if this is still the case, because i have rewrote a lot of logic here. Possibly delete this branch LP 2025-10-31
+                    error_log("LP available_refund was negative $available_refund, setting it to zero");
+                    $available_refund = 0;
                 }
-                error_log('LP remaining_item_sum: ' . print_r($remaining_item_sum, true));
+                error_log('LP available_refund: ' . print_r($available_refund, true));
 
-                // If there is enough money remaining not captured for this item sum, then we are safe to set all of this item to noncapturable. LP 2025-10-24
-                $enough_items_remaining = $refund_item_sum <= $remaining_item_sum && $refund_item_sum >= 0;
-                error_log('LP enough_items_remaining: ' . print_r($enough_items_remaining, true));
-                if ($enough_items_remaining) {
+                // If there is enough money available to refund for this item sum, then we are safe to set all of this item to noncapturable. LP 2025-10-24
+                $enough_available = $refund_item_sum <= $available_refund;
+                error_log('LP enough_available: ' . print_r($enough_available, true));
+                if ($enough_available) {
                     $noncapturable_sum += $refund_item_sum;
                     error_log("LP case enough items remaining, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                     continue;
                 };
 
-                // If this refund is refunding the whole amount of this item, then set noncapture for the amount not already fulfilled. LP 2025-10-23
-                $refunding_whole_item_sum = abs($refund_item_sum - $order_item_sum) < PHP_FLOAT_EPSILON;
-                error_log('LP refunding_whole_quantity: ' . print_r($refunding_whole_item_sum, true));
-                if ($refunding_whole_item_sum) {
-                    $to_noncapture = $refund_item_sum - $fulfilled_item_sum;
-                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $fulfilled_item_sum  . ", to_noncapture=$to_noncapture");
+                // If this refund is refunding the entire amount of this item, then set noncapture for the amount not already fulfilled. LP 2025-10-23
+                $refunding_entire_item = abs($refund_item_sum - $order_item_sum) < PHP_FLOAT_EPSILON;
+                error_log('LP refunding_whole_quantity: ' . print_r($refunding_entire_item, true));
+                if ($refunding_entire_item) {
+                    $to_noncapture = $refund_item_sum - $already_captured;
+                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $already_captured  . ", to_noncapture=$to_noncapture");
                     $noncapturable_sum += $to_noncapture;
                     continue;
                 }
@@ -307,20 +283,20 @@ class VippsFulfillments {
         return version_compare(WC_VERSION, '10.2', '>=') && get_option('woocommerce_feature_fulfillments_enabled') == 'yes';
     }
 
-    /** Returns associative array ['item_id' => 'quantity'] for all items in the fulfillments array containing Fulfillment instances. LP 2025-10-23 */
-    public static function get_fulfillments_item_quantities($fulfillments) {
-        $items = [];
-        foreach ($fulfillments as $fulfillment) {
-            foreach ($fulfillment->get_items() as $item) {
-                $id = $item['item_id'];
-                $quantity = $item['qty'];
-                if (array_key_exists($id, $items)) {
-                    $items[$id] += $quantity;
-                    continue;
-                }
-                $items[$id] = $quantity;
-            }
-        }
-        return $items;
-    }
+    // /** Returns associative array ['item_id' => 'quantity'] for all items in the fulfillments array containing Fulfillment instances. LP 2025-10-23 */
+    // public static function get_fulfillments_item_quantities($fulfillments) {
+    //     $items = [];
+    //     foreach ($fulfillments as $fulfillment) {
+    //         foreach ($fulfillment->get_items() as $item) {
+    //             $id = $item['item_id'];
+    //             $quantity = $item['qty'];
+    //             if (array_key_exists($id, $items)) {
+    //                 $items[$id] += $quantity;
+    //                 continue;
+    //             }
+    //             $items[$id] = $quantity;
+    //         }
+    //     }
+    //     return $items;
+    // }
 }
