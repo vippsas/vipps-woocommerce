@@ -852,9 +852,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
         $all_captured = $captured == $reserved;
 
-        // If not, we need to check the items in the current refund, also check for partial captures on the items. LP 2025-10-31
+        // If not, we need to check the items in the current refund, also check for partial captures (fulfillments) on the items. LP 2025-10-31
         if (!$all_captured) { 
-
             $new_sums = $this->handle_refund_items($order, $refund_amount, $current_refund);
             if (is_wp_error($new_sums)) {
                 return $new_sums;
@@ -903,6 +902,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
+    /** Loops over the refunds items and checks for certain error cases like the user asking for more refund than is available on the order item.
+     * If the item has been partially captured (via. fulfillments) then it hands it off to VippsFulfillments to check the specific cases we need to handle differently.
+     *
+     * When refunding a partially captured order, we need to see if the actual refund to be processed is one of the
+     * items captured in fulfillments or not. If it *is*, then we can process this amount normally in process refund. If it is *not*, then we
+     * have to note that the sum in question is "noncapturable" instead - so we need to split the incoming "amount to refund" into these two values.
+     * It will also be neccessary to pay attention to the quantities of the items being refunded and so forth. IOK 2025-10-27
+     * Note also that doing partial capture through the portal probably will *not* be compatible with this, so if partial capture has been done 
+     * *outside* fulfilments, that's an error. IOK 2025-10-27
+     *
+     * @return array | WP_Error Array containing two calculated values: refund amount and amount to mark as noncapturable for the order.
+     */
     public function handle_refund_items($order, $refund_amount, $current_refund) {
         $refund_sum = $refund_amount;
         $noncapturable_sum = 0;
