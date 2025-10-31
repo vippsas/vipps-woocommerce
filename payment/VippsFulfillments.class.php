@@ -57,11 +57,6 @@ class VippsFulfillments {
         $this->fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete this fulfillment.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
-    public function get_order_fulfillments($order) {
-        $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
-        return $data_store->read_fulfillments('WC_Order', $order->get_id());
-    }
-
     /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
      *
      *  This hook will also run on fulfillments edits, after the hook '...before_update'
@@ -96,14 +91,14 @@ class VippsFulfillments {
 
             // Stop here and give the user a fail message if they try to remove already-captured amounts for this order item.
             // This is for fulfillment edits. LP 2025-10-31
-            $already_captured = intval($order_item->get_meta('_vipps_item_captured'));
-            if ($item_sum < $already_captured) {
+            $item_captured_sum = intval($order_item->get_meta('_vipps_item_captured'));
+            if ($item_sum < $item_captured_sum) {
                 /* translators: %1 = item product name, %2 = company name */
                 $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, cannot fulfill less products than before', 'woo-vipps'), $order_item->get_name(), Vipps::CompanyName()));
             }
 
             // We cannot yet update the items captured meta until we know success, so just store it in a table. LP 2025-10-31
-            $new_item_sums[$order_item] = $item_sum + $already_captured;
+            $new_item_sums[$order_item] = $item_sum + $item_captured_sum;
 
             $to_capture += $item_sum;
         }
@@ -164,7 +159,7 @@ class VippsFulfillments {
             $orderid = $order->get_id();
             error_log("LP order id for refund is $orderid");
 
-            // Loop over the new current refund and handle the different refund cases for each item. LP 2025-10-29
+            // Loop over the current refund and handle the different refund cases for each item. LP 2025-10-29
             foreach ($current_refund->get_items() as $refund_item) {
                 // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
                 $item_id = $refund_item->get_meta('_refunded_item_id');
@@ -190,14 +185,14 @@ class VippsFulfillments {
                 error_log('LP order_item_quantity: ' . print_r($order_item_quantity, true));
                 error_log('LP order_item_total: ' . print_r($order_item_total, true));
                 error_log('LP order_item_sum: ' . print_r($order_item_sum, true));
-                $already_captured = intval($order_item->get_meta('_vipps_item_captured'));
-                error_log('LP already_captured: ' . print_r($already_captured, true));
+                $item_captured_sum = intval($order_item->get_meta('_vipps_item_captured'));
+                error_log('LP item_captured_sum: ' . print_r($item_captured_sum, true));
 
 
                 // Now, the different refund cases are:
 
                 // If the item has nothing captured/fulfilled - easy: we are safe to set all of this item from the refund to noncapturable. LP 2025-10-24
-                if (!$already_captured) {
+                if (!$item_captured_sum) {
                     $noncapturable_sum += $refund_item_sum;
                     error_log("LP case items has nothing captured, mark all as noncaptureable, noncapturable+=$refund_item_sum");
                     continue;
@@ -213,7 +208,7 @@ class VippsFulfillments {
                     return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large for item '%2\$s'.", 'woo-vipps'), $this->gateway->get_payment_method_name(), $refund_item->get_name()));
                 }
 
-                $remaining_item_sum = max($order_item_sum - $already_captured - $already_captured, 0); // Value could be negative e.g. if the item is entirely fulfilled, but also has refunds. LP 2025-10-31
+                $remaining_item_sum = max($order_item_sum - $item_captured_sum - $item_captured_sum, 0); // Value could be negative e.g. if the item is entirely fulfilled, but also has refunds. LP 2025-10-31
                 error_log('LP available_refund: ' . print_r($remaining_item_sum, true));
 
                 // If there is enough money available to refund for this item sum, then we are safe to set all of this item to noncapturable. LP 2025-10-24
@@ -229,8 +224,8 @@ class VippsFulfillments {
                 $refunding_entire_item = abs($refund_item_sum - $order_item_sum) < PHP_FLOAT_EPSILON;
                 error_log('LP refunding_whole_quantity: ' . print_r($refunding_entire_item, true));
                 if ($refunding_entire_item) {
-                    $to_noncapture = $refund_item_sum - $already_captured;
-                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $already_captured  . ", to_noncapture=$to_noncapture");
+                    $to_noncapture = $refund_item_sum - $item_captured_sum;
+                    error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $item_captured_sum  . ", to_noncapture=$to_noncapture");
                     $noncapturable_sum += $to_noncapture;
                     continue;
                 }
@@ -262,8 +257,50 @@ class VippsFulfillments {
 
     }
 
+    public function handle_refund_item($order_amount, $refund_amount, $captured_amount) {
+        $noncapturable_sum = 0;
+
+        $remaining_item_sum = max($order_amount - $captured_amount - $captured_amount, 0); // Value could be negative e.g. if the item is entirely fulfilled, but also has refunds. LP 2025-10-31
+        error_log('LP handle_refund_item available_refund: ' . print_r($remaining_item_sum, true));
+
+        // If there is enough money available to refund for this item sum, then we are safe to set all of this item to noncapturable. LP 2025-10-24
+        $enough_available = $refund_amount <= $remaining_item_sum;
+        error_log('LP handle_refund_item enough_available: ' . print_r($enough_available, true));
+        if ($enough_available) {
+            $noncapturable_sum += $refund_amount;
+            error_log("LP case enough items remaining, mark all as noncaptureable, noncapturable+=$refund_amount");
+            continue;
+        };
+
+        // If this refund is refunding the entire amount of this item, then set noncapture for the amount not already fulfilled. LP 2025-10-23
+        $refunding_entire_item = abs($refund_amount - $order_amount) < PHP_FLOAT_EPSILON;
+        error_log('LP handle_refund_item refunding_whole_quantity: ' . print_r($refunding_entire_item, true));
+        if ($refunding_entire_item) {
+            $to_noncapture = $refund_amount - $captured_amount;
+            error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $captured_amount  . ", to_noncapture=$to_noncapture");
+            $noncapturable_sum += $to_noncapture;
+            continue;
+        }
+
+        // Final case: There are NOT enough of this item left in the order to mark all as noncapture,
+        // we need to set noncapture for the remaining sum, then refund the rest of the amount. LP 2025-10-24
+        $to_noncapture = $remaining_item_sum;
+        error_log("LP handle_refund_item case not enough items left nonfulfilled, need to refund fulfilled + set rest noncapturable. to_noncapture=$to_noncapture and we will refund the remaining");
+        $noncapturable_sum += $to_noncapture;
+        return $noncapturable_sum;
+    }
+
     /** Whether fulfillments is supported in the WC version and is an enabled feature. LP 2025-10-27 */
     public static function is_supported() {
         return version_compare(WC_VERSION, '10.2', '>=') && get_option('woocommerce_feature_fulfillments_enabled') == 'yes';
+    }
+
+    public static function get_order_fulfillments($order) {
+        $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
+        return $data_store->read_fulfillments('WC_Order', $order->get_id());
+    }
+
+    public static function order_has_fulfillments($order) {
+        return !empty(static::get_order_fulfillments($order));
     }
 }
