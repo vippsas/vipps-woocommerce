@@ -850,12 +850,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $noncapturable_amount = 0;
 
-        // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount.
-        $all_captured = ($captured == $reserved);
+        // For the case where order has been fully captured: no need to check partial captures, just refund the refund amount. LP 2025-10-31
+        $all_captured = $captured == $reserved;
 
         // If not, check if we have done partial capture via fulfillments. IOK 2025-10-28
         if (!$all_captured) { 
-            // IOK FIXME first check that we have done partial capture on this order via fulfilments! 2025-10-30
+            // IOK FIXME first check that we have done partial capture on this order via fulfillments! 2025-10-30
             $order_fulfillments = $this->fulfillments->get_order_fulfillments($order);
             error_log("LP process_refund order fulfillments count is " . count($order_fulfillments));
             if (!empty($order_fulfillments)) {
@@ -1976,7 +1976,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $requestid = $requestidnr . ":" . $order->get_order_key();
             $api = $order->get_meta('_vipps_api');
 
-
             // Stop if amount too small for capture
             $minamount = $this->get_min_capture_amount($api, $currency);
             error_log("LP min capture amount for api $api with currency $currency is: $minamount");
@@ -1999,6 +1998,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             } else {
                 $content =  $this->api->capture_payment($order,$amount,$requestid);
             }
+
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not capture %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
             $this->adminerr(sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . "\n" . $e->getMessage());
