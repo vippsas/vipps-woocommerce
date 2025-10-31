@@ -65,8 +65,7 @@ class VippsFulfillments {
     /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
      *
      *  This hook will also run on fulfillments edits, after the hook '...before_update'
-     *  therefore here we loop over all fulfillments and only capture if the total sum is more than what is already captured.
-     *  Else stop fulfillment with failure message.
+     *  therefore here we loop over all fulfillment items and stop if the new fulfill sum is less than what is already captured at Vipps MobilePay. LP 2025-10-31
      */
     public function woocommerce_fulfillment_before_fulfill($new_fulfillment) {
         error_log("LP running woocommerce_fulfillment_before_fulfill");
@@ -82,61 +81,37 @@ class VippsFulfillments {
             return $new_fulfillment;
         }
 
-        try {
-            $fulfillments = $this->get_order_fulfillments($order);
-        } catch (Exception $e) {
-            $this->gateway->log(sprintf(__('Could not get previous fulfillments for order %1$s: ', 'woo-vipps'), $order->get_id()) . $e->getMessage(), 'error');
-            $this->fulfillment_fail(__('Could not find fulfillments for the order. Please check the logs for more information.', 'woo-vipps'));
-        }
+        $to_capture = 0;
+        foreach ($fulfillment->get_items() as $item) {
+            $item_id = $item['item_id'];
+            error_log('LP before_fulfill item_id: ' . print_r($item_id, true));
+            $item_quantity = $item['qty'];
+            $order_item = $order->get_item($item_id);
+            if (!$order_item) {
+                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+            }
+            error_log('LP before_fulfill item_name: ' . print_r($order_item->get_name(), true));
+            $item_sum = $order->get_item_total($order_item, true, false) * $item_quantity;
+            error_log('LP item_sum: ' . print_r($item_sum, true));
 
-        // Add new to array of all fulfillments to first position, to stop duplicate captures for cases with updated/edited fulfillments. LP 2025-10-15
-        array_unshift($fulfillments, $new_fulfillment);
-        error_log("LP fulfill_update total number of fulfillments is " . count($fulfillments));
-
-        $sum = 0;
-        $new_is_handled = false;
-        foreach ($fulfillments as $fulfillment) {
-            // Make sure to don't capture duplicate if this is a fulfillment update, by skipping the old one. LP 2025-10-15
-            if ($fulfillment->get_id() === $new_fulfillment->get_id()) {
-                error_log("LP This is the new fulfillment, has already been handled (update/edit fulfillment)?: $new_is_handled");
-                if ($new_is_handled) {
-                    continue;
-                }
-                $new_is_handled = true;
+            // Stop here and give the user a fail message if they try to remove already-captured amounts for this order item.
+            // This is for fulfillment edits. LP 2025-10-31
+            $already_captured = intval($order_item->get_meta('_vipps_partially_captured'));
+            if ($item_sum < $already_captured) {
+                /* translators: %1 = item product name, %2 = company name */
+                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, cannot fulfill less products than before', 'woo-vipps'), $order_item->get_name(), Vipps::CompanyName()));
             }
 
-            foreach ($fulfillment->get_items() as $item) {
-                error_log('LP item: ' . print_r($item, true));
-                $item_id = $item['item_id'];
-                $item_quantity = $item['qty'];
-                $order_item = $order->get_item($item_id);
-                error_log('LP item_name: ' . print_r($order_item->get_name(), true));
-                if (!$order_item) {
-                    $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
-                }
+            // We cannot yet update the items captured meta until we know success, so just store it in a table. LP 2025-10-31
+            $new_item_sums[$order_item] = $item_sum + $already_captured;
 
-                $item_sum = $order->get_item_total($order_item, true, false) * $item_quantity;
-                error_log('LP item_sum: ' . print_r($item_sum, true));
-                $sum += $item_sum;
-            }
-        }
-
-        $sum = round(wc_format_decimal($sum, '') * 100);
-        error_log('LP before_fulfill sum: ' . print_r($sum, true));
-        $captured = intval($order->get_meta('_vipps_captured'));
-        error_log('LP before_fulfill captured: ' . print_r($captured, true));
-
-        // If new sum is less than already captured, stop and return failure message to admin. We don't want to refund here. LP 2025-10-15
-        if ($sum < $captured) {
-            /* translators: %1$s = company name */
-            $this->fulfillment_fail(sprintf(__('New capture sum is less than what is already captured at %1$s, cannot fulfill less products than before', 'woo-vipps'), Vipps::CompanyName()));
+            $to_capture += $item_sum;
         }
 
 
-        // New sum is greater than already captured, send capture. LP 2025-10-15
-        $to_capture = $sum - $captured;
-        error_log('LP before_fulfill new capture ' . print_r($to_capture, true));
+        error_log('LP before_fulfill to_capture ' . print_r($to_capture, true));
         if ($to_capture == 0) {
+            error_log("LP before_fulfill new capture is zero, not sending anything to capture");
             return $new_fulfillment;
         }
 
@@ -146,7 +121,13 @@ class VippsFulfillments {
             /* translators: %1$s = number, %2$s = this payment method company name */
             $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::CompanyName()));
         }
-        error_log("LP before_fulfillment capture ok! Accepting fulfillment");
+
+        error_log("LP before_fulfillment capture ok! Updating item metas, then accepting fulfillment");
+        // Everything ok, now we need to update captured meta for each item. LP 2025-10-31
+        foreach ($new_item_sums as $order_item => $new_sum) {
+            $order_item->update_meta('_vipps_partially_captured', $new_sum);
+        }
+
         return $new_fulfillment;
     }
 
@@ -171,7 +152,6 @@ class VippsFulfillments {
      * *outside* fulfilments, that's an error. IOK 2025-10-27
      */
     public function handle_refund($order, $refund_amount, $current_refund) {
-
         $noncapturable_sum = 0;
         $refund_sum = $refund_amount;
 
