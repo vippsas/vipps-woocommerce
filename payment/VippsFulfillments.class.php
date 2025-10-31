@@ -141,8 +141,6 @@ class VippsFulfillments {
     * @return int | WP_Error The amount to mark as noncapturable for this item.
     */
     public function handle_refund_item($order_amount, $refund_amount, $captured_amount) {
-        $noncapturable_sum = 0;
-
         $remaining_item_sum = max($order_amount - $captured_amount - $captured_amount, 0); // Value could be negative e.g. if the item is entirely fulfilled, but also has refunds. LP 2025-10-31
         error_log('LP handle_refund_item available_refund: ' . print_r($remaining_item_sum, true));
 
@@ -150,9 +148,8 @@ class VippsFulfillments {
         $enough_available = $refund_amount <= $remaining_item_sum;
         error_log('LP handle_refund_item enough_available: ' . print_r($enough_available, true));
         if ($enough_available) {
-            $noncapturable_sum += $refund_amount;
-            error_log("LP case enough items remaining, mark all as noncaptureable, noncapturable+=$refund_amount");
-            continue;
+            error_log("LP handle_refund_item case enough items remaining, mark all as noncaptureable, noncapturable+=$refund_amount");
+            return $refund_amount;
         };
 
         // If this refund is refunding the entire amount of this item, then set noncapture for the amount not already fulfilled. LP 2025-10-23
@@ -160,17 +157,15 @@ class VippsFulfillments {
         error_log('LP handle_refund_item refunding_whole_quantity: ' . print_r($refunding_entire_item, true));
         if ($refunding_entire_item) {
             $to_noncapture = $refund_amount - $captured_amount;
-            error_log("LP Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $captured_amount  . ", to_noncapture=$to_noncapture");
-            $noncapturable_sum += $to_noncapture;
-            continue;
+            error_log("LP handle_refund_item Case refunding the whole quantity, need to refund fulfilled + set rest noncapturable, to_refund=" . $captured_amount  . ", to_noncapture=$to_noncapture");
+            return $to_noncapture;
         }
 
         // Final case: There are NOT enough of this item left in the order to mark all as noncapture,
         // we need to set noncapture for the remaining sum, then refund the rest of the amount. LP 2025-10-24
         $to_noncapture = $remaining_item_sum;
         error_log("LP handle_refund_item case not enough items left nonfulfilled, need to refund fulfilled + set rest noncapturable. to_noncapture=$to_noncapture and we will refund the remaining");
-        $noncapturable_sum += $to_noncapture;
-        return $noncapturable_sum;
+        return $to_noncapture;
     }
 
     /** Whether fulfillments is supported in the WC version and is an enabled feature. LP 2025-10-27 */
