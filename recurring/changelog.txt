@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.3 =
+* Fix: Reduced the lead time for recurring charges to one day instead of two days, as per the latest changes to the API: https://developer.vippsmobilepay.com/docs/technical-updates/2025-11/#one-day-lead-time-for-recurring-charges
+
 = 2.2.2 =
 * Fix: Improved compatibility with legacy WooCommerce order storage.
 * Fix: Stop checking orders where the charge was cancelled in cron.
