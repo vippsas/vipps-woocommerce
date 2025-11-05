@@ -233,6 +233,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return $refund;
             });
         });
+
+        add_filter('woocommerce_hidden_order_itemmeta', [$this, 'woocommerce_hidden_order_itemmeta']);
+    }
+
+    public function woocommerce_hidden_order_itemmeta($meta_keys) {
+        $vipps_meta_keys = apply_filters('woo_vipps_hidden_order_itemmeta', ['_vipps_item_captured', '_vipps_item_refunded', '_vipps_item_noncapturable']);
+        if (!is_array($vipps_meta_keys)) {
+            $vipps_meta_keys = [$vipps_meta_keys];
+        }
+        return array_merge($meta_keys, $vipps_meta_keys);
     }
 
 
