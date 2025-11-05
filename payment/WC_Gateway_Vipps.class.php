@@ -914,13 +914,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
-    /** Loops over the refunds items to find the sum which is safe to refund, the rest must be marked as noncapturable.
+    /** Loops over the refunds items to calculate what we should refund, the rest must be marked as noncapturable.
      * Checks for certain error cases like the user asking for more refund than is available for that item.
      * If the item has been partially captured then it checks the specific cases we need to handle differently.
      *
-     * If an item *is* partially captured, then we can process this amount normally in process refund. If it is *not*, then we
-     * have to note that the sum in question is "noncapturable" instead - so we need to split the incoming "amount to refund" into these two values.
-     * It will also be neccessary to pay attention to the quantities of the items being refunded and so forth. IOK 2025-10-27
      * Note also that doing partial capture through the Vipps MobilePay business portal probably will *not* be compatible with this, so if partial capture has been done 
      * *outside* WooCommerce, that's an error. IOK 2025-10-27
      *
@@ -989,8 +986,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             };
 
 
-            // Final case: The item *does* have a captured amount: we need to handle the different partial capture refund cases
-            // to calculate what we may refund vs what we have to mark noncapturable. LP 2025-10-31
+            // Final case: The item *does* have a captured amount: we need to check the different partial capture refund cases
+            // to calculate the amount we should refund. The amount we shouldn't refund we will instead mark as noncapturable. LP 2025-10-31
             error_log('LP loop_refund_items: final case, sending to submethod handle_partially_captured_refund_item');
             $to_refund = $this->handle_partially_captured_refund_item($order_item_sum, $refunded, $noncapturable, $captured, $to_maybe_refund);
             $to_noncapture = $to_maybe_refund - $to_refund;
@@ -1005,7 +1002,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return [$refund_sum / 100, $item_meta_table]; 
     }
 
-    /** Handles the different cases for a partially captured refund item and returns the amount safe to refund for this item.
+    /** Handles the different cases for a partially captured refund item and returns the amount to refund for this item.
     *   Use minor units (cents, øre). LP 2025-10-24
     */
     public function handle_partially_captured_refund_item($order_item_sum, $refunded, $noncapturable, $captured, $to_refund) {
