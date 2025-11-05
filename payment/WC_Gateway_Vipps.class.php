@@ -825,19 +825,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $refund_amount = $amount;
+        error_log('LP original refund_amount: ' . print_r($refund_amount, true));
         $noncapturable_amount = 0;
 
         $refund_remaining =  intval($order->get_meta('_vipps_refund_remaining'));
+        error_log('LP refund_remaining: ' . print_r($refund_remaining, true));
 
         // We'll receive what is being refunded as an order-like refund object with items with value, quantity etc. We capture this with a filter. IOK 2025-10-27
         $current_refund = apply_filters('woo_vipps_currently_active_refund', null);
 
         // We need to process each refund item to figure out what should be set noncapturable vs actually refund. LP 2025-11-05
-        $new_amounts_or_wperror = $this->loop_refund_items($order, $refund_amount, $current_refund);
-        if (is_wp_error($new_amounts_or_wperror)) {
-            return $new_amounts_or_wperror;
+        $item_values = $this->loop_refund_items($order, $current_refund);
+        if (is_wp_error($item_values)) {
+            return $item_values;
         }
-        [$refund_amount, $noncapturable_amount, $item_meta_table] = $new_amounts_or_wperror;
+        [$noncapturable_amount, $item_meta_table] = $item_values;
+        $refund_amount -= $noncapturable_amount;
         error_log('LP after loop_refund_items refund_amount: ' . print_r($refund_amount, true));
         error_log('LP after loop_refund_items noncapturable_amount: ' . print_r($noncapturable_amount, true));
         error_log('LP after loop_refund_items item_meta_table: ' . print_r($item_meta_table, true));
@@ -898,8 +901,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
 
-    /** Loops over the refunds items and checks for certain error cases like the user asking for more refund than is available on the order item.
-     * If the item has been partially captured (via. fulfillments) then it checks the specific cases we need to handle differently.
+    /** Loops over the refunds items to find the sum to mark as noncapturable. Checks for certain error cases like
+     * the user asking for more refund than is available for that item. If the item has been partially captured
+     * then it checks the specific cases we need to handle differently.
      *
      * If an item *is* partially captured, then we can process this amount normally in process refund. If it is *not*, then we
      * have to note that the sum in question is "noncapturable" instead - so we need to split the incoming "amount to refund" into these two values.
@@ -907,10 +911,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
      * Note also that doing partial capture through the Vipps MobilePay business portal probably will *not* be compatible with this, so if partial capture has been done 
      * *outside* WooCommerce, that's an error. IOK 2025-10-27
      *
-     * @return array | WP_Error Array containing new refund amount, new amount to mark as noncapturable for the order (normal units), and an associative array of the meta values to update for each refund item. WP Error on fail.
+     * @return array | WP_Error Array containing two values: the new amount to mark as noncapturable for the order (normal units), and an associative array of the meta values to update for each refund item. WP Error on fail.
      */
-    public function loop_refund_items($order, $refund_amount, $current_refund) {
-        $refund_sum = $refund_amount;
+    public function loop_refund_items($order, $current_refund) {
         $noncapturable_sum = 0;
         $is_epayment = 'epayment' == $order->get_meta('_vipps_api');
 
@@ -978,10 +981,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_noncapturable = $this->handle_refund_item_partially_captured($order_item_sum, $refund_item_sum, $item_captured);
             error_log('LP loop_refund_items: item_noncapturable after handle_refund_item_partially_captured: ' . print_r($item_noncapturable, true));
             $noncapturable_sum += $item_noncapturable;
-            $refund_sum -= $item_noncapturable;
         }
 
-        return [$refund_sum / 100, $noncapturable_sum / 100, $item_meta_table]; 
+        return [$noncapturable_sum / 100, $item_meta_table]; 
     }
 
     /** Handles the different cases for a partially captured refund item. Returns the amount to mark as noncapturable for this item.
