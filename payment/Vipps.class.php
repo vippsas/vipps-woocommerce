@@ -2689,6 +2689,12 @@ else:
             $this->log(sprintf(__("Could not restore cart from session of order %1\$d", 'woo-vipps'), $orderid));
         }
         if (WC()->cart) {
+            $all_chosen = null;
+            if (is_a(WC()->session, 'WC_Session_Handler')) {
+                $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+                error_log('LP callback_restore-session all_chosen: ' . print_r($all_chosen, true));
+            }
+
             WC()->cart->set_totals( WC()->session->get( 'cart_totals', null ) );
             WC()->cart->set_applied_coupons( WC()->session->get( 'applied_coupons', array() ) );
             WC()->cart->set_coupon_discount_totals( WC()->session->get( 'coupon_discount_totals', array() ) );
@@ -2698,6 +2704,14 @@ else:
             // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
             do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
             WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
+
+            // calculate_totals() overwrites the session chosen_shipping_methods to default if it think it changed,
+            // which will be true if the pickup points are missing from previously. Pickup points only get loaded in woos checkout. 
+            // So reset this to what it was before calling calculate_totals(). LP 2025-11-05
+            if ($all_chosen) {
+                error_log("LP callback_restore_session setting session chosen_shipping_methods to " . print_r($all_chosen,true));
+                WC()->session->set('chosen_shipping_methods', $all_chosen);
+            }
         } else {
             // Apparently this happens quite a lot, so don't log it or anything. IOK 2021-06-21
         }
@@ -2908,6 +2922,14 @@ else:
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
         do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $vippsdata);
 
+        $chosen = null;
+        $all_chosen = null; 
+        if (is_a(WC()->session, 'WC_Session_Handler')) {
+            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+            error_log('LP callback_handler all_chosen: ' . print_r($all_chosen, true));
+            if (!empty($all_chosen)) $chosen= $all_chosen[0];
+        }
+        error_log('LP callback_handler chosen: ' . print_r($chosen, true));
 
         //  Previously, we would create a shoppingcart at this point, because we would not have access to the 'live' one,
         // but it turns out this isn't actually possible. Any cart so created will become "the" cart for the Woo front end,
@@ -2922,6 +2944,15 @@ else:
         $cart_is_reconstructed = $this->maybe_reconstruct_cart($order->get_id());
        
         WC()->cart->calculate_totals();
+
+        // calculate_totals() overwrites the session chosen_shipping_methods to default if it think it changed,
+        // which will be true if the pickup points are missing from previously. Pickup points only get loaded in woos checkout. 
+        // So reset this to what it was before calling calculate_totals(). LP 2025-11-05
+        if ($all_chosen) {
+            error_log("LP callback_handler setting session chosen_shipping_methods to " . print_r($all_chosen,true));
+            WC()->session->set('chosen_shipping_methods', $all_chosen);
+        }
+
         $acart = WC()->cart;
 
         $shipping_methods = array();
@@ -2968,11 +2999,6 @@ else:
         }
         $order->update_meta_data('_vipps_shipping_tax_rates', $taxrate);
 
-        $chosen = null;
-        if (is_a(WC()->session, 'WC_Session_Handler')) {
-            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
-            if (!empty($all_chosen)) $chosen= $all_chosen[0];
-        }
         // Merchant is using the old 'woo_vipps_shipping_methods' filter, and hasn't chosen to disable it. Use legacy methd.
         // IOK 2025-08-14 I think we should add a deprecation notice to this now. It really should not be used anymore. FIXME
         if (has_action('woo_vipps_shipping_methods') &&  $this->gateway()->get_option('newshippingcallback') != 'new') {
