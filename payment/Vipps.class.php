@@ -2689,11 +2689,13 @@ else:
             $this->log(sprintf(__("Could not restore cart from session of order %1\$d", 'woo-vipps'), $orderid));
         }
         if (WC()->cart) {
-            $all_chosen = null;
-            if (is_a(WC()->session, 'WC_Session_Handler')) {
-                $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
-                error_log('LP callback_restore-session all_chosen: ' . print_r($all_chosen, true));
-            }
+
+            // When doing "calculate_totals" on a cart, Woo will now compare "previous shipping methods" with
+            // "current shipping methods" and reset the chosen shipping methods even if it is still available. 
+            // This becomes a problem because Woo only loads the pickup location methods in a few places - mostly checkout -
+            // so if we chose a shipping method while these were available, we'd get ourselves reset just by calculating
+            // cart totals. Fix this by saving and restoring this value. IOK 2025-11-05
+            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
 
             WC()->cart->set_totals( WC()->session->get( 'cart_totals', null ) );
             WC()->cart->set_applied_coupons( WC()->session->get( 'applied_coupons', array() ) );
@@ -2704,12 +2706,8 @@ else:
             // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
             do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
             WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
-
-            // calculate_totals() overwrites the session chosen_shipping_methods to default if it think it changed,
-            // which will be true if the pickup points are missing from previously. Pickup points only get loaded in woos checkout. 
-            // So reset this to what it was before calling calculate_totals(). LP 2025-11-05
+            // See above: Reset chosen shipping methods to avoid having it be reset by Woo for no good reason.
             if ($all_chosen) {
-                error_log("LP callback_restore_session setting session chosen_shipping_methods to " . print_r($all_chosen,true));
                 WC()->session->set('chosen_shipping_methods', $all_chosen);
             }
         } else {
@@ -2922,14 +2920,18 @@ else:
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
         do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $vippsdata);
 
+        // calculate_totals() overwrites the session chosen_shipping_methods to default if it think it changed,
+        // which will be true if the pickup points are missing from previously. Pickup points only get loaded in woos checkout. 
+        // So reset this to what it was before calling calculate_totals(). LP 2025-11-05
+        // To be more specific if the *list of available methods* change, it will reset the chosen shipping method,
+        // even if the chosen shipping method is actually still available. We need to call calculate_totals on the cart,
+        // so we need to save + restore this.
         $chosen = null;
         $all_chosen = null; 
         if (is_a(WC()->session, 'WC_Session_Handler')) {
             $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
-            error_log('LP callback_handler all_chosen: ' . print_r($all_chosen, true));
             if (!empty($all_chosen)) $chosen= $all_chosen[0];
         }
-        error_log('LP callback_handler chosen: ' . print_r($chosen, true));
 
         //  Previously, we would create a shoppingcart at this point, because we would not have access to the 'live' one,
         // but it turns out this isn't actually possible. Any cart so created will become "the" cart for the Woo front end,
@@ -2945,11 +2947,8 @@ else:
        
         WC()->cart->calculate_totals();
 
-        // calculate_totals() overwrites the session chosen_shipping_methods to default if it think it changed,
-        // which will be true if the pickup points are missing from previously. Pickup points only get loaded in woos checkout. 
-        // So reset this to what it was before calling calculate_totals(). LP 2025-11-05
+        // See above. Restore chosen shipping methods if neccessary. IOK 2025-11-05
         if ($all_chosen) {
-            error_log("LP callback_handler setting session chosen_shipping_methods to " . print_r($all_chosen,true));
             WC()->session->set('chosen_shipping_methods', $all_chosen);
         }
 
