@@ -76,6 +76,8 @@ class VippsFulfillments {
             return $new_fulfillment;
         }
 
+        $currency = $order->get_currency();
+
         $to_capture = 0;
         $item_capture_table = []; // store new capture sum for each item for the purpose of updating metas when we know capture success. LP 2025-10-31
         foreach ($new_fulfillment->get_items() as $item) {
@@ -87,7 +89,7 @@ class VippsFulfillments {
                 $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
             }
             error_log('LP before_fulfill item_name: ' . print_r($order_item->get_name(), true));
-            $item_sum = $order->get_item_total($order_item, true, false) * $item_quantity;
+            $item_sum = $order->get_item_total($order_item, true, false) * $item_quantity * 100;
             error_log('LP item_sum: ' . print_r($item_sum, true));
 
             // Stop here and give the user a fail message if they try to remove already-captured amounts for this order item.
@@ -112,8 +114,8 @@ class VippsFulfillments {
         $ok = $this->gateway->capture_payment($order, $to_capture);
         if (!$ok) {
             error_log("LP before_fulfill capture was not ok!");
-            /* translators: %1$s = number, %2$s = this payment method company name */
-            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment capture difference of %1$s at %2$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, Vipps::CompanyName()));
+            /* translators: %1 = number, %2 = currency string, %3 = this payment method name */
+            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %1$s %2$s at %3$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, $currency, $this->gateway->get_payment_method_name()));
         }
 
         error_log("LP before_fulfillment capture ok! Updating item metas, then accepting fulfillment");
