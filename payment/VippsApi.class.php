@@ -976,6 +976,24 @@ class VippsApi {
         $res = $this->http_call($msn,$command . "/" . urlencode($reference),$data,'PATCH',$headers,'json'); 
         return $res;
     }
+    public function checkout_expire_session($order) {
+        error_log("lp checkout_expire_session starting for order " . $order->get_id());
+        $msn = $this->get_merchant_serial();
+        $clientid = $this->get_clientid($msn);
+        $secret = $this->get_secret($msn);
+        $vippsorderid = $order->get_meta('_vipps_orderid');
+        $reference = $vippsorderid;
+        $command = "checkout/v3/session/$reference/expire";
+
+        $headers = $this->get_headers($msn);
+        // Required for Checkout
+        $headers['client_id'] = $clientid;
+        $headers['client_secret'] = $secret;
+
+        $res = $this->http_call($msn, $command, [], 'POST', $headers, 'json'); 
+error_log("Expire result: " . print_r($res, true));
+        return $res;
+    }
 
     // Returns same data as session poll; we've changed it so 404s and so returns as words
     public function checkout_get_session_info($order) {
