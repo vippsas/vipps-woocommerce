@@ -2435,16 +2435,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $oldstatus = $order->get_status();
         $newstatus = $oldstatus;
 
+        // Only do work when the orders woo status is pending
         if ($oldstatus != 'pending') return $oldstatus;
-
-        // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
-        // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
-        // and callbacks happen at the same time.
-        if (!$Vipps->lockOrder($order)) {
-            return $oldstatus;
-        }
-
-        $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
         $oldvippsstatus = $this->interpret_vipps_order_status($order->get_meta('_vipps_status'));
         $vippsstatus = "";
@@ -2459,6 +2451,20 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $ready = false; // True if money is authorized or complete
             if (in_array($vippsstatus, ['authorized', 'complete'])) {
                 $ready = true;
+            }
+
+            // No change == nothing to do. Ensure we don't modify the order at this point. IOK 2025-10-24
+            if ($vippsstatus == $oldvippsstatus) {
+                return $oldstatus;
+            }
+            // Something changed, so we are now going to sideeffect the order. IOK 2025-10-15
+            $this->log(sprintf(__("%1\$s poll: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
+
+            // If we are in the process of getting a callback from vipps, don't update anything. Currently, Woo/WP has no locking mechanism,
+            // and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of races when this method is called 
+            // and callbacks happen at the same time.
+            if (!$Vipps->lockOrder($order)) {
+                return $oldstatus;
             }
 
             // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
@@ -2501,24 +2507,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->save();
 
-        $statuschange = 0;
-        if ($oldvippsstatus != $vippsstatus) {
-            $statuschange = 1;
-        }
-        if ($oldstatus == 'pending' && $vippsstatus != 'initiated') {
-            $statuschange = 1; // Probably handled by case above always IOK 2025-08-13
-        }
+        error_log("callback check order status: vipps status is $vippsstatus old was $oldvippsstatus");
 
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
-        if ($statuschange && ($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
+        if (($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
 
             do_action('woo_vipps_express_checkout_get_order_status', $paymentdetails);
             $address_set = $order->get_meta('_vipps_shipping_set');
 
             if ($address_set) {
-               // Callback has handled the situation, do nothing
+                // Callback has handled the situation, do nothing
             } elseif ($paymentdetails['shippingDetails'] ?? "") {
-               // We need to set shipping details here
+                // We need to set shipping details here
                 $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
                 $this->set_order_shipping_details($order,$paymentdetails['shippingDetails'], $paymentdetails['userDetails'], $billing, $paymentdetails);
             } else {
@@ -2544,26 +2544,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        if ($statuschange) {
-            switch ($vippsstatus) {
-                case 'authorized':
-                    $this->payment_complete($order);
-                    break;
-                case 'complete':
-                    $msg = sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name());
-                    $msg = $msg . __(" - order does not need processing", 'woo-vipps');
-                    $order->add_order_note($msg);
-                    $order = $this->update_vipps_payment_details($order, $paymentdetails); 
-                    $order->payment_complete();
-                    break;
-                case 'cancelled':
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-                    break;
-            }
-            $order->save();
-            clean_post_cache($order->get_id());
-            $newstatus = $order->get_status();
+        # Since the order is pending, and the vipps status has changed, switch to the correct vipps status in woo too IOK 2025-10-24
+        switch ($vippsstatus) {
+            case 'authorized':
+                $this->payment_complete($order);
+                break;
+            case 'complete':
+                $msg = sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name());
+                $msg = $msg . __(" - order does not need processing", 'woo-vipps');
+                $order->add_order_note($msg);
+                $order = $this->update_vipps_payment_details($order, $paymentdetails); 
+                $order->payment_complete();
+                break;
+            case 'cancelled':
+                $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                break;
         }
+
+        $order->save();
+        clean_post_cache($order->get_id());
+        $newstatus = $order->get_status();
         $Vipps->unlockOrder($order);
         return $newstatus;
     }

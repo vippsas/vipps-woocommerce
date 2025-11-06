@@ -2212,24 +2212,54 @@ else:
         add_action('wp_ajax_nopriv_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
         add_action('wp_ajax_do_single_product_express_checkout', array($this, 'ajax_do_single_product_express_checkout'));
 
-        // The normal 'cancel unpaid order' thing for Woo only works for orders created via normal checkout
-        // We want it to work with Vipps Checkout and Express Checkout orders too IOK 2021-11-24 
+        // Handle the cancel unpaid order action when the "hold stock" times out.
+        // For *normal* vipps orders, we run another cronjob every 5. minute which checks order status,
+        // therefore here it suffices to check if the order is 'cancelled' at Vipps, and if so we return.
+        // For Checkout the rules are different though.
         add_filter('woocommerce_cancel_unpaid_order', function ($cancel, $order) {
-            if ($cancel) return $cancel;
+
+            // If we can't cancel for some other reason, don't.  
+            if (!$cancel) return $cancel;
+
             // Only check Vipps orders
             if ($order->get_payment_method() != 'vipps') return $cancel;
-            // For Vipps, all unpaid orders must be pending.
+
+            // For Vipps, all unpaid orders must be pending. IOK FIXME ADD FAILED
             if ($order->get_status() != 'pending') return $cancel;
-            // We do need to check the order status, because this could be called very soon after order creation on some sites.
+
+error_log("Checking if we should cancel unpaid vipps order");
+
+            // Handle this separately, in the Checkout class. IOK 2025-10-08
+            $checkout_session = $order->get_meta('_vipps_checkout_session');
+            if ($checkout_session) {
+                try {
+                     $polldata = $this->gateway()->api->checkout_get_session_info($order);
+                     $sessionState = (!empty($polldata) && is_array($polldata) && isset($polldata['sessionState'])) ? $polldata['sessionState'] : "";
+                     // We can cancel the order iff we haven't started payment yet.
+                     if ($sessionState == 'PaymentSuccessful' || $sessionState == 'PaymentInitiated') return false; 
+                     return true;
+                } catch (Exception $e) {
+                     // If Vipps is unreachable, be safe and don't delete
+                     return false;
+                }
+                return false; 
+            }
+  
             try {
-              $details = $this->gateway()->get_payment_details($order);
-              if ($details && isset($details['status']) && $details['status'] == 'CANCEL') {
-                  return true;
-              }
+                $result = $this->gateway()->api->epayment_get_payment($order);
             } catch (Exception $e) {
-              // Don't do anything here at this point. IOK 2021-11-24
-            } 
-            return $cancel;
+                $this->log(sprintf(__("Cannot get status of %1\$d at %2\$s in woocommerce_cancel_unpaid_order, not allowing deletion: %3\$s", 'woo-vipps'), $order->get_id(), Vipps::CompanyName(), $e->getMessage()));
+                return false;
+            }
+
+            // We should now have an object with the 'state' in one of the Vipps states. We'll translate all of them to 
+            // cancelled or nah, and if cancelled, we allow deletion. IOK 2025-10-07
+            if (empty($result)) return true; 
+            $state = $this->gateway()->interpret_vipps_order_status($result['state'] ?? 'CANCEL');
+            if (empty($state) || $state == 'cancelled') return true;
+            
+            return false;
+
         }, 20, 2);
 
         // Used both in admin and non-admin-scripts, load as quick as possible IOK 2020-09-03
@@ -2276,12 +2306,19 @@ else:
     // IOK 2021-12-09 try to get the current language in the format Vipps wants, one of 'en' and 'no'
     // IOK 2025-09-03 stop trying to get the logged-in users language - it does not seem to work especially well in newer woos.
     public function get_customer_language() {
+        global $TRP_LANGUAGE; // TranslatePress IOK 2025-11-06
+
         $language = substr(get_bloginfo('language'),0,2);
         if (function_exists('pll_current_language')) {
            $language = pll_current_language('slug');
         } elseif (has_filter('wpml_current_language')){
             $language=apply_filters('wpml_current_language',null);
-        } 
+        }  elseif (!empty($TRP_LANGUAGE)) {
+            $language = sanitize_title($TRP_LANGUAGE);
+        }
+        // Just to be sure.
+        $language = strtolower($language);
+
         if ($language == 'nb' || $language == 'nn') $language = 'no';
         if ($language == 'da') $language = 'dk';
         if ($language == 'sv') $language = 'se';
@@ -2689,6 +2726,14 @@ else:
             $this->log(sprintf(__("Could not restore cart from session of order %1\$d", 'woo-vipps'), $orderid));
         }
         if (WC()->cart) {
+
+            // When doing "calculate_totals" on a cart, Woo will now compare "previous shipping methods" with
+            // "current shipping methods" and reset the chosen shipping methods even if it is still available. 
+            // This becomes a problem because Woo only loads the pickup location methods in a few places - mostly checkout -
+            // so if we chose a shipping method while these were available, we'd get ourselves reset just by calculating
+            // cart totals. Fix this by saving and restoring this value. IOK 2025-11-05
+            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+
             WC()->cart->set_totals( WC()->session->get( 'cart_totals', null ) );
             WC()->cart->set_applied_coupons( WC()->session->get( 'applied_coupons', array() ) );
             WC()->cart->set_coupon_discount_totals( WC()->session->get( 'coupon_discount_totals', array() ) );
@@ -2698,6 +2743,10 @@ else:
             // IOK 2020-07-01 plugins expect this to be called: hopefully they'll not get confused by it happening twice
             do_action( 'woocommerce_cart_loaded_from_session', WC()->cart);
             WC()->cart->calculate_totals(); // And if any of them changed anything, recalculate the totals again!
+            // See above: Reset chosen shipping methods to avoid having it be reset by Woo for no good reason.
+            if ($all_chosen) {
+                WC()->session->set('chosen_shipping_methods', $all_chosen);
+            }
         } else {
             // Apparently this happens quite a lot, so don't log it or anything. IOK 2021-06-21
         }
@@ -2908,6 +2957,18 @@ else:
         // currently crash the system. This could be used to avoid that. IOK 2019-10-09
         do_action('woo_vipps_shipping_details_before_cart_creation', $order, $vippsorderid, $vippsdata);
 
+        // calculate_totals() overwrites the session chosen_shipping_methods to default if it think it changed,
+        // which will be true if the pickup points are missing from previously. Pickup points only get loaded in woos checkout. 
+        // So reset this to what it was before calling calculate_totals(). LP 2025-11-05
+        // To be more specific if the *list of available methods* change, it will reset the chosen shipping method,
+        // even if the chosen shipping method is actually still available. We need to call calculate_totals on the cart,
+        // so we need to save + restore this.
+        $chosen = null;
+        $all_chosen = null; 
+        if (is_a(WC()->session, 'WC_Session_Handler')) {
+            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
+            if (!empty($all_chosen)) $chosen= $all_chosen[0];
+        }
 
         //  Previously, we would create a shoppingcart at this point, because we would not have access to the 'live' one,
         // but it turns out this isn't actually possible. Any cart so created will become "the" cart for the Woo front end,
@@ -2922,6 +2983,12 @@ else:
         $cart_is_reconstructed = $this->maybe_reconstruct_cart($order->get_id());
        
         WC()->cart->calculate_totals();
+
+        // See above. Restore chosen shipping methods if neccessary. IOK 2025-11-05
+        if ($all_chosen) {
+            WC()->session->set('chosen_shipping_methods', $all_chosen);
+        }
+
         $acart = WC()->cart;
 
         $shipping_methods = array();
@@ -2968,11 +3035,6 @@ else:
         }
         $order->update_meta_data('_vipps_shipping_tax_rates', $taxrate);
 
-        $chosen = null;
-        if (is_a(WC()->session, 'WC_Session_Handler')) {
-            $all_chosen =  WC()->session->get( 'chosen_shipping_methods' );
-            if (!empty($all_chosen)) $chosen= $all_chosen[0];
-        }
         // Merchant is using the old 'woo_vipps_shipping_methods' filter, and hasn't chosen to disable it. Use legacy methd.
         // IOK 2025-08-14 I think we should add a deprecation notice to this now. It really should not be used anymore. FIXME
         if (has_action('woo_vipps_shipping_methods') &&  $this->gateway()->get_option('newshippingcallback') != 'new') {
@@ -3522,9 +3584,11 @@ else:
 
         $order_status = null;
         try {
+            // FIXME Rewrite this so the order is only modified *when the status changes* !
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
+error_log("In the periodic job, checking order status for " . $order->get_id());
             $order_status = $gw->callback_check_order_status($order);
-            $order->save();
+error_log("Order status is now $order_status for " . $order->get_id());
             $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting order status at %1\$s for order %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id()), 'error'); 

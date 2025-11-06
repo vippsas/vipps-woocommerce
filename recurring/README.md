@@ -236,9 +236,9 @@ If you have a valid reason to do so you can use the *Capture payment instantly* 
 
 ### When a renewal happens, why is the order on hold?
 
-This is because when an order is charged in Vipps MobilePay, it takes 2 days before the payment has been fully captured from the customer's bank account.
+This is because when an order is charged in Vipps MobilePay, it takes one day before the payment has been fully captured from the customer's bank account.
 
-After 2 days, it will move to the "Processing" status. You can however change the behavior of this by using the
+After one day, it will move to the "Processing" status. You can however change the behavior of this by using the
 *Default status to give pending renewals* option in the plugin settings.
 
 Alternatively, you could look into using WooCommerce "Early renewals":

@@ -194,8 +194,8 @@ class WC_Vipps_Recurring_Api {
 			$amount = $this->get_price_from_agreement( $agreement );
 		}
 
-		// minimum of 2 days
-		$due_at = date( 'Y-m-d', time() + 3600 * 24 * 2 );
+		// minimum of 1 days
+		$due_at = date( 'Y-m-d', time() + 3600 * 24 );
 
 		$charge = ( new WC_Vipps_Charge() )->set_order_id( $vipps_order_id )
 		                                   ->set_external_id( $order_id )
