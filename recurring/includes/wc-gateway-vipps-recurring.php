@@ -2947,7 +2947,13 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 	}
 
 	public function maybe_delete_subscription( $subscription_id ): bool {
-		$subscription = wcs_get_subscription( $subscription_id );
+		if ( is_a( $subscription_id, 'WC_Subscription' ) ) {
+			$subscription    = $subscription_id;
+			$subscription_id = $subscription->get_id();
+		} else {
+			$subscription = wcs_get_subscription( $subscription_id );
+		}
+
 		if ( ! $subscription ) {
 			return false;
 		}
