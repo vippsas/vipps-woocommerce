@@ -853,12 +853,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP after loop_refund_items noncapturable_amount: ' . print_r($noncapturable_amount, true));
         error_log('LP after loop_refund_items item_meta_table: ' . print_r($item_meta_table, true));
 
-
         if ($refund_amount*100 > $refund_remaining) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
 
-        $ok = false;
         // return new WP_Error('Vipps', 'lp debug stop early');
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
@@ -885,6 +883,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log($refund_amount . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
             }
 
+            // Update noncapturable order meta. LP 2025-11-06
             if ($noncapturable_amount) {
                 $noncapturable = round($noncapturable_amount * 100) + intval($order->get_meta('_vipps_noncapturable'));
                 $order->update_meta_data('_vipps_noncapturable', $noncapturable);
@@ -1023,11 +1022,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // There is NOT enough outstanding amount to mark it *all* as noncapturable, so we need to refund the remainder. LP 2025-11-05
             error_log("LP loop_refund_items case not enough outstanding amount. Noncapture + refund.");
-            $noncapture = $order_item_sum - $captured;
+            $noncapture = $outstanding;
             $refund = $to_maybe_refund - $noncapture;
             $item_meta_table[$item_id]['_vipps_item_noncapturable'] += $noncapture;
             $item_meta_table[$item_id]['_vipps_item_refunded'] += $refund;
             $refund_sum += $refund;
+        }
+
+        // Check negative just in case, because of subtraction in subamounts. LP 2025-11-06
+        if ($refund_sum < 0) {
+            /* translators: %1 = method name, %2 = the refund sum */
+            $this->log(sprintf(__('Got a negative refund sum in %1$s of %2$s, stopping the refund', 'woo-vipps'), 'loop_refund_items', $refund_sum), 'error');
+            return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - something unexpected occured, got a negative refund amount.", 'woo-vipps'), $this->get_payment_method_name()));
         }
 
         return [$refund_sum / 100, $item_meta_table];
