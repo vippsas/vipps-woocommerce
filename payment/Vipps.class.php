@@ -2276,12 +2276,19 @@ else:
     // IOK 2021-12-09 try to get the current language in the format Vipps wants, one of 'en' and 'no'
     // IOK 2025-09-03 stop trying to get the logged-in users language - it does not seem to work especially well in newer woos.
     public function get_customer_language() {
+        global $TRP_LANGUAGE; // TranslatePress IOK 2025-11-06
+
         $language = substr(get_bloginfo('language'),0,2);
         if (function_exists('pll_current_language')) {
            $language = pll_current_language('slug');
         } elseif (has_filter('wpml_current_language')){
             $language=apply_filters('wpml_current_language',null);
-        } 
+        }  elseif (!empty($TRP_LANGUAGE)) {
+            $language = sanitize_title($TRP_LANGUAGE);
+        }
+        // Just to be sure.
+        $language = strtolower($language);
+
         if ($language == 'nb' || $language == 'nn') $language = 'no';
         if ($language == 'da') $language = 'dk';
         if ($language == 'sv') $language = 'se';
