@@ -837,8 +837,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Stop if the meta values do not coincide with the sum of the order items' metas. We don't then have enough information to process it correctly,
         // but most likely this means there has been a refund outside WP (like the Vipps MobilePay business portal). LP 2025-11-07
         if (!$this->order_meta_coincides_with_items_meta($order)) {
-            $this->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. There may have been a refund through the %1$s business portal', 'woo-vipps'), Vipps::CompanyName()), 'error');
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - status is not clear, there may have been a refund through the %2$s business portal.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName()));
+            $this->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. There may have been a refund through the %1$s business portal or something went wrong.', 'woo-vipps'), Vipps::CompanyName()), 'error');
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - status is not clear, there may have been a refund through the %2$s business portal or something went wrong.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName()));
         }
 
         error_log('LP original refund amount: ' . print_r($amount, true));
@@ -938,8 +938,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $item_captured_sum = 0;
         $item_refunded_sum = 0;
         foreach ($order->get_items() as $item) {
-            $item_captured_sum += $item->get_meta('_vipps_item_captured');
-            $item_refunded_sum += $item->get_meta('_vipps_item_refunded');
+            $item_captured_sum += intval($item->get_meta('_vipps_item_captured'));
+            $item_refunded_sum += intval($item->get_meta('_vipps_item_refunded'));
         }
 
         return ($order_captured != $item_captured_sum) || ($order_refunded != $item_refunded_sum);
