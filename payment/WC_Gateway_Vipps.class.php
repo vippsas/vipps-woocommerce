@@ -860,7 +860,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Construct the new refund and noncapture sums from the items' meta values in the table. LP 2025-11-07
         [$to_refund, $to_noncapture] = array_reduce($item_meta_table, function($sums, $item) {
-            error_log('LP test, item is '. print_r($item,true));
             if (array_key_exists('_vipps_item_refunded', $item)) {
                 $sums[0] += $item['_vipps_item_refunded'];
             } 
@@ -872,7 +871,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP after loop_refund_items to_refund: ' . print_r($to_refund, true));
         error_log('LP after loop_refund_items to_noncapture: ' . print_r($to_noncapture, true));
 
-        if ($to_refund*100 > $refund_remaining) {
+        if ($to_refund > $refund_remaining) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
 
@@ -881,7 +880,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // don't return early here, we still need to process the meta data. LP 2025-11-05
         } else {
             try {
-                $ok = $this->refund_payment($order,$to_refund);
+                $ok = $this->refund_payment($order, $to_refund, true);
             } catch (TemporaryVippsApiException $e) {
                 $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . "\n" .$e->getMessage(),'error');
                 return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::CompanyName()) . ' ' . $e->getMessage());
@@ -899,14 +898,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         
         // Simplify debugging by adding the success of this to the vipps log so merchants can quote this to us. IOK 2025-10-28
         if ($to_refund) {
-            $this->log($to_refund . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
+            $this->log(round($to_refund / 100) . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
         }
 
         // Update noncapturable order meta. LP 2025-11-06
         if ($to_noncapture) {
-            $noncapturable = round($to_noncapture * 100) + intval($order->get_meta('_vipps_noncapturable'));
+            $noncapturable = $to_noncapture + intval($order->get_meta('_vipps_noncapturable'));
             $order->update_meta_data('_vipps_noncapturable', $noncapturable);
-            $msg = sprintf(__('Some funds from the refund were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, $to_noncapture, $currency);
+            /** translators: %1 = order id, %2 = number, %3 = currency string */
+            $msg = sprintf(__('Some funds from the refund on order %1$s were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, round($to_noncapture / 100), $currency);
             $this->log($msg, 'info');
             $order->add_order_note($msg);
             $order->save();
