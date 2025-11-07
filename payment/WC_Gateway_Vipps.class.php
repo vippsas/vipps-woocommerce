@@ -921,9 +921,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $this->log("Could not get item with id $item_id to update meta in process_refund", 'error');
                     continue;
                 }
-                if ($value_increment <= 0) {
-                    continue;
-                }
                 error_log("LP process_refund updating meta $key with increment of +$value_increment");
                 $value = $value_increment + intval($item->get_meta($key));
                 $item->update_meta_data($key, $value);
@@ -1014,7 +1011,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the payment has not been captured yet.", 'woo-vipps'), $this->get_payment_method_name()));
                 }
                 error_log("LP calculate_refund_item_values: case items has nothing captured, mark all as noncaptureable, refund nothing");
-                $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $to_maybe_refund;
+                if ($to_maybe_refund > 0) {
+                    $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $to_maybe_refund;
+                }
                 continue;
             };
 
@@ -1031,8 +1030,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($refunding_entire_item) {
                 error_log("LP calculate_refund_item_values case refunding the whole quantity, need to refund captured + set rest noncapturable");
                 $refund = $captured;
-                $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $to_maybe_refund - $refund;
-                $item_meta_table[$item_id]['_vipps_item_refunded'] = $refund;
+                $noncapture = $to_maybe_refund - $refund;
+                if ($noncapture > 0) {
+                    $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $noncapture;
+                }
+                if ($refund > 0) {
+                    $item_meta_table[$item_id]['_vipps_item_refunded'] = $refund;
+                }
                 continue;
             }
 
@@ -1046,16 +1050,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $is_enough_oustanding = $to_maybe_refund <= $outstanding;
             if ($is_enough_oustanding) {
                 error_log("LP calculate_refund_item_values case enough items remaining, mark all as noncaptureable (refund nothing)");
-                $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $to_maybe_refund;
+                if ($to_maybe_refund > 0) {
+                    $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $to_maybe_refund;
+                }
                 continue;
             }
 
             // There is NOT enough outstanding amount to mark it *all* as noncapturable, so we need to refund the remainder. LP 2025-11-05
             error_log("LP calculate_refund_item_values case not enough outstanding amount. Noncapture + refund.");
-            $noncapture = $outstanding;
             $refund = $to_maybe_refund - $noncapture;
-            $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $noncapture;
-            $item_meta_table[$item_id]['_vipps_item_refunded'] = $refund;
+            $noncapture = $outstanding;
+            if ($noncapture > 0) {
+                $item_meta_table[$item_id]['_vipps_item_noncapturable'] = $noncapture;
+            }
+            if ($refund > 0) {
+                $item_meta_table[$item_id]['_vipps_item_refunded'] = $refund;
+            }
         }
 
         return $item_meta_table;

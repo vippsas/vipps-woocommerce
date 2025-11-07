@@ -41,8 +41,9 @@ class VippsFulfillments {
     }
 
     public function register_hooks() {
-        add_action('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
-        add_action('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
+        add_filter('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
+        add_filter('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
+        add_filter('woocommerce_fulfillment_before_update', [$this, 'woocommerce_fulfillment_before_update']);
     }
 
     /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
@@ -50,11 +51,29 @@ class VippsFulfillments {
         return $this->is_supported() && $this->gateway->get_option('fulfillments_enabled') == 'yes';
     }
 
+    /** Mark a fulfillment edit as being an edit so we can decide the correct capture amount in before_fulfill. LP 2025-11-07 */
+    public function woocommerce_fulfillment_before_update($fulfillment) {
+        error_log('LP Running fulfillment_before_update to mark it as being edit. Id is ' . $fulfillment->get_id());
+        $fulfillment->update_meta_data('_vipps_fulfillment_is_edit', 1);
+        return $fulfillment;
+    }
+
 
     /** Disable deletion for vipps fulfillments, since we capture fulfillments and don't want to refund (they can't be recaptured). LP 2025-10-22 */
     public function woocommerce_fulfillment_before_delete($fulfillment) {
-        error_log("LP woocommerce_fulfillment_before_delete. Stopping...");
-        $this->fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete this fulfillment.', 'woo-vipps'), Vipps::CompanyName()));
+        $order = $fulfillment->get_order();
+        if (!$order) {
+            $this->fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
+        }
+
+        $payment_method = $order->get_payment_method();
+        error_log('LP before_delete payment_method: ' . print_r($payment_method, true));
+        if ($payment_method != 'vipps') {
+            return $fulfillment;
+        }
+
+        error_log("LP woocommerce_fulfillment_before_delete on vipps order. Stopping...");
+        $this->fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete it.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
     /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
@@ -64,6 +83,8 @@ class VippsFulfillments {
      */
     public function woocommerce_fulfillment_before_fulfill($fulfillment) {
         error_log("LP running woocommerce_fulfillment_before_fulfill");
+
+        $is_an_edit = intval($fulfillment->get_meta('_vipps_fulfillment_is_edit'));
 
         $order = $fulfillment->get_order();
         if (!$order) {
@@ -96,7 +117,7 @@ class VippsFulfillments {
 
         $currency = $order->get_currency();
 
-        $to_capture = 0;
+        $to_capture_sum = 0;
         $item_capture_table = []; // store new capture sum for each item for the purpose of updating metas when we know capture success. LP 2025-10-31
         foreach ($fulfillment->get_items() as $item) {
             $item_id = $item['item_id'];
@@ -112,46 +133,56 @@ class VippsFulfillments {
             $item_name = $order_item->get_name();
             error_log('LP before_fulfill item_name: ' . print_r($item_name, true));
 
-            // Stop if user tries to remove already-captured amounts for this order item (fulfillment edits). LP 2025-10-31
+            // If this is an edit of an existing fulfillment, make sure to only capture the difference between the new sum, don't capture duplicate. LP 2025-11-07
             $captured = intval($order_item->get_meta('_vipps_item_captured'));
-            if ($fulfill_sum < $captured) {
+            $to_capture = $fulfill_sum;
+            if ($is_an_edit) {
+                error_log('LP before_fulfull, yes this was an edit! subtract captured amount of '. $captured);
+                $to_capture -= $captured;
+            }
+            error_log('LP to_capture for item: ' . print_r($to_capture, true));
+
+            // Stop if user tries to remove already-captured amounts for this order item (fulfillment edit). LP 2025-10-31
+            if ($to_capture < 0) {
                 /* translators: %1 = item product name, %2 = company name */
-                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, cannot fulfill less products than before', 'woo-vipps'), $item_name, Vipps::CompanyName()));
+                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, please consider refunding the item instead.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
             }
 
             // Stop if there is not enough outstanding amount for the item to capture this fulfillment. LP 2025-11-07
             $order_item_sum = (int) $order->get_item_total($order_item, true, false) * $order_item->get_quantity() * 100;
             $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
             $item_outstanding = $order_item_sum - $noncapturable - $captured;
-            if ($fulfill_sum > $item_outstanding) {
+            if ($to_capture > $item_outstanding) {
                 $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is more than is available to capture at %2$s.', 'woo_vipps'), $item_name, Vipps::CompanyName()));
             }
 
-            $item_capture_table[$item_id] = $fulfill_sum + $captured;
-            $to_capture += $fulfill_sum;
+            if ($to_capture > 0) {
+                $item_capture_table[$item_id] = $to_capture;
+            }
+            $to_capture_sum += $to_capture;
         }
 
-        error_log('LP before_fulfill to_capture ' . print_r($to_capture, true));
-        if ($to_capture <= 0) {
+
+        error_log('LP before_fulfill to_capture_sum ' . print_r($to_capture_sum, true));
+        if ($to_capture_sum <= 0) {
             error_log("LP before_fulfill new capture is zero or below, not sending anything to capture");
             return $fulfillment;
         }
 
-        $ok = $this->gateway->capture_payment($order, $to_capture);
+        $ok = $this->gateway->capture_payment($order, $to_capture_sum);
         if (!$ok) {
             error_log("LP before_fulfill capture was not ok!");
             /* translators: %1 = number, %2 = currency string, %3 = this payment method name */
-            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %1$s %2$s at %3$s. Please check the logs for more information.', 'woo-vipps'), $to_capture, $currency, $this->gateway->get_payment_method_name()));
+            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %1$s %2$s at %3$s. Please check the logs for more information.', 'woo-vipps'), $to_capture_sum, $currency, $this->gateway->get_payment_method_name()));
         }
 
         error_log("LP before_fulfillment capture ok! Updating item metas, then accepting fulfillment");
         // Everything ok, now we need to update captured meta for each item. LP 2025-10-31
-        foreach ($item_capture_table as $item_id => $new_sum) {
+        foreach ($item_capture_table as $item_id => $new_capture) {
             $item = $order->get_item($item_id);
-            if ($new_sum) {
-                $item->update_meta_data('_vipps_item_captured', $new_sum);
-                $item->save_meta_data();
-            }
+            $captured = intval($item->get_meta('_vipps_item_captured')) + $new_capture;
+            $item->update_meta_data('_vipps_item_captured', $captured);
+            $item->save_meta_data();
         }
 
         return $fulfillment;
@@ -173,6 +204,9 @@ class VippsFulfillments {
     }
 
     public function get_order_fulfillments($order) {
+        if (!class_exists('Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore')) {
+            return false;
+        }
         $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
         return $data_store->read_fulfillments('WC_Order', $order->get_id());
     }
