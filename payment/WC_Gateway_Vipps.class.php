@@ -903,8 +903,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         $this->log("Could not get item with id $item_id to update meta in process_refund", 'error');
                         continue;
                     }
-                    $item->update_meta_data($key, $value);
-                    $item->save_meta_data();
+                    if ($value) {
+                        $item->update_meta_data($key, $value);
+                        $item->save_meta_data();
+                    }
                 }
             }
         }
@@ -2149,8 +2151,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         //  We simply have to keep track: There is no way of knowing what the correct values are here yet, as we only get these values async, after
         // the fact. 
         $captured = $amount + intval($order->get_meta('_vipps_captured'));
-        $remaining = intval($order->get_meta('_vipps_amount')) - $captured - intval($order->get_meta('_vipps_cancelled'));
+        error_log('LP capture_payment new captured: ' . print_r($captured, true));
+        $order_sum = intval($order->get_meta('_vipps_amount'));
+        error_log('LP capture_payment order_sum: ' . print_r($order_sum, true));
+        $remaining = $order_sum - $captured - intval($order->get_meta('_vipps_cancelled'));
+        error_log('LP capture_payment remaining: ' . print_r($remaining, true));
         $refundable = $captured - intval($order->get_meta('_vipps_refunded'));
+        $noncapturable = intval($order->get_meta('_vipps_noncapturable'));
+        error_log('LP capture_payment noncapturable: ' . print_r($noncapturable, true));
 
         $order->update_meta_data('_vipps_captured', $captured);
         $order->update_meta_data('_vipps_capture_remaining', $remaining);
@@ -2158,11 +2166,44 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_capture_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency);
 
+        // If we captured the whole remaining order sum, update order item metas. LP 2025-11-07
+        // Note: when changing status to 'complete' the noncapturable amount is cancelled *after* this method, so $remaining will in this case not be zero,
+        // we need to calculate it by checking noncapturable here. LP 2025-11-07
+        if ($captured + $noncapturable >= $order_sum) {
+            $this->mark_order_items_fully_captured($order);
+        }
 
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_capture_transid', $requestidnr+1);
         $order->save();
 
+        return true;
+    }
+
+    
+    /** Updates the captured meta of every item in the order to be fully captured, returns success bool. LP 2025-11-07 */
+    public function mark_order_items_fully_captured($order) {
+        error_log("lp mark_order_items_fully_captured starting");
+        if (!is_a($order, 'WC_Order')) {
+            return false;
+        }
+
+        foreach($order->get_items() as $item) {
+            $item_total = (int) $order->get_item_total($item, true, false) * 100;
+            $item_quantity = $item->get_quantity();
+            $item_sum = $item_total * $item_quantity;
+            error_log('LP mark_order_items_fully_captured item_sum: ' . print_r($item_sum, true));
+
+            $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
+            error_log('LP mark_order_items_fully_captured noncapturable: ' . print_r($noncapturable, true));
+            $captured = $item_sum - $noncapturable;
+            error_log('LP mark_order_items_fully_captured captured: ' . print_r($captured, true));
+
+            if ($captured) {
+                $item->update_meta_data('_vipps_item_captured', $captured);
+                $item->save_meta_data();
+            }
+        }
         return true;
     }
 

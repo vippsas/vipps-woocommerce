@@ -122,8 +122,10 @@ class VippsFulfillments {
         // Everything ok, now we need to update captured meta for each item. LP 2025-10-31
         foreach ($item_capture_table as $item_id => $new_sum) {
             $item = $order->get_item($item_id);
-            $item->update_meta_data('_vipps_item_captured', $new_sum);
-            $item->save_meta_data();
+            if ($new_sum) {
+                $item->update_meta_data('_vipps_item_captured', $new_sum);
+                $item->save_meta_data();
+            }
         }
 
         return $new_fulfillment;
