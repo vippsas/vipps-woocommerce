@@ -76,6 +76,13 @@ class VippsFulfillments {
             return $fulfillment;
         }
 
+        // Stop if the order amounts does not coincide with the sum of its items, this could mean there
+        // was a refund or other outside WP (e.g. refund through business portal) LP 2025-11-07
+        if (!$this->gateway->order_meta_coincides_with_items_meta($order)) {
+            $this->gateway->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. There may have been a refund through the %1$s business portal', 'woo-vipps'), Vipps::CompanyName()), 'error');
+            $this->fulfillment_fail(sprintf(__('Cannot refund through %1$s - status is not clear, there may have been a refund through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
+        }
+
         // Don't process anything further if the order is entirely captured already. LP 2025-11-07
         if (intval(!$order->get_meta('_vipps_capture_remaining'))) {
             return $fulfillment;
