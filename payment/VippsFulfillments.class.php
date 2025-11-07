@@ -71,8 +71,9 @@ class VippsFulfillments {
         }
 
         // This is handled in gateway->capture_payment(), but might as well return early here if not Vipps MobilePay. LP 2025-10-27
-        $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
+        $payment_method = $order->get_payment_method();
+        error_log('LP before_fulfill payment_method: ' . print_r($payment_method, true));
+        if ($payment_method != 'vipps') {
             return $fulfillment;
         }
 
@@ -83,8 +84,13 @@ class VippsFulfillments {
             $this->fulfillment_fail(sprintf(__('Cannot refund through %1$s - status is not clear, there may have been a refund through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
-        // Don't process anything further if the order is entirely captured already. LP 2025-11-07
-        if (intval(!$order->get_meta('_vipps_capture_remaining'))) {
+        // Don't process anything further if the order is entirely captured already,
+        // the meta '_vipps_capture_remaining' might be unset so we need to calculate it instead. LP 2025-11-07
+        $capture_remaining = intval($order->get_meta('_vipps_amount')) -
+            intval($order->get_meta('_vipps_captured')) -
+            intval($order->get_meta('_vipps_noncapturable'));
+        error_log('LP before_fulfill capture_remaining: ' . print_r($capture_remaining, true));
+        if ($capture_remaining <= 0) {
             return $fulfillment;
         }
 
