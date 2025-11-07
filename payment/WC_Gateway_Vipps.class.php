@@ -881,6 +881,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } else {
             try {
                 $ok = $this->refund_payment($order, $to_refund, true);
+                if (!$ok) {
+                    return false;
+                }
+        
             } catch (TemporaryVippsApiException $e) {
                 $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . "\n" .$e->getMessage(),'error');
                 return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::CompanyName()) . ' ' . $e->getMessage());
@@ -892,10 +896,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        if (!$ok) {
-            return false;
-        }
-        
         // Simplify debugging by adding the success of this to the vipps log so merchants can quote this to us. IOK 2025-10-28
         if ($to_refund) {
             $this->log(round($to_refund / 100) . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);

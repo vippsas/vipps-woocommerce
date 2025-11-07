@@ -91,6 +91,13 @@ class VippsFulfillments {
             $this->fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
         }
 
+        try {
+                $order = $this->gateway->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->gateway->log(__("Error getting payment details before processing fulfillment: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
         // This is handled in gateway->capture_payment(), but might as well return early here if not Vipps MobilePay. LP 2025-10-27
         $payment_method = $order->get_payment_method();
         error_log('LP before_fulfill payment_method: ' . print_r($payment_method, true));
@@ -109,9 +116,11 @@ class VippsFulfillments {
         // the meta '_vipps_capture_remaining' might be unset so we need to calculate it instead. LP 2025-11-07
         $capture_remaining = intval($order->get_meta('_vipps_amount')) -
             intval($order->get_meta('_vipps_captured')) -
-            intval($order->get_meta('_vipps_noncapturable'));
+            intval($order->get_meta('_vipps_noncapturable')) -
+            intval($order->get_meta('_vipps_cancelled'));
         error_log('LP before_fulfill capture_remaining: ' . print_r($capture_remaining, true));
         if ($capture_remaining <= 0) {
+            error_log('LP before_fulfill there was no capture remaining, accepting it without processing anything at vipps');
             return $fulfillment;
         }
 
