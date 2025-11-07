@@ -77,7 +77,7 @@ class VippsFulfillments {
         }
 
         // Don't process anything further if the order is entirely captured already. LP 2025-11-07
-        if(intval(!$order->get_meta('_vipps_capture_remaining'))) {
+        if (intval(!$order->get_meta('_vipps_capture_remaining'))) {
             return $fulfillment;
         }
 
@@ -94,18 +94,28 @@ class VippsFulfillments {
                 $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
             }
             error_log('LP before_fulfill item_name: ' . print_r($order_item->get_name(), true));
-            $item_sum = (int) $order->get_item_total($order_item, true, false) * $fulfill_quantity * 100;
-            error_log('LP before_fulfill item_sum: ' . print_r($item_sum, true));
+            $fulfill_sum = (int) $order->get_item_total($order_item, true, false) * $fulfill_quantity * 100;
+            error_log('LP before_fulfill fulfill_sum: ' . print_r($fulfill_sum, true));
+            $item_name = $order_item->get_name();
+            error_log('LP before_fulfill item_name: ' . print_r($item_name, true));
 
-            // Stop here and give the user a fail message if they try to remove already-captured amounts for this order item (fulfillment edits). LP 2025-10-31
-            $item_captured_sum = intval($order_item->get_meta('_vipps_item_captured'));
-            if ($item_sum < $item_captured_sum) {
+            // Stop if user tries to remove already-captured amounts for this order item (fulfillment edits). LP 2025-10-31
+            $captured = intval($order_item->get_meta('_vipps_item_captured'));
+            if ($fulfill_sum < $captured) {
                 /* translators: %1 = item product name, %2 = company name */
-                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, cannot fulfill less products than before', 'woo-vipps'), $order_item->get_name(), Vipps::CompanyName()));
+                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, cannot fulfill less products than before', 'woo-vipps'), $item_name, Vipps::CompanyName()));
             }
 
-            $item_capture_table[$item_id] = $item_sum + $item_captured_sum;
-            $to_capture += $item_sum;
+            // Stop if there is not enough outstanding amount for the item to capture this fulfillment. LP 2025-11-07
+            $order_item_sum = (int) $order->get_item_total($order_item, true, false) * $order_item->get_quantity() * 100;
+            $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
+            $item_outstanding = $order_item_sum - $noncapturable - $captured;
+            if ($fulfill_sum > $item_outstanding) {
+                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is more than is available to capture at %2$s.', 'woo_vipps'), $item_name, Vipps::CompanyName()));
+            }
+
+            $item_capture_table[$item_id] = $fulfill_sum + $captured;
+            $to_capture += $fulfill_sum;
         }
 
         error_log('LP before_fulfill to_capture ' . print_r($to_capture, true));
