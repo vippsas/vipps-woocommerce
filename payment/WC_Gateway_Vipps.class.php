@@ -837,8 +837,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Stop if the meta values do not coincide with the sum of the order items' metas. We don't then have enough information to process it correctly,
         // but most likely this means there has been a refund outside WP (like the Vipps MobilePay business portal). LP 2025-11-07
         if (!$this->order_meta_coincides_with_items_meta($order)) {
+            /* translators: %1 = company name */
             $this->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. There may have been a refund through the %1$s business portal or something went wrong.', 'woo-vipps'), Vipps::CompanyName()), 'error');
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - status is not clear, there may have been a refund through the %2$s business portal or something went wrong.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName()));
+            /* translators: %1 = payment method name */
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - status is not clear. Please do a manual refund outside of %1$s instead.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName()));
         }
 
         error_log('LP original refund amount: ' . print_r($amount, true));
@@ -863,8 +865,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($to_refund*100 > $refund_remaining) {
             return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large.", 'woo-vipps'), $this->get_payment_method_name()));
         }
-
-        // return new WP_Error('Vipps', 'lp debug stop early');
 
         // Specialcase zero, because Vipps treats this as the entire amount IOK 2021-09-14
         if (is_numeric($to_refund) && $to_refund == 0) {
@@ -914,14 +914,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if ($value_increment <= 0) {
                     continue;
                 }
-
                 error_log("LP process_refund updating meta $key with increment of +$value_increment");
                 $value = $value_increment + intval($item->get_meta($key));
                 $item->update_meta_data($key, $value);
                 $item->save_meta_data();
             }
         }
-
         return true;
     }
 
