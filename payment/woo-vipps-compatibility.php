@@ -193,8 +193,9 @@ add_action('after_setup_theme', function () {
             // This should annotate the order correctly, straight before the order changes status to 'processing'.
             add_action('woo_vipps_set_order_shipping_details', function ($order) {
                 if (class_exists('MailChimp_Service')) {
+                    $is_checkout = $order->get_meta('_vipps_checkout');
                     $consent = intval($order->get_meta('_vipps_custom_consent_provided'));
-                    if ($consent) {
+                    if ($consent && $is_checkout) {
                         $order->update_meta_data('mailchimp_woocommerce_is_subscribed', true);
                         $order->save();
                     } 
