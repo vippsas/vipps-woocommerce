@@ -2319,6 +2319,9 @@ error_log("Checking if we should cancel unpaid vipps order");
         // Just to be sure.
         $language = strtolower($language);
 
+        // Allow others to override in case they have some unorthodox setups IOK 2025-11-12
+        $language = apply_filters('woo_vipps_customer_language', $language);
+
         if ($language == 'nb' || $language == 'nn') $language = 'no';
         if ($language == 'da') $language = 'dk';
         if ($language == 'sv') $language = 'se';
