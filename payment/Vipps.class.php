@@ -3583,7 +3583,6 @@ else:
 
         $order_status = null;
         try {
-            // FIXME Rewrite this so the order is only modified *when the status changes* !
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
             $order_status = $gw->callback_check_order_status($order);
             $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id(), $order_status), 'debug');
