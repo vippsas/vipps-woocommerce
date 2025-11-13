@@ -2737,8 +2737,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order->save();
 
-        error_log("callback check order status: vipps status is $vippsstatus old was $oldvippsstatus");
-
         // We have a completed order, but the callback haven't given us the payment details yet - so handle it.
         if (($vippsstatus == 'authorized' || $vippsstatus=='complete') && $order->get_meta('_vipps_express_checkout')) {
 

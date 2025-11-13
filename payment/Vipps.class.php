@@ -2227,8 +2227,6 @@ else:
             // For Vipps, all unpaid orders must be pending. IOK FIXME ADD FAILED
             if ($order->get_status() != 'pending') return $cancel;
 
-error_log("Checking if we should cancel unpaid vipps order");
-
             // Handle this separately, in the Checkout class. IOK 2025-10-08
             $checkout_session = $order->get_meta('_vipps_checkout_session');
             if ($checkout_session) {
@@ -3044,15 +3042,11 @@ error_log("Checking if we should cancel unpaid vipps order");
             return $this->legacy_shipping_callback_handler($shipping_methods, $chosen, $addressid, $vippsorderid, $order, $acart);
         }
 
-        // Default 'priority' is based on cost, so sort this thing
-        uasort($shipping_methods, function($a, $b) { 
-                $acost = $a->get_cost() ?: 0;
-                $bcost = $b->get_cost() ?: 0;
-                return $acost - $bcost;
-                });
+        // Earlier we sorted shipping methods based on price; currently we just use WooCommerce's order, but we
+        // provide this filter for people who would prefer the old logic.
+        $shipping_methods = apply_filters('woo_vipps_sort_shipping_methods', $shipping_methods, $order);
 
-        // IOK 2020-02-13 Ok, new method!  We are going to provide a list full of metadata for the users to process this time, which we will massage into the final
-        // Vipps method list
+        // IOK 2020-02-13 Ok, new method!  We are going to provide a list full of metadata for the users to process this time, which we will massage into the final Vipps method list
         $methods = array();
         $i=-1;
 
