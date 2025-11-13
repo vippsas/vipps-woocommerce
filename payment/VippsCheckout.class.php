@@ -103,11 +103,10 @@ class VippsCheckout {
         $is_checkout = $order->get_meta('_vipps_checkout_session');
         if (!$is_checkout) return;
         try {
-            error_log("Expiring checkout session for $orderid");
             // If the order isn't in the right state, this will do nothing. IOK 2025-10-08
             $this->gateway()->api->checkout_expire_session($order);
         } catch (Exception $e) {
-            error_log("Cannot expire checkout session: " . $e->getMessage());
+            $this->log(sprintf(__("Cannot expire checkout session for order %d: %s", 'woo-vipps'), $orderid, $e->getMessage()));
         }
         // Cleanup the order, and ensure that we don't do this twice by deleting the old session
         $order->delete_meta_data('_vipps_checkout_session');

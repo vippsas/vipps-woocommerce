@@ -977,7 +977,6 @@ class VippsApi {
         return $res;
     }
     public function checkout_expire_session($order) {
-        error_log("lp checkout_expire_session starting for order " . $order->get_id());
         $msn = $this->get_merchant_serial();
         $clientid = $this->get_clientid($msn);
         $secret = $this->get_secret($msn);
@@ -991,7 +990,6 @@ class VippsApi {
         $headers['client_secret'] = $secret;
 
         $res = $this->http_call($msn, $command, [], 'POST', $headers, 'json'); 
-error_log("Expire result: " . print_r($res, true));
         return $res;
     }
 
