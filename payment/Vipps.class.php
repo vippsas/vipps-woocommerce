@@ -3058,7 +3058,9 @@ else:
             $method['rate'] = $rate;
             $methods[$key]= $method;
         }
-        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order); if ($chosen && !isset($methods[$chosen]))  {
+        $chosen = apply_filters('woo_vipps_default_shipping_method', $chosen, $shipping_methods, $order); 
+        
+        if ($chosen && !isset($methods[$chosen]))  {
             $chosen = null; // Actually that isn't available
             $this->log(sprintf(__("Unavailable shipping method set as default in the %1\$s Express Checkout shipping callback - check the 'woo_vipps_default_shipping_method' filter",'debug'), $this->get_payment_method_name()));
         }
