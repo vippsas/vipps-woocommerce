@@ -238,7 +238,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function woocommerce_hidden_order_itemmeta($meta_keys) {
-        $vipps_meta_keys = apply_filters('woo_vipps_hidden_order_itemmeta', ['_vipps_item_captured', '_vipps_item_refunded', '_vipps_item_noncapturable']);
+            $vipps_meta_keys = apply_filters('woo_vipps_hidden_order_itemmeta', [
+                '_vipps_item_captured',
+                '_vipps_item_refunded',
+                '_vipps_item_noncapturable',
+                '_vipps_item_cancelled'
+            ]);
         if (!is_array($vipps_meta_keys)) {
             $vipps_meta_keys = [$vipps_meta_keys];
         }
@@ -742,16 +747,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 global $Vipps;
                 $Vipps->store_admin_notices();
             }
-            // order could now be refunded, so update it
+            // order could now be refunded, so update it. LP 2025-10-16
             $order = wc_get_order($orderid);
         }
 
-        // CANCEL REMAINING AMOUNT
         $payment = $this->check_payment_status($order);
         if ($payment == 'initiated' || $payment == 'cancelled' || $total == $captured) {
            return true; // Can't cancel these
         }
 
+        // CANCEL REMAINING AMOUNT
         try {
             $ok = $this->cancel_payment($order);
         } catch (Exception $e) {
@@ -2220,14 +2225,78 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP mark_order_items_fully_captured item_sum: ' . print_r($item_sum, true));
 
             $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
+            $cancelled = intval($item->get_meta('_vipps_item_cancelled'));
             error_log('LP mark_order_items_fully_captured noncapturable: ' . print_r($noncapturable, true));
-            $captured = $item_sum - $noncapturable;
-            error_log('LP mark_order_items_fully_captured captured: ' . print_r($captured, true));
+            error_log('LP mark_order_items_fully_captured cancelled: ' . print_r($cancelled, true));
 
-            if ($captured) {
-                $item->update_meta_data('_vipps_item_captured', $captured);
-                $item->save_meta_data();
+            // Note: do not subtract the refunded meta for this item here, since at Vipps MobilePay orders are still marked
+            // as captured even after they are refunded. Meaning we indeed wish to mark the already-refunded item
+            // amount as captured here. LP 2025-11-17
+            $to_cancel = $item_sum - $noncapturable - $cancelled;
+            error_log('LP mark_order_items_fully_captured new to set as to_cancel: ' . print_r($to_cancel, true));
+
+            if ($to_cancel <= 0) {
+                error_log("LP mark_order_items_fully_captured got a non-positive to_cancel meta amount of $to_cancel");
+                continue;
             }
+            $item->update_meta_data('_vipps_item_captured', $to_cancel);
+            $item->save_meta_data();
+        }
+        return true;
+    }
+
+    /** Updates the refunded meta of every item in the order to be fully refunded, returns success bool. LP 2025-11-07 */
+    public function mark_order_items_fully_refunded($order) {
+        error_log("lp mark_order_items_fully_refunded starting");
+        if (!is_a($order, 'WC_Order')) {
+            return false;
+        }
+
+        foreach($order->get_items() as $item) {
+            $captured = intval($item->get_meta('_vipps_item_captured'));
+            error_log('LP mark_order_items_fully_refunded captured: ' . print_r($captured, true));
+            $to_refund = $captured;
+            error_log('LP mark_order_items_fully_refunded new to set as refunded: ' . print_r($to_refund, true));
+
+            if ($to_refund <= 0) {
+                error_log("LP mark_order_items_fully_refunded got a non-positive refunded meta amount of $to_refund");
+                continue;
+            }
+            $item->update_meta_data('_vipps_item_refunded', $to_refund);
+            $item->save_meta_data();
+        }
+        return true;
+    }
+
+    /** Updates the cancelled meta of every item in the order to be fully cancelled, returns success bool. LP 2025-11-07 */
+    public function mark_order_items_fully_cancelled($order) {
+        error_log("lp mark_order_items_fully_cancelled starting");
+        if (!is_a($order, 'WC_Order')) {
+            return false;
+        }
+
+        foreach($order->get_items() as $item) {
+            $item_total = (int) $order->get_item_total($item, true, false) * 100;
+            $item_quantity = $item->get_quantity();
+            $item_sum = $item_total * $item_quantity;
+            error_log('LP mark_order_items_fully_cancelled item_sum: ' . print_r($item_sum, true));
+
+            $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
+            $captured = intval($item->get_meta('_vipps_item_captured'));
+            error_log('LP mark_order_items_fully_cancelled noncapturable: ' . print_r($noncapturable, true));
+            error_log('LP mark_order_items_fully_cancelled captured: ' . print_r($captured, true));
+
+            // Note: do not subtract the refunded meta for this item here, because refunds don't alter the captured meta amount.
+            // i.e. you could have 200 nok captured, 100 nok refunded, but the captured meta will still be 200 nok. LP 2025-11-17
+            $to_cancel = $item_sum - $noncapturable - $captured;
+            error_log('LP mark_order_items_fully_cancelled new to set as to_cancel: ' . print_r($to_cancel, true));
+
+            if ($to_cancel <= 0) {
+                error_log("LP mark_order_items_fully_cancelled got a non-positive to_cancel meta amount of $to_cancel");
+                continue;
+            }
+            $item->update_meta_data('_vipps_item_cancelled', $to_cancel);
+            $item->save_meta_data();
         }
         return true;
     }
@@ -2357,6 +2426,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_cancelled', $total_cancelled);
         $order->update_meta_data('_vipps_cancel_remaining', $remaining);
 
+        // Update cancelled meta for each order item. LP 2025-11-17
+        $this->mark_order_items_fully_cancelled($order);
+
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
             $status = $this->get_vipps_order_status($order);
@@ -2427,6 +2499,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refund_remaining', $remaining);
         $order->update_meta_data('_vipps_refund_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency );
+
+        // Update refunded meta for each order item. LP 2025-11-17
+        $this->mark_order_items_fully_refunded($order);
 
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
