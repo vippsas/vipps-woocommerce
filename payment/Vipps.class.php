@@ -273,6 +273,20 @@ class Vipps {
         // Stuff for the Order screen
         add_action('woocommerce_order_item_add_action_buttons', array($this, 'order_item_add_action_buttons'), 10, 1);
 
+        // Don't allow deletion of refunds made through Vipps IOK 2025-11-17
+        add_action('woocommerce_after_order_refund_item_name', function ($refund) {
+            $orderid = $refund->get_parent_id();
+            $order = wc_get_order($orderid);
+            if (is_a($order, 'WC_Order')  && $order->get_payment_method() == 'vipps') {
+                $id = $refund->get_id();
+                $gw = $refund->get_refunded_payment();
+                if ($gw) {
+                    $msg = sprintf(__('Refunded through %1$s', 'woo-vipps'), $this->get_payment_method_name()); 
+                    echo "<style>#woocommerce-order-items tr.refund[data-order_refund_id=\"" . intval($id) . "\"] .wc-order-edit-line-item .wc-order-edit-line-item-actions a.delete_refund { display: none; }</style>";
+                    echo "<i>" . esc_html($msg) . "</i>";
+                }
+            }});
+
         require_once(dirname(__FILE__) . "/VippsDismissibleAdminBanners.class.php");
         VippsDismissibleAdminBanners::add();
 
