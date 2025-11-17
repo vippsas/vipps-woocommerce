@@ -692,14 +692,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $captured = intval($order->get_meta('_vipps_captured'));
 
-        // This will just cancel the order, including at Vipps. No funds have been captured.
-        if ($captured == 0) {
-            return $this->maybe_refund_and_cancel_payment($order_id);
-        }
-
         // If this is true then the order is *too old to refund* which would happen on maybe_cancel_payment.
         // add a note instead.
-        if ($days_since_order > $days_threshold) {
+        if ($captured > 0 && $days_since_order > $days_threshold) {
             $note = sprintf(__('Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required.', 'woo-vipps'), $days_threshold);
             $order->add_order_note($note);
             // Add an admin notice in case this is interactive
