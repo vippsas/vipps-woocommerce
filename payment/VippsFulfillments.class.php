@@ -158,7 +158,7 @@ class VippsFulfillments {
             }
 
             // Stop if there is not enough outstanding amount for the item to capture this fulfillment. LP 2025-11-07
-            $order_item_sum = (int) $order->get_item_total($order_item, true, false) * $order_item->get_quantity() * 100;
+            $order_item_sum = intval($order->get_item_total($order_item, true, false) * $order_item->get_quantity() * 100);
             $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
             $item_outstanding = $order_item_sum - $noncapturable - $captured;
             if ($to_capture > $item_outstanding) {

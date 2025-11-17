@@ -734,11 +734,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $order->get_meta('_vipps_status');
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
+            error_log('LP to_refund: ' . print_r($to_refund, true));
 
         if (($captured || $vippsstatus == 'SALE') && $to_refund > 0 && $this->can_refund_order($order)) {
             // REFUND CAPTURED AMOUNT
             $ok = $this->refund_payment($order, $to_refund, 'exact');
-            if (!$ok) {
+            error_log('LP refund ok: ' . print_r($ok, true));
+            if ($ok) {
+                $this->mark_order_items_fully_refunded($order);
+            } else {
                 $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
                 $this->adminerr($msg);
                 $order->add_order_note($msg);
@@ -763,7 +767,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
         }
 
-        if (!$ok) {
+        if ($ok) {
+            $this->mark_order_items_fully_cancelled($order);
+        } else {
             // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
             $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
             $this->adminerr($msg);
@@ -794,7 +800,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
-    // they don't require payment. So we try to capture. IOK 2020-09-22
+    // they don't require processing. So we try to capture. IOK 2020-09-22
     // do NOT call this unless the order is 'reserved' at Vipps!
     protected function maybe_complete_payment($order) {
         if ('vipps' != $order->get_payment_method()) return false;
@@ -813,6 +819,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->add_order_note(sprintf(__('Order does not need processing, but payment could not be captured at %1$s:','woo_vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
         }
         if (!$ok) return false;
+
+        $this->mark_order_items_fully_captured($order);
         $order->save();
         return true;
     }
@@ -940,14 +948,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         $order_captured = intval($order->get_meta('_vipps_captured'));
         $order_refunded = intval($order->get_meta('_vipps_refunded'));
+        $order_cancelled = intval($order->get_meta('_vipps_cancelled'));
         
         $item_captured_sum = 0;
         $item_refunded_sum = 0;
+        $item_cancelled_sum = 0;
         foreach ($order->get_items() as $item) {
             $item_captured_sum += intval($item->get_meta('_vipps_item_captured'));
             $item_refunded_sum += intval($item->get_meta('_vipps_item_refunded'));
+            $item_cancelled_sum += intval($item->get_meta('_vipps_item_cancelled'));
         }
-        return ($order_captured == $item_captured_sum) && ($order_refunded == $item_refunded_sum);
+        
+        // The shipping cost is not on the order items, so make sure to subtract it in the comparison. LP 2025-11-17
+        $shipping_total = intval(($order->get_shipping_total() ?: '0') * 100);
+        $shipping_tax = intval(($order->get_shipping_tax() ?: '0') * 100);
+        $shipping = $shipping_total + $shipping_tax;
+        error_log('LP coincide method, shipping is: ' . print_r($shipping, true));
+        // FIXME: does this work when no shipping? test. LP 2025-11-17
+
+        return ($order_captured - $shipping - $item_captured_sum = 0) &&
+            ($order_refunded - $shipping - $item_refunded_sum = 0) && 
+            ($order_cancelled - $shipping - $item_cancelled_sum = 0);
     }
 
 
@@ -977,7 +998,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // This is actually the sum for the refund item, not the item's unit price. Not to be confused with getting
             // the item total for an order item, which then actually is the unit price. LP 2025-10-30
-            $to_maybe_refund = (int) ($refund_item->get_total() + $refund_item->get_total_tax()) * -100; // NB: refund prices are negative. LP 2025-10-29
+            $total = $refund_item->get_total() ?: '0';
+            $tax = $refund_item->get_total_tax() ?: '0';
+            $to_maybe_refund = intval(($total + $tax) * -100); // NB: refund prices are negative. LP 2025-10-29
             error_log('LP calculate_refund_item_values: to_maybe_refund: ' . print_r($to_maybe_refund, true));
 
             $order_item = $order->get_item($item_id);
@@ -985,7 +1008,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read order item in refund.', 'woo-vipps'), $this->get_payment_method_name()));
             }
 
-            $order_item_total = (int) $order->get_item_total($order_item, true, false) * 100;
+            $order_item_total = intval($order->get_item_total($order_item, true, false) * 100);
             $order_item_quantity = $order_item->get_quantity();
             $order_item_sum = $order_item_total * $order_item_quantity;
             error_log('LP calculate_refund_item_values: order_item_quantity: ' . print_r($order_item_quantity, true));
@@ -2049,6 +2072,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Signal other hooked actions that this one actually did something. IOK 2025-02-04
             $order->update_meta_data('_vipps_capture_complete',true);
             $order->save();
+
+            $this->mark_order_items_fully_captured($order);
         } else  {
             $order->update_meta_data('_vipps_capture_complete',false);
             $msg = sprintf(__("Could not capture %1\$s payment for this order!", 'woo-vipps'), $this->get_payment_method_name());
@@ -2202,13 +2227,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_capture_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment captured:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency);
 
-        // If we captured the whole remaining order sum, update order item metas. LP 2025-11-07
-        // Note: when changing status to 'complete' the noncapturable amount is cancelled *after* this method, so $remaining will in this case not be zero:
-        // therefore we need to calculate it by checking noncapturable here instead. LP 2025-11-07
-        if ($captured + $noncapturable >= $order_sum) {
-            $this->mark_order_items_fully_captured($order);
-        }
-
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_capture_transid', $requestidnr+1);
         $order->save();
@@ -2225,7 +2243,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         foreach($order->get_items() as $item) {
-            $item_total = (int) $order->get_item_total($item, true, false) * 100;
+            $item_total = intval($order->get_item_total($item, true, false) * 100);
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_captured item_sum: ' . print_r($item_sum, true));
@@ -2282,7 +2300,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         foreach($order->get_items() as $item) {
-            $item_total = (int) $order->get_item_total($item, true, false) * 100;
+            $item_total = intval($order->get_item_total($item, true, false) * 100);
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_cancelled item_sum: ' . print_r($item_sum, true));
@@ -2506,11 +2524,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_refund_remaining', $remaining);
         $order->update_meta_data('_vipps_refund_timestamp', time());
         $order->add_order_note(sprintf(__('%1$s Payment Refunded:','woo-vipps'), $this->get_payment_method_name()) . ' ' .  sprintf("%0.2f",$amount/100) . ' ' . $currency );
-
-        // If we refunded the whole order, update order item metas. LP 2025-11-07
-        if ($refunded == $order_total) {
-            $this->mark_order_items_fully_refunded($order);
-        }
 
         // Since we succeeded, the next time we'll start a new transaction.
         $order->update_meta_data('_vipps_refund_transid', $requestidnr+1);
