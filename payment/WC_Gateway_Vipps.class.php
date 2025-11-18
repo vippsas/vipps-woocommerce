@@ -2253,14 +2253,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP mark_order_items_fully_captured item_sum: ' . print_r($item_sum, true));
 
             $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
-            $cancelled = intval($item->get_meta('_vipps_item_cancelled'));
             error_log('LP mark_order_items_fully_captured noncapturable: ' . print_r($noncapturable, true));
-            error_log('LP mark_order_items_fully_captured cancelled: ' . print_r($cancelled, true));
 
-            // Note: do not subtract the refunded meta for this item here, since at Vipps MobilePay orders are still marked
-            // as captured even after they are refunded. Meaning we indeed wish to mark the already-refunded item
-            // amount as captured here. LP 2025-11-17
-            $to_capture = $item_sum - $noncapturable - $cancelled;
+            // Note: do not subtract the refunded meta for this item here, since at Vipps MobilePay orders are
+            // still marked as captured even after they are refunded. Meaning we actually here wish to mark the
+            // already-refunded amount as captured. LP 2025-11-17
+
+            // In a similar sense, don't subtract $cancelled here since its a subset of $noncapturable. LP 2025-11-18
+            $to_capture = $item_sum - $noncapturable;
             error_log('LP mark_order_items_fully_captured new to set as to_capture: ' . print_r($to_capture, true));
 
             if ($to_capture <= 0) {
@@ -2317,7 +2317,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
-    /** Updates the cancelled meta of every item in the order to be fully cancelled, returns success bool. LP 2025-11-07 */
+    /** Updates the cancelled meta of every item in the order to be fully cancelled, returns success bool.
+    * NB: also updates the noncapturable meta to equate the cancelled meta, it's necessary to keep them in sync because 
+    * we never delete any amount in the noncapturable meta even upon cancel. LP 2025-11-07 */
     public function mark_order_items_fully_cancelled($order) {
         error_log("lp mark_order_items_fully_cancelled starting");
         if (!is_a($order, 'WC_Order')) {
@@ -2345,6 +2347,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 continue;
             }
             $item->update_meta_data('_vipps_item_cancelled', $to_cancel);
+            $item->update_meta_data('_vipps_item_noncapturable', $to_cancel);
             $item->save_meta_data();
         }
         return true;
