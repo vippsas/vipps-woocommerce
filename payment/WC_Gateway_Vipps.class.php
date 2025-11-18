@@ -2238,7 +2238,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
-    
+
     /** Updates the captured meta of every item in the order to be fully captured, returns success bool. LP 2025-11-07 */
     public function mark_order_items_fully_captured($order) {
         error_log("lp mark_order_items_fully_captured starting");
@@ -2255,11 +2255,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
             error_log('LP mark_order_items_fully_captured noncapturable: ' . print_r($noncapturable, true));
 
-            // Note: do not subtract the refunded meta for this item here, since at Vipps MobilePay orders are
-            // still marked as captured even after they are refunded. Meaning we actually here wish to mark the
-            // already-refunded amount as captured. LP 2025-11-17
-
-            // In a similar sense, don't subtract $cancelled here since its a subset of $noncapturable. LP 2025-11-18
+            /** Note: do not subtract the refunded meta for this item here, since at Vipps MobilePay orders are
+            * still marked as captured even after they are refunded. Meaning we actually here wish to mark the
+            * already-refunded amount as captured. LP 2025-11-17
+            *
+            * In a similar sense, don't subtract $cancelled here since its a subset of $noncapturable. LP 2025-11-18*/
             $to_capture = $item_sum - $noncapturable;
             error_log('LP mark_order_items_fully_captured new to set as to_capture: ' . print_r($to_capture, true));
 
@@ -2477,9 +2477,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order->update_meta_data('_vipps_cancel_timestamp', time());
         $order->update_meta_data('_vipps_cancelled', $total_cancelled);
         $order->update_meta_data('_vipps_cancel_remaining', $remaining);
-
-        // Update cancelled meta for each order item. LP 2025-11-17
-        $this->mark_order_items_fully_cancelled($order);
 
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
