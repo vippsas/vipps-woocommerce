@@ -2332,14 +2332,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_cancelled item_sum: ' . print_r($item_sum, true));
 
-            $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
             $captured = intval($item->get_meta('_vipps_item_captured'));
-            error_log('LP mark_order_items_fully_cancelled noncapturable: ' . print_r($noncapturable, true));
             error_log('LP mark_order_items_fully_cancelled captured: ' . print_r($captured, true));
 
-            // Note: do not subtract the refunded meta for this item here, because refunds don't alter the captured meta amount.
-            // i.e. you could have 200 nok captured, 100 nok refunded, but the captured meta will still be 200 nok. LP 2025-11-17
-            $to_cancel = $item_sum - $noncapturable - $captured;
+            // We only wish to mark everything uncaptured as cancelled (don't take into account refunded here, because it is a subset of captured).
+            // Also set the same as noncapturable so they are in sync. LP 2025-11-18
+            $to_cancel = $item_sum - $captured;
             error_log('LP mark_order_items_fully_cancelled new to set as to_cancel: ' . print_r($to_cancel, true));
 
             if ($to_cancel <= 0) {
