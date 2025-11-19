@@ -2158,6 +2158,11 @@ else:
                 return $shipping;
             }, 10, 3);
 
+
+        // Support adding pickup locations to any shipping rate using the 'woo_vipps_shipping_method_pickup_points' filter
+        // IOK 2025-11-19
+        add_filter('woo_vipps_modify_express_checkout_rate', array($this, 'express_add_pickup_location_options'), 10, 4);
+
     }
 
     public function get_payment_method_name() {
@@ -3212,6 +3217,9 @@ else:
         $translated = array();
         $currency = $order->get_currency();
 
+        // First, we'll translate the legacy format originally used by express to the new one (that may 
+        // still be in use by filters etc), then add hooks to modify options and other new features.
+        // IOK 2025-11-19
         foreach ($return['shippingDetails']  as $m) {
             $m2 = array();
             $options = [];
@@ -3240,61 +3248,14 @@ else:
             // We can also support descriptions, in the "meta" field
             $description = $rate->get_description();
 
-            // Allow shipping methods to add pickup points data IOK 2025-04-08
-            // This will create multiple pointers to the same shipping rate, which will be extended with a metadata field containing the pickup point.
-            // That is, this is *not* for local_pickup, but for legacy local pickup and other shipping methods that have the same rate price, but 
-            // allows the user to select a location. IOK 2025-08-15
-            $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
-            if ($pickup_points) {
-                $index = 0;
-                $pickup_point_table = [];
-                foreach($pickup_points as $point) {
-                    $index++; // Start at 1
-                    $entry = [];
-
-                    if ($delivery_time) $entry['estimatedDelivery'] = $delivery_time;
-
-                    // This way of adding pickup points uses the same price for all pickup points. LP 2025-05-26
-                    $entry['amount'] = array( 'value' => round(100*$m['shippingCost']), 'currency' => $currency);
-
-                    $addr = [];
-                    foreach(['name', 'address', 'postalCode', 'city', 'country'] as $key) {
-                        $v = trim($point[$key]);
-                        if (!empty($v)) $addr[$key] = $v;
-                    }
-                    // To avoid confusion, force the keys to be strings. IOK 2025-08-15
-                    $pickup_point_table["i".$index] = $addr;
-
-             
-                    // This is for display in the App only IOK 2025-08-15
-                    $description = join(", ", array_values($addr));
-                    $description = trim(apply_filters('woo_vipps_shipping_option_meta', trim($description, " ,"), $rate, $shipping_method, $order));
-                    if ($description) $entry['meta'] = $description;
-
-                    // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate, 
-                    // we need to add a suffix, which is removed in gw->set_order_shipping_details(). 
-                    $entry['id'] = $id . ":" . $index;
-                    $entry['name'] = $point['name'];
-                    $entry['priority'] = $m['priority'];
-                    $options[] = $entry;
-                }
-                // If we have pickup points added, then store them in a table in the rate itself. We'll strip that value when finalizing the order. IOK 2025-08-15
-                if (!empty($pickup_point_table)) {
-                   $rate->add_meta_data('_vipps_pickupPoints', $pickup_point_table);
-                   $ratemap[$id] = $rate;
-                }
-                $m2['type'] = 'PICKUP_POINT';
-
-            } else { // normal / non-pickup shipping methods. LP 2025-05-26
-                $option = [];
-                $option['priority'] = $m['priority'];
-                $option['name'] = $m['shippingMethod']; 
-                $option['id'] = $id;
-                $option['amount'] = [ 'value' => round(100*$m['shippingCost']), 'currency' => $currency ];
-                if ($delivery_time) $option['estimatedDelivery'] = $delivery_time;
-                if ($description) $entry['meta'] = $description;
-                $options[] = $option;
-            }
+            $option = [];
+            $option['priority'] = $m['priority'];
+            $option['name'] = $m['shippingMethod']; 
+            $option['id'] = $id;
+            $option['amount'] = [ 'value' => round(100*$m['shippingCost']), 'currency' => $currency ];
+            if ($delivery_time) $option['estimatedDelivery'] = $delivery_time;
+            if ($description) $entry['meta'] = $description;
+            $options[] = $option;
 
             if (isset($meta['brand'])) {
                 $m2['brand'] = $meta['brand'];
@@ -3307,14 +3268,71 @@ else:
             }
 
             if ($m2['brand'] != "OTHER" && isset($meta['type'])) {
-                $m2['type'] = apply_filters('woo_vipps_shipping_method_type', $meta['type']);
+                $m2['type'] = apply_filters('woo_vipps_shipping_method_type', $meta['type'], $shipping_method, $rate);
             }
-
             $m2['options'] = $options;
+
+            // Now allow custom code to modify both the rate (adding metadata, mostly) and the Vipps shipping method (probably adding 
+            // options, changing the brand etc) IOK 2025-11-19
+            // For an example, see the express_add_pickup_location_options method. IOK 2025-11-19
+            list ($rate, $m2) = apply_filters('woo_vipps_modify_express_checkout_rate', [$rate, $m2], $shipping_method, $rate, $order);
+            $ratemap[$id] = $rate; // Modify the ratemaps copy with any new data here - ratemap is passed by reference IOK 2025-11-19
+
             $translated[] = $m2;
         }
 
         return $translated;
+    }
+
+    // This adds extra options for express checkout shipping rates that implement the 'woo_vipps_shipping_method_pickup_points' filter,
+    // making these into groups with a dropdown for the exact shipping location as separate options.
+    // This will create multiple pointers to the same shipping rate, which will be extended with a metadata field containing the pickup point.
+    // That is, this is *not* for local_pickup, but for legacy local pickup and other shipping methods that have the same rate price, but
+    // allows the user to select a location. IOK 2025-08-15
+    public function express_add_pickup_location_options ( $data, $shipping_method, $rate, $order) {
+        list ($rate, $m2) = $data;
+        $pickup_points = apply_filters('woo_vipps_shipping_method_pickup_points', [], $rate, $shipping_method, $order);
+        if (empty($pickup_points)) return $data;
+        if (count($m2['options'])>1) return $data; 
+
+        $index = 0;
+        $pickup_point_table = [];
+        $option = $m2['options'][0];
+        $id = $option['id'];
+
+        foreach($pickup_points as $point) {
+            $index++; // Start at 1
+            $entry = $option; // This is a copy in PHP
+
+            $addr = [];
+            foreach(['name', 'address', 'postalCode', 'city', 'country'] as $key) {
+                $v = trim($point[$key]);
+                if (!empty($v)) $addr[$key] = $v;
+            }
+            // To avoid confusion, force the keys to be strings. IOK 2025-08-15
+            $pickup_point_table["i".$index] = $addr;
+
+            // This is for display in the App only IOK 2025-08-15
+            $description = join(", ", array_values($addr));
+            $description = trim(apply_filters('woo_vipps_shipping_option_meta', trim($description, " ,"), $rate, $shipping_method, $order));
+            if ($description) $entry['meta'] = $description;
+
+            // IOK 2025-06-04 Since we are here mapping several Express rates to a single Woo rate,
+            // we need to add a suffix, which is removed in gw->set_order_shipping_details().
+            $entry['id'] = $id . ":" . $index;
+            $entry['name'] = $point['name'];
+            $entry['priority'] = $option['priority'];
+            $options[] = $entry;
+        }
+        // If we have pickup points added, then store them in a table in the rate itself. We'll strip that value when finalizing the order. IOK 2025-08-15
+        // This gets stored in the orders ratemap on return. IOK 2025-11-19
+        if (!empty($pickup_point_table)) {
+            $rate->add_meta_data('_vipps_pickupPoints', $pickup_point_table);
+        }
+        $m2['options'] = $options;
+        $m2['type'] = 'PICKUP_POINT';
+
+        return [$rate, $m2];
     }
 
 
