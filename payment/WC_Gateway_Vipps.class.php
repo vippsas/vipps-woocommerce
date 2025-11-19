@@ -227,23 +227,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // nb: note very late priority - we must have captured before, please
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
 
-        // Store active refund data for fulfillment checking in process_refund(). LP 2025-10-22
+        // Store the currencly active refund data in a filter so we can use it in process_refund(). LP 2025-10-22
         add_action('woocommerce_create_refund', function($refund) {
             add_filter('woo_vipps_currently_active_refund', function($oldrefund) use ($refund) {
                 return $refund;
             });
         });
 
+        // Hide our order item meta data from the admin interface. LP 2025-11-19
         add_filter('woocommerce_hidden_order_itemmeta', [$this, 'woocommerce_hidden_order_itemmeta']);
     }
 
     public function woocommerce_hidden_order_itemmeta($meta_keys) {
-            $vipps_meta_keys = apply_filters('woo_vipps_hidden_order_itemmeta', [
+        $vipps_meta_keys = apply_filters('woo_vipps_hidden_order_itemmeta', [
                 '_vipps_item_captured',
                 '_vipps_item_refunded',
                 '_vipps_item_noncapturable',
                 '_vipps_item_cancelled'
-            ]);
+        ]);
         if (!is_array($vipps_meta_keys)) {
             $vipps_meta_keys = [$vipps_meta_keys];
         }
@@ -715,6 +716,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         // If not, then the older is pretty new so we will cancel or refund it, as before
+        // Or alternatively, it might still be old *but* had no capture, then it will just be cancelled and not refunded at all. LP 2025-11-19
         return $this->maybe_refund_and_cancel_payment($order_id);
     }
 
@@ -846,13 +848,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        // Stop if the meta values do not coincide with the sum of the order items' metas. We don't then have enough information to process it correctly,
-        // but most likely this means there has been a refund outside WooCommerce (like the Vipps MobilePay business portal). LP 2025-11-07
+        // Stop if the order meta values do not add up with the sum of the order items' meta values. We don't then have enough information to process it correctly,
+        // but most likely this means there has been a refund outside WooCommerce (like the Vipps MobilePay business portal) or alike. LP 2025-11-07
         if (!$this->order_meta_coincides_with_items_meta($order)) {
             /* translators: %1 = company name */
-            $this->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. There may have been a refund through the %1$s business portal or something went wrong.', 'woo-vipps'), Vipps::CompanyName()), 'error');
+            $this->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. The order may have changed through the %1$s business portal or something unexpected went wrong.', 'woo-vipps'), Vipps::CompanyName()), 'error');
             /* translators: %1 = payment method name */
-            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - status is not clear. Please do a manual refund outside of %1$s instead.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName()));
+            return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - order status is unclear. Please do a manual refund outside of %1$s instead.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName()));
         }
 
         error_log('LP original refund amount: ' . print_r($amount, true));
@@ -863,23 +865,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We'll receive what is being refunded as an order-like refund object with items with value, quantity etc. We capture this with a filter. IOK 2025-10-27
         $current_refund = apply_filters('woo_vipps_currently_active_refund', null);
 
-        // We need to process each refund item to figure out what should be refunded for items separately, the rest will be set as noncapturable. LP 2025-11-05
+        // We need to process each refund item to figure out what should be refunded for items separately, the rest will be set as noncapturable.
+        // This is returned in a table (or a wp error if any items hit any error cases) mapping order item id to the meta names with value increments. LP 2025-11-05
         $item_meta_table = $this->calculate_refund_item_values($order, $current_refund);
         if (is_wp_error($item_meta_table)) {
             return $item_meta_table;
         }
         error_log('LP after calculate_refund_item_values item_meta_table: ' . print_r($item_meta_table, true));
 
-        // Construct the new refund and noncapture sums from the items' meta values in the table. LP 2025-11-07
-        [$to_refund, $to_noncapture] = array_reduce($item_meta_table, function($sums, $item) {
-            if (array_key_exists('_vipps_item_refunded', $item)) {
-                $sums[0] += $item['_vipps_item_refunded'];
-            } 
-            if (array_key_exists('_vipps_item_noncapturable', $item)) {
-                $sums[1] += $item['_vipps_item_noncapturable'];
-            } 
-            return $sums;
-        }, [0, 0]);
+        // Construct the *sums* for refund and noncapture from the table. LP 2025-11-07
+        [$to_refund, $to_noncapture] = array_reduce(
+            $item_meta_table,
+            function($sums, $item) {
+                if (array_key_exists('_vipps_item_refunded', $item)) {
+                    $sums[0] += $item['_vipps_item_refunded'];
+                }
+                if (array_key_exists('_vipps_item_noncapturable', $item)) {
+                    $sums[1] += $item['_vipps_item_noncapturable'];
+                }
+                return $sums;
+            },
+            [0, 0] // [to_refund, to_noncapture]
+        );
         error_log('LP after calculate_refund_item_values to_refund: ' . print_r($to_refund, true));
         error_log('LP after calculate_refund_item_values to_noncapture: ' . print_r($to_noncapture, true));
 
@@ -896,7 +903,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 if (!$ok) {
                     return false;
                 }
-        
             } catch (TemporaryVippsApiException $e) {
                 $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $orderid . "\n" .$e->getMessage(),'error');
                 return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), Vipps::CompanyName()) . ' ' . $e->getMessage());
@@ -908,6 +914,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
+        // If we are here, we have refund success. LP 2025-11-19
+
         // Simplify debugging by adding the success of this to the vipps log so merchants can quote this to us. IOK 2025-10-28
         if ($to_refund) {
             $this->log(round($to_refund / 100) . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), Vipps::CompanyName()) . ' ' . $reason);
@@ -917,23 +925,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($to_noncapture) {
             $noncapturable = $to_noncapture + intval($order->get_meta('_vipps_noncapturable'));
             $order->update_meta_data('_vipps_noncapturable', $noncapturable);
-            /** translators: %1 = order id, %2 = number, %3 = currency string */
+            /* translators: %1 = order id, %2 = number, %3 = currency string */
             $this->log(sprintf(__('Some funds from the refund on order %1$s were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $orderid, round($to_noncapture / 100), $currency), 'info');
-            /** translators: %1 = payment method name, %2 = number, %3 = currency string */
+            /* translators: %1 = payment method name, %2 = number, %3 = currency string */
             $order->add_order_note(sprintf(__('Some funds from the %1$s payment were not yet captured, only reserved. %2$s %3$s of the reserved funds will be released when the order is set to complete.', 'woo-vipps'), $this->get_payment_method_name(), round($to_noncapture / 100), $currency));
             $order->save();
         }
 
-        // Update meta data for each refund item. LP 2025-11-03
+        // Update meta data for each order *item* in the refund. LP 2025-11-03
         foreach($item_meta_table as $item_id => $meta_table) {
-            error_log('LP process_refund updating meta for item_id: ' . print_r($item_id, true));
             foreach($meta_table as $key => $value_increment) {
                 $item = $order->get_item($item_id);
                 if (!$item) {
                     $this->log("Could not get item with id $item_id to update meta in process_refund", 'error');
                     continue;
                 }
-                error_log("LP process_refund updating meta $key with increment of +$value_increment");
                 $value = $value_increment + intval($item->get_meta($key));
                 $item->update_meta_data($key, $value);
                 $item->save_meta_data();
@@ -963,26 +969,31 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_cancelled_sum += intval($item->get_meta('_vipps_item_cancelled'));
         }
         
-        // The shipping cost is not on the order items, so make sure to subtract it in the comparison. LP 2025-11-17
-        $shipping_total = intval(($order->get_shipping_total() ?: '0') * 100);
-        $shipping_tax = intval(($order->get_shipping_tax() ?: '0') * 100);
+        // The shipping cost is not on the order *items*, so make sure to subtract it in the comparisons below. LP 2025-11-17
+        $shipping_total = intval(100 * ($order->get_shipping_total() ?: '0'));
+        $shipping_tax = intval(100 * ($order->get_shipping_tax() ?: '0'));
         $shipping = $shipping_total + $shipping_tax;
 
-        return ($order_captured - $shipping - $item_captured_sum = 0) &&
-            ($order_refunded - $shipping - $item_refunded_sum = 0) && 
-            ($order_cancelled - $shipping - $item_cancelled_sum = 0);
+        return ($order_captured - $shipping - $item_captured_sum = 0)
+            && ($order_refunded - $shipping - $item_refunded_sum = 0)
+            && ($order_cancelled - $shipping - $item_cancelled_sum = 0);
     }
 
 
     /** Loops over the refunds items to calculate what we should refund and what to mark as noncapturable.
-     * Returns a table poining each item id to the item meta value increment as a result. 
+    * Returns a table in the format:
+    * [
+    *       order_item_id => [
+    *               meta_name => value_increment
+    *       ]
+    * ]
 
-     * Checks for certain error cases like the user asking for more refund than is available for that item.
-     * If the item has been partially captured then it checks the specific cases we need to handle differently.
-     *
-     * Note also that doing partial capture through the Vipps MobilePay business portal probably will *not* be compatible with this, so if partial capture has been done 
-     * *outside* WooCommerce, that's an error. IOK 2025-10-27
-     */
+    * Checks for certain error cases like the user asking for more refund than is available for that item.
+    * If the item has been partially captured then it checks the specific cases we need to handle differently.
+    *
+    * Note also that doing partial capture through the Vipps MobilePay business portal probably will *not* be compatible with this, so if partial capture has been done
+    * *outside* WooCommerce, that's an error. IOK 2025-10-27
+    */
     public function calculate_refund_item_values($order, $current_refund) {
         $is_epayment = 'epayment' == $order->get_meta('_vipps_api');
 
@@ -999,7 +1010,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP calculate_refund_item_values: refund item name: ' . print_r($refund_item->get_name(), true));
 
             // This is actually the sum for the refund item, not the item's unit price. Not to be confused with getting
-            // the item total for an order item, which then actually is the unit price. LP 2025-10-30
+            // the item total for an *order item*, which then actually is the unit price. LP 2025-10-30
             $total = $refund_item->get_total() ?: '0';
             $tax = $refund_item->get_total_tax() ?: '0';
             $to_maybe_refund = intval(($total + $tax) * -100); // NB: refund prices are negative. LP 2025-10-29
@@ -1010,7 +1021,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read order item in refund.', 'woo-vipps'), $this->get_payment_method_name()));
             }
 
-            $order_item_total = intval($order->get_item_total($order_item, true, false) * 100);
+            $order_item_total = intval(100 * $order->get_item_total($order_item, true, false)); // this is unit price, not sum for all items in the order. LP 2025-11-19
             $order_item_quantity = $order_item->get_quantity();
             $order_item_sum = $order_item_total * $order_item_quantity;
             error_log('LP calculate_refund_item_values: order_item_quantity: ' . print_r($order_item_quantity, true));
@@ -1027,14 +1038,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP calculate_refund_item_values: cancelled: ' . print_r($cancelled, true));
 
             // Stop if user tries to refund more than what is left to refund or noncapture. LP 2025-11-06
-            $available_to_refund = $order_item_sum - $refunded - $noncapturable - $cancelled;
-            error_log('LP calculate_refund_item_values available_to_refund: ' . print_r($available_to_refund, true));
-            if ($to_maybe_refund > $available_to_refund) {
+            if ($to_maybe_refund > $order_item_sum - $refunded - $noncapturable - $cancelled) {
+                error_log("LP calculate_refund_item_values case to_maybe_refund=$to_maybe_refund was greater than what is available to refund or noncapture");
                 /* translators: %1 = payment method name, %2 = item product name */
                 return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large for item '%2\$s'.", 'woo-vipps'), $this->get_payment_method_name(), $refund_item->get_name()));
             }
 
-            // REFUND CASES:
+            // THE DISTINCT REFUND CASES:
 
             // If the item has nothing captured, then we are safe to set everything to noncapturable - refund nothing. LP 2025-10-24
             if (!$captured) {
@@ -1056,10 +1066,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 continue;
             }
 
-            // If refunding the entire item sum, then we refund what is captured and set the remaining item amount to noncapturable. LP 2025-10-23
-            $refunding_entire_item = $to_maybe_refund == $order_item_sum;
-            if ($refunding_entire_item) {
-                error_log("LP calculate_refund_item_values case refunding the whole quantity, need to refund captured + set rest noncapturable");
+            // If refunding the entire item sum, then we refund what is captured, and mark the remaining item amount as noncapturable. LP 2025-10-23
+            if ($to_maybe_refund == $order_item_sum) {
+                error_log("LP calculate_refund_item_values case refunding the whole item sum, need to refund captured + set rest noncapturable");
                 $refund = $captured;
                 $noncapture = $to_maybe_refund - $refund;
                 if ($noncapture > 0) {
@@ -1072,10 +1081,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
 
-            // When we are here we know this is a partially captured item. LP 2025-11-06
-            // PARTIAL CAPTURE REFUND CASES:
+            // When we are here we know this is a partially captured case. LP 2025-11-06
 
-            // If the refund amount is *entirely* covered by what is available to set as noncapturable, then noncapture it and refund nothing. LP 2025-10-24
+            // If the refund amount is *entirely* covered by what is available to mark as noncapturable, then noncapture it all and refund nothing. LP 2025-10-24
+            // FIXME: im worried about noncapturable and cancelled being in sync, 
+            // ref: cancel_order_items_noncapturable_amount & mark_order_items_fully_cancelled. This was done on purpose
+            // to fix calculated refund values, but please review this logic. As long as we don't support partial 
+            // cancel i don't believe we should reach here. LP 2025-11-19
             $available_to_noncapturable = $order_item_sum - $noncapturable - $captured - $cancelled;
             error_log('LP calculate_refund_item_values available_to_noncapturable: ' . print_r($available_to_noncapturable, true));
             if ($to_maybe_refund <= $available_to_noncapturable) {
@@ -1511,7 +1523,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'label'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'type'        => 'checkbox',
-                /** translators: %1 = payment method name */
+                /* translators: %1 = payment method name */
                 'description' => sprintf(__('Enable %1$s support for WooCommerce order fulfillment.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'no',
             ];
