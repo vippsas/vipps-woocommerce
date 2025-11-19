@@ -3321,7 +3321,6 @@ else:
             // we need to add a suffix, which is removed in gw->set_order_shipping_details().
             $entry['id'] = $id . ":" . $index;
             $entry['name'] = $point['name'];
-            $entry['priority'] = $option['priority'];
             $options[] = $entry;
         }
         // If we have pickup points added, then store them in a table in the rate itself. We'll strip that value when finalizing the order. IOK 2025-08-15
