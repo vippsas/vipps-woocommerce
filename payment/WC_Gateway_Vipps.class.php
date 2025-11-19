@@ -967,8 +967,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $shipping_total = intval(($order->get_shipping_total() ?: '0') * 100);
         $shipping_tax = intval(($order->get_shipping_tax() ?: '0') * 100);
         $shipping = $shipping_total + $shipping_tax;
-        error_log('LP coincide method, shipping is: ' . print_r($shipping, true));
-        // FIXME: does this work when no shipping? test. LP 2025-11-17
 
         return ($order_captured - $shipping - $item_captured_sum = 0) &&
             ($order_refunded - $shipping - $item_refunded_sum = 0) && 
@@ -1513,7 +1511,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'title'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'label'       => __('Enable support for order fulfillments', 'woo-vipps'),
                 'type'        => 'checkbox',
-                'description' => sprintf(__('Enable WooCommerce order fulfillment support for %1$s.', 'woo-vipps'), $payment_method_name),
+                /** translators: %1 = payment method name */
+                'description' => sprintf(__('Enable %1$s support for WooCommerce order fulfillment.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'no',
             ];
         }

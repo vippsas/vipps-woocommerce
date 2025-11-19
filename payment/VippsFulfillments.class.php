@@ -112,16 +112,16 @@ class VippsFulfillments {
             $this->fulfillment_fail(sprintf(__('Cannot refund through %1$s - status is not clear, there may have been a refund through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
-        // Don't process anything further if the order is entirely captured already,
-        // the meta '_vipps_capture_remaining' might be unset so we need to calculate it instead. LP 2025-11-07
+        // Don't process anything further if the order has nothing remaining to capture
+        // Note: the meta '_vipps_capture_remaining' might be unset at this point so we instead need to calculate it. LP 2025-11-07
+        // We also don't subtract refunded, because it is a subset of captured. LP 2025-11-19
         $capture_remaining = intval($order->get_meta('_vipps_amount')) -
             intval($order->get_meta('_vipps_captured')) -
-            intval($order->get_meta('_vipps_noncapturable')) -
-            intval($order->get_meta('_vipps_cancelled'));
+            intval($order->get_meta('_vipps_cancelled')) -
+            intval($order->get_meta('_vipps_noncapturable'));
         error_log('LP before_fulfill capture_remaining: ' . print_r($capture_remaining, true));
-        if ($capture_remaining <= 0) {
-            error_log('LP before_fulfill there was no capture remaining, accepting it without processing anything at vipps');
-            return $fulfillment;
+        if ($capture_remaining <= 0) { // Might be less than zero because we subtract both noncapturable and cancelled. LP 2025-11-19
+            $this->fulfillment_fail(sprintf(__('Order has nothing left to capture at %1$s, cannot fulfill these items.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
         $currency = $order->get_currency();
@@ -214,6 +214,8 @@ class VippsFulfillments {
 
     public function get_order_fulfillments($order) {
         if (!class_exists('Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore')) {
+            /** translators: %1 = class name, %2 = order id */
+            $this->gateway->log(sprintf(__('%1$s was not found, can\'t retrieve order fulfillments for order %1$s'), 'FulfillmentsDataStore', $order->get_id()), 'error');
             return false;
         }
         $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
