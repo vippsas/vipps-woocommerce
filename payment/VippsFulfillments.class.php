@@ -123,7 +123,7 @@ class VippsFulfillments {
         }
 
         // Stop early if the order has anything cancelled, we don't support partial capture as of now. LP 2025-11-21
-        if (intval($order->get_meta('_vipps_cancelled'))) {
+        if (intval($order->get_meta('_vipps_cancelled')) > 0) {
             /* translators: %1=company name */
             $this->fulfillment_fail(sprintf(__('Order is cancelled at %1$s and can not be modified.', 'woo_vipps'), Vipps::CompanyName()));
         }
