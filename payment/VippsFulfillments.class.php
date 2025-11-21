@@ -135,9 +135,8 @@ class VippsFulfillments {
             $this->fulfillment_fail(sprintf(__('Cannot do partial capture through %1$s - order status is unclear, the order may have been changed through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
-        // Don't process anything further if the order has nothing remaining to capture
-        // Note: the meta '_vipps_capture_remaining' might be unset if there is no capture on this order yet,
-        // so we instead need to calculate it here. LP 2025-11-07
+        // Don't process anything further there is nothing to capture. Note: the meta '_vipps_capture_remaining' 
+        // might be unset if there is no capture on this order yet, so we instead need to calculate it here. LP 2025-11-07
         // We also should *not* subtract refunded, because it is a subset of captured! LP 2025-11-19
         $capture_remaining = intval($order->get_meta('_vipps_amount'))
             - intval($order->get_meta('_vipps_captured'))
