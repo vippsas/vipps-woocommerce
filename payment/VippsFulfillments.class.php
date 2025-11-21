@@ -123,7 +123,7 @@ class VippsFulfillments {
         }
 
         // Stop early if the order has anything cancelled, we don't support partial capture as of now. LP 2025-11-21
-        if (intval($order->get_meta('_vipps_cancelled'))) {
+        if (intval($order->get_meta('_vipps_cancelled')) > 0) {
             /* translators: %1=company name */
             $this->fulfillment_fail(sprintf(__('Order is cancelled at %1$s and can not be modified.', 'woo_vipps'), Vipps::CompanyName()));
         }
@@ -135,9 +135,8 @@ class VippsFulfillments {
             $this->fulfillment_fail(sprintf(__('Cannot do partial capture through %1$s - order status is unclear, the order may have been changed through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
-        // Don't process anything further if the order has nothing remaining to capture
-        // Note: the meta '_vipps_capture_remaining' might be unset if there is no capture on this order yet,
-        // so we instead need to calculate it here. LP 2025-11-07
+        // Don't process anything further there is nothing to capture. Note: the meta '_vipps_capture_remaining' 
+        // might be unset if there is no capture on this order yet, so we instead need to calculate it here. LP 2025-11-07
         // We also should *not* subtract refunded, because it is a subset of captured! LP 2025-11-19
         $capture_remaining = intval($order->get_meta('_vipps_amount'))
             - intval($order->get_meta('_vipps_captured'))
@@ -165,7 +164,7 @@ class VippsFulfillments {
             $fulfill_quantity = $item['qty'];
             $order_item = $order->get_item($item_id);
             if (!$order_item) {
-                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // hok did this happen
+                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
             }
 
             $item_name = $order_item->get_name();
