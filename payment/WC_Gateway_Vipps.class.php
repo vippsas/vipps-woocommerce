@@ -864,6 +864,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We'll receive what is being refunded as an order-like refund object with items with value, quantity etc. We capture this with a filter. IOK 2025-10-27
         $current_refund = apply_filters('woo_vipps_currently_active_refund', null);
+        if (empty($current_refund)) return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - Refund object is irretrievable. Please try aa manual refund outside of %1$s instead.', 'woo-vipps'), $this->get_payment_method_name(), Vipps::CompanyName())); 
 
         // We need to process each refund item to figure out what should be refunded for items separately, the rest will be set as noncapturable.
         // This is returned in a table (or a wp error if any items hit any error cases) mapping order item id to the meta names with value increments. LP 2025-11-05
