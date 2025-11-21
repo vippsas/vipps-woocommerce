@@ -42,9 +42,11 @@ class VippsFulfillments {
 
 
     public function register_hooks() {
-        add_filter('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
-        add_filter('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
-        add_filter('woocommerce_fulfillment_before_update', [$this, 'woocommerce_fulfillment_before_update']);
+        if ($this->is_enabled()) {
+            add_filter('woocommerce_fulfillment_before_fulfill', [$this, 'woocommerce_fulfillment_before_fulfill']);
+            add_filter('woocommerce_fulfillment_before_delete', [$this, 'woocommerce_fulfillment_before_delete']);
+            add_filter('woocommerce_fulfillment_before_update', [$this, 'woocommerce_fulfillment_before_update']);
+        }
     }
 
 
@@ -54,7 +56,7 @@ class VippsFulfillments {
     }
 
 
-    /** Whether the plugin has enabled fulfillment support. LP 2025-10-22 */
+    /** Whether the plugin has enabled support for partial capture in fulfillment. LP 2025-10-22 */
     public function is_enabled() {
         return $this->is_supported() && $this->gateway->get_option('fulfillments_enabled') == 'yes';
     }
@@ -72,7 +74,7 @@ class VippsFulfillments {
     public function woocommerce_fulfillment_before_delete($fulfillment) {
         $order = $fulfillment->get_order();
         if (!$order) {
-            $this->fulfillment_fail(__('Something went wrong, could not find order', 'woo-vipps'));
+            $this->fulfillment_fail(__('Something went wrong, could not find order when handling fulfillments', 'woo-vipps'));
         }
 
         $payment_method = $order->get_payment_method();
@@ -82,11 +84,18 @@ class VippsFulfillments {
         }
 
         error_log("LP woocommerce_fulfillment_before_delete on vipps order. Stopping...");
-        $this->fulfillment_fail(sprintf(__('Fulfillment is already captured at %1$s, cannot delete it.', 'woo-vipps'), Vipps::CompanyName()));
+        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment - its value has been captured at %1$. Refunding the items is possible.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
 
-    /** Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
+    /** 
+     * Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
+     *
+     *  If support for this is turned on in the settings; When completing a fulfilment, we will sum up the total values of the items fulfilled and do
+     *  a partial capture through the Vipps Api for this order. Since fulfillments can be edited, deleted etc, we will at the same time annotate on 
+     *  each order line how much has been captured for the given orderline. The process-refund method of the gateway will likewise annotate the refunded
+     *  amounts, and the amount to be cancelled (if the order has not been captured yet.). If we cannot (safely) do a partial capture, we will throw an error instead.
+     *  The user may then have to turn off this support to be able to manage the fulfillments as required.
      *
      *  This hook will also run on fulfillments edits, after the hook '...before_update'
      *  therefore here we loop over the fulfillment items and stop if the new fulfill sum is less than what is already captured at Vipps MobilePay. LP 2025-10-31
@@ -116,8 +125,8 @@ class VippsFulfillments {
         // Stop if the order meta amounts does not add up with sum of its items, this could mean that
         // the order was mutated outside of WP (e.g. refund through business portal) LP 2025-11-07
         if (!$this->gateway->order_meta_coincides_with_items_meta($order)) {
-            $this->gateway->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t process this refund correctly. There may have been a refund or alike through the %1$s business portal', 'woo-vipps'), Vipps::CompanyName()), 'error');
-            $this->fulfillment_fail(sprintf(__('Cannot refund through %1$s - order status is unclear, the order may have been changed through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
+            $this->gateway->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t do partial capture for this fulfillment. There may have been a refund or capture through the %1$s business portal', 'woo-vipps'), Vipps::CompanyName()), 'error');
+            $this->fulfillment_fail(sprintf(__('Cannot do partial capture through %1$s - order status is unclear, the order may have been changed through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
         // Don't process anything further if the order has nothing remaining to capture
@@ -129,7 +138,7 @@ class VippsFulfillments {
             intval($order->get_meta('_vipps_noncapturable'));
         error_log('LP before_fulfill capture_remaining: ' . print_r($capture_remaining, true));
         if ($capture_remaining <= 0) { // Might be less than zero because we subtract both noncapturable and cancelled. LP 2025-11-19
-            $this->fulfillment_fail(sprintf(__('Order has nothing left to capture at %1$s, cannot fulfill these items.', 'woo_vipps'), Vipps::CompanyName()));
+            $this->fulfillment_fail(sprintf(__('Order has nothing left to capture at %1$s, cannot do a partial capture when fulfilling these items.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
         // We need to know if this fulfillment is an edit of an existing fulfillment to calculate correct capture,
@@ -139,6 +148,7 @@ class VippsFulfillments {
         $currency = $order->get_currency();
 
         // Loop over each item and calculate what to actually capture. LP 2025-11-19
+        // No capture will be made until we are sure *all* the items in the fulfillment can be captured for.
         $to_capture_sum = 0;
         // Also store captures separately in a table, so we can update order items' meta upon capture success. LP 2025-10-31
         $item_capture_table = []; 
@@ -149,7 +159,7 @@ class VippsFulfillments {
             $fulfill_quantity = $item['qty'];
             $order_item = $order->get_item($item_id);
             if (!$order_item) {
-                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
+                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // hok did this happen
             }
 
             $item_name = $order_item->get_name();
@@ -221,6 +231,8 @@ class VippsFulfillments {
     /** Returns a failure message to the fulfillment admin interface by throwing FulfillmentException. LP 2025-10-15 */
     public function fulfillment_fail($msg) {
         if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
+            /* translators:  %1 = exception message */
+            $this->gateway->log(sprintf(__('Error handling fulfilment: %1$s', "woo-vipps"), 'error'),  $msg);
             throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
         }
         /* translators: %1 = class name, %2 = exception message */
