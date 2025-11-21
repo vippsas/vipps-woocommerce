@@ -113,6 +113,12 @@ class VippsFulfillments {
             return $fulfillment;
         }
 
+        // Stop early if the order has anything cancelled, we don't support partial capture as of now. LP 2025-11-21
+        if (intval($order->get_meta('_vipps_cancelled'))) {
+            /* translators: %1=company name */
+            $this->fulfillment_fail(sprintf(__('Order is cancelled at %1$s and can not be modified.', 'woo_vipps'), Vipps::CompanyName()));
+        }
+
         // Stop if the order meta amounts does not add up with sum of its items, this could mean that
         // the order was mutated outside of WP (e.g. refund through business portal) LP 2025-11-07
         if (!$this->gateway->order_meta_coincides_with_items_meta($order)) {
@@ -121,14 +127,14 @@ class VippsFulfillments {
         }
 
         // Don't process anything further if the order has nothing remaining to capture
-        // Note: the meta '_vipps_capture_remaining' might be unset at this point so we instead need to calculate it. LP 2025-11-07
-        // We also don't subtract refunded, because it is a subset of captured. LP 2025-11-19
-        $capture_remaining = intval($order->get_meta('_vipps_amount')) -
-            intval($order->get_meta('_vipps_captured')) -
-            intval($order->get_meta('_vipps_cancelled')) -
-            intval($order->get_meta('_vipps_noncapturable'));
+        // Note: the meta '_vipps_capture_remaining' might be unset if there is no capture on this order yet,
+        // so we instead need to calculate it here. LP 2025-11-07
+        // We also should *not* subtract refunded, because it is a subset of captured! LP 2025-11-19
+        $capture_remaining = intval($order->get_meta('_vipps_amount'))
+            - intval($order->get_meta('_vipps_captured'))
+            - intval($order->get_meta('_vipps_noncapturable'));
         error_log('LP before_fulfill capture_remaining: ' . print_r($capture_remaining, true));
-        if ($capture_remaining <= 0) { // Might be less than zero because we subtract both noncapturable and cancelled. LP 2025-11-19
+        if ($capture_remaining <= 0) {
             $this->fulfillment_fail(sprintf(__('Order has nothing left to capture at %1$s, cannot fulfill these items.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
