@@ -165,7 +165,7 @@ class VippsFulfillments {
             $fulfill_quantity = $item['qty'];
             $order_item = $order->get_item($item_id);
             if (!$order_item) {
-                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // hok did this happen
+                $this->fulfillment_fail('Something went wrong, could not find fulfillment item'); // how did this happen
             }
 
             $item_name = $order_item->get_name();
