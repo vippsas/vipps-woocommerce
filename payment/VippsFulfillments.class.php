@@ -146,16 +146,49 @@ class VippsFulfillments {
             $this->fulfillment_fail(sprintf(__('Order has nothing left to capture at %1$s, cannot fulfill these items.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
-        // We need to know if this fulfillment is an edit of an existing fulfillment to calculate correct capture,
-        // this meta is created in the filter woocommerce_fulfillment_before_update. LP 2025-11-19
-        $is_an_edit = intval($fulfillment->get_meta('_vipps_fulfillment_is_edit'));
-
         $currency = $order->get_currency();
 
         // Loop over each item and calculate what to actually capture. LP 2025-11-19
         // No capture will be made until we are sure *all* the items in the fulfillment can be captured for.
-        $to_capture_sum = 0;
-        // Also store captures separately in a table, so we can update order items' meta upon capture success. LP 2025-10-31
+        $item_capture_table = $this->calculate_item_captures($fulfillment);
+        $to_capture_sum = array_sum($item_capture_table);
+
+        error_log('LP item_capture_table: ' . print_r($item_capture_table, true));
+        error_log('LP to_capture_sum: ' . print_r($to_capture_sum, true));
+
+        // Do the capture. LP 2025-11-19
+        $ok = $this->gateway->capture_payment($order, $to_capture_sum);
+        if (!$ok) {
+            error_log("LP before_fulfill capture was not ok!");
+            /* translators: %1 = number, %2 = currency string, %3 = this payment method name */
+            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %1$s %2$s at %3$s. Please check the logs for more information.', 'woo-vipps'), $to_capture_sum, $currency, $this->gateway->get_payment_method_name()));
+        }
+
+        // Capture was successfull, now we need to update the captured meta for each item. LP 2025-10-31
+        error_log("LP before_fulfillment capture ok! Updating item metas, then accepting fulfillment");
+        foreach ($item_capture_table as $item_id => $new_capture) {
+            $item = $order->get_item($item_id);
+            $captured = intval($item->get_meta('_vipps_item_captured')) + $new_capture;
+            $item->update_meta_data('_vipps_item_captured', $captured);
+            $item->save_meta_data();
+        }
+
+        return $fulfillment;
+    }
+
+
+    /** Loops over each fulfillment item and calculates the amount to actually capture at Vipps MobilePay,
+     * also checks certain error cases and calls fulfillment_fail for these.
+     *
+     * Returns a table mapping fulfillment item id to capture amount. LP 2025-11-24
+     */
+    public function calculate_item_captures($fulfillment) {
+        $order = $fulfillment->get_order();
+
+        // We need to know if this fulfillment is an edit of an existing fulfillment to calculate correct capture,
+        // this meta is created in the filter woocommerce_fulfillment_before_update. LP 2025-11-19
+        $is_an_edit = intval($fulfillment->get_meta('_vipps_fulfillment_is_edit'));
+
         $item_capture_table = []; 
 
         foreach ($fulfillment->get_items() as $item) {
@@ -208,28 +241,9 @@ class VippsFulfillments {
             }
 
             $item_capture_table[$item_id] = $to_capture;
-            $to_capture_sum += $to_capture;
         }
 
-
-        // Do the capture. LP 2025-11-19
-        $ok = $this->gateway->capture_payment($order, $to_capture_sum);
-        if (!$ok) {
-            error_log("LP before_fulfill capture was not ok!");
-            /* translators: %1 = number, %2 = currency string, %3 = this payment method name */
-            $this->fulfillment_fail(sprintf(__('Could not capture the fulfillment of %1$s %2$s at %3$s. Please check the logs for more information.', 'woo-vipps'), $to_capture_sum, $currency, $this->gateway->get_payment_method_name()));
-        }
-
-        // Capture was successfull, now we need to update the captured meta for each item. LP 2025-10-31
-        error_log("LP before_fulfillment capture ok! Updating item metas, then accepting fulfillment");
-        foreach ($item_capture_table as $item_id => $new_capture) {
-            $item = $order->get_item($item_id);
-            $captured = intval($item->get_meta('_vipps_item_captured')) + $new_capture;
-            $item->update_meta_data('_vipps_item_captured', $captured);
-            $item->save_meta_data();
-        }
-
-        return $fulfillment;
+        return $item_capture_table;
     }
 
 
@@ -237,7 +251,7 @@ class VippsFulfillments {
     public function fulfillment_fail($msg) {
         if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
             /* translators:  %1 = exception message */
-            $this->gateway->log(sprintf(__('Error handling fulfilment: %1$s', "woo-vipps"), 'error'),  $msg);
+            $this->gateway->log(sprintf(__('Error handling fulfilment: %1$s', "woo-vipps"), $msg), 'error');
             throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
         }
         /* translators: %1 = class name, %2 = exception message */
