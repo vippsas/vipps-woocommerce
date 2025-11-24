@@ -960,24 +960,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order_captured = intval($order->get_meta('_vipps_captured'));
         $order_refunded = intval($order->get_meta('_vipps_refunded'));
         $order_cancelled = intval($order->get_meta('_vipps_cancelled'));
+        $order_noncapturable = intval($order->get_meta('_vipps_noncapturable'));
         
         $item_captured_sum = 0;
         $item_refunded_sum = 0;
         $item_cancelled_sum = 0;
+        $item_noncapturable_sum = 0;
         foreach ($order->get_items() as $item) {
             $item_captured_sum += intval($item->get_meta('_vipps_item_captured'));
             $item_refunded_sum += intval($item->get_meta('_vipps_item_refunded'));
             $item_cancelled_sum += intval($item->get_meta('_vipps_item_cancelled'));
+            $item_noncapturable_sum += intval($item->get_meta('_vipps_item_noncapturable'));
         }
         
         // The shipping cost is not on the order *items*, so make sure to subtract it in the comparisons below. LP 2025-11-17
-        $shipping_total = intval(100 * ($order->get_shipping_total() ?: '0'));
-        $shipping_tax = intval(100 * ($order->get_shipping_tax() ?: '0'));
+        $shipping_total = round(100 * ($order->get_shipping_total() ?: '0'), 0);
+        $shipping_tax = round(100 * ($order->get_shipping_tax() ?: '0'), 0);
         $shipping = $shipping_total + $shipping_tax;
 
         return ($order_captured - $shipping - $item_captured_sum = 0)
             && ($order_refunded - $shipping - $item_refunded_sum = 0)
-            && ($order_cancelled - $shipping - $item_cancelled_sum = 0);
+            && ($order_cancelled - $shipping - $item_cancelled_sum = 0)
+            && ($order_noncapturable - $shipping - $item_noncapturable_sum = 0);
     }
 
 
@@ -1014,7 +1018,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // the item total for an *order item*, which then actually is the unit price. LP 2025-10-30
             $total = $refund_item->get_total() ?: '0';
             $tax = $refund_item->get_total_tax() ?: '0';
-            $to_maybe_refund = intval(($total + $tax) * -100); // NB: refund prices are negative. LP 2025-10-29
+            $to_maybe_refund = round(-100 * ($total + $tax), 0); // NB: refund prices are negative. LP 2025-10-29
             error_log('LP calculate_refund_item_values: to_maybe_refund: ' . print_r($to_maybe_refund, true));
 
             $order_item = $order->get_item($item_id);
@@ -1022,24 +1026,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return new WP_Error('Vipps', sprintf(__('Cannot refund through %1$s - could not read order item in refund.', 'woo-vipps'), $this->get_payment_method_name()));
             }
 
-            $order_item_total = intval(100 * $order->get_item_total($order_item, true, false)); // this is unit price, not sum for all items in the order. LP 2025-11-19
+            $order_item_total = round(100 * $order->get_item_total($order_item, true, false), 0); // this is unit price, not sum for all items in the order. LP 2025-11-19
             $order_item_quantity = $order_item->get_quantity();
             $order_item_sum = $order_item_total * $order_item_quantity;
             error_log('LP calculate_refund_item_values: order_item_quantity: ' . print_r($order_item_quantity, true));
             error_log('LP calculate_refund_item_values: order_item_total: ' . print_r($order_item_total, true));
             error_log('LP calculate_refund_item_values: order_item_sum: ' . print_r($order_item_sum, true));
 
+            // LP FIXME: is this correct?
+            // Note: we don't consider the _cancelled meta here, because it is either zero, or equal to _noncapturable if the order is completed/refunded/cancelled. LP 2025-11-24
             $captured = intval($order_item->get_meta('_vipps_item_captured'));
             $refunded = intval($order_item->get_meta('_vipps_item_refunded'));
             $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
-            $cancelled = intval($order_item->get_meta('_vipps_item_cancelled'));
             error_log('LP calculate_refund_item_values: captured: ' . print_r($captured, true));
             error_log('LP calculate_refund_item_values: refunded: ' . print_r($refunded, true));
             error_log('LP calculate_refund_item_values: noncapturable: ' . print_r($noncapturable, true));
-            error_log('LP calculate_refund_item_values: cancelled: ' . print_r($cancelled, true));
 
             // Stop if user tries to refund more than what is left to refund or noncapture. LP 2025-11-06
-            if ($to_maybe_refund > $order_item_sum - $refunded - $noncapturable - $cancelled) {
+            if ($to_maybe_refund > $order_item_sum - $refunded - $noncapturable) {
                 error_log("LP calculate_refund_item_values case to_maybe_refund=$to_maybe_refund was greater than what is available to refund or noncapture");
                 /* translators: %1 = payment method name, %2 = item product name */
                 return new WP_Error('Vipps', sprintf(__("Cannot refund through %1\$s - the refund amount is too large for item '%2\$s'.", 'woo-vipps'), $this->get_payment_method_name(), $refund_item->get_name()));
@@ -1085,11 +1089,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // When we are here we know this is a partially captured case. LP 2025-11-06
 
             // If the refund amount is *entirely* covered by what is available to mark as noncapturable, then noncapture it all and refund nothing. LP 2025-10-24
-            // FIXME: im worried about noncapturable and cancelled being in sync, 
-            // ref: cancel_order_items_noncapturable_amount & mark_order_items_fully_cancelled. This was done on purpose
-            // to fix calculated refund values, but please review this logic. As long as we don't support partial 
-            // cancel i don't believe we should reach here. LP 2025-11-19
-            $available_to_noncapturable = $order_item_sum - $noncapturable - $captured - $cancelled;
+            $available_to_noncapturable = $order_item_sum - $noncapturable - $captured;
             error_log('LP calculate_refund_item_values available_to_noncapturable: ' . print_r($available_to_noncapturable, true));
             if ($to_maybe_refund <= $available_to_noncapturable) {
                 error_log("LP calculate_refund_item_values case enough to noncapture the entire refund amount. (refunding nothing)");
@@ -2259,7 +2259,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         foreach($order->get_items() as $item) {
-            $item_total = intval($order->get_item_total($item, true, false) * 100);
+            $item_total = round(100 * $order->get_item_total($item, true, false), 0);
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_captured item_sum: ' . print_r($item_sum, true));
@@ -2339,7 +2339,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         foreach($order->get_items() as $item) {
-            $item_total = intval($order->get_item_total($item, true, false) * 100);
+            $item_total = round(100 * $order->get_item_total($item, true, false), 0);
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_cancelled item_sum: ' . print_r($item_sum, true));

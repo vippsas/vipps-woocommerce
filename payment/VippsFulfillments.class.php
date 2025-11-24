@@ -169,9 +169,9 @@ class VippsFulfillments {
 
             $item_name = $order_item->get_name();
             error_log('LP before_fulfill item_name: ' . print_r($item_name, true));
-            $fulfill_sum = intval(
+            $fulfill_sum = round(
                 100 * $order->get_item_total($order_item, true, false) * $fulfill_quantity
-            );
+            , 0);
             error_log('LP before_fulfill fulfill_sum: ' . print_r($fulfill_sum, true));
             $captured = intval($order_item->get_meta('_vipps_item_captured'));
             error_log('LP before_fulfill captured: ' . print_r($captured, true));
@@ -198,9 +198,9 @@ class VippsFulfillments {
             }
 
             // Stop if this fulfillment would capture more than the items actual outstanding amount. LP 2025-11-07
-            $order_item_sum = intval(
+            $order_item_sum = round(
                 100 * $order->get_item_total($order_item, true, false) * $order_item->get_quantity()
-            );
+            , 0);
             $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
             $item_outstanding = $order_item_sum - $noncapturable - $captured;
             if ($to_capture > $item_outstanding) {
