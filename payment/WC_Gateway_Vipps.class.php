@@ -951,37 +951,42 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
 
     /** Returns whether the order meta data coincides with the sum of the order items' meta data.
-    * If not, this may mean there has been a refund or some other process outside WooCommerce
-    * (e.g a refund through the Vipps MobilePay business portal) LP 2025-11-07 */
+    *
+    * If not, this may mean that the order has been changed somewhere outside WooCommerce
+    * (e.g a refund through the Vipps MobilePay business portal). LP 2025-11-07 */
     public function order_meta_coincides_with_items_meta($order) {
         if (!is_a($order, 'WC_Order')) {
             return false;
         }
         $order_captured = intval($order->get_meta('_vipps_captured'));
+        error_log('LP coincides method, order_captured: ' . print_r($order_captured, true));
         $order_refunded = intval($order->get_meta('_vipps_refunded'));
+        error_log('LP coincides method, order_refunded: ' . print_r($order_refunded, true));
         $order_cancelled = intval($order->get_meta('_vipps_cancelled'));
+        error_log('LP coincides method, order_cancelled: ' . print_r($order_cancelled, true));
         $order_noncapturable = intval($order->get_meta('_vipps_noncapturable'));
-        
+        error_log('LP coincides method, order_noncapturable: ' . print_r($order_noncapturable, true));
+
         $item_captured_sum = 0;
         $item_refunded_sum = 0;
         $item_cancelled_sum = 0;
         $item_noncapturable_sum = 0;
-        foreach ($order->get_items() as $item) {
+
+        foreach ($order->get_items(['line_item', 'shipping', 'fee']) as $item) {
             $item_captured_sum += intval($item->get_meta('_vipps_item_captured'));
             $item_refunded_sum += intval($item->get_meta('_vipps_item_refunded'));
             $item_cancelled_sum += intval($item->get_meta('_vipps_item_cancelled'));
             $item_noncapturable_sum += intval($item->get_meta('_vipps_item_noncapturable'));
         }
-        
-        // The shipping cost is not on the order *items*, so make sure to subtract it in the comparisons below. LP 2025-11-17
-        $shipping_total = round(100 * ($order->get_shipping_total() ?: '0'), 0);
-        $shipping_tax = round(100 * ($order->get_shipping_tax() ?: '0'), 0);
-        $shipping = $shipping_total + $shipping_tax;
+        error_log('LP coincides method, item_captured_sum: ' . print_r($item_captured_sum, true));
+        error_log('LP coincides method, item_refunded_sum: ' . print_r($item_refunded_sum, true));
+        error_log('LP coincides method, item_cancelled_sum: ' . print_r($item_cancelled_sum, true));
+        error_log('LP coincides method, item_noncapturable_sum: ' . print_r($item_noncapturable_sum, true));
 
-        return ($order_captured - $shipping - $item_captured_sum = 0)
-            && ($order_refunded - $shipping - $item_refunded_sum = 0)
-            && ($order_cancelled - $shipping - $item_cancelled_sum = 0)
-            && ($order_noncapturable - $shipping - $item_noncapturable_sum = 0);
+        return ($order_captured ==  $item_captured_sum)
+            && ($order_refunded == $item_refunded_sum)
+            && ($order_cancelled == $item_cancelled_sum)
+            && ($order_noncapturable == $item_noncapturable_sum);
     }
 
 
@@ -1005,7 +1010,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Table to keep track of what meta values to update for each item to upon success. We need to return this. LP 2025-10-31
         $item_meta_table = [];
 
-        foreach ($current_refund->get_items() as $refund_item) {
+        foreach ($current_refund->get_items(['line_item', 'shipping', 'fee']) as $refund_item) {
             // These refund items are WC_Order_Item (specifically WC_Order_Item_Product for products)
             $item_id = $refund_item->get_meta('_refunded_item_id');
             if (!$item_id) {
@@ -2258,7 +2263,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        foreach($order->get_items() as $item) {
+        foreach($order->get_items(['line_item', 'shipping', 'fee']) as $item) {
             $item_total = round(100 * $order->get_item_total($item, true, false), 0);
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
@@ -2292,7 +2297,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        foreach($order->get_items() as $item) {
+        foreach($order->get_items(['line_item', 'shipping', 'fee']) as $item) {
             $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
             error_log('LP cancel_order_items_noncapturable_amount noncapturable: ' . print_r($noncapturable, true));
             if ($noncapturable <= 0) {
@@ -2313,7 +2318,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        foreach($order->get_items() as $item) {
+        foreach($order->get_items(['line_item', 'shipping', 'fee']) as $item) {
             $captured = intval($item->get_meta('_vipps_item_captured'));
             error_log('LP mark_order_items_fully_refunded captured: ' . print_r($captured, true));
             $to_refund = $captured;
@@ -2338,7 +2343,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        foreach($order->get_items() as $item) {
+        foreach($order->get_items(['line_item', 'shipping', 'fee']) as $item) {
             $item_total = round(100 * $order->get_item_total($item, true, false), 0);
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
@@ -2348,7 +2353,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP mark_order_items_fully_cancelled captured: ' . print_r($captured, true));
 
             // We only wish to mark everything uncaptured as cancelled (don't take into account refunded here, because it is a subset of captured).
-            // Also set the same as noncapturable so they are in sync. LP 2025-11-18
             $to_cancel = $item_sum - $captured;
             error_log('LP mark_order_items_fully_cancelled new to set as to_cancel: ' . print_r($to_cancel, true));
 
@@ -2357,6 +2361,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 continue;
             }
             $item->update_meta_data('_vipps_item_cancelled', $to_cancel);
+            // Also set the same as noncapturable so they are in sync. LP 2025-11-18
             $item->update_meta_data('_vipps_item_noncapturable', $to_cancel);
             $item->save_meta_data();
         }
@@ -2481,11 +2486,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = intval($order->get_meta('_vipps_captured'));
         $new_cancelled = $total - $captured;
         $total_cancelled = $new_cancelled + intval($order->get_meta('_vipps_cancelled'));
-        $remaining = $total - $captured - $total_cancelled; // until we support partial cancel this will just be zero since we cancel everything. LP 2025-10-14
+        $remaining = $total - $captured - $total_cancelled;
 
         // We need to assume it worked. Also, we can't do partial cancels yet, so just cancel everything.
         $order->update_meta_data('_vipps_cancel_timestamp', time());
         $order->update_meta_data('_vipps_cancelled', $total_cancelled);
+        $order->update_meta_data('_vipps_noncapturable', $total_cancelled); # sync noncapturable with cancelled. LP 2025-11-24
         $order->update_meta_data('_vipps_cancel_remaining', $remaining);
 
         // Set status from Vipps, ignore errors, use statusdata if we have it.
