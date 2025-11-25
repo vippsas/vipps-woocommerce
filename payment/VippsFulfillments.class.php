@@ -33,6 +33,9 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+use Automattic\WooCommerce\Internal\Fulfillments\Fulfillment;
+use Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore;
+
 class VippsFulfillments {
     private $gateway;
 
@@ -62,10 +65,66 @@ class VippsFulfillments {
     }
 
 
-    /** Mark a fulfillment edit as being an edit so we can decide the correct capture amount in woocommerce_fulfillment_before_fulfill. LP 2025-11-07 */
+    /** Returns a Fulfillment object if one is found with the given id, else false. LP 2025-11-25 */
+    public function get_fulfillment($id) {
+        if (!class_exists('Automattic\WooCommerce\Internal\Fulfillments\Fulfillment')
+        || !class_exists('Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore')) {
+            /* translators:  %1 and %2 are class names */
+            $this->gateway->log(sprintf(__('Class %1$s or %2$s was not found', "woo-vipps"), 'Fulfillment', 'FulfillmentsDataStore'), 'error');
+            return false;
+        }
+        try {
+            $fulfillment = new Fulfillment($id);
+            $data_store = wc_get_container()->get(FulfillmentsDataStore::class);
+            $data_store->read($fulfillment);
+            return $fulfillment;
+        } catch (Exception $e) {
+            /* translators:  %1 = id, %2 = exception message */
+            $this->gateway->log(sprintf(__('Could not read fulfillment with id %1$s: %2$s', "woo-vipps"), $id, $e->getMessage(), 'error'));
+            return false;
+        }
+    }
+
+
+    /** This runs on fulfillment edits, we need to mark this fulfillment as being an edit to
+     * calculate correct new capture in woocommerce_fulfillment_before_fulfill. LP 2025-11-07.
+     *
+     *  We also need to check if this new updated version has all the items that the old one had, 
+     *  i.e. this is the edge case where they remove all quantity of an item, then it won't be found in get_items()
+     *  and therefore not caught in calculate_item_captures which runs on in woocommerce_fulfillment_before_fulfill. LP 2025-11-25
+     */
     public function woocommerce_fulfillment_before_update($fulfillment) {
+
         error_log('LP Running fulfillment_before_update to mark it as being edit. Id is ' . $fulfillment->get_id());
         $fulfillment->update_meta_data('_vipps_fulfillment_is_edit', 1);
+
+        $original_fulfillment = $this->get_fulfillment($fulfillment->get_id());
+        if (!is_a($fulfillment, 'Automattic\WooCommerce\Internal\Fulfillments\Fulfillment')) {
+                $this->fulfillment_fail(__('Something went wrong, did not find the original fulfillment to edit', 'woo-vipps'));
+                /* translators: %1 = id, %2 = method/hook name */
+                $this->gateway->log(sprintf(__('Did not find original fulfillment with id %1$s in %2$s, could not guarantee this is safe to fulfill, it was not accepted.', 'woo-vipps'), $fulfillment->get_id(), 'woocommerce_fulfillment_before_update'), 'error');
+        }
+
+        $item_ids = array_map(fn ($item) => $item['item_id'], $fulfillment->get_items());
+        $original_item_ids = array_map(fn ($item) => $item['item_id'], $original_fulfillment->get_items());
+        error_log('LP before_update item_ids: ' . print_r($item_ids, true));
+        error_log('LP before_update original_item_ids: ' . print_r($original_item_ids, true));
+
+        // Ensure all item ids from before update exists in this updated fulfillment. LP 2025-11-25
+        foreach($original_item_ids as $id) {
+            if (!in_array($id, $item_ids)) {
+                try {
+                    $item_name = $fulfillment->get_order()->get_item($id)->get_name();
+                } catch (Exception $e) {
+                    /* translators: %1 = id, %2 = method/hook name, %3 = exception message */
+                    $this->gateway->log(sprintf(__('Could not get item name for fulfillment id %1$s in %2$s: %3$s', 'woo-vipps'), $fulfillment->get_id(), 'woocommerce_fulfillment_before_update', $e->getMessage()), 'error');
+                    $item_name = 'unknown item name';
+                }
+                /* translators: %1 = item name, %2 = company name */
+                $this->fulfillment_fail(sprintf(__('Item \'%1$s\' is already captured at %2$s, cannot remove it', 'woo-vipps'), $item_name, Vipps::CompanyName()));
+            }
+        }
+
         return $fulfillment;
     }
 
@@ -224,7 +283,7 @@ class VippsFulfillments {
             }
             error_log('LP to_capture for item: ' . print_r($to_capture, true));
 
-            // We can skip the rest if to_capture is zero (note: it shouldn't be negative here since check for this in the edit-branch above). LP 2025-11-19
+            // We can skip the rest if to_capture is zero, don't capture anything for this item. LP 2025-11-19
             if ($to_capture <= 0) {
                 error_log("LP before_fulfill, got a nonpositive to_capture=$to_capture, skipping this item");
                 continue;
@@ -251,11 +310,11 @@ class VippsFulfillments {
     public function fulfillment_fail($msg) {
         if (class_exists('Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException')) {
             /* translators:  %1 = exception message */
-            $this->gateway->log(sprintf(__('Error handling fulfilment: %1$s', "woo-vipps"), $msg), 'error');
+            $this->gateway->log(sprintf(__('Error handling fulfillment: %1$s', "woo-vipps"), $msg), 'error');
             throw new Automattic\WooCommerce\Internal\Fulfillments\FulfillmentException($msg);
         }
         /* translators: %1 = class name, %2 = exception message */
-        $this->gateway->log(sprintf(__('%1$s does not exist, the exception was: %2$s', "woo-vipps"), 'error'), 'FulfillmentException', $msg);
+        $this->gateway->log(sprintf(__('%1$ did not exist to throw on fulfillment fail, the fail message was: %2$s', "woo-vipps"), 'error'), 'FulfillmentException', $msg);
         throw new Exception($msg);
     }
 
@@ -267,7 +326,7 @@ class VippsFulfillments {
             $this->gateway->log(sprintf(__('%1$s was not found, can\'t retrieve order fulfillments for order %1$s'), 'FulfillmentsDataStore', $order->get_id()), 'error');
             return false;
         }
-        $data_store = wc_get_container()->get(Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore::class);
+        $data_store = wc_get_container()->get(FulfillmentsDataStore::class);
         return $data_store->read_fulfillments('WC_Order', $order->get_id());
     }
 
