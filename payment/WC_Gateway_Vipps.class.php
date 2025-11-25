@@ -2268,6 +2268,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_captured item_sum: ' . print_r($item_sum, true));
+            error_log('LP mark_order_items_fully_captured item name: ' . $item->get_name());
 
             $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
             error_log('LP mark_order_items_fully_captured noncapturable: ' . print_r($noncapturable, true));
@@ -2298,6 +2299,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         foreach($order->get_items(['line_item', 'shipping', 'fee']) as $item) {
+            error_log('LP mark_order_items_fully_captured item name: ' . $item->get_name());
             $noncapturable = intval($item->get_meta('_vipps_item_noncapturable'));
             error_log('LP cancel_order_items_noncapturable_amount noncapturable: ' . print_r($noncapturable, true));
             if ($noncapturable <= 0) {
@@ -2348,6 +2350,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $item_quantity = $item->get_quantity();
             $item_sum = $item_total * $item_quantity;
             error_log('LP mark_order_items_fully_cancelled item_sum: ' . print_r($item_sum, true));
+            error_log('LP mark_order_items_fully_captured item name: ' . $item->get_name());
 
             $captured = intval($item->get_meta('_vipps_item_captured'));
             error_log('LP mark_order_items_fully_cancelled captured: ' . print_r($captured, true));
