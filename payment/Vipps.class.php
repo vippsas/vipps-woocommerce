@@ -1102,8 +1102,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 }
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
                         $logo = plugins_url('img/vmp-logo.png',__FILE__);
-                        $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
-                        $message = sprintf($text, admin_url('/admin.php?page=vipps_settings_menu'));
+                        $message = "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
