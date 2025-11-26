@@ -121,7 +121,7 @@ class VippsFulfillments {
                     $item_name = 'unknown item name';
                 }
                 /* translators: %1 = item name, %2 = company name */
-                $this->fulfillment_fail(sprintf(__('Item \'%1$s\' is already captured at %2$s, cannot remove it', 'woo-vipps'), $item_name, Vipps::CompanyName()));
+                $this->fulfillment_fail(sprintf(__('Item \'%1$s\' is already captured at %2$s and cannot be removed, please consider refunding it instead.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
             }
         }
 
@@ -184,14 +184,16 @@ class VippsFulfillments {
         // Stop early if the order has anything cancelled, we don't support partial capture as of now. LP 2025-11-21
         if (intval($order->get_meta('_vipps_cancelled')) > 0) {
             /* translators: %1=company name */
-            $this->fulfillment_fail(sprintf(__('Order is cancelled at %1$s and can not be modified.', 'woo_vipps'), Vipps::CompanyName()));
+            $this->fulfillment_fail(sprintf(__('Order is cancelled at %1$s and cannot be modified.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
         // Stop if the order meta amounts does not add up with sum of its items, this could mean that
         // the order was mutated outside of WP (e.g. refund through business portal) LP 2025-11-07
         if (!$this->gateway->order_meta_coincides_with_items_meta($order)) {
+            /* translators: %1 = payment method name |*/
             $this->gateway->log(sprintf(__('The order meta data does not coincide with the sums of the order items\' meta data, we can\'t do partial capture for this fulfillment. There may have been a refund or capture through the %1$s business portal', 'woo-vipps'), Vipps::CompanyName()), 'error');
-            $this->fulfillment_fail(sprintf(__('Cannot do partial capture through %1$s - order status is unclear, the order may have been changed through the %2$s business portal.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
+            /* translators: %1 = payment method name, %2 = company name */
+            $this->fulfillment_fail(sprintf(__('Cannot do partial capture through %1$s - order status is unclear. Please consider temporarily disabling fulfillment support in the %2$s settings.', 'woo-vipps'), $this->gateway->get_payment_method_name(), Vipps::CompanyName()));
         }
 
         // Don't process anything further there is nothing to capture. Note: the meta '_vipps_capture_remaining' 
@@ -275,7 +277,7 @@ class VippsFulfillments {
                 // Stop if user tries to remove already-captured amounts in this edit. LP 2025-10-31
                 if ($to_capture < $captured) {
                     /* translators: %1 = item product name, %2 = company name */
-                    $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, please consider refunding the item instead.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
+                    $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, please consider refunding it instead.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
                 }
 
                 error_log('LP before_fulfull, yes this was an edit! subtract captured amount of '. $captured);
