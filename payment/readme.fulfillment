@@ -1,0 +1,18 @@
+WC_Gateway
+- ENDRING: merget metodene maybe_cancel_payment og maybe_refund_payment. 
+- ENDRING: Vi syncer nå _cancelled og _noncapturable meta på ordren, og order items meta, når noe kanselleres (_noncapturable blir oppdatert med ny cancel sum)
+
+- NYTT: Nå refunder den refundable beløp hvis det er noe, etterpå kanselleres ordre uavhengig om noe ble refundet.
+- NYTT: På order complete, refund, cancel, og fulfillment så annoterer vi nå de separate item beløpene på alle ordre items.
+- metoden process_refund:
+    - NYTT: Før refund så sjekkes det om beløp matcher for ordre meta vs sum av item meta, gir error hvis ikke
+    - NYTT: gir feilmelding dersom brukern prøvde å refunde mer enn er gjenstående på ordreitem
+    - NYTT: annoterer _refunded og _noncapturable beløpene på hver ordre item, det er en ny metode som looper over items og returnerer en tabell.
+
+Ny klasse VippsFulfillments.class.php
+- Håndterer fulfillment hookene og har noen hjelpemetoder for fulfillment-bruk.
+- En instans av denne opprettes i __construct til WC_Gateway_Vipps.class.php
+- Fulfillment-hooks registreres *kun* hvis nye settingen "enable support for fulfillments" er skrudd på (default av)
+- Før fulfillment godkjennes så sjekkes det om beløp matcher for ordre meta vs sum av item meta
+- Før fulfillment edit godkjennes så sjekker den eksplisitt om noen items har blitt fjernet, også annoterer dette objektet som en edit i en meta-verdi.
+
