@@ -1526,11 +1526,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         if ($this->fulfillments->is_supported()) {
             $mainfields['fulfillments_enabled'] = [
-                'title'       => __('Enable support for order fulfillments', 'woo-vipps'),
-                'label'       => __('Enable support for order fulfillments', 'woo-vipps'),
+                'title'       => __('Enable support for partial capture of order fulfillments', 'woo-vipps'),
+                'label'       => __('Enable support for partial capture of order fulfillments', 'woo-vipps'),
                 'type'        => 'checkbox',
                 /* translators: %1 = payment method name */
-                'description' => sprintf(__('Enable %1$s support for WooCommerce order fulfillment.', 'woo-vipps'), $payment_method_name),
+                'description' => sprintf(__('If you enable this, and are also using WooCommerce Fulfillments, this plugin will perform partial capture of each fulfillment via %1$s. This means that if you complete a fulfillment while the order is in the processing state, the value of that order will be captured and transferred to your account immediately, without waiting for the rest of the order to be set to complete. When set to completed, the entire (rest of the) order will be captured as usual. If you do activate this, you will not be able to delete or remove items from a completed fulfillment, since we can\'t "uncapture" funds. You can then only *add* lines to fulfillments. If you do partial capture via the %1$s portal, this will not work and should not be turned on.', 'woo-vipps'), $payment_method_name),
                 'default'     => 'no',
             ];
         }
