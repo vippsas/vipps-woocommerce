@@ -119,7 +119,7 @@ class VippsFulfillments {
                     $item_name = 'unknown item name';
                 }
                 /* translators: %1 = item name, %2 = company name */
-                $this->fulfillment_fail(sprintf(__('Item \'%1$s\' is already captured at %2$s and cannot be removed, please consider refunding it instead.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
+                $this->fulfillment_fail(sprintf(__('Because item \'%1$s\' already has been captured at %2$s, it cannot be removed from this fulfillment. It can still be refunded. If you do need to remove the item from this fulfillment, you will need to temporarily turn of support for partial capture in fulfillments in the %2$s settings.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
             }
         }
 
@@ -141,7 +141,7 @@ class VippsFulfillments {
         }
 
         error_log("LP woocommerce_fulfillment_before_delete on vipps order. Stopping...");
-        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment - its value has been captured at %1$. Refunding the items is possible.', 'woo-vipps'), Vipps::CompanyName()));
+        $this->fulfillment_fail(sprintf(__('Cannot delete this fulfillment - its value has been captured at %1$. Refunding the items is possible. If you do need to delete the fulfillment, you will need to temporarily turn of support for partial capture in fulfillments in the %2$s settings.', 'woo-vipps'), Vipps::CompanyName()));
     }
 
 
@@ -180,9 +180,12 @@ class VippsFulfillments {
         }
 
         // Stop early if the order has anything cancelled, we don't support partial capture as of now. LP 2025-11-21
+        // If part of the order is cancelled, then the rest has been captured (if anything). We will then refuse more fulfillments.
+        // Here we *could* allow the merchant to fulfill just those order items that have been captured, but we assume for now that 
+        // for this usecase, the merchant would not have partial capture turned on. IOK 2025-12-01
         if (intval($order->get_meta('_vipps_cancelled')) > 0) {
             /* translators: %1=company name */
-            $this->fulfillment_fail(sprintf(__('Order is cancelled at %1$s and cannot be modified.', 'woo_vipps'), Vipps::CompanyName()));
+            $this->fulfillment_fail(sprintf(__('This order has been fully processed at %1$s, so it it is not possible to do partial captures on it. If you still need to add a fulfillment, you will need to turn of the support for partial capture via fulfillments at the  %1$s settings.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
         // Stop if the order meta amounts does not add up with sum of its items, this could mean that
@@ -202,7 +205,7 @@ class VippsFulfillments {
             - intval($order->get_meta('_vipps_noncapturable'));
         error_log('LP before_fulfill capture_remaining: ' . print_r($capture_remaining, true));
         if ($capture_remaining <= 0) {
-            $this->fulfillment_fail(sprintf(__('Order has nothing left to capture at %1$s, cannot fulfill these items.', 'woo_vipps'), Vipps::CompanyName()));
+            $this->fulfillment_fail(sprintf(__('This order has been fully processed at %1$s, so it it is not possible to do partial captures on it. If you still need to add a fulfillment, you will need to turn of the support for partial capture via fulfillments at the  %1$s settings.', 'woo_vipps'), Vipps::CompanyName()));
         }
 
         $currency = $order->get_currency();
@@ -275,7 +278,7 @@ class VippsFulfillments {
                 // Stop if user tries to remove already-captured amounts in this edit. LP 2025-10-31
                 if ($to_capture < $captured) {
                     /* translators: %1 = item product name, %2 = company name */
-                    $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, please consider refunding it instead.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
+                    $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is less than what is already captured at %2$s, please consider refunding it instead. If you need to do this edit, you can do so by turning off support for partial capture via fullfilments in the %2$s settings.', 'woo-vipps'), $item_name, Vipps::CompanyName()));
                 }
 
                 error_log('LP before_fulfull, yes this was an edit! subtract captured amount of '. $captured);
@@ -296,7 +299,7 @@ class VippsFulfillments {
             $noncapturable = intval($order_item->get_meta('_vipps_item_noncapturable'));
             $item_outstanding = $order_item_sum - $noncapturable - $captured;
             if ($to_capture > $item_outstanding) {
-                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is more than is available to capture at %2$s.', 'woo_vipps'), $item_name, Vipps::CompanyName()));
+                $this->fulfillment_fail(sprintf(__('New capture sum for item \'%1$s\' is more than is available to capture at %2$s. If you need to do this edit anyway, you will need to turn off support for partial capture via fullfilments in the %2$s settings.', 'woo_vipps'), $item_name, Vipps::CompanyName()));
             }
 
             $item_capture_table[$item_id] = $to_capture;
