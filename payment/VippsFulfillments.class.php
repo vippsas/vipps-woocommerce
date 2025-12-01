@@ -1,6 +1,6 @@
 <?php
 /*
-    This class contains the logic for handling WooCommerce fulfillments. We will capture fulfilled order items. LP 2025-10-22
+This class contains the logic for handling WooCommerce fulfillments for Vipps MobilePay orders. LP 2025-10-22
 
 
 This file is part of the plugin Pay with Vipps and MobilePay for WooCommerce
@@ -59,7 +59,7 @@ class VippsFulfillments {
     }
 
 
-    /** Whether the plugin has enabled support for partial capture in fulfillment. LP 2025-10-22 */
+    /** Whether the plugin's support WC fulfillment is enabled. LP 2025-10-22 */
     public function is_enabled() {
         return $this->is_supported() && $this->gateway->get_option('fulfillments_enabled') == 'yes';
     }
@@ -89,12 +89,10 @@ class VippsFulfillments {
     /** This runs on fulfillment edits, we need to mark this fulfillment as being an edit to
      * calculate correct new capture in woocommerce_fulfillment_before_fulfill. LP 2025-11-07.
      *
-     *  We also need to check if this new updated version has all the items that the old one had, 
-     *  i.e. this is the edge case where they remove all quantity of an item, then it won't be found in get_items()
-     *  and therefore not caught in calculate_item_captures which runs on in woocommerce_fulfillment_before_fulfill. LP 2025-11-25
+     *  We also need to check if this new edited fulfillment has all the items that the old one had. If an item is fully
+     *  removed then it won't be found in get_items(), which leads to incorrect values in the hook woocommerce_fulfillment_before_fulfill. LP 2025-11-25
      */
     public function woocommerce_fulfillment_before_update($fulfillment) {
-
         error_log('LP Running fulfillment_before_update to mark it as being edit. Id is ' . $fulfillment->get_id());
         $fulfillment->update_meta_data('_vipps_fulfillment_is_edit', 1);
 
@@ -129,7 +127,7 @@ class VippsFulfillments {
     }
 
 
-    /** Disable deletion for vipps fulfillments, since we capture fulfillments and don't want to refund (they can't be recaptured). LP 2025-10-22 */
+    /** Disable fulfillment deletions, since they are already captured at Vipps MobilePay (can't be recaptured if we refund them). LP 2025-10-22 */
     public function woocommerce_fulfillment_before_delete($fulfillment) {
         $order = $fulfillment->get_order();
         if (!$order) {
@@ -147,7 +145,7 @@ class VippsFulfillments {
     }
 
 
-    /** 
+    /**
      * Partially capture Vipps order using the fulfilled items from woo. LP 2025-10-08
      *
      *  If support for this is turned on in the settings; When completing a fulfilment, we will sum up the total values of the items fulfilled and do
