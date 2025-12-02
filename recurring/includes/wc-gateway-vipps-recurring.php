@@ -775,13 +775,17 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// status: RESERVED
-		// Part of a renewal, so we need to put the order status to `$this->default_renewal_status` and charge the payment.
+		// Part of a renewal, so we need to put the order status to `$this->default_renewal_status` or completed and charge the payment.
 		if ( empty( $transaction_id ) && $charge->status === WC_Vipps_Charge::STATUS_RESERVED
 			 && wcs_order_contains_renewal( $order ) ) {
+			// NOTE: should we respect $order->needs_processing() here?
+			// If the answer is yes, we also need to make sure we create a RESERVE_CAPTURE charge when creating new charges as well.
 			if ( $this->maybe_capture_payment( WC_Vipps_Recurring_Helper::get_id( $order ) ) ) {
 				WC_Vipps_Recurring_Helper::set_transaction_id_for_order( $order, $charge->id );
-				$order->update_status( $this->default_renewal_status );
 				WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge captured for renewal order: %s (%s)', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id, $charge->status ) );
+
+				$status = $this->transition_renewals_to_completed ? 'completed' : $this->default_renewal_status;
+				$order->update_status( $status );
 			}
 		}
 
