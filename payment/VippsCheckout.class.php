@@ -952,6 +952,7 @@ jQuery(document).ready(function () {
                     add_filter('woocommerce_add_error', function ($message) { return ""; });
                     add_filter('woocommerce_add_notice', function ($message) { return ""; });
 
+		    do_action('woo_vipps_checkout_before_applying_coupon', $order, $code);
                     if (WC()->cart) {
 
 
@@ -975,6 +976,7 @@ jQuery(document).ready(function () {
 
                     $res = $order->apply_coupon($code);
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
+		    do_action('woo_vipps_checkout_after_applying_coupon', $order, $code);
 
                     return 1;
                 }
@@ -984,12 +986,14 @@ jQuery(document).ready(function () {
             $filters['removecoupon'] = function ($action, $order) {
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
+		    do_action('woo_vipps_checkout_before_removing_coupon', $order, $code);
                     // Ensure the cart too loses the coupon
                     if (WC()->cart) {
                       $ok = WC()->cart->remove_coupon($code);
                       // can't do much if this fails so
                     }
                     $res = $order->remove_coupon($code);
+		    do_action('woo_vipps_checkout_after_removing_coupon', $order, $code);
 
                     $coupon = new WC_Coupon($code);
                     $has_free = $coupon->get_free_shipping();
