@@ -259,7 +259,7 @@ jQuery( document ).ready( function() {
                     {   cache:false,
                         timeout: 0,
                         dataType:'json',
-
+                        headers: {"Accept-Language": VippsConfig['vippslocale']},
                         data: data,
                         method: 'POST', 
                         error: function (xhr, statustext, error) {

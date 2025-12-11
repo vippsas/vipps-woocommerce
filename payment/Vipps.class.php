@@ -3974,6 +3974,14 @@ else:
             exit();
         }
 
+        // Try setting locale recieved from frontend in Accept-Language header. LP 2025-12-11
+        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+            $newlocale = trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            if (!empty($newlocale)) {
+                switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
+            }
+        }
+
         // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
         $toolate = false;
         $msg = "";
@@ -4041,6 +4049,14 @@ else:
             $result = array('ok'=>0, 'msg'=>sprintf(__('%1$s is not available for this order','woo-vipps'), Vipps::ExpressCheckoutName()), 'url'=>false);
             wp_send_json($result);
             exit();
+        }
+
+        // Try setting locale recieved from frontend in Accept-Language header. LP 2025-12-11
+        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+            $newlocale = trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+            if (!empty($newlocale)) {
+                switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
+            }
         }
 
         // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 

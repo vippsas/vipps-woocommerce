@@ -440,6 +440,9 @@ jQuery(document).ready(function () {
             $src = $sessioninfo['session']['checkoutFrontendUrl'];
             $url = $src; 
         }
+
+        $this->try_set_locale($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+
         // And if we do, just return what we have. NB: This *should not happen*.
         // IOK 2025-05-04 what are you talking about IOK, this absolutely happens e.g. when using the backbutton to a page starting the orders.
         if ($url || $redir) {
@@ -863,21 +866,25 @@ jQuery(document).ready(function () {
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
+    // Manually set locale to fix incorrect language shown in checkout widgets when using translate plugins like polylang, wpml.
+    // we send the locale to the frontend when first setting up Checkout, then we send the locale back
+    // in the Accept-Language header when requesting the ajax endpoint. LP 2025-12-11
+    function try_set_locale($locale_str) {
+        if (!isset($locale_str))
+            return false;
+        $newlocale = trim($locale_str);
+        if (empty($newlocale))
+            return false;
+        return switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
+    }
+
     // Returns HTML of any widgets for the Checkout page IOK 2025-05-13
     function vipps_ajax_get_widgets () {
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return "";
 
-        // Manually set locale to fix incorrect language shown in checkout widgets when using translate plugins like polylang, wpml.
-        // we send the locale to the frontend when first setting up Checkout,
-        // then we send the locale back in the Accept-Language header when requesting this ajax endpoint. LP 2025-12-11
-        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $newlocale = trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            if (!empty($newlocale)) {
-                switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
-            }
-        }
+        $this->try_set_locale($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 
         print $this->get_checkout_widgets($order);
         exit();
