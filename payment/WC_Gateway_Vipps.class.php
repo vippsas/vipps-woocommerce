@@ -3052,9 +3052,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
                 if (is_array($shipping_table) && isset($shipping_table[$key])) {
-                    $shipping_rate = @unserialize($shipping_table[$key]);
+                    $json = $shipping_table['_is_json'] ?? false;
+                    $shipping_rate = null;
+                    if ($json) {
+                        $shipping_rate = json_decode($shipping_table[$key], true, 512, JSON_INVALID_UTF8_IGNORE | JSON_OBJECT_AS_ARRAY);
+                    } else {
+                        $shipping_rate = @unserialize($shipping_table[$key]);
+                    }
                     if (!$shipping_rate) {
-                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error');
+                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
+                        if ($json) {
+                           $this->log(sprintf(__("%1\$s: Error was %2\$s", 'woo-vipps'), Vipps::ExpressCheckoutName(), json_last_error_msg()));
+                        }
                     } else {
                         if ($option_index) {
                            $meta = $shipping_rate->get_meta_data();

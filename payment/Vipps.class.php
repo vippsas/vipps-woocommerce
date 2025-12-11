@@ -3195,7 +3195,7 @@ else:
         foreach($ratemap as $key => $rate) {
             $serialized = '';
             try {
-                $serialized = serialize($rate);
+                $serialized = json_encode($rate, JSON_INVALID_UTF8_IGNORE| JSON_PRESERVE_ZERO_FRACTION | JSON_PARTIAL_OUTPUT_ON_ERROR );
             } catch (Exception $e) {
                 $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
                 continue;
@@ -3205,6 +3205,7 @@ else:
         }
         // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
         $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
+        $storedmethods['_is_json'] = true; // Switched from php serialization
 
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save_meta_data();
