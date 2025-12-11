@@ -174,6 +174,7 @@ jQuery( document ).ready( function() {
             type: "GET",
             cache:false,
             timeout: 0,
+            headers: {"Accept-Language": VippsConfig['vippslocale']},
             dataType:'html',
             error: function (eh) { console.log("error loading widgets"); },
             success: function (data) {
@@ -258,7 +259,7 @@ jQuery( document ).ready( function() {
                     {   cache:false,
                         timeout: 0,
                         dataType:'json',
-
+                        headers: {"Accept-Language": VippsConfig['vippslocale']},
                         data: data,
                         method: 'POST', 
                         error: function (xhr, statustext, error) {
