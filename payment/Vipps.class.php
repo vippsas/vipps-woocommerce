@@ -3193,17 +3193,44 @@ else:
 
         // We need to store the WC_Shipping_Rate objects with all its meta data in the database until return from Vipps. IOK 2020-02-17
         $storedmethods = array(); 
+        $errormethods = array();
         foreach($ratemap as $key => $rate) {
             $serialized = '';
             try {
-                $serialized = json_encode($rate, JSON_INVALID_UTF8_IGNORE| JSON_PRESERVE_ZERO_FRACTION | JSON_PARTIAL_OUTPUT_ON_ERROR );
+                $serialized = json_encode($rate, JSON_INVALID_UTF8_IGNORE| JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
+                // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
+                $storedmethods[$key] = $serialized;
             } catch (Exception $e) {
+                $errormethods[] = $key;
                 $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
                 continue;
             }
-            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
-            $storedmethods[$key] = $serialized;
         }
+
+        // Remove any methods from the return that was not serializable
+        if (!empty($errormethods)) {
+            $fixedreturn = [];
+            if ($ischeckout) {
+                foreach($errormethods as $problem) {
+                    foreach($return['shippingDetails'] as $method) {
+                        $id = preg_replace('!:\d+$!', "", $method['id']);
+                        if ($id != $problem) $fixedreturn[]  = $method;
+                    }
+                }
+                $return['shippingDetails'] = $fixedreturn;
+            } else {
+                foreach($errormethods as $problem) {
+                    foreach($return as $method) {
+                        $option = $method['options'][0];
+                        $id = preg_replace('!:\d+$!', "", $option['id']);
+                        if ($id != $problem) $fixedreturn[]  = $method;
+                    }
+                }
+                $return = $fixedreturn;
+            }
+        }
+
+
         // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
         $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
         $storedmethods['_is_json'] = true; // Switched from php serialization
