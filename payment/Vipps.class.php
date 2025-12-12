@@ -4391,6 +4391,87 @@ else:
             <?php
             return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
+
+    // Specific logo for express checkout based on certain parameters, these are the new express svgs received 2025-12-12. LP 2025-12-12
+    private function get_express_img($payment_method, $lang, $variant) {
+        $base = plugins_url('img', __FILE__);
+
+        // A much more concise approach could be to name the variant files directly and do a oneliner, but harder to grep after the files' usage. LP 2025-12-12
+        $img_map = [
+            "vipps" => [
+                "default" => "$base/vipps/en/buy-now-vipps-en-rectangular.svg",
+                "en" => [
+                    "buy-now-rectangular" => "$base/vipps/en/buy-now-vipps-en-rectangular.svg",
+                    "buy-now-pill" => "$base/vipps/en/buy-now-vipps-en-pill.svg",
+                    "express-rectangular" => "$base/vipps/en/express-vipps-en-rectangular.svg",
+                    "express-rectangular-mini" => "$base/vipps/en/express-vipps-en-rectangular-mini.svg",
+                    "express-pill" => "$base/vipps/en/express-vipps-en-pill.svg",
+                    "express-pill-mini" => "$base/vipps/en/express-vipps-en-pill-mini.svg",
+
+                ],
+                "no" => [
+                    "buy-now-rectangular" => "$base/vipps/no/kjop-na-vipps-no-rectangular.svg",
+                    "buy-now-pill" => "$base/vipps/no/kjop-na-vipps-no-pill.svg",
+                    "express-rectangular" => "$base/vipps/no/ekspress-vipps-no-rectangular.svg",
+                    "express-rectangular-mini" => "$base/vipps/no/ekspress-vipps-no-rectangular-mini.svg",
+                    "express-pill" => "$base/vipps/no/ekspress-vipps-no-pill.svg",
+                    "express-pill-mini" => "$base/vipps/no/ekspress-vipps-no-pill-mini.svg",
+                ],
+                "sv" => [
+                    "buy-now-rectangular" => "$base/vipps/se/kop-nu-vipps-se-rectangular.svg",
+                    "buy-now-pill" => "$base/vipps/se/kop-nu-vipps-se-pill.svg",
+                    "express-rectangular" => "$base/vipps/se/express-vipps-se-rectangular.svg",
+                    "express-rectangular-mini" => "$base/vipps/se/express-vipps-se-rectangular-mini.svg",
+                    "express-pill" => "$base/vipps/se/express-vipps-se-pill.svg",
+                    "express-pill-mini" => "$base/vipps/se/express-vipps-se-pill-mini.svg",
+
+                ],
+            ],
+            "mobilepay" => [
+                "default" => "$base/mobilepay/en/buy-now-mp-en-rectangular.svg",
+                "en" => [
+                    "buy-now-rectangular" => "$base/mobilepay/en/buy-now-mp-en-rectangular.svg",
+                    "buy-now-pill" => "$base/mobilepay/en/buy-now-mp-en-pill.svg",
+                    "express-rectangular" => "$base/mobilepay/en/express-mp-en-rectangular.svg",
+                    "express-rectangular-mini" => "$base/mobilepay/en/express-mp-en-rectangular-mini.svg",
+                    "express-pill" => "$base/mobilepay/en/express-mp-en-pill.svg",
+                    "express-pill-mini" => "$base/mobilepay/en/express-mp-en-pill-mini.svg",
+
+                ],
+                "dk" => [
+                    "buy-now-rectangular" => "$base/mobilepay/dk/kob-nu-mp-dk-rectangular.svg",
+                    "buy-now-pill" => "$base/mobilepay/dk/kob-nu-mp-dk-pill.svg",
+                    "express-rectangular" => "$base/mobilepay/dk/express-mp-dk-rectangular.svg",
+                    "express-rectangular-mini" => "$base/mobilepay/dk/express-mp-dk-rectangular-mini.svg",
+                    "express-pill" => "$base/mobilepay/dk/express-mp-dk-pill.svg",
+                    "express-pill-mini" => "$base/mobilepay/dk/express-mp-dk-pill-mini.svg",
+                ],
+                "fi" => [
+                    "buy-now-rectangular" => "$base/mobilepay/fi/osta-nyt-mp-fi-rectangular.svg",
+                    "buy-now-pill" => "$base/mobilepay/fi/osta-nyt-mp-fi-pill.svg",
+                    "express-rectangular" => "$base/mobilepay/fi/express-mp-fi-rectangular.svg",
+                    "express-rectangular-mini" => "$base/mobilepay/fi/express-mp-fi-rectangular-mini.svg",
+                    "express-pill" => "$base/mobilepay/fi/express-mp-fi-pill.svg",
+                    "express-pill-mini" => "$base/mobilepay/fi/express-mp-fi-pill-mini.svg",
+
+                ],
+            ],
+
+        ];
+
+        $payment_method = strtolower($payment_method);
+        // Dont give a default if payment method not found. LP 2025-12-12
+        if (!array_key_exists($payment_method, $img_map)) 
+            return null;
+
+        $img = @$img_map[$payment_method][$lang][$variant]; 
+        if (is_null($img)) {
+            // Try getting default for this payment method
+            $img = @$img_map[$payment_method]['default'];
+        }
+        return $img;
+    }
+
     // Get payment logo based on payment method, then language NT 2023-11-30
     private function get_payment_logo($short=false) {
         $logo = null;
