@@ -4477,15 +4477,20 @@ else:
         $logo = null;
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
-        // If the payment method is MobilePay, get the MobilePay logo with correct language
-        if($payment_method === "MobilePay"){
-            $logo = $this->get_mobilepay_logo($lang, $short);
-        }
-        // If the payment method is Vipps, get the Vipps logo with correct language
-        if($payment_method === "Vipps"){
-            $logo = $this->get_vipps_logo($lang);
-        }
-        return $logo;
+
+        // TODO: check settings for the correct variant to use. LP 2025-12-12
+        $variant = $short ? 'express-rectangular-mini' : 'express-rectangular';
+        $variant = 'buy-now-rectangular';
+        return $this->get_express_img($payment_method, $lang, $variant);
+        // TODO: remove this old code
+        // // If the payment method is MobilePay, get the MobilePay logo with correct language
+        // if($payment_method === "MobilePay"){
+        //     $logo = $this->get_mobilepay_logo($lang, $short);
+        // }
+        // // If the payment method is Vipps, get the Vipps logo with correct language
+        // if($payment_method === "Vipps"){
+        //     $logo = $this->get_vipps_logo($lang);
+        // }
     }
 
     // Get express banner logo based on payment method. LP 2025-09-03
