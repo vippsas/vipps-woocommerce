@@ -3197,7 +3197,13 @@ else:
         foreach($ratemap as $key => $rate) {
             $serialized = '';
             try {
-                $serialized = json_encode($rate, JSON_INVALID_UTF8_IGNORE| JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
+                // We use serialize here instead of json_encode because we need the object back.
+                // we base64-encode the serialized object, because it is to be stored in a database in a text field.a IOK 2025-12-12
+                $raw = @serialize($rate);
+                $serialized = $raw ? @base64_encode($raw) : null;
+                if (!$serialized) {
+                    throw new Exception("Could not serialize rate $key");
+                }
                 // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
                 $storedmethods[$key] = $serialized;
             } catch (Exception $e) {
@@ -3233,7 +3239,6 @@ else:
 
         // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
         $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
-        $storedmethods['_is_json'] = true; // Switched from php serialization
 
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save_meta_data();
