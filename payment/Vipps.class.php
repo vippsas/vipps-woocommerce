@@ -3240,6 +3240,7 @@ else:
 
         // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
         $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
+        $storedmethods['_is_base64'] = true;
 
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save_meta_data();

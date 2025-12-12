@@ -3051,8 +3051,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $key = $matches['key'] ?? "";
                 $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+
                 if (is_array($shipping_table) && isset($shipping_table[$key])) {
-                    $decoded = @base64_decode($shipping_table[$key]);
+                    $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
                     $shipping_rate = $decoded ? @unserialize($decoded) : null;
                     if (!$shipping_rate) {
                         $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
