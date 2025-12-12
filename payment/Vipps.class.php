@@ -3208,7 +3208,8 @@ else:
                 $storedmethods[$key] = $serialized;
             } catch (Exception $e) {
                 $errormethods[] = $key;
-                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
+                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label), 'error');
+                $this->log($rate, 'error');
                 continue;
             }
         }
