@@ -4392,15 +4392,20 @@ else:
             return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
 
-    // Specific logo for express checkout based on certain parameters, these are the new express svgs received 2025-12-12. LP 2025-12-12
-    private function get_express_img($payment_method, $lang, $variant) {
+
+    // Returns express logo images depending on parameters, these are the new express svgs received 2025-12-12.
+    // Fallsbacks to defaults for each payment method. LP 2025-12-15
+    private function get_express_logo($payment_method, $lang, $variant, $fallback_use_mini = false) {
         $base = plugins_url('img', __FILE__);
 
         // A much more concise approach could be to name the variant files directly and do a oneliner, but harder to grep after the files' usage. LP 2025-12-12
         $img_map = [
             "vipps" => [
                 "default" => "$base/vipps/express/en/buy-now-vipps-en-rectangular.svg",
+                "default-mini" => "$base/vipps/express/en/express-vipps-en-rectangular-mini.svg",
                 "en" => [
+                    "default" => "$base/vipps/express/en/buy-now-vipps-en-rectangular.svg",
+                    "default-mini" => "$base/vipps/express/en/express-vipps-en-rectangular-mini.svg",
                     "buy-now-rectangular" => "$base/vipps/express/en/buy-now-vipps-en-rectangular.svg",
                     "buy-now-pill" => "$base/vipps/express/en/buy-now-vipps-en-pill.svg",
                     "express-rectangular" => "$base/vipps/express/en/express-vipps-en-rectangular.svg",
@@ -4410,6 +4415,8 @@ else:
 
                 ],
                 "no" => [
+                    "default" => "$base/vipps/express/no/kjop-na-vipps-no-rectangular.svg",
+                    "default-mini" => "$base/vipps/express/no/ekspress-vipps-no-rectangular-mini.svg",
                     "buy-now-rectangular" => "$base/vipps/express/no/kjop-na-vipps-no-rectangular.svg",
                     "buy-now-pill" => "$base/vipps/express/no/kjop-na-vipps-no-pill.svg",
                     "express-rectangular" => "$base/vipps/express/no/ekspress-vipps-no-rectangular.svg",
@@ -4417,7 +4424,9 @@ else:
                     "express-pill" => "$base/vipps/express/no/ekspress-vipps-no-pill.svg",
                     "express-pill-mini" => "$base/vipps/express/no/ekspress-vipps-no-pill-mini.svg",
                 ],
-                "sv" => [
+                "se" => [
+                    "default" => "$base/vipps/express/se/kop-nu-vipps-se-rectangular.svg",
+                    "default-mini" => "$base/vipps/express/se/express-vipps-se-rectangular-mini.svg",
                     "buy-now-rectangular" => "$base/vipps/express/se/kop-nu-vipps-se-rectangular.svg",
                     "buy-now-pill" => "$base/vipps/express/se/kop-nu-vipps-se-pill.svg",
                     "express-rectangular" => "$base/vipps/express/se/express-vipps-se-rectangular.svg",
@@ -4429,7 +4438,10 @@ else:
             ],
             "mobilepay" => [
                 "default" => "$base/mobilepay/express/en/buy-now-mp-en-rectangular.svg",
+                "default-mini" => "$base/mobilepay/express/en/express-mp-en-rectangular-mini.svg",
                 "en" => [
+                    "default" => "$base/mobilepay/express/en/buy-now-mp-en-rectangular.svg",
+                    "default-mini" => "$base/mobilepay/express/en/express-mp-en-rectangular-mini.svg",
                     "buy-now-rectangular" => "$base/mobilepay/express/en/buy-now-mp-en-rectangular.svg",
                     "buy-now-pill" => "$base/mobilepay/express/en/buy-now-mp-en-pill.svg",
                     "express-rectangular" => "$base/mobilepay/express/en/express-mp-en-rectangular.svg",
@@ -4439,6 +4451,8 @@ else:
 
                 ],
                 "dk" => [
+                    "default" => "$base/mobilepay/express/dk/kob-nu-mp-dk-rectangular.svg",
+                    "default-mini" => "$base/mobilepay/express/dk/express-mp-dk-rectangular-mini.svg",
                     "buy-now-rectangular" => "$base/mobilepay/express/dk/kob-nu-mp-dk-rectangular.svg",
                     "buy-now-pill" => "$base/mobilepay/express/dk/kob-nu-mp-dk-pill.svg",
                     "express-rectangular" => "$base/mobilepay/express/dk/express-mp-dk-rectangular.svg",
@@ -4447,6 +4461,8 @@ else:
                     "express-pill-mini" => "$base/mobilepay/express/dk/express-mp-dk-pill-mini.svg",
                 ],
                 "fi" => [
+                    "default" => "$base/mobilepay/express/fi/osta-nyt-mp-fi-rectangular.svg",
+                    "default-mini" => "$base/mobilepay/express/fi/express-mp-fi-rectangular-mini.svg",
                     "buy-now-rectangular" => "$base/mobilepay/express/fi/osta-nyt-mp-fi-rectangular.svg",
                     "buy-now-pill" => "$base/mobilepay/express/fi/osta-nyt-mp-fi-pill.svg",
                     "express-rectangular" => "$base/mobilepay/express/fi/express-mp-fi-rectangular.svg",
@@ -4459,39 +4475,42 @@ else:
 
         ];
 
-        $payment_method = strtolower($payment_method);
+        $payment = strtolower($payment_method);
+        if ($lang === 'sv') 
+            $lang = 'se';
 
         // Dont give a default if payment method not found. LP 2025-12-12
-        if (!array_key_exists($payment_method, $img_map)) 
+        if (!array_key_exists($payment, $img_map)) {
             return null;
+        }
 
-        $img = @$img_map[$payment_method][$lang][$variant]; 
+        $img = @$img_map[$payment][$lang][$variant];
 
-        // Try getting default for this payment method. LP 2025-12-12
+        // Try getting default for payment method + language, but it not found then try getting the payment method's global default. LP 2025-12-12
+        $default = $fallback_use_mini ? 'default-mini' : 'default';
         if (is_null($img)) {
-            $img = @$img_map[$payment_method]['default'];
+            $img = @$img_map[$payment][$lang][$default];
+        }
+        if (is_null($img)) {
+            $img = @$img_map[$payment][$default];
+        }
+        if (is_null($img)) {
+            /* translators: %1= payment method name, %2 = language string, %3 = variant name, %4 = boolean */
+            $this->log(sprintf(__('Could not find express logo for payment method %1$s, language %2$s, and variant %3$s (using mini for fallback = %4$s).', 'woo-vipps'), $payment_method, $lang, $variant, ($fallback_use_mini ? 'true' : 'false')), 'error');
         }
         return $img;
     }
 
     // Get payment logo based on payment method, then language NT 2023-11-30
+    // and based on custom variant setting. LP 2025-12-15
     private function get_payment_logo($short=false) {
-        $logo = null;
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
+        $variant = $this->gateway()->get_option('express_logo_variant', ($short ? 'default-mini' : 'default'));
 
-        // TODO: check settings for the correct variant to use. LP 2025-12-12
-        $variant = $short ? 'express-rectangular-mini' : 'express-rectangular';
-        return $this->get_express_img($payment_method, $lang, $variant);
-        // TODO: remove this old code. LP 2025-12-12
-        // // If the payment method is MobilePay, get the MobilePay logo with correct language
-        // if($payment_method === "MobilePay"){
-        //     $logo = $this->get_mobilepay_logo($lang, $short);
-        // }
-        // // If the payment method is Vipps, get the Vipps logo with correct language
-        // if($payment_method === "Vipps"){
-        //     $logo = $this->get_vipps_logo($lang);
-        // }
+        // TODO: maybe replace $short param with a custom setting for the areas we use short (e.g minicart, product list page),
+        // separate to the planned setting used other places (e.g. single product page). LP 2025-12-15
+        return $this->get_express_logo($payment_method, $lang, $variant, $short);
     }
 
     // Get express banner logo based on payment method. LP 2025-09-03
