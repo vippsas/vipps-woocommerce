@@ -759,6 +759,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
+
+
+        // Don't do anything if the order has any *manual* refunds (manual Woo refund outside of Vipps MobilePay). LP 2025-12-16
+        // TODO: this is a short sighted fix, in the future we wish to rewrite this logic to instead run our own logic in the woocommerce_order_status_refunded hook
+        // *before* woocommerce runs wc_order_fully_refunded() which create a refund automatically. Instead we will create our own refund.
+        // This so we can stop the order note saying they need to refund through their payment gateway, in addition to handle skipping
+        // Vipps MP refund if order has manual refunds. LP 2025-12-16
+        $refunds = $order->get_refunds();
+        foreach ($refunds as $refund) {
+            $is_manual_refund = !$refund->get_refunded_payment();
+
+            // Changing order status to refunded creates a refund with an empty item list, but we still want to refund these.
+            // So manual refunds we will skip are the ones with items only. LP 2025-12-16
+            $has_line_items = !empty($refund->get_items());
+            if ($is_manual_refund && $has_line_items) {
+                /* translators: orderid, company name */
+                $this->log(sprintf(__('Order %1$s has a manual refund so we will not send this refund to %2$s', 'woo-vipps'), $orderid, Vipps::CompanyName()), 'info');
+                return true;
+            }
+        }
+
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $vippsstatus = $order->get_meta('_vipps_status');
         $captured = intval($order->get_meta('_vipps_captured'));
