@@ -4627,44 +4627,6 @@ else:
         return null;
     }
 
-    // Get MobilePay logo with correct language NT 2023-11-30
-    private function get_mobilepay_logo($lang, $short=false) {
-        // if language is Danish
-        if($lang === "dk") {
-            // get Danish logo
-            return plugins_url('img/mobilepay-rectangular-pay-DK.svg',__FILE__);
-        // if language is Finnish
-        } else if($lang === "fi") {
-            // get Finnish logo(s)
-            if ($short) {
-                return plugins_url('img/mobilepay-rectangular-pay-short-FI.svg',__FILE__);
-            } else {
-                return plugins_url('img/mobilepay-rectangular-pay-FI.svg',__FILE__);
-            }
-        // otherwise
-        } else {
-            // get English logo by default
-            return plugins_url('img/mobilepay-rectangular-pay-EN.svg',__FILE__);
-        }
-    }
-
-    // Get Vipps logo with correct language NT 2023-11-30
-    private function get_vipps_logo($lang) {
-        // if language is Norwegian
-        if($lang === "no") {
-            // get Norwegian logo
-            return plugins_url('img/vipps-rectangular-pay-NO.svg',__FILE__);
-        // if language is Swedish
-        } else if($lang === "sv") {
-            // currently using English logo for Swedish
-            return plugins_url('img/vipps-rectangular-pay-EN.svg',__FILE__);
-        // otherwise
-        } else {
-            // get English logo by default
-            return plugins_url('img/vipps-rectangular-pay-EN.svg',__FILE__);
-        }
-    }
-
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
     public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $short=false) {
         $disabled = $disabled ? 'disabled' : '';
