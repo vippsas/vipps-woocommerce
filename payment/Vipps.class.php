@@ -3722,9 +3722,8 @@ else:
     * then we send the locale back in the Accept-Language header to ajax endpoints. LP 2025-12-11
     */
     public static function set_locale_if_in_header() {
-        if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
-            return false;
-        $newlocale = trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        $locales = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+        $newlocale = trim(preg_replace("!;.*!", "", explode(",", $locales)[0]));
         if (empty($newlocale))
             return false;
         return switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
