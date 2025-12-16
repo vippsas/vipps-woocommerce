@@ -3723,6 +3723,8 @@ else:
     */
     public static function set_locale_if_in_header() {
         $locales = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+
+        // get first in list, but strip away semicolon and everything after. LP 2025-12-16
         $newlocale = trim(preg_replace("!;.*!", "", explode(",", $locales)[0]));
         if (empty($newlocale))
             return false;
