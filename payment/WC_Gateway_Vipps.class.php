@@ -3835,6 +3835,7 @@ function activate_vipps_checkout(yesno) {
   jQuery.ajax(<?php echo json_encode(admin_url('admin-ajax.php')); ?>, { 
             method: 'POST',
             data: args,
+            headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
             error: function (jqXHR, stat, err) {
             },
             success: function  (data, stat, jqXHR) {

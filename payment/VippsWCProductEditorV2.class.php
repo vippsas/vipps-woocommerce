@@ -97,6 +97,7 @@ class VippsWCProductEditorV2
     public function ajax_vipps_generate_unused_shareable_meta_key()
     {
         check_ajax_referer('vipps_share_link_nonce', 'vipps_share_shareable_link_nonce');
+        Vipps::set_locale_if_in_header();
         if (!current_user_can('manage_woocommerce')) {
             echo json_encode(array('ok' => 0, 'msg' => __('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
             wp_die();

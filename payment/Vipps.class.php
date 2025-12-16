@@ -197,6 +197,7 @@ class Vipps {
         // Activate support for Vipps Checkout, including creating the special checkout page etc. Triggered from the payment page.
         add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
           check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
+          static::set_locale_if_in_header();
           update_option('woo_vipps_checkout_activated', true, true); // This will load Vipps Checkout functionality from now on
           $this->maybe_create_vipps_pages(); // Ensure the special page exists
           if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
@@ -656,6 +657,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // To be called in admin-post.php
     public function vipps_delete_webhook() {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -677,6 +679,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // To be called in admin-post.php
     public function vipps_add_webhook() {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -792,6 +795,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     public function update_badge_settings () {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -1609,6 +1613,7 @@ else:
             echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
             wp_die();
         }
+        static::set_locale_if_in_header();
         $prodid = intval($_POST['prodid']);
         $varid = intval($_POST['varid']);
 
@@ -1723,6 +1728,7 @@ else:
     // This is for debugging and ensuring we have excact details correct for a transaction.
     public function ajax_vipps_payment_details() {
         check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');
+        static::set_locale_if_in_header();
         $orderid = intval($_REQUEST['orderid']);
         $gw = $this->gateway();
         $order = wc_get_order($orderid);
@@ -2350,6 +2356,7 @@ else:
     // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
     public function order_handle_vipps_action () {
            check_ajax_referer('vippssecnonce','vipps_sec');
+           static::set_locale_if_in_header();
            $order = wc_get_order(intval($_REQUEST['orderid']));
            if (!is_a($order, 'WC_Order')) return;
            $pm = $order->get_payment_method();
@@ -4284,6 +4291,7 @@ else:
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
+        static::set_locale_if_in_header();
         Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
