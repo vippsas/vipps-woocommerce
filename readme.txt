@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.12
-Stable tag: 5.0.12
+Version: 5.0.13
+Stable tag: 5.0.13
 Requires at least: 6.2
-Tested up to: 6.8.2
+Tested up to: 6.9.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 10.3.5
+WC tested up to: 10.4.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -309,6 +309,8 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-12-16 version 5.0.13  =
+
 = 2025-11-24 version 5.0.12  =
 Added new filter for adding options to Express Checkout, 'woo_vipps_modify_express_checkout_rate'. This for adding options like delivery times etc to your custom shipping methods and rates
 
