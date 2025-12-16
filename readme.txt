@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.13
-Stable tag: 5.0.13
+Version: 5.0.14
+Stable tag: 5.0.14
 Requires at least: 6.2
 Tested up to: 6.9.0
 Requires PHP: 7.4
@@ -109,6 +109,8 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.0.14
+Fixed fatal typo in express checkout
 Version 5.0.13
 Fix: language in Checkout when using multilang plugins.
 Fix: encoding issue in Express checkout.
@@ -313,6 +315,8 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2025-12-16 version 5.0.14  =
+Fixed fatal typo in express checkout
 = 2025-12-16 version 5.0.13  =
 Fix: language in Checkout when using multilang plugins.
 Fix: encoding issue in Express checkout.
