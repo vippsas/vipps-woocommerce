@@ -910,40 +910,38 @@ jQuery('a.webhook-adder').click(function (e) {
 
         ?>
         <div class='wrap vipps-button-settings'>
-
           <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
+          <h3><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></h3>
+          <form class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
 
-           <h3><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></h3>
-
-           <!-- EXPRESS SECTION -->
-           <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
-
-           <form class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+            <!-- EXPRESS SECTION -->
+            <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
             <input type="hidden" name="action" value="update_vipps_button_settings" />
             <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
 
             <!-- Preload all variant images. Javascript will show the active one. LP 2025-12-16 -->
             <div class="vipps-express-button-demo-container">
-                <?php foreach(array_keys($variants) as $variant): ?>
-                    <img
-                        class="vipps-express-button-demo"
-                        id="vipps-express-button-demo-<?php echo $variant; ?>" 
-                        src="<?php echo static::get_express_logo($payment_method, $lang, $variant); ?>"
-                style="display: <?php echo ($variant === $init_states['express']['variant'] ? 'block' : 'none') ;?>;"
-                    >
-                <?php endforeach; ?>
+              <?php foreach(array_keys($variants) as $variant): ?>
+                <img
+                  class="vipps-express-button-demo"
+                  id="vipps-express-button-demo-<?php echo $variant; ?>" 
+                  src="<?php echo static::get_express_logo($payment_method, $lang, $variant); ?>"
+                  style="display: <?php echo ($variant === $init_states['express']['variant'] ? 'block' : 'none') ;?>;"
+                >
+              <?php endforeach; ?>
             </div>
 
             <!-- variant dropdown -->
             <div>
               <label for="vippsButtonVariant"><?php _e('Choose variant', 'woo-vipps'); ?></label>
               <select id="vippsButtonVariant"  name="express[variant]" onChange='changeExpressVariant()'>
-               <?php foreach($variants as $key=>$name): ?>
-                <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
-                   <?php echo $name ; ?>
-                </option>
-               <?php endforeach; ?>
+                <?php foreach($variants as $key=>$name): ?>
+                  <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
+                     <?php echo $name ; ?>
+                  </option>
+                <?php endforeach; ?>
               </select>
+            </div>
             <!-- END EXPRESS SECTION -->
 
             <!-- Save button -->
@@ -951,7 +949,8 @@ jQuery('a.webhook-adder').click(function (e) {
               <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
             </div>
 
-           </form>
+          </form>
+        </div>
 
         <script>
         function changeExpressVariant() {
