@@ -77,6 +77,7 @@ jQuery( document ).ready( function() {
                 {   cache:false,
                     timeout: 0,
                     dataType:'json',
+                    headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
                     method: 'POST',
                     data: data,
                     error: function (xhr, statustext, error) {
@@ -142,6 +143,7 @@ jQuery( document ).ready( function() {
       jQuery.ajax(VippsConfig['vippsajaxurl'], {
         cache: false,
         dataType: 'json',
+        headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
         data: { 'action': 'vipps_checkout_validate_cart' },
         method: 'POST',
         success: function(result) {
@@ -174,6 +176,7 @@ jQuery( document ).ready( function() {
             type: "GET",
             cache:false,
             timeout: 0,
+            headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
             dataType:'html',
             error: function (eh) { console.log("error loading widgets"); },
             success: function (data) {
@@ -258,7 +261,7 @@ jQuery( document ).ready( function() {
                     {   cache:false,
                         timeout: 0,
                         dataType:'json',
-
+                        headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
                         data: data,
                         method: 'POST', 
                         error: function (xhr, statustext, error) {
@@ -339,7 +342,11 @@ jQuery( document ).ready( function() {
         // Abstracted out so we can pass it to the lock promise if neccessary IOK 2025-05-16
         function doTheCall() {
            jQuery.ajax(VippsConfig['vippsajaxurl'],
-                   {cache:false, timeout: 0, dataType:'json', method: 'POST', 
+                { cache:false,
+                    timeout: 0,
+                    dataType:'json',
+                    method: 'POST',
+                    headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
                     data: { 'action': 'vipps_checkout_poll_session', 'lock_held' : locking, 'type': type, 'pollData': pollData, 'vipps_checkout_sec' : jQuery('#vipps_checkout_sec').val(), 'orderid' : jQuery('#vippsorderid').val() },
                     error: function (xhr, statustext, error) {
                         if (locking) setTimeout(unlockSession, 3000); // Allow backend some error recovery time. 

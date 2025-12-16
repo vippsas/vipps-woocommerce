@@ -238,7 +238,13 @@ SOFTWARE.
             var nonce = jQuery('#vipps_share_sec').val();
             var data = { 'action': 'vipps_create_shareable_link', 'prodid':prodid,'varid':varid, 'vipps_share_sec':nonce };
 
-            jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
+            jQuery.ajax(ajaxurl, {
+                "method": "POST",
+                "data":data,
+                "cache":false,
+                "dataType": "json",
+                "timeout":0,
+                "headers": {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
                 "error": function (xhr, statustext, error) {
                     jQuery('#vipps-share-link').removeAttr('disabled');
                     console.log("Error creating shareable link" + statustext + " " + error);
@@ -356,7 +362,13 @@ SOFTWARE.
 
           console.log("Ajaxurl " + ajaxurl + " and data %j", data);
  
-          jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0,
+          jQuery.ajax(ajaxurl, {
+                 "method": "POST",
+                 "data":data,
+                 "cache":false,
+                 "dataType": "json",
+                 "timeout":0,
+                 "headers": {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
                  "error": function (xhr, statustext, error) {
                      button.removeAttr('disabled');
                      button.removeClass('disabled');
@@ -389,7 +401,7 @@ jQuery(document).ready(function () {
         let nonce = VippsConfig['vippssecnonce'];
         let key = jQuery(this).closest('.notice').data('key');
         if (! key) return;
-        let data = { 'action': 'vipps_dismiss_notice', 'vipps_sec':nonce, 'key': key };
+        let data = { 'action': 'vipps_dismiss_notice', 'vipps_sec':nonce, 'key': key, headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`} };
         jQuery.ajax(ajaxurl, { "method": "POST", "data":data, "cache":false, "dataType": "json", "timeout":0 });
     });
 });

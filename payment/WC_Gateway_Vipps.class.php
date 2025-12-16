@@ -742,6 +742,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
             error_log('LP to_refund: ' . print_r($to_refund, true));
 
+        // Don't refund if the order has any *manual* refunds (manual Woo refund outside of Vipps MobilePay). LP 2025-12-16
+        // TODO: this is a short sighted fix, in the future we wish to rewrite this logic to instead run our own logic in the woocommerce_order_status_refunded hook
+        // *before* woocommerce runs wc_order_fully_refunded() which create a refund automatically. Instead we will create our own refund.
+        // This so we can stop the order note saying they need to refund through their payment gateway, in addition to handle skipping
+        // Vipps MP refund if order has manual refunds. LP 2025-12-16
+        $refunds = $order->get_refunds();
+        foreach ($refunds as $refund) {
+            $is_manual_refund = !$refund->get_refunded_payment();
+
+            // Changing order status to refunded creates a refund with an empty item list, but we still want to refund these.
+            // So manual refunds we will skip are the ones with items only. LP 2025-12-16
+            $has_line_items = !empty($refund->get_items());
+            if ($is_manual_refund && $has_line_items) {
+                /* translators: orderid, company name */
+                $this->log(sprintf(__('Order %1$s has a manual refund so we will not send this refund to %2$s', 'woo-vipps'), $orderid, Vipps::CompanyName()), 'info');
+                $to_refund = 0;
+            }
+        }
+
         if (($captured || $vippsstatus == 'SALE') && $to_refund > 0 && $this->can_refund_order($order)) {
             // REFUND CAPTURED AMOUNT
             $ok = $this->refund_payment($order, $to_refund, 'exact');
@@ -3465,10 +3484,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $key = $matches['key'] ?? "";
                 $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+
                 if (is_array($shipping_table) && isset($shipping_table[$key])) {
-                    $shipping_rate = @unserialize($shipping_table[$key]);
+                    $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
+                    $shipping_rate = $decoded ? @unserialize($decoded) : null;
                     if (!$shipping_rate) {
-                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error');
+                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
+                        $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
                     } else {
                         if ($option_index) {
                            $meta = $shipping_rate->get_meta_data();
@@ -4224,6 +4247,7 @@ function activate_vipps_checkout(yesno) {
   jQuery.ajax(<?php echo json_encode(admin_url('admin-ajax.php')); ?>, { 
             method: 'POST',
             data: args,
+            headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
             error: function (jqXHR, stat, err) {
             },
             success: function  (data, stat, jqXHR) {

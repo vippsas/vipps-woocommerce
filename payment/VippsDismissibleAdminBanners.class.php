@@ -68,6 +68,7 @@ class VippsDismissibleAdminBanners {
 
     public function ajax_vipps_dismiss_notice() {
         check_ajax_referer('vippssecnonce','vipps_sec');
+        Vipps::set_locale_if_in_header();
         if (!isset($_POST['key']) || !$_POST['key']) return;
         $dismissed = get_option('_vipps_dismissed_notices');
         if (!is_array($dismissed)) $dismissed = array();
