@@ -925,92 +925,97 @@ jQuery('a.webhook-adder').click(function (e) {
         ?>
         <div class='wrap vipps-button-settings'>
           <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-          <h4><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></h4>
+          <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
           <form class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
 
             <!-- EXPRESS SECTION -->
-            <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
-            <input type="hidden" name="action" value="update_vipps_button_settings" />
-            <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
+            <div id="vipps-button-settings-express-container">
+              <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
+              <input type="hidden" name="action" value="update_vipps_button_settings" />
+              <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
 
-            <!-- variant dropdown -->
-            <div>
-              <label for="vippsButtonVariant"><?php _e('Choose variant', 'woo-vipps'); ?></label>
-              <select id="vippsButtonVariant"  name="express[variant]" onChange='changeExpressVariant()'>
-                <?php foreach($variants as $key=>$name): ?>
-                  <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
-                     <?php echo $name ; ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
+              <!-- variant -->
+              <div class="vipps-button-settings-section">
+                <!-- variant dropdown -->
+                <div class="vipps-button-settings-express-demo-container">
+                  <label for="vippsButtonVariant"><?php _e('Choose variant', 'woo-vipps'); ?></label>
+                  <select id="vippsButtonVariant"  name="express[variant]" onChange='changeExpressVariant()'>
+                    <?php foreach($variants as $key=>$name): ?>
+                      <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
+                         <?php echo $name ; ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
 
-            <!-- Preload all variant images. Javascript will show the active one. LP 2025-12-16 -->
-            <div class="vipps-express-button-demo-container">
-              <?php foreach(array_keys($variants) as $variant): ?>
-                <img
-                  class="vipps-express-button-demo"
-                  id="vipps-express-button-demo-<?php echo $variant; ?>" 
-                  src="<?php echo static::get_express_logo($payment_method, $lang, $variant); ?>"
-                  style="display: <?php echo ($variant === $init_states['express']['variant'] ? 'block' : 'none') ;?>;"
-                >
-              <?php endforeach; ?>
-            </div>
-
-
-            <!-- Checkboxes "Use mini version for x page" -->
-            <div>
-              <span><?php _e('Force mini variant in these contexts:', 'woo-vipps'); ?></span>
-              <div class="vipps-express-button-force-mini-container">
-                <label class="vipps-express-button-force-mini" id="vipps-express-button-force-mini-product"><?php _e('Product page', 'woo-vipps'); ?></label>
-                <input name="express[force-mini][product]" type="hidden" value="no">
-                <input name="express[force-mini][product]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['product'] == "yes") echo "checked";?>>
-              </div>
-
-              <div class="vipps-express-button-force-mini-container">
-                <label class="vipps-express-button-force-mini" id="vipps-express-button-force-mini-catalog"><?php _e('Catalog page', 'woo-vipps'); ?></label>
-                <input name="express[force-mini][catalog]" type="hidden" value="no">
-                <input name="express[force-mini][catalog]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['catalog'] == "yes") echo "checked";?>>
-              </div>
-
-              <div class="vipps-express-button-force-mini-container">
-                <label class="vipps-express-button-force-mini" id="vipps-express-button-force-mini-cart"><?php _e('Cart & mini cart', 'woo-vipps'); ?></label>
-                <input name="express[force-mini][cart]" type="hidden" value="no">
-                <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['cart'] == "yes") echo "checked";?>>
-              </div>
-
-
-              <!-- mini variant dropdown -->
-              <div>
-                <label for="vippsButtonMiniVariant"><?php _e('Choose variant to use in mini contexts', 'woo-vipps'); ?></label>
-                <select id="vippsButtonMiniVariant"  name="express[mini-variant]" onChange='changeExpressMiniVariant()'>
-                  <?php foreach($mini_variants as $key=>$name): ?>
-                    <option value="<?php echo $key; ?>" <?php if ($init_states['express']['mini-variant'] === $key) echo " selected "; ?> >
-                       <?php echo $name ; ?>
-                    </option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <!-- Mini variant if any checked. LP 2025-12-17  -->
-              <div class="vipps-express-button-mini-demo-container">
-                <?php foreach(array_keys($mini_variants) as $variant): ?>
-                  <?php if (!str_ends_with($variant, '-mini')) continue; ?>
+                <!-- Preload all variant images. Javascript will show the active one. LP 2025-12-16 -->
+                <div class="vipps-button-settings-express-demo-container vipps-button-settings-img-container">
+                <?php foreach(array_keys($variants) as $variant): ?>
                   <img
-                    class="vipps-express-button-mini-demo"
-                    id="vipps-express-button-mini-demo-<?php echo $variant; ?>" 
+                    class="vipps-button-settings-express-demo"
+                    id="vipps-button-settings-express-demo-<?php echo $variant; ?>" 
                     src="<?php echo static::get_express_logo($payment_method, $lang, $variant); ?>"
-                    style="display: <?php echo ($variant === $init_states['express']['mini-variant'] ? 'block' : 'none') ;?>;"
+                    style="display: <?php echo ($variant === $init_states['express']['variant'] ? 'block' : 'none') ;?>;"
                   >
                 <?php endforeach; ?>
+                </div>
               </div>
 
-            </div>
+
+              <!-- mini variant section -->
+              <div class="vipps-button-settings-section">
+                <!-- Checkboxes "Use mini version for x page" -->
+                <label><?php _e('Force mini variant in these contexts:', 'woo-vipps'); ?></label>
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-product"><?php _e('Product page', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][product]" type="hidden" value="no">
+                  <input name="express[force-mini][product]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['product'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-catalog"><?php _e('Catalog page', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][catalog]" type="hidden" value="no">
+                  <input name="express[force-mini][catalog]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['catalog'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-cart"><?php _e('Cart & mini cart', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][cart]" type="hidden" value="no">
+                  <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['cart'] == "yes") echo "checked";?>>
+                </div>
+
+                <!-- mini variant dropdown -->
+                <div class="vipps-button-settings-express-mini-demo-container">
+                  <label for="vippsButtonMiniVariant"><?php _e('Choose variant to use in mini contexts', 'woo-vipps'); ?></label>
+                  <select id="vippsButtonMiniVariant"  name="express[mini-variant]" onChange='changeExpressMiniVariant()'>
+                    <?php foreach($mini_variants as $key=>$name): ?>
+                      <option value="<?php echo $key; ?>" <?php if ($init_states['express']['mini-variant'] === $key) echo " selected "; ?> >
+                         <?php echo $name ; ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+
+                <!-- Preload mini variant imgs. LP 2025-12-17  -->
+                <div class="vipps-button-settings-express-mini-demo-container vipps-button-settings-img-container">
+                  <?php foreach(array_keys($mini_variants) as $variant): ?>
+                    <?php if (!str_ends_with($variant, '-mini')) continue; ?>
+                    <img
+                      class="vipps-button-settings-express-mini-demo"
+                      id="vipps-button-settings-express-mini-demo-<?php echo $variant; ?>" 
+                      src="<?php echo static::get_express_logo($payment_method, $lang, $variant); ?>"
+                      style="display: <?php echo ($variant === $init_states['express']['mini-variant'] ? 'block' : 'none') ;?>;"
+                    >
+                  <?php endforeach; ?>
+                </div>
+              </div>
 
             <!-- END EXPRESS SECTION -->
+            </div>
 
             <!-- Save button -->
-            <div>
-              <input class="btn button primary"  type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
+            <div id="vipps-button-settings-save">
+              <input class="btn button primary" type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
             </div>
 
           </form>
@@ -1020,15 +1025,15 @@ jQuery('a.webhook-adder').click(function (e) {
           function changeExpressVariant() {
               const variant = jQuery('#vippsButtonVariant').val().trim();
               // Show the one selected, hide all others. LP 2025-12-16
-              jQuery('.vipps-express-button-demo').hide();
-              jQuery(`#vipps-express-button-demo-${variant}`).show();
+              jQuery('.vipps-button-settings-express-demo').hide();
+              jQuery(`#vipps-button-settings-express-demo-${variant}`).show();
           }
 
           function changeExpressMiniVariant() {
               const variant = jQuery('#vippsButtonMiniVariant').val().trim();
               // Show the one selected, hide all others. LP 2025-12-16
-              jQuery('.vipps-express-button-mini-demo').hide();
-              jQuery(`#vipps-express-button-mini-demo-${variant}`).show();
+              jQuery('.vipps-button-settings-express-mini-demo').hide();
+              jQuery(`#vipps-button-settings-express-mini-demo-${variant}`).show();
           }
         </script> 
         <?php
