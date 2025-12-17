@@ -802,12 +802,22 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
         }
 
-        $current = get_option('vipps_button_options');
+        $options = get_option('vipps_button_options');
+        error_log('LP old options: ' . print_r($options, true));
+        error_log('lp post: ' . print_r($_POST,true));
         if (isset($_POST['express']['variant'])) {
-            $current['express']['variant'] = sanitize_title($_POST['express']['variant']);
+            $options['express']['variant'] = sanitize_title($_POST['express']['variant']);
         }
+        if (isset($_POST['express']['mini-variant'])) {
+            $options['express']['mini-variant'] = sanitize_title($_POST['express']['mini-variant']);
+        }
+        if (isset($_POST['express']['force-mini']) && is_array($_POST['express']['force-mini'])) {
+            foreach($_POST['express']['force-mini'] as $key => $val)
+              $options['express']['force-mini'][$key] = sanitize_title($val);
+        }
+        error_log('LP new options: ' . print_r($options, true));
 
-        update_option('vipps_button_options', $current);
+        update_option('vipps_button_options', $options);
         wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
         exit();
     }
@@ -893,31 +903,47 @@ jQuery('a.webhook-adder').click(function (e) {
         $lang = $this->get_customer_language();
         $button_options = get_option('vipps_button_options');
 
-        $variants = [
+        $normal_variants = [
             'buy-now-rectangular' => __('Buy now rectangular', 'woo-vipps'),
             'buy-now-pill' => __('Buy now pill', 'woo-vipps'),
             'express-rectangular' => __('Express rectangular', 'woo-vipps'),
-            'express-rectangular-mini' => __('Express rectangular mini', 'woo-vipps'),
             'express-pill' => __('Express pill', 'woo-vipps'),
+        ];
+        $mini_variants = [
+            'express-rectangular-mini' => __('Express rectangular mini', 'woo-vipps'),
             'express-pill-mini' => __('Express pill mini', 'woo-vipps'),
         ];
+        $variants = array_merge($normal_variants, $mini_variants);
 
         $init_states = [
             'express' => [
                 'variant' => array_key_exists(@$button_options['express']['variant'], $variants) ? $button_options['express']['variant'] : 'buy-now-rectangular',
+                'mini-variant' => array_key_exists(@$button_options['express']['mini-variant'], $mini_variants) ? $button_options['express']['mini-variant'] : 'express-rectangular-mini',
             ],
         ];
 
         ?>
         <div class='wrap vipps-button-settings'>
           <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
-          <h3><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></h3>
+          <h4><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></h4>
           <form class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
 
             <!-- EXPRESS SECTION -->
             <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
             <input type="hidden" name="action" value="update_vipps_button_settings" />
             <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
+
+            <!-- variant dropdown -->
+            <div>
+              <label for="vippsButtonVariant"><?php _e('Choose variant', 'woo-vipps'); ?></label>
+              <select id="vippsButtonVariant"  name="express[variant]" onChange='changeExpressVariant()'>
+                <?php foreach($variants as $key=>$name): ?>
+                  <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
+                     <?php echo $name ; ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
 
             <!-- Preload all variant images. Javascript will show the active one. LP 2025-12-16 -->
             <div class="vipps-express-button-demo-container">
@@ -931,17 +957,55 @@ jQuery('a.webhook-adder').click(function (e) {
               <?php endforeach; ?>
             </div>
 
-            <!-- variant dropdown -->
+
+            <!-- Checkboxes "Use mini version for x page" -->
             <div>
-              <label for="vippsButtonVariant"><?php _e('Choose variant', 'woo-vipps'); ?></label>
-              <select id="vippsButtonVariant"  name="express[variant]" onChange='changeExpressVariant()'>
-                <?php foreach($variants as $key=>$name): ?>
-                  <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
-                     <?php echo $name ; ?>
-                  </option>
+              <span><?php _e('Force mini variant in these contexts:', 'woo-vipps'); ?></span>
+              <div class="vipps-express-button-force-mini-container">
+                <label class="vipps-express-button-force-mini" id="vipps-express-button-force-mini-product"><?php _e('Product page', 'woo-vipps'); ?></label>
+                <input name="express[force-mini][product]" type="hidden" value="no">
+                <input name="express[force-mini][product]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['product'] == "yes") echo "checked";?>>
+              </div>
+
+              <div class="vipps-express-button-force-mini-container">
+                <label class="vipps-express-button-force-mini" id="vipps-express-button-force-mini-catalog"><?php _e('Catalog page', 'woo-vipps'); ?></label>
+                <input name="express[force-mini][catalog]" type="hidden" value="no">
+                <input name="express[force-mini][catalog]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['catalog'] == "yes") echo "checked";?>>
+              </div>
+
+              <div class="vipps-express-button-force-mini-container">
+                <label class="vipps-express-button-force-mini" id="vipps-express-button-force-mini-cart"><?php _e('Cart & mini cart', 'woo-vipps'); ?></label>
+                <input name="express[force-mini][cart]" type="hidden" value="no">
+                <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['cart'] == "yes") echo "checked";?>>
+              </div>
+
+
+              <!-- mini variant dropdown -->
+              <div>
+                <label for="vippsButtonMiniVariant"><?php _e('Choose variant to use in mini contexts', 'woo-vipps'); ?></label>
+                <select id="vippsButtonMiniVariant"  name="express[mini-variant]" onChange='changeExpressMiniVariant()'>
+                  <?php foreach($mini_variants as $key=>$name): ?>
+                    <option value="<?php echo $key; ?>" <?php if ($init_states['express']['mini-variant'] === $key) echo " selected "; ?> >
+                       <?php echo $name ; ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <!-- Mini variant if any checked. LP 2025-12-17  -->
+              <div class="vipps-express-button-mini-demo-container">
+                <?php foreach(array_keys($mini_variants) as $variant): ?>
+                  <?php if (!str_ends_with($variant, '-mini')) continue; ?>
+                  <img
+                    class="vipps-express-button-mini-demo"
+                    id="vipps-express-button-mini-demo-<?php echo $variant; ?>" 
+                    src="<?php echo static::get_express_logo($payment_method, $lang, $variant); ?>"
+                    style="display: <?php echo ($variant === $init_states['express']['mini-variant'] ? 'block' : 'none') ;?>;"
+                  >
                 <?php endforeach; ?>
-              </select>
+              </div>
+
             </div>
+
             <!-- END EXPRESS SECTION -->
 
             <!-- Save button -->
@@ -953,12 +1017,19 @@ jQuery('a.webhook-adder').click(function (e) {
         </div>
 
         <script>
-        function changeExpressVariant() {
-            const variant = jQuery('#vippsButtonVariant').val().trim();
-            // Show the one selected, hide all others. LP 2025-12-16
-            jQuery('.vipps-express-button-demo').hide();
-            jQuery(`#vipps-express-button-demo-${variant}`).show();
-        }
+          function changeExpressVariant() {
+              const variant = jQuery('#vippsButtonVariant').val().trim();
+              // Show the one selected, hide all others. LP 2025-12-16
+              jQuery('.vipps-express-button-demo').hide();
+              jQuery(`#vipps-express-button-demo-${variant}`).show();
+          }
+
+          function changeExpressMiniVariant() {
+              const variant = jQuery('#vippsButtonMiniVariant').val().trim();
+              // Show the one selected, hide all others. LP 2025-12-16
+              jQuery('.vipps-express-button-mini-demo').hide();
+              jQuery(`#vipps-express-button-mini-demo-${variant}`).show();
+          }
         </script> 
         <?php
     }
