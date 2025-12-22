@@ -919,6 +919,11 @@ jQuery('a.webhook-adder').click(function (e) {
             'express' => [
                 'variant' => array_key_exists(@$button_options['express']['variant'], $variants) ? $button_options['express']['variant'] : 'buy-now-rectangular',
                 'mini-variant' => array_key_exists(@$button_options['express']['mini-variant'], $mini_variants) ? $button_options['express']['mini-variant'] : 'express-rectangular-mini',
+                'force-mini' => [
+                    'product' => @$button_options['express']['mini-variant'] ?? 'no',
+                    'catalog' => @$button_options['express']['mini-variant'] ?? 'yes',
+                    'cart' => @$button_options['express']['mini-variant'] ?? 'yes',
+                ],
             ],
         ];
 
@@ -969,19 +974,19 @@ jQuery('a.webhook-adder').click(function (e) {
                 <div class="vipps-button-settings-express-force-mini-container">
                   <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-product"><?php _e('Product page', 'woo-vipps'); ?></label>
                   <input name="express[force-mini][product]" type="hidden" value="no">
-                  <input name="express[force-mini][product]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['product'] == "yes") echo "checked";?>>
+                  <input name="express[force-mini][product]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['product'] == "yes") echo "checked";?>>
                 </div>
 
                 <div class="vipps-button-settings-express-force-mini-container">
                   <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-catalog"><?php _e('Catalog page', 'woo-vipps'); ?></label>
                   <input name="express[force-mini][catalog]" type="hidden" value="no">
-                  <input name="express[force-mini][catalog]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['catalog'] == "yes") echo "checked";?>>
+                  <input name="express[force-mini][catalog]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['catalog'] == "yes") echo "checked";?>>
                 </div>
 
                 <div class="vipps-button-settings-express-force-mini-container">
                   <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-cart"><?php _e('Cart & mini cart', 'woo-vipps'); ?></label>
                   <input name="express[force-mini][cart]" type="hidden" value="no">
-                  <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if (@$button_options['express']['force-mini']['cart'] == "yes") echo "checked";?>>
+                  <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['cart'] == "yes") echo "checked";?>>
                 </div>
 
                 <!-- mini variant dropdown -->
@@ -3876,7 +3881,7 @@ else:
         $should_delete = $gw->get_option( 'delete_settings_on_deactivation' ) === 'yes';
         if ( ($should_delete)) {
             // Delete options.
-            $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
+            $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', 'vipps_button_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
             foreach($options as $option) {
                 error_log("Deleting woo-vipps option: $option");
                 delete_option($option);
