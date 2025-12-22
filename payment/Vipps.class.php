@@ -4652,8 +4652,6 @@ else:
         ];
 
         $payment = strtolower($payment_method);
-        if ($lang === 'sv') 
-            $lang = 'se';
 
         // Dont give a default if payment method not found. LP 2025-12-12
         if (!array_key_exists($payment, $img_map)) {
