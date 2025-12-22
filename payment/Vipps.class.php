@@ -803,8 +803,6 @@ jQuery('a.webhook-adder').click(function (e) {
         }
 
         $options = get_option('vipps_button_options');
-        error_log('LP old options: ' . print_r($options, true));
-        error_log('lp post: ' . print_r($_POST,true));
         if (isset($_POST['express']['variant'])) {
             $options['express']['variant'] = sanitize_title($_POST['express']['variant']);
         }
@@ -815,7 +813,6 @@ jQuery('a.webhook-adder').click(function (e) {
             foreach($_POST['express']['force-mini'] as $key => $val)
               $options['express']['force-mini'][$key] = sanitize_title($val);
         }
-        error_log('LP new options: ' . print_r($options, true));
 
         update_option('vipps_button_options', $options);
         wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
@@ -4686,20 +4683,14 @@ else:
     // and based on custom variant setting. $page is the page origin slug, e.g 'cart', 'product'. LP 2025-12-15
     private function get_payment_logo($page = null) {
         $lang = $this->get_customer_language();
-        error_log('LP lang: ' . print_r($lang, true));
         $payment_method = $this->get_payment_method_name();
-        error_log('LP payment_method: ' . print_r($payment_method, true));
         $variant = $this->get_express_logo_variant($page);
-        error_log('LP variant: ' . print_r($variant, true));
         $logo_url = $this->get_express_logo($payment_method, $lang, $variant);
-        error_log('LP logo_url: ' . print_r($logo_url, true));
         return $logo_url;
     }
 
     private function get_express_logo_variant($page = null) {
         $options = get_option('vipps_button_options');
-        error_log('LP options: ' . print_r($options, true));
-        error_log("LP page=$page");
 
         // Init defaults, use mini version by default in these pages. LP 2025-12-17
         if ($page === 'gutenberg') // Treat gutenberg as product for now, TODO: separate setting or are they really the same? LP 2025-12-17
@@ -4716,10 +4707,8 @@ else:
             $variant = sanitize_title($options['express'][$key]) ?? '';
         }
 
-        error_log('LP use_mini: ' . print_r($use_mini, true));
         if (!$variant)
             $variant = $use_mini ? "default-mini" : "default";
-        error_log('LP variant: ' . print_r($variant, true));
         return $variant;
     }
 
