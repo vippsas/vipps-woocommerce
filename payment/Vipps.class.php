@@ -4663,6 +4663,8 @@ else:
         // Try getting default for payment method + language, but it not found then try getting the payment method's global default. LP 2025-12-12
         $default = 'default';
         if (is_null($img)) {
+            /* translators: %1= payment method name, %2 = language string, %3 = variant name */
+            $this->log(sprintf(__('Could not find chosen express logo for payment method %1$s, language %2$s, and variant %3$s, attempting to fall back on language and payment method, else only language.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
             $img = @$img_map[$payment][$lang][$default];
         }
         if (is_null($img)) {
@@ -4670,7 +4672,7 @@ else:
         }
         if (is_null($img)) {
             /* translators: %1= payment method name, %2 = language string, %3 = variant name */
-            $this->log(sprintf(__('Could not find chosen express logo for payment method %1$s, language %2$s, and variant %3$s.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
+            $this->log(sprintf(__('Found no express logo fallback for payment method %1$s, language %2$s, and variant %3$s.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
         }
         return $img;
     }
