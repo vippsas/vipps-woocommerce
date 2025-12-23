@@ -197,6 +197,7 @@ class Vipps {
         // Activate support for Vipps Checkout, including creating the special checkout page etc. Triggered from the payment page.
         add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
           check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
+          static::set_locale_if_in_header();
           update_option('woo_vipps_checkout_activated', true, true); // This will load Vipps Checkout functionality from now on
           $this->maybe_create_vipps_pages(); // Ensure the special page exists
           if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
@@ -657,6 +658,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // To be called in admin-post.php
     public function vipps_delete_webhook() {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -678,6 +680,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // To be called in admin-post.php
     public function vipps_add_webhook() {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -820,6 +823,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     public function update_badge_settings () {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -1803,6 +1807,7 @@ else:
             echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
             wp_die();
         }
+        static::set_locale_if_in_header();
         $prodid = intval($_POST['prodid']);
         $varid = intval($_POST['varid']);
 
@@ -1917,6 +1922,7 @@ else:
     // This is for debugging and ensuring we have excact details correct for a transaction.
     public function ajax_vipps_payment_details() {
         check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');
+        static::set_locale_if_in_header();
         $orderid = intval($_REQUEST['orderid']);
         $gw = $this->gateway();
         $order = wc_get_order($orderid);
@@ -2544,6 +2550,7 @@ else:
     // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
     public function order_handle_vipps_action () {
            check_ajax_referer('vippssecnonce','vipps_sec');
+           static::set_locale_if_in_header();
            $order = wc_get_order(intval($_REQUEST['orderid']));
            if (!is_a($order, 'WC_Order')) return;
            $pm = $order->get_payment_method();
@@ -3909,6 +3916,23 @@ else:
 
     }
 
+    /** Try manually setting locale to locale recieved in AcceptLanguage header.
+    *
+    * This should fix incorrect language recieved from ajax when using translate plugins like polylang, wpml.
+    * E.g. for checkout widgets and product names: We send the correct locale to the frontend when first setting up Checkout,
+    * then we send the locale back in the Accept-Language header to ajax endpoints. LP 2025-12-11
+    */
+    public static function set_locale_if_in_header() {
+        $locales = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+
+        // get first in list, but strip away semicolon and everything after. LP 2025-12-16
+        $newlocale = trim(preg_replace("!;.*!", "", explode(",", $locales)[0]));
+        if (empty($newlocale))
+            return false;
+        return switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
+    }
+
+
     public function footer() {
        // Nothing yet
     }
@@ -4175,6 +4199,7 @@ else:
 
     public function ajax_vipps_buy_single_product () {
 	Vipps::nocache();
+        static::set_locale_if_in_header();
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         $session = WC()->session;
@@ -4195,6 +4220,7 @@ else:
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
 	Vipps::nocache();
+        static::set_locale_if_in_header();
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -4203,13 +4229,8 @@ else:
             exit();
         }
 
-        // Try setting locale recieved from frontend in Accept-Language header. LP 2025-12-11
-        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $newlocale = trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            if (!empty($newlocale)) {
-                switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
-            }
-        }
+
+        
 
         // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
         $toolate = false;
@@ -4271,6 +4292,7 @@ else:
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
 	Vipps::nocache();
+        static::set_locale_if_in_header();
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
 
@@ -4280,13 +4302,6 @@ else:
             exit();
         }
 
-        // Try setting locale recieved from frontend in Accept-Language header. LP 2025-12-11
-        if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $newlocale = trim($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-            if (!empty($newlocale)) {
-                switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
-            }
-        }
 
         // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
         // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
@@ -4470,6 +4485,7 @@ else:
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
+        static::set_locale_if_in_header();
         Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));

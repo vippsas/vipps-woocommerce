@@ -428,6 +428,8 @@ jQuery(document).ready(function () {
         $redir = "";
         $token = "";
 
+        Vipps::set_locale_if_in_header();
+
         // First, check that we haven't already done this like in another window or something:
         // IOK 2024-06-04 This also happens when using the back button! Sometimes!
         $sessioninfo = $this->vipps_checkout_current_pending_session();
@@ -440,8 +442,6 @@ jQuery(document).ready(function () {
             $src = $sessioninfo['session']['checkoutFrontendUrl'];
             $url = $src; 
         }
-
-        $this->try_set_locale($_SERVER['HTTP_ACCEPT_LANGUAGE']);
 
         // And if we do, just return what we have. NB: This *should not happen*.
         // IOK 2025-05-04 what are you talking about IOK, this absolutely happens e.g. when using the backbutton to a page starting the orders.
@@ -573,6 +573,8 @@ jQuery(document).ready(function () {
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $action = sanitize_title($_REQUEST['callback_action'] ?? 0);
 
+        Vipps::set_locale_if_in_header();
+
         add_filter('woo_vipps_is_checkout_callback', '__return_true'); // Signal that this is a special context.
 
         // add some default action handlers IOK  2025-05-13
@@ -657,6 +659,8 @@ jQuery(document).ready(function () {
         $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
+
+        Vipps::set_locale_if_in_header();
 
         // The single current pending order. IOK 2025-04-25
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
@@ -805,6 +809,7 @@ jQuery(document).ready(function () {
     // Also any other checks we might want to do in the future. This will validate the cart each time the
     //  checkout page loads, even if a session is already in progress.  IOK 2024-09-09
     public function ajax_vipps_checkout_validate_cart() {
+        Vipps::set_locale_if_in_header();
         $cart_total = WC()->cart->get_total('edit') ?: 0;
         $minimum_amount = 1; // 1 in the store currency
 
@@ -866,25 +871,13 @@ jQuery(document).ready(function () {
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
-    // Manually set locale to fix incorrect language shown in checkout widgets when using translate plugins like polylang, wpml.
-    // we send the locale to the frontend when first setting up Checkout, then we send the locale back
-    // in the Accept-Language header when requesting the ajax endpoint. LP 2025-12-11
-    function try_set_locale($locale_str) {
-        if (!isset($locale_str))
-            return false;
-        $newlocale = trim($locale_str);
-        if (empty($newlocale))
-            return false;
-        return switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
-    }
-
     // Returns HTML of any widgets for the Checkout page IOK 2025-05-13
     function vipps_ajax_get_widgets () {
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return "";
 
-        $this->try_set_locale($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        Vipps::set_locale_if_in_header();
 
         print $this->get_checkout_widgets($order);
         exit();

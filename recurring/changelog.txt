@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.4 =
+* Fix: Paying for a failed order with Vipps/MobilePay now works as intended. Previously the order would not be automatically charged, and marked with the correct renewal status.
+
 = 2.2.3 =
 * Fix: Reduced the lead time for recurring charges to one day instead of two days, as per the latest changes to the API: https://developer.vippsmobilepay.com/docs/technical-updates/2025-11/#one-day-lead-time-for-recurring-charges
 * Fix: Sometimes `subscription_id` in our `maybe_delete_subscription` hook could sometimes be an actual `WC_Subscription` object instead of an ID.
