@@ -917,9 +917,9 @@ jQuery('a.webhook-adder').click(function (e) {
                 'variant' => array_key_exists(@$button_options['express']['variant'], $variants) ? $button_options['express']['variant'] : 'buy-now-rectangular',
                 'mini-variant' => array_key_exists(@$button_options['express']['mini-variant'], $mini_variants) ? $button_options['express']['mini-variant'] : 'express-rectangular-mini',
                 'force-mini' => [
-                    'product' => @$button_options['express']['mini-variant'] ?? 'no',
-                    'catalog' => @$button_options['express']['mini-variant'] ?? 'yes',
-                    'cart' => @$button_options['express']['mini-variant'] ?? 'yes',
+                    'product' => @$button_options['express']['force-mini']['product'] ?? 'no',
+                    'catalog' => @$button_options['express']['force-mini']['catalog'] ?? 'yes',
+                    'cart' => @$button_options['express']['force-mini']['cart'] ?? 'yes',
                 ],
             ],
         ];
