@@ -919,7 +919,8 @@ jQuery('a.webhook-adder').click(function (e) {
                 'force-mini' => [
                     'product' => @$button_options['express']['force-mini']['product'] ?? 'no',
                     'catalog' => @$button_options['express']['force-mini']['catalog'] ?? 'yes',
-                    'cart' => @$button_options['express']['force-mini']['cart'] ?? 'yes',
+                    'cart' => @$button_options['express']['force-mini']['cart'] ?? 'no',
+                    'minicart' => @$button_options['express']['force-mini']['minicart'] ?? 'yes',
                 ],
             ],
         ];
@@ -981,9 +982,15 @@ jQuery('a.webhook-adder').click(function (e) {
                 </div>
 
                 <div class="vipps-button-settings-express-force-mini-container">
-                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-cart"><?php _e('Cart & mini cart', 'woo-vipps'); ?></label>
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-cart"><?php _e('Cart', 'woo-vipps'); ?></label>
                   <input name="express[force-mini][cart]" type="hidden" value="no">
                   <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['cart'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-minicart"><?php _e('Mini cart', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][minicart]" type="hidden" value="no">
+                  <input name="express[force-mini][minicart]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['minicart'] == "yes") echo "checked";?>>
                 </div>
 
                 <!-- mini variant dropdown -->
@@ -1541,10 +1548,19 @@ jQuery('a.webhook-adder').click(function (e) {
         }
     }
 
-    public function cart_express_checkout_button_html() {
+    public function minicart_express_checkout_button() {
+        $gw = $this->gateway();
+
+        if ($gw->show_express_checkout()){
+            return $this->cart_express_checkout_button_html(true);
+        }
+    }
+
+    public function cart_express_checkout_button_html($minicart = false) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo('cart'));
+        $page = $minicart ? 'minicart' : 'cart';
+        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo($page));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
         $button = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
@@ -2376,7 +2392,7 @@ else:
 
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
-        add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
+        add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'minicart_express_checkout_button'), 30);
         add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
 
         add_action('woocommerce_after_add_to_cart_button', array($this, 'single_product_buy_now_button'));
@@ -4684,18 +4700,21 @@ else:
     private function get_payment_logo($page = null) {
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
-        $variant = $this->get_express_logo_variant($page);
+        $variant = $this->get_express_logo_page_variant($page);
         $logo_url = $this->get_express_logo($payment_method, $lang, $variant);
         return $logo_url;
     }
 
-    private function get_express_logo_variant($page = null) {
+    /** Returns the correct variant to use for the given page, found from the wp option. LP 2025-12-23 */
+    private function get_express_logo_page_variant($page = null) {
         $options = get_option('vipps_button_options');
 
-        // Init defaults, use mini version by default in these pages. LP 2025-12-17
-        if ($page === 'gutenberg') // Treat gutenberg as product for now, TODO: separate setting or are they really the same? LP 2025-12-17
+        if ($page === 'gutenberg') {
+            // Treat gutenberg as product for now, TODO: separate setting or are they really the same? LP 2025-12-17
             $page = 'product';
-        $use_mini = in_array($page, ['catalog']);
+        }
+        // Init defaults, use mini version by default in below pages. LP 2025-12-17
+        $use_mini = in_array($page, ['catalog', 'minicart']);
         $variant = "";
 
         // Find correct variant from button settings. LP 2025-12-17
@@ -4707,8 +4726,9 @@ else:
             $variant = sanitize_title($options['express'][$key]) ?? '';
         }
 
-        if (!$variant)
+        if (!$variant) {
             $variant = $use_mini ? "default-mini" : "default";
+        }
         return $variant;
     }
 
@@ -4744,7 +4764,7 @@ else:
         $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $method_name);
         
         $payment_method = $this->get_payment_method_name();
-        $short = str_ends_with($this->get_express_logo_variant($page), 'mini');
+        $short = str_ends_with($this->get_express_logo_page_variant($page), 'mini');
         $logo = $this->get_payment_logo($page);
 
         $message =" <img border=0 src='$logo' alt='$payment_method'/>";
