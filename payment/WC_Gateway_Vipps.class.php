@@ -1306,6 +1306,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => 'yes',
             ),
 
+            'checkout_phone_transformation' => array(
+                'title'       => sprintf(__('Phone number transformation for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'type'        => 'select',
+                'options' => array(
+                    'none' => __('None', 'woo-vipps'),
+                    'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
+                    'strip_country_code' => __('Strip country code','woo-vipps'),
+                ), 
+                'description' => __('NB: stripping country codes is at the moment only supported for Norwegian, Danish, and Swedish numbers.<br>Remember to expliciticly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'default'     => 'none',
+            ),
         );
 
          $expressfields = array(  
@@ -2980,7 +2992,24 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $address['zipCode'] = $postcode; // ecom
         $address['postalCode'] = $postcode; // checkout
 
+        // Phone number transformations
+        // NOTE: as of writing this, the checkout+expresscheckout expected format is '{countrycode}{phonenr}', so we assume this. LP 2025-12-29
+        $phone_transformation = $this->get_option('checkout_phone_transformation');
+        switch($phone_transformation) {
+            case 'ensure_plus':
+                $phone = "+$phone";
+                break;
+            case 'strip_country_code':
+                // We only support norway,denmark,swedish country codes as of now. LP 2025-12-29
+                $phone = preg_replace('!^(47|46|45)(\d{8})!', '\2', $phone);
+                break;
+        }
+        $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
+        if (isset($address['phoneNumber'])) $address['phoneNumber'] = $phone;
+        if (isset($address['mobileNumber'])) $address['mobileNumber'] = $phone;
+
         // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
+        // note: added separate filter for phone number 'woo_vipps_canonicalize_checkout_phone' because of the different uses, keys etc. LP 2025-12-29
         return apply_filters('woo_vipps_canonicalize_checkout_address', $address, $user);
     }
 
