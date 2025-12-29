@@ -3000,7 +3000,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $phone = "+$phone";
                 break;
             case 'strip_country_code':
-                // We only support norway,denmark,swedish country codes as of now. LP 2025-12-29
+                // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
                 $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
                 break;
         }
