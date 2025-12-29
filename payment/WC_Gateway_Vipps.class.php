@@ -1315,7 +1315,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
                     'strip_country_code' => __('Strip country code','woo-vipps'),
                 ), 
-                'description' => __('NB: stripping country codes is at the moment only supported for Norwegian, Danish, and Swedish numbers.<br>Remember to expliciticly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
                 'default'     => 'none',
             ),
         );
