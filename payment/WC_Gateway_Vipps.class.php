@@ -1315,7 +1315,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
                     'strip_country_code' => __('Strip country code','woo-vipps'),
                 ), 
-                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
                 'default'     => 'none',
             ),
         );
@@ -3001,7 +3001,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
             case 'strip_country_code':
                 // We only support norway,denmark,swedish country codes as of now. LP 2025-12-29
-                $phone = preg_replace('!^(47|46|45)(\d{8})!', '\2', $phone);
+                $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
                 break;
         }
         $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
