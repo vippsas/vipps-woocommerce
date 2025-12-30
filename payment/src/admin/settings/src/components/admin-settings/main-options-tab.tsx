@@ -105,18 +105,6 @@ export function AdminSettingsMainOptionsTab(): JSX.Element {
 
       {/* Renders a checkbox that specifies whether or not Vipps is the default payment method */}
       <CheckboxFormField name="vippsdefault" titleKey="vippsdefault.title" labelKey="vippsdefault.label" />
-
-      {/* Renders a select field for the phone transformations for checkout + express. LP 2025-12-29 */}
-      <SelectFormField
-        name="checkout_phone_transformation"
-        titleKey="checkout_phone_transformation.title"
-        descriptionKey="checkout_phone_transformation.description"
-        options={[
-          { label: gettext('checkout_phone_transformation.options.none'), value: 'none' },
-          { label: gettext('checkout_phone_transformation.options.ensure_plus'), value: 'ensure_plus' },
-          { label: gettext('checkout_phone_transformation.options.strip_country_code'), value: 'strip_country_code' },
-        ]}
-      />
     </div>
   );
 }
