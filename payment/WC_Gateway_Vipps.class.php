@@ -2272,7 +2272,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // we only do it for orders that match this. IOK 2023-02-03
     public function reset_erroneous_payment_method($order) {
         // This is only called by methods that are Vipps-specific, but still lets be careful not to touch other orders
-        if ($order->get_payment_method() === "kco" && $order->get_meta("_vipps_orderid")) {
+        if ($order->get_payment_method() != "vipps" && $order->get_meta("_vipps_orderid")) {
             $order->set_payment_method('vipps');
 
             $express = $order->get_meta('_vipps_express_checkout');
