@@ -154,6 +154,7 @@ jQuery(document).ready(function () {
     "method": "POST",
     "data":data,
     "cache":false,
+    "headers": {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
     "dataType": "json",
     "error": function (xhr, statustext, error) {
       console.log("Error creating express checkout:" + statustext + " " + error);

@@ -428,6 +428,8 @@ jQuery(document).ready(function () {
         $redir = "";
         $token = "";
 
+        Vipps::set_locale_if_in_header();
+
         // First, check that we haven't already done this like in another window or something:
         // IOK 2024-06-04 This also happens when using the back button! Sometimes!
         $sessioninfo = $this->vipps_checkout_current_pending_session();
@@ -440,6 +442,7 @@ jQuery(document).ready(function () {
             $src = $sessioninfo['session']['checkoutFrontendUrl'];
             $url = $src; 
         }
+
         // And if we do, just return what we have. NB: This *should not happen*.
         // IOK 2025-05-04 what are you talking about IOK, this absolutely happens e.g. when using the backbutton to a page starting the orders.
         if ($url || $redir) {
@@ -570,6 +573,8 @@ jQuery(document).ready(function () {
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $action = sanitize_title($_REQUEST['callback_action'] ?? 0);
 
+        Vipps::set_locale_if_in_header();
+
         add_filter('woo_vipps_is_checkout_callback', '__return_true'); // Signal that this is a special context.
 
         // add some default action handlers IOK  2025-05-13
@@ -654,6 +659,8 @@ jQuery(document).ready(function () {
         $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
+
+        Vipps::set_locale_if_in_header();
 
         // The single current pending order. IOK 2025-04-25
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
@@ -802,6 +809,7 @@ jQuery(document).ready(function () {
     // Also any other checks we might want to do in the future. This will validate the cart each time the
     //  checkout page loads, even if a session is already in progress.  IOK 2024-09-09
     public function ajax_vipps_checkout_validate_cart() {
+        Vipps::set_locale_if_in_header();
         $cart_total = WC()->cart->get_total('edit') ?: 0;
         $minimum_amount = 1; // 1 in the store currency
 
@@ -868,6 +876,9 @@ jQuery(document).ready(function () {
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
         $order = $current_pending ? wc_get_order($current_pending) : null;
         if (!$order) return "";
+
+        Vipps::set_locale_if_in_header();
+
         print $this->get_checkout_widgets($order);
         exit();
     }
@@ -952,6 +963,7 @@ jQuery(document).ready(function () {
                     add_filter('woocommerce_add_error', function ($message) { return ""; });
                     add_filter('woocommerce_add_notice', function ($message) { return ""; });
 
+		    do_action('woo_vipps_checkout_before_applying_coupon', $order, $code);
                     if (WC()->cart) {
 
 
@@ -975,6 +987,7 @@ jQuery(document).ready(function () {
 
                     $res = $order->apply_coupon($code);
                     if (is_wp_error($res)) throw (new Exception("Failed to apply coupon code $code"));
+		    do_action('woo_vipps_checkout_after_applying_coupon', $order, $code);
 
                     return 1;
                 }
@@ -984,12 +997,14 @@ jQuery(document).ready(function () {
             $filters['removecoupon'] = function ($action, $order) {
                 $code = isset($_REQUEST['callbackdata']['code']) ? trim($_REQUEST['callbackdata']['code']) : '';
                 if ($code) {
+		    do_action('woo_vipps_checkout_before_removing_coupon', $order, $code);
                     // Ensure the cart too loses the coupon
                     if (WC()->cart) {
                       $ok = WC()->cart->remove_coupon($code);
                       // can't do much if this fails so
                     }
                     $res = $order->remove_coupon($code);
+		    do_action('woo_vipps_checkout_after_removing_coupon', $order, $code);
 
                     $coupon = new WC_Coupon($code);
                     $has_free = $coupon->get_free_shipping();

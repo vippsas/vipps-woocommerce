@@ -284,8 +284,7 @@ class WC_Vipps_Recurring_Helper {
 				WC_Vipps_Charge::STATUS_RESERVED,
 				WC_Vipps_Charge::STATUS_PARTIALLY_CAPTURED
 			] )
-		       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT )
-		       && ! wcs_order_contains_renewal( $order );
+		       && ! (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT );
 	}
 
 	/**

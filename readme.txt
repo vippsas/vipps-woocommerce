@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.0.12
-Stable tag: 5.0.12
+Version: 5.1.0
+Stable tag: 5.1.0
 Requires at least: 6.2
-Tested up to: 6.8.2
+Tested up to: 6.9.0
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 10.3.5
+WC tested up to: 10.4.3
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -109,34 +109,11 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.0.9
-Fixed incompatibility notice in the payment block
-Version 5.0.8
-Fix for Checkout Posti shipping method crash.
-Fix a bug where a log line did not show order id correctly.
-Version 5.0.7
-Add feature for deleting all settings when deactivating plugin (Under settings/advanced)
-Changed loading of certain web component scripts to async.
-Fix more logging print bugs
-Version 5.0.6
-Fix a bug in a rare logging print
-Version 5.0.5
-Fix an edge case concerning rounding of shipping prices
-Version 5.0.4
-Make express checkout provide addresses for virtual orders again (if requested)
-Version 5.0.3
-Properly handle shipping when coupons are added
-Fix spurious error logs when express checkout orders are cancelled.
-Version 5.0.2
-Fix phone numbers being stripped when using external payment methods
-Fix Checkout widgets on mobile
-Version 5.0.1
-Fix MobilePay buttons for Express for Finland
-Version 5.0.0
-Support for the new Express Checkout mechanism and the removal of the old code. Customers will need the updated app.
-Express Checkout now supported for MobilePay
-Express Checkout now supports Local Pickup locations.
-Fix in the session handling of Express Checkout and Checkout shipping
+Version 5.1.0  =
+Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
+New option in settings/advanced to modify phone numbers in Express or Checkout so that they either get an added "+" or the country prefix is removed
+New, more space-efficient buttons and a new button configurator interface
+
 
 == Frequently Asked Questions ==
 
@@ -309,6 +286,18 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-01-06 version 5.1.0  =
+Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
+New option in settings/advanced to modify phone numbers in Express or Checkout so that they either get an added "+" or the country prefix is removed
+New, more space-efficient buttons and a new button configurator interface
+
+= 2025-12-16 version 5.0.14  =
+Fixed fatal typo in express checkout
+= 2025-12-16 version 5.0.13  =
+Fix: language in Checkout when using multilang plugins.
+Fix: encoding issue in Express checkout.
+Fix: manual Woo refund triggering Vipps MobilePay refund when the entire remaining amount is refunded
+
 = 2025-11-24 version 5.0.12  =
 Added new filter for adding options to Express Checkout, 'woo_vipps_modify_express_checkout_rate'. This for adding options like delivery times etc to your custom shipping methods and rates
 

@@ -197,6 +197,7 @@ class Vipps {
         // Activate support for Vipps Checkout, including creating the special checkout page etc. Triggered from the payment page.
         add_action('wp_ajax_woo_vipps_activate_checkout_page', function () {
           check_ajax_referer('woo_vipps_activate_checkout','_wpnonce');
+          static::set_locale_if_in_header();
           update_option('woo_vipps_checkout_activated', true, true); // This will load Vipps Checkout functionality from now on
           $this->maybe_create_vipps_pages(); // Ensure the special page exists
           if (isset($_REQUEST['activate']) && $_REQUEST['activate']) {
@@ -329,6 +330,7 @@ class Vipps {
 
         // POST actions for the backend
         add_action('admin_post_update_vipps_badge_settings', array($this, 'update_badge_settings'));
+        add_action('admin_post_update_vipps_button_settings', array($this, 'update_button_settings'));
         add_action('admin_post_vipps_delete_webhook', array($this, 'vipps_delete_webhook'));
         add_action('admin_post_vipps_add_webhook', array($this, 'vipps_add_webhook'));
 
@@ -656,6 +658,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // To be called in admin-post.php
     public function vipps_delete_webhook() {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -677,6 +680,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // To be called in admin-post.php
     public function vipps_add_webhook() {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['webhook_nonce'],'webhook_nonce');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -791,7 +795,35 @@ jQuery('a.webhook-adder').click(function (e) {
         <?php
     }
 
+    public function update_button_settings () {
+        $ok = wp_verify_nonce($_REQUEST['buttonnonce'],'buttonaction');
+        if (!$ok) {
+           wp_die("Wrong nonce");
+        }
+        if (!current_user_can('manage_woocommerce')) {
+            echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
+            wp_die(__('You don\'t have sufficient rights to edit this product', 'woo-vipps'));
+        }
+
+        $options = get_option('vipps_button_options');
+        if (isset($_POST['express']['variant'])) {
+            $options['express']['variant'] = sanitize_title($_POST['express']['variant']);
+        }
+        if (isset($_POST['express']['mini-variant'])) {
+            $options['express']['mini-variant'] = sanitize_title($_POST['express']['mini-variant']);
+        }
+        if (isset($_POST['express']['force-mini']) && is_array($_POST['express']['force-mini'])) {
+            foreach($_POST['express']['force-mini'] as $key => $val)
+              $options['express']['force-mini'][$key] = sanitize_title($val);
+        }
+
+        update_option('vipps_button_options', $options);
+        wp_safe_redirect(admin_url("admin.php?page=vipps_button_menu"));
+        exit();
+    }
+
     public function update_badge_settings () {
+        static::set_locale_if_in_header();
         $ok = wp_verify_nonce($_REQUEST['badgenonce'],'badgeaction');
         if (!$ok) {
            wp_die("Wrong nonce");
@@ -861,6 +893,162 @@ jQuery('a.webhook-adder').click(function (e) {
         foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
 
         return "<vipps-badge $badgeatts></vipps-badge>";
+    }
+
+
+    public function button_menu_page() {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
+        }
+        $payment_method = $this->get_payment_method_name();
+        $lang = $this->get_customer_language();
+        $button_options = get_option('vipps_button_options');
+
+        $normal_variants = [
+            'buy-now-rectangular' => __('Buy now rectangular', 'woo-vipps'),
+            'buy-now-pill' => __('Buy now pill', 'woo-vipps'),
+            'express-rectangular' => __('Express rectangular', 'woo-vipps'),
+            'express-pill' => __('Express pill', 'woo-vipps'),
+        ];
+        $mini_variants = [
+            'express-rectangular-mini' => __('Express rectangular mini', 'woo-vipps'),
+            'express-pill-mini' => __('Express pill mini', 'woo-vipps'),
+        ];
+        $variants = array_merge($normal_variants, $mini_variants);
+
+        $init_states = [
+            'express' => [
+                'variant' => array_key_exists(@$button_options['express']['variant'], $variants) ? $button_options['express']['variant'] : 'buy-now-rectangular',
+                'mini-variant' => array_key_exists(@$button_options['express']['mini-variant'], $mini_variants) ? $button_options['express']['mini-variant'] : 'express-rectangular-mini',
+                'force-mini' => [
+                    'product' => @$button_options['express']['force-mini']['product'] ?? 'no',
+                    'catalog' => @$button_options['express']['force-mini']['catalog'] ?? 'yes',
+                    'cart' => @$button_options['express']['force-mini']['cart'] ?? 'no',
+                    'minicart' => @$button_options['express']['force-mini']['minicart'] ?? 'yes',
+                ],
+            ],
+        ];
+
+        ?>
+        <div class='wrap vipps-button-settings'>
+          <h1><?php echo sprintf(__('%1$s button configuration', 'woo-vipps'), Vipps::CompanyName()); ?></h1>
+          <span><?php echo sprintf(__('%1$s supports different variants of buttons for you to perfect your store\'s look', 'woo-vipps'), Vipps::CompanyName()); ?></span>
+          <form class="vipps-button-settings" action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+
+            <!-- EXPRESS SECTION -->
+            <div id="vipps-button-settings-express-container">
+              <h2> <?php _e('Express Checkout', 'woo-vipps'); ?></h2>
+              <input type="hidden" name="action" value="update_vipps_button_settings" />
+              <?php wp_nonce_field( 'buttonaction', 'buttonnonce'); ?>
+
+              <!-- variant -->
+              <div class="vipps-button-settings-section">
+                <!-- variant dropdown -->
+                <div class="vipps-button-settings-express-demo-container">
+                  <label for="vippsButtonVariant"><?php _e('Choose variant', 'woo-vipps'); ?></label>
+                  <select id="vippsButtonVariant"  name="express[variant]" onChange='changeExpressVariant()'>
+                    <?php foreach($variants as $key=>$name): ?>
+                      <option value="<?php echo $key; ?>" <?php if ($init_states['express']['variant'] === $key) echo " selected "; ?> >
+                         <?php echo $name ; ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+
+                <!-- Preload all variant images. Javascript will show the active one. LP 2025-12-16 -->
+                <div class="vipps-button-settings-express-demo-container vipps-button-settings-img-container">
+                <?php foreach(array_keys($variants) as $variant): ?>
+                  <img
+                    class="vipps-button-settings-express-demo"
+                    id="vipps-button-settings-express-demo-<?php echo $variant; ?>" 
+                    src="<?php echo $this->get_express_logo($payment_method, $lang, $variant); ?>"
+                    style="display: <?php echo ($variant === $init_states['express']['variant'] ? 'block' : 'none') ;?>;"
+                  >
+                <?php endforeach; ?>
+                </div>
+              </div>
+
+
+              <!-- mini variant section -->
+              <div class="vipps-button-settings-section">
+                <!-- Checkboxes "Use mini version for x page" -->
+                <label><?php _e('Force mini variant in these contexts:', 'woo-vipps'); ?></label>
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-product"><?php _e('Product page', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][product]" type="hidden" value="no">
+                  <input name="express[force-mini][product]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['product'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-catalog"><?php _e('Catalog page', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][catalog]" type="hidden" value="no">
+                  <input name="express[force-mini][catalog]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['catalog'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-cart"><?php _e('Cart', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][cart]" type="hidden" value="no">
+                  <input name="express[force-mini][cart]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['cart'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-minicart"><?php _e('Mini cart', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][minicart]" type="hidden" value="no">
+                  <input name="express[force-mini][minicart]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['minicart'] == "yes") echo "checked";?>>
+                </div>
+
+                <!-- mini variant dropdown -->
+                <div class="vipps-button-settings-express-mini-demo-container">
+                  <label for="vippsButtonMiniVariant"><?php _e('Choose variant to use in mini contexts', 'woo-vipps'); ?></label>
+                  <select id="vippsButtonMiniVariant"  name="express[mini-variant]" onChange='changeExpressMiniVariant()'>
+                    <?php foreach($mini_variants as $key=>$name): ?>
+                      <option value="<?php echo $key; ?>" <?php if ($init_states['express']['mini-variant'] === $key) echo " selected "; ?> >
+                         <?php echo $name ; ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+
+                <!-- Preload mini variant imgs. LP 2025-12-17  -->
+                <div class="vipps-button-settings-express-mini-demo-container vipps-button-settings-img-container">
+                  <?php foreach(array_keys($mini_variants) as $variant): ?>
+                    <img
+                      class="vipps-button-settings-express-mini-demo"
+                      id="vipps-button-settings-express-mini-demo-<?php echo $variant; ?>" 
+                      src="<?php echo $this->get_express_logo($payment_method, $lang, $variant); ?>"
+                      style="display: <?php echo ($variant === $init_states['express']['mini-variant'] ? 'block' : 'none') ;?>;"
+                    >
+                  <?php endforeach; ?>
+                </div>
+              </div>
+
+            <!-- END EXPRESS SECTION -->
+            </div>
+
+            <!-- Save button -->
+            <div id="vipps-button-settings-save">
+              <input class="btn button primary" type="submit" value="<?php _e('Update settings', 'woo-vipps'); ?>" />
+            </div>
+
+          </form>
+        </div>
+
+        <script>
+          function changeExpressVariant() {
+              const variant = jQuery('#vippsButtonVariant').val().trim();
+              // Show the one selected, hide all others. LP 2025-12-16
+              jQuery('.vipps-button-settings-express-demo').hide();
+              jQuery(`#vipps-button-settings-express-demo-${variant}`).show();
+          }
+
+          function changeExpressMiniVariant() {
+              const variant = jQuery('#vippsButtonMiniVariant').val().trim();
+              // Show the one selected, hide all others. LP 2025-12-16
+              jQuery('.vipps-button-settings-express-mini-demo').hide();
+              jQuery(`#vipps-button-settings-express-mini-demo-${variant}`).show();
+          }
+        </script> 
+        <?php
     }
 
 
@@ -1102,8 +1290,7 @@ jQuery('a.webhook-adder').click(function (e) {
                 }
                 add_action('admin_notices', function() use ($text,$type, $key, $extraclasses) {
                         $logo = plugins_url('img/vmp-logo.png',__FILE__);
-                        $text= "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
-                        $message = sprintf($text, admin_url('/admin.php?page=vipps_settings_menu'));
+                        $message = "<img style='height:40px;float:left;' src='$logo' alt='Vipps-logo'> $text";
                         echo "<div class='notice notice-vipps notice-$type $extraclasses is-dismissible'  data-key='" . esc_attr($key) . "'><p>$message</p></div>";
                         });
     }
@@ -1215,6 +1402,7 @@ jQuery('a.webhook-adder').click(function (e) {
         }
 
         add_submenu_page( 'vipps_admin_menu', __('Badges', 'woo-vipps'),   __('Badges', 'woo-vipps'),   'manage_woocommerce', 'vipps_badge_menu', array($this, 'badge_menu_page'), 90);
+        add_submenu_page( 'vipps_admin_menu', __('Buttons', 'woo-vipps'),   __('Buttons', 'woo-vipps'),   'manage_woocommerce', 'vipps_button_menu', array($this, 'button_menu_page'), 80);
         add_submenu_page( 'vipps_admin_menu', __('Webhooks', 'woo-vipps'),   __('Webhooks', 'woo-vipps'),   'manage_woocommerce', 'vipps_webhook_menu', array($this, 'webhook_menu_page'), 10);
     }
 
@@ -1364,10 +1552,19 @@ jQuery('a.webhook-adder').click(function (e) {
         }
     }
 
-    public function cart_express_checkout_button_html() {
+    public function minicart_express_checkout_button() {
+        $gw = $this->gateway();
+
+        if ($gw->show_express_checkout()){
+            return $this->cart_express_checkout_button_html(true);
+        }
+    }
+
+    public function cart_express_checkout_button_html($minicart = false) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo('short'));
+        $page = $minicart ? 'minicart' : 'cart';
+        $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo($page));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
         $button = "<a href='$url' class='button vipps-express-checkout short $method' title='$title'><img alt='$title' border=0 src='$imgurl'></a>";
@@ -1379,7 +1576,7 @@ jQuery('a.webhook-adder').click(function (e) {
     // cached. Therefore stock, purchasability etc will be done later. IOK 2018-10-02
     public function buy_now_button_shortcode ($atts) {
         $args = shortcode_atts( array( 'id' => '','variant'=>'','sku' => '',), $atts );
-        return "<div class='vipps_buy_now_wrapper noloop'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false) . "</div>";
+        return "<div class='vipps_buy_now_wrapper noloop'>".  $this->get_buy_now_button($args['id'], $args['variant'], $args['sku'], false, '', 'shortcode') . "</div>";
     }
 
     // The express checkout shortcode implementation. It does not need to check if we are to show the button, obviously, but needs to see if the cart works
@@ -1610,6 +1807,7 @@ else:
             echo json_encode(array('ok'=>0,'msg'=>__('You don\'t have sufficient rights to edit this product', 'woo-vipps')));
             wp_die();
         }
+        static::set_locale_if_in_header();
         $prodid = intval($_POST['prodid']);
         $varid = intval($_POST['varid']);
 
@@ -1724,6 +1922,7 @@ else:
     // This is for debugging and ensuring we have excact details correct for a transaction.
     public function ajax_vipps_payment_details() {
         check_ajax_referer('paymentdetails','vipps_paymentdetails_sec');
+        static::set_locale_if_in_header();
         $orderid = intval($_REQUEST['orderid']);
         $gw = $this->gateway();
         $order = wc_get_order($orderid);
@@ -2125,7 +2324,7 @@ else:
             $stripped = preg_replace("!</li>$!", "", $html);
             $pid = $product->get_id();
             $button = '<div class="wp-block-button wc-block-components-product-button wc-block-button-vipps">';
-            $button .= $this->get_buy_now_button($pid,false, null, false, '', 'short');
+            $button .= $this->get_buy_now_button($pid,false, null, false, '', 'catalog');
             $button .= '</div>';
             return $stripped . $button . "</li>";
         }, 10, 3);
@@ -2199,7 +2398,7 @@ else:
 
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
-        add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'cart_express_checkout_button'), 30);
+        add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'minicart_express_checkout_button'), 30);
         add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
 
         add_action('woocommerce_after_add_to_cart_button', array($this, 'single_product_buy_now_button'));
@@ -2289,8 +2488,9 @@ else:
         $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), $this->get_payment_method_name());
         $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
+        $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
-        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo('short');
+        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo('gutenberg');
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
@@ -2350,6 +2550,7 @@ else:
     // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
     public function order_handle_vipps_action () {
            check_ajax_referer('vippssecnonce','vipps_sec');
+           static::set_locale_if_in_header();
            $order = wc_get_order(intval($_REQUEST['orderid']));
            if (!is_a($order, 'WC_Order')) return;
            $pm = $order->get_payment_method();
@@ -3193,19 +3394,54 @@ else:
 
         // We need to store the WC_Shipping_Rate objects with all its meta data in the database until return from Vipps. IOK 2020-02-17
         $storedmethods = array(); 
+        $errormethods = array();
         foreach($ratemap as $key => $rate) {
             $serialized = '';
             try {
-                $serialized = serialize($rate);
+                // We use serialize here instead of json_encode because we need the object back.
+                // we base64-encode the serialized object, because it is to be stored in a database in a text field.a IOK 2025-12-12
+                $raw = @serialize($rate);
+                $serialized = $raw ? @base64_encode($raw) : null;
+                if (!$serialized) {
+                    throw new Exception("Could not serialize rate $key");
+                }
+                // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
+                $storedmethods[$key] = $serialized;
             } catch (Exception $e) {
-                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label));
+                $errormethods[] = $key;
+                $this->log(sprintf(__("Cannot use shipping method %2\$s in %1\$s Express checkout: the shipping method isn't serializable.", 'woo-vipps'), $this->get_payment_method_name(), $label), 'error');
+                $this->log($rate, 'error');
                 continue;
             }
-            // Retrieve these precalculated rates on return from the store IOK 2020-02-14 
-            $storedmethods[$key] = $serialized;
         }
+
+        // Remove any methods from the return that was not serializable
+        if (!empty($errormethods)) {
+            $fixedreturn = [];
+            if ($ischeckout) {
+                foreach($errormethods as $problem) {
+                    foreach($return['shippingDetails'] as $method) {
+                        $id = preg_replace('!:\d+$!', "", $method['id']);
+                        if ($id != $problem) $fixedreturn[]  = $method;
+                    }
+                }
+                $return['shippingDetails'] = $fixedreturn;
+            } else {
+                foreach($errormethods as $problem) {
+                    foreach($return as $method) {
+                        $option = $method['options'][0];
+                        $id = preg_replace('!:\d+$!', "", $option['id']);
+                        if ($id != $problem) $fixedreturn[]  = $method;
+                    }
+                }
+                $return = $fixedreturn;
+            }
+        }
+
+
         // We'll also store whether or not this set of rates include free shipping in some way. IOK 2025-09-16
         $storedmethods['_meta_has_free_shipping'] = $has_free_shipping;
+        $storedmethods['_is_base64'] = true;
 
         $order->update_meta_data('_vipps_express_checkout_shipping_method_table', $storedmethods);
         $order->save_meta_data();
@@ -3665,7 +3901,7 @@ else:
         $should_delete = $gw->get_option( 'delete_settings_on_deactivation' ) === 'yes';
         if ( ($should_delete)) {
             // Delete options.
-            $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
+            $options = ['woocommerce_vipps_settings', 'woo-vipps-configured', 'vipps_badge_options', 'vipps_button_options', '_vipps_dismissed_notices', 'woo_vipps_checkout_activated'];
             foreach($options as $option) {
                 error_log("Deleting woo-vipps option: $option");
                 delete_option($option);
@@ -3679,6 +3915,23 @@ else:
         delete_option('woo_vipps_recurring_payments_activation');
 
     }
+
+    /** Try manually setting locale to locale recieved in AcceptLanguage header.
+    *
+    * This should fix incorrect language recieved from ajax when using translate plugins like polylang, wpml.
+    * E.g. for checkout widgets and product names: We send the correct locale to the frontend when first setting up Checkout,
+    * then we send the locale back in the Accept-Language header to ajax endpoints. LP 2025-12-11
+    */
+    public static function set_locale_if_in_header() {
+        $locales = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+
+        // get first in list, but strip away semicolon and everything after. LP 2025-12-16
+        $newlocale = trim(preg_replace("!;.*!", "", explode(",", $locales)[0]));
+        if (empty($newlocale))
+            return false;
+        return switch_to_locale($newlocale); // note: this may fail and return a false. LP 2025-12-11
+    }
+
 
     public function footer() {
        // Nothing yet
@@ -3946,6 +4199,7 @@ else:
 
     public function ajax_vipps_buy_single_product () {
 	Vipps::nocache();
+        static::set_locale_if_in_header();
         // We're not checking ajax referer here, because what we do is creating a session and redirecting to the
         // 'create order' page wherein we'll do the actual work. IOK 2018-09-28
         $session = WC()->session;
@@ -3966,6 +4220,7 @@ else:
     public function ajax_do_express_checkout () {
         check_ajax_referer('do_express','sec');
 	Vipps::nocache();
+        static::set_locale_if_in_header();
         $gw = $this->gateway();
 
         if (!$gw->express_checkout_available() || !$gw->cart_supports_express_checkout()) {
@@ -3973,6 +4228,9 @@ else:
             wp_send_json($result);
             exit();
         }
+
+
+        
 
         // Validate cart going forward using same logic as WC_Cart->check_cart() but not adding notices.
         $toolate = false;
@@ -4034,6 +4292,7 @@ else:
     public function ajax_do_single_product_express_checkout() {
         check_ajax_referer('do_express','sec');
 	Vipps::nocache();
+        static::set_locale_if_in_header();
         require_once(dirname(__FILE__) . "/WC_Gateway_Vipps.class.php");
         $gw = $this->gateway();
 
@@ -4042,6 +4301,7 @@ else:
             wp_send_json($result);
             exit();
         }
+
 
         // Here we will either have a product-id, a variant-id and a product-id, or just a SKU. The product-id will not be a variant - but 
         // we'll double-check just in case. Also if we somehow *just* get a variant-id we should fix that too. But a SKU trumps all. IOK 2018-10-02
@@ -4225,6 +4485,7 @@ else:
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
         check_ajax_referer('vippsstatus','sec');
+        static::set_locale_if_in_header();
         Vipps::nocache();
 
         $orderid= wc_get_order_id_by_order_key(sanitize_text_field(@$_POST['key']));
@@ -4340,20 +4601,151 @@ else:
             <?php
             return apply_filters('woo_vipps_spinner', ob_get_clean());
     }
+
+
+    // Returns express logo images depending on parameters, these are the new express svgs received 2025-12-12.
+    // Fallsbacks to defaults for each payment method. LP 2025-12-15
+    private function get_express_logo($payment_method, $lang, $variant) {
+        $base = plugins_url('img', __FILE__);
+
+        // A much more concise approach could be to name the variant files directly and do a oneliner, but harder to grep after the files' usage. LP 2025-12-12
+        $img_map = [
+            "vipps" => [
+                "default" => "$base/vipps/express/en/buy-now-vipps-en-rectangular.svg",
+                "default-mini" => "$base/vipps/express/en/express-vipps-en-rectangular-mini.svg",
+                "en" => [
+                    "default" => "$base/vipps/express/en/buy-now-vipps-en-rectangular.svg",
+                    "default-mini" => "$base/vipps/express/en/express-vipps-en-rectangular-mini.svg",
+                    "buy-now-rectangular" => "$base/vipps/express/en/buy-now-vipps-en-rectangular.svg",
+                    "buy-now-pill" => "$base/vipps/express/en/buy-now-vipps-en-pill.svg",
+                    "express-rectangular" => "$base/vipps/express/en/express-vipps-en-rectangular.svg",
+                    "express-rectangular-mini" => "$base/vipps/express/en/express-vipps-en-rectangular-mini.svg",
+                    "express-pill" => "$base/vipps/express/en/express-vipps-en-pill.svg",
+                    "express-pill-mini" => "$base/vipps/express/en/express-vipps-en-pill-mini.svg",
+
+                ],
+                "no" => [
+                    "default" => "$base/vipps/express/no/kjop-na-vipps-no-rectangular.svg",
+                    "default-mini" => "$base/vipps/express/no/ekspress-vipps-no-rectangular-mini.svg",
+                    "buy-now-rectangular" => "$base/vipps/express/no/kjop-na-vipps-no-rectangular.svg",
+                    "buy-now-pill" => "$base/vipps/express/no/kjop-na-vipps-no-pill.svg",
+                    "express-rectangular" => "$base/vipps/express/no/ekspress-vipps-no-rectangular.svg",
+                    "express-rectangular-mini" => "$base/vipps/express/no/ekspress-vipps-no-rectangular-mini.svg",
+                    "express-pill" => "$base/vipps/express/no/ekspress-vipps-no-pill.svg",
+                    "express-pill-mini" => "$base/vipps/express/no/ekspress-vipps-no-pill-mini.svg",
+                ],
+                "se" => [
+                    "default" => "$base/vipps/express/se/kop-nu-vipps-se-rectangular.svg",
+                    "default-mini" => "$base/vipps/express/se/express-vipps-se-rectangular-mini.svg",
+                    "buy-now-rectangular" => "$base/vipps/express/se/kop-nu-vipps-se-rectangular.svg",
+                    "buy-now-pill" => "$base/vipps/express/se/kop-nu-vipps-se-pill.svg",
+                    "express-rectangular" => "$base/vipps/express/se/express-vipps-se-rectangular.svg",
+                    "express-rectangular-mini" => "$base/vipps/express/se/express-vipps-se-rectangular-mini.svg",
+                    "express-pill" => "$base/vipps/express/se/express-vipps-se-pill.svg",
+                    "express-pill-mini" => "$base/vipps/express/se/express-vipps-se-pill-mini.svg",
+
+                ],
+            ],
+            "mobilepay" => [
+                "default" => "$base/mobilepay/express/en/buy-now-mp-en-rectangular.svg",
+                "default-mini" => "$base/mobilepay/express/en/express-mp-en-rectangular-mini.svg",
+                "en" => [
+                    "default" => "$base/mobilepay/express/en/buy-now-mp-en-rectangular.svg",
+                    "default-mini" => "$base/mobilepay/express/en/express-mp-en-rectangular-mini.svg",
+                    "buy-now-rectangular" => "$base/mobilepay/express/en/buy-now-mp-en-rectangular.svg",
+                    "buy-now-pill" => "$base/mobilepay/express/en/buy-now-mp-en-pill.svg",
+                    "express-rectangular" => "$base/mobilepay/express/en/express-mp-en-rectangular.svg",
+                    "express-rectangular-mini" => "$base/mobilepay/express/en/express-mp-en-rectangular-mini.svg",
+                    "express-pill" => "$base/mobilepay/express/en/express-mp-en-pill.svg",
+                    "express-pill-mini" => "$base/mobilepay/express/en/express-mp-en-pill-mini.svg",
+
+                ],
+                "dk" => [
+                    "default" => "$base/mobilepay/express/dk/kob-nu-mp-dk-rectangular.svg",
+                    "default-mini" => "$base/mobilepay/express/dk/express-mp-dk-rectangular-mini.svg",
+                    "buy-now-rectangular" => "$base/mobilepay/express/dk/kob-nu-mp-dk-rectangular.svg",
+                    "buy-now-pill" => "$base/mobilepay/express/dk/kob-nu-mp-dk-pill.svg",
+                    "express-rectangular" => "$base/mobilepay/express/dk/express-mp-dk-rectangular.svg",
+                    "express-rectangular-mini" => "$base/mobilepay/express/dk/express-mp-dk-rectangular-mini.svg",
+                    "express-pill" => "$base/mobilepay/express/dk/express-mp-dk-pill.svg",
+                    "express-pill-mini" => "$base/mobilepay/express/dk/express-mp-dk-pill-mini.svg",
+                ],
+                "fi" => [
+                    "default" => "$base/mobilepay/express/fi/osta-nyt-mp-fi-rectangular.svg",
+                    "default-mini" => "$base/mobilepay/express/fi/express-mp-fi-rectangular-mini.svg",
+                    "buy-now-rectangular" => "$base/mobilepay/express/fi/osta-nyt-mp-fi-rectangular.svg",
+                    "buy-now-pill" => "$base/mobilepay/express/fi/osta-nyt-mp-fi-pill.svg",
+                    "express-rectangular" => "$base/mobilepay/express/fi/express-mp-fi-rectangular.svg",
+                    "express-rectangular-mini" => "$base/mobilepay/express/fi/express-mp-fi-rectangular-mini.svg",
+                    "express-pill" => "$base/mobilepay/express/fi/express-mp-fi-pill.svg",
+                    "express-pill-mini" => "$base/mobilepay/express/fi/express-mp-fi-pill-mini.svg",
+
+                ],
+            ],
+
+        ];
+
+        $payment = strtolower($payment_method);
+
+        // Dont give a default if payment method not found. LP 2025-12-12
+        if (!array_key_exists($payment, $img_map)) {
+            return null;
+        }
+
+        $img = @$img_map[$payment][$lang][$variant];
+
+        // Try getting default for payment method + language, but it not found then try getting the payment method's global default. LP 2025-12-12
+        $default = str_ends_with($variant, '-mini') ? 'default-mini' : 'default';
+        if (is_null($img)) {
+            /* translators: %1= payment method name, %2 = language string, %3 = variant name */
+            $this->log(sprintf(__('Could not find chosen express logo for payment method %1$s, language %2$s, and variant %3$s, attempting to fall back on language and payment method, else only language.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
+            $img = @$img_map[$payment][$lang][$default];
+        }
+        if (is_null($img)) {
+            $img = @$img_map[$payment][$default];
+        }
+        if (is_null($img)) {
+            /* translators: %1= payment method name, %2 = language string, %3 = variant name */
+            $this->log(sprintf(__('Found no express logo fallback for payment method %1$s, language %2$s, and variant %3$s.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
+        }
+        return $img;
+    }
+
     // Get payment logo based on payment method, then language NT 2023-11-30
-    private function get_payment_logo($short=false) {
-        $logo = null;
+    // and based on custom variant setting. $page is the page origin slug, e.g 'cart', 'product'. LP 2025-12-15
+    private function get_payment_logo($page = null) {
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
-        // If the payment method is MobilePay, get the MobilePay logo with correct language
-        if($payment_method === "MobilePay"){
-            $logo = $this->get_mobilepay_logo($lang, $short);
+        $variant = $this->get_express_logo_page_variant($page);
+        $logo_url = $this->get_express_logo($payment_method, $lang, $variant);
+        return $logo_url;
+    }
+
+    /** Returns the correct variant to use for the given page, found from the wp option. LP 2025-12-23 */
+    private function get_express_logo_page_variant($page = null) {
+        $options = get_option('vipps_button_options');
+
+        if ($page === 'gutenberg') {
+            // Treat gutenberg as product for now, TODO: separate setting or are they really the same? LP 2025-12-17
+            $page = 'product';
         }
-        // If the payment method is Vipps, get the Vipps logo with correct language
-        if($payment_method === "Vipps"){
-            $logo = $this->get_vipps_logo($lang);
+        // Init defaults, use mini version by default in below pages. LP 2025-12-17
+        $use_mini = in_array($page, ['catalog', 'minicart']);
+        $variant = "";
+
+        // Find correct variant from button settings. LP 2025-12-17
+        if (is_array($options) && array_key_exists('express', $options)) {
+            if (array_key_exists($page, $options['express']['force-mini'])) {
+                $use_mini = sanitize_title($options['express']['force-mini'][$page]) === 'yes';
+            }
+            $key = $use_mini ? 'mini-variant' : 'variant';
+            $variant = sanitize_title($options['express'][$key]) ?? '';
         }
-        return $logo;
+
+        if (!$variant) {
+            $variant = $use_mini ? "default-mini" : "default";
+        }
+        return $variant;
     }
 
     // Get express banner logo based on payment method. LP 2025-09-03
@@ -4368,46 +4760,8 @@ else:
         return null;
     }
 
-    // Get MobilePay logo with correct language NT 2023-11-30
-    private function get_mobilepay_logo($lang, $short=false) {
-        // if language is Danish
-        if($lang === "dk") {
-            // get Danish logo
-            return plugins_url('img/mobilepay-rectangular-pay-DK.svg',__FILE__);
-        // if language is Finnish
-        } else if($lang === "fi") {
-            // get Finnish logo(s)
-            if ($short) {
-                return plugins_url('img/mobilepay-rectangular-pay-short-FI.svg',__FILE__);
-            } else {
-                return plugins_url('img/mobilepay-rectangular-pay-FI.svg',__FILE__);
-            }
-        // otherwise
-        } else {
-            // get English logo by default
-            return plugins_url('img/mobilepay-rectangular-pay-EN.svg',__FILE__);
-        }
-    }
-
-    // Get Vipps logo with correct language NT 2023-11-30
-    private function get_vipps_logo($lang) {
-        // if language is Norwegian
-        if($lang === "no") {
-            // get Norwegian logo
-            return plugins_url('img/vipps-rectangular-pay-NO.svg',__FILE__);
-        // if language is Swedish
-        } else if($lang === "sv") {
-            // currently using English logo for Swedish
-            return plugins_url('img/vipps-rectangular-pay-EN.svg',__FILE__);
-        // otherwise
-        } else {
-            // get English logo by default
-            return plugins_url('img/vipps-rectangular-pay-EN.svg',__FILE__);
-        }
-    }
-
     // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
-    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $short=false) {
+    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $page=null) {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
 
@@ -4426,7 +4780,8 @@ else:
         $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $method_name);
         
         $payment_method = $this->get_payment_method_name();
-        $logo = $this->get_payment_logo($short);
+        $short = str_ends_with($this->get_express_logo_page_variant($page), 'mini');
+        $logo = $this->get_payment_logo($page);
 
         $message =" <img border=0 src='$logo' alt='$payment_method'/>";
 
@@ -4481,7 +4836,7 @@ else:
         if ($compat) $classes[] ='compat-mode';
         $classes = apply_filters('woo_vipps_single_product_buy_now_classes', $classes, $product);
 
-        $button = $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes);
+        $button = $this->get_buy_now_button(false,false,false, ($product->is_type('variable') ? 'disabled' : false), $classes, 'product');
         $code = "<div class='vipps_buy_now_wrapper noloop'>$button</div>";
         echo $code;
     }
@@ -4516,7 +4871,7 @@ else:
         if (!$this->loop_single_product_is_express_checkout_purchasable($product)) return;
        
         $sku = $product->get_sku();
-        $button = $this->get_buy_now_button($product->get_id(),false,$sku, false, '', 'short');
+        $button = $this->get_buy_now_button($product->get_id(),false,$sku, false, '', 'catalog');
         echo "<div class='vipps_buy_now_wrapper loop'>$button</div>";
     }
 
@@ -4757,7 +5112,7 @@ else:
         wp_enqueue_script('vipps-express-checkout');
         // If we have a valid nonce when we get here, just call the 'create order' bit at once. Otherwise, make a button
         // to actually perform the express checkout.
-        $buttonimgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
+        $buttonimgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo('landing'));
 
 
         $orderspec = $this->get_orderspec_from_arguments($productinfo);
@@ -4835,7 +5190,6 @@ else:
             $content .= $extraHTML;
             $content .= $termsHTML;
             $content .= apply_filters('woo_vipps_express_checkout_validation_elements', '');
-            $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo());
             $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $this->get_payment_method_name());
             $content .= "<div class='vipps_buy_now_wrapper noloop'><a href='#' id='do-express-checkout' class='button vipps-express-checkout' title='$title'><img alt='$title' border=0 src='$buttonimgurl'></a></div>";
             $content .= "<div id='vipps-status-message'></div>";

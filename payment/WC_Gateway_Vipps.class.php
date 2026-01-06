@@ -759,6 +759,27 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 //Do nothing with this for now
                 $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
+
+
+        // Don't do anything if the order has any *manual* refunds (manual Woo refund outside of Vipps MobilePay). LP 2025-12-16
+        // TODO: this is a short sighted fix, in the future we wish to rewrite this logic to instead run our own logic in the woocommerce_order_status_refunded hook
+        // *before* woocommerce runs wc_order_fully_refunded() which create a refund automatically. Instead we will create our own refund.
+        // This so we can stop the order note saying they need to refund through their payment gateway, in addition to handle skipping
+        // Vipps MP refund if order has manual refunds. LP 2025-12-16
+        $refunds = $order->get_refunds();
+        foreach ($refunds as $refund) {
+            $is_manual_refund = !$refund->get_refunded_payment();
+
+            // Changing order status to refunded creates a refund with an empty item list, but we still want to refund these.
+            // So manual refunds we will skip are the ones with items only. LP 2025-12-16
+            $has_line_items = !empty($refund->get_items());
+            if ($is_manual_refund && $has_line_items) {
+                /* translators: orderid, company name */
+                $this->log(sprintf(__('Order %1$s has a manual refund so we will not send this refund to %2$s', 'woo-vipps'), $orderid, Vipps::CompanyName()), 'info');
+                return true;
+            }
+        }
+
         // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
         $vippsstatus = $order->get_meta('_vipps_status');
         $captured = intval($order->get_meta('_vipps_captured'));
@@ -1285,6 +1306,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'default'     => 'yes',
             ),
 
+            'checkout_phone_transformation' => array(
+                'title'       => sprintf(__('Phone number transformation for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'label'       => sprintf(__('Choose a transformation to apply to phone numbers for %1$s and Express Checkout', 'woo-vipps'), 'Checkout'),
+                'type'        => 'select',
+                'options' => array(
+                    'none' => __('None', 'woo-vipps'),
+                    'ensure_plus' => __('Prepend \'+\'','woo-vipps'),
+                    'strip_country_code' => __('Strip country code','woo-vipps'),
+                ), 
+                'description' => __('Phone numbers from Express or Checkout are in the format 47xxxxxx without plus-sign in front. If you prefer, or if it is neccessary for your integrations, you can transform these numbers either by adding the plus sign or by stripping the country-code (45, 46, 47, 358).<br>NB: stripping country codes is at the moment only supported for Norwegian, Danish, Finnish and Swedish numbers.<br>Remember to explicitly test your use case before committing to any transformation on your live store.', 'woo-vipps'),
+                'default'     => 'none',
+            ),
         );
 
          $expressfields = array(  
@@ -2239,7 +2272,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // we only do it for orders that match this. IOK 2023-02-03
     public function reset_erroneous_payment_method($order) {
         // This is only called by methods that are Vipps-specific, but still lets be careful not to touch other orders
-        if ($order->get_payment_method() === "kco" && $order->get_meta("_vipps_orderid")) {
+
+        // New 2026-01-05: we now check all other payment methods that aren't vipps, and reset it back to vipps.
+        // The issue was using Klarna Payments and pressing 'back' in the browser, then completing the payment in vipps checkout
+        // the order still had the payment method klarna_payments, since we previously only checked 'kco' = klarna/kustom checkout. LP 2026-01-05
+        if ($order->get_payment_method() != "vipps" && $order->get_meta("_vipps_orderid")) {
             $order->set_payment_method('vipps');
 
             $express = $order->get_meta('_vipps_express_checkout');
@@ -2249,7 +2286,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if ($checkout) $order->set_payment_method_title('Vipps Checkout');
             $order->save();
 
-            $msg = sprintf(__("Payment method reset to %1\$s - it had been set to KCO while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
+            $msg = sprintf(__("Payment method reset to %1\$s - it had been set to another payment method while completing the order for %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id());
             $this->log($msg, 'debug');
             $order->add_order_note($msg);
         }
@@ -2900,10 +2937,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $lastname = $user['lastName'];
         $email = $user['email'];
 
+        // Get the passed phone number from checkout or express, which could be in any number of slots IOK 2025-
         $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
         if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
         if (!$phone && ($address['phoneNumber'] ?? "")) $phone = $address['phoneNumber'];
         if (!$phone && ($address['mobileNumber'] ?? "")) $phone = $address['mobileNumber'];
+
+        // Phone number transformations - the format Vipps Mobilepay uses is often not what merchants expect or need
+        // NOTE: as of writing this, the checkout+expresscheckout expected format is '{countrycode}{phonenr}', so we assume this. LP 2025-12-29
+        $phone_transformation = $this->get_option('checkout_phone_transformation');
+        switch($phone_transformation) {
+            case 'ensure_plus':
+                $phone = "+$phone";
+                break;
+            case 'strip_country_code':
+                // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
+                $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
+                break;
+        }
+        $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
 
         if (!isset($address['firstName']) or !$address['firstName']) {
             $address['firstName'] = $firstname;
@@ -2960,6 +3012,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $address['postalCode'] = $postcode; // checkout
 
         // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
+        // note: added separate filter for phone number 'woo_vipps_canonicalize_checkout_phone' because of the different uses, keys etc. LP 2025-12-29
         return apply_filters('woo_vipps_canonicalize_checkout_address', $address, $user);
     }
 
@@ -3051,10 +3104,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $key = $matches['key'] ?? "";
                 $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+
                 if (is_array($shipping_table) && isset($shipping_table[$key])) {
-                    $shipping_rate = @unserialize($shipping_table[$key]);
+                    $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
+                    $shipping_rate = $decoded ? @unserialize($decoded) : null;
                     if (!$shipping_rate) {
-                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error');
+                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
+                        $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
                     } else {
                         if ($option_index) {
                            $meta = $shipping_rate->get_meta_data();
@@ -3810,6 +3867,7 @@ function activate_vipps_checkout(yesno) {
   jQuery.ajax(<?php echo json_encode(admin_url('admin-ajax.php')); ?>, { 
             method: 'POST',
             data: args,
+            headers: {"Accept-Language": `${VippsConfig['vippslocale']}, *`},
             error: function (jqXHR, stat, err) {
             },
             success: function  (data, stat, jqXHR) {
