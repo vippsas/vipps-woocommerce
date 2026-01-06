@@ -2937,10 +2937,25 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $lastname = $user['lastName'];
         $email = $user['email'];
 
+        // Get the passed phone number from checkout or express, which could be in any number of slots IOK 2025-
         $phone = isset($user['mobileNumber']) ? $user['mobileNumber'] : "";
         if (isset($user['phoneNumber'])) $phone = $user['phoneNumber'];
         if (!$phone && ($address['phoneNumber'] ?? "")) $phone = $address['phoneNumber'];
         if (!$phone && ($address['mobileNumber'] ?? "")) $phone = $address['mobileNumber'];
+
+        // Phone number transformations - the format Vipps Mobilepay uses is often not what merchants expect or need
+        // NOTE: as of writing this, the checkout+expresscheckout expected format is '{countrycode}{phonenr}', so we assume this. LP 2025-12-29
+        $phone_transformation = $this->get_option('checkout_phone_transformation');
+        switch($phone_transformation) {
+            case 'ensure_plus':
+                $phone = "+$phone";
+                break;
+            case 'strip_country_code':
+                // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
+                $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
+                break;
+        }
+        $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
 
         if (!isset($address['firstName']) or !$address['firstName']) {
             $address['firstName'] = $firstname;
@@ -2995,22 +3010,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $address['postCode'] = $postcode; // epayment
         $address['zipCode'] = $postcode; // ecom
         $address['postalCode'] = $postcode; // checkout
-
-        // Phone number transformations
-        // NOTE: as of writing this, the checkout+expresscheckout expected format is '{countrycode}{phonenr}', so we assume this. LP 2025-12-29
-        $phone_transformation = $this->get_option('checkout_phone_transformation');
-        switch($phone_transformation) {
-            case 'ensure_plus':
-                $phone = "+$phone";
-                break;
-            case 'strip_country_code':
-                // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
-                $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
-                break;
-        }
-        $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
-        if (isset($address['phoneNumber'])) $address['phoneNumber'] = $phone;
-        if (isset($address['mobileNumber'])) $address['mobileNumber'] = $phone;
 
         // Allow users to modify the address to e.g. handle phone numbers differently IOK 2025-01-20
         // note: added separate filter for phone number 'woo_vipps_canonicalize_checkout_phone' because of the different uses, keys etc. LP 2025-12-29
