@@ -235,3 +235,28 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
     font-size:larger;
     font-weight:medium;
 }
+
+/* Button page stuff */
+.vipps-button-settings label {
+    width: 20%;
+    display: inline-block;
+    font-weight: 550;
+}
+
+.vipps-button-settings-img-container {
+    width: 30%;
+    display: flex;
+    justify-content: center;
+}
+
+.vipps-button-settings-img-container img {
+    margin-top: 0.5rem;
+}
+
+.vipps-button-settings-section {
+    margin-bottom: 2rem;
+}
+
+.vipps-button-settings-express-force-mini-container {
+    margin-bottom: .5rem;
+}
