@@ -244,7 +244,7 @@ body.post-type-vipps_qr_code.wp-admin .url-section .url-options .url-option.acti
 }
 
 .vipps-button-settings-img-container {
-    width: 30%;
+    max-width: 768px;
     display: flex;
     justify-content: center;
 }
