@@ -1062,7 +1062,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
         $recurringsettings = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring');
         $checkoutsettings  = admin_url('/admin.php?page=vipps_settings_menu');
-        $loginsettings = admin_url('/options-general.php?page=vipps_login_options');
+        $loginsettings = admin_url('options-general.php?page=vipps_login_settings');
 
         $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
         $subscriptioninstall = 'https://woocommerce.com/products/woocommerce-subscriptions/';
