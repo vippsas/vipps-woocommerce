@@ -1062,7 +1062,7 @@ jQuery('a.webhook-adder').click(function (e) {
 
         $recurringsettings = admin_url('/admin.php?page=wc-settings&tab=checkout&section=vipps_recurring');
         $checkoutsettings  = admin_url('/admin.php?page=vipps_settings_menu');
-        $loginsettings = admin_url('/options-general.php?page=vipps_login_options');
+        $loginsettings = admin_url('options-general.php?page=vipps_login_settings');
 
         $logininstall = admin_url('/plugin-install.php?s=login-with-vipps&tab=search&type=term');
         $subscriptioninstall = 'https://woocommerce.com/products/woocommerce-subscriptions/';
@@ -3240,7 +3240,8 @@ else:
 
         // No exit here, because developers can add more methods using the filter below. IOK 2018-09-20
         if (empty($shipping_methods)) {
-            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order %2$d will fail', 'woo-vipps', 'warning'), Vipps::ExpressCheckoutName(), $order->get_id()), 'debug');
+            $name = $ischeckout ? Vipps::CheckoutName() : Vipps::ExpressCheckoutName();
+            $this->log(sprintf(__('Could not find any applicable shipping methods for %1$s - order %2$d will fail', 'woo-vipps', 'warning'), $name, $order->get_id()), 'debug');
             $this->log(sprintf(__('Address given for %1$s was %2$s', 'woo-vipps'), $order->get_id(), 
               ($addressline1 . " " .  $addressline2 . " " .  $city . " " .  $postcode . " " .  $country)
             ), 'debug');
