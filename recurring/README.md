@@ -5,6 +5,7 @@ sidebar_position: 1
 description: WooCommerce subscription plugin for Vipps/MobilePay recurring payments - automated billing and subscription management for Nordic merchants.
 pagination_next: null
 pagination_prev: null
+section: Plugins
 ---
 END_METADATA -->
 

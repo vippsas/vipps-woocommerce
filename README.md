@@ -5,6 +5,7 @@ sidebar_position: 1
 description: Official WooCommerce payment plugin for Vipps/MobilePay - Nordic's leading mobile payment solution with complete checkout integration.
 pagination_next: null
 pagination_prev: null
+section: Plugins
 ---
 END_METADATA -->
 
