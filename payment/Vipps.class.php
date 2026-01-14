@@ -2527,7 +2527,8 @@ else:
 
         $language = substr(get_bloginfo('language'),0,2);
         if (function_exists('pll_current_language')) {
-           $language = pll_current_language('slug');
+            $pll_language = pll_current_language('slug');
+            if ($pll_language) $language = $pll_language;
         } elseif (has_filter('wpml_current_language')){
             $language=apply_filters('wpml_current_language',null);
         }  elseif (!empty($TRP_LANGUAGE)) {
