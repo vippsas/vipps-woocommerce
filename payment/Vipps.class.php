@@ -4727,8 +4727,8 @@ else:
         $options = get_option('vipps_button_options');
 
         if ($page === 'gutenberg') {
-            // Treat gutenberg as product for now, TODO: separate setting or are they really the same? LP 2025-12-17
-            $page = 'product';
+            // Treat gutenberg as catalog for now, since the buy-now block is applied to the product template parent block used in product collections. LP 2026-01-14
+            $page = 'catalog';
         }
         // Init defaults, use mini version by default in below pages. LP 2025-12-17
         $use_mini = in_array($page, ['catalog', 'minicart']);
