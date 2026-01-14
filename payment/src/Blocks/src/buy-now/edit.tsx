@@ -3,7 +3,7 @@ import type { BlockAttributes } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
 
 // Injected config. LP 27.11.2024
-declare const VippsConfig: {
+declare const vippsBuyNowBlockConfig: {
 	BuyNowWithVipps: string;
 	logoSvgUrl: string;
 };
@@ -29,12 +29,12 @@ export default function Edit({
 			>
 				<a
 					className="single-product button vipps-buy-now wp-block-button__link"
-					title={VippsConfig['BuyNowWithVipps']}
+					title={vippsBuyNowBlockConfig['BuyNowWithVipps']}
 				>
 					<img
 						className="inline vipps-logo-negative"
-						src={VippsConfig['logoSvgUrl']}
-						alt={VippsConfig['BuyNowWithVipps']}
+						src={vippsBuyNowBlockConfig['logoSvgUrl']}
+						alt={vippsBuyNowBlockConfig['BuyNowWithVipps']}
 					/>
 				</a>
 			</div>

@@ -62,6 +62,14 @@ add_action('enqueue_block_editor_assets', function () {
 
     // Inject config from Vipps.class.php to buy-now editor script. LP 29.11.2024
     if (version_compare(WC_VERSION, '9.4', '>=')) {
-        wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const VippsConfig = ' . json_encode(Vipps::instance()->vippsJSConfig), 'before');
+        $buy_now_config = [
+            'BuyNowWithVipps' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
+            'logoSvgUrl' => Vipps::instance()->vippsJSConfig['logoSvgUrl'],
+            'vippssmileurl' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
+            'vippsbuynowbutton' => Vipps::instance()->vippsJSConfig['vippsbuynowbutton'],
+            'vippsbuynowdescription' => Vipps::instance()->vippsJSConfig['vippsbuynowdescription'],
+
+        ];
+        wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_config), 'before');
     }
 });
