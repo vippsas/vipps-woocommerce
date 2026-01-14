@@ -28,6 +28,7 @@ SOFTWARE.
 */
 
 // Hook vippsInit to woocommerce/product-collection render event. LP 29.11.2024
+// IOK 2026-01-14 available from woo 9.4 - so the buy now block will not be available until that version
 document.body.addEventListener('wc-blocks_product_list_rendered',
   function (event) {
     document.body.dispatchEvent(new Event('vippsInit'));

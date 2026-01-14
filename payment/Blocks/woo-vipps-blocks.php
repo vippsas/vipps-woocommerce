@@ -7,7 +7,8 @@ add_action('init', function () {
     // vipps-badge block. LP 29.11.2025
     register_block_type(__DIR__ . '/dist/vipps-badge');
 
-    // Buy-now product block uses JS event introduced in woocommerce 9.4. LP 29.11.2024
+    // Buy-now product block uses the JS event 'wc-blocks_product_list_rendered', introduced in woocommerce 9.4. LP 29.11.2024
+    // See vipp.js - this event is used to initialize the buy-now buttons IOK 2026-01-14
     if (version_compare(WC_VERSION, '9.4', '>=')) {
         register_block_type(__DIR__ . '/dist/buy-now');
 
@@ -61,6 +62,7 @@ add_action('enqueue_block_editor_assets', function () {
         'before');
 
     // Inject config from Vipps.class.php to buy-now editor script. LP 29.11.2024
+    // Buy-now product block uses the JS event 'wc-blocks_product_list_rendered', introduced in woocommerce 9.4. LP 29.11.2024
     if (version_compare(WC_VERSION, '9.4', '>=')) {
         $buy_now_config = [
             'BuyNowWithVipps' => Vipps::instance()->vippsJSConfig['vippssmileurl'],
