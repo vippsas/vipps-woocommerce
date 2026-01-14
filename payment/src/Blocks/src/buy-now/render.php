@@ -10,5 +10,5 @@ if ($product && is_a($product, 'WC_Product')) {
 
 // Only create button if the product has woo-vipps express checkout enabled. LP 29.11.2024
 if ($supports) {
-	echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button($product->get_id(), false, null, false, '', 'gutenberg') . "</div>";
+	echo "<div class='wp-block-button wc-block-components-product-button wc-block-button-vipps'>" . $vipps->get_buy_now_button($product->get_id(), false, null, false, '', 'buy-now-block') . "</div>";
 }

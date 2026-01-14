@@ -2490,7 +2490,7 @@ else:
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();
-        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo('gutenberg');
+        $this->vippsJSConfig['logoSvgUrl'] = $this->get_payment_logo('buy-now-block');
        
 
         // If the site supports Gutenberg Blocks, support the Checkout block IOK 2020-08-10
@@ -4727,8 +4727,8 @@ else:
     private function get_express_logo_page_variant($page = null) {
         $options = get_option('vipps_button_options');
 
-        if ($page === 'gutenberg') {
-            // Treat gutenberg as catalog for now, since the buy-now block is applied to the product template parent block used in product collections. LP 2026-01-14
+        if ($page === 'buy-now-block') {
+            // Treat the gutenberg buy-now block as catalog for now, since the buy-now block is applied to the product template parent block used in product collections. LP 2026-01-14
             $page = 'catalog';
         }
         // Init defaults, use mini version by default in below pages. LP 2025-12-17
