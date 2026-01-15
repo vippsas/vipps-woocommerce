@@ -3041,6 +3041,9 @@ else:
             exit();
         }
 
+        // This is for debugging sites where shipping handling fails because of blocks etc IOK 2026-01-15
+        $this->log(sprintf(__("Received shipping callback for order %d", 'woo-vipps'), $orderid));
+
         do_action('woo_vipps_shipping_details_callback_order', $orderid, $vippsorderid);
 
         $order = wc_get_order($orderid);
