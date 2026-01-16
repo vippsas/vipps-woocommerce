@@ -2,12 +2,20 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "woo-vipps/buy-now",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "title": "Vipps MobilePay Buy Now",
   "attributes": {
     "isInQuery": {
       "type": "boolean",
       "default": "false"
+    },
+    "variant": {
+      "type": "string",
+      "default": "default-mini"
+    },
+    "language": {
+      "type": "string",
+      "default": "en"
     }
   },
   "keywords": [

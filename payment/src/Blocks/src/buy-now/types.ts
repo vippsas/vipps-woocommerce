@@ -1,8 +1,14 @@
 import type { BlockAttributes } from '@wordpress/blocks';
 
-interface Select {
+type Select = {
 	label: string;
 	value: string;
+};
+
+export interface VippsBlockAttributes extends BlockAttributes {
+	align: string;
+	variant: string;
+	language: string;
 
 	// Currently, this block only works within the product collection block,
 	// which sets the 'query' context. To support the button in other contexts, we add an isInQuery attribute which
@@ -11,16 +17,12 @@ interface Select {
 	isInQuery: boolean;
 }
 
-export interface VippsBlockAttributes extends BlockAttributes {
-	align: string;
-	variant: string;
-	language: string;
-}
-
 export interface VippsBlockConfig {
 	BuyNowWithVipps: string;
-	logoSvgUrl: string;
+	logos: Record<string, Record<string, string>>;
 	vippssmileurl: string;
 	vippsbuynowbutton: string;
 	vippsbuynowdescription: string;
+	variants: Select[];
+	languages: Select[];
 }
