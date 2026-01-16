@@ -1,21 +1,15 @@
 import type { BlockEditProps } from '@wordpress/blocks';
-import type { BlockAttributes } from '@wordpress/blocks';
 import { useBlockProps } from '@wordpress/block-editor';
 
-// Injected config. LP 27.11.2024
-declare const vippsBuyNowBlockConfig: {
-	BuyNowWithVipps: string;
-	logoSvgUrl: string;
-};
+import { VippsBlockAttributes, VippsBlockConfig } from './types';
 
-interface Attributes extends BlockAttributes {
-	isInQuery: boolean;
-}
+// Injected config. LP 27.11.2024
+declare const vippsBuyNowBlockConfig: VippsBlockConfig;
 
 export default function Edit({
 	context,
 	setAttributes,
-}: BlockEditProps<Attributes>) {
+}: BlockEditProps<VippsBlockAttributes>) {
 	// Currently, this block only works within the product collection block, 
 	// which sets the 'query' context. To support the button in other contexts, we add an isInQuery attribute which
 	// is available in render.php. NB: This is not currently in use; it would be for instance used to add buy-now buttons
