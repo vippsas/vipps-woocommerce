@@ -33,8 +33,6 @@ SOFTWARE.
 }
 
 /* And this is for the products blocks IOK 2020-09-03 */
-.wc-block-grid__product .vippsbuynow {
-}
 .wc-block-grid__product .single-product.button.vipps-buy-now .inline.vipps-logo.negative {
     display: inline-block;
     margin: 0 .2em;
@@ -68,6 +66,7 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.s
     margin-right: auto;
     display: inline-block;
     padding-top:0;
+    background-color: transparent;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 9rem;
@@ -280,9 +279,10 @@ a.single-product.button.vipps-buy-now  {
     padding-bottom:0;
 }
 
-.widget_shopping_cart a.button.vipps-express-checkout {
+body .widget_shopping_cart a.button.vipps-express-checkout, body .widget_shopping_cart a.button.vipps-express-checkout:hover {
  color:transparent;
- background-color: #fff;
+ border:0;
+ background-color: transparent;
  float: none;
  margin-top: .5em;
  margin-bottom: 0;

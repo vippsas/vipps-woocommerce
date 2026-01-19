@@ -65,9 +65,9 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
     text-align: center;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
-    /* margin-left: auto;
-    margin-right: auto; */
     display: inline-block;
+    background-color: transparent;
+    border: 0;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 10rem;

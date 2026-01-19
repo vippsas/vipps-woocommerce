@@ -41,7 +41,6 @@ add_action('enqueue_block_editor_assets', function () {
                 ['label' => __('Default', 'woo-vipps'), 'value' => $store_language],
                 ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                 ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
-                ['label' => __('Swedish', 'woo-vipps'), 'value' => 'se'],
                 ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
                 ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
             ];
@@ -53,7 +52,6 @@ add_action('enqueue_block_editor_assets', function () {
         'brand' => strtolower($vipps->get_payment_method_name()),
         'languages' => $languages,
     ];
-    // vipps-badge config stop
 
     // Inject block config to vipps-badge editor script. LP 15.11.2024
     wp_add_inline_script(
