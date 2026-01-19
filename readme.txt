@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.1.0
-Stable tag: 5.1.0
+Version: 5.1.1
+Stable tag: 5.1.1
 Requires at least: 6.2
 Tested up to: 6.9.0
 Requires PHP: 7.4
@@ -109,7 +109,9 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.1.0  =
+Version 5.1.1 
+Minor improvements in styles and user interface
+Version 5.1.0 
 Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
 New option in settings/advanced to modify phone numbers in Express or Checkout so that they either get an added "+" or the country prefix is removed
 New, more space-efficient buttons and a new button configurator interface
@@ -286,6 +288,12 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-01-19 version 5.1.1  =
+Fix link to the settings-page for the login app
+Fix rendering of Buy-Now block in Product Collections block
+Improve user interface of Buy-Now block
+Style improvements for the express checkout block
+
 = 2026-01-06 version 5.1.0  =
 Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
 New option in settings/advanced to modify phone numbers in Express or Checkout so that they either get an added "+" or the country prefix is removed
