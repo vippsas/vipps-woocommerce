@@ -49,7 +49,6 @@ add_action('enqueue_block_editor_assets', function () {
             ['label' => __('Default', 'woo-vipps'), 'value' => $store_language],
             ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
             ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
-            ['label' => __('Swedish', 'woo-vipps'), 'value' => 'se'],
             ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
             ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
         ],

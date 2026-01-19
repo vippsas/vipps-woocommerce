@@ -66,6 +66,7 @@ div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.s
     margin-right: auto;
     display: inline-block;
     padding-top:0;
+    background-color: transparent;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
     max-width: 9rem;
