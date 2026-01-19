@@ -22,9 +22,14 @@ export default function Edit({
 		vippsBuyNowBlockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
 
+	console.log(attributes);
+	console.log(!!attributes.hasProductContext);
+	console.log(!!attributes.productId);
+
 	return (
 		<>
-			{/* The actual block. LP 2026-01-16 */}
+			{/* The actual block: show the buy-now button if we have a product, else show the product search field. LP 2026-01-19 */}
+			{attributes.hasProductContext || attributes.productId ? (
 			<div
 				{...useBlockProps({
 					className:
@@ -42,24 +47,37 @@ export default function Edit({
 					/>
 				</a>
 			</div>
+			) 
+			: (
+				<TextControl
+					label={__('Product id', 'woo-vipps')}
+					help={__(
+						'Enter the post id of the product this button should buy',
+						'woo-vipps'
+					)}
+					value={attributes.productId}
+					onChange={(newProductId) =>
+						setAttributes({ productId: Number(newProductId) })
+					}
+					placeholder={__('Product post ID', 'woo-vipps')}
+				/>
+			)}
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
 			<InspectorControls>
-				{/* Product id selection only if not in a parent block context (hasProductContext). LP 2026-01-19 */}
-				{!attributes.hasProductContext && (
-					<TextControl
-						label={__('Product id', 'woo-vipps')}
-						help={__(
-							'Enter the post id of the product this button should buy',
-							'woo-vipps'
-						)}
-						value={attributes.productId}
-						onChange={(newProductId) =>
-							setAttributes({ productId: Number(newProductId) })
-						}
-						placeholder={__('Product post ID', 'woo-vipps')}
-					/>
-				)}
+
+				<TextControl
+					label={__('Product id', 'woo-vipps')}
+					help={__(
+						'Enter the post id of the product this button should buy',
+						'woo-vipps'
+					)}
+					value={attributes.productId}
+					onChange={(newProductId) =>
+						setAttributes({ productId: Number(newProductId) })
+					}
+					placeholder={__('Product post ID', 'woo-vipps')}
+				/>
 				<PanelBody>
 					<SelectControl
 						onChange={(newVariant) =>

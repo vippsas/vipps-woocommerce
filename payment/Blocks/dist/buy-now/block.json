@@ -7,11 +7,11 @@
   "attributes": {
     "hasProductContext": {
       "type": "boolean",
-      "default": "0"
+      "default": false
     },
     "productId": {
       "type": "number",
-      "default": ""
+      "default": null
     },
     "variant": {
       "type": "string",

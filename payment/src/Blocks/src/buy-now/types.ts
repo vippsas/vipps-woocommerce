@@ -9,12 +9,10 @@ export interface VippsBlockAttributes extends BlockAttributes {
 	align: string;
 	variant: string;
 	language: string;
+	productId: number;
 
-	// Currently, this block only works within the product collection block,
-	// which sets the 'query' context. To support the button in other contexts, we add an isInQuery attribute which
-	// is available in render.php. NB: This is not currently in use; it would be for instance used to add buy-now buttons
-	// for arbitrary product ID or on product pages etc. IOK 2026-01-14
-	isInQuery: boolean;
+	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
+	hasProductContext: boolean;
 }
 
 export interface VippsBlockConfig {
