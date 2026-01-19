@@ -293,6 +293,7 @@ Fix link to the settings-page for the login app
 Fix rendering of Buy-Now block in Product Collections block
 Improve user interface of Buy-Now block
 Style improvements for the express checkout block
+Improve logging for shipping for express checkout
 
 = 2026-01-06 version 5.1.0  =
 Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
