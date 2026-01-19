@@ -7,7 +7,11 @@
   "attributes": {
     "isInQuery": {
       "type": "boolean",
-      "default": "false"
+      "default": "0"
+    },
+    "productId": {
+      "type": "number",
+      "default": ""
     },
     "variant": {
       "type": "string",
@@ -23,9 +27,6 @@
     "woo-gutenberg-products-block"
   ],
   "category": "woocommerce",
-  "parent": [
-    "woocommerce/product-template"
-  ],
   "usesContext": [
     "query",
     "queryId",

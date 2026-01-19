@@ -1,7 +1,7 @@
 import type { BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { SelectControl, PanelBody } from '@wordpress/components';
+import { SelectControl, PanelBody, TextControl } from '@wordpress/components';
 
 import { VippsBlockAttributes, VippsBlockConfig } from './types';
 
@@ -19,7 +19,9 @@ export default function Edit({
 	// for arbitrary product ID or on product pages etc. IOK 2026-01-14
 	if (context['query']) setAttributes({ isInQuery: true });
 
-	const langLogos = vippsBuyNowBlockConfig.logos[attributes.language] ?? vippsBuyNowBlockConfig.logos['en'];
+	const langLogos =
+		vippsBuyNowBlockConfig.logos[attributes.language] ??
+		vippsBuyNowBlockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
 
 	return (
@@ -45,6 +47,18 @@ export default function Edit({
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
 			<InspectorControls>
+				<TextControl
+					label={__('Product id', 'woo-vipps')}
+					help={__(
+						'Enter the post id of the product this button should buy',
+						'woo-vipps'
+					)}
+					value={attributes.productId}
+					onChange={(newProductId) =>
+						setAttributes({ productId: Number(newProductId) })
+					}
+					placeholder={__('Product post ID', 'woo-vipps')}
+				/>
 				<PanelBody>
 					<SelectControl
 						onChange={(newVariant) =>
