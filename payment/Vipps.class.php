@@ -776,7 +776,7 @@ jQuery('a.webhook-adder').click(function (e) {
            <h2><?php _e('Shortcodes', 'woo-vipps'); ?> </h2>
            <p><?php echo sprintf(__('If you need to add a %1$s badge on a specific page, footer, header and so on, and you cannot use the Gutenberg Block provided for this, you can either add the %1$s Badge manually (as <a href="%2$s" nofollow rel=nofollow target=_blank>documented here</a>) or you can use the shortcode.', 'woo-vipps'), Vipps::CompanyName(), "https://developer.vippsmobilepay.com/docs/knowledge-base/design-guidelines/on-site-messaging/"); ?></p>
            <br><?php _e("The shortcode looks like this:", 'woo-vipps')?><br>
-              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|se|fi|dk} ] </pre><br> 
+              <pre>[vipps-mobilepay-badge variant={white|filled|light|grey|purple}<br>                       language={en|no|fi|dk} ] </pre><br> 
               <?php _e("Please refer to the documentation for the meaning of the parameters.", 'woo-vipps'); ?></br>
               <?php _e("The brand will be automatically applied.", 'woo-vipps'); ?>
            </p>
@@ -851,11 +851,9 @@ jQuery('a.webhook-adder').click(function (e) {
 
     public function vipps_mobilepay_badge_shortcode($atts) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'', 'brand' => '', 'variant' => '','language'=>''), $atts );
-        
+
         $variant = in_array($args['variant'], ['orange', 'light-orange', 'grey','white', 'purple', 'filled', 'light']) ? $args['variant'] : "";
-        $language = in_array($args['language'], ['en','no', 'fi', 'dk', 'se']) ? $args['language'] : $this->get_customer_language();
-        // $amount = intval($args['amount']);
-        // $later = $args['vipps-senere'];
+        $language = in_array($args['language'], ['en','no', 'fi', 'dk']) ? $args['language'] : $this->get_customer_language();
         $id = sanitize_title($args['id']);
         $class = sanitize_text_field($args['class']);
 
@@ -863,18 +861,16 @@ jQuery('a.webhook-adder').click(function (e) {
         $attributes['brand'] = strtolower($this->get_payment_method_name());
         if ($variant) $attributes['variant'] = $variant;
         if ($language) $attributes['language'] = $language;
-        // if ($amount) $attributes['amount'] = $amount;
-        // if ($later) $attributes['vipps-senere'] = 1;
         if ($id) $attributes['id'] = $id;
         if ($class) $attributes['class'] = $class;
-        
+
         $badgeatts = "";
         foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
 
         return "<vipps-mobilepay-badge $badgeatts></vipps-mobilepay-badge>";
     }
 
-    // legacy vipps_badge shortcode. LP 19.11.2024
+    // legacy vipps_badge shortcode, the new one is vipps_mobilepay_badge_shortcode. LP 19.11.2024
     public function vipps_badge_shortcode($atts) {
         $args = shortcode_atts( array('id'=>'', 'class'=>'','variant' => '','language'=>''), $atts );
         
@@ -888,7 +884,7 @@ jQuery('a.webhook-adder').click(function (e) {
         if ($language) $attributes['language'] = $language;
         if ($id) $attributes['id'] = $id;
         if ($class) $attributes['class'] = $class;
-        
+
         $badgeatts = "";
         foreach($attributes as $key=>$value) $badgeatts .= " $key=\"" . esc_attr($value) . '"';
 
