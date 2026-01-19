@@ -2,13 +2,10 @@ import { registerBlockType } from '@wordpress/blocks';
 
 import Edit from './edit';
 import metadata from './block.json';
+import { VippsBlockConfig } from './types';
 
 // Injected config. LP 27.11.2024
-declare const vippsBuyNowBlockConfig: {
-	vippssmileurl: string;
-	vippsbuynowbutton: string;
-	vippsbuynowdescription: string;
-};
+declare const vippsBuyNowBlockConfig: VippsBlockConfig;
 
 // @ts-ignore
 registerBlockType(metadata.name, {

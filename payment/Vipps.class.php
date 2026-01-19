@@ -891,6 +891,17 @@ jQuery('a.webhook-adder').click(function (e) {
         return "<vipps-badge $badgeatts></vipps-badge>";
     }
 
+    public function get_express_logo_variants() {
+        return [
+            'buy-now-rectangular' => __('Buy now rectangular', 'woo-vipps'),
+            'buy-now-pill' => __('Buy now pill', 'woo-vipps'),
+            'express-rectangular' => __('Express rectangular', 'woo-vipps'),
+            'express-pill' => __('Express pill', 'woo-vipps'),
+            'express-rectangular-mini' => __('Express rectangular mini', 'woo-vipps'),
+            'express-pill-mini' => __('Express pill mini', 'woo-vipps'),
+        ];
+    }
+
 
     public function button_menu_page() {
         if (!current_user_can('manage_woocommerce')) {
@@ -900,17 +911,8 @@ jQuery('a.webhook-adder').click(function (e) {
         $lang = $this->get_customer_language();
         $button_options = get_option('vipps_button_options');
 
-        $normal_variants = [
-            'buy-now-rectangular' => __('Buy now rectangular', 'woo-vipps'),
-            'buy-now-pill' => __('Buy now pill', 'woo-vipps'),
-            'express-rectangular' => __('Express rectangular', 'woo-vipps'),
-            'express-pill' => __('Express pill', 'woo-vipps'),
-        ];
-        $mini_variants = [
-            'express-rectangular-mini' => __('Express rectangular mini', 'woo-vipps'),
-            'express-pill-mini' => __('Express pill mini', 'woo-vipps'),
-        ];
-        $variants = array_merge($normal_variants, $mini_variants);
+        $variants = $this->get_express_logo_variants();
+        $mini_variants = array_filter($variants, fn($key) => str_ends_with($key, 'mini'), ARRAY_FILTER_USE_KEY);
 
         $init_states = [
             'express' => [
@@ -4605,8 +4607,8 @@ else:
 
 
     // Returns express logo images depending on parameters, these are the new express svgs received 2025-12-12.
-    // Fallsbacks to defaults for each payment method. LP 2025-12-15
-    private function get_express_logo($payment_method, $lang, $variant) {
+    // Fallbacks to defaults for each payment method. LP 2025-12-15
+    public function get_express_logo($payment_method, $lang, $variant) {
         $base = plugins_url('img', __FILE__);
 
         // A much more concise approach could be to name the variant files directly and do a oneliner, but harder to grep after the files' usage. LP 2025-12-12
@@ -4692,22 +4694,36 @@ else:
         if (!array_key_exists($payment, $img_map)) {
             return null;
         }
+        $payment_map = $img_map[$payment];
 
-        $img = @$img_map[$payment][$lang][$variant];
+        $img = null;
+        if (array_key_exists($lang, $payment_map)
+            && is_array($payment_map[$lang])
+            && array_key_exists($variant, $payment_map[$lang])) {
+            $img = @$payment_map[$lang][$variant];
+        }
 
-        // Try getting default for payment method + language, but it not found then try getting the payment method's global default. LP 2025-12-12
-        $default = str_ends_with($variant, '-mini') ? 'default-mini' : 'default';
-        if (is_null($img)) {
-            /* translators: %1= payment method name, %2 = language string, %3 = variant name */
-            $this->log(sprintf(__('Could not find chosen express logo for payment method %1$s, language %2$s, and variant %3$s, attempting to fall back on language and payment method, else only language.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
-            $img = @$img_map[$payment][$lang][$default];
-        }
-        if (is_null($img)) {
-            $img = @$img_map[$payment][$default];
-        }
-        if (is_null($img)) {
-            /* translators: %1= payment method name, %2 = language string, %3 = variant name */
-            $this->log(sprintf(__('Found no express logo fallback for payment method %1$s, language %2$s, and variant %3$s.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
+        // Default fallback behaviour
+        if (!$img) {
+            $default = str_ends_with($variant, '-mini') ? 'default-mini' : 'default';
+
+            // First try getting default for payment method + language. LP 2026-01-16
+            if (array_key_exists($lang, $payment_map) && is_array($payment_map[$lang])) {
+                /* translators: %1= payment method name, %2 = language string, %3 = variant name */
+                $this->log(sprintf(__('Could not find chosen express logo for payment method %1$s, language %2$s, and variant %3$s, attempting to fall back on language and payment method, else only language.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
+                $img = @$payment_map[$lang][$default];
+            }
+
+            // If not found, then try global default for payment method. LP 2026-01-16
+            if (!$img) {
+                $img = @$payment_map[$default];
+            }
+
+            // Found no logo at all, log this. LP 2026-01-16
+            if (!$img) {
+                /* translators: %1= payment method name, %2 = language string, %3 = variant name */
+                $this->log(sprintf(__('Found no express logo fallback for payment method %1$s, language %2$s, and variant %3$s.', 'woo-vipps'), $payment_method, $lang, $variant), 'error');
+            }
         }
         return $img;
     }
@@ -4726,10 +4742,6 @@ else:
     private function get_express_logo_page_variant($page = null) {
         $options = get_option('vipps_button_options');
 
-        if ($page === 'buy-now-block') {
-            // Treat the gutenberg buy-now block as catalog for now, since the buy-now block is applied to the product template parent block used in product collections. LP 2026-01-14
-            $page = 'catalog';
-        }
         // Init defaults, use mini version by default in below pages. LP 2025-12-17
         $use_mini = in_array($page, ['catalog', 'minicart']);
         $variant = "";
@@ -4761,8 +4773,8 @@ else:
         return null;
     }
 
-    // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
-    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $page=null) {
+    // Get buy now button by manually selecting logo variant and language. LP 2026-01-16
+    public function get_buy_now_button_manual($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $logo_variant=null, $logo_lang=null) {
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
 
@@ -4777,12 +4789,10 @@ else:
             $buttoncode .= " data-$key='$value' ";
         }
 
-        $method_name = $this->get_payment_method_name();
-        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $method_name);
-        
         $payment_method = $this->get_payment_method_name();
-        $short = str_ends_with($this->get_express_logo_page_variant($page), 'mini');
-        $logo = $this->get_payment_logo($page);
+        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method);
+        $short = str_ends_with($logo_variant, 'mini');
+        $logo = $this->get_express_logo($payment_method, $logo_lang, $logo_variant);
 
         $message =" <img border=0 src='$logo' alt='$payment_method'/>";
 
@@ -4793,8 +4803,15 @@ else:
         if ($classes) $classes = " $classes";
         if ($short) $classes = "short $classes";
 
-        $buttoncode .=  " class='single-product button vipps-buy-now $method_name $disabled$classes' title='$title'>$message</a>";
+        $buttoncode .=  " class='single-product button vipps-buy-now $payment_method $disabled$classes' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
+    }
+
+    // Code that will generate various versions of the 'buy now with Vipps' button IOK 2018-09-27
+    public function get_buy_now_button($product_id,$variation_id=null,$sku=null,$disabled=false, $classes='', $page=null) {
+        $logo_lang = $this->get_customer_language();
+        $logo_variant = $this->get_express_logo_page_variant($page);
+        return $this->get_buy_now_button_manual($product_id, $variation_id, $sku, $disabled, $classes, $logo_variant, $logo_lang);
     }
 
     // Display a 'buy now with express checkout' button on the product page IOK 2018-09-27
