@@ -4789,10 +4789,8 @@ else:
             $buttoncode .= " data-$key='$value' ";
         }
 
-        $method_name = $this->get_payment_method_name();
-        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $method_name);
-
         $payment_method = $this->get_payment_method_name();
+        $title = sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method);
         $short = str_ends_with($logo_variant, 'mini');
         $logo = $this->get_express_logo($payment_method, $logo_lang, $logo_variant);
 
@@ -4805,7 +4803,7 @@ else:
         if ($classes) $classes = " $classes";
         if ($short) $classes = "short $classes";
 
-        $buttoncode .=  " class='single-product button vipps-buy-now $method_name $disabled$classes' title='$title'>$message</a>";
+        $buttoncode .=  " class='single-product button vipps-buy-now $payment_method $disabled$classes' title='$title'>$message</a>";
         return apply_filters('woo_vipps_buy_now_button', $buttoncode, $product_id, $variation_id, $sku, $disabled);
     }
 
