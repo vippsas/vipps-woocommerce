@@ -10,8 +10,8 @@
       "default": false
     },
     "productId": {
-      "type": "number",
-      "default": null
+      "type": "string",
+      "default": ""
     },
     "variant": {
       "type": "string",

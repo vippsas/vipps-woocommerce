@@ -1,9 +1,22 @@
 import type { BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
-import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { SelectControl, PanelBody, TextControl } from '@wordpress/components';
+import {
+	InspectorControls,
+	useBlockProps,
+	BlockControls,
+} from '@wordpress/block-editor';
+import {
+	SelectControl,
+	PanelBody,
+	TextControl,
+	Button,
+	ToolbarGroup,
+	ToolbarButton,
+} from '@wordpress/components';
+import { pencil } from '@wordpress/icons';
 
 import { VippsBlockAttributes, VippsBlockConfig } from './types';
+import { useState } from 'react';
 
 // Injected config. LP 27.11.2024
 declare const vippsBuyNowBlockConfig: VippsBlockConfig;
@@ -13,6 +26,10 @@ export default function Edit({
 	attributes,
 	setAttributes,
 }: BlockEditProps<VippsBlockAttributes>) {
+	const [productIdText, setProductIdText] = useState(
+		String(attributes.productId)
+	);
+
 	// If we have a product context inherited from parent block, which as of now
 	// is the product template block used in the product collection block. LP 2026-01-19
 	if (context['query']) setAttributes({ hasProductContext: true });
@@ -26,46 +43,85 @@ export default function Edit({
 	console.log(!!attributes.hasProductContext);
 	console.log(!!attributes.productId);
 
+	const showEditButton = !attributes.hasProductContext;
+
+	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
+	const [showProductSelection, setShowProductSelection] = useState(
+		!(attributes.hasProductContext || attributes.productId)
+	);
+
 	return (
 		<>
-			{/* The actual block: show the buy-now button if we have a product, else show the product search field. LP 2026-01-19 */}
-			{attributes.hasProductContext || attributes.productId ? (
 			<div
 				{...useBlockProps({
 					className:
 						'wp-block-button wc-block-components-product-button wc-block-button-vipps',
 				})}
 			>
-				<a
-					className="single-product button vipps-buy-now wp-block-button__link"
-					title={vippsBuyNowBlockConfig['BuyNowWithVipps']}
-				>
-					<img
-						className="inline vipps-logo-negative"
-						src={logoSrc}
-						alt={vippsBuyNowBlockConfig['BuyNowWithVipps']}
-					/>
-				</a>
+				{showProductSelection ? (
+					// Product selection with text input for product id. LP 2026-01-19
+					<div>
+						<TextControl
+							label={vippsBuyNowBlockConfig['vippsbuynowbutton']}
+							help={__(
+								'Enter the post id of the product this button should buy',
+								'woo-vipps'
+							)}
+							value={productIdText}
+							onChange={(newProductId) =>
+								setProductIdText(newProductId)
+							}
+							placeholder={__('Product ID', 'woo-vipps')}
+						/>
+						<Button
+							variant="primary"
+							onClick={() => {
+								let text = productIdText.trim();
+								if (!text || isNaN(Number(text))) return;
+								setAttributes({ productId: text });
+								setShowProductSelection(false);
+							}}
+						>
+							{__('Confirm', 'woo-vipps')}
+						</Button>
+					</div>
+				) : (
+					// The WYSIWYG buy-now button. LP 2026-01-19
+					<>
+						<a
+							className="single-product button vipps-buy-now wp-block-button__link"
+							title={vippsBuyNowBlockConfig['BuyNowWithVipps']}
+						>
+							<img
+								className="inline vipps-logo-negative"
+								src={logoSrc}
+								alt={vippsBuyNowBlockConfig['BuyNowWithVipps']}
+							/>
+						</a>
+
+						{/* Toolbar button to start editing product id selection. LP 2026-01-19 */}
+						{showEditButton && (
+							<BlockControls>
+								<ToolbarGroup>
+									<ToolbarButton
+										icon={pencil}
+										label={__(
+											'Edit product ID',
+											'woo-vipps'
+										)}
+										onClick={() =>
+											setShowProductSelection(true)
+										}
+									/>
+								</ToolbarGroup>
+							</BlockControls>
+						)}
+					</>
+				)}
 			</div>
-			) 
-			: (
-				<TextControl
-					label={__('Product id', 'woo-vipps')}
-					help={__(
-						'Enter the post id of the product this button should buy',
-						'woo-vipps'
-					)}
-					value={attributes.productId}
-					onChange={(newProductId) =>
-						setAttributes({ productId: Number(newProductId) })
-					}
-					placeholder={__('Product post ID', 'woo-vipps')}
-				/>
-			)}
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
 			<InspectorControls>
-
 				<TextControl
 					label={__('Product id', 'woo-vipps')}
 					help={__(
@@ -74,7 +130,7 @@ export default function Edit({
 					)}
 					value={attributes.productId}
 					onChange={(newProductId) =>
-						setAttributes({ productId: Number(newProductId) })
+						setAttributes({ productId: newProductId })
 					}
 					placeholder={__('Product post ID', 'woo-vipps')}
 				/>
