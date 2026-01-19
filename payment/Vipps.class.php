@@ -4689,6 +4689,7 @@ else:
         ];
 
         $payment = strtolower($payment_method);
+        if ($lang === 'store') $lang = $this->get_customer_language();
 
         // Dont give a default if payment method not found. LP 2025-12-12
         if (!array_key_exists($payment, $img_map)) {

@@ -64,9 +64,12 @@ add_action('enqueue_block_editor_assets', function () {
     // Buy-now product block uses the JS event 'wc-blocks_product_list_rendered', introduced in woocommerce 9.4. LP 29.11.2024
     if (version_compare(WC_VERSION, '9.4', '>=')) {
         $payment_method = Vipps::instance()->get_payment_method_name();
+        $store_language = Vipps::instance()->get_customer_language();
+
         switch ($payment_method) {
             case 'Vipps':
                 $buy_now_languages = [
+                    ['label' => __('Use store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
                     ['label' => __('Swedish', 'woo-vipps'), 'value' => 'se'],
@@ -74,6 +77,7 @@ add_action('enqueue_block_editor_assets', function () {
                 break;
             case 'MobilePay':
                 $buy_now_languages = [
+                    ['label' => __('Use store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
                     ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],
@@ -92,10 +96,11 @@ add_action('enqueue_block_editor_assets', function () {
         // Create array of language => variant => logo_url. LP 2026-01-16
         $logos = [];
         foreach ($buy_now_languages as $lang_arr) {
-            $lang = $lang_arr['value'];
+            $lang_key = $lang_arr['value'];
+            $lang = $lang_key === 'store' ? $store_language : $lang_key;
             foreach ($buy_now_variants as $variant_arr) {
                 $variant = $variant_arr['value'];
-                $logos[$lang][$variant] = Vipps::instance()->get_express_logo($payment_method, $lang, $variant);
+                $logos[$lang_key][$variant] = Vipps::instance()->get_express_logo($payment_method, $lang, $variant);
             }
         }
 
