@@ -3,13 +3,13 @@ $vipps = Vipps::instance();
 $supports = false;
 
 error_log('LP attributes: ' . print_r($block->attributes, true));
-// isInQuery is set if we are in a product template parent block context. LP 2026-01-19
-if ($block->attributes['isInQuery']) {
-	error_log("In query");
+// hasProductContext is set if we are in a product template parent block context. LP 2026-01-19
+if ($block->attributes['hasProductContext']) {
+	error_log("Has product context");
     $pid = $block->context['postId'] ?? 0;
 } // else we need to get product from the block config. LP 2026-01-19
 else {
-	error_log("not In query");
+	error_log("NOT product context");
     $pid = $block->attributes['productId'] ?? 0;
 }
 $product = $pid ? wc_get_product($pid) : 0;

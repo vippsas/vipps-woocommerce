@@ -5,7 +5,7 @@
   "version": "2.1.0",
   "title": "Vipps MobilePay Buy Now",
   "attributes": {
-    "isInQuery": {
+    "hasProductContext": {
       "type": "boolean",
       "default": "0"
     },

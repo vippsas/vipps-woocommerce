@@ -13,11 +13,9 @@ export default function Edit({
 	attributes,
 	setAttributes,
 }: BlockEditProps<VippsBlockAttributes>) {
-	// Currently, this block only works within the product collection block,
-	// which sets the 'query' context. To support the button in other contexts, we add an isInQuery attribute which
-	// is available in render.php. NB: This is not currently in use; it would be for instance used to add buy-now buttons
-	// for arbitrary product ID or on product pages etc. IOK 2026-01-14
-	if (context['query']) setAttributes({ isInQuery: true });
+	// If we have a product context inherited from parent block, which as of now
+	// is the product template block used in the product collection block. LP 2026-01-19
+	if (context['query']) setAttributes({ hasProductContext: true });
 
 	const langLogos =
 		vippsBuyNowBlockConfig.logos[attributes.language] ??
@@ -47,18 +45,21 @@ export default function Edit({
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
 			<InspectorControls>
-				<TextControl
-					label={__('Product id', 'woo-vipps')}
-					help={__(
-						'Enter the post id of the product this button should buy',
-						'woo-vipps'
-					)}
-					value={attributes.productId}
-					onChange={(newProductId) =>
-						setAttributes({ productId: Number(newProductId) })
-					}
-					placeholder={__('Product post ID', 'woo-vipps')}
-				/>
+				{/* Product id selection only if not in a parent block context (hasProductContext). LP 2026-01-19 */}
+				{!attributes.hasProductContext && (
+					<TextControl
+						label={__('Product id', 'woo-vipps')}
+						help={__(
+							'Enter the post id of the product this button should buy',
+							'woo-vipps'
+						)}
+						value={attributes.productId}
+						onChange={(newProductId) =>
+							setAttributes({ productId: Number(newProductId) })
+						}
+						placeholder={__('Product post ID', 'woo-vipps')}
+					/>
+				)}
 				<PanelBody>
 					<SelectControl
 						onChange={(newVariant) =>
