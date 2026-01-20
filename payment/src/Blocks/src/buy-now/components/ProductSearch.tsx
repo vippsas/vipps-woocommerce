@@ -29,7 +29,7 @@ export default function ProductSearch({
 			return;
 		}
 
-		const delaySearch = setTimeout(async () => {
+		const searchTimeout = setTimeout(async () => {
 			setIsLoading(true);
 			try {
 				const products: Product[] = await apiFetch({
@@ -50,7 +50,7 @@ export default function ProductSearch({
 			}
 		}, 300);
 
-		return () => clearTimeout(delaySearch);
+		return () => clearTimeout(searchTimeout);
 	}, [searchTerm]);
 
 	const resetProduct = () => {
