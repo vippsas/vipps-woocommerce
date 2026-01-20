@@ -208,7 +208,10 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We will refund money on cancelled orders, but only if they are *relatively new*. This is to 
         // avoid accidents and issues where old orders are *somehow* cancelled even though they are complete. IOK 2024-08-12
         add_action('woocommerce_order_status_cancelled', array($this, 'order_status_cancelled_wrapper'));
-        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_payment'));
+        // Add a full refund if neccessary *before* woocommerce does this.
+        add_action('woocommerce_order_status_refunded', array($this, 'wc_order_fully_refunded', 9, 1));
+        // and *afterwards* ensure we cancel any remaining, noncaptured funds. IOK 2026-01-20
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount', 99, 1));
 
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
 
@@ -231,7 +234,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
-        if (! $order->get_meta('_vipps_capture_complete')) {
+        if (! $order->get_meta('_vipps_capture_complete')) { // FIXME SET THIS IN WC_ORDER_FULLY_REFUNDED TOO!
             return false;
         }
         // We also only want to do this for orders that have had *something* captured. IOK 2025-02-04
@@ -697,7 +700,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured || $vippsstatus == 'SALE') {
-            return $this->maybe_refund_payment($orderid);
+            return $this->wc_order_fully_refunded ($orderid);
         }
 
         try {
@@ -745,7 +748,72 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
-    // Handle the transition from anything to "refund"
+    // This is ran in woocommerce_order_status_refunded *before* woos own  wc_order_fully_refunded (priority 9)
+    // so that we can create a through-the-gateway refund for this if neccessary. If not, we'll let the normal logic
+    // proceed, which should create a manual refund instead. IOK 2026-01-20
+    public function wc_order_fully_refunded ($orderid) {
+        $order = wc_get_order($orderid);
+        if ('vipps' != $order->get_payment_method()) return false;
+        $ok = 0;
+
+        // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
+        // the order is capturable by getting full payment details.
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
+        // We can only refund-through-the-gateway if we have captured something.
+        $vippsstatus = $order->get_meta('_vipps_status');
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
+
+        $refund_thru_gateway = true;
+
+        if (!$captured) $refund_thru_gateway = false;
+        if ($to_refund == 0) $refund_thru_gateway = false;
+
+        if ($refund_thru_gateway) {
+            $ok = false;
+            try {
+                $ok = $this->refund_payment($order,$to_refund,'exact');
+            } catch (TemporaryVippsAPIException $e) {
+                $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
+                $this->adminerr($e->getMessage());
+                global $Vipps;
+                $Vipps->store_admin_notices();
+                return false;
+            } catch (Exception $e) {
+                $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
+                $order->save();
+                $this->adminerr($e->getMessage());
+            }
+            if ($ok) {
+                // Exit here if we succeeded IOK 2026-01-20
+                return true;
+            } else {
+                // Errormessages on failure. Maybe a bit too aggressive here with the adminerr stuff. IOK 2026-01-20 - this could be headless
+                $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
+                $this->adminerr($msg);
+                $order->add_order_note($msg);
+                // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
+                // allow the state change here if that happens.
+                // IOK 2026-01-20 - actually we *could* by throwing an exception, but instead, we'll continue with a *manual* refund .
+                global $Vipps;
+                $Vipps->store_admin_notices();
+            }
+        }
+        // If we get here, we either cannot refund thru the gateway, or we tried and failed
+
+        // IOK FIXME FIXME ADD REFUND LOGIC FROM wc_order_fully_refunded BUT ADD ITEMS 2026-01-20
+
+
+    }
+
+    // Handle the transition from anything to "refund", *AFTER* having refunded the entire payment either manually or via Vipps.
+    // we should at this point *cancel* the order, because everything still reserved here should be released. IOK 2026-01-20 FIXME
     public function maybe_refund_payment($orderid) {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
