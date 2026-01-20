@@ -44,10 +44,6 @@ export default function Edit({
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
 
-	console.log(attributes);
-	console.log(!!attributes.hasProductContext);
-	console.log(!!attributes.productId);
-
 	const showEditButton = !attributes.hasProductContext;
 
 	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
@@ -55,7 +51,6 @@ export default function Edit({
 		!(attributes.hasProductContext || attributes.productId)
 	);
 
-	console.log('LP showProductSelection: ', showProductSelection);
 	return (
 		<>
 			<div

@@ -20,8 +20,6 @@ export default function ProductSearch({
 	const [searchTerm, setSearchTerm] = useState(attributes.productName);
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
-	console.log('LP attributes: ', attributes);
-	console.log('LP searchTerm: ', searchTerm);
 
 	const resultsPerFetch = 10;
 
@@ -88,9 +86,6 @@ export default function ProductSearch({
 					}
 					const name = selectedOption.label;
 
-					console.log(
-						`setting the selected value, id=${id}, name=${name}`
-					);
 					setSearchTerm(name);
 					setAttributes({
 						productId: id,
