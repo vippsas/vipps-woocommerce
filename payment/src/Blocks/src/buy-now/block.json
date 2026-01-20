@@ -13,6 +13,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"productName": {
+			"type": "string",
+			"default": ""
+		},
 		"variant": {
 			"type": "string",
 			"default": "default-mini"

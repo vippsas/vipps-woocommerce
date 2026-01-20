@@ -15,17 +15,16 @@ import {
 } from '@wordpress/components';
 import { pencil } from '@wordpress/icons';
 
-import { VippsBlockConfig } from './types';
-import ProductSearch from './components/productSearch';
 
-// Injected config. LP 27.11.2024
-declare const vippsBuyNowBlockConfig: VippsBlockConfig;
+import ProductSearch from './components/ProductSearch';
+import { blockConfig } from './config';
 
 export interface EditAttributes extends BlockAttributes {
 	align: string;
 	variant: string;
 	language: string;
 	productId: string;
+	productName: string;
 
 	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
 	hasProductContext: boolean;
@@ -43,8 +42,8 @@ export default function Edit({
 	if (context['query']) setAttributes({ hasProductContext: true });
 
 	const langLogos =
-		vippsBuyNowBlockConfig.logos[attributes.language] ??
-		vippsBuyNowBlockConfig.logos['en'];
+		blockConfig.logos[attributes.language] ??
+		blockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
 
 	console.log(attributes);
@@ -68,21 +67,24 @@ export default function Edit({
 			>
 				{showProductSelection ? (
 					// Product selection combobox. LP 2026-01-19
-					<ProductSearch
-						attributes={attributes}
-						setAttributes={setAttributes}
-					/>
+					<div>
+						{blockConfig['vippsbuynowbutton']}
+						<ProductSearch
+							attributes={attributes}
+							setAttributes={setAttributes}
+						/>
+					</div>
 				) : (
 					// The WYSIWYG buy-now button. LP 2026-01-19
 					<>
 						<a
 							className="single-product button vipps-buy-now wp-block-button__link"
-							title={vippsBuyNowBlockConfig['BuyNowWithVipps']}
+							title={blockConfig['BuyNowWithVipps']}
 						>
 							<img
 								className="inline vipps-logo-negative"
 								src={logoSrc}
-								alt={vippsBuyNowBlockConfig['BuyNowWithVipps']}
+								alt={blockConfig['BuyNowWithVipps']}
 							/>
 						</a>
 
@@ -128,7 +130,7 @@ export default function Edit({
 						}
 						label={__('Variant', 'woo-vipps')}
 						value={attributes.variant}
-						options={vippsBuyNowBlockConfig.variants}
+						options={blockConfig.variants}
 						help={__(
 							'Choose the button variant with the perfect fit for your site',
 							'woo-vipps'
@@ -140,7 +142,7 @@ export default function Edit({
 						}
 						label={__('Language', 'woo-vipps')}
 						value={attributes.language}
-						options={vippsBuyNowBlockConfig.languages}
+						options={blockConfig.languages}
 						help={__('Choose language', 'woo-vipps')}
 					/>
 				</PanelBody>

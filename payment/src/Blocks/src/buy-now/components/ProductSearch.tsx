@@ -43,6 +43,7 @@ export default function ProductSearch({
 					label: product.name,
 					value: product.id.toString(),
 				}));
+				console.log('LP productOptions: ', productOptions);
 
 				setProductOptions(productOptions);
 			} catch (error) {
@@ -68,6 +69,7 @@ export default function ProductSearch({
 					(opt) => opt.value === value
 				);
 				if (!selectedOption) return;
+
 				setAttributes({
 					productId: id.toString(),
 					productName: selectedOption.label,
