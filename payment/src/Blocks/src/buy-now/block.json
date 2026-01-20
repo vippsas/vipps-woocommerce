@@ -17,7 +17,7 @@
 			"type": "string",
 			"default": null
 		},
-		"showProductSelection":{
+		"showProductSelection": {
 			"type": "boolean",
 			"default": "true"
 		},
@@ -39,11 +39,7 @@
 		"buy-now"
 	],
 	"category": "woocommerce",
-	"usesContext": [
-		"query",
-		"queryId",
-		"postId"
-	],
+	"usesContext": ["query", "queryId", "postId"],
 	"supports": {
 		"html": false
 	},

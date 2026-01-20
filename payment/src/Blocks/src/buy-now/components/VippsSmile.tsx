@@ -1,4 +1,4 @@
-import { blockConfig } from "../config";
+import { blockConfig } from '../config';
 
 export default function VippsSmile() {
 	return (
