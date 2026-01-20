@@ -771,118 +771,39 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
         $refund_thru_gateway = true;
-
         if (!$captured) $refund_thru_gateway = false;
         if ($to_refund == 0) $refund_thru_gateway = false;
 
+        $items = [];
+        $data = [];
+        $data['amount'] = $to_refund/100;
+        $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
+        $data['order_id'] = $order_id;
+        $data['line_items'] = $items; // FIXME ADD ITEMS!
+        $data['restock_items'] = true; // should check filters here
+
         if ($refund_thru_gateway) {
-            $ok = false;
-            try {
-                $ok = $this->refund_payment($order,$to_refund,'exact');
-            } catch (TemporaryVippsAPIException $e) {
-                $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
-                $this->adminerr($e->getMessage());
-                global $Vipps;
-                $Vipps->store_admin_notices();
-                return false;
-            } catch (Exception $e) {
-                $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
+            $data['refund_payment'] = true; // This should call our "process_refud"
+            wc_switch_to_site_locale();            
+            $the_refund = wc_create_refund($data);
+            wc_restore_locale();
+            if (is_wp_error($the_refund)) {
+                $msg = $the_refund->get_error_message();
+                $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
                 $order->save();
-                $this->adminerr($e->getMessage());
-            }
-            if ($ok) {
-                // Exit here if we succeeded IOK 2026-01-20
-                return true;
-            } else {
-                // Errormessages on failure. Maybe a bit too aggressive here with the adminerr stuff. IOK 2026-01-20 - this could be headless
-                $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
                 $this->adminerr($msg);
-                $order->add_order_note($msg);
-                // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
-                // allow the state change here if that happens.
-                // IOK 2026-01-20 - actually we *could* by throwing an exception, but instead, we'll continue with a *manual* refund .
-                global $Vipps;
-                $Vipps->store_admin_notices();
-            }
-        }
-        // If we get here, we either cannot refund thru the gateway, or we tried and failed
-
-        // IOK FIXME FIXME ADD REFUND LOGIC FROM wc_order_fully_refunded BUT ADD ITEMS 2026-01-20
-
-
-    }
-
-    // Handle the transition from anything to "refund", *AFTER* having refunded the entire payment either manually or via Vipps.
-    // we should at this point *cancel* the order, because everything still reserved here should be released. IOK 2026-01-20 FIXME
-    public function maybe_refund_payment($orderid) {
-        $order = wc_get_order($orderid);
-        if ('vipps' != $order->get_payment_method()) return false;
-        $ok = 0;
-
-        // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
-        // the order is capturable by getting full payment details.
-        try {
-                $order = $this->update_vipps_payment_details($order); 
-       } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
-        }
-
-
-        // Don't do anything if the order has any *manual* refunds (manual Woo refund outside of Vipps MobilePay). LP 2025-12-16
-        // TODO: this is a short sighted fix, in the future we wish to rewrite this logic to instead run our own logic in the woocommerce_order_status_refunded hook
-        // *before* woocommerce runs wc_order_fully_refunded() which create a refund automatically. Instead we will create our own refund.
-        // This so we can stop the order note saying they need to refund through their payment gateway, in addition to handle skipping
-        // Vipps MP refund if order has manual refunds. LP 2025-12-16
-        $refunds = $order->get_refunds();
-        foreach ($refunds as $refund) {
-            $is_manual_refund = !$refund->get_refunded_payment();
-
-            // Changing order status to refunded creates a refund with an empty item list, but we still want to refund these.
-            // So manual refunds we will skip are the ones with items only. LP 2025-12-16
-            $has_line_items = !empty($refund->get_items());
-            if ($is_manual_refund && $has_line_items) {
-                /* translators: orderid, company name */
-                $this->log(sprintf(__('Order %1$s has a manual refund so we will not send this refund to %2$s', 'woo-vipps'), $orderid, Vipps::CompanyName()), 'info');
+            } else {
                 return true;
             }
         }
-
-        // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
-        $vippsstatus = $order->get_meta('_vipps_status');
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-
-        if (!$captured) {
-            return $this->maybe_cancel_payment($orderid);
-        }
-        if ($to_refund == 0) return true;
-
-        try {
-            $ok = $this->refund_payment($order,$to_refund,'exact');
-        } catch (TemporaryVippsAPIException $e) {
-            $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
-            $this->adminerr($e->getMessage());
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
-        } catch (Exception $e) {
-            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
-            $order->save();
-            $this->adminerr($e->getMessage());
-        }
-        if (!$ok) {
-            $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr($msg);
-            $order->add_order_note($msg);
-            // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
-            // allow the state change here if that happens.
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
-        }
+        // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
+        $data['refund_payment'] = false;
+        wc_switch_to_site_locale(); 
+        $the_refund = wc_create_refund($data);
+        wc_restore_locale();
+        return true;
     }
-
+    
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
     // they don't require payment. So we try to capture. IOK 2020-09-22
     // do NOT call this unless the order is 'reserved' at Vipps!
