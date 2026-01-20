@@ -1,4 +1,5 @@
-import type { BlockEditProps } from '@wordpress/blocks';
+import { useState } from 'react';
+import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
 	InspectorControls,
@@ -9,27 +10,34 @@ import {
 	SelectControl,
 	PanelBody,
 	TextControl,
-	Button,
 	ToolbarGroup,
 	ToolbarButton,
 } from '@wordpress/components';
 import { pencil } from '@wordpress/icons';
 
-import { VippsBlockAttributes, VippsBlockConfig } from './types';
-import { useState } from 'react';
+import { VippsBlockConfig } from './types';
+import ProductSearch from './components/productSearch';
 
 // Injected config. LP 27.11.2024
 declare const vippsBuyNowBlockConfig: VippsBlockConfig;
+
+export interface EditAttributes extends BlockAttributes {
+	align: string;
+	variant: string;
+	language: string;
+	productId: string;
+
+	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
+	hasProductContext: boolean;
+}
+
+export type EditProps = BlockEditProps<EditAttributes>;
 
 export default function Edit({
 	context,
 	attributes,
 	setAttributes,
-}: BlockEditProps<VippsBlockAttributes>) {
-	const [productIdText, setProductIdText] = useState(
-		String(attributes.productId)
-	);
-
+}: EditProps) {
 	// If we have a product context inherited from parent block, which as of now
 	// is the product template block used in the product collection block. LP 2026-01-19
 	if (context['query']) setAttributes({ hasProductContext: true });
@@ -59,32 +67,11 @@ export default function Edit({
 				})}
 			>
 				{showProductSelection ? (
-					// Product selection with text input for product id. LP 2026-01-19
-					<div>
-						<TextControl
-							label={vippsBuyNowBlockConfig['vippsbuynowbutton']}
-							help={__(
-								'Enter the post id of the product this button should buy',
-								'woo-vipps'
-							)}
-							value={productIdText}
-							onChange={(newProductId) =>
-								setProductIdText(newProductId)
-							}
-							placeholder={__('Product ID', 'woo-vipps')}
-						/>
-						<Button
-							variant="primary"
-							onClick={() => {
-								let text = productIdText.trim();
-								if (!text || isNaN(Number(text))) return;
-								setAttributes({ productId: text });
-								setShowProductSelection(false);
-							}}
-						>
-							{__('Confirm', 'woo-vipps')}
-						</Button>
-					</div>
+					// Product selection combobox. LP 2026-01-19
+					<ProductSearch
+						attributes={attributes}
+						setAttributes={setAttributes}
+					/>
 				) : (
 					// The WYSIWYG buy-now button. LP 2026-01-19
 					<>

@@ -18,7 +18,7 @@
 		"typescript": "^5.6.3"
 	},
 	"dependencies": {
+		"@wordpress/api-fetch": "^7.38.0",
 		"@wordpress/interactivity": "^6.12.0"
 	}
 }
-
