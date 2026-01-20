@@ -69,7 +69,7 @@ add_action('enqueue_block_editor_assets', function () {
         switch ($payment_method) {
             case 'Vipps':
                 $buy_now_languages = [
-                    ['label' => __('Use store language', 'woo-vipps'), 'value' => "store"],
+                    ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Norwegian', 'woo-vipps'), 'value' => 'no'],
                     ['label' => __('Swedish', 'woo-vipps'), 'value' => 'se'],
@@ -77,7 +77,7 @@ add_action('enqueue_block_editor_assets', function () {
                 break;
             case 'MobilePay':
                 $buy_now_languages = [
-                    ['label' => __('Use store language', 'woo-vipps'), 'value' => "store"],
+                    ['label' => __('Store language', 'woo-vipps'), 'value' => "store"],
                     ['label' => __('English', 'woo-vipps'), 'value' => 'en'],
                     ['label' => __('Finnish', 'woo-vipps'), 'value' => 'fi'],
                     ['label' => __('Danish', 'woo-vipps'), 'value' => 'dk'],

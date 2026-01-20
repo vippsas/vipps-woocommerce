@@ -66,6 +66,7 @@ table.webhook-table td.actions {
     flex-direction: row;
     gap: .8rem;
     margin-bottom: .5rem;
+    justify-content: center;
 }
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
     text-align: center;

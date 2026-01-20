@@ -2,14 +2,15 @@ import { useState } from 'react';
 import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
-        InspectorControls,
-        useBlockProps,
-        BlockControls,
+	InspectorControls,
+	useBlockProps,
+	BlockControls,
 } from '@wordpress/block-editor';
 import {
-        SelectControl,
-        PanelBody, ToolbarGroup,
-        ToolbarButton
+	SelectControl,
+	PanelBody,
+	ToolbarGroup,
+	ToolbarButton,
 } from '@wordpress/components';
 import { pencil } from '@wordpress/icons';
 
@@ -64,13 +65,13 @@ export default function Edit({
 				})}
 			>
 				{showProductSelection ? (
+					// Product selection mode. LP 2026-01-19
 					<div className="vipps-buy-now-block-edit-container">
 						<div className="vipps-buy-now-block-edit-header">
 							<VippsSmile />
 							{blockConfig['vippsbuynowbutton']}
 						</div>
 
-						{/* Product selection combobox. LP 2026-01-19 */}
 						<ProductSearch
 							attributes={attributes}
 							setAttributes={setAttributes}
@@ -91,7 +92,7 @@ export default function Edit({
 							/>
 						</a>
 
-						{/* Toolbar button to start editing product id selection. LP 2026-01-19 */}
+						{/* Toolbar button to switch to product selection mode. LP 2026-01-19 */}
 						{showEditButton && (
 							<BlockControls>
 								<ToolbarGroup>
