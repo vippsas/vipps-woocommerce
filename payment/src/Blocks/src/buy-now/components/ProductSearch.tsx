@@ -64,6 +64,7 @@ export default function ProductSearch({
 	return (
 		<>
 			<ComboboxControl
+				className='vipps-buy-now-button-product-search'
 				// Opt into these to-be-made style defaults early to suppress deprectaion warnings. LP 2026-01-20
 				__next40pxDefaultSize={true}
 				__nextHasNoMarginBottom={true}
