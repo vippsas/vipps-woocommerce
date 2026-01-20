@@ -64,6 +64,10 @@ export default function ProductSearch({
 	return (
 		<>
 			<ComboboxControl
+				// Opt into these to-be-made style defaults early to suppress deprectaion warnings. LP 2026-01-20
+				__next40pxDefaultSize={true}
+				__nextHasNoMarginBottom={true}
+
 				label={__('Select Product', 'woo-vipps')}
 				// @ts-ignore: for some reason isLoading is not typed correctly. This shows a spinner when its loading, and its also in the docs: https://developer.wordpress.org/block-editor/reference-guides/components/combobox-control/. LP 2026-01-20
 				isLoading={isLoading}
