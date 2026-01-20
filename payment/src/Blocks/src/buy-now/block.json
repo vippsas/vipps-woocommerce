@@ -10,7 +10,7 @@
 			"default": false
 		},
 		"productId": {
-			"type": "number",
+			"type": "string",
 			"default": ""
 		},
 		"productName": {

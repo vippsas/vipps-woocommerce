@@ -55,8 +55,8 @@ export default function ProductSearch({
 
 	const resetProduct = () => {
 		setAttributes({
-			productId: undefined,
-			productName: undefined,
+			productId: '',
+			productName: '',
 		});
 		return;
 	};

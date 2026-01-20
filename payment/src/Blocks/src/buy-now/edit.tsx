@@ -38,7 +38,8 @@ export default function Edit({
 }: EditProps) {
 	// If we have a product context inherited from parent block, which as of now
 	// is the product template block used in the product collection block. LP 2026-01-19
-	if (context['query']) setAttributes({ hasProductContext: true });
+	const hasProductContext = !!context['query'];
+	if (hasProductContext) setAttributes({ hasProductContext: true });
 
 	const langLogos =
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
@@ -48,7 +49,7 @@ export default function Edit({
 
 	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
 	const [showProductSelection, setShowProductSelection] = useState(
-		!(attributes.hasProductContext || attributes.productId)
+		!(hasProductContext || attributes.productId)
 	);
 
 	return (
