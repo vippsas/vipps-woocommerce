@@ -1,17 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
-	InspectorControls,
-	useBlockProps,
-	BlockControls,
+        InspectorControls,
+        useBlockProps,
+        BlockControls,
 } from '@wordpress/block-editor';
 import {
-	SelectControl,
-	PanelBody,
-	TextControl,
-	ToolbarGroup,
-	ToolbarButton,
+        SelectControl,
+        PanelBody, ToolbarGroup,
+        ToolbarButton
 } from '@wordpress/components';
 import { pencil } from '@wordpress/icons';
 
@@ -23,9 +21,8 @@ export interface EditAttributes extends BlockAttributes {
 	align: string;
 	variant: string;
 	language: string;
-	productId: string;
+	productId: number;
 	productName: string;
-	showProductSelection: boolean;
 
 	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
 	hasProductContext: boolean;
@@ -53,13 +50,11 @@ export default function Edit({
 	const showEditButton = !attributes.hasProductContext;
 
 	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
-	setAttributes({
-		showProductSelection: !(
-			attributes.hasProductContext || attributes.productId
-		),
-	});
+	const [showProductSelection, setShowProductSelection] = useState(
+		!(attributes.hasProductContext || attributes.productId)
+	);
 
-	console.log('LP showProductSelection: ', attributes.showProductSelection);
+	console.log('LP showProductSelection: ', showProductSelection);
 	return (
 		<>
 			<div
@@ -68,7 +63,7 @@ export default function Edit({
 						'wp-block-button wc-block-components-product-button wc-block-button-vipps',
 				})}
 			>
-				{attributes.showProductSelection ? (
+				{showProductSelection ? (
 					<div className="vipps-buy-now-block-edit-container">
 						<div className="vipps-buy-now-block-edit-header">
 							<VippsSmile />
@@ -79,6 +74,7 @@ export default function Edit({
 						<ProductSearch
 							attributes={attributes}
 							setAttributes={setAttributes}
+							hideCallback={() => setShowProductSelection(false)}
 						/>
 					</div>
 				) : (
@@ -103,9 +99,7 @@ export default function Edit({
 										icon={pencil}
 										label={__('Edit product', 'woo-vipps')}
 										onClick={() =>
-											setAttributes({
-												showProductSelection: true,
-											})
+											setShowProductSelection(true)
 										}
 									/>
 								</ToolbarGroup>

@@ -9,11 +9,13 @@ import { EditProps } from '../edit';
 export type ProductSearchProps = {
 	attributes: EditProps['attributes'];
 	setAttributes: EditProps['setAttributes'];
+	hideCallback: () => void;
 };
 
 export default function ProductSearch({
 	attributes,
 	setAttributes,
+	hideCallback,
 }: ProductSearchProps) {
 	const [searchTerm, setSearchTerm] = useState(attributes.productName);
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
@@ -67,7 +69,9 @@ export default function ProductSearch({
 				label={__('Select Product', 'woo-vipps')}
 				// @ts-ignore: for some reason isLoading is not typed correctly. This shows a spinner when its loading, and its also in the docs: https://developer.wordpress.org/block-editor/reference-guides/components/combobox-control/. LP 2026-01-20
 				isLoading={isLoading}
-				value={searchTerm}
+				value={
+					attributes.productId ? attributes.productId.toString() : ''
+				}
 				onChange={(value) => {
 					const id = parseInt(value ?? '');
 					if (isNaN(id)) {
@@ -82,10 +86,15 @@ export default function ProductSearch({
 						resetProduct();
 						return;
 					}
+					const name = selectedOption.label;
 
+					console.log(
+						`setting the selected value, id=${id}, name=${name}`
+					);
+					setSearchTerm(name);
 					setAttributes({
-						productId: id.toString(),
-						productName: selectedOption.label,
+						productId: id,
+						productName: name,
 					});
 				}}
 				onFilterValueChange={setSearchTerm}
@@ -98,7 +107,8 @@ export default function ProductSearch({
 			<Button
 				variant="primary"
 				onClick={() => {
-					setAttributes({ showProductSelection: false });
+					if (!attributes.productId || !attributes.productId) return;
+					hideCallback();
 				}}
 			>
 				{__('Confirm', 'woo-vipps')}
