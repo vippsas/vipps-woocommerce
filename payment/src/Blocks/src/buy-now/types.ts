@@ -1,17 +1,7 @@
-type Select = {
+export type Select = {
 	label: string;
 	value: string;
 };
-
-export interface VippsBlockConfig {
-	BuyNowWithVipps: string;
-	logos: Record<string, Record<string, string>>;
-	vippssmileurl: string;
-	vippsbuynowbutton: string;
-	vippsbuynowdescription: string;
-	variants: Select[];
-	languages: Select[];
-}
 
 export interface Product {
 	id: number;

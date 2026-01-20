@@ -15,8 +15,8 @@ import {
 } from '@wordpress/components';
 import { pencil } from '@wordpress/icons';
 
-
 import ProductSearch from './components/ProductSearch';
+import VippsSmile from './components/VippsSmile';
 import { blockConfig } from './config';
 
 export interface EditAttributes extends BlockAttributes {
@@ -42,8 +42,7 @@ export default function Edit({
 	if (context['query']) setAttributes({ hasProductContext: true });
 
 	const langLogos =
-		blockConfig.logos[attributes.language] ??
-		blockConfig.logos['en'];
+		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
 
 	console.log(attributes);
@@ -68,7 +67,7 @@ export default function Edit({
 				{showProductSelection ? (
 					// Product selection combobox. LP 2026-01-19
 					<div>
-						{blockConfig['vippsbuynowbutton']}
+						<VippsSmile />
 						<ProductSearch
 							attributes={attributes}
 							setAttributes={setAttributes}
