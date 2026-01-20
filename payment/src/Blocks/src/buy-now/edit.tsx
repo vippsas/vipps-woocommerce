@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
@@ -25,6 +25,7 @@ export interface EditAttributes extends BlockAttributes {
 	language: string;
 	productId: string;
 	productName: string;
+	showProductSelection: boolean;
 
 	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
 	hasProductContext: boolean;
@@ -52,10 +53,13 @@ export default function Edit({
 	const showEditButton = !attributes.hasProductContext;
 
 	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
-	const [showProductSelection, setShowProductSelection] = useState(
-		!(attributes.hasProductContext || attributes.productId)
-	);
+	setAttributes({
+		showProductSelection: !(
+			attributes.hasProductContext || attributes.productId
+		),
+	});
 
+	console.log('LP showProductSelection: ', attributes.showProductSelection);
 	return (
 		<>
 			<div
@@ -64,10 +68,14 @@ export default function Edit({
 						'wp-block-button wc-block-components-product-button wc-block-button-vipps',
 				})}
 			>
-				{showProductSelection ? (
-					// Product selection combobox. LP 2026-01-19
-					<div>
-						<VippsSmile />
+				{attributes.showProductSelection ? (
+					<div className="vipps-buy-now-block-edit-container">
+						<div className="vipps-buy-now-block-edit-header">
+							<VippsSmile />
+							{blockConfig['vippsbuynowbutton']}
+						</div>
+
+						{/* Product selection combobox. LP 2026-01-19 */}
 						<ProductSearch
 							attributes={attributes}
 							setAttributes={setAttributes}
@@ -93,12 +101,11 @@ export default function Edit({
 								<ToolbarGroup>
 									<ToolbarButton
 										icon={pencil}
-										label={__(
-											'Edit product ID',
-											'woo-vipps'
-										)}
+										label={__('Edit product', 'woo-vipps')}
 										onClick={() =>
-											setShowProductSelection(true)
+											setAttributes({
+												showProductSelection: true,
+											})
 										}
 									/>
 								</ToolbarGroup>
@@ -110,18 +117,6 @@ export default function Edit({
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
 			<InspectorControls>
-				<TextControl
-					label={__('Product id', 'woo-vipps')}
-					help={__(
-						'Enter the post id of the product this button should buy',
-						'woo-vipps'
-					)}
-					value={attributes.productId}
-					onChange={(newProductId) =>
-						setAttributes({ productId: newProductId })
-					}
-					placeholder={__('Product post ID', 'woo-vipps')}
-				/>
 				<PanelBody>
 					<SelectControl
 						onChange={(newVariant) =>

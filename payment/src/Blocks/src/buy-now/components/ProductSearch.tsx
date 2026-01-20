@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { ComboboxControl } from '@wordpress/components';
+import { Button, ComboboxControl } from '@wordpress/components';
 
-import { Product } from '../types';
+import { Option, Product } from '../types';
 import { EditProps } from '../edit';
-
-type Option = {
-	value: string;
-	label: string;
-};
 
 export type ProductSearchProps = {
 	attributes: EditProps['attributes'];
@@ -20,9 +15,11 @@ export default function ProductSearch({
 	attributes,
 	setAttributes,
 }: ProductSearchProps) {
-	const [searchTerm, setSearchTerm] = useState('');
+	const [searchTerm, setSearchTerm] = useState(attributes.productName);
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	console.log('LP attributes: ', attributes);
+	console.log('LP searchTerm: ', searchTerm);
 
 	const resultsPerFetch = 10;
 
@@ -43,7 +40,6 @@ export default function ProductSearch({
 					label: product.name,
 					value: product.id.toString(),
 				}));
-				console.log('LP productOptions: ', productOptions);
 
 				setProductOptions(productOptions);
 			} catch (error) {
@@ -57,31 +53,56 @@ export default function ProductSearch({
 		return () => clearTimeout(delaySearch);
 	}, [searchTerm]);
 
+	const resetProduct = () => {
+		setAttributes({
+			productId: undefined,
+			productName: undefined,
+		});
+		return;
+	};
+
 	return (
-		<ComboboxControl
-			label={__('Select Product', 'woo-vipps')}
-			value={attributes.productId ? attributes.productId.toString() : ''}
-			onChange={(value) => {
-				const id = parseInt(value ?? '');
-				if (isNaN(id)) return;
+		<>
+			<ComboboxControl
+				label={__('Select Product', 'woo-vipps')}
+				// @ts-ignore: for some reason isLoading is not typed correctly. This shows a spinner when its loading, and its also in the docs: https://developer.wordpress.org/block-editor/reference-guides/components/combobox-control/. LP 2026-01-20
+				isLoading={isLoading}
+				value={searchTerm}
+				onChange={(value) => {
+					const id = parseInt(value ?? '');
+					if (isNaN(id)) {
+						resetProduct();
+						return;
+					}
 
-				const selectedOption = productOptions.find(
-					(opt) => opt.value === value
-				);
-				if (!selectedOption) return;
+					const selectedOption = productOptions.find(
+						(opt) => opt.value === value
+					);
+					if (!selectedOption) {
+						resetProduct();
+						return;
+					}
 
-				setAttributes({
-					productId: id.toString(),
-					productName: selectedOption.label,
-				});
-			}}
-			onFilterValueChange={setSearchTerm}
-			options={productOptions}
-			help={
-				isLoading
-					? __('Searching...', 'woo-vipps')
-					: __('Type at least 3 characters to search', 'woo-vipps')
-			}
-		/>
+					setAttributes({
+						productId: id.toString(),
+						productName: selectedOption.label,
+					});
+				}}
+				onFilterValueChange={setSearchTerm}
+				options={productOptions}
+				help={__(
+					'Type at least 3 characters to search products',
+					'woo-vipps'
+				)}
+			/>
+			<Button
+				variant="primary"
+				onClick={() => {
+					setAttributes({ showProductSelection: false });
+				}}
+			>
+				{__('Confirm', 'woo-vipps')}
+			</Button>
+		</>
 	);
 }

@@ -10,12 +10,16 @@
       "default": false
     },
     "productId": {
-      "type": "string",
-      "default": ""
+      "type": "number",
+      "default": null
     },
     "productName": {
       "type": "string",
-      "default": ""
+      "default": null
+    },
+    "showProductSelection": {
+      "type": "boolean",
+      "default": "true"
     },
     "variant": {
       "type": "string",

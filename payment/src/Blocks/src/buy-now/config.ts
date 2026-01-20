@@ -1,4 +1,4 @@
-import { Select } from './types';
+import { Option } from './types';
 
 export interface VippsBlockConfig {
 	BuyNowWithVipps: string;
@@ -6,8 +6,8 @@ export interface VippsBlockConfig {
 	vippssmileurl: string;
 	vippsbuynowbutton: string;
 	vippsbuynowdescription: string;
-	variants: Select[];
-	languages: Select[];
+	variants: Option[];
+	languages: Option[];
 }
 
 // Injected config from php. LP 27.11.2024

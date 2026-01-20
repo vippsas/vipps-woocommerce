@@ -6,7 +6,8 @@
 		"lint:js": "wp-scripts lint-js",
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
-		"start": "wp-scripts start --webpack-copy-php --output-path=../../Blocks/dist"
+		"start": "wp-scripts start --webpack-copy-php --output-path=../../Blocks/dist",
+		"type-check": "tsc --noEmit --pretty"
 	},
 	"devDependencies": {
 		"@types/wordpress__block-editor": "^11.5.15",
