@@ -22,7 +22,7 @@ export interface EditAttributes extends BlockAttributes {
 	align: string;
 	variant: string;
 	language: string;
-	productId: number;
+	productId: string;
 	productName: string;
 
 	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19

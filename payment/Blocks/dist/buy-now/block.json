@@ -11,11 +11,11 @@
     },
     "productId": {
       "type": "number",
-      "default": null
+      "default": ""
     },
     "productName": {
       "type": "string",
-      "default": null
+      "default": ""
     },
     "showProductSelection": {
       "type": "boolean",
