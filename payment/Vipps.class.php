@@ -207,6 +207,9 @@ class Vipps {
           }
         });
 
+        // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
+        add_action('wp_ajax_woo_vipps_express_checkout_products', array($this, 'ajax_express_checkout_products'));
+
         // We need a 5-minute scheduled event for the handler for missed callbacks. Using the 
         // action scheduler would be better, but we can't do that just yet because of backwards 
         // compatibility. At some point, support for older woo-versions should be dropped; then this
@@ -2545,7 +2548,6 @@ else:
         return $language;
     }
 
-
     // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
     public function order_handle_vipps_action () {
            check_ajax_referer('vippssecnonce','vipps_sec');
@@ -2567,7 +2569,34 @@ else:
            }
            print "1";
     }
-    
+
+    // returns wc products, but only those purchasable by VMP express checkout. LP 2026-01-22
+    // Called by ajax by the buy-now express block, returns the products from wc api if they are purchaseable by express checkout. LP 2026-01-22
+    public function ajax_express_checkout_products() {
+        check_ajax_referer('vippsexpressproducts');
+        static::set_locale_if_in_header();
+
+        $query = [];
+        foreach (['per_page', 'orderby', 'order', 'search'] as $param) {
+            if (isset($_REQUEST[$param])) {
+            $query[$param] = sanitize_title($_REQUEST[$param]);
+            }
+        }
+        $args = ['body' => $query];
+        $args['sslverify'] = false; // FIXME: DELETE THIS. LP 2026-01-22
+
+        $url = home_url('/wp-json/wc/store/v1/products');
+        $response = wp_remote_get($url, $args);
+        if (is_wp_error($response)) {
+                return wp_send_json_error($response);
+        }
+
+        $products = json_decode(wp_remote_retrieve_body($response), true);
+        $filtered_products = array_filter($products, fn($p) => $this->loop_single_product_is_express_checkout_purchasable(wc_get_product($p['id'])));
+
+        return wp_send_json_success(['ok' => 1, 'products' => $filtered_products], wp_remote_retrieve_response_code($response));
+    }
+
 
     // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
     public function store_admin_notices() {

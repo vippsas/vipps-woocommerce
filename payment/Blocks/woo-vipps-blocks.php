@@ -112,7 +112,8 @@ add_action('enqueue_block_editor_assets', function () {
             'vippsbuynowdescription' => Vipps::instance()->vippsJSConfig['vippsbuynowdescription'],
             'languages' => $buy_now_languages,
             'variants' => $buy_now_variants,
-
+            'vippsajaxurl' => Vipps::instance()->vippsJSConfig['vippsajaxurl'],
+            'vippsajaxnonce' => wp_create_nonce('vippsexpressproducts'),
         ];
         wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_config), 'before');
     }

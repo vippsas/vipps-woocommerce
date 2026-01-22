@@ -8,6 +8,8 @@ export interface VippsBlockConfig {
 	vippsbuynowdescription: string;
 	variants: Option[];
 	languages: Option[];
+	vippsajaxurl: string;
+	vippsajaxnonce: string;
 }
 
 // Injected config from php. LP 27.11.2024

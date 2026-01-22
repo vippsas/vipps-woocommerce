@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import apiFetch from '@wordpress/api-fetch';
 import { Button, ComboboxControl } from '@wordpress/components';
 
 import { Option, Product } from '../types';
 import { EditProps } from '../edit';
+import { blockConfig } from '../config';
 
 export type ProductSearchProps = {
 	attributes: EditProps['attributes'];
@@ -21,9 +21,8 @@ export default function ProductSearch({
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const resultsPerFetch = 10;
 	const minCharsToSearch = 3;
-	const baseApiPath = `/wc/store/v1/products`;
+	const debounceMs = 300;
 
 	useEffect(() => {
 		if (searchTerm.length < minCharsToSearch) {
@@ -31,25 +30,43 @@ export default function ProductSearch({
 			return;
 		}
 
+		const onError = (error: any) => {
+			console.error('Error fetching products:', error);
+			setProductOptions([]);
+		};
+
+		const query = new URLSearchParams({
+			search: searchTerm,
+			per_page: '10',
+			action: 'woo_vipps_express_checkout_products',
+			orderby: 'title',
+			order: 'desc',
+			_ajax_nonce: blockConfig['vippsajaxnonce'],
+		}).toString();
+
 		const searchTimeout = setTimeout(async () => {
 			setIsLoading(true);
-			try {
-				const products: Product[] = await apiFetch({
-					path: `${baseApiPath}?search=${encodeURIComponent(searchTerm)}&per_page=${resultsPerFetch}`,
-				});
-				const productOptions: Option[] = products.map((product) => ({
-					label: product.name,
-					value: product.id.toString(),
-				}));
-
-				setProductOptions(productOptions);
-			} catch (error) {
-				console.error('Error fetching products:', error);
-				setProductOptions([]);
-			} finally {
-				setIsLoading(false);
-			}
-		}, 300);
+			fetch(`${blockConfig.vippsajaxurl}?${query}`, {
+				method: 'GET',
+			})
+				.then((res) => res.json())
+				.then((res) => {
+					if (!res['success'] || !Number(res['data']['ok'])) {
+						onError(`Result was not ok: ${JSON.stringify(res)}`);
+						return;
+					}
+					const products: Product[] = res['data']['products'] ?? [];
+					const productOptions: Option[] = products.map(
+						(product) => ({
+							label: product.name,
+							value: product.id.toString(),
+						})
+					);
+					setProductOptions(productOptions);
+				})
+				.catch(onError)
+				.finally(() => setIsLoading(false));
+		}, debounceMs);
 
 		return () => clearTimeout(searchTimeout);
 	}, [searchTerm]);
@@ -69,9 +86,7 @@ export default function ProductSearch({
 				label={__('Select Product', 'woo-vipps')}
 				// @ts-ignore: for some reason isLoading is not typed correctly. This shows a spinner when its loading, and its also in the docs: https://developer.wordpress.org/block-editor/reference-guides/components/combobox-control/. LP 2026-01-20
 				isLoading={isLoading}
-				value={
-					attributes.productId ? attributes.productId.toString() : ''
-				}
+				value={attributes.productId}
 				onChange={(value) => {
 					const id = parseInt(value ?? '');
 					if (isNaN(id)) {
