@@ -2592,8 +2592,22 @@ else:
         }
 
         $products = json_decode(wp_remote_retrieve_body($response), true);
-        $filtered_products = array_filter($products, fn($p) => $this->loop_single_product_is_express_checkout_purchasable(wc_get_product($p['id'])));
 
+        // Support product variants by adding the variants to the array. LP 2026-01-22
+        foreach($products as &$product) {
+            if (isset($product['variations']) && is_array($product['variations']) && $product['variations']) {
+                error_log("Product has variants:" . print_r($product['name'],true));
+                foreach($product['variations'] as $variation)
+                    $v = wc_get_product($variation['id']);
+                    if (!is_a($v, 'WC_Product')) continue;
+                    $products[] = ['id' => $v->get_id(), 'sku' => $v->get_sku(), 'type' => $v->get_type(), 'slug' => $v->get_slug(), 'name' => $v->get_name()];
+                }
+        }
+
+        // Filter only Express-purchaseable products, variant parents should also be removed here. LP 2026-01-22
+        $filtered_products = array_filter($products, fn($p) => $this->loop_single_product_is_express_checkout_purchasable(wc_get_product($p['id'])));
+        // Reindex array to fix json output. LP 2026-01-22
+        $filtered_products = array_values($filtered_products);
         return wp_send_json_success(['ok' => 1, 'products' => $filtered_products], wp_remote_retrieve_response_code($response));
     }
 

@@ -56,6 +56,7 @@ export default function ProductSearch({
 						return;
 					}
 					const products: Product[] = res['data']['products'] ?? [];
+					console.log('LP products: ', typeof products, products);
 					const productOptions: Option[] = products.map(
 						(product) => ({
 							label: product.name,
