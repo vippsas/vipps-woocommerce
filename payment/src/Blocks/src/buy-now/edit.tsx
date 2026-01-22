@@ -24,6 +24,7 @@ export interface EditAttributes extends BlockAttributes {
 	language: string;
 	productId: string;
 	productName: string;
+	productParentId: string; // for product variations. LP 2026-01-22
 
 	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
 	hasProductContext: boolean;

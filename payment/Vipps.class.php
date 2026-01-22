@@ -2600,7 +2600,15 @@ else:
                 foreach($product['variations'] as $variation)
                     $v = wc_get_product($variation['id']);
                     if (!is_a($v, 'WC_Product')) continue;
-                    $products[] = ['id' => $v->get_id(), 'sku' => $v->get_sku(), 'type' => $v->get_type(), 'slug' => $v->get_slug(), 'name' => $v->get_name()];
+                    $products[] = [
+                        'is_variation' => true,
+                        'parent' => $product['id'],
+                        'id' => $v->get_id(),
+                        'sku' => $v->get_sku(),
+                        'type' => $v->get_type(),
+                        'slug' => $v->get_slug(),
+                        'name' => $v->get_name()
+                    ];
                 }
         }
 

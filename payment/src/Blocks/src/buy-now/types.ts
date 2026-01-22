@@ -10,6 +10,7 @@ export interface Product {
   name: string
   slug: string
   type: string
+  is_variation: boolean,
   parent?: number
   variations?: Variation[]
   variation?: string
