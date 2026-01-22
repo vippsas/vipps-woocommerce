@@ -19,12 +19,10 @@ export default function ProductSearch({
 }: ProductSearchProps) {
 	console.log('LP attributes: ', attributes);
 	const [searchTerm, setSearchTerm] = useState('');
-	console.log('LP searchTerm: ', searchTerm);
 	const [isInitialized, setIsInitialized] = useState(false);
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const minCharsToSearch = 3;
 	const debounceMs = 300;
 
 	useEffect(() => {
@@ -32,8 +30,7 @@ export default function ProductSearch({
 			setIsInitialized(true);
 			return;
 		}
-		
-		if (searchTerm.length < minCharsToSearch) {
+		if (!searchTerm.trim()) {
 			setProductOptions([]);
 			return;
 		}
@@ -87,8 +84,15 @@ export default function ProductSearch({
 	return (
 		<>
 			{attributes.productName && (
-				<div style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
-					{__('Selected product', 'woo-vipps') + ': '} <strong>{attributes.productName}</strong>
+				<div
+					style={{
+						marginBottom: '8px',
+						fontSize: '14px',
+						color: '#666',
+					}}
+				>
+					{__('Selected product', 'woo-vipps') + ': '}{' '}
+					<strong>{attributes.productName}</strong>
 				</div>
 			)}
 			<ComboboxControl
@@ -110,7 +114,6 @@ export default function ProductSearch({
 					const selectedOption = productOptions.find(
 						(opt) => opt.value === value
 					);
-						console.log('LP selectedOption: ', selectedOption);
 					if (!selectedOption) {
 						resetProduct();
 						return;
@@ -125,10 +128,6 @@ export default function ProductSearch({
 				}}
 				onFilterValueChange={setSearchTerm}
 				options={productOptions}
-				help={__(
-					'Type at least %1 characters to search products',
-					'woo-vipps'
-				).replace('%1', minCharsToSearch.toString())}
 			/>
 			<Button
 				variant="primary"
