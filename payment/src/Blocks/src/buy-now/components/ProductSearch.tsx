@@ -17,7 +17,10 @@ export default function ProductSearch({
 	setAttributes,
 	hideCallback,
 }: ProductSearchProps) {
-	const [searchTerm, setSearchTerm] = useState(attributes.productName);
+	console.log('LP attributes: ', attributes);
+	const [searchTerm, setSearchTerm] = useState('');
+	console.log('LP searchTerm: ', searchTerm);
+	const [isInitialized, setIsInitialized] = useState(false);
 	const [productOptions, setProductOptions] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -25,6 +28,11 @@ export default function ProductSearch({
 	const debounceMs = 300;
 
 	useEffect(() => {
+		if (!isInitialized) {
+			setIsInitialized(true);
+			return;
+		}
+		
 		if (searchTerm.length < minCharsToSearch) {
 			setProductOptions([]);
 			return;
@@ -56,7 +64,6 @@ export default function ProductSearch({
 						return;
 					}
 					const products: Product[] = res['data']['products'] ?? [];
-					console.log('LP products: ', typeof products, products);
 					const productOptions: Option[] = products.map(
 						(product) => ({
 							label: product.name,
@@ -79,12 +86,17 @@ export default function ProductSearch({
 
 	return (
 		<>
+			{attributes.productName && (
+				<div style={{ marginBottom: '8px', fontSize: '14px', color: '#666' }}>
+					{__('Selected product', 'woo-vipps') + ': '} <strong>{attributes.productName}</strong>
+				</div>
+			)}
 			<ComboboxControl
 				className="vipps-buy-now-button-product-search"
 				// Opt into these to-be-made style defaults early to suppress deprectaion warnings. LP 2026-01-20
 				__next40pxDefaultSize={true}
 				__nextHasNoMarginBottom={true}
-				label={__('Select Product', 'woo-vipps')}
+				label={__('Search Product', 'woo-vipps')}
 				// @ts-ignore: for some reason isLoading is not typed correctly. This shows a spinner when its loading, and its also in the docs: https://developer.wordpress.org/block-editor/reference-guides/components/combobox-control/. LP 2026-01-20
 				isLoading={isLoading}
 				value={attributes.productId}
@@ -98,13 +110,14 @@ export default function ProductSearch({
 					const selectedOption = productOptions.find(
 						(opt) => opt.value === value
 					);
+						console.log('LP selectedOption: ', selectedOption);
 					if (!selectedOption) {
 						resetProduct();
 						return;
 					}
 					const name = selectedOption.label;
 
-					setSearchTerm(name);
+					setSearchTerm('');
 					setAttributes({
 						productId: id.toString(),
 						productName: name,
