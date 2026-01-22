@@ -22,9 +22,11 @@ export default function ProductSearch({
 	const [isLoading, setIsLoading] = useState(false);
 
 	const resultsPerFetch = 10;
+	const minCharsToSearch = 3;
+	const baseApiPath = `/wc/store/v1/products`;
 
 	useEffect(() => {
-		if (searchTerm.length < 3) {
+		if (searchTerm.length < minCharsToSearch) {
 			setProductOptions([]);
 			return;
 		}
@@ -33,9 +35,8 @@ export default function ProductSearch({
 			setIsLoading(true);
 			try {
 				const products: Product[] = await apiFetch({
-					path: `/wc/store/products?search=${encodeURIComponent(searchTerm)}&per_page=${resultsPerFetch}`,
+					path: `${baseApiPath}?search=${encodeURIComponent(searchTerm)}&per_page=${resultsPerFetch}`,
 				});
-
 				const productOptions: Option[] = products.map((product) => ({
 					label: product.name,
 					value: product.id.toString(),
@@ -54,10 +55,7 @@ export default function ProductSearch({
 	}, [searchTerm]);
 
 	const resetProduct = () => {
-		setAttributes({
-			productId: '',
-			productName: '',
-		});
+		setAttributes({ productId: '', productName: '' });
 		return;
 	};
 
@@ -99,9 +97,9 @@ export default function ProductSearch({
 				onFilterValueChange={setSearchTerm}
 				options={productOptions}
 				help={__(
-					'Type at least 3 characters to search products',
+					'Type at least %1 characters to search products',
 					'woo-vipps'
-				)}
+				).replace('%1', minCharsToSearch.toString())}
 			/>
 			<Button
 				variant="primary"

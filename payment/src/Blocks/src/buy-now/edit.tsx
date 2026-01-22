@@ -94,7 +94,7 @@ export default function Edit({
 								<ToolbarGroup>
 									<ToolbarButton
 										icon={pencil}
-										label={__('Edit product', 'woo-vipps')}
+										label={__('Edit chosen product', 'woo-vipps')}
 										onClick={() =>
 											setShowProductSelection(true)
 										}
