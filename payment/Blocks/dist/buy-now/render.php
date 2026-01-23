@@ -15,7 +15,6 @@ if ($block->attributes['hasProductContext']) {
 
 // else we need to get product from the block config. LP 2026-01-19
 else {
-
     // Variation products have a parent id set, which is the product_id we need to use. LP 2026-01-22
     if ($block->attributes['productParentId']) {
         $pid = $block->attributes['productParentId'] ?? 0;
@@ -25,7 +24,9 @@ else {
     }
 
     $product = $pid ? wc_get_product($pid) : 0;
-    $supported = $product && is_a($product, 'WC_Product');
+    if ($product && is_a($product, 'WC_Product')) {
+        $supported = $vipps->loop_single_product_is_express_checkout_purchasable($product);
+    }
 }
 
 // Only create button if the product has woo-vipps express checkout enabled. LP 29.11.2024

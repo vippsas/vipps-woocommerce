@@ -22,6 +22,7 @@ export interface EditAttributes extends BlockAttributes {
 	align: string;
 	variant: string;
 	language: string;
+	/** Only set with manual product selection, i.e when not in a product context. LP 2026-01-23 */
 	productId: string;
 	productName: string;
 	/** For product variations we need the parent product. LP 2026-01-22 */
@@ -49,7 +50,7 @@ export default function Edit({
 
 	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
 	const [showProductSelection, setShowProductSelection] = useState(
-		!(hasProductContext || attributes.productId)
+		!hasProductContext && !attributes.productId
 	);
 
 	return (
