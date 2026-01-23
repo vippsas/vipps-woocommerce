@@ -80,7 +80,7 @@ export default function ProductSearch({
 	}, [searchTerm]);
 
 	const resetProduct = () => {
-		setAttributes({ productId: '', productName: '' });
+		setAttributes({ productId: '', productName: '', productParentId: '' });
 		return;
 	};
 
