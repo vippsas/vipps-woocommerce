@@ -2,6 +2,8 @@
 $vipps = Vipps::instance();
 $supported = false;
 
+$variation_id = null;
+
 // hasProductContext is set if we are in a product template parent block context. LP 2026-01-19
 if ($block->attributes['hasProductContext']) {
     $pid = $block->context['postId'] ?? 0;
@@ -20,7 +22,6 @@ else {
         $variation_id = $block->attributes['productId'] ?? 0;
     } else {
         $pid = $block->attributes['productId'] ?? 0;
-        $variation_id = 0;
     }
 
     $product = $pid ? wc_get_product($pid) : 0;
