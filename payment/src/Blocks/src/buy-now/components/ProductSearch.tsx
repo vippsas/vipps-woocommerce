@@ -14,10 +14,6 @@ export type ProductSearchProps = {
 	hideCallback: () => void;
 };
 
-interface ProductOption extends Option {
-	parentId?: string;
-}
-
 export default function ProductSearch({
 	attributes,
 	setAttributes,
@@ -25,7 +21,7 @@ export default function ProductSearch({
 }: ProductSearchProps) {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [isInitialized, setIsInitialized] = useState(false);
-	const [productOptions, setProductOptions] = useState<ProductOption[]>([]);
+	const [productOptions, setProductOptions] = useState<Option[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const debounceMs = 300;
@@ -61,13 +57,10 @@ export default function ProductSearch({
 				method: 'GET',
 			})
 				.then((products) => {
-					const productOptions: ProductOption[] = products.map(
+					const productOptions: Option[] = products.map(
 						(product) => ({
 							label: product.name,
 							value: product.id.toString(),
-							parentId: product.is_variation
-								? product.parent?.toString()
-								: undefined,
 						})
 					);
 					setProductOptions(productOptions);
@@ -127,7 +120,6 @@ export default function ProductSearch({
 					setAttributes({
 						productId: id.toString(),
 						productName: name,
-						productParentId: selectedOption.parentId,
 					});
 				}}
 				onFilterValueChange={setSearchTerm}

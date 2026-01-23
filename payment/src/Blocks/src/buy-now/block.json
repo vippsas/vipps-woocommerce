@@ -13,10 +13,6 @@
 			"type": "string",
 			"default": ""
 		},
-		"productParentId": {
-			"type": "string",
-			"default": ""
-		},
 		"productName": {
 			"type": "string",
 			"default": ""

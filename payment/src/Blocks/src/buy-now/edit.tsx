@@ -25,8 +25,6 @@ export interface EditAttributes extends BlockAttributes {
 	/** Only set with manual product selection, i.e when not in a product context. LP 2026-01-23 */
 	productId: string;
 	productName: string;
-	/** For product variations we need the parent product. LP 2026-01-22 */
-	productParentId: string;
 	/** If this block is in a product context. LP 2026-01-23 */
 	hasProductContext: boolean;
 }
@@ -40,7 +38,9 @@ export default function Edit({
 }: EditProps) {
 	// If this block is a child of a product context. e.g. when this block is inserted into the blocks Product collection, Single product. LP 2026-01-23
 	const hasProductContext = context['postType'] === 'product';
-	setAttributes({ hasProductContext });
+	if (hasProductContext) {
+		setAttributes({ hasProductContext });
+	}
 
 	const langLogos =
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];

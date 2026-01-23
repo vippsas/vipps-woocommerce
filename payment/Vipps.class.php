@@ -4827,10 +4827,19 @@ else:
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
 
+        // Support directly using the variant id as $product_id with no $variation_id. LP 2026-01-23
+        if ($product_id && !$variation_id) {
+            $product = wc_get_product($product_id);
+            if ($product && is_a($product, 'WC_Product_Variation')) {
+                $variation_id = $product_id;
+                $product_id = $product->get_parent_id();
+            }
+        }
 
         if ($sku) $data['product_sku'] = $sku;
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
+
 
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {
