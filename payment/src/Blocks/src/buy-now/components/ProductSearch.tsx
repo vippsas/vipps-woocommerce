@@ -61,7 +61,6 @@ export default function ProductSearch({
 				method: 'GET',
 			})
 				.then((products) => {
-					console.log('LP products: ', products);
 					const productOptions: ProductOption[] = products.map(
 						(product) => ({
 							label: product.name,
