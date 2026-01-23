@@ -9,6 +9,7 @@ export interface VippsBlockConfig {
 	variants: Option[];
 	languages: Option[];
 	vippsajaxurl: string;
+	vippsresturl: string;
 	vippsajaxnonce: string;
 }
 

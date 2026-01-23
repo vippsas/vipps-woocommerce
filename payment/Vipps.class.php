@@ -208,7 +208,12 @@ class Vipps {
         });
 
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
-        add_action('wp_ajax_woo_vipps_express_checkout_products', array($this, 'ajax_express_checkout_products'));
+        add_action('rest_api_init', function() {
+                   register_rest_route('woo-vipps/v1', '/express-products', [
+                        'methods' => 'GET',
+                        'callback' => [$this, 'rest_express_checkout_products'],
+                   ]);
+        });
 
         // We need a 5-minute scheduled event for the handler for missed callbacks. Using the 
         // action scheduler would be better, but we can't do that just yet because of backwards 
@@ -2570,55 +2575,47 @@ else:
            print "1";
     }
 
-    // returns wc products, but only those purchasable by VMP express checkout. LP 2026-01-22
-    // Called by ajax by the buy-now express block, returns the products from wc api if they are purchaseable by express checkout. LP 2026-01-22
-    public function ajax_express_checkout_products() {
-        check_ajax_referer('vippsexpressproducts');
+    // Rest route: returns wc products, but only those purchasable by VMP express checkout. LP 2026-01-22
+    // Called by the buy-now express block. LP 2026-01-22
+    public function rest_express_checkout_products($request) {
         static::set_locale_if_in_header();
 
-        $query = [];
-        foreach (['per_page', 'orderby', 'order', 'search'] as $param) {
-            if (isset($_REQUEST[$param])) {
-            $query[$param] = sanitize_title($_REQUEST[$param]);
-            }
+        // Redirect product fetch to WC rest api. LP 2026-01-23
+        $wc_request = new WP_REST_Request('GET', '/wc/store/v1/products');
+        $wc_request->set_query_params($request->get_query_params());
+        $response = rest_do_request($wc_request);
+        if ($response->is_error()) {
+                return $response;
         }
-        $args = ['body' => $query];
-        $args['sslverify'] = false; // FIXME: DELETE THIS. LP 2026-01-22
+        $products = $response->get_data();
 
-        $url = home_url('/wp-json/wc/store/v1/products');
-        $response = wp_remote_get($url, $args);
-        if (is_wp_error($response)) {
-                return wp_send_json_error($response);
-        }
-
-        $products = json_decode(wp_remote_retrieve_body($response), true);
-
-        // Support product variants by adding the variants to the array. LP 2026-01-22
+        // Extract variant products out from the parent product, so we can support these. LP 2026-01-22
         foreach($products as &$product) {
-            if (isset($product['variations']) && is_array($product['variations']) && $product['variations']) {
-                error_log("Product has variants:" . print_r($product['name'],true));
-                foreach($product['variations'] as $variation)
-                    $v = wc_get_product($variation['id']);
-                    if (!is_a($v, 'WC_Product')) continue;
-                    $products[] = [
-                        'is_variation' => true,
-                        'parent' => $product['id'],
-                        'id' => $v->get_id(),
-                        'sku' => $v->get_sku(),
-                        'type' => $v->get_type(),
-                        'slug' => $v->get_slug(),
-                        'name' => $v->get_name()
-                    ];
-                }
+            if (!(isset($product['variations']) && is_array($product['variations']) && $product['variations'])) continue;
+
+            foreach($product['variations'] as $variation) {
+                $v = wc_get_product($variation->id);
+                if (!is_a($v, 'WC_Product')) continue;
+                $products[] = [
+                'is_variation' => true,
+                'parent' => $product['id'],
+                'id' => $v->get_id(),
+                'sku' => $v->get_sku(),
+                'type' => $v->get_type(),
+                'slug' => $v->get_slug(),
+                'name' => $v->get_name()
+                ];
+            }
         }
 
         // Filter only Express-purchaseable products, variant parents should also be removed here. LP 2026-01-22
         $filtered_products = array_filter($products, fn($p) => $this->loop_single_product_is_express_checkout_purchasable(wc_get_product($p['id'])));
-        // Reindex array to fix json output. LP 2026-01-22
+        // Reindex array to fix output. LP 2026-01-22
         $filtered_products = array_values($filtered_products);
-        return wp_send_json_success(['ok' => 1, 'products' => $filtered_products], wp_remote_retrieve_response_code($response));
-    }
+        $response->set_data($filtered_products);
+        return $response;
 
+    }
 
     // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
     public function store_admin_notices() {

@@ -2,7 +2,6 @@
 $vipps = Vipps::instance();
 $supported = false;
 
-error_log(print_r($block->attributes,true));
 // hasProductContext is set if we are in a product template parent block context. LP 2026-01-19
 if ($block->attributes['hasProductContext']) {
     $pid = $block->context['postId'] ?? 0;

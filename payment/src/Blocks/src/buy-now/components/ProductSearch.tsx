@@ -5,6 +5,8 @@ import { Button, ComboboxControl } from '@wordpress/components';
 import { Option, Product } from '../types';
 import { EditProps } from '../edit';
 import { blockConfig } from '../config';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
 
 export type ProductSearchProps = {
 	attributes: EditProps['attributes'];
@@ -43,27 +45,23 @@ export default function ProductSearch({
 			setProductOptions([]);
 		};
 
-		const query = new URLSearchParams({
+		const path = `${blockConfig.vippsresturl}/express-products`;
+		const queryParams = {
 			search: searchTerm,
 			per_page: '10',
 			action: 'woo_vipps_express_checkout_products',
 			orderby: 'title',
 			order: 'desc',
-			_ajax_nonce: blockConfig['vippsajaxnonce'],
-		}).toString();
+		};
 
 		const searchTimeout = setTimeout(async () => {
 			setIsLoading(true);
-			fetch(`${blockConfig.vippsajaxurl}?${query}`, {
+			apiFetch<Product[]>({
+				path: addQueryArgs(path, queryParams),
 				method: 'GET',
 			})
-				.then((res) => res.json())
-				.then((res) => {
-					if (!res['success'] || !Number(res['data']['ok'])) {
-						onError(`Result was not ok: ${JSON.stringify(res)}`);
-						return;
-					}
-					const products: Product[] = res['data']['products'] ?? [];
+				.then((products) => {
+					console.log('LP products: ', products);
 					const productOptions: ProductOption[] = products.map(
 						(product) => ({
 							label: product.name,
