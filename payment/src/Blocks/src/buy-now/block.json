@@ -43,7 +43,7 @@
 		"buy-now"
 	],
 	"category": "woocommerce",
-	"usesContext": ["query", "queryId", "postId"],
+	"usesContext": ["postId", "postType"],
 	"supports": {
 		"html": false
 	},

@@ -24,9 +24,9 @@ export interface EditAttributes extends BlockAttributes {
 	language: string;
 	productId: string;
 	productName: string;
-	productParentId: string; // for product variations. LP 2026-01-22
-
-	// This is when the block has the context 'query' which is passed from parent block Product Template inside Product Collection. LP 2026-01-19
+	/** For product variations we need the parent product. LP 2026-01-22 */
+	productParentId: string;
+	/** If this block is in a product context. LP 2026-01-23 */
 	hasProductContext: boolean;
 }
 
@@ -37,10 +37,9 @@ export default function Edit({
 	attributes,
 	setAttributes,
 }: EditProps) {
-	// If we have a product context inherited from parent block, which as of now
-	// is the product template block used in the product collection block. LP 2026-01-19
-	const hasProductContext = !!context['query'];
-	if (hasProductContext) setAttributes({ hasProductContext: true });
+	// If this block is a child of a product context. e.g. when this block is inserted into the blocks Product collection, Single product. LP 2026-01-23
+	const hasProductContext = context['postType'] === 'product';
+	setAttributes({ hasProductContext });
 
 	const langLogos =
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
@@ -95,7 +94,10 @@ export default function Edit({
 								<ToolbarGroup>
 									<ToolbarButton
 										icon={pencil}
-										label={__('Edit selected product', 'woo-vipps')}
+										label={__(
+											'Edit selected product',
+											'woo-vipps'
+										)}
 										onClick={() =>
 											setShowProductSelection(true)
 										}
