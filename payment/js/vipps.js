@@ -57,26 +57,30 @@ jQuery( document ).ready( function() {
  
  // Hooks for the 'buy now with vipps' button on product pages etc
  jQuery('body').on('found_variation', function (e,variation) {
+   // Only change affect buy-now buttons for product variations. LP 2026-01-26
+   const buynowVariations = jQuery('form .variations_button .button.single-product.vipps-buy-now');
 
    var purchasable=true;
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
-   jQuery('form .button.single-product.vipps-buy-now').addClass('variation-found');
+   buynowVariations.addClass('variation-found');
    if (purchasable) {
-    jQuery('form .button.single-product.vipps-buy-now').removeAttr('disabled');
-    jQuery('form .button.single-product.vipps-buy-now').removeClass('disabled');
+    buynowVariations.removeAttr('disabled');
+    buynowVariations.removeClass('disabled');
     removeErrorMessages();
    } else {
-    jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
-    jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
+    buynowVariations.attr('disabled','disabled');
+    buynowVariations.addClass('disabled');
     removeErrorMessages();
    }
  });
  jQuery('body').on('reset_data', function () {
-    jQuery('form .button.single-product.vipps-buy-now').removeClass('variation-found');
-    jQuery('form .button.single-product.vipps-buy-now').attr('disabled','disabled');
-    jQuery('form .button.single-product.vipps-buy-now').addClass('disabled');
+    // Only change affect buy-now buttons for product variations. LP 2026-01-26
+    const buynowVariations = jQuery('form .variations_button .button.single-product.vipps-buy-now');
+    buynowVariations.removeClass('variation-found');
+    buynowVariations.attr('disabled','disabled');
+    buynowVariations.addClass('disabled');
     removeErrorMessages();
  });
  // If this is triggered, somebody just loaded a variation form, so we need to redo the button init scripts
