@@ -89,10 +89,10 @@ They then confirm the payment in the Vipps or MobilePay app.
    The plugin can also be installed manually by uploading the plugin files to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the *Plugins* screen on WordPress.
 3. Go to the *WooCommerce Settings* page, choose *Payments*, and enable Vipps MobilePay.
-4. Go the *Settings* page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the Vipps MobilePay Merchant Portal. For information, see [How to get account keys from Merchant Portal](#how-to-get-account-keys-from-merchant-portal).
+4. Go the *Settings* page for the Vipps MobilePay plugin and enter your Vipps MobilePay account keys. Your account keys are available in the Vipps MobilePay business portal, [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/). For information, see [How to get account keys from the business portal](#how-to-get-account-keys-from-the-business-portal).
 5. (Optional, but recommended) Activate *Checkout* by clicking on the *Checkout* tab and selecting the *Enable Alternative Vipps/MobilePay Checkout screen, replacing the standard checkout page* option.
 
-## How to get account keys from Merchant Portal
+## How to get account keys from the business portal
 
 1. Sign in to [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/).
 2. In the *Developer* section, choose *Production Keys*. Here you can find the merchant serial number (6 figures).
