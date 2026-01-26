@@ -58,7 +58,7 @@ jQuery( document ).ready( function() {
  // Hooks for the 'buy now with vipps' button on product pages etc
  jQuery('body').on('found_variation', function (e,variation) {
    // Only change affect buy-now buttons for product variations. LP 2026-01-26
-   const buynowVariations = jQuery('form .variations_button .button.single-product.vipps-buy-now');
+   const buynowVariations = jQuery('form .button.single-product.vipps-buy-now.variable-product');
 
    var purchasable=true;
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
@@ -77,7 +77,7 @@ jQuery( document ).ready( function() {
  });
  jQuery('body').on('reset_data', function () {
     // Only change affect buy-now buttons for product variations. LP 2026-01-26
-    const buynowVariations = jQuery('form .variations_button .button.single-product.vipps-buy-now');
+   const buynowVariations = jQuery('form .button.single-product.vipps-buy-now.variable-product');
     buynowVariations.removeClass('variation-found');
     buynowVariations.attr('disabled','disabled');
     buynowVariations.addClass('disabled');

@@ -4841,9 +4841,11 @@ else:
         $showit = apply_filters('woo_vipps_show_single_product_buy_now', $showit, $product);
         if (!$showit) return;
 
+        $classes = array();
         $disabled="";
         if ($product->is_type('variable')) {
             $disabled="disabled";
+            $classes[] = 'variable-product';
         }
 
 # If true, add a class that signals that the button should be added in 'compat mode', which is compatible with
@@ -4851,7 +4853,6 @@ else:
         $compat = ($gw->get_option('singleproductbuynowcompatmode') == 'yes');
         $compat = apply_filters('woo_vipps_single_product_compat_mode', $compat, $product);
 
-        $classes = array();
         if ($compat) $classes[] ='compat-mode';
         $classes = apply_filters('woo_vipps_single_product_buy_now_classes', $classes, $product);
 
