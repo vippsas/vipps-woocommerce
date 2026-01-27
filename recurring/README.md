@@ -64,8 +64,8 @@ for an overview.
 
 ## Getting started
 
-* Sign up for a merchant agreement and product order from the Vipps MobilePay business portal, [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/).
-* After 1–2 days, you will get an email with login details to the business portal, [portal.vippsmobilepay.com](https://portal.vippsmobilepay.com/), where you can get the API credentials.
+* Sign up for a merchant agreement and product order from the Vipps MobilePay [business portal](https://portal.vippsmobilepay.com/).
+* After 1–2 days, you will get an email with login details to the [business portal](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
 
@@ -80,7 +80,7 @@ for an overview.
 
 ### Retrieving Vipps MobilePay API keys
 
-Log-in to [portal.vippsmobilepay.com/](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
+Log-in to the [business portal](https://portal.vippsmobilepay.com/) and get your test API keys, as described in
 [API keys](https://developer.vippsmobilepay.com/docs/knowledge-base/api-keys/).
 
 ### Configuration of the plugin

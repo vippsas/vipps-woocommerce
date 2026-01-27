@@ -1,46 +1,113 @@
-import type { BlockEditProps } from '@wordpress/blocks';
+import { useState } from 'react';
+import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
-import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { SelectControl, PanelBody } from '@wordpress/components';
+import {
+	InspectorControls,
+	useBlockProps,
+	BlockControls,
+} from '@wordpress/block-editor';
+import {
+	SelectControl,
+	PanelBody,
+	ToolbarGroup,
+	ToolbarButton,
+} from '@wordpress/components';
+import { pencil } from '@wordpress/icons';
 
-import { VippsBlockAttributes, VippsBlockConfig } from './types';
+import ProductSearch from './components/ProductSearch';
+import VippsSmile from './components/VippsSmile';
+import { blockConfig } from './config';
 
-// Injected config. LP 27.11.2024
-declare const vippsBuyNowBlockConfig: VippsBlockConfig;
+export interface EditAttributes extends BlockAttributes {
+	align: string;
+	variant: string;
+	language: string;
+	/** Only set with manual product selection, i.e when not in a product context. LP 2026-01-23 */
+	productId: string;
+	productName: string;
+	/** If this block is in a product context. LP 2026-01-23 */
+	hasProductContext: boolean;
+}
+
+export type EditProps = BlockEditProps<EditAttributes>;
 
 export default function Edit({
 	context,
 	attributes,
 	setAttributes,
-}: BlockEditProps<VippsBlockAttributes>) {
-	// Currently, this block only works within the product collection block,
-	// which sets the 'query' context. To support the button in other contexts, we add an isInQuery attribute which
-	// is available in render.php. NB: This is not currently in use; it would be for instance used to add buy-now buttons
-	// for arbitrary product ID or on product pages etc. IOK 2026-01-14
-	if (context['query']) setAttributes({ isInQuery: true });
+}: EditProps) {
+	// If this block is a child of a product context. e.g. when this block is inserted into the blocks Product collection, Single product. LP 2026-01-23
+	const hasProductContext = context['postType'] === 'product';
+	if (hasProductContext) {
+		setAttributes({ hasProductContext });
+	}
 
-	const langLogos = vippsBuyNowBlockConfig.logos[attributes.language] ?? vippsBuyNowBlockConfig.logos['en'];
+	const langLogos =
+		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
+
+	const showEditButton = !attributes.hasProductContext;
+
+	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
+	const [showProductSelection, setShowProductSelection] = useState(
+		!hasProductContext && !attributes.productId
+	);
 
 	return (
 		<>
-			{/* The actual block. LP 2026-01-16 */}
 			<div
 				{...useBlockProps({
 					className:
 						'wp-block-button wc-block-components-product-button wc-block-button-vipps',
 				})}
 			>
-				<a
-					className="single-product button vipps-buy-now wp-block-button__link"
-					title={vippsBuyNowBlockConfig['BuyNowWithVipps']}
-				>
-					<img
-						className="inline vipps-logo-negative"
-						src={logoSrc}
-						alt={vippsBuyNowBlockConfig['BuyNowWithVipps']}
-					/>
-				</a>
+				{showProductSelection ? (
+					// Product selection mode. LP 2026-01-19
+					<div className="vipps-buy-now-block-edit-container">
+						<div className="vipps-buy-now-block-edit-header">
+							<VippsSmile />
+							{blockConfig['vippsbuynowbutton']}
+						</div>
+
+						<ProductSearch
+							attributes={attributes}
+							setAttributes={setAttributes}
+							hideCallback={() => setShowProductSelection(false)}
+						/>
+					</div>
+				) : (
+					// The WYSIWYG buy-now button. LP 2026-01-19
+					<>
+						<a
+							className="single-product button vipps-buy-now wp-block-button__link"
+							title={blockConfig['BuyNowWithVipps']}
+						>
+							<img
+								className="inline vipps-logo-negative"
+								src={logoSrc}
+								alt={blockConfig['BuyNowWithVipps']}
+							/>
+						</a>
+
+						{/* Toolbar button to switch to product selection mode. LP 2026-01-19 */}
+						{showEditButton && (
+							<BlockControls>
+								<ToolbarGroup>
+									<ToolbarButton
+										icon={pencil}
+										label={__(
+											'Edit selected product',
+											'woo-vipps'
+										)}
+										onClick={() =>
+											setShowProductSelection(true)
+										}
+									/>
+								</ToolbarGroup>
+							</BlockControls>
+						)}
+					</>
+				)}
 			</div>
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
@@ -52,7 +119,7 @@ export default function Edit({
 						}
 						label={__('Variant', 'woo-vipps')}
 						value={attributes.variant}
-						options={vippsBuyNowBlockConfig.variants}
+						options={blockConfig.variants}
 						help={__(
 							'Choose the button variant with the perfect fit for your site',
 							'woo-vipps'
@@ -64,7 +131,7 @@ export default function Edit({
 						}
 						label={__('Language', 'woo-vipps')}
 						value={attributes.language}
-						options={vippsBuyNowBlockConfig.languages}
+						options={blockConfig.languages}
 						help={__('Choose language', 'woo-vipps')}
 					/>
 				</PanelBody>

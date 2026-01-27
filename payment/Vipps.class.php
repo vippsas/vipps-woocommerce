@@ -207,6 +207,14 @@ class Vipps {
           }
         });
 
+        // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
+        add_action('rest_api_init', function() {
+                   register_rest_route('woo-vipps/v1', '/express-products', [
+                        'methods' => 'GET',
+                        'callback' => [$this, 'rest_express_checkout_products'],
+                   ]);
+        });
+
         // We need a 5-minute scheduled event for the handler for missed callbacks. Using the 
         // action scheduler would be better, but we can't do that just yet because of backwards 
         // compatibility. At some point, support for older woo-versions should be dropped; then this
@@ -2549,7 +2557,6 @@ else:
         return $language;
     }
 
-
     // Called by ajax on the order page; redirects back to same page. IOK 2022-11-02
     public function order_handle_vipps_action () {
            check_ajax_referer('vippssecnonce','vipps_sec');
@@ -2571,7 +2578,48 @@ else:
            }
            print "1";
     }
-    
+
+    // Rest route: returns wc products, but only those purchasable by VMP express checkout. LP 2026-01-22
+    // Called by the buy-now express block. LP 2026-01-22
+    public function rest_express_checkout_products($request) {
+        static::set_locale_if_in_header();
+
+        // Redirect product fetch to WC rest api. LP 2026-01-23
+        $wc_request = new WP_REST_Request('GET', '/wc/store/v1/products');
+        $wc_request->set_query_params($request->get_query_params());
+        $response = rest_do_request($wc_request);
+        if ($response->is_error()) {
+                return $response;
+        }
+        $products = $response->get_data();
+
+        // Extract variant products out from the parent product, so we can support these. LP 2026-01-22
+        foreach($products as &$product) {
+            if (!(isset($product['variations']) && is_array($product['variations']) && $product['variations'])) continue;
+
+            foreach($product['variations'] as $variation) {
+                $v = wc_get_product($variation->id);
+                if (!is_a($v, 'WC_Product')) continue;
+                $products[] = [
+                'is_variation' => true,
+                'parent' => $product['id'],
+                'id' => $v->get_id(),
+                'sku' => $v->get_sku(),
+                'type' => $v->get_type(),
+                'slug' => $v->get_slug(),
+                'name' => $v->get_name()
+                ];
+            }
+        }
+
+        // Filter only Express-purchaseable products, variant parents should also be removed here. LP 2026-01-22
+        $filtered_products = array_filter($products, fn($p) => $this->loop_single_product_is_express_checkout_purchasable(wc_get_product($p['id'])));
+        // Reindex array to fix output. LP 2026-01-22
+        $filtered_products = array_values($filtered_products);
+        $response->set_data($filtered_products);
+        return $response;
+
+    }
 
     // Make admin-notices persistent so we can provide error messages whenever possible. IOK 2018-05-11
     public function store_admin_notices() {
@@ -4783,10 +4831,19 @@ else:
         $disabled = $disabled ? 'disabled' : '';
         $data = array();
 
+        // Support directly using the variant id as $product_id with no $variation_id. LP 2026-01-23
+        if ($product_id && !$variation_id) {
+            $product = wc_get_product($product_id);
+            if ($product && is_a($product, 'WC_Product_Variation')) {
+                $variation_id = $product_id;
+                $product_id = $product->get_parent_id();
+            }
+        }
 
         if ($sku) $data['product_sku'] = $sku;
         if ($product_id) $data['product_id'] = $product_id;
         if ($variation_id) $data['variation_id'] = $variation_id;
+
 
         $buttoncode = "<a href='javascript:void(0)' $disabled ";
         foreach($data as $key=>$value) {

@@ -2,12 +2,24 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "woo-vipps/buy-now",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "title": "Vipps MobilePay Buy Now",
   "attributes": {
-    "isInQuery": {
+    "hasProductContext": {
       "type": "boolean",
-      "default": "false"
+      "default": false
+    },
+    "productId": {
+      "type": "string",
+      "default": ""
+    },
+    "productName": {
+      "type": "string",
+      "default": ""
+    },
+    "showProductSelection": {
+      "type": "boolean",
+      "default": "true"
     },
     "variant": {
       "type": "string",
@@ -20,16 +32,16 @@
   },
   "keywords": [
     "WooCommerce",
-    "woo-gutenberg-products-block"
+    "woo-gutenberg-products-block",
+    "Vipps",
+    "Vipps Express",
+    "Express",
+    "buy-now"
   ],
   "category": "woocommerce",
-  "parent": [
-    "woocommerce/product-template"
-  ],
   "usesContext": [
-    "query",
-    "queryId",
-    "postId"
+    "postId",
+    "postType"
   ],
   "supports": {
     "html": false

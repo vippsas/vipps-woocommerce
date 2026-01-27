@@ -61,6 +61,16 @@ table.webhook-table td.actions {
 }
 
 /* Gutenberg buy-now product block, copied from vipps.css LP 02.12.2024 */
+.vipps-buy-now-block-edit-header {
+    display: flex;
+    flex-direction: row;
+    gap: .8rem;
+    margin-bottom: .5rem;
+    justify-content: center;
+}
+.vipps-buy-now-button-product-search {
+    margin-bottom: .4rem;
+}
 div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
     text-align: center;
 }
