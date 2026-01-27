@@ -113,7 +113,7 @@ export default function CheckoutPage () {
 					{checkoutData.session.token && (
 						<iframe ref={iframeRef}
 								src={`${(checkoutData.session.checkoutFrontendUrl ||
-									checkoutData.session.src)}?token=${checkoutData.session.token}&language=${checkoutData.language}`}
+									checkoutData.session.src)}?token=${checkoutData.session.token}&lang=${checkoutData.language}`}
 								frameBorder="0" width={'100%'}></iframe>
 					)}
 				</>}
