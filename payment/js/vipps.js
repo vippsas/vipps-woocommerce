@@ -57,30 +57,30 @@ jQuery( document ).ready( function() {
  
  // Hooks for the 'buy now with vipps' button on product pages etc
  jQuery('body').on('found_variation', function (e,variation) {
-   // Only change affect buy-now buttons for product variations. LP 2026-01-26
-   const buynowVariations = jQuery('form .button.single-product.vipps-buy-now.variable-product');
+   const form = jQuery(e.target);
+   const target = form.find(".button.single-product.vipps-buy-now.variable-product");
 
    var purchasable=true;
    if ( ! variation.is_purchasable || ! variation.is_in_stock || ! variation.variation_is_visible ) {
      purchasable = false;
    }
-   buynowVariations.addClass('variation-found');
+   target.addClass('variation-found');
    if (purchasable) {
-    buynowVariations.removeAttr('disabled');
-    buynowVariations.removeClass('disabled');
+    target.removeAttr('disabled');
+    target.removeClass('disabled');
     removeErrorMessages();
    } else {
-    buynowVariations.attr('disabled','disabled');
-    buynowVariations.addClass('disabled');
+    target.attr('disabled','disabled');
+    target.addClass('disabled');
     removeErrorMessages();
    }
  });
- jQuery('body').on('reset_data', function () {
-    // Only change affect buy-now buttons for product variations. LP 2026-01-26
-   const buynowVariations = jQuery('form .button.single-product.vipps-buy-now.variable-product');
-    buynowVariations.removeClass('variation-found');
-    buynowVariations.attr('disabled','disabled');
-    buynowVariations.addClass('disabled');
+ jQuery('body').on('reset_data', function (e) {
+    const form = jQuery(e.target)
+    const target = form.find(".button.single-product.vipps-buy-now.variable-product");
+    target.removeClass('variation-found');
+    target.attr('disabled','disabled');
+    target.addClass('disabled');
     removeErrorMessages();
  });
  // If this is triggered, somebody just loaded a variation form, so we need to redo the button init scripts
