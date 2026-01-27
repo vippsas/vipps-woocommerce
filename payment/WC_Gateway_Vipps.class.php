@@ -210,8 +210,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_cancelled', array($this, 'order_status_cancelled_wrapper'));
         // Add a full refund if neccessary *before* woocommerce does this.
         add_action('woocommerce_order_status_refunded', array($this, 'wc_order_fully_refunded', 9, 1));
-        // and *afterwards* ensure we cancel any remaining, noncaptured funds. IOK 2026-01-20
-        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount', 99, 1));
 
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
 
@@ -220,10 +218,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // when an order is complete, we need to check if there is reserved amount that is not captured
         // if so, we need to cancel this amount PMB 2024-11-21
         // nb: note very late priority - we must have captured before, please
+        // Also for orders that have been partially or completely refunded IOK 2026-01-26
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount', 99, 1));
     }
 
-    // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete or refunded. It checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     public function maybe_cancel_reserved_amount ($orderid) {
         $order = wc_get_order($orderid);
@@ -234,7 +234,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
-        if (! $order->get_meta('_vipps_capture_complete')) { // FIXME SET THIS IN WC_ORDER_FULLY_REFUNDED TOO!
+        if (! $order->get_meta('_vipps_capture_complete')) {
             return false;
         }
         // We also only want to do this for orders that have had *something* captured. IOK 2025-02-04
@@ -255,7 +255,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             try {
                 // This will only cancel any remaining amount. IOK 2024-11-25
                 $res = $this->api->epayment_cancel_payment($order,$requestid=1);
-
 
                 $amount = number_format($remaining/100, 2) . " " . $currency;
                 $note = sprintf(__('Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account.', 'woo-vipps'), $orderid, $amount);
@@ -691,6 +690,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return $this->maybe_cancel_payment($order_id);
     }
 
+    // This is called when the orders status is set to "cancel". It will refund any captured funds, then cancel the remaining. IOK 2026-01-26
+    // orders that have been captured but end up in "refunded" or "complete" will cancel the monies with a different path. IOK 2026-01-26
     public function maybe_cancel_payment($orderid) {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
@@ -700,7 +701,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured || $vippsstatus == 'SALE') {
-            return $this->wc_order_fully_refunded ($orderid);
+            // This will create + process a refund for the captured amount. IOK 2026-01-26
+            $this->wc_order_fully_refunded ($orderid);
         }
 
         try {
@@ -793,14 +795,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->save();
                 $this->adminerr($msg);
             } else {
+                $refund_thru_gateway = false;
                 return true;
             }
         }
-        // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
-        $data['refund_payment'] = false;
-        wc_switch_to_site_locale(); 
-        $the_refund = wc_create_refund($data);
-        wc_restore_locale();
+        if (!$refund_thru_gateway) {
+            // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
+            $data['refund_payment'] = false;
+            wc_switch_to_site_locale(); 
+            $the_refund = wc_create_refund($data);
+            wc_restore_locale();
+        }
+
+        // In any case, having come this far, we can now say that capture is complete so any non-captured funds can be cancelled. IOK 2026-01-26
+        $order->update_meta_data('_vipps_capture_complete',true);
+        $order->save();
         return true;
     }
     
@@ -2108,14 +2117,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
-        $status = $this->get_vipps_order_status($order);
-        if ($status) $order->update_meta_data('_vipps_status',$status);
-        $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), $this->get_payment_method_name()));
-        $order->save();
+            $status = $this->get_vipps_order_status($order);
+            if ($status) $order->update_meta_data('_vipps_status',$status);
+            $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), $this->get_payment_method_name()));
+            $order->save();
         } catch (Exception $e)  {
         }
         return true;
-        }
+    }
 
     // Refund (possibly partially) the captured order. IOK 2018-05-07
     // The caller must handle the errors.
