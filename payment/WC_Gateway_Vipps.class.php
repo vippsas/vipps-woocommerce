@@ -3251,6 +3251,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             if (class_exists('VippsWooLogin') && $customer && !is_wp_error($customer) && !get_user_meta($customer->get_id(), '_vipps_phone',true)) {
                 update_user_meta($customer->get_id(), '_vipps_phone', $billing['phoneNumber']);
                 if (isset($user['sub'])) {
+                    $userid = $customer->get_id();
                     update_user_meta($userid, '_vipps_id', $user['sub']);
                     update_user_meta($userid, '_vipps_just_connected', 1);
                 }
