@@ -3086,142 +3086,171 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             WC()->customer->set_shipping_location($address['country'],'',$address['postalCode'],$address['region']);
         }
 
+        // We may need the order total early on, so start with that
+        $ordertotal = $order->get_total() ?: 0;
+
+        $vipps_reserved = $alldata['paymentDetails']['amount']['value'] ?? null;
+        // i dont expect order total to ever be greater than vipps reserved total here, so i dont use abs(). LP 2026-01-28
+        $diff_reserved_ordertotal = is_numeric($vipps_reserved) ? ($vipps_reserved / 100 - $ordertotal) : 0;
+
         // Now do shipping, if it exists IOK 2021-09-02
         $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
 
-        $shipping_rate=null;
-        $option_table = [];
+        // We will add a shipping rate either if there has been passed a shipping method; or if this
+        // is an order that needs shipping and the amount reserved at vipps is greater than the order total
+        // (with a bit of tolerance for rounding errors). If we *don't* have a shipping method but we know
+        // we need a shipping rate; this is an error condition that the merchant needs  to resolve. We'll add a fake
+        // 'Unknown' rate to ensure we capture the right amount and add this fact to the order log. Code by LP, comment by IOK 2026-01-28
+        $needs_shipping = $method || $order->get_meta('_vipps_needs_shipping');
+        $tol = 0.01;
+        $has_shipping = $method || $diff_reserved_ordertotal > $tol;
 
-        if ($method) {
-            if (substr($method,0,1) != '$') {
-                $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
-            } else { 
-                // Strip suffixes if we have several Express rates mapping to the same Woo rate (eg. for Posten). IOK 2025-05-04
-                $matches = [];
-                preg_match("!^(?P<key>[^:]+):?(?P<option_index>.+)?$!", $method, $matches);
-                $key = $matches['key'] ?? "";
-                $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
-                $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-                $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+        if ($needs_shipping && $has_shipping) {
+            $shipping_rate=null;
+            $option_table = [];
 
-                if (is_array($shipping_table) && isset($shipping_table[$key])) {
-                    $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
-                    $shipping_rate = $decoded ? @unserialize($decoded) : null;
-                    if (!$shipping_rate) {
-                        $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
-                        $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
-                    } else {
-                        if ($option_index) {
-                           $meta = $shipping_rate->get_meta_data();
-                           $option_table = $meta['_vipps_pickupPoints'] ?? [];
-                           // force string table IOK 2025-08-15
-                           $point =  $option_table["i".$option_index] ?? "";
-                           if ($point) {
-                               $shipping['pickupPoint'] = $point;
-                           }
-                           $shipping_rate->add_meta_data('_vipps_pickupPoints', null);
+            // Try to find the shipping rate. LP 2026-01-28
+            if ($method) {
+                if (substr($method,0,1) != '$') {
+                    // This is the old way of adding shipping. We should probably deprecate this sometime soon. IOK 2026-01-28
+                    $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
+                } else { 
+                    // Strip suffixes if we have several Express rates mapping to the same Woo rate (eg. for Posten). IOK 2025-05-04
+                    $matches = [];
+                    preg_match("!^(?P<key>[^:]+):?(?P<option_index>.+)?$!", $method, $matches);
+                    $key = $matches['key'] ?? "";
+                    $option_index = intval(trim($matches['option_index'] ?? "")); // 0 is never an index
+                    $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                    $is_base64 = $shipping_table ? ( $shipping_table['_is_base64'] ?? false) : false;
+
+                    if (is_array($shipping_table) && isset($shipping_table[$key])) {
+                        $decoded = $is_base64 ? @base64_decode($shipping_table[$key]) : $shipping_table[$key];
+                        $shipping_rate = $decoded ? @unserialize($decoded) : null;
+                        if (!$shipping_rate) {
+                            $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
+                            $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
+                        } else {
+                            // Special-case the Woo pickup location methods. IOK 2026-01-28
+                            if ($option_index) {
+                               $meta = $shipping_rate->get_meta_data();
+                               $option_table = $meta['_vipps_pickupPoints'] ?? [];
+                               // force string table IOK 2025-08-15
+                               $point =  $option_table["i".$option_index] ?? "";
+                               if ($point) {
+                                   $shipping['pickupPoint'] = $point;
+                               }
+                               $shipping_rate->add_meta_data('_vipps_pickupPoints', null);
+                            }
+                            // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
+                            $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
                         }
-                        // Empty this when done, but not if there was an error - let the merchant be able to debug. IOK 2020-02-14
-                        $order->update_meta_data('_vipps_express_checkout_shipping_method_table', null);
                     }
-                } 
-            }
+                }
 
+                // Possible extra metadata from Vipps Checkout IOK 2023-01-17
+                // Store in the order, but also in the shipping rate so it will be visible in the order screen
+                // along with the shipping ragte
+                if (isset($shipping['pickupPoint'])) {
+                    $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
+                    if ($shipping_rate) {
+                        $pp = $shipping['pickupPoint'];
+                        $addr = [];
+                        foreach(['address', 'postalCode', 'city', 'country'] as $key) {
+                            $v = trim($pp[$key]);
+                            if (!empty($v)) $addr[] = trim($pp[$key]);
+                        }
 
-            // Possible extra metadata from Vipps Checkout IOK 2023-01-17
-            // Store in the order, but also in the shipping rate so it will be visible in the order screen
-            // along with the shipping ragte
-            if (isset($shipping['pickupPoint'])) {
-                $order->update_meta_data('vipps_checkout_pickupPoint', $shipping['pickupPoint']);
-                if ($shipping_rate) {
-                    $pp = $shipping['pickupPoint'];
-                    $addr = [];
-                    foreach(['address', 'postalCode', 'city', 'country'] as $key) {
-                        $v = trim($pp[$key]);
-                        if (!empty($v)) $addr[] = trim($pp[$key]);
+                        $shipping_rate->add_meta_data('pickup_location', $pp['name']);
+                        $shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
+                        $shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07
                     }
-
-                    $shipping_rate->add_meta_data('pickup_location', $pp['name']);
-                    $shipping_rate->add_meta_data('pickup_address', join(", ", $addr));
-                    $shipping_rate->add_meta_data('pickup_details', ""); // Not supported by the API unfortunately. IOK 2025-06-07
+                }
+                if (isset($shipping['timeslot'])) {
+                    $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
+                    if ($shipping_rate) {
+                        $pp = $shipping['timeslot'];
+                        $slot = "";
+                        $slot .= sprintf(__("Date: %s", 'woo-vipps'), ($pp['date'] ?? ""));
+                        $slot .= " " . sprintf(__("Start: %s", 'woo-vipps'), ($pp['start'] ?? ""));
+                        $slot .= " " . sprintf(__("End: %s", 'woo-vipps'), ($pp['end'] ?? ""));
+                        $shipping_rate->add_meta_data('vipps_delivery_timeslot', $slot);
+                        $shipping_rate->add_meta_data('vipps_delivery_timeslot_id', $pp['id']);
+                    }
                 }
             }
-            if (isset($shipping['timeslot'])) {
-                $order->update_meta_data('vipps_checkout_timeslot', $shipping['timeslot']);
-                if ($shipping_rate) {
-                    $pp = $shipping['timeslot'];
-                    $slot = "";
-                    $slot .= sprintf(__("Date: %s", 'woo-vipps'), ($pp['date'] ?? ""));
-                    $slot .= " " . sprintf(__("Start: %s", 'woo-vipps'), ($pp['start'] ?? ""));
-                    $slot .= " " . sprintf(__("End: %s", 'woo-vipps'), ($pp['end'] ?? ""));
-                    $shipping_rate->add_meta_data('vipps_delivery_timeslot', $slot);
-                    $shipping_rate->add_meta_data('vipps_delivery_timeslot_id', $pp['id']);
-                }
+
+            // We know we need a shipping rate, and what its price has to be, so ensure we have one by making one up if missing. LP 2026-01-28
+            if (!$shipping_rate) {
+                $shipping_rate = new WC_Shipping_Rate(
+                        'UNKNOWN',
+                        sprintf(__('Unknown shipping: please check the shipping details at %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                        $diff_reserved_ordertotal,
+                        [],
+                        'UNKNOWN',
+                        0,
+                        );
+                $shipping_rate = apply_filters('woo_vipps_unknown_shipping_rate_dummy', $shipping_rate, $order);
+
+                // Add an error log for the merchants to quote to us. 
+                $msg = sprintf(__("%1\$s Could not retrieve any shipping rate for this order, with method %2\$s",'woo-vipps'), $this->get_payment_method_name(), $method) . " " .  $order->get_id();
+                $order->add_order_note($msg);
+                $this->log($msg,  'warning');
             }
 
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
-            $it = null;       
 
             $total_shipping = 0;
             $total_shipping_tax = 0;
+            $it = null;
 
-            if ($shipping_rate) {
-                // We may need the order total early on, so start with that
-                $ordertotal = $order->get_total() ?: 0;
+            // Recover the Shipping Method class
+            $methods_classes = WC()->shipping->get_shipping_method_class_names();
+            $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
+            $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
+            $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
 
-                // Recover the Shipping Method class
-                $methods_classes = WC()->shipping->get_shipping_method_class_names();
-                $methodclass = $methods_classes[$shipping_rate->get_method_id()] ?? null;
-                $shipping_method = $methodclass ? new $methodclass($shipping_rate->get_instance_id()) : null;
-                $is_vipps_checkout_shipping = $shipping_method && is_a($shipping_method, 'VippsCheckout_Shipping_Method');
+            // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
+            if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
+                $vippsamount = intval($order->get_meta('_vipps_amount'));
+                $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
+                $compareamount = $ordertotal * 100;
+                $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
+                $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
+                $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
+                $actual = $amountdiff/100 - $difftax;
 
-                // Some Vipps Checkout-specific shipping methods calculate the cost in the Vipps window.
-                if ($is_vipps_checkout_shipping && $shipping_method->dynamic_cost) {
-                    $vippsamount = intval($order->get_meta('_vipps_amount'));
-                    $shipping_tax_rate = floatval($order->get_meta('_vipps_shipping_tax_rates'));
-                    $compareamount = $ordertotal * 100;
-                    $amountdiff = $vippsamount-$compareamount; // this is the *actual* shipping cost at this point
-                    $diffnotax = ($amountdiff / (100 + $shipping_tax_rate)); // Adjusted to correct values actually 
-                    $difftax = WC_Tax::round($amountdiff/100 - $diffnotax);
-                    $actual = $amountdiff/100 - $difftax;
-
-                    $shipping_rate->set_cost($actual); 
-                    $shipping_rate->set_taxes( [ 1 => $difftax] );
-                } else {
-                    // Noop
-                }
-
-                $it = new WC_Order_Item_Shipping();
-                $it->set_shipping_rate($shipping_rate);
-                $it->set_order_id( $order->get_id() );
-                // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
-                // Therefore, do it manually/forcefully IOK 2020-02-17
-                foreach($shipping_rate->get_meta_data() as $key => $value) {
-                    $it->add_meta_data($key,$value,true);
-                }
-                $it->save();
-
-                $order->add_item($it);
-
-                $total_shipping = $it->get_total() ?: 0;
-                $total_shipping_tax = $it->get_total_tax() ?: 0;
-
-                // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
-                // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
-                // value reserved at Vipps and the order total is the same. IOK 2022-10-03
-                $order->set_shipping_total($total_shipping);
-                $order->set_shipping_tax($total_shipping_tax);
-
-                $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
-                $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
+                $shipping_rate->set_cost($actual); 
+                $shipping_rate->set_taxes( [ 1 => $difftax] );
             }
 
+            $it = new WC_Order_Item_Shipping();
+            $it->set_shipping_rate($shipping_rate);
+            $it->set_order_id( $order->get_id() );
+            // This should actually have been done by the "set_shipping_rate" call above, but as of 3.9.2 at least, this does not work.
+            // Therefore, do it manually/forcefully IOK 2020-02-17
+            foreach($shipping_rate->get_meta_data() as $key => $value) {
+                $it->add_meta_data($key,$value,true);
+            }
+            $it->save();
+
+            $order->add_item($it);
+
+            $total_shipping = $it->get_total() ?: 0;
+            $total_shipping_tax = $it->get_total_tax() ?: 0;
+
+            // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
+            // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
+            // value reserved at Vipps and the order total is the same. IOK 2022-10-03
+            $order->set_shipping_total($total_shipping);
+            $order->set_shipping_tax($total_shipping_tax);
+
+            $order->set_total($ordertotal + $total_shipping + $total_shipping_tax);
+            $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
+
             // Add an early hook for Vipps Checkout orders with special shipping methods
-            if ($shipping_rate) { 
-                $metadata = $shipping_rate->get_meta_data();
-                if (isset($metadata['type'])) {
-                    do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
-                }
+            $metadata = $shipping_rate->get_meta_data();
+            if (isset($metadata['type'])) {
+                do_action('woo_vipps_checkout_special_shipping_method', $order, $shipping_rate, $metadata['type']);
             }
 
             $order->save(); 
@@ -3258,6 +3287,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Ensure we get any changes made to the order, as it will be re-saved later
             $order = wc_get_order($order->get_id());
         }
+
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
 
