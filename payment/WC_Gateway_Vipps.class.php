@@ -3091,7 +3091,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // We may need the order total early on, so start with that
         $ordertotal = $order->get_total() ?: 0;
 
-        $vipps_reserved = $alldata['amount']['value'] ?? null;
+        $vipps_reserved = $alldata['paymentDetails']['amount']['value'] ?? null;
         // i dont expect order total to ever be greater than vipps reserved total here, so i dont use abs(). LP 2026-01-28
         $diff_reserved_ordertotal = is_numeric($vipps_reserved) ? ($vipps_reserved / 100 - $ordertotal) : 0;
 
