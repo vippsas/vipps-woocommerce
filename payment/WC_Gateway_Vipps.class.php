@@ -756,7 +756,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function wc_order_fully_refunded ($orderid) {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
-        $ok = 0;
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
@@ -769,6 +768,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // We can only refund-through-the-gateway if we have captured something.
         $vippsstatus = $order->get_meta('_vipps_status');
+
+        // FIXME Check that the vipps status is in a refundable state. Also, get vipps status first.
+ 
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
@@ -780,7 +782,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $data = [];
         $data['amount'] = $to_refund/100;
         $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
-        $data['order_id'] = $order_id;
+        $data['order_id'] = $orderid;
         $data['line_items'] = $items; // FIXME ADD ITEMS!
         $data['restock_items'] = true; // should check filters here
 
