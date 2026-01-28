@@ -2572,10 +2572,6 @@ else:
                $gw = $this->gateway();
                $ok = $gw->maybe_capture_payment($order->get_id());
            }
-           if ($action == 'refund_superfluous') {
-               $gw = $this->gateway();
-               $ok = $gw->refund_superfluous_capture($order);
-           }
            print "1";
     }
 
@@ -2635,7 +2631,6 @@ else:
 
     public function order_item_add_action_buttons ($order) {
         $this->order_item_add_capture_button($order);
-        $this->order_item_refund_superfluous_captured_amount($order);
     }
 
     public function order_item_add_capture_button ($order) {
@@ -2661,31 +2656,6 @@ else:
                  data-orderid="' . $order->get_id() . '" data-action="do_capture"
                  style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" >
                 <img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Capture payment','woo-vipps') . '</button>';
-
-    } 
-
-    public function order_item_refund_superfluous_captured_amount ($order) {
-        $pm = $order->get_payment_method();
-        if ($pm != 'vipps') return;
-        $status = $order->get_status();
-
-        if ($status != 'completed') return;
-
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $total = intval(100*wc_format_decimal($order->get_total(),''));
-        $refunded = intval($order->get_meta('_vipps_refunded'));
-
-        $superfluous = $captured-$total-$refunded;
-
-        if ($superfluous<=0) {
-            return;
-        }
-        $logo = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
-        print "<div><strong>" . sprintf(__('More funds than the order total has been captured at %1$s. Press this button to refund this amount at %1$s without editing this order', 'woo_vipps'), $this->get_payment_method_name()) . "</strong></div>";
-        print '<button type="button" class="button vippsbutton generate-items vipps-action" 
-                 data-orderid="' . $order->get_id() . '" data-action="refund_superfluous"
-                 style="background-color:#ff5b24;border-color:#ff5b24;color:#ffffff" >
-                <img border=0 style="display:inline;height:2ex;vertical-align:text-bottom" class="inline" alt=0 src="'.$logo.'"/> ' . __('Refund superfluous payment','woo-vipps')  . '</button>';
 
     } 
 

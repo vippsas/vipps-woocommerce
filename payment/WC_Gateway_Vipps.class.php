@@ -2010,65 +2010,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
-    public function refund_superfluous_capture($order) {
-        $status = $order->get_status();
-        if ($status != 'completed') {
-            $this->log(__('Cannot refund superfluous capture on non-completed order:','woo-vipps'). ' ' . $order->get_id(), 'error');
-            $this->adminerr(__('Order not completed, cannot refund superfluous capture','woo-vipps'));
-            return false;
-        }
-
-        $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
-            $this->log(sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
-            $this->adminerr(sprintf(__('Cannot refund payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
-            return false;
-        }
-
-        try {
-                $order = $this->update_vipps_payment_details($order); 
-        } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
-        }
-
-        $total = round(wc_format_decimal($order->get_total(),'')*100);
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-        $refunded = intval($order->get_meta('_vipps_refunded'));
-        $superfluous = $captured-$total-$refunded;
-
-
-        if ($captured <= $total) {
-            return false;
-        }
-        $superfluous = $captured-$total-$refunded;
-        if ($superfluous<=0) {
-            return false;
-        }
-        $refundvalue = min($to_refund,$superfluous);
-
-        $reason = __("The value of the order is less than the amount captured.", "woo-vipps");
-
-        $ok = 0;
-        $currency = $order->get_currency();
-        try {
-            $ok = $this->refund_payment($order,$refundvalue,'cents');
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
-        } catch (Exception $e) {
-            $msg = sprintf(__('Could not refund %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage();
-            $order->add_order_note($msg);
-            $this->log($msg,'error');
-            return new WP_Error('Vipps',$msg);
-        }
-
-        if ($ok) {
-            $order->add_order_note($refundvalue/100 . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $reason);
-        } 
-        return $ok;
-    }
 
     // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
     public function cancel_payment($order) {
