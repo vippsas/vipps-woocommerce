@@ -3281,6 +3281,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $shipping_item->set_order_id( $order->get_id() );
                 $shipping_item->save();
                 $order->add_item($shipping_item);
+
+                $total_shipping = $shipping_item->get_total() ?: 0;
+                $total_shipping_tax = $shipping_item->get_total_tax() ?: 0;
+
+                // Try to avoid calculate_totals, because this will recalculate shipping _without checking if the rate
+                // in question actually should use tax_. Therefore we will just add the pre-calculated values, so that the
+                // value reserved at Vipps and the order total is the same. IOK 2022-10-03
+                $order->set_shipping_total($total_shipping);
+                $order->set_shipping_tax($total_shipping_tax);
+
+                $order->set_total($order_total + $total_shipping + $total_shipping_tax);
+                $order->update_taxes(); // Necessary for the admin view only; does not recalculate order.
             }
         }
 
