@@ -3260,6 +3260,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Ensure we get any changes made to the order, as it will be re-saved later
             $order = wc_get_order($order->get_id());
         }
+
+        // Missing shipping rate, add an 'UNKNOWN RATE' dummy. LP 2026-01-28
+        $vipps_total = $alldata['amount']['value'] ?? null;
+        if (!$shipping_rate && is_numeric($vipps_total)) {
+            $order_total = $order->get_total();
+            $diff = $vipps_total / 100 - $order_total; // i dont expect order total to ever be greater than vipps total here, so i dont use abs(). LP 2026-01-28
+            $tol = 0.01;
+            if ($diff > $tol) {
+                $shipping_rate = new WC_Shipping_Rate(
+                    'UNKNOWN',
+                    sprintf(__('Unknown shipping: please check the shipping details at %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                    $diff,
+                    [],
+                    'UNKNOWN',
+                    0,
+                );
+                $shipping_item = new WC_Order_Item_Shipping();
+                $shipping_item->set_shipping_rate($shipping_rate);
+                $shipping_item->set_order_id( $order->get_id() );
+                $shipping_item->save();
+                $order->add_item($shipping_item);
+            }
+        }
+
         do_action('woo_vipps_set_order_shipping_details', $order, $shipping, $user);
         $order->save(); // I'm not sure why this is neccessary - but be sure.
 
