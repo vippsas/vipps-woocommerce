@@ -3179,7 +3179,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             // We need a shipping rate, so if missing; ensure we have one by making one up. LP 2026-01-28
-            if (!$shipping_rate && $has_missing_total) {
+            if (!$shipping_rate) {
                 $shipping_rate = new WC_Shipping_Rate(
                     'UNKNOWN',
                     sprintf(__('Unknown shipping: please check the shipping details at %1$s', 'woo-vipps'), Vipps::CompanyName()),
