@@ -3092,20 +3092,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $ordertotal = $order->get_total() ?: 0;
 
         $vipps_reserved = $alldata['amount']['value'] ?? null;
-        $has_missing_total = false;
-        if (is_numeric($vipps_reserved)) {
-            // i dont expect order total to ever be greater than vipps reserved total here, so i dont use abs(). LP 2026-01-28
-            $diff_reserved_ordertotal = $vipps_reserved / 100 - $ordertotal;
-            $tol = 0.01;
-            $has_missing_total = $diff_reserved_ordertotal > $tol;
-        }
+        // i dont expect order total to ever be greater than vipps reserved total here, so i dont use abs(). LP 2026-01-28
+        $diff_reserved_ordertotal = is_numeric($vipps_reserved) ? ($vipps_reserved / 100 - $ordertotal) : 0;
 
         // Now do shipping, if it exists IOK 2021-09-02
         $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
+
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
+        $tol = 0.01;
+        $has_shipping = $method || $diff_reserved_ordertotal > $tol;
 
-
-        $has_shipping = $method || $has_missing_total;
         if ($needs_shipping && $has_shipping) {
             $shipping_rate=null;
             $option_table = [];
@@ -3178,7 +3174,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             }
 
-            // We need a shipping rate, so if missing; ensure we have one by making one up. LP 2026-01-28
+            // We need a shipping rate so ensure we have one by making one up if missing. LP 2026-01-28
             if (!$shipping_rate) {
                 $shipping_rate = new WC_Shipping_Rate(
                     'UNKNOWN',
