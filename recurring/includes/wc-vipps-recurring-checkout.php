@@ -663,6 +663,8 @@ class WC_Vipps_Recurring_Checkout {
 			$data['session'] = $this->maybe_create_session();
 		}
 
+		$data['language'] = Vipps::instance()->get_customer_language();
+
 		wp_add_inline_script( 'woo-vipps-recurring-checkout', 'window.VippsRecurringCheckout = ' . wp_json_encode( $data ), 'before' );
 
 		return '<div id="vipps-mobilepay-recurring-checkout"></div>';

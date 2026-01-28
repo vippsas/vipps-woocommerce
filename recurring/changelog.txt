@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.5 =
+* Fix: Set language correctly in Checkout.
+
 = 2.2.4 =
 * Fix: Paying for a failed order with Vipps/MobilePay now works as intended. Previously the order would not be automatically charged, and marked with the correct renewal status.
 

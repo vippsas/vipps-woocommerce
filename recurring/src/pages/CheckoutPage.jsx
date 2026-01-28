@@ -49,7 +49,7 @@ export default function CheckoutPage () {
 			return
 		}
 
-		if (sessionStatus.status === "EXPIRED") {
+		if (sessionStatus.status === 'EXPIRED') {
 			clearInterval(sessionPollHandler.current)
 
 			return
@@ -73,7 +73,7 @@ export default function CheckoutPage () {
 		}
 
 		if (e.data.type === 'payment_url') {
-			window.location.href = e.data.paymentUrl;
+			window.location.href = e.data.paymentUrl
 		}
 	}, [iframeRef.current])
 
@@ -91,7 +91,8 @@ export default function CheckoutPage () {
 
 	return <form id="vippsdata" className="woocommerce-checkout">
 		<div className={'vipps-recurring-checkout-page'}>
-			{(!checkoutData.session.success && checkoutData.session.msg?.length > 0) ? <div
+			{(!checkoutData.session.success &&
+				checkoutData.session.msg?.length > 0) ? <div
 				className={'vipps-recurring-checkout-page__error'}>
 				<p>
 					{checkoutData.session.msg}
@@ -112,7 +113,7 @@ export default function CheckoutPage () {
 					{checkoutData.session.token && (
 						<iframe ref={iframeRef}
 								src={`${(checkoutData.session.checkoutFrontendUrl ||
-									checkoutData.session.src)}?token=${checkoutData.session.token}`}
+									checkoutData.session.src)}?token=${checkoutData.session.token}&lang=${checkoutData.language}`}
 								frameBorder="0" width={'100%'}></iframe>
 					)}
 				</>}
