@@ -3098,7 +3098,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Now do shipping, if it exists IOK 2021-09-02
         $method = isset($shipping['shippingMethodId']) ? $shipping['shippingMethodId'] : false;
 
-        $needs_shipping = $order->get_meta('_vipps_needs_shipping');
+        // We will add a shipping rate either if there has been passed a shipping method; or if this
+        // is an order that needs shipping and the amount reserved at vipps is greater than the order total
+        // (with a bit of tolerance for rounding errors). If we *don't* have a shipping method but we know
+        // we need a shipping rate; this is an error condition that the merchant needs  to resolve. We'll add a fake
+        // 'Unknown' rate to ensure we capture the right amount and add this fact to the order log. Code by LP, comment by IOK 2026-01-28
+        $needs_shipping = $method || $order->get_meta('_vipps_needs_shipping');
         $tol = 0.01;
         $has_shipping = $method || $diff_reserved_ordertotal > $tol;
 
@@ -3109,6 +3114,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Try to find the shipping rate. LP 2026-01-28
             if ($method) {
                 if (substr($method,0,1) != '$') {
+                    // This is the old way of adding shipping. We should probably deprecate this sometime soon. IOK 2026-01-28
                     $shipping_rate = $this->get_legacy_express_checkout_shipping_rate($shipping);
                 } else { 
                     // Strip suffixes if we have several Express rates mapping to the same Woo rate (eg. for Posten). IOK 2025-05-04
@@ -3126,6 +3132,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             $this->log(sprintf(__("%1\$s: Could not deserialize the chosen shipping method %2\$s for order %3\$d", 'woo-vipps'), Vipps::ExpressCheckoutName(), $method, $order->get_id()), 'error'); 
                             $this->log(sprintf(__("Serialized data was %1\$s", 'woo-vipps'), base64_decode($shipping_table[$key])),  'error');
                         } else {
+                            // Special-case the Woo pickup location methods. IOK 2026-01-28
                             if ($option_index) {
                                $meta = $shipping_rate->get_meta_data();
                                $option_table = $meta['_vipps_pickupPoints'] ?? [];
@@ -3174,17 +3181,22 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 }
             }
 
-            // We need a shipping rate so ensure we have one by making one up if missing. LP 2026-01-28
+            // We know we need a shipping rate, and what its price has to be, so ensure we have one by making one up if missing. LP 2026-01-28
             if (!$shipping_rate) {
                 $shipping_rate = new WC_Shipping_Rate(
-                    'UNKNOWN',
-                    sprintf(__('Unknown shipping: please check the shipping details at %1$s', 'woo-vipps'), Vipps::CompanyName()),
-                    $diff_reserved_ordertotal,
-                    [],
-                    'UNKNOWN',
-                    0,
-                );
+                        'UNKNOWN',
+                        sprintf(__('Unknown shipping: please check the shipping details at %1$s', 'woo-vipps'), Vipps::CompanyName()),
+                        $diff_reserved_ordertotal,
+                        [],
+                        'UNKNOWN',
+                        0,
+                        );
                 $shipping_rate = apply_filters('woo_vipps_unknown_shipping_rate_dummy', $shipping_rate, $order);
+
+                // Add an error log for the merchants to quote to us. 
+                $msg = sprintf(__("%1\$s Could not retrieve any shipping rate for this order, with method %2\$s",'woo-vipps'), $this->get_payment_method_name(), $method) . " " .  $order->get_id();
+                $order->add_order_note($msg);
+                $this->log($msg,  'warning');
             }
 
             $shipping_rate = apply_filters('woo_vipps_express_checkout_final_shipping_rate', $shipping_rate, $order, $shipping);
