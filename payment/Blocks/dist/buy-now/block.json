@@ -9,6 +9,10 @@
       "type": "boolean",
       "default": false
     },
+    "isCartMode": {
+      "type": "boolean",
+      "default": false
+    },
     "productId": {
       "type": "string",
       "default": ""

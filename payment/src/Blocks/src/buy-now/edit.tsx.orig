@@ -17,7 +17,6 @@ import { pencil } from '@wordpress/icons';
 import ProductSearch from './components/ProductSearch';
 import VippsSmile from './components/VippsSmile';
 import { blockConfig } from './config';
-import useIsInsideCart from './hooks/useIsInsideCart';
 
 export interface EditAttributes extends BlockAttributes {
 	align: string;
@@ -39,15 +38,20 @@ export default function Edit({
 	context,
 	attributes,
 	setAttributes,
-	clientId,
 }: EditProps) {
-	const cartMode = useIsInsideCart(clientId);
+	const cartMode = true;
 	if (attributes.cartMode !== cartMode) {
 		setAttributes({ cartMode });
 	}
 
 	const hasProductContext = context['postType'] === 'product';
 	if (attributes.hasProductContext !== hasProductContext) {
+<<<<<<< Updated upstream
+||||||| Stash base
+	if (attributes.hasProductContext !== hasProductContext) { // note: dont always set attribute, because it triggers react rerender. LP 2026-01-29
+=======
+		// note: dont always set attribute, because it triggers react rerender. LP 2026-01-29
+>>>>>>> Stashed changes
 		setAttributes({ hasProductContext });
 	}
 
@@ -57,11 +61,11 @@ export default function Edit({
 
 	// Whether to show the block edit mode "select product". LP 2026-01-29
 	const [showProductSelection, setShowProductSelection] = useState(
-		!cartMode && !hasProductContext && !attributes.productId
+		!hasProductContext && !attributes.productId
 	);
 
 	// Whether to show the button that switches to the block edit mode "select product". LP 2026-01-29
-	const showEditButton = !cartMode && !attributes.hasProductContext;
+	const showEditButton = !attributes.hasProductContext;
 
 	return (
 		<>
