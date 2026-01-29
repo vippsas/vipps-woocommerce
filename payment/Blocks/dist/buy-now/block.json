@@ -50,6 +50,9 @@
   "supports": {
     "html": false
   },
+  "blockHooks": {
+    "woocommerce/mini-cart-items-block": "lastChild"
+  },
   "textdomain": "woo-vipps",
   "editorScript": "file:./index.js",
   "render": "file:./render.php"

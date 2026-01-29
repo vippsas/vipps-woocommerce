@@ -43,9 +43,15 @@
 		"buy-now"
 	],
 	"category": "woocommerce",
-	"usesContext": ["postId", "postType"],
+	"usesContext": [
+		"postId",
+		"postType"
+	],
 	"supports": {
 		"html": false
+	},
+	"blockHooks": {
+		"woocommerce/mini-cart-items-block": "lastChild"
 	},
 	"textdomain": "woo-vipps",
 	"editorScript": "file:./index.js",
