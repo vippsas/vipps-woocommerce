@@ -24,8 +24,9 @@ export interface EditAttributes extends BlockAttributes {
 	language: string;
 	/** Only set with manual product selection, i.e when not in a product context. LP 2026-01-23 */
 	productId: string;
+	/** Only set with manual product selection, i.e when not in a product context. LP 2026-01-23 */
 	productName: string;
-	/** If this block is in a product context. LP 2026-01-23 */
+	/** Whether this block inherently has a product context. e.g. a child of the block Product collection/Single product. LP 2026-01-23 */
 	hasProductContext: boolean;
 }
 
@@ -36,9 +37,8 @@ export default function Edit({
 	attributes,
 	setAttributes,
 }: EditProps) {
-	// If this block is a child of a product context. e.g. when this block is inserted into the blocks Product collection, Single product. LP 2026-01-23
 	const hasProductContext = context['postType'] === 'product';
-	if (hasProductContext) {
+	if (attributes.hasProductContext !== hasProductContext) {
 		setAttributes({ hasProductContext });
 	}
 
@@ -46,12 +46,13 @@ export default function Edit({
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
 	const logoSrc = langLogos[attributes.variant] ?? 'default';
 
-	const showEditButton = !attributes.hasProductContext;
-
-	// only show product selection if we are not in a product context and we don't have a product id. LP 2026-01-19
+	// Whether to show the block edit mode "select product". LP 2026-01-29
 	const [showProductSelection, setShowProductSelection] = useState(
 		!hasProductContext && !attributes.productId
 	);
+
+	// Whether to show the button that switches to the block edit mode "select product". LP 2026-01-29
+	const showEditButton = !attributes.hasProductContext;
 
 	return (
 		<>
