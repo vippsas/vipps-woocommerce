@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
@@ -30,7 +30,7 @@ export interface EditAttributes extends BlockAttributes {
 	/** Whether this block inherently has a product context. e.g. a child of the block Product collection/Single product. LP 2026-01-23 */
 	hasProductContext: boolean;
 	/** In cart mode the button should instead buy the whole cart context, otherwise it buys a single product. LP 2026-01-29 */
-	cartMode: boolean;
+	isCartMode: boolean;
 }
 
 export type EditProps = BlockEditProps<EditAttributes>;
@@ -41,15 +41,21 @@ export default function Edit({
 	setAttributes,
 	clientId,
 }: EditProps) {
-	const cartMode = useIsInsideCart(clientId);
-	if (attributes.cartMode !== cartMode) {
-		setAttributes({ cartMode });
-	}
+	const isCartMode = useIsInsideCart(clientId);
 
 	const hasProductContext = context['postType'] === 'product';
-	if (attributes.hasProductContext !== hasProductContext) {
-		setAttributes({ hasProductContext });
-	}
+
+	// Sync to attributes
+	useEffect(() => {
+		if (attributes.isCartMode !== isCartMode) {
+			setAttributes({ isCartMode });
+		}
+	}, [isCartMode]);
+	useEffect(() => {
+		if (attributes.hasProductContext !== hasProductContext) {
+			setAttributes({ hasProductContext });
+		}
+	}, [hasProductContext]);
 
 	const langLogos =
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
@@ -57,11 +63,11 @@ export default function Edit({
 
 	// Whether to show the block edit mode "select product". LP 2026-01-29
 	const [showProductSelection, setShowProductSelection] = useState(
-		!cartMode && !hasProductContext && !attributes.productId
+		!isCartMode && !hasProductContext && !attributes.productId
 	);
 
 	// Whether to show the button that switches to the block edit mode "select product". LP 2026-01-29
-	const showEditButton = !cartMode && !attributes.hasProductContext;
+	const showEditButton = !isCartMode && !attributes.hasProductContext;
 
 	return (
 		<>
@@ -121,31 +127,33 @@ export default function Edit({
 			</div>
 
 			{/* The block controls on the right side-panel. LP 2026-01-16 */}
-			<InspectorControls>
-				<PanelBody>
-					<SelectControl
-						onChange={(newVariant) =>
-							setAttributes({ variant: newVariant })
-						}
-						label={__('Variant', 'woo-vipps')}
-						value={attributes.variant}
-						options={blockConfig.variants}
-						help={__(
-							'Choose the button variant with the perfect fit for your site',
-							'woo-vipps'
-						)}
-					/>
-					<SelectControl
-						onChange={(newLanguage) =>
-							setAttributes({ language: newLanguage })
-						}
-						label={__('Language', 'woo-vipps')}
-						value={attributes.language}
-						options={blockConfig.languages}
-						help={__('Choose language', 'woo-vipps')}
-					/>
-				</PanelBody>
-			</InspectorControls>
+			{!isCartMode && (
+				<InspectorControls>
+					<PanelBody>
+						<SelectControl
+							onChange={(newVariant) =>
+								setAttributes({ variant: newVariant })
+							}
+							label={__('Variant', 'woo-vipps')}
+							value={attributes.variant}
+							options={blockConfig.variants}
+							help={__(
+								'Choose the button variant with the perfect fit for your site',
+								'woo-vipps'
+							)}
+						/>
+						<SelectControl
+							onChange={(newLanguage) =>
+								setAttributes({ language: newLanguage })
+							}
+							label={__('Language', 'woo-vipps')}
+							value={attributes.language}
+							options={blockConfig.languages}
+							help={__('Choose language', 'woo-vipps')}
+						/>
+					</PanelBody>
+				</InspectorControls>
+			)}
 		</>
 	);
 }
