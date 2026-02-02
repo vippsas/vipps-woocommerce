@@ -23,7 +23,7 @@
 		},
 		"showProductSelection": {
 			"type": "boolean",
-			"default": true
+			"default": false
 		},
 		"variant": {
 			"type": "string",
