@@ -1377,6 +1377,9 @@ jQuery('a.webhook-adder').click(function (e) {
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
+        // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
+        $this->script_add_vippslocale();
+
         wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
         wp_enqueue_script('vipps-admin');
 
@@ -1459,6 +1462,11 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+
+    }
+
+    // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
+    public function script_add_vippslocale () {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
         $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()));
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
@@ -1470,6 +1478,9 @@ jQuery('a.webhook-adder').click(function (e) {
             $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
         }
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
+
+        // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
+        $this->script_add_vippslocale();
 
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
