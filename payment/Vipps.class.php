@@ -303,6 +303,8 @@ class Vipps {
         add_action('admin_head', array($this, 'admin_head'));
 
         // Scripts
+        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
+        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // Redirect the default WooCommerce settings page to our own
@@ -1473,12 +1475,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     public function wp_enqueue_scripts() {
-        // Add a nonce for certain admin operations IOK 2026-01-26
-        if (is_admin()) {
-            $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-        }
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
-
         // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
         $this->script_add_vippslocale();
 
