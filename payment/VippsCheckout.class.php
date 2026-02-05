@@ -520,11 +520,12 @@ jQuery(document).ready(function () {
             $customerinfo['postalCode'] = $customer->get_billing_postcode();
             $customerinfo['country'] = $customer->get_billing_country();
 
-            // Currently Vipps requires all phone numbers to have area codes and NO  +. We can't guaratee that at all, but try for Norway
-            $phone = ""; 
+            // Currently Vipps requires all phone numbers to have area codes and NOT the +-sign prefix, nor 00. 
+            // We can't guaratee that at all, but try for Norway
+            $customerinfo['phoneNumber'] = "";
             $phonenr = Vipps::normalizePhoneNumber($customer->get_billing_phone(), $customerinfo['country']);
             if ($phonenr) {
-                $customerinfo['phoneNumber'] = $phone;
+                $customerinfo['phoneNumber'] = $phonenr;
             }
         }
 
