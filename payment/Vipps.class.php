@@ -2397,7 +2397,7 @@ else:
 
     public function after_setup_theme() {
         // To facilitate development, allow loading the plugin-supplied translations. Must be called here at the earliest.
-        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( dirname( __FILE__ ) ) ) . "/languages");
 
         // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
         // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
