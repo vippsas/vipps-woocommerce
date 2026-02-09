@@ -1930,20 +1930,28 @@ else:
                     $phonenr = "45$phonenr";
                 }
                 break;
-            case 'SE': // https://www.sent.dm/resources/se
-                if (10 === strlen($phonenr)) {
-                    $phonenr = "46$phonenr";
-                }
-                break;
             case 'NO':
                 if (8 === strlen($phonenr)) {
                     $phonenr = "47$phonenr";
+                }
+                break;
+            case 'SE': // https://www.sent.dm/resources/se
+                if (10 === strlen($phonenr)) {
+                    // Strip leading zero from area code. LP 2026-02-09
+                    if (substr($phonenr, 0, 1) === '0') {
+                        $phonenr = substr($phonenr, 1);
+                    }
+                    $phonenr = "46$phonenr";
                 }
                 break;
             case 'FI': // https://en.wikipedia.org/wiki/Telephone_numbers_in_Finland  and  https://kielitoimistonohjepankki.fi/ohje/puhelinnumerot/
                 if (10 === strlen($phonenr) // 04x 123 45 67 and 050 123 45 67
                     || 11 === strlen($phonenr) // 0457 123 45 67
                     ) {
+                    // Strip leading zero from area code. LP 2026-02-09
+                    if (substr($phonenr, 0, 1) === '0') {
+                        $phonenr = substr($phonenr, 1);
+                    }
                     $phonenr = "358$phonenr";
                 }
                 break;
