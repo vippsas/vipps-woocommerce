@@ -1930,8 +1930,8 @@ else:
                     $phonenr = "45$phonenr";
                 }
                 break;
-            case 'SE': // https://www.sent.dm/resources/se
-                if (10 === strlen($phonenr)) {
+            case 'SE': // 10 digits, but we stripped the leading zero above, https://www.sent.dm/resources/se. LP 2026-02-09
+                if (9 === strlen($phonenr)) {
                     $phonenr = "46$phonenr";
                 }
                 break;
@@ -1941,8 +1941,8 @@ else:
                 }
                 break;
             case 'FI': // https://en.wikipedia.org/wiki/Telephone_numbers_in_Finland  and  https://kielitoimistonohjepankki.fi/ohje/puhelinnumerot/
-                if (10 === strlen($phonenr) // 04x 123 45 67 and 050 123 45 67
-                    || 11 === strlen($phonenr) // 0457 123 45 67
+                if (9 === strlen($phonenr) // 04x 123 45 67 and 050 123 45 67 (but we removed leading zero already)
+                    || 10 === strlen($phonenr) // 0457 123 45 67 (but we removed leading zero already)
                     ) {
                     $phonenr = "358$phonenr";
                 }
