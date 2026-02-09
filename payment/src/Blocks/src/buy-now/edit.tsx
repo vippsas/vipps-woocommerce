@@ -44,7 +44,7 @@ export default function Edit({
 
 	const langLogos =
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
-	const logoSrc = langLogos[attributes.variant] ?? 'default';
+	const logoSrc = langLogos[attributes.variant ?? 'default']; 
 
 	const showEditButton = !attributes.hasProductContext;
 
