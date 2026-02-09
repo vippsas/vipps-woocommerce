@@ -2953,7 +2953,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'strip_country_code':
                 // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
                 $phone = preg_replace('!^(45|47)!', '', $phone); // NO, DK
-                $phone = preg_replace('!^(46|358)!', '0', $phone); // SE, FI: add 0 after stripping country code
+                $phone = preg_replace('!^(46|358)!', '0', $phone); // SE, FI: leading zero for area codes is not used with country code, so add it back here. LP 2026-02-09
                 break;
         }
         $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);
