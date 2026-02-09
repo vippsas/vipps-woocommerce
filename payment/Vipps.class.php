@@ -303,6 +303,8 @@ class Vipps {
         add_action('admin_head', array($this, 'admin_head'));
 
         // Scripts
+        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
+        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // Redirect the default WooCommerce settings page to our own
@@ -1473,12 +1475,7 @@ jQuery('a.webhook-adder').click(function (e) {
     }
 
     public function wp_enqueue_scripts() {
-        // Add a nonce for certain admin operations IOK 2026-01-26
-        if (is_admin()) {
-            $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-        }
         wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
-
         // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
         $this->script_add_vippslocale();
 
@@ -2400,7 +2397,7 @@ else:
 
     public function after_setup_theme() {
         // To facilitate development, allow loading the plugin-supplied translations. Must be called here at the earliest.
-        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( dirname( __FILE__ ) ) ) . "/languages");
 
         // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
         // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
