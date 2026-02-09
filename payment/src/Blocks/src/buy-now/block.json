@@ -9,10 +9,6 @@
 			"type": "boolean",
 			"default": false
 		},
-		"isCartMode": {
-			"type": "boolean",
-			"default": false
-		},
 		"productId": {
 			"type": "string",
 			"default": ""
@@ -23,7 +19,7 @@
 		},
 		"showProductSelection": {
 			"type": "boolean",
-			"default": false
+			"default": "true"
 		},
 		"variant": {
 			"type": "string",
@@ -43,15 +39,9 @@
 		"buy-now"
 	],
 	"category": "woocommerce",
-	"usesContext": [
-		"postId",
-		"postType"
-	],
+	"usesContext": ["postId", "postType"],
 	"supports": {
 		"html": false
-	},
-	"blockHooks": {
-		"woocommerce/mini-cart-items-block": "lastChild"
 	},
 	"textdomain": "woo-vipps",
 	"editorScript": "file:./index.js",
