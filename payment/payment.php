@@ -112,7 +112,7 @@ add_action( 'woocommerce_blocks_loaded',  function () { // TODO: extract closure
     woocommerce_store_api_register_endpoint_data(
         array(
             'endpoint'        => Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema::IDENTIFIER,
-            'namespace'       => 'woo_vipps',
+            'namespace'       => 'woo-vipps',
             'data_callback'   => 'woo_vipps_store_api_cart_data',
             'schema_callback' => 'woo_vipps_store_api_cart_schema',
             'schema_type'     => ARRAY_A,
