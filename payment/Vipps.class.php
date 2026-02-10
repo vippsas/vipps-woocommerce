@@ -107,6 +107,23 @@ class Vipps {
         add_action('init',array($Vipps,'init'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
         add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
+        add_action( 'woocommerce_blocks_loaded',  [$Vipps, 'woocommerce_blocks_loaded']);
+    }
+
+    // Register woocommerce store api endpoint to use in buy-now minicart block. LP 2026-02-10
+    public function woocommerce_blocks_loaded() {
+        if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+            return;
+        }
+        woocommerce_store_api_register_endpoint_data(
+            array(
+                'endpoint'        => Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema::IDENTIFIER,
+                'namespace'       => 'woo-vipps',
+                'data_callback'   => [$this, 'woo_vipps_store_api_cart_data'],
+                'schema_callback' => [$this, 'woo_vipps_store_api_cart_schema'],
+                'schema_type'     => ARRAY_A,
+            )
+        );
     }
 
     // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
@@ -5519,5 +5536,22 @@ else:
         $GLOBALS['wp_query'] = $wp_query;
         $wp->register_globals();
         return $wp_post;
+    }
+
+    public function woo_vipps_store_api_cart_data() {
+        // Reverting the condition with the directive data-wp-bind--hidden does not work, so we need the flipped bool here (hide instead of show). LP 2026-02-10
+        return array(
+            'cart_hide_express' =>  !$this->gateway()->show_express_checkout(),
+        );
+    }
+
+    public function woo_vipps_store_api_cart_schema() {
+        return array(
+            'cart_hide_express' => array(
+                'description' => sprintf(__( 'Whether to hide the %1$s Express Checkout in the cart', 'woo-vipps' ), $this->get_payment_method_name()),
+                'type'        => array( 'boolean', 'null' ),
+                'readonly'    => true,
+            ),
+        );
     }
 }
