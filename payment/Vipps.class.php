@@ -212,6 +212,7 @@ class Vipps {
                    register_rest_route('woo-vipps/v1', '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
+                        'permissions_callback' => '__return_true',
                    ]);
         });
 
@@ -303,6 +304,8 @@ class Vipps {
         add_action('admin_head', array($this, 'admin_head'));
 
         // Scripts
+        $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
+        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
         add_action('admin_enqueue_scripts', array($this,'admin_enqueue_scripts'));
 
         // Redirect the default WooCommerce settings page to our own
@@ -1377,6 +1380,9 @@ jQuery('a.webhook-adder').click(function (e) {
     }
     // Scripts used in the backend
     public function admin_enqueue_scripts($hook) {
+        // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
+        $this->script_add_vippslocale();
+
         wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
         wp_enqueue_script('vipps-admin');
 
@@ -1459,19 +1465,20 @@ jQuery('a.webhook-adder').click(function (e) {
             wp_register_script('wp-hooks', plugins_url('/compat/hooks.min.js', __FILE__));
         }
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
+
     }
 
-    public function wp_enqueue_scripts() {
-        // Add a nonce for certain admin operations IOK 2026-01-26
-        if (is_admin()) {
-            $this->vippsJSConfig['vippssecnonce'] = wp_create_nonce('vippssecnonce');
-        }
-        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
-
+    // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
+    public function script_add_vippslocale () {
         // This is actually for the payment block, where localize script has started to not-work in certain contexts. IOK 2022-12-13
         $strings = array('Continue with Vipps'=>sprintf(__('Continue with %1$s', 'woo-vipps'), $this->get_payment_method_name()),'Vipps'=> sprintf(__('%1$s', 'woo-vipps'), $this->get_payment_method_name()));
         wp_localize_script('vipps-gw', 'VippsLocale', $strings);
-        
+    }
+
+    public function wp_enqueue_scripts() {
+        wp_localize_script('vipps-gw', 'VippsConfig', $this->vippsJSConfig);
+        // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
+        $this->script_add_vippslocale();
 
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
@@ -2391,7 +2398,7 @@ else:
 
     public function after_setup_theme() {
         // To facilitate development, allow loading the plugin-supplied translations. Must be called here at the earliest.
-        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( __FILE__ ) ) . "/languages");
+        $ok = Vipps::load_plugin_textdomain('woo-vipps', false, basename( dirname( dirname( __FILE__ ) ) ) . "/languages");
 
         // Vipps Checkout replaces the default checkout page, and currently uses its own  page for this which needs to exist
         // Will also probably be used to maintain a real utility-page for Vipps actions later for themes where this
@@ -2496,7 +2503,7 @@ else:
         $this->vippsJSConfig['vippslogourl'] = plugins_url('img/vipps_logo_negativ_rgb_transparent.png',__FILE__);
         $this->vippsJSConfig['vippssmileurl'] = plugins_url('img/vmp-logo.png',__FILE__);
         $this->vippsJSConfig['vippsbuynowbutton'] = sprintf(__( '%1$s Buy Now button', 'woo-vipps' ), $this->get_payment_method_name());
-        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block', 'woo-vipps'), $this->get_payment_method_name());
+        $this->vippsJSConfig['vippsbuynowdescription'] =  sprintf(__( 'Add a %1$s Buy Now-button to the product block or choose a product manually', 'woo-vipps'), $this->get_payment_method_name());
         $this->vippsJSConfig['vippslanguage'] = $this->get_customer_language();
         $this->vippsJSConfig['vippslocale'] = get_locale();
         $this->vippsJSConfig['vippsexpressbuttonurl'] = $this->get_payment_method_name();

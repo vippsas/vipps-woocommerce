@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { BlockAttributes, BlockEditProps } from '@wordpress/blocks';
 import { __ } from '@wordpress/i18n';
 import {
@@ -38,13 +38,15 @@ export default function Edit({
 }: EditProps) {
 	// If this block is a child of a product context. e.g. when this block is inserted into the blocks Product collection, Single product. LP 2026-01-23
 	const hasProductContext = context['postType'] === 'product';
-	if (hasProductContext) {
-		setAttributes({ hasProductContext });
-	}
+	useEffect(() => {
+		if (attributes.hasProductContext !== hasProductContext) {
+			setAttributes({ hasProductContext });
+		}
+	}, []);
 
 	const langLogos =
 		blockConfig.logos[attributes.language] ?? blockConfig.logos['en'];
-	const logoSrc = langLogos[attributes.variant] ?? 'default';
+	const logoSrc = langLogos[attributes.variant ?? 'default']; 
 
 	const showEditButton = !attributes.hasProductContext;
 
