@@ -229,6 +229,7 @@ class Vipps {
                    register_rest_route('woo-vipps/v1', '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
+                        'permissions_callback' => '__return_true',
                    ]);
         });
 
