@@ -4807,7 +4807,7 @@ else:
 
     // Get payment logo based on payment method, then language NT 2023-11-30
     // and based on custom variant setting. $page is the page origin slug, e.g 'cart', 'product'. LP 2025-12-15
-    private function get_payment_logo($page = null) {
+    public function get_payment_logo($page = null) {
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
         $variant = $this->get_express_logo_page_variant($page);

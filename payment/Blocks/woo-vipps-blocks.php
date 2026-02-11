@@ -120,8 +120,10 @@ add_action('enqueue_block_editor_assets', function () {
         $buy_now_cart_config = [
             'vippsbuynowdescription' => sprintf(__( 'Add a %1$s Buy Now-button to the mini-cart', 'woo-vipps'), $vipps->get_payment_method_name()),
             'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'],
+            'vippssmileurl' => $buy_now_config['vippssmileurl'],
             'BuyNowWithVipps' => $buy_now_config['BuyNowWithVipps'],
+            'minicartLogo' => $vipps->get_payment_logo('minicart'),
         ];
-        wp_add_inline_script('woo-vipps-buy-now-cart-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_cart_config), 'before');
+        wp_add_inline_script('woo-vipps-buy-now-cart-editor-script', 'const vippsBuyNowCartBlockConfig = ' . json_encode($buy_now_cart_config), 'before');
     }
 });
