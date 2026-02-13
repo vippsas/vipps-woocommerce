@@ -209,7 +209,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // avoid accidents and issues where old orders are *somehow* cancelled even though they are complete. IOK 2024-08-12
         add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_order'));
         // Add a full refund if neccessary *before* woocommerce does, on priority 10 IOK 2026-01-28
-        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_order', 9, 1));
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_order'), 9, 1);
 
         // Possibly delete orders that never went anywhere
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
@@ -221,8 +221,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // nb: note very late priority - we must have captured before, please
         // Also for orders that have been partially or completely refunded, or need to be set to cancelled IOK 2026-01-26
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
-        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount', 99, 1));
-        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_reserved_amount', 99, 1));
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
+        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
     }
 
     // this function is called after an order is changed to complete or refunded. It checks if there is reserved money that is not captured
@@ -688,7 +688,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured > 0 || $vippsstatus == 'SALE') {
             // This will create + process a refund for the captured amount. IOK 2026-01-26
-            $this->wc_order_fully_refunded ($orderid);
+            $this->wc_order_fully_refunded ($order_id);
         }
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
         $order->update_meta_data('_vipps_capture_complete',true);
@@ -737,7 +737,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return false;
             }
             // This will create + process a refund for the captured amount. IOK 2026-01-26
-            $this->wc_order_fully_refunded ($orderid);
+            $this->wc_order_fully_refunded ($order_id);
         }
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
         $order->update_meta_data('_vipps_capture_complete',true);
@@ -799,17 +799,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $data['restock_items'] = true; // should check filters here
 
         if ($refund_thru_gateway) {
-            $data['refund_payment'] = true; // This should call our "process_refud"
+            $data['refund_payment'] = true; // This should call our "process_refund"
             wc_switch_to_site_locale();            
             $the_refund = wc_create_refund($data);
             wc_restore_locale();
             if (is_wp_error($the_refund)) {
+                $refund_thru_gateway = false;
                 $msg = $the_refund->get_error_message();
                 $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
                 $order->save();
                 $this->adminerr($msg);
             } else {
-                $refund_thru_gateway = false;
                 return true;
             }
         }
