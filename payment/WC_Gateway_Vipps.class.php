@@ -235,15 +235,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Cannot partially cancel legacy ecom orders
         if ('epayment' != $order->get_meta('_vipps_api')) return false; 
 
+error_log("iverok $orderid in maybe_cancel_reserved_amount");
+
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
         // Also set in maybe_cancel and maybe_refund now - in all "final status" hooks. IOK 2026-01-28
         if (! $order->get_meta('_vipps_capture_complete')) {
+error_log("iverok Capture complete not marked - order is not 'finished'");
             return false;
         }
 
         $order_status = $order->get_status();
+error_log("iverok Order status $order_status");
 
         if ('completed' == $order_status) {
             // For safety, on  completed orders also only want to do this for orders that have had *something* captured. IOK 2025-02-04
@@ -253,15 +257,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
         if ('cancelled' != $order_status) {
+error_log("iverok Checking to see if we should never capture");
             // If not in the 'cancelled' state, allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
             if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) {
                 return false;
             }
+error_log("iverok No.");
         }
 
         $ok = true;
 
         $remaining = intval($order->get_meta('_vipps_capture_remaining'));
+
+error_log("iverok Capture remaining is $remaining");
 
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
@@ -282,6 +290,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->add_order_note($msg);
             $this->log($msg,'error');
         }
+error_log("iverok ok is $ok");
 
         // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
         try {
@@ -671,6 +680,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Called when orders reach the 'refunded' status. We'll add a complete refund and note that any rest is to be cancelled.
     public function maybe_refund_order($order_id) {
+error_log("iverok in maybe refund order");
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
         try {
@@ -688,6 +698,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured > 0 || $vippsstatus == 'SALE') {
             // This will create + process a refund for the captured amount. IOK 2026-01-26
+error_log("iverok Calling wc order fully refunded in maybe refund");
             $this->wc_order_fully_refunded ($order_id);
         }
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
@@ -698,6 +709,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Called when orders reach the 'cancelled'-status. When this happens, orders will be *refunded*
     // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
     public function maybe_cancel_order($order_id) {
+error_log("iverok in maybe cancel");
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
 
@@ -737,6 +749,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return false;
             }
             // This will create + process a refund for the captured amount. IOK 2026-01-26
+error_log("iverok calling order fully refunded in cancel");
             $this->wc_order_fully_refunded ($order_id);
         }
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
@@ -766,8 +779,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // so that we can create a through-the-gateway refund for this if neccessary. If not, we'll let the normal logic
     // proceed, which should create a manual refund instead. IOK 2026-01-20
     public function wc_order_fully_refunded ($orderid) {
+error_log("iverok in wc order fully refunded");
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
+
+        // First check to see if we actually need to refund anything now IOK 2026-02-16
+        $max_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
+        if ( ! $max_refund ) {
+            return;
+        }
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
@@ -792,7 +812,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $items = [];
         $data = [];
-        $data['amount'] = $to_refund/100;
+        $data['amount'] = $max_refund;
         $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
         $data['order_id'] = $orderid;
         $data['line_items'] = $items; // FIXME ADD ITEMS!
@@ -810,10 +830,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->save();
                 $this->adminerr($msg);
             } else {
+error_log("iverok refunded thru gateway ok");
                 return true;
             }
         }
         if (!$refund_thru_gateway) {
+error_log("iverok Cannot refund thru gateway");
             // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
             $data['refund_payment'] = false;
             wc_switch_to_site_locale(); 
