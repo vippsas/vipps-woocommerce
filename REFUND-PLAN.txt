@@ -15,4 +15,14 @@
 
 * Furthermore: Manual refunds can be deleted at any point in time.
 
+* Maybe disallow creating manual refunds before capture:
+** there is a hook before the refund is saved:
+                do_action( 'woocommerce_create_refund', $refund, $args );
+
+However we cannot return a WP_Error here. The function wc_create_refund 
+states
+
+@throws Exception Throws exceptions when fail to create, but returns WP_Error instead.
+
+which isn't grammatical, but in the code, any error is catched and transformed to a WP_Error. The/any refund is deleted.
 
