@@ -1,0 +1,28 @@
+* Point of this branch is to *not* refund in maybe_refund, but instead before woo creates a manual refund
+* Secondary point: Try to simplify logic in maybe_refund/maybe_cancel/maybe_capture, all of which possibly cancels an order
+* We cannot cancel an arbitrary amount, only the remaining captured amount
+* The problems are with Manual Refunds made before capture
+
+* No capture, full manual refund:
+** This sets the order to "refunded". We cannot refund, because nothing is captured. But we should not cancel either, because the manual refund amount should not be paid to the customer. However, the money *will* be cancelled at Vipps after a period of time. But it seems contraintuitive to *capture* the amount
+* No capture, some manual refunds, some thru gateway
+** Refunds thru the gateway is recorded and should be cancelled. However we cannot cancel arbitrary amounts, only the non-captured part. Since we have not captured anything we can only cancel the entire order. This means that the sum having been refunded *manually* will be cancelled too.
+* No capture, part manual refund, order completed
+** Now only part of the order will be captured. The rest will be cancelled, either at once or when the order times out at vipps.
+
+* Manual refund *after* capture is ok
+** This amount is not recorded as uncapturable, so it will remain captured, it cannot be cancelled, only refunded.
+
+* Furthermore: Manual refunds can be deleted at any point in time.
+
+* Maybe disallow creating manual refunds before capture:
+** there is a hook before the refund is saved:
+                do_action( 'woocommerce_create_refund', $refund, $args );
+
+However we cannot return a WP_Error here. The function wc_create_refund 
+states
+
+@throws Exception Throws exceptions when fail to create, but returns WP_Error instead.
+
+which isn't grammatical, but in the code, any error is catched and transformed to a WP_Error. The/any refund is deleted.
+

@@ -207,74 +207,98 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         // We will refund money on cancelled orders, but only if they are *relatively new*. This is to 
         // avoid accidents and issues where old orders are *somehow* cancelled even though they are complete. IOK 2024-08-12
-        add_action('woocommerce_order_status_cancelled', array($this, 'order_status_cancelled_wrapper'));
-        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_payment'));
+        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_order'));
+        // Add a full refund if neccessary *before* woocommerce does, on priority 10 IOK 2026-01-28
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_refund_order'), 9, 1);
 
+        // Possibly delete orders that never went anywhere
         add_action('woocommerce_order_status_pending_to_cancelled', array($this, 'maybe_delete_order'), 99999, 1);
-
+        // Handle orders when authorized
         add_action('woocommerce_payment_complete', array($this, 'order_payment_complete'), 10, 1);
 
         // when an order is complete, we need to check if there is reserved amount that is not captured
         // if so, we need to cancel this amount PMB 2024-11-21
         // nb: note very late priority - we must have captured before, please
+        // Also for orders that have been partially or completely refunded, or need to be set to cancelled IOK 2026-01-26
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+        add_action('woocommerce_order_status_refunded', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
+        add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
     }
 
-    // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete or refunded. It checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
+    // Ensure we've updated the vipps status before calling this. IOK 2026-01-28
     public function maybe_cancel_reserved_amount ($orderid) {
         $order = wc_get_order($orderid);
         if (!$order) return;
         if ('vipps' != $order->get_payment_method()) return false;
         // Cannot partially cancel legacy ecom orders
         if ('epayment' != $order->get_meta('_vipps_api')) return false; 
+
+error_log("iverok $orderid in maybe_cancel_reserved_amount");
+
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
+        // Also set in maybe_cancel and maybe_refund now - in all "final status" hooks. IOK 2026-01-28
         if (! $order->get_meta('_vipps_capture_complete')) {
+error_log("iverok Capture complete not marked - order is not 'finished'");
             return false;
         }
-        // We also only want to do this for orders that have had *something* captured. IOK 2025-02-04
-        $captured = intval($order->get_meta('_vipps_captured'));
-        if ($captured < 1) {
-            return false;
+
+        $order_status = $order->get_status();
+error_log("iverok Order status $order_status");
+
+        if ('completed' == $order_status) {
+            // For safety, on  completed orders also only want to do this for orders that have had *something* captured. IOK 2025-02-04
+            $captured = intval($order->get_meta('_vipps_captured'));
+            if ($captured < 1) {
+                return false;
+            }
         }
-        // Allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
-        if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) return false;
+        if ('cancelled' != $order_status) {
+error_log("iverok Checking to see if we should never capture");
+            // If not in the 'cancelled' state, allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
+            if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) {
+                return false;
+            }
+error_log("iverok No.");
+        }
 
         $ok = true;
 
         $remaining = intval($order->get_meta('_vipps_capture_remaining'));
 
+error_log("iverok Capture remaining is $remaining");
+
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
-            $currency = $order->get_currency();
-            try {
-                // This will only cancel any remaining amount. IOK 2024-11-25
-                $res = $this->api->epayment_cancel_payment($order,$requestid=1);
+        }
 
-
+        $currency = $order->get_currency();
+        try {
+            $ok = $this->cancel_payment($order);
+            if ($ok && $remaining && 'completed' == $order_status) {
                 $amount = number_format($remaining/100, 2) . " " . $currency;
                 $note = sprintf(__('Order %1$s: %2$s is cancelled to free up the reservation in the customers bank account.', 'woo-vipps'), $orderid, $amount);
                 $order->add_order_note($note);
-            } catch (Exception $e) {
-                $ok = false;
-                // if this happens, we just log it - we may not have an active admin
-                $msg = sprintf(__('Was not able to cancel remaining amount for the order %1$s: %2$s','woo-vipps'), $orderid, $e->getMessage());
-                $order->add_order_note($msg);
-                $this->log($msg,'error');
             }
-
-            // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
-            if ($ok) {
-                try {
-                    $this->update_vipps_payment_details($order);
-                } catch (Exception $e) {
-                    // noop
-                }
-            }
-
+        } catch (Exception $e) {
+            $ok = false;
+            // if this happens, we just log it - we may not have an active admin
+            $msg = sprintf(__('Was not able to cancel remaining amount for the order %1$s: %2$s','woo-vipps'), $orderid, $e->getMessage());
+            $order->add_order_note($msg);
+            $this->log($msg,'error');
         }
+error_log("iverok ok is $ok");
+
+        // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
+        try {
+            $this->update_vipps_payment_details($order);
+        } catch (Exception $e) {
+            // noop
+        }
+
         // we just return true from this function for now PMB 2024-11-21
         // return false if we couldn't cancel reserved. IOK 2024-11-22
         return $ok;
@@ -653,78 +677,84 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     public function show_login_with_vipps() {
         return false;
     }
+
+    // Called when orders reach the 'refunded' status. We'll add a complete refund and note that any rest is to be cancelled.
+    public function maybe_refund_order($order_id) {
+error_log("iverok in maybe refund order");
+        $order = wc_get_order($order_id);
+        if ('vipps' != $order->get_payment_method()) return false;
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+        $payment = $this->check_payment_status($order);
+        if ($payment == 'initiated' || $payment == 'cancelled') {
+            return true; // Can't refund these
+        }
+
+        $captured = intval($order->get_meta('_vipps_captured'));
+        $vippsstatus = $order->get_meta('_vipps_status');
+        if ($captured > 0 || $vippsstatus == 'SALE') {
+            // This will create + process a refund for the captured amount. IOK 2026-01-26
+error_log("iverok Calling wc order fully refunded in maybe refund");
+            $this->wc_order_fully_refunded ($order_id);
+        }
+        // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
+        $order->update_meta_data('_vipps_capture_complete',true);
+        $order->save();
+    }
    
     // Called when orders reach the 'cancelled'-status. When this happens, orders will be *refunded*
     // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
-    public function order_status_cancelled_wrapper($order_id) {
+    public function maybe_cancel_order($order_id) {
+error_log("iverok in maybe cancel");
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
+
+        try {
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        }
+
+        $payment = $this->check_payment_status($order);
+        if ($payment == 'initiated' || $payment == 'cancelled') {
+            return true; // Can't cancel these
+        }
 
         $days_threshold = apply_filters('woo_vipps_cancel_refund_days_threshold', 30);
         $order_date = $order->get_date_created();
         $days_since_order = (time() - $order_date->getTimestamp()) / (60 * 60 * 24);
 
         $captured = intval($order->get_meta('_vipps_captured'));
-
-        // This will just cancel the order, including at Vipps. No funds have been captured.
-        if ($captured == 0) {
-            return $this->maybe_cancel_payment($order_id);
-        }
-
-        // If this is true then the order is *too old to refund* which would happen on maybe_cancel_payment. 
-        // add a note instead.
-        if ($days_since_order > $days_threshold) {
-            $note = sprintf(__('Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required.', 'woo-vipps'), $days_threshold);
-            $order->add_order_note($note);
-            // Add an admin notice in case this is interactive
-            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr(__('Order', 'woo-vipps') . " " . $order->get_id() . ": " . $note);
-            $order->save();
-            Vipps::instance()->store_admin_notices();
-            return false;
-        }
-
-        // If not, then the older is pretty new so we will cancel or refund it, as before
-        return $this->maybe_cancel_payment($order_id);
-    }
-
-    public function maybe_cancel_payment($orderid) {
-        $order = wc_get_order($orderid);
-        if ('vipps' != $order->get_payment_method()) return false;
-        $ok = 0;
-
-        // Now first check to see if we have captured anything, and if we have, refund it. IOK 2018-05-07
-        $captured = intval($order->get_meta('_vipps_captured'));
         $vippsstatus = $order->get_meta('_vipps_status');
-        if ($captured || $vippsstatus == 'SALE') {
-            return $this->maybe_refund_payment($orderid);
-        }
 
-        try {
-            $order = $this->update_vipps_payment_details($order); 
-        } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing cancel: ", 'woo-vipps') . $e->getMessage(), 'warning');
+        // If we have captured some funds, we must first create a refund for the amount we've captured. 
+        // However, we will only do this if the order is relatively fresh, to avoid accidentally refunding
+        // old orders. 
+        if ($captured > 0 || $vippsstatus == 'SALE') {
+            // If this is true then the order is *too old to refund* which would happen on maybe_cancel_payment. 
+            // add a note instead.
+            if ($days_since_order > $days_threshold) {
+                $note = sprintf(__('Order with captured funds older than %d days cancelled - because the order is this old, it will not be automatically refunded at Vipps. Manual refund may be required.', 'woo-vipps'), $days_threshold);
+                $order->add_order_note($note);
+                // Add an admin notice in case this is interactive
+                $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
+                $this->adminerr(__('Order', 'woo-vipps') . " " . $order->get_id() . ": " . $note);
+                $order->save();
+                Vipps::instance()->store_admin_notices();
+                return false;
+            }
+            // This will create + process a refund for the captured amount. IOK 2026-01-26
+error_log("iverok calling order fully refunded in cancel");
+            $this->wc_order_fully_refunded ($order_id);
         }
-
-        $payment = $this->check_payment_status($order);
-        if ($payment == 'initiated' || $payment == 'cancelled') {
-           return true; // Can't cancel these
-        }
-
-        try {
-            $ok = $this->cancel_payment($order);
-        } catch (Exception $e) {
-            // This is handled in sub-methods so we shouldn't actually hit this IOK 2018-05-07 
-        } 
-        if (!$ok) {
-            // It's just a captured payment, so we'll ignore the illegal status change. IOK 2017-05-07
-            $msg = sprintf(__("Could not cancel %1\$s payment", 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr($msg);
-            $order->save();
-            global $Vipps;
-            $Vipps->store_admin_notices();
-        }
+        // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
+        $order->update_meta_data('_vipps_capture_complete',true);
+        $order->save();
     }
 
     // IOK 2024-09-01 In general, we can refund most Vipps Mobilepay orders through the api,
@@ -745,76 +775,76 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
     }
 
-    // Handle the transition from anything to "refund"
-    public function maybe_refund_payment($orderid) {
+    // This is ran in woocommerce_order_status_refunded *before* woos own  wc_order_fully_refunded (priority 9)
+    // so that we can create a through-the-gateway refund for this if neccessary. If not, we'll let the normal logic
+    // proceed, which should create a manual refund instead. IOK 2026-01-20
+    public function wc_order_fully_refunded ($orderid) {
+error_log("iverok in wc order fully refunded");
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
-        $ok = 0;
+
+        // First check to see if we actually need to refund anything now IOK 2026-02-16
+        $max_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() );
+        if ( ! $max_refund ) {
+            return;
+        }
 
         // IOK 2019-10-03 it is now possible to do capture via other tools than Woo, so we must now first check to see if 
         // the order is capturable by getting full payment details.
         try {
-                $order = $this->update_vipps_payment_details($order); 
-       } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+            $order = $this->update_vipps_payment_details($order); 
+        } catch (Exception $e) {
+            //Do nothing with this for now
+            $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-
-        // Don't do anything if the order has any *manual* refunds (manual Woo refund outside of Vipps MobilePay). LP 2025-12-16
-        // TODO: this is a short sighted fix, in the future we wish to rewrite this logic to instead run our own logic in the woocommerce_order_status_refunded hook
-        // *before* woocommerce runs wc_order_fully_refunded() which create a refund automatically. Instead we will create our own refund.
-        // This so we can stop the order note saying they need to refund through their payment gateway, in addition to handle skipping
-        // Vipps MP refund if order has manual refunds. LP 2025-12-16
-        $refunds = $order->get_refunds();
-        foreach ($refunds as $refund) {
-            $is_manual_refund = !$refund->get_refunded_payment();
-
-            // Changing order status to refunded creates a refund with an empty item list, but we still want to refund these.
-            // So manual refunds we will skip are the ones with items only. LP 2025-12-16
-            $has_line_items = !empty($refund->get_items());
-            if ($is_manual_refund && $has_line_items) {
-                /* translators: orderid, company name */
-                $this->log(sprintf(__('Order %1$s has a manual refund so we will not send this refund to %2$s', 'woo-vipps'), $orderid, Vipps::CompanyName()), 'info');
-                return true;
-            }
-        }
-
-        // Now first check to see if we have captured anything, and if we haven't, just cancel order IOK 2018-05-07
+        // We can only refund-through-the-gateway if we have captured something.
         $vippsstatus = $order->get_meta('_vipps_status');
+
+        // FIXME Check that the vipps status is in a refundable state. Also, get vipps status first.
+ 
         $captured = intval($order->get_meta('_vipps_captured'));
         $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
 
-        if (!$captured) {
-            return $this->maybe_cancel_payment($orderid);
-        }
-        if ($to_refund == 0) return true;
+        $refund_thru_gateway = true;
+        if (!$captured) $refund_thru_gateway = false;
+        if ($to_refund == 0) $refund_thru_gateway = false;
 
-        try {
-            $ok = $this->refund_payment($order,$to_refund,'exact');
-        } catch (TemporaryVippsAPIException $e) {
-            $this->adminerr(sprintf(__('Temporary error when refunding payment through %1$s - ensure order is refunded manually, or reset the order to "Processing" and try again', 'woo-vipps'), $this->get_payment_method_name()));
-            $this->adminerr($e->getMessage());
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
-        } catch (Exception $e) {
-            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
-            $order->save();
-            $this->adminerr($e->getMessage());
+        $items = [];
+        $data = [];
+        $data['amount'] = $max_refund;
+        $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
+        $data['order_id'] = $orderid;
+        $data['line_items'] = $items; // FIXME ADD ITEMS!
+        $data['restock_items'] = true; // should check filters here
+
+        if ($refund_thru_gateway) {
+            $data['refund_payment'] = true; // This should call our "process_refund"
+            wc_switch_to_site_locale();            
+            $the_refund = wc_create_refund($data);
+            wc_restore_locale();
+            if (is_wp_error($the_refund)) {
+                $refund_thru_gateway = false;
+                $msg = $the_refund->get_error_message();
+                $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
+                $order->save();
+                $this->adminerr($msg);
+            } else {
+error_log("iverok refunded thru gateway ok");
+                return true;
+            }
         }
-        if (!$ok) {
-            $msg = sprintf(__('Could not refund payment through %1$s - ensure the refund is handled manually!', 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr($msg);
-            $order->add_order_note($msg);
-            // Unfortunately, we can't 'undo' the refund when the user manually sets the status to "Refunded" so we must 
-            // allow the state change here if that happens.
-            global $Vipps;
-            $Vipps->store_admin_notices();
-            return false;
+        if (!$refund_thru_gateway) {
+error_log("iverok Cannot refund thru gateway");
+            // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
+            $data['refund_payment'] = false;
+            wc_switch_to_site_locale(); 
+            $the_refund = wc_create_refund($data);
+            wc_restore_locale();
         }
+        return true;
     }
-
+    
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
     // they don't require payment. So we try to capture. IOK 2020-09-22
     // do NOT call this unless the order is 'reserved' at Vipps!
@@ -2002,65 +2032,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
-    public function refund_superfluous_capture($order) {
-        $status = $order->get_status();
-        if ($status != 'completed') {
-            $this->log(__('Cannot refund superfluous capture on non-completed order:','woo-vipps'). ' ' . $order->get_id(), 'error');
-            $this->adminerr(__('Order not completed, cannot refund superfluous capture','woo-vipps'));
-            return false;
-        }
-
-        $pm = $order->get_payment_method();
-        if ($pm != 'vipps') {
-            $this->log(sprintf(__('Trying to refund payment on order not made by %1$s:','woo-vipps'), $this->get_payment_method_name()). ' ' . $order->get_id(), 'error');
-            $this->adminerr(sprintf(__('Cannot refund payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
-            return false;
-        }
-
-        try {
-                $order = $this->update_vipps_payment_details($order); 
-        } catch (Exception $e) {
-                //Do nothing with this for now
-                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
-        }
-
-        $total = round(wc_format_decimal($order->get_total(),'')*100);
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-        $refunded = intval($order->get_meta('_vipps_refunded'));
-        $superfluous = $captured-$total-$refunded;
-
-
-        if ($captured <= $total) {
-            return false;
-        }
-        $superfluous = $captured-$total-$refunded;
-        if ($superfluous<=0) {
-            return false;
-        }
-        $refundvalue = min($to_refund,$superfluous);
-
-        $reason = __("The value of the order is less than the amount captured.", "woo-vipps");
-
-        $ok = 0;
-        $currency = $order->get_currency();
-        try {
-            $ok = $this->refund_payment($order,$refundvalue,'cents');
-        } catch (TemporaryVippsApiException $e) {
-            $this->log(sprintf(__('Could not refund %1$s payment for order id:', 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $order->get_id() . "\n" .$e->getMessage(),'error');
-            return new WP_Error('Vipps',sprintf(__('%1$s is temporarily unavailable.','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage());
-        } catch (Exception $e) {
-            $msg = sprintf(__('Could not refund %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage();
-            $order->add_order_note($msg);
-            $this->log($msg,'error');
-            return new WP_Error('Vipps',$msg);
-        }
-
-        if ($ok) {
-            $order->add_order_note($refundvalue/100 . ' ' . $currency . ' ' . sprintf(__(" refunded through %1\$s:",'woo-vipps'), $this->get_payment_method_name()) . ' ' . $reason);
-        } 
-        return $ok;
-    }
 
     // Cancel (only completely) a reserved but not yet captured order IOK 2018-05-07
     public function cancel_payment($order) {
@@ -2070,26 +2041,26 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->adminerr(sprintf(__('Cannot cancel payment on orders not made by %1$s','woo-vipps'), $this->get_payment_method_name()));
             return false;
         }
-        // If we have captured the order, we can't cancel it. IOK 2018-05-07
-        $captured = intval($order->get_meta('_vipps_captured'));
-        if ($captured) {
-            $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), $this->get_payment_method_name());
-            $this->adminerr($msg);
-            return false;
-        }
         // We'll use the same transaction id for all cancel jobs, as we can only do it completely. IOK 2018-05-07
         // For epayment, partial cancellations will be possible. IOK 2022-11-12
         $api = $order->get_meta('_vipps_api');
         try {
             $requestid = "";
-            $api = $order->get_meta('_vipps_api');
             if ($api == 'banktransfer') {
                 // If we are here, and the order is somehow not captured, just do nothing. IOK 2024-01-09
                 $content = [];
             } elseif ($api == 'epayment') {
                 $requestid = 1;
+                // This will cancel any remaining, not-captured amount IOK 2026-01-28
                 $content =  $this->api->epayment_cancel_payment($order,$requestid);
             } else {
+                // If we have captured the order, we can't cancel it with the ecom API IOK 2018-05-07
+                $captured = intval($order->get_meta('_vipps_captured'));
+                if ($captured>0) {
+                    $msg = sprintf(__('Cannot cancel a captured %1$s transaction - use refund instead', 'woo-vipps'), "ECOM " .  $this->get_payment_method_name());
+                    $this->adminerr($msg);
+                    return false;
+                }
                 $content =  $this->api->cancel_payment($order,$requestid);
             }
         } catch (TemporaryVippsApiException $e) {
@@ -2119,14 +2090,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Set status from Vipps, ignore errors, use statusdata if we have it.
         try {
-        $status = $this->get_vipps_order_status($order);
-        if ($status) $order->update_meta_data('_vipps_status',$status);
-        $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), $this->get_payment_method_name()));
-        $order->save();
+            $status = $this->get_vipps_order_status($order);
+            if ($status) $order->update_meta_data('_vipps_status',$status);
+            $order->add_order_note(sprintf(__('%1$s Payment cancelled:','woo-vipps'), $this->get_payment_method_name()));
+            $order->save();
         } catch (Exception $e)  {
         }
         return true;
-        }
+    }
 
     // Refund (possibly partially) the captured order. IOK 2018-05-07
     // The caller must handle the errors.
