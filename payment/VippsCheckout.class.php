@@ -529,12 +529,6 @@ jQuery(document).ready(function () {
             }
         }
 
-        $keys = ['firstName', 'lastName', 'streetAddress', 'postalCode', 'country', 'phoneNumber'];
-        foreach($keys as $k) {
-            if (empty($customerinfo[$k])) {
-                $customerinfo = array(); break;
-            }
-        }
         $customerinfo = apply_filters('woo_vipps_customerinfo', $customerinfo, $order);
 
         try {
