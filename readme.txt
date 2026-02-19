@@ -114,6 +114,7 @@ Support Tutor LMS in Express and Checkout
 Add block to support new interactivity-API based minicart for Express Checkout
 Handle swedish and finnish phone numbers correctly when canonicalizing
 Fix customer prefill in Checkout
+Show Express Checkout button in cart if the settings say so, even with Vipps Checkout active
 
 == Frequently Asked Questions ==
 
@@ -292,6 +293,7 @@ Add block to support new interactivity-API based minicart for Express Checkout
 Handle swedish and finnish phone numbers correctly when canonicalizing
 Support Tutor LMS in Express and Checkout
 All blocks updated to version 3 
+Show Express Checkout button in cart if the settings say so, even with Vipps Checkout active
 
 = 2026-02-11 version 5.1.5 =
 Suppress REST warning about permission callback
