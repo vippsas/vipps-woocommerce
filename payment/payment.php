@@ -101,4 +101,3 @@ add_action( 'woocommerce_shipping_init', function () {
         require_once(dirname(__FILE__) . '/VippsCheckoutShippingMethods.php');
     }
 });
-
