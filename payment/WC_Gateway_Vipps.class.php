@@ -644,8 +644,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
         $show = $show && $this->cart_supports_express_checkout();
 
-        // By default don't show express checkout in cart if Vipps MobilePay Checkout is enabled
-        $show = $show && ($this->get_option('vipps_checkout_enabled') != 'yes');
+        // Earlier, we disabled this if Checkout was active; but we will now respect the setting in all
+        // cases. Also, there is a filter. IOK 2026-02-19
 
         return apply_filters('woo_vipps_show_express_checkout', $show);
     }
