@@ -3,14 +3,14 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.1.5
-Stable tag: 5.1.5
+Version: 5.1.6
+Stable tag: 5.1.6
 Requires at least: 6.2
 Tested up to: 6.9.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 WC requires at least: 3.3.4
-WC tested up to: 10.5.0
+WC tested up to: 10.5.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
 Official Vipps MobilePay payment plugin for WooCommerce.
@@ -109,22 +109,11 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.1.4
-Fix translations
-Fix customer prefill in checkout when customer is known
-Version 5.1.3
-Fix: javascript crash in backend
-Version 5.1.2
-Allow the Buy Now block to be inserted in all contexts, providing a button to buy an arbitrary product via Express on any page
-Minor improvements for compatibility for translation plugins
-Improve error-handling when a shipping method has been paid for in Vipps MobilePay Express, but cannot be added to the Woo order
-Version 5.1.1 
-Minor improvements in styles and user interface
-Version 5.1.0 
-Fix errors preventing order completion in certain situations using Checkout and Klarna Payments
-New option in settings/advanced to modify phone numbers in Express or Checkout so that they either get an added "+" or the country prefix is removed
-New, more space-efficient buttons and a new button configurator interface
-
+Version 5.1.6
+Support Tutor LMS in Express and Checkout
+Add block to support new interactivity-API based minicart for Express Checkout
+Handle swedish and finnish phone numbers correctly when canonicalizing
+Fix customer prefill in Checkout
 
 == Frequently Asked Questions ==
 
@@ -297,6 +286,13 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-02-xx version 5.1.6 =
+Fix customer prefill in Checkout
+Add block to support new interactivity-API based minicart for Express Checkout
+Handle swedish and finnish phone numbers correctly when canonicalizing
+Support Tutor LMS in Express and Checkout
+All blocks updated to version 3 
+
 = 2026-02-11 version 5.1.5 =
 Suppress REST warning about permission callback
 
