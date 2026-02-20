@@ -596,7 +596,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
-		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! $is_renewal ) {
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 			$this->unlock_order( $order );
 
@@ -807,15 +807,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// status: CANCELLED
-		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! wcs_order_contains_renewal( $order ) ) {
 			$order->update_status( 'cancelled', __( 'Vipps/MobilePay payment cancelled.', 'woo-vipps' ) );
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge cancelled: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
 		}
 
-		// status: FAILED
-		if ( $charge->status === WC_Vipps_Charge::STATUS_FAILED ) {
+		// status: FAILED, or CANCELLED (renewal)
+		if ( in_array( $charge->status, [
+			WC_Vipps_Charge::STATUS_FAILED,
+			WC_Vipps_Charge::STATUS_CANCELLED
+		], true ) ) {
 			$order->update_status( 'failed', __( 'Vipps/MobilePay payment failed.', 'woo-vipps' ) );
 			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, $charge );
 
