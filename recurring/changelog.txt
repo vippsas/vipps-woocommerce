@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 2.2.7 =
+* Fix: Conditionally set status to processing when a payment completes. This fixes a problem where when a payment initially fails, it could get stuck in "On hold".
+
 = 2.2.6 =
 * Fix: Properly handle order ids when using the payment retry feature.
 
