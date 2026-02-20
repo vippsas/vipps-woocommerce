@@ -703,8 +703,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 		// Controlled by the `transition_renewals_to_completed` setting
 		// Only applicable to renewal orders
-		if ( $this->transition_renewals_to_completed && wcs_order_contains_renewal( $order ) && $order->get_status() !== 'completed' ) {
-			$order->update_status( 'completed' );
+		if ( wcs_order_contains_renewal( $order ) && $order->get_status() !== 'completed' ) {
+			$order->update_status( $this->transition_renewals_to_completed ? 'completed' : 'processing' );
 		}
 
 		// Unlock the order and make sure we tell our cronjob to stop periodically checking the status of this order
