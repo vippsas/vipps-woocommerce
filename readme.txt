@@ -287,13 +287,14 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2026-02-xx version 5.1.6 =
+= 2026-02-23 version 5.1.6 =
 Fix customer prefill in Checkout
 Add block to support new interactivity-API based minicart for Express Checkout
 Handle swedish and finnish phone numbers correctly when canonicalizing
 Support Tutor LMS in Express and Checkout
 All blocks updated to version 3 
 Show Express Checkout button in cart if the settings say so, even with Vipps Checkout active
+Suppress permission warnings
 
 = 2026-02-11 version 5.1.5 =
 Suppress REST warning about permission callback
