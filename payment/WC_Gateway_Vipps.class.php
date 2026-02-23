@@ -2411,6 +2411,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
+        $vippsstatus = 'cancelled'; // FIXME: delete. LP 2026-02-20
         # Since the order is pending, and the vipps status has changed, switch to the correct vipps status in woo too IOK 2025-10-24
         switch ($vippsstatus) {
             case 'authorized':
@@ -2424,7 +2425,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
-                $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                // Set order status failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
+                // $order->update_meta_data('_vipps_shipping_set', false);
+                if ($order->get_meta('_vipps_shipping_set')) {
+                    /* translators: company name */
+                    $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                } else {
+                    /* translators: company name */
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s, also shipping details are not set.', 'woo-vipps'), Vipps::CompanyName()));
+                }
                 break;
         }
 
