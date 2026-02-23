@@ -5560,11 +5560,19 @@ else:
         return $wp_post;
     }
 
+    // Support the interactivity API with data about our cart IOK 2026-02-23
     public function woo_vipps_store_api_cart_data() {
         // Reverting the condition with the directive data-wp-bind--hidden does not work, so we need the flipped bool here (hide instead of show). LP 2026-02-10
-        return array(
-            'cart_hide_express' =>  !$this->gateway()->show_express_checkout(),
-        );
+
+        $checkout_page = $this->gateway()->vipps_checkout_available();
+        $standard_checkout = get_permalink(get_option('woocommerce_checkout_page_id'));
+        $checkout_url = $checkout_page ? get_permalink($checkout_page) : $standard_checkout;
+        $cart_data = array(
+                'cart_hide_express' =>  !$this->gateway()->show_express_checkout(),
+                'cart_supports_checkout' =>  (bool) $checkout_page,
+                'checkout_url' => $checkout_url,
+                );
+        return $cart_data;
     }
 
     public function woo_vipps_store_api_cart_schema() {
@@ -5572,6 +5580,16 @@ else:
             'cart_hide_express' => array(
                 'description' => sprintf(__( 'Whether to hide the %1$s Express Checkout in the cart', 'woo-vipps' ), $this->get_payment_method_name()),
                 'type'        => array( 'boolean', 'null' ),
+                'readonly'    => true,
+            ),
+            'cart_supports_checkout' => array(
+                'description' => sprintf(__( 'True if %1$s Checkout is active and the cart supports it', 'woo-vipps' ), $this->get_payment_method_name()),
+                'type'        => array( 'boolean', 'null' ),
+                'readonly'    => true,
+            ),
+            'checkout_url' => array(
+                'description' => sprintf(__( 'Current checkout url based on cart state', 'woo-vipps' ), $this->get_payment_method_name()),
+                'type'        => array( 'string', 'null' ),
                 'readonly'    => true,
             ),
         );
