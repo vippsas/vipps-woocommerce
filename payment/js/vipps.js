@@ -35,29 +35,6 @@ document.body.addEventListener('wc-blocks_product_list_rendered',
   }
 );
 
-// Handle some cart events using the store api IOK 2026-02-23
-(function () {
-   if( !window.wp?.data) return;
-
-   // The interactivity based minicart is only loaded once; so if the cart changes wrt supporting Vipps Checkout we must handle that 
-   // by subscribing to the cart data. IOK 2026-02-23
-   let prevCheckoutUrl = "";
-   function handleCartChanges () {
-       const minicartbutton = document.querySelector('a.wp-block-woocommerce-mini-cart-checkout-button-block');
-       if (!minicartbutton) return;
-
-       const cart = wp.data.select("wc/store/cart")?.getCartData?.();
-       if (!cart) return;
-       const vippsdata = cart?.extensions?.['woo-vipps'];
-       if (!vippsdata) return;
-       if (vippsdata['checkout_url'] && prevCheckoutUrl != vippsdata['checkout_url']) {
-           prevCheckoutUrl = vippsdata['checkout_url']; 
-           minicartbutton.href = vippsdata['checkout_url'];
-       }
-   }
-   wp.data.subscribe(handleCartChanges);
-
-})();
 
 jQuery( document ).ready( function() {
 
@@ -289,6 +266,29 @@ jQuery( document ).ready( function() {
       wp.hooks.doAction('vippsInit');
    }
  }
+
+ // For modern wp/woo we want to subscribe to events for the cart especially. IOK 2026-02-24
+ if( window.wp?.data) {
+     // The interactivity based minicart is only loaded once; so if the cart changes wrt supporting Vipps Checkout we must handle that 
+     // by subscribing to the cart data. IOK 2026-02-23
+     let prevCheckoutUrl = "";
+     function handleCartChanges () {
+         const minicartbutton = document.querySelector('a.wp-block-woocommerce-mini-cart-checkout-button-block');
+         if (!minicartbutton) return;
+
+         const cart = wp.data.select("wc/store/cart")?.getCartData?.();
+         if (!cart) return;
+         const vippsdata = cart?.extensions?.['woo-vipps'];
+         if (!vippsdata) return;
+         if (vippsdata['checkout_url'] && prevCheckoutUrl != vippsdata['checkout_url']) {
+             prevCheckoutUrl = vippsdata['checkout_url'];
+             minicartbutton.href = vippsdata['checkout_url'];
+         }
+     }
+     wp.data.subscribe(handleCartChanges);
+ }
+
+
  
  vippsInit();
 });
