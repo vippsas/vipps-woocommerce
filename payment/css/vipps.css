@@ -78,6 +78,11 @@ div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
     max-width: 9rem;
 }
 
+/* Specifically the buy-now block injected with blockHooks in minicart guten template. LP 2026-01-29 */
+.wc-block-mini-cart__items a.vipps-express-checkout.button {
+    align-self: center;
+}
+
 /* end block stuff for now */
 
 

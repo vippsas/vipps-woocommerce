@@ -179,6 +179,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->supports = array('products','refunds');
 
+        // we need to disallow certain types of refunds; mostly manual refunds done before capture. IOK 2026-02-24
+        add_action( 'woocommerce_create_refund', array($this, 'woocommerce_create_refund'), 10, 2);
+
         // We can't guarantee any particular product type being supported, so we must enumerate those we are certain about
         // IOK 2020-04-21 Add support for WooCommerce Product Bundles
         $supported_types= array('simple','variable','variation','bundle', 'yith_bundle', 'gift-card');
@@ -235,19 +238,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Cannot partially cancel legacy ecom orders
         if ('epayment' != $order->get_meta('_vipps_api')) return false; 
 
-error_log("iverok $orderid in maybe_cancel_reserved_amount");
-
         // Check that the normal maybe_capture_order hook has actually ran *and* done something,
         // it's only after this we know we have captured 'everything' so if there is anything left, 
         // it should be cancelled. IOK 2025-05-04                                                              
         // Also set in maybe_cancel and maybe_refund now - in all "final status" hooks. IOK 2026-01-28
         if (! $order->get_meta('_vipps_capture_complete')) {
-error_log("iverok Capture complete not marked - order is not 'finished'");
             return false;
         }
 
         $order_status = $order->get_status();
-error_log("iverok Order status $order_status");
 
         if ('completed' == $order_status) {
             // For safety, on  completed orders also only want to do this for orders that have had *something* captured. IOK 2025-02-04
@@ -257,19 +256,15 @@ error_log("iverok Order status $order_status");
             }
         }
         if ('cancelled' != $order_status) {
-error_log("iverok Checking to see if we should never capture");
             // If not in the 'cancelled' state, allow merchants that do not reserve large amounts to opt out for safety IOK 2025-02-04
             if (apply_filters('woo_vipps_never_cancel_uncaptured_money', false, $order)) {
                 return false;
             }
-error_log("iverok No.");
         }
 
         $ok = true;
 
         $remaining = intval($order->get_meta('_vipps_capture_remaining'));
-
-error_log("iverok Capture remaining is $remaining");
 
         if ($remaining > 0) {
             $this->log(sprintf(__("maybe_cancel_reserved_amount we have remaining reserved after capture of total %1\$s ",'woo-vipps'), $remaining),'debug');
@@ -290,7 +285,6 @@ error_log("iverok Capture remaining is $remaining");
             $order->add_order_note($msg);
             $this->log($msg,'error');
         }
-error_log("iverok ok is $ok");
 
         // We need to update the order details after the fact. We can't fix errors here though. IOK 2024-11-22
         try {
@@ -668,8 +662,8 @@ error_log("iverok ok is $ok");
         $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
         $show = $show && $this->cart_supports_express_checkout();
 
-        // By default don't show express checkout in cart if Vipps MobilePay Checkout is enabled
-        $show = $show && ($this->get_option('vipps_checkout_enabled') != 'yes');
+        // Earlier, we disabled this if Checkout was active; but we will now respect the setting in all
+        // cases. Also, there is a filter. IOK 2026-02-19
 
         return apply_filters('woo_vipps_show_express_checkout', $show);
     }
@@ -680,7 +674,6 @@ error_log("iverok ok is $ok");
 
     // Called when orders reach the 'refunded' status. We'll add a complete refund and note that any rest is to be cancelled.
     public function maybe_refund_order($order_id) {
-error_log("iverok in maybe refund order");
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
         try {
@@ -698,7 +691,6 @@ error_log("iverok in maybe refund order");
         $vippsstatus = $order->get_meta('_vipps_status');
         if ($captured > 0 || $vippsstatus == 'SALE') {
             // This will create + process a refund for the captured amount. IOK 2026-01-26
-error_log("iverok Calling wc order fully refunded in maybe refund");
             $this->wc_order_fully_refunded ($order_id);
         }
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
@@ -709,7 +701,6 @@ error_log("iverok Calling wc order fully refunded in maybe refund");
     // Called when orders reach the 'cancelled'-status. When this happens, orders will be *refunded*
     // when they have been captured, but for added safety, this is only done when the orders are relatively new. 
     public function maybe_cancel_order($order_id) {
-error_log("iverok in maybe cancel");
         $order = wc_get_order($order_id);
         if ('vipps' != $order->get_payment_method()) return false;
 
@@ -749,7 +740,6 @@ error_log("iverok in maybe cancel");
                 return false;
             }
             // This will create + process a refund for the captured amount. IOK 2026-01-26
-error_log("iverok calling order fully refunded in cancel");
             $this->wc_order_fully_refunded ($order_id);
         }
         // In any case, note that this order is ready for cancellation - we don't actually do this here anymore
@@ -779,7 +769,6 @@ error_log("iverok calling order fully refunded in cancel");
     // so that we can create a through-the-gateway refund for this if neccessary. If not, we'll let the normal logic
     // proceed, which should create a manual refund instead. IOK 2026-01-20
     public function wc_order_fully_refunded ($orderid) {
-error_log("iverok in wc order fully refunded");
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
 
@@ -830,12 +819,10 @@ error_log("iverok in wc order fully refunded");
                 $order->save();
                 $this->adminerr($msg);
             } else {
-error_log("iverok refunded thru gateway ok");
                 return true;
             }
         }
         if (!$refund_thru_gateway) {
-error_log("iverok Cannot refund thru gateway");
             // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
             $data['refund_payment'] = false;
             wc_switch_to_site_locale(); 
@@ -869,6 +856,30 @@ error_log("iverok Cannot refund thru gateway");
         return true;
     }
 
+    // This filter runs on *all* refunds, including manual refunds. Its main job here is to
+    // disallow creating manual refunds on orders that have not been captured yet, since this makes the capture/cancel logic
+    // very confusing
+    public function woocommerce_create_refund ($refund, $args) {
+        $order_id = intval($args['order_id'] ?? 0);
+        $order = $order_id ? wc_get_order( $order_id ) : null;
+        if ( ! $order ) return;
+        if ( $order->get_payment_method() !== 'vipps' ) return;
+        // This is for manual refunds only IOK 2026-02-24
+        if (!($args['refund_payment'] ?? false)) { 
+            try {
+                $order = $this->update_vipps_payment_details($order);
+            } catch (Exception $e) {
+                //Do nothing with this for now
+                $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
+            }
+            // This would be *per order line* in the fulfilment branch. IOK 2026-02-24 FIXME
+            $captured = intval($order->get_meta('_vipps_captured'));
+            if (!$captured) {
+                $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through  %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
+                throw new Exception($msg);
+            }
+        }
+    }
 
     // This is the Woocommerce refund api called by the "Refund" actions. IOK 2018-05-11
     public function process_refund($orderid,$amount=null,$reason='') {
@@ -2923,7 +2934,12 @@ error_log("iverok Cannot refund thru gateway");
                 break;
             case 'strip_country_code':
                 // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
-                $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
+                // We can't do these replaces in sequence, because e.g. +47 46 12 34 56 would become 0 12 34 56 instead of the correct 46 12 34 56. LP 2026-02-19
+                if (preg_match('!^(45|47)!', $phone)) { // NO, DK
+                    $phone = preg_replace('!^(45|47)!', '', $phone);
+                } else if (preg_match('!^(46|358)!', $phone)) { // SE, FI: leading zero for area codes is not used with country code, so add it back here. LP 2026-02-09
+                    $phone = preg_replace('!^(46|358)!', '0', $phone);
+                }
                 break;
         }
         $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);

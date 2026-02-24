@@ -11,7 +11,7 @@ add_action('init', function () {
     // See vipp.js - this event is used to initialize the buy-now buttons IOK 2026-01-14
     if (version_compare(WC_VERSION, '9.4', '>=')) {
         register_block_type(__DIR__ . '/dist/buy-now');
-
+        register_block_type(__DIR__ . '/dist/buy-now-cart');
     }
 });
 
@@ -115,5 +115,15 @@ add_action('enqueue_block_editor_assets', function () {
             'vippsresturl' => '/woo-vipps/v1',
         ];
         wp_add_inline_script('woo-vipps-buy-now-editor-script', 'const vippsBuyNowBlockConfig = ' . json_encode($buy_now_config), 'before');
+
+        // Buy now block for the minicart only. LP 2026-02-09
+        $buy_now_cart_config = [
+            'vippsbuynowdescription' => sprintf(__( 'Add a %1$s Buy Now-button to the mini-cart', 'woo-vipps'), $vipps->get_payment_method_name()),
+            'vippsbuynowbutton' => $buy_now_config['vippsbuynowbutton'],
+            'vippssmileurl' => $buy_now_config['vippssmileurl'],
+            'BuyNowWithVipps' => $buy_now_config['BuyNowWithVipps'],
+            'minicartLogo' => $vipps->get_payment_logo('minicart'),
+        ];
+        wp_add_inline_script('woo-vipps-buy-now-cart-editor-script', 'const vippsBuyNowCartBlockConfig = ' . json_encode($buy_now_cart_config), 'before');
     }
 });

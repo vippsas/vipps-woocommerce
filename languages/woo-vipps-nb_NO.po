@@ -923,7 +923,7 @@ msgstr "Venter på at du skal belaste betalingen"
 #: payment/lib/recurring-translations.php:96
 #: recurring/includes/wc-gateway-vipps-recurring.php:760
 msgid "Charge completed (Charge ID: %s)"
-msgstr "Beatling fullført (Betalings-ID: %s)"
+msgstr "Betaling fullført (Betalings-ID: %s)"
 
 #: payment/lib/recurring-translations.php:95
 #: recurring/includes/wc-gateway-vipps-recurring.php:681
