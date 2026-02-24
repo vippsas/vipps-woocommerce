@@ -1067,12 +1067,6 @@ class WC_Vipps_Recurring_Checkout {
 			$customer = new WC_Customer( $user_id );
 			$this->maybe_update_billing_and_shipping( $customer, $session );
 
-			// Send a password reset link right away.
-			$user_data = get_user_by( 'ID', $user_id );
-			$key       = get_password_reset_key( $user_data );
-			WC()->mailer();
-			do_action( 'woocommerce_reset_password_notification', $user_data->user_login, $key );
-
 			WC_Vipps_Recurring_Logger::log( sprintf( "[%s] Handling Vipps/MobilePay Checkout payment: replacing customer with new id %s", $order_id, $user_id ) );
 
 			$order->set_customer_id( $user_id );
