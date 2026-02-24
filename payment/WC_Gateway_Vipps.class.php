@@ -668,8 +668,8 @@ error_log("iverok ok is $ok");
         $show = ($this->enabled == 'yes') && ($this->get_option('cartexpress') == 'yes') ;
         $show = $show && $this->cart_supports_express_checkout();
 
-        // By default don't show express checkout in cart if Vipps MobilePay Checkout is enabled
-        $show = $show && ($this->get_option('vipps_checkout_enabled') != 'yes');
+        // Earlier, we disabled this if Checkout was active; but we will now respect the setting in all
+        // cases. Also, there is a filter. IOK 2026-02-19
 
         return apply_filters('woo_vipps_show_express_checkout', $show);
     }
@@ -2923,7 +2923,12 @@ error_log("iverok Cannot refund thru gateway");
                 break;
             case 'strip_country_code':
                 // We only support norway,denmark,swedish,finnish country codes as of now. LP 2025-12-29
-                $phone = preg_replace('!^(45|46|47|358)!', '', $phone);
+                // We can't do these replaces in sequence, because e.g. +47 46 12 34 56 would become 0 12 34 56 instead of the correct 46 12 34 56. LP 2026-02-19
+                if (preg_match('!^(45|47)!', $phone)) { // NO, DK
+                    $phone = preg_replace('!^(45|47)!', '', $phone);
+                } else if (preg_match('!^(46|358)!', $phone)) { // SE, FI: leading zero for area codes is not used with country code, so add it back here. LP 2026-02-09
+                    $phone = preg_replace('!^(46|358)!', '0', $phone);
+                }
                 break;
         }
         $phone = apply_filters('woo_vipps_canonicalize_checkout_phone', $phone, $address, $user);

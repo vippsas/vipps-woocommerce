@@ -107,6 +107,23 @@ class Vipps {
         add_action('init',array($Vipps,'init'));
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
         add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
+        add_action( 'woocommerce_blocks_loaded',  [$Vipps, 'woocommerce_blocks_loaded']);
+    }
+
+    // Register woocommerce store api endpoint to use in buy-now minicart block. LP 2026-02-10
+    public function woocommerce_blocks_loaded() {
+        if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+            return;
+        }
+        woocommerce_store_api_register_endpoint_data(
+            array(
+                'endpoint'        => Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema::IDENTIFIER,
+                'namespace'       => 'woo-vipps',
+                'data_callback'   => [$this, 'woo_vipps_store_api_cart_data'],
+                'schema_callback' => [$this, 'woo_vipps_store_api_cart_schema'],
+                'schema_type'     => ARRAY_A,
+            )
+        );
     }
 
     // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
@@ -212,7 +229,7 @@ class Vipps {
                    register_rest_route('woo-vipps/v1', '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
-                        'permissions_callback' => '__return_true',
+                        'permission_callback' => '__return_true',
                    ]);
         });
 
@@ -1925,8 +1942,29 @@ else:
         $phonenr = preg_replace("!^0+!", "", $phonenr);
 
         // Try to reconstruct phone numbers from information provided
-        if (strlen($phonenr) == 8 && $country == 'NO') { 
-            $phonenr = '47' . $phonenr;
+        switch ($country) {
+            case 'DK':
+                if (8 === strlen($phonenr)) {
+                    $phonenr = "45$phonenr";
+                }
+                break;
+            case 'SE': // 10 digits, but we stripped the leading zero above, https://www.sent.dm/resources/se. LP 2026-02-09
+                if (9 === strlen($phonenr)) {
+                    $phonenr = "46$phonenr";
+                }
+                break;
+            case 'NO':
+                if (8 === strlen($phonenr)) {
+                    $phonenr = "47$phonenr";
+                }
+                break;
+            case 'FI': // https://en.wikipedia.org/wiki/Telephone_numbers_in_Finland  and  https://kielitoimistonohjepankki.fi/ohje/puhelinnumerot/
+                if (9 === strlen($phonenr) // 04x 123 45 67 and 050 123 45 67 (but we removed leading zero already)
+                    || 10 === strlen($phonenr) // 0457 123 45 67 (but we removed leading zero already)
+                    ) {
+                    $phonenr = "358$phonenr";
+                }
+                break;
         }
 
         if (!preg_match("/^\d{10,15}$/", $phonenr)) {
@@ -4760,7 +4798,7 @@ else:
 
     // Get payment logo based on payment method, then language NT 2023-11-30
     // and based on custom variant setting. $page is the page origin slug, e.g 'cart', 'product'. LP 2025-12-15
-    private function get_payment_logo($page = null) {
+    public function get_payment_logo($page = null) {
         $lang = $this->get_customer_language();
         $payment_method = $this->get_payment_method_name();
         $variant = $this->get_express_logo_page_variant($page);
@@ -5490,5 +5528,40 @@ else:
         $GLOBALS['wp_query'] = $wp_query;
         $wp->register_globals();
         return $wp_post;
+    }
+
+    // Support the interactivity API with data about our cart IOK 2026-02-23
+    public function woo_vipps_store_api_cart_data() {
+        // Reverting the condition with the directive data-wp-bind--hidden does not work, so we need the flipped bool here (hide instead of show). LP 2026-02-10
+
+        $checkout_page = $this->gateway()->vipps_checkout_available();
+        $standard_checkout = get_permalink(get_option('woocommerce_checkout_page_id'));
+        $checkout_url = $checkout_page ? get_permalink($checkout_page) : $standard_checkout;
+        $cart_data = array(
+                'cart_hide_express' =>  !$this->gateway()->show_express_checkout(),
+                'cart_supports_checkout' =>  (bool) $checkout_page,
+                'checkout_url' => $checkout_url,
+                );
+        return $cart_data;
+    }
+
+    public function woo_vipps_store_api_cart_schema() {
+        return array(
+            'cart_hide_express' => array(
+                'description' => sprintf(__( 'Whether to hide the %1$s Express Checkout in the cart', 'woo-vipps' ), $this->get_payment_method_name()),
+                'type'        => array( 'boolean', 'null' ),
+                'readonly'    => true,
+            ),
+            'cart_supports_checkout' => array(
+                'description' => sprintf(__( 'True if %1$s Checkout is active and the cart supports it', 'woo-vipps' ), $this->get_payment_method_name()),
+                'type'        => array( 'boolean', 'null' ),
+                'readonly'    => true,
+            ),
+            'checkout_url' => array(
+                'description' => sprintf(__( 'Current checkout url based on cart state', 'woo-vipps' ), $this->get_payment_method_name()),
+                'type'        => array( 'string', 'null' ),
+                'readonly'    => true,
+            ),
+        );
     }
 }

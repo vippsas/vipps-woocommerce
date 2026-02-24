@@ -82,12 +82,12 @@ export default function Edit({
 					<>
 						<a
 							className="single-product button vipps-buy-now wp-block-button__link"
-							title={blockConfig['BuyNowWithVipps']}
+							title={blockConfig['vippsbuynowbutton']}
 						>
 							<img
 								className="inline vipps-logo-negative"
 								src={logoSrc}
-								alt={blockConfig['BuyNowWithVipps']}
+								alt={blockConfig['vippsbuynowbutton']}
 							/>
 						</a>
 

@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Report version externally
-define('WOO_VIPPS_VERSION', '5.1.5');
+define('WOO_VIPPS_VERSION', '5.1.6');
 
 define( 'WC_VIPPS_PAYMENT_MAIN_FILE', __FILE__ );
 
@@ -101,4 +101,3 @@ add_action( 'woocommerce_shipping_init', function () {
         require_once(dirname(__FILE__) . '/VippsCheckoutShippingMethods.php');
     }
 });
-
