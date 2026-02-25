@@ -26,8 +26,8 @@ class WC_Vipps_Agreement_Initial_Charge extends WC_Vipps_Model {
 	}
 
 	public function set_description( string $description ): self {
-		if ( strlen( $description ) > 45 ) {
-			$description = mb_substr( $description, 0, 42 ) . '...';
+		if ( strlen( $description ) > 100 ) {
+			$description = mb_substr( $description, 0, 97 ) . '...';
 		}
 
 		$this->description = $description;
