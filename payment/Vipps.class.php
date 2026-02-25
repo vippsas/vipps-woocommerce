@@ -739,6 +739,8 @@ jQuery('a.webhook-adder').click(function (e) {
         if (!current_user_can('manage_woocommerce')) {
             wp_die(__('You don\'t have sufficient rights to access this page', 'woo-vipps'));
         }
+        wp_enqueue_script('vipps-onsite-messageing');
+
         $badge_options = get_option('vipps_badge_options');
         
         // Get current brand and language
@@ -1410,12 +1412,6 @@ jQuery('a.webhook-adder').click(function (e) {
         wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
         wp_enqueue_style('vipps-fonts');
         wp_enqueue_style('vipps-fonts',plugins_url('css/fonts.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/fonts.css"), 'all');
-
-        wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION,
-            array(
-                'in_footer' => true,
-                'strategy'  => 'async',
-            ));
     }
 
 
@@ -1487,6 +1483,13 @@ jQuery('a.webhook-adder').click(function (e) {
         }
         wp_register_script('vipps-gw',plugins_url('js/vipps.js',__FILE__),array('jquery','wp-hooks'),filemtime(dirname(__FILE__) . "/js/vipps.js"), 'true');
 
+        // Badges - web components provided by Vipps MobilePay to display payment options in-store.
+        wp_register_script('vipps-onsite-messageing','https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js',array(),WOO_VIPPS_VERSION,
+           array(
+                'in_footer' => true,
+                'strategy'  => 'async',
+            ));
+
     }
 
     // Runs late in both wp_enqueue_scripts and admin_enqueue_scripts to make it more compatible with translation plugins IOK 2026-02-02
@@ -1503,15 +1506,6 @@ jQuery('a.webhook-adder').click(function (e) {
 
         wp_enqueue_script('vipps-gw');
         wp_enqueue_style('vipps-gw',plugins_url('css/vipps.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/vipps.css"));
-        $badges = get_option('vipps_badge_options');
-        // Only enqueue in the front-end if badges are actually on. IOK 2025-07-25
-        if ($badges && ($badges['badgeon'] ?? false)) {
-            wp_enqueue_script('vipps-onsite-messageing',"https://checkout.vipps.no/on-site-messaging/v1/vipps-osm.js",array(),WOO_VIPPS_VERSION,
-           array(
-                'in_footer' => true,
-                'strategy'  => 'async',
-            ));
-        }
     }
 
 
