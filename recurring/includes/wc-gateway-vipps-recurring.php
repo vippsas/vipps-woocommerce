@@ -1603,10 +1603,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order     = wc_get_order( $order_id );
 		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
-		$is_failed_renewal_order = wcs_cart_contains_failed_renewal_order_payment() !== false;
+		$is_failed_renewal_order      = wcs_cart_contains_failed_renewal_order_payment() !== false;
+		$contains_manual_subscription = wcs_order_contains_manual_subscription( $order );
 
 		if ( ! $is_gateway_change
 			 && ! $is_failed_renewal_order
+			 && ! $contains_manual_subscription
 			 && ! wcs_order_contains_subscription( $order )
 			 && ! wcs_order_contains_early_renewal( $order ) ) {
 			return [
@@ -1615,7 +1617,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			];
 		}
 
-		// If we have an early renewal order on our hands we should
+		// If we have an early renewal order on our hands we should deal with it accordingly
 		if ( wcs_order_contains_early_renewal( $order ) ) {
 			$renewal_order = $order;
 
@@ -1757,6 +1759,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				if ( $is_zero_amount ) {
 					WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT, true );
+				}
+
+				if ( $contains_manual_subscription ) {
+					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
+					$subscription->set_payment_method( $this->id );
+					$subscription->save();
 				}
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );

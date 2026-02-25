@@ -4,6 +4,7 @@
 * Fix: Standardize user generation by using the same hooks as express (woo_vipps_express_checkout_new_username and woo_vipps_express_checkout_new_customer).
 * Fix: Initial charge description can now correctly be up to 100 characters instead of 45.
 * Fix: Remove the sending of password reset emails when using Checkout.
+* Fix: Paying for a manual subscription renewal now works as intended.
 
 = 2.2.7 =
 * Fix: Conditionally set status to processing when a payment completes. This fixes a problem where when a payment initially fails, it could get stuck in "On hold".
