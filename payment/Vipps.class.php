@@ -1404,7 +1404,7 @@ jQuery('a.webhook-adder').click(function (e) {
         // Add certain translations very late so translation plugins get a chance to work. IOK 2026-02-02
         $this->script_add_vippslocale();
 
-        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'true');
+        wp_register_script('vipps-admin',plugins_url('js/admin.js',__FILE__),array('jquery','vipps-gw'),filemtime(dirname(__FILE__) . "/js/admin.js"), 'all');
         wp_enqueue_script('vipps-admin');
 
         wp_enqueue_style('vipps-admin-style',plugins_url('css/admin.css',__FILE__),array(),filemtime(dirname(__FILE__) . "/css/admin.css"), 'all');
