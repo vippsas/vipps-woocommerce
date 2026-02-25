@@ -1,0 +1,52 @@
+
+/* For the products blocks IOK 2020-09-03 */
+.wc-block-grid__product .single-product.button.vipps-buy-now .inline.vipps-logo.negative {
+    display: inline-block;
+    margin: 0 .2em;
+    height: 2ex;
+    max-width: 100%;
+    width: auto;
+    vertical-align: text-bottom;
+}
+
+.wc-block-grid__product .single-product.button.vipps-buy-now .inline.mobilepay-logo.negative {
+    display: inline-block;
+    margin: 0 .2em;
+    height: 2ex;
+    max-width: 100%;
+    width: auto;
+    vertical-align: text-bottom;
+}
+
+/* This is for the badge block IOK 2022-11-16 */
+.vipps-badge-wrapper.aligncenter {
+  text-align: center;
+}
+
+/* Gutenberg buy-now product block. LP 02.12.2024 */
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps {
+    text-align: center;
+}
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now{
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
+    padding-top:0;
+    background-color: transparent;
+}
+div.wp-block-button.wc-block-components-product-button.wc-block-button-vipps a.single-product.button.vipps-buy-now img{
+    max-width: 9rem;
+    margin-bottom:0;
+}
+div.vipps_buy_now_wrapper.loop {
+    text-align:center;
+}
+div.vipps_buy_now_wrapper.loop  a.single-product.button.vipps-buy-now img{
+    max-width: 9rem;
+}
+
+/* Specifically the buy-now block injected with blockHooks in minicart guten template. LP 2026-01-29 */
+.wc-block-mini-cart__items a.vipps-express-checkout.button {
+    align-self: center;
+}
+
