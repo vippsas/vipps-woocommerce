@@ -108,6 +108,10 @@ class Vipps {
         add_action( 'woocommerce_loaded', array($Vipps,'woocommerce_loaded'));
         add_filter( 'woocommerce_available_payment_gateways', array($Vipps, 'payment_gateway_filter'));
         add_action( 'woocommerce_blocks_loaded',  [$Vipps, 'woocommerce_blocks_loaded']);
+        // Express Checkout and Vipps Checkout supports the new pickup_location shipping method, but the admin interface for this may
+        // not have loaded if the default checkout solution isn't the Checkout block. We'll load it anyway if the user has any local pickup locations
+        // stored in the database since we support this for both Vipps MobilePay checkokut and Express.  IOK 2026-02-25
+        add_action('woocommerce_load_shipping_methods', array($Vipps, 'maybe_load_pickup_locations'), 90);
     }
 
     // Register woocommerce store api endpoint to use in buy-now minicart block. LP 2026-02-10
@@ -4565,22 +4569,29 @@ else:
         }
     }
 
+    // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
+    // 'checkout-page' or in some template; but that's not nececssarily the case if Vipps MobilePay checkout is active.
+    // Supported also in express checkout. 2026-02-25
+    // We'll add this if admin has stored *any* pickup locations at any point. IOK 2026-02-25
+    // Afterwards, we need to post-process this, because *each* location gets a different rate. See the VippsCheckout class.
+    function maybe_load_pickup_locations () {
+        $locations = get_option('pickup_location_pickup_locations', array());
+        if (!empty($locations) && class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
+            $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
+        }
+    }
+
     // Vipps Checkout and Express Checkout allows loading specific kinds of shipping methods with non-standard APIs, such as PickupLocations. IOK 2025-05-08
-    // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback. 
+    // Must be called *early*. IOK 2025-05-08. Called in callback methods, and if using static shipping, in the 'start session' callback.
     public function load_extra_shipping_methods($order, $addressdata, $ischeckout=false) {
         // If we need to add more shipping methods *before* the shipping callback starts, it must be done before we load the session. IOK 2025-05-06
         add_action('woocommerce_load_shipping_methods', function () use ($order, $addressdata) {
-            // Support local pickup. This is normally only registered when the Gutenberg Checkout block is either on the
-            // 'checkout-page' or in some template; the first case will not occur when Vipps MobilePay Checkout is active, so make sure it is
-            // Express checkout does not support this (yet). IOK 2025-05-06
-            // Afterwards, we need to post-process this, because *each* location gets a different rate. See the VippsCheckout class.
-            if (class_exists('Automattic\WooCommerce\Blocks\Shipping\PickupLocation')) {
-                $ok = wc()->shipping->register_shipping_method( new Automattic\WooCommerce\Blocks\Shipping\PickupLocation() );
-            }
+            // Previously we loaded PickupLocations here; we now do that if any are defined at all. The old custom filter still runs though,
+            // and last. IOK 2026-02-25
             do_action('woo_vipps_express_load_shipping_methods', $order, $addressdata);
         }, 99);
     }
-    
+
 
     // Check the status of the order if it is a part of our session, and return a result to the handler function IOK 2018-05-04
     public function ajax_check_order_status () {
