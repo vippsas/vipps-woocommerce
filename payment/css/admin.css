@@ -54,12 +54,6 @@ table.webhook-table td.actions {
  vertical-align: text-bottom;
 }
 
-
-.editor-styles-wrapper .block-editor-block-icon .vipps-component-icon {
- max-width: 32px;
- max-height: 32px;
-}
-
 /* Gutenberg buy-now product block, copied from vipps.css LP 02.12.2024 */
 .vipps-buy-now-block-edit-header {
     display: flex;
