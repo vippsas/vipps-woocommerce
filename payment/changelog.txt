@@ -1,5 +1,6 @@
 == Changelog ==
-= 2026-0x-xx Version 5.1.7 =
+= 2026-0x-xx Version 5.2.0 =
+Bump required versions of php, WP and Woo to reasonably modern versions
 Fixed all blocks to be compatible with the new iframe based block editor
 Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
 Make the new interactivity based minicart work correctly with Checkout
