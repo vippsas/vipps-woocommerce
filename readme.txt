@@ -3,13 +3,13 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.1.6
-Stable tag: 5.1.6
-Requires at least: 6.2
+Version: 5.1.7
+Stable tag: 5.1.7
+Requires at least: 6.3
 Tested up to: 6.9.1
-Requires PHP: 7.4
+Requires PHP: 8.0
 Requires Plugins: woocommerce
-WC requires at least: 3.3.4
+WC requires at least: 8.0.0
 WC tested up to: 10.5.2
 License: MIT
 License URI: https://choosealicense.com/licenses/mit/
@@ -109,6 +109,10 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.1.7
+Fixed all blocks to be compatible with the new iframe based block editor
+Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
+Make the new interactivity based minicart work correctly with Checkout
 Version 5.1.6
 Support Tutor LMS in Express and Checkout
 Add block to support new interactivity-API based minicart for Express Checkout
@@ -287,6 +291,12 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+
+= 2026-0x-xx Version 5.1.7 =
+Fixed all blocks to be compatible with the new iframe based block editor
+Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
+Make the new interactivity based minicart work correctly with Checkout
+
 = 2026-02-23 version 5.1.6 =
 Fix customer prefill in Checkout
 Add block to support new interactivity-API based minicart for Express Checkout

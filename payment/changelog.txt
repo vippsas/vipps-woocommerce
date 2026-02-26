@@ -1,4 +1,9 @@
 == Changelog ==
+= 2026-0x-xx Version 5.1.7 =
+Fixed all blocks to be compatible with the new iframe based block editor
+Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
+Make the new interactivity based minicart work correctly with Checkout
+
 = 2026-02-23 version 5.1.6 =
 Fix customer prefill in Checkout
 Add block to support new interactivity-API based minicart for Express Checkout
