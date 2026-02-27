@@ -1729,18 +1729,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
+            error_log('LP vipps init timestamp: ' . $order->get_meta('_vipps_init_timestamp'));
         if ($order->get_meta('_vipps_init_timestamp')) {
            $oldurl = $order->get_meta('_vipps_orderurl');
-           $oldstatus = $order->get_meta('_vipps_status');
-
-           // This isn't actually an expired session but it is the same logic; so we'll keep the
-           // text in this 'can't happen' branch
-           if (!$oldurl) {
-              $this->log(sprintf(__("Order %2\$d was attempted restarted, but had no %1\$s session url stored. Cannot continue!", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'error');
-              wc_add_notice(sprintf(__('Order session expired at %1$s, please try again!', 'woo-vipps'), Vipps::CompanyName()), 'error');
-              $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-              return [];
-           }
+            error_log('LP oldurl: ' . print_r($oldurl, true));
+           $oldstatus = $order->get_meta('_vipps_status'); // FIXME: do we have to poll status here, or is it updated since the last try? LP 2026-02-27
+                error_log('LP oldstatus: ' . print_r($oldstatus, true));
+            $vipps_session_closed = 'initiated' !== $this->interpret_vipps_order_status($oldstatus);
+            $oldurl = null; // FIXME: DELETE. LP 2026-02-27
+            if ($vipps_session_closed && !$oldurl) { // FIXME: how should we handle oldurl here, or should we just get a new url..? LP 2026-02-27
+                    error_log('LP branch with no oldurl');
+                    $this->log(sprintf(__("Order %2\$d was attempted restarted, but had no %1\$s session url stored. Cannot continue!", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'error');
+                    wc_add_notice(sprintf(__('Order session expired at %1$s, please try again!', 'woo-vipps'), Vipps::CompanyName()), 'error');
+                    $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                    return [];
+                }
 
            $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
 
@@ -2432,7 +2435,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 } else {
                     /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s, also shipping details are not set.', 'woo-vipps'), Vipps::CompanyName()));
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s, no shipping details.', 'woo-vipps'), Vipps::CompanyName()));
                 }
                 break;
         }
