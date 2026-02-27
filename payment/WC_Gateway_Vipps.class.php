@@ -1729,27 +1729,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
-            error_log('LP vipps init timestamp: ' . $order->get_meta('_vipps_init_timestamp'));
+            error_log('LP vipps init timestamp: ' . $order->get_meta('_vipps_init_timestamp')); // FIXME: delete. LP 2026-02-27
         if ($order->get_meta('_vipps_init_timestamp')) {
-           $oldurl = $order->get_meta('_vipps_orderurl');
+            $oldurl = $order->get_meta('_vipps_orderurl');
             error_log('LP oldurl: ' . print_r($oldurl, true));
-           $oldstatus = $order->get_meta('_vipps_status'); // FIXME: do we have to poll status here, or is it updated since the last try? LP 2026-02-27
-                error_log('LP oldstatus: ' . print_r($oldstatus, true));
-            $vipps_session_closed = 'initiated' !== $this->interpret_vipps_order_status($oldstatus);
             $oldurl = null; // FIXME: DELETE. LP 2026-02-27
-            if ($vipps_session_closed && !$oldurl) { // FIXME: how should we handle oldurl here, or should we just get a new url..? LP 2026-02-27
-                    error_log('LP branch with no oldurl');
-                    $this->log(sprintf(__("Order %2\$d was attempted restarted, but had no %1\$s session url stored. Cannot continue!", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'error');
-                    wc_add_notice(sprintf(__('Order session expired at %1$s, please try again!', 'woo-vipps'), Vipps::CompanyName()), 'error');
-                    $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-                    return [];
-                }
 
-           $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+            // Poll status at VMP here to verify session is still open. LP 2026-02-27
+            $vipps_status = $this->callback_check_order_status($order);
+            error_log('LP vipps_status: ' . print_r($vipps_status, true));
+            $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
+            error_log('LP vipps_session_open: ' . print_r($vipps_session_open, true));
 
-           return array('result'=>'success','redirect'=>$oldurl);
+            // Do we have an active session we can redirect to? LP 2026-02-27
+            if ($vipps_session_open && $oldurl) {
+                $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+                return array('result'=>'success','redirect'=>$oldurl);
+            }
+            // If not, then we need to create a new session. We will add a retry suffix to the
+            // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
+            error_log('LP branch with no oldurl');
+            $this->log(sprintf(__("Order %2\$d session could not be restored, creating new session with incremental retry.", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'info');
+            // TODO: the retry session LP 2026-02-27
+            return [];
         }
-
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
         $this->save_session_in_order($order);
