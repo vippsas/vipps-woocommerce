@@ -292,7 +292,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
 
 == Changelog ==
 
-= 2026-0x-xx Version 5.2.0 =
+= 2026-03-02 Version 5.2.0 =
 Bump required versions of php, WP and Woo to reasonably modern versions
 Fixed all blocks to be compatible with the new iframe based block editor
 Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
