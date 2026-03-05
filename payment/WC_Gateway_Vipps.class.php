@@ -1762,7 +1762,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order->save_meta_data();
             $requestid .= "-$retrycount";
             error_log('LP requestid: ' . print_r($requestid, true));
-            // NOTE: this filter is, as of writing, applied for epayment session creation, checkout session creation, and static shipping. LP 2026-03-05
+            // NOTE: this filter is, as of writing, applied for epayment session
+            // creation, checkout session creation, and static shipping. But Checkout
+            // does not run this method so it shouldn't be affected. LP 2026-03-05
             add_filter('woo_vipps_orderid', function($woovippsid, $prefix, $order) use ($retrycount) {
                 error_log("LP vipps orderid ($woovippsid) filter for order: " . $order->get_id());
                 return "$woovippsid-$retrycount";
