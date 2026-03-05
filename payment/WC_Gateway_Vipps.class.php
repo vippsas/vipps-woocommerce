@@ -1726,6 +1726,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
              return [];
         }
 
+        $requestid = $order->get_order_key();
+
         // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
@@ -1744,17 +1746,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP vipps_session_open: ' . print_r($vipps_session_open, true));
 
             // Do we have an active session we can redirect to? LP 2026-02-27
+            error_log('LP oldurl: ' . print_r($oldurl, true));
+            $oldurl = null;
             if ($vipps_session_open && $oldurl) {
                 $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
                 return array('result'=>'success','redirect'=>$oldurl);
             }
             // If not, then we need to create a new session. We will add a retry suffix to the
             // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
-            error_log('LP branch with no oldurl');
+            error_log('LP we are in the new retry session branch!');
             $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry.", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'info');
             $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
+            error_log('LP retrycount: ' . print_r($retrycount, true));
             $order->update_meta_data('_vipps_retry_count', $retrycount);
             $order->save_meta_data();
+            $requestid .= "-$retrycount";
+            error_log('LP requestid: ' . print_r($requestid, true));
+            // NOTE: this filter is, as of writing, applied for epayment session creation, checkout session creation, and static shipping. LP 2026-03-05
             add_filter('woo_vipps_orderid', function($woovippsid, $prefix, $order) use ($retrycount) {
                 error_log("LP vipps orderid ($woovippsid) filter for order: " . $order->get_id());
                 return "$woovippsid-$retrycount";
@@ -1787,13 +1795,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
-            $requestid = $order->get_order_key();
             $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+            error_log('LP success epayment initiate payment');
         } catch (TemporaryVippsApiException $e) {
+            error_log('LP vippsexception epayment initiate payment');
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
         } catch (Exception $e) {
+            error_log('LP exception epayment initiate payment');
 
             // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
             // log some more info IOK 2022-11-02
@@ -2424,7 +2434,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
         }
 
-        $vippsstatus = 'cancelled'; // FIXME: delete. LP 2026-02-20
+        // $vippsstatus = 'cancelled'; // FIXME: delete. LP 2026-02-20
         # Since the order is pending, and the vipps status has changed, switch to the correct vipps status in woo too IOK 2025-10-24
         switch ($vippsstatus) {
             case 'authorized':
