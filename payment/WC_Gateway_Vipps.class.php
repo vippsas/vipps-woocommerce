@@ -3528,6 +3528,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
                 $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
             }
+            $order = wc_get_order($order->get_id());
         }
 
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
@@ -3540,8 +3541,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            // Set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
-            // $order->update_meta_data('_vipps_shipping_set', false);
+            // Not ok status; set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
             if ($order->get_meta('_vipps_shipping_set')) {
                 /* translators: company name */
                 $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
@@ -3550,6 +3550,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s, cannot set to failed with missing shipping details', 'woo-vipps'), Vipps::CompanyName()));
             }
         }
+
         $order->save();
         clean_post_cache($order->get_id());
 
