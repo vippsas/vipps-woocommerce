@@ -3540,7 +3540,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+            // Set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
+            // $order->update_meta_data('_vipps_shipping_set', false);
+            if ($order->get_meta('_vipps_shipping_set')) {
+                /* translators: company name */
+                $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+            } else {
+                /* translators: company name */
+                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s, cannot set to failed with missing shipping details', 'woo-vipps'), Vipps::CompanyName()));
+            }
         }
         $order->save();
         clean_post_cache($order->get_id());
