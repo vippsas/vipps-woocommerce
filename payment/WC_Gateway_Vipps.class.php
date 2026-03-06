@@ -1676,7 +1676,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2018-04-20 Initiate payment at Vipps and redirect to the Vipps payment terminal.
     public function process_payment ($order_id) {
-        error_log('LP process_payment running');
         global $woocommerce, $Vipps;
         if (!$order_id) return [];
 
@@ -1732,41 +1731,30 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
-        error_log('LP vipps init timestamp: ' . $order->get_meta('_vipps_init_timestamp')); // FIXME: delete. LP 2026-02-27
         if ($order->get_meta('_vipps_init_timestamp')) {
-            error_log('LP hello we are in restart branch');
             $oldurl = $order->get_meta('_vipps_orderurl');
-            error_log('LP oldurl: ' . print_r($oldurl, true));
-            $oldurl = null; // FIXME: DELETE. LP 2026-02-27
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
             $vipps_status = $this->callback_check_order_status($order);
-            error_log('LP vipps_status: ' . print_r($vipps_status, true));
             $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
-            error_log('LP vipps_session_open: ' . print_r($vipps_session_open, true));
 
             // Do we have an active session we can redirect to? LP 2026-02-27
-            error_log('LP oldurl: ' . print_r($oldurl, true));
-            $oldurl = null;
             if ($vipps_session_open && $oldurl) {
                 $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
                 return array('result'=>'success','redirect'=>$oldurl);
             }
             // If not, then we need to create a new session. We will add a retry suffix to the
             // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
-            error_log('LP we are in the new retry session branch!');
             $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry.", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'info');
             $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
-            error_log('LP retrycount: ' . print_r($retrycount, true));
             $order->update_meta_data('_vipps_retry_count', $retrycount);
             $order->save_meta_data();
             $requestid .= "-$retrycount";
-            error_log('LP requestid: ' . print_r($requestid, true));
+
             // NOTE: this filter is, as of writing, applied for epayment session
             // creation, checkout session creation, and static shipping. But Checkout
             // does not run this method so it shouldn't be affected. LP 2026-03-05
             add_filter('woo_vipps_orderid', function($woovippsid, $prefix, $order) use ($retrycount) {
-                error_log("LP vipps orderid ($woovippsid) filter for order: " . $order->get_id());
                 return "$woovippsid-$retrycount";
             }, 999, 3);
         }
@@ -2450,7 +2438,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
             case 'cancelled':
                 // Set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
-                // $order->update_meta_data('_vipps_shipping_set', false);
                 if ($order->get_meta('_vipps_shipping_set')) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
