@@ -1676,6 +1676,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2018-04-20 Initiate payment at Vipps and redirect to the Vipps payment terminal.
     public function process_payment ($order_id) {
+            error_log('LP process payment running');
         global $woocommerce, $Vipps;
         if (!$order_id) return [];
 
@@ -1732,6 +1733,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
         if ($order->get_meta('_vipps_init_timestamp')) {
+            error_log('LP we have vipps timestamp');
             $oldurl = $order->get_meta('_vipps_orderurl');
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
@@ -1740,6 +1742,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
             // Do we have an active session we can redirect to? LP 2026-02-27
             if ($vipps_session_open && $oldurl) {
+                error_log('LP we have active session, return this early');
                 $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
                 return array('result'=>'success','redirect'=>$oldurl);
             }
@@ -1747,6 +1750,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
             $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry.", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'info');
             $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
+            error_log('LP retrycount: ' . print_r($retrycount, true));
             $order->update_meta_data('_vipps_retry_count', $retrycount);
             $order->save_meta_data();
             $requestid .= "-$retrycount";
@@ -3039,6 +3043,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
+        error_log('LP set_order_shipping_details running');
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;

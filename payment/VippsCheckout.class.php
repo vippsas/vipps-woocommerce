@@ -183,11 +183,14 @@ jQuery(document).ready(function () {
 
     # Called in admin-post and will finalize a Vipps Checkout order + send the customer to the payment page.
     public function choose_other_gw () {
+        error_log('LP choose_other_gw running');
         $orderid = intval($_GET['o']);
+error_log('LP orderid: ' . print_r($orderid, true));
         $gw = trim(sanitize_title($_GET['gw']));
         if ($gw == 'any') $gw = "";
         $nonce = $_GET['cb'];
         $ok = wp_verify_nonce($nonce, 'vipps_gw');
+error_log('LP ok: ' . print_r($ok, true));
         if (!$ok) {
             $this->abandonVippsCheckoutOrder(false);
             $this->log(sprintf(__("Orderid %1\$s: Wrong nonce when trying to switch payment methods.", 'woo-vipps'), $orderid), 'error');
@@ -195,6 +198,7 @@ jQuery(document).ready(function () {
         }
         $order = wc_get_order($orderid);
         if (!$order || $order->get_status() != 'pending') {
+error_log('LP missing order or not pending status');
             $this->abandonVippsCheckoutOrder(false);
             $this->log(sprintf(__("Orderid %1\$s is not pending when choosing another payment method from Vipps Checkout", 'woo-vipps'), $orderid), 'error');
             wp_redirect(home_url());
@@ -204,6 +208,7 @@ jQuery(document).ready(function () {
         WC()->initialize_session();
 
         if (WC()->session) { 
+            error_log('LP has session');
             if (! WC()->session->has_session()) {
                 WC()->session->set_customer_session_cookie( true );
             }
@@ -239,6 +244,7 @@ jQuery(document).ready(function () {
         }
 
         $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+        error_log('LP current_pending: ' . print_r($current_pending, true));
 
         # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
         $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
@@ -1239,6 +1245,7 @@ jQuery(document).ready(function () {
     } 
     
      public function abandonVippsCheckoutOrder($order) {
+        error_log('LP abandonVippsCheckoutOrder running');
 
         if (WC()->session) {
             WC()->session->set('vipps_checkout_current_pending',0);
