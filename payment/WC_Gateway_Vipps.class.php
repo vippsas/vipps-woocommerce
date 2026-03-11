@@ -1735,6 +1735,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->get_meta('_vipps_init_timestamp')) {
             error_log('LP we have vipps timestamp');
             $oldurl = $order->get_meta('_vipps_orderurl');
+            $oldurl ='';
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
             $vipps_status = $this->callback_check_order_status($order);
@@ -1748,9 +1749,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             // If not, then we need to create a new session. We will add a retry suffix to the
             // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
-            $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry.", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'info');
+            /* translators: number of attempts, order id. */
             $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
-            error_log('LP retrycount: ' . print_r($retrycount, true));
+            $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
             $order->update_meta_data('_vipps_retry_count', $retrycount);
             $order->save_meta_data();
             $requestid .= "-$retrycount";
@@ -2309,6 +2310,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
+            error_log('LP polling order ' . $order->get_id());
         global $Vipps;
         $orderid = $order->get_id();
 
@@ -2439,6 +2441,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
             case 'cancelled':
                 // Set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
+                error_log('LP in poll vipps status is cancelled, setting wc status');
                 if ($order->get_meta('_vipps_shipping_set')) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
@@ -2470,6 +2473,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // IOK 2025-08-12: Three cases; either this is Checkout, in which case we need to get user/shipping-data from the checkout session,
         // or it is Express Checkout or normal payment, in which cases we just retrieve the payment from the epayment API - possibly containing user data
+            error_log('LP get_payment_details, this is checkout?: ' . !!$checkout_session);
         if ($checkout_session) {
             try {
                 $result = $this->api->checkout_get_session_info($order);
