@@ -1740,8 +1740,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->callback_check_order_status($order);
             $order = wc_get_order($order);
             $vipps_status = $order->get_meta('_vipps_status');
-            error_log('LP vipps_status: ' . print_r($vipps_status, true));
-            error_log('LP interpreted status: ' . $this->interpret_vipps_order_status($vipps_status));
             $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
             error_log('LP vipps_session_open: ' . print_r($vipps_session_open, true));
 

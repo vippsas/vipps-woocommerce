@@ -2772,7 +2772,6 @@ else:
            $result['orderId'] = $result['reference'];
         }
         
-error_log("LP vipps_callback running for vippsorderid=$vippsorderid, \$callback=$callback");
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
 
         if (!$result) {
@@ -2826,15 +2825,11 @@ error_log("LP vipps_callback running for vippsorderid=$vippsorderid, \$callback=
                 } else {
                     // If it isn't, but it is a payment event, get the order id from the epayment metadata. IOK 2023-12-21
                     try {
-error_log('LP vipps_callback vippsorderid: ' . print_r($vippsorderid, true));
                         $polldata = $this->gateway()->api->epayment_get_payment($vippsorderid, $msn);
                         if ($polldata && isset($polldata['metadata'])) {
                             $orderid = $polldata['metadata']['orderid'];
-error_log('LP vipps_callback orderid from polldata: ' . print_r($orderid, true));
                             if ($orderid) {
                                 $order = wc_get_order($orderid);
-error_log('LP vipps_callback, has order?: ' . !!$order);
-error_log('LP vipps_callback order meta for vipps orderid:'. $order->get_meta('_vipps_orderid'));
                                 if (!$order || $vippsorderid != $order->get_meta('_vipps_orderid')) {
                                     $this->log(
                                         sprintf(__('The reference %1$s and order id %2$s does not match in webhook event %3$s - callback is invalid for the order.', 'woo-vipps'),
