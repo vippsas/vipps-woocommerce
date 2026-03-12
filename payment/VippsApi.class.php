@@ -509,8 +509,11 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
 
-        // Reset checkout session meta for epayment, since we now support restarting the same order's payment with retry sessions, meaning an aborted Checkout session would previously create a new order instead. LP 2026-03-11
-        $order->delete_meta_data('_vipps_checkout_session');
+        // Reset checkout and express metas if shipping is set, since we now support restarting the same order's payment with retry sessions. This will stop us incorrectly thinking this is still a checkout session. LP 2026-03-11
+        if ($order->get_meta('_vipps_shipping_set')) {
+            $order->delete_meta_data('_vipps_checkout_session');
+            $order->delete_meta_data('_vipps_express_checkout'); // This was set for checkout, so clear it too. LP 2026-03-12
+        }
 
 
         $headers = $this->get_headers($msn);

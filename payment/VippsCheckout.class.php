@@ -1239,7 +1239,6 @@ jQuery(document).ready(function () {
     } 
     
      public function abandonVippsCheckoutOrder($order) {
-        error_log('LP abandonVippsCheckoutOrder running for order ' . $order->get_id());
 
         if (WC()->session) {
             WC()->session->set('vipps_checkout_current_pending',0);
