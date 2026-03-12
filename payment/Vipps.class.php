@@ -2774,6 +2774,7 @@ else:
            $result['orderId'] = $result['reference'];
         }
         
+error_log("LP vipps_callback running for vippsorderid=$vippsorderid, \$callback=$callback");
         do_action('woo_vipps_vipps_callback', $result,$raw_post);
 
         if (!$result) {

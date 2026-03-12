@@ -529,6 +529,9 @@ class VippsApi {
         }
         $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
 
+        // Reset checkout session meta for epayment, since we now support restarting the same order's payment with retry sessions, meaning an aborted Checkout session would previously create a new order instead. LP 2026-03-11
+        $order->delete_meta_data('_vipps_checkout_session');
+
         $order->update_meta_data('_vipps_api', 'epayment');
         $order->update_meta_data('_vipps_prefix',$prefix);
         $order->update_meta_data('_vipps_orderid', $vippsorderid);

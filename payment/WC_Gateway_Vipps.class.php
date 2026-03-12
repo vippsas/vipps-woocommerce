@@ -1735,7 +1735,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->get_meta('_vipps_init_timestamp')) {
             error_log('LP we have vipps timestamp');
             $oldurl = $order->get_meta('_vipps_orderurl');
-            $oldurl ='';
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
             $vipps_status = $this->callback_check_order_status($order);
@@ -1747,6 +1746,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
                 return array('result'=>'success','redirect'=>$oldurl);
             }
+            
             // If not, then we need to create a new session. We will add a retry suffix to the
             // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
             /* translators: number of attempts, order id. */
