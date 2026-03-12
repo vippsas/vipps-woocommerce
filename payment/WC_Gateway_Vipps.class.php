@@ -1720,7 +1720,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $content = null;
 
         // Should be impossible, but there we go IOK 2022-04-21
-        if (! $order->has_status('pending', 'failed')) {
+        if (! $order->has_status(['pending', 'failed'])) {
              $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
              wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
              return [];
@@ -1745,7 +1745,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return array('result'=>'success','redirect'=>$oldurl);
             }
             
-            // If not, then we need to create a new retry session with incremting index. LP 2026-03-12
+            // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
             if (apply_filters('woo_vipps_enable_payment_restart', true)) {
                 $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
                 /* translators: number of attempts, order id. */
@@ -1753,9 +1753,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->update_meta_data('_vipps_retry_count', $retrycount);
                 $order->save_meta_data();
             } else {
-                // If restarting is disabled, then we have to cancel it. LP 2026-03-12
+                // If restarting is disabled, then we have to cancel the order. LP 2026-03-12
                 /* translators: order id. */
-                $this->log(sprintf(__("Order %1\$d session could not be restored, and payment restarting is disabled. Cancelling the order!", 'woo-vipps'), $order_id), 'warning');
+                $this->log(sprintf(__('Order %1$d session could not be restored, and payment restarting is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'warning');
                 $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
                 return [];
             }
