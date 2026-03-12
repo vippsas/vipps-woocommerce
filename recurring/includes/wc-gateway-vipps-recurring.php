@@ -596,7 +596,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$pending_charge = $initial ? 1 : (int) WC_Vipps_Recurring_Helper::get_meta( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING );
 		$did_fail       = WC_Vipps_Recurring_Helper::is_charge_failed_for_order( $order );
 
-		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! $is_renewal ) {
 			WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_CHARGE_PENDING, false );
 			$this->unlock_order( $order );
 
@@ -807,15 +807,18 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		// status: CANCELLED
-		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED ) {
+		if ( $charge->status === WC_Vipps_Charge::STATUS_CANCELLED && ! wcs_order_contains_renewal( $order ) ) {
 			$order->update_status( 'cancelled', __( 'Vipps/MobilePay payment cancelled.', 'woo-vipps' ) );
 			WC_Vipps_Recurring_Helper::set_order_as_not_pending( $order );
 
 			WC_Vipps_Recurring_Logger::log( sprintf( '[%s] Charge cancelled: %s', WC_Vipps_Recurring_Helper::get_id( $order ), $charge->id ) );
 		}
 
-		// status: FAILED
-		if ( $charge->status === WC_Vipps_Charge::STATUS_FAILED ) {
+		// status: FAILED, or CANCELLED (renewal)
+		if ( in_array( $charge->status, [
+			WC_Vipps_Charge::STATUS_FAILED,
+			WC_Vipps_Charge::STATUS_CANCELLED
+		], true ) ) {
 			$order->update_status( 'failed', __( 'Vipps/MobilePay payment failed.', 'woo-vipps' ) );
 			WC_Vipps_Recurring_Helper::set_order_charge_failed( $order, $charge );
 
@@ -1550,7 +1553,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		}
 
 		if ( $has_campaign ) {
-			$campaign_price = $has_free_campaign ? $sign_up_fee : $order->get_total();
+			$campaign_price = $has_free_campaign ? 0 : $order->get_total();
 
 			$campaign_type   = WC_Vipps_Agreement_Campaign::TYPE_PRICE_CAMPAIGN;
 			$campaign_period = null;
@@ -1600,10 +1603,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 		$order     = wc_get_order( $order_id );
 		$debug_msg = sprintf( '[%s] process_payment (gateway change: %s)', $order_id, $is_gateway_change ? 'Yes' : 'No' ) . "\n";
 
-		$is_failed_renewal_order = wcs_cart_contains_failed_renewal_order_payment() !== false;
+		$is_failed_renewal_order      = wcs_cart_contains_failed_renewal_order_payment() !== false;
+		$contains_manual_subscription = wcs_order_contains_manual_subscription( $order );
 
 		if ( ! $is_gateway_change
 			 && ! $is_failed_renewal_order
+			 && ! $contains_manual_subscription
 			 && ! wcs_order_contains_subscription( $order )
 			 && ! wcs_order_contains_early_renewal( $order ) ) {
 			return [
@@ -1612,7 +1617,7 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			];
 		}
 
-		// If we have an early renewal order on our hands we should
+		// If we have an early renewal order on our hands we should deal with it accordingly
 		if ( wcs_order_contains_early_renewal( $order ) ) {
 			$renewal_order = $order;
 
@@ -1754,6 +1759,12 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 
 				if ( $is_zero_amount ) {
 					WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_ORDER_ZERO_AMOUNT, true );
+				}
+
+				if ( $contains_manual_subscription ) {
+					WC_Vipps_Recurring_Helper::update_meta_data( $subscription, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
+					$subscription->set_payment_method( $this->id );
+					$subscription->save();
 				}
 
 				WC_Vipps_Recurring_Helper::update_meta_data( $order, WC_Vipps_Recurring_Helper::META_AGREEMENT_ID, $response['agreementId'] );
@@ -2606,7 +2617,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$supports = WC_Vipps_Recurring::get_instance()->gateway_should_be_active();
+		$supports = WC_Vipps_Recurring::get_instance()->gateway_should_be_active()
+					&& WC_Subscriptions_Cart::cart_contains_subscription();
 
 		return apply_filters( 'wc_vipps_recurring_cart_supports_checkout', $supports, $cart );
 	}

@@ -12,4 +12,7 @@
 
 .vipps-smile.vipps-component-icon {
     width: 24px;
+    max-width: 32px;
+    max-height: 32px;
 }
+
