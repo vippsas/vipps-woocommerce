@@ -754,7 +754,7 @@ class VippsApi {
         // Required for Checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
-//        $headers['Idempotency-Key'] = $requestid;
+        $headers['Idempotency-Key'] = $requestid;
 
         // Object to send.
         $data = array();

@@ -489,7 +489,7 @@ jQuery(document).ready(function () {
             $phone = get_user_meta(get_current_user_id(), 'billing_phone', true);
         }
         $order_id = $order->get_id();
-        $requestid = 1;
+        $requestid = $order->get_order_key();
         $returnurl = Vipps::instance()->payment_return_url();
         $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
