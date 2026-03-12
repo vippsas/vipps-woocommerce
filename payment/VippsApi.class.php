@@ -490,12 +490,15 @@ class VippsApi {
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
     // Not any more: Express Checkout is started if the logistics parameters are set. IOK 2025-06-19
     public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
+        error_log('LP epayment_initiate_payment running for order ' . $order->get_id());
         $command = 'epayment/v1/payments';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
+        error_log('LP static_shipping: ' . print_r($static_shipping, true));
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
+        error_log('LP needs_shipping: ' . print_r($needs_shipping, true));
 
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
@@ -505,6 +508,10 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
+
+        // Reset checkout session meta for epayment, since we now support restarting the same order's payment with retry sessions, meaning an aborted Checkout session would previously create a new order instead. LP 2026-03-11
+        $order->delete_meta_data('_vipps_checkout_session');
+
 
         $headers = $this->get_headers($msn);
         $headers['Idempotency-Key'] = $requestid;
@@ -528,9 +535,6 @@ class VippsApi {
             $woovippsid = $prefix . $paddedid;
         }
         $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
-
-        // Reset checkout session meta for epayment, since we now support restarting the same order's payment with retry sessions, meaning an aborted Checkout session would previously create a new order instead. LP 2026-03-11
-        $order->delete_meta_data('_vipps_checkout_session');
 
         $order->update_meta_data('_vipps_api', 'epayment');
         $order->update_meta_data('_vipps_prefix',$prefix);

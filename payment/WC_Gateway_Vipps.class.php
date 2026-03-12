@@ -2447,7 +2447,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 } else {
                     /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s, cannot set to failed with missing shipping details.', 'woo-vipps'), Vipps::CompanyName()));
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s, cannot set to failed due to missing shipping details.', 'woo-vipps'), Vipps::CompanyName()));
                 }
                 break;
         }
