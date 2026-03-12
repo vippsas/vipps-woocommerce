@@ -1726,8 +1726,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
              return [];
         }
 
-        $requestid = $order->get_order_key();
-
         // If the Vipps order already has an init-timestamp, we should *not* call init_payment again,
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
@@ -1735,6 +1733,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->get_meta('_vipps_init_timestamp')) {
             error_log('LP we have vipps timestamp');
             $oldurl = $order->get_meta('_vipps_orderurl');
+            $oldurl=  '';
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
             $vipps_status = $this->callback_check_order_status($order);
@@ -1749,16 +1748,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             
             // If not, then we need to create a new session. We will add a retry suffix to the
             // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
-            /* translators: number of attempts, order id. */
             $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
+
+            /* translators: number of attempts, order id. */
             $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
             $order->update_meta_data('_vipps_retry_count', $retrycount);
             $order->save_meta_data();
-            $requestid .= "-$retrycount";
-
-            add_filter('woo_vipps_orderid', function($woovippsid, $prefix, $order) use ($retrycount) {
-                return "$woovippsid-$retrycount";
-            }, 999, 3);
         }
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
@@ -1787,7 +1782,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
-            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
             error_log('LP success epayment initiate payment');
         } catch (TemporaryVippsApiException $e) {
             error_log('LP vippsexception epayment initiate payment');

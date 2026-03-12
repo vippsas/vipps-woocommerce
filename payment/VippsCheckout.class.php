@@ -489,7 +489,6 @@ jQuery(document).ready(function () {
             $phone = get_user_meta(get_current_user_id(), 'billing_phone', true);
         }
         $order_id = $order->get_id();
-        $requestid = $order->get_order_key();
         $returnurl = Vipps::instance()->payment_return_url();
         $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
@@ -532,7 +531,7 @@ jQuery(document).ready(function () {
         $customerinfo = apply_filters('woo_vipps_customerinfo', $customerinfo, $order);
 
         try {
-            $session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken,$requestid); 
+            $session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken); 
             if ($session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
