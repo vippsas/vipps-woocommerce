@@ -545,7 +545,8 @@ class VippsApi {
         }
         $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
         
-        // Retry sessions: add retry index to reference and idempotency key. LP 2026-03-12
+        // Retry sessions: add retry index to reference and idempotency key.
+        // this allows merchants to still correlate the WC order id to the VMP reference. LP 2026-03-12
         $retrycount = intval($order->get_meta('_vipps_retry_count'));
         if ($retrycount) {
             $vippsorderid .= "-$retrycount";

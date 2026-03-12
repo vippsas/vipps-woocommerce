@@ -1746,14 +1746,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 return array('result'=>'success','redirect'=>$oldurl);
             }
             
-            // If not, then we need to create a new session. We will add a retry suffix to the
-            // order id reference for VMP, so merchants can still correlate the WC order id to the VMP reference. LP 2026-02-27
-            $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
-
-            /* translators: number of attempts, order id. */
-            $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
-            $order->update_meta_data('_vipps_retry_count', $retrycount);
-            $order->save_meta_data();
+            // If not, then we need to create a new retry session with incremting index. LP 2026-03-12
+            if (apply_filters('woo_vipps_enable_payment_restart', true)) {
+                $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
+                /* translators: number of attempts, order id. */
+                $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
+                $order->update_meta_data('_vipps_retry_count', $retrycount);
+                $order->save_meta_data();
+            }
         }
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
