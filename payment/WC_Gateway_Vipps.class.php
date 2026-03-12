@@ -1733,7 +1733,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         if ($order->get_meta('_vipps_init_timestamp')) {
             error_log('LP we have vipps timestamp');
             $oldurl = $order->get_meta('_vipps_orderurl');
-            $oldurl=  '';
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
             $vipps_status = $this->callback_check_order_status($order);
@@ -1753,6 +1752,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
                 $order->update_meta_data('_vipps_retry_count', $retrycount);
                 $order->save_meta_data();
+            } else {
+                // If restarting is disabled, then we have to cancel it. LP 2026-03-12
+                /* translators: order id. */
+                $this->log(sprintf(__("Order %1\$d session could not be restored, and payment restarting is disabled. Cancelling the order!", 'woo-vipps'), $order_id), 'warning');
+                $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                return [];
             }
         }
 
