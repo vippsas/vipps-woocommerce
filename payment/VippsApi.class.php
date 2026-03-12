@@ -511,10 +511,16 @@ class VippsApi {
 
         if (!$idempotency_key) $idempotency_key = $order->get_order_key();
 
-        // Reset checkout and express metas if shipping is set, since we now support restarting the same order's payment with retry sessions. This will stop us incorrectly thinking this is still a checkout session. LP 2026-03-11
+        // Reset certain vipps meta data if we already have shipping, to avoid conflict since we now support restarting the same order's payment with retry sessions. LP 2026-03-11
         if ($order->get_meta('_vipps_shipping_set')) {
             $order->delete_meta_data('_vipps_checkout_session');
             $order->delete_meta_data('_vipps_express_checkout'); // This is set for checkout, so clear it too. LP 2026-03-12
+            $order->delete_meta_data('_vipps_init_timestamp');
+            $order->delete_meta_data('_vipps_callback_timestamp');
+            $order->delete_meta_data('_vipps_capture_timestamp');
+            $order->delete_meta_data('_vipps_refund_timestamp');
+            $order->delete_meta_data('_vipps_cancel_timestamp');
+
         }
 
         $headers = $this->get_headers($msn);
