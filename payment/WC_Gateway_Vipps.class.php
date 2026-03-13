@@ -2435,14 +2435,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
-                // We can only set the order to failed if we have finalized shipping, so restarting the payment with a retry session will work.
-                // Otherwise we need to cancel it so it wont be retried. LP 2026-03-13
-                if ($order->get_meta('_vipps_shipping_set')) {
+                $api = $order->get_meta('_vipps_api');
+                $nonexpress_epayment = 'epayment' === $api && !$order->get_meta('_vipps_express_checkout');
+                $shipping_set = $order->get_meta('_vipps_shipping_set');
+                $order_finalized = $nonexpress_epayment || $shipping_set;
+
+                // Unfinalized orders should not be retried, so only set to failed if finalized. LP 2026-03-13
+                if ($order_finalized) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 } else {
                     /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s (cannot set to failed due to unfinalized shipping details).', 'woo-vipps'), Vipps::CompanyName()));
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s (cannot set to failed because order is not finalized).', 'woo-vipps'), Vipps::CompanyName()));
                 }
                 break;
         }
@@ -3526,13 +3530,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            // Not ok status; set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
-            if ($order->get_meta('_vipps_shipping_set')) {
+            // Not ok status; set to failed/cancelled
+            $api = $order->get_meta('_vipps_api');
+            $nonexpress_epayment = 'epayment' === $api && !$express;
+            $shipping_set = $order->get_meta('_vipps_shipping_set');
+            $order_finalized = $nonexpress_epayment || $shipping_set;
+
+            // Unfinalized orders should not be retried, so only set to failed if finalized. LP 2026-03-13
+            if ($order_finalized) {
                 /* translators: company name */
                 $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
             } else {
                 /* translators: company name */
-                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s, cannot set to failed with missing shipping details', 'woo-vipps'), Vipps::CompanyName()));
+                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s (cannot set to failed because order is not finalized)', 'woo-vipps'), Vipps::CompanyName()));
             }
         }
 
