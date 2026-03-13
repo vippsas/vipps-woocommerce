@@ -2790,7 +2790,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
     // Also, epayment uses mobileNumber and checkout uses phoneNumber, so normalize.
-    private function ensure_userDetails($vippsdata, $order) {
+    public function ensure_userDetails($vippsdata, $order) {
         $userDetails = [];
 
         // If we have userDetails, use it (ecom API with user data requested - Express Checkout

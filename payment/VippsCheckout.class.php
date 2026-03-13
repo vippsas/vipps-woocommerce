@@ -242,6 +242,8 @@ jQuery(document).ready(function () {
 
         # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
         $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+        // As of writing, userDetails is not included in the return. LP 2026-03-13
+        $paymentdetails = WC_Gateway_Vipps::instance()->ensure_userDetails($paymentdetails, $order);
 
         // Unless the order actually somehow doesn't exist anymore - this should not be possible but let's handle it
         if ($paymentdetails && isset($paymentdetails['status']) && $paymentdetails['status'] == 'CANCEL') {
