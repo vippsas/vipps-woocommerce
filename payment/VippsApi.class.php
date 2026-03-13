@@ -508,16 +508,16 @@ class VippsApi {
 
         if (!$idempotency_key) $idempotency_key = $order->get_order_key();
 
-        // Reset certain vipps meta data if we already have shipping, to avoid conflict since we now support restarting the same order's payment with retry sessions. LP 2026-03-11
+        // Make sure to clean up old metas, since we now support restarting order payment with Vipps retry sesssions,
+        // so these may be set and cause conflicts. LP 2026-03-11
         if ($order->get_meta('_vipps_shipping_set')) {
             $order->delete_meta_data('_vipps_checkout_session');
-            $order->delete_meta_data('_vipps_express_checkout'); // This is set for checkout, so clear it too. LP 2026-03-12
+            $order->delete_meta_data('_vipps_express_checkout'); // note: This is also set for Checkout. LP 2026-03-12
             $order->delete_meta_data('_vipps_init_timestamp');
             $order->delete_meta_data('_vipps_callback_timestamp');
             $order->delete_meta_data('_vipps_capture_timestamp');
             $order->delete_meta_data('_vipps_refund_timestamp');
             $order->delete_meta_data('_vipps_cancel_timestamp');
-
         }
 
         $headers = $this->get_headers($msn);
@@ -541,9 +541,11 @@ class VippsApi {
             $woovippsid = $prefix . $paddedid;
         }
         $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
-        
-        // Retry sessions: add retry index to reference and idempotency key.
-        // this allows merchants to still correlate the WC order id to the VMP reference. LP 2026-03-12
+
+        // Retry sessions: add retry index to reference and idempotency key. Note: reusing idempotency key even 
+        // with a different reference will result in fail. We also dont want to regenerate the order key (which is used as idempotency key by default)
+        // since that may have unwanted effects (e.g. links in session/emails may stop working). LP 2026-03-13
+        // https://developer.vippsmobilepay.com/docs/knowledge-base/orderid/#handling-multiple-payment-attempts-for-the-same-order
         $retrycount = intval($order->get_meta('_vipps_retry_count'));
         if ($retrycount) {
             $vippsorderid .= "-$retrycount";

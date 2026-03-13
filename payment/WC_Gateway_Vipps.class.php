@@ -1734,7 +1734,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $oldurl = $order->get_meta('_vipps_orderurl');
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
-            $vipps_status = $this->get_payment_details($order)["state"];
+            $vipps_status = $this->get_payment_details($order)['status'];
             $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
 
             // Do we have an active session we can redirect to? LP 2026-02-27
