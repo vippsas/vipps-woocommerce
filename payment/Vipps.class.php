@@ -5422,10 +5422,14 @@ else:
             exit();
         }
 
+        // We are done, but in failure. Don't poll.
         $content = "";
         $failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
-        // We are done, but in failure. Don't poll.
+        if ('failed' == $status) {
+            wp_redirect($failure_redirect ?: $gw->get_return_url($order));
+            exit();
+        }
         if ($status == 'cancelled' || $payment == 'cancelled') {
             $this->maybe_restore_cart($orderid,'failed');
             if ($failure_redirect){
