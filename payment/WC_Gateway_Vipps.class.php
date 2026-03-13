@@ -1785,6 +1785,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
+            // Update: replaced requestid with new idempotency key, moved this into epayment_initiate_payment. LP 2026-03-13
             $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
@@ -2434,13 +2435,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
-                // Set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
+                // We can only set the order to failed if we have finalized shipping, so restarting the payment with a retry session will work.
+                // Otherwise we need to cancel it so it wont be retried. LP 2026-03-13
                 if ($order->get_meta('_vipps_shipping_set')) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 } else {
                     /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s, cannot set to failed due to missing shipping details.', 'woo-vipps'), Vipps::CompanyName()));
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s (cannot set to failed due to unfinalized shipping details).', 'woo-vipps'), Vipps::CompanyName()));
                 }
                 break;
         }
@@ -3512,7 +3514,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
                 $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
             }
-            $order = wc_get_order($order->get_id());
         }
 
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
