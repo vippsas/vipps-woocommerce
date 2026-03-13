@@ -490,15 +490,12 @@ class VippsApi {
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
     // Not any more: Express Checkout is started if the logistics parameters are set. IOK 2025-06-19
     public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$idempotency_key=null) {
-        error_log('LP epayment_initiate_payment running for order ' . $order->get_id());
         $command = 'epayment/v1/payments';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
         $prefix = $this->get_orderprefix();
         $static_shipping = $order->get_meta('_vipps_static_shipping');
-        error_log('LP static_shipping: ' . print_r($static_shipping, true));
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
-        error_log('LP needs_shipping: ' . print_r($needs_shipping, true));
 
         if (!$subkey) {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));

@@ -1676,7 +1676,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // IOK 2018-04-20 Initiate payment at Vipps and redirect to the Vipps payment terminal.
     public function process_payment ($order_id) {
-            error_log('LP process payment running');
         global $woocommerce, $Vipps;
         if (!$order_id) return [];
 
@@ -1732,20 +1731,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
         // Note: we now also support restarting the payment with a new retry session if there is no stored vipps session. LP 2026-03-12
         if ($order->get_meta('_vipps_init_timestamp')) {
-            error_log('LP we have vipps timestamp');
             $oldurl = $order->get_meta('_vipps_orderurl');
-            error_log('LP oldurl: ' . print_r($oldurl, true));
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
             $this->callback_check_order_status($order);
             $order = wc_get_order($order);
             $vipps_status = $order->get_meta('_vipps_status');
             $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
-            error_log('LP vipps_session_open: ' . print_r($vipps_session_open, true));
 
             // Do we have an active session we can redirect to? LP 2026-02-27
             if ($vipps_session_open && $oldurl) {
-                error_log('LP we have active session, return this early');
                 $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
                 return array('result'=>'success','redirect'=>$oldurl);
             }
@@ -1793,14 +1788,11 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
             $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
-            error_log('LP success epayment initiate payment');
         } catch (TemporaryVippsApiException $e) {
-            error_log('LP vippsexception epayment initiate payment');
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
             return [];
         } catch (Exception $e) {
-            error_log('LP exception epayment initiate payment');
 
             // Special case the "duplicate order id" thing to ensure it doesn't happen again, and if it does, at least
             // log some more info IOK 2022-11-02
@@ -2315,7 +2307,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
     public function callback_check_order_status($order) {
-            error_log('LP polling order ' . $order->get_id());
         global $Vipps;
         $orderid = $order->get_id();
 
@@ -2446,7 +2437,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
             case 'cancelled':
                 // Set order status to failed if the shipping has already been set (set_order_shipping_details), else set it to cancelled. LP 2026-02-20
-                error_log('LP in poll vipps status is cancelled, setting wc status');
                 if ($order->get_meta('_vipps_shipping_set')) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
@@ -2478,7 +2468,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // IOK 2025-08-12: Three cases; either this is Checkout, in which case we need to get user/shipping-data from the checkout session,
         // or it is Express Checkout or normal payment, in which cases we just retrieve the payment from the epayment API - possibly containing user data
-            error_log('LP get_payment_details, this is checkout?: ' . !!$checkout_session);
         if ($checkout_session) {
             try {
                 $result = $this->api->checkout_get_session_info($order);
@@ -3052,7 +3041,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     public function set_order_shipping_details($order,$shipping, $user, $billing=false, $alldata=null, $assigncustomer=true) {
-        error_log('LP set_order_shipping_details running');
         global $Vipps;
         $done = $order->get_meta('_vipps_shipping_set');
         if ($done) return true;
