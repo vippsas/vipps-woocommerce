@@ -1744,7 +1744,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             
             // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
-            if (apply_filters('woo_vipps_enable_payment_restart', true)) {
+            if (apply_filters('woo_vipps_enable_payment_restart', true, $order, $vipps_status)) {
                 $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
                 /* translators: number of attempts, order id. */
                 $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
