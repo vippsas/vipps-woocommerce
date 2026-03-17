@@ -143,7 +143,7 @@ class Vipps {
                 // $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
                 $allow_repayment = true;
 
-                // Previously we did not allow Vipps repayment here if the order has been at Vipps, now we allow this. But keep the filter. LP 2026-03-10
+                // Previously we did not allow Vipps repayment by default if the order had been at Vipps, now we allow this by default and keep the filter. LP 2026-03-10
                 $allow_repayment = apply_filters('woo_vipps_allow_repayment', $allow_repayment, $order);
                 if (!$allow_repayment) unset($gateways['vipps']);
             }
