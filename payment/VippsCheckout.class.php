@@ -842,7 +842,8 @@ jQuery(document).ready(function () {
             $this->log(sprintf(__("%1\$s session %2\$d cancelled (pending session)", 'woo-vipps'), Vipps::CheckoutName(), $order->get_id()), 'debug');
             // This will mostly just wipe the session.
             $this->abandonVippsCheckoutOrder($order);
-            $redirect = home_url();
+            // Previously we redirected to home_page() here, but in this case with a cancelled session,
+            // we want to keep the user at the Checkout and start a new session instead. LP 2026-03-17
         }
         // Now if we don't have an order right now, we should not have a session either, so fix that
         if (!$order) {
@@ -863,6 +864,7 @@ jQuery(document).ready(function () {
         }
 
         // This will return either a valid vipps session, nothing, or  redirect. 
+        // From now on it could also return an order without a session. E.g. if the session was cancelled, we call abandonVippsCheckoutOrder and dont redirect anymore. LP 2026-03-17
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
