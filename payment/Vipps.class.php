@@ -131,20 +131,24 @@ class Vipps {
     }
 
     // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
-    // Since we now support Vipps restart sessions, we can now provide Vipps a payment option on this page even if the order has been at Vipps. LP 2026-03-10
+    // Since we now support Vipps restart sessions, we *may* now provide Vipps a payment option on this page even if the order has been at Vipps. LP 2026-03-10
     public function payment_gateway_filter ($gateways) {
         if (is_checkout_pay_page()) {
             $orderid = absint(get_query_var( 'order-pay')); 
             $order = $orderid ? wc_get_order($orderid) : null;
             if (is_a($order, 'WC_Order')) {
                 // Existing override that allows repayment. IOK 2024-06-04
-                // i.e a third party plugin that implemented restarting payment for our plugin, we used to enable repayment only
-                // if this plugin was found. Now instead we always enable repayment because we implement payment restart ourselves. LP 2026-03-10
+                // i.e a third party plugin that implemented payment retrying for our plugin, we used to enable repayment only if this plugin was found.
                 // $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
-                $allow_repayment = true;
+                // However, now we implement payment retrying ourselves. LP 2026-03-18
 
-                // Previously we did not allow Vipps repayment by default if the order had been at Vipps, now we allow this by default and keep the filter. LP 2026-03-10
-                $allow_repayment = apply_filters('woo_vipps_allow_repayment', $allow_repayment, $order);
+                $vipps_status = $order->get_meta('_vipps_status');
+                $retry_count = $order->get_meta('_vipps_retry_count');
+                $retry_enabled = apply_filters('woo_vipps_enable_payment_retry', true, $order, $vipps_status, $retry_count);
+                $order_is_retryable = static::order_is_vipps_retryable($order->get_id());
+
+                // by default enable repayment if we can retry the order. LP 2026-03-18
+                $allow_repayment = apply_filters('woo_vipps_allow_repayment', $retry_enabled && $order_is_retryable, $order);
                 if (!$allow_repayment) unset($gateways['vipps']);
             }
         }
