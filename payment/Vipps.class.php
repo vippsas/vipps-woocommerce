@@ -5491,7 +5491,7 @@ else:
 
         $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woo-vipps') . '</p>';
         $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
-        $content .= "<a id='continueToOrderFailed' style='display:none' href='$failure_redirect'></a>";
+        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . ($failure_redirect ?: $gw->get_return_url($order)) . "'></a>";
         $content .= "</div>";
 
 
