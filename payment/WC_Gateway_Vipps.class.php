@@ -1734,8 +1734,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $oldurl = $order->get_meta('_vipps_orderurl');
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
-            $vipps_status = $this->get_payment_details($order)['status'];
-            $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
+            try {
+                $vipps_status = $this->get_payment_details($order)['status'] ?? 'unknown';
+                $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
+            } catch (Exception $e) {
+                /* translators: company name, order id */
+                $this->log(sprintf(__('Retry-branch: error getting payment details from %1$s for order id %2$s:','woo-vipps'), $this->get_payment_method_name(), $order->get_id()) . "\n" . $e->getMessage(), 'error');
+                $vipps_status = 'unknown';
+            }
 
             // Do we have an active session we can redirect to? LP 2026-02-27
             if ($vipps_session_open && $oldurl) {
