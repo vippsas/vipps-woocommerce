@@ -2547,10 +2547,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
                     throw $e;
                 }
-            } catch (Exception $e) {
-                $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
-                $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
-                return $result;
             }
         }
 
@@ -2865,7 +2861,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Update the order with Vipps payment details, either passed or called using the API.
     public function update_vipps_payment_details ($order, $details = null) {
-       if (!$details) $details = $this->get_payment_details($order);
+        if (!$details) {
+            try {
+                $details = $this->get_payment_details($order);
+            } catch (Exception $e) {
+                // We'll try but if we fail, that's too bad. IOK 2026-03-18. No recovery is really possible here.
+                $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+                $this->log($e->getMessage());
+            }
+        }
 
        if ($details) {
            if (isset($details['transactionSummary'])) {
@@ -3511,9 +3515,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
             // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
             // we have added a scope of any kind. This is therefore probably dead code.
+            // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
             if (!isset($result['userDetails'])) {
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
-                $result = $this->get_payment_details($order);
+                try {
+                   $details = $this->get_payment_details($order);
+                   $result = $details;
+                } catch (Exception $e) {
+                  $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+                  $this->log($e->getMessage());
+                }
             } 
 
             // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
@@ -3632,7 +3643,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
         } catch (Exception $e) {
             // This is/should be non-critical so just log it.
-            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->getMessage()), "error");
+            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->etMessage()), "error");
         }
     }
 
