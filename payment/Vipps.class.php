@@ -148,7 +148,7 @@ class Vipps {
                 $order_is_retryable = static::order_is_vipps_retryable($order->get_id());
 
                 // by default enable repayment if we can retry the order. LP 2026-03-18
-                $allow_repayment = apply_filters('woo_vipps_allow_repayment', $retry_enabled && $order_is_retryable, $order);
+                $allow_repayment = apply_filters('woo_vipps_allow_repayment', $retry_enabled && $order_is_retryable, $order); // legacy filter
                 if (!$allow_repayment) unset($gateways['vipps']);
             }
         }

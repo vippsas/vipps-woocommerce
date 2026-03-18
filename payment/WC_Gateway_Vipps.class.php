@@ -2446,19 +2446,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
-                $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
-                $retry_count = intval($order->get_meta('_vipps_retry_count'));
-
-                $enable_payment_retry = $order_is_retryable; 
-                $enable_payment_retry = apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vippsstatus, $retry_count);
-                $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', !$enable_payment_retry, $order, $vippsstatus);
-
-                if ($cancel_on_fail) {
-                    /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
-                } else {
+                $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+                if (!$cancel_on_fail) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                } else {
+                    /* translators: company name */
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 }
                 break;
         }
@@ -3554,19 +3548,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->update_vipps_payment_details($order);
         } else {
             // Not ok status; set to failed/cancelled
-            $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
-            $retry_count = intval($order->get_meta('_vipps_retry_count'));
-
-            $enable_payment_retry = $order_is_retryable; 
-            $enable_payment_retry = apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vippsstatus, $retry_count);
-            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', !$enable_payment_retry, $order, $vippsstatus);
-
-            if ($cancel_on_fail) {
-                /* translators: company name */
-                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s (cannot set to failed because order is not finalized)', 'woo-vipps'), Vipps::CompanyName()));
-            } else {
+            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+            if (!$cancel_on_fail) {
                 /* translators: company name */
                 $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+            } else {
+                /* translators: company name */
+                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s (cannot set to failed because order is not finalized)', 'woo-vipps'), Vipps::CompanyName()));
             }
         }
 
