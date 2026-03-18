@@ -5610,4 +5610,16 @@ else:
             ),
         );
     }
+
+    // Whether the order is possible to restart with a retry session at VMP. LP 2026-03-18
+    public static function order_is_vipps_retryable($order_id) {
+        $order = wc_get_order($order_id);
+        if (!$order) return false;
+        $api = $order->get_meta('_vipps_api');
+        $nonexpress_epayment = 'epayment' === $api && !$order->get_meta('_vipps_express_checkout');
+        $shipping_set = $order->get_meta('_vipps_shipping_set');
+
+        // Express or unfinalized Checkout orders do not have shipping available, so we cant retry these in particular. LP 2026-03-18
+        return $nonexpress_epayment || $shipping_set;
+    }
 }
