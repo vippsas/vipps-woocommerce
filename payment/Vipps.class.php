@@ -3902,7 +3902,7 @@ else:
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return $actions;
 
-        if ($order->get_meta('_vipps_express_checkout')) {
+        if (!static::order_is_vipps_retryable($order->get_id())) {
             unset($actions['pay']);
         }
         return $actions;
