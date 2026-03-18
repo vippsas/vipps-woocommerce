@@ -1734,13 +1734,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $oldurl = $order->get_meta('_vipps_orderurl');
 
             // Poll status at VMP here to verify session is still open. LP 2026-02-27
+            $vipps_status = 'unknown';
+            $vipps_session_open = false;
             try {
                 $vipps_status = $this->get_payment_details($order)['status'] ?? 'unknown';
-                $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
+                if ('unknown' !== $vipps_status) {
+                    $vipps_session_open = 'initiated' === $this->interpret_vipps_order_status($vipps_status);
+                }
             } catch (Exception $e) {
                 /* translators: company name, order id */
                 $this->log(sprintf(__('Retry-branch: error getting payment details from %1$s for order id %2$s:','woo-vipps'), $this->get_payment_method_name(), $order->get_id()) . "\n" . $e->getMessage(), 'error');
-                $vipps_status = 'unknown';
             }
 
             // Do we have an active session we can redirect to? LP 2026-02-27
@@ -1750,16 +1753,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             
             // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
-            if (apply_filters('woo_vipps_enable_payment_restart', true, $order, $vipps_status)) {
-                $retrycount = intval($order->get_meta('_vipps_retry_count')) + 1;
+            $retry_count = intval($order->get_meta('_vipps_retry_count')) + 1;
+            $enable_payment_retry = 'unknown' !== $vipps_status; // dont retry unknown statuses. LP 2026-03-18
+            if (apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vipps_status, $retry_count)) {
                 /* translators: number of attempts, order id. */
-                $this->log(sprintf(__("Order %2\$d session could not be restored, creating a new session with incremental retry (retry #%1\$d).", 'woo-vipps'), $retrycount, $order_id), 'info');
-                $order->update_meta_data('_vipps_retry_count', $retrycount);
+                $this->log(sprintf(__('Order %2$d session could not be restored, creating a new retry session (retry #%1$d).', 'woo-vipps'), $retry_count, $order_id), 'info');
+                $order->update_meta_data('_vipps_retry_count', $retry_count);
                 $order->save_meta_data();
             } else {
                 // If restarting is disabled, then we have to cancel the order. LP 2026-03-12
                 /* translators: order id. */
-                $this->log(sprintf(__('Order %1$d session could not be restored, and payment restarting is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'warning');
+                $this->log(sprintf(__('Order %1$d session could not be restored, and payment retry is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'info');
                 $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
                 return [];
             }
