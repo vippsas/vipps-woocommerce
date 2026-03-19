@@ -655,10 +655,6 @@ jQuery(document).ready(function () {
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
         $polldata = $_REQUEST['pollData'] ?? []; // the actual Checkout js event data. LP 2026-03-19
-        $lplog = 'shipping_selected' === $type;
-if ($lplog) error_log('LP vipps_ajax_checkout_poll_session');
-if ($lplog) error_log('LP type: ' . print_r($type, true));
-if ($lplog) error_log('LP polldata: ' . print_r($polldata, true));
 
         Vipps::set_locale_if_in_header();
 
@@ -794,30 +790,50 @@ if ($lplog) error_log('LP polldata: ' . print_r($polldata, true));
 
         switch ($type) {
             // Store the newly selected shipping method in session. LP 2026-03-19
+            // NB: selecting a new pickup location option inside the same pickup location group does NOT send a new event here. LP 2026-03-19
             case 'shipping_selected':
-                if (!is_a(WC()->session, 'WC_Session')) {
+                if (!is_a(WC()->session, 'WC_Session') || !is_a($order, 'WC_Order')) {
                     break;
                 }
 
-                $new_shipping = $polldata['id'] ?? null;
-
+                $new_shipping_key = $polldata['id'] ?? null; // our custom key like '$flat_rate$a1vkbszd221:index' used in shipping table, NOT the same as woo rate_id. LP 2026-03-19
+                if (!$new_shipping_key) {
+                    break;
+                }
                 $old_shipping_methods = WC()->session->get('chosen_shipping_methods');
-                if ($lplog) error_log('LP old_shipping_methods: ' . print_r($old_shipping_methods, true));
-                $old_shipping = null;
-                if (!empty($old_shipping_methods)) {
-                    $old_shipping = $old_shipping_methods[0];
-                }
-                if (!$old_shipping || !$new_shipping) {
+                if (empty($old_shipping_methods)) {
                     break;
                 }
-                
-                $shipping_changed = null; // TODO: 
-                if ($shipping_changed) {
-                    $change = true;
-                    // TODO: store in wc session
+                $old_shipping_rate_id = $old_shipping_methods[0]; // woo rate_id like 'flat_rate:1'. LP 2026-03-19
+
+                // Retrieve the woo rate id for this new shipping selection, by deserializing from shipping table in order meta. LP 2026-03-19
+                $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                if (!is_array($shipping_table) || !array_key_exists($new_shipping_key, $shipping_table)) {
+                    break;
                 }
 
-            }
+                $is_base64 = $shipping_table['_is_base64'] ?? false;
+                $serialized_rate = $is_base64 ? @base64_decode($shipping_table[$new_shipping_key]) : $shipping_table[$new_shipping_key];
+                $new_shipping_rate = $serialized_rate ? @unserialize($serialized_rate) : null;
+                if (!$new_shipping_rate) {
+                    /* translators: shipping rate key, order id */
+                    $this->gw->log(sprintf(__('Checkout poll: Could not deserialize the chosen shipping rate %1$s for order %2$d', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'error'); 
+                    $this->gw->log(sprintf(__('Serialized data was %1$s', 'woo-vipps'), $serialized_rate),  'error');
+                    break;
+                }
+
+                $new_shipping_rate_id = $new_shipping_rate->get_id();
+                // As of writing you don't get a new event by reclicking the already
+                // chosen shipping method, so this shouldn't happen but. LP 2026-03-19
+                if ($old_shipping_rate_id === $new_shipping_rate_id) {
+                    break;
+                }
+
+                $change = true;
+                WC()->session->set('chosen_shipping_methods', [$new_shipping_rate_id]);
+                WC()->session->save_data();
+                break;
+        }
 
         if ($ok && $change) {
             wp_send_json_success(array('msg'=>'order_change', 'url'=>''));

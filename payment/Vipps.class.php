@@ -3180,7 +3180,6 @@ else:
         $this->load_extra_shipping_methods($order, $result, $ischeckout);
 
         $return = $this->vipps_shipping_details_callback_handler($order, $result,$vippsorderid, $ischeckout);
-error_log('LP return: ' . print_r($return, true));
 
         // Express checkout wants the data wrapped in a object with a 'groups' attribute, Checkout wants thing unwrapped.
         // Dispatch on the known type. IOK 2025-08-15
