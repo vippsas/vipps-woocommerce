@@ -790,7 +790,7 @@ jQuery(document).ready(function () {
 
         switch ($type) {
             // Store the newly selected shipping method in session. LP 2026-03-19
-            // NB: selecting a new pickup location option inside the same pickup location group does NOT send a new event here. LP 2026-03-19
+            // NB: selecting a new pickup location option inside the same pickup location group does NOT trigger an event here. LP 2026-03-19
             case 'shipping_selected':
                 if (!is_a(WC()->session, 'WC_Session') || !is_a($order, 'WC_Order')) {
                     break;
@@ -804,7 +804,7 @@ jQuery(document).ready(function () {
                 if (empty($old_shipping_methods)) {
                     break;
                 }
-                $old_shipping_rate_id = $old_shipping_methods[0]; // woo rate_id like 'flat_rate:1'. LP 2026-03-19
+                $old_shipping_rate_id = $old_shipping_methods[0]; // woo rate id like 'flat_rate:1'. LP 2026-03-19
 
                 // Retrieve the woo rate id for this new shipping selection, by deserializing from shipping table in order meta. LP 2026-03-19
                 $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
