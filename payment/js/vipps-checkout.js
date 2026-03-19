@@ -215,7 +215,8 @@ jQuery( document ).ready( function() {
                      iFrameContainerId: "vippscheckoutframe",
                      language: VippsConfig['vippslanguage'],
                      on: {
-                         shipping_option_selected: function (data) { pollSessionStatus('shipping_selected', data); },
+                         shipping_option_selected: function (data) {
+                        pollSessionStatus('shipping_selected', data); },
                          total_amount_changed: function (data) { pollSessionStatus('total_changed', data); },
                          session_status_changed: function (data) {
                              console.log("Session status changed %j", data);                             

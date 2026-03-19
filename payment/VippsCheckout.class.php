@@ -654,6 +654,11 @@ jQuery(document).ready(function () {
         $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
+        $polldata = $_REQUEST['pollData'] ?? []; // the actual Checkout js event data. LP 2026-03-19
+        $lplog = 'shipping_selected' === $type;
+if ($lplog) error_log('LP vipps_ajax_checkout_poll_session');
+if ($lplog) error_log('LP type: ' . print_r($type, true));
+if ($lplog) error_log('LP polldata: ' . print_r($polldata, true));
 
         Vipps::set_locale_if_in_header();
 
@@ -786,6 +791,33 @@ jQuery(document).ready(function () {
                 }
             }
         }
+
+        switch ($type) {
+            // Store the newly selected shipping method in session. LP 2026-03-19
+            case 'shipping_selected':
+                if (!is_a(WC()->session, 'WC_Session')) {
+                    break;
+                }
+
+                $new_shipping = $polldata['id'] ?? null;
+
+                $old_shipping_methods = WC()->session->get('chosen_shipping_methods');
+                if ($lplog) error_log('LP old_shipping_methods: ' . print_r($old_shipping_methods, true));
+                $old_shipping = null;
+                if (!empty($old_shipping_methods)) {
+                    $old_shipping = $old_shipping_methods[0];
+                }
+                if (!$old_shipping || !$new_shipping) {
+                    break;
+                }
+                
+                $shipping_changed = null; // TODO: 
+                if ($shipping_changed) {
+                    $change = true;
+                    // TODO: store in wc session
+                }
+
+            }
 
         if ($ok && $change) {
             wp_send_json_success(array('msg'=>'order_change', 'url'=>''));
