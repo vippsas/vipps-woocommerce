@@ -1719,7 +1719,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $content = null;
 
         // Should be impossible, but there we go IOK 2022-04-21
-        if (! $order->has_status('pending', 'failed')) {
+        if (! $order->has_status(['pending', 'failed'])) {
              $this->log(sprintf(__("Trying to start order %1\$s with status %2\$s - only 'pending' and 'failed' are allowed, so this will fail", 'woo-vipps'), $order_id, $order->get_status()));
              wc_add_notice(sprintf(__('This order cannot be paid with %1$s - please try another payment method or try again later', 'woo-vipps'), $this->get_payment_method_name()), 'error');
              return [];
@@ -1729,24 +1729,46 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // in the *normal* case, this is a user who have lost their vipps session, so it suffices to 
         // just return the stored vipps session URL (eg. the user used the Back button.) If abandoned, the
         // order will eventually be cancelled. Changes in the cart will result in a new order anyway.
+        // Note: we now also support restarting the payment with a new retry session if there is no stored vipps session. LP 2026-03-12
         if ($order->get_meta('_vipps_init_timestamp')) {
-           $oldurl = $order->get_meta('_vipps_orderurl');
-           $oldstatus = $order->get_meta('_vipps_status');
+            $oldurl = $order->get_meta('_vipps_orderurl');
 
-           // This isn't actually an expired session but it is the same logic; so we'll keep the
-           // text in this 'can't happen' branch
-           if (!$oldurl) {
-              $this->log(sprintf(__("Order %2\$d was attempted restarted, but had no %1\$s session url stored. Cannot continue!", 'woo-vipps'), Vipps::CompanyName(), $order_id), 'error');
-              wc_add_notice(sprintf(__('Order session expired at %1$s, please try again!', 'woo-vipps'), Vipps::CompanyName()), 'error');
-              $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-              return [];
-           }
+            // Poll status at VMP here to verify session is still open. LP 2026-02-27
+            $vipps_status = 'unknown';
+            $vipps_session_open = false;
+            try {
+                $vipps_status = $this->get_payment_details($order)['status'] ?? 'unknown';
+                if ('unknown' !== $vipps_status) {
+                    $vipps_status = $this->interpret_vipps_order_status($vipps_status);
+                    $vipps_session_open = 'initiated' === $vipps_status;
+                }
+            } catch (Exception $e) {
+                /* translators: company name, order id */
+                $this->log(sprintf(__('Retry-branch: error getting payment details from %1$s for order id %2$s:','woo-vipps'), $this->get_payment_method_name(), $order->get_id()) . "\n" . $e->getMessage(), 'error');
+            }
 
-           $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
-
-           return array('result'=>'success','redirect'=>$oldurl);
+            // Do we have an active session we can redirect to? LP 2026-02-27
+            if ($vipps_session_open && $oldurl) {
+                $order->add_order_note(sprintf(__('%1$s payment restarted','woo-vipps'), $this->get_payment_method_name()));
+                return array('result'=>'success','redirect'=>$oldurl);
+            }
+            
+            // If not, then we need to create a new retry session with incrementing index. LP 2026-03-12
+            $retry_count = intval($order->get_meta('_vipps_retry_count')) + 1;
+            $enable_payment_retry = 'unknown' !== $vipps_status; // dont retry unknown statuses. LP 2026-03-18
+            if (apply_filters('woo_vipps_enable_payment_retry', $enable_payment_retry, $order, $vipps_status, $retry_count)) {
+                /* translators: number of attempts, order id. */
+                $this->log(sprintf(__('Order %2$d session could not be restored, creating a new retry session (retry #%1$d).', 'woo-vipps'), $retry_count, $order_id), 'info');
+                $order->update_meta_data('_vipps_retry_count', $retry_count);
+                $order->save_meta_data();
+            } else {
+                // If restarting is disabled, then we have to cancel the order. LP 2026-03-12
+                /* translators: order id. */
+                $this->log(sprintf(__('Order %1$d session could not be restored, and payment retry is disabled. Cancelling the order!', 'woo-vipps'), $order_id), 'info');
+                $order->update_status('cancelled', sprintf(__('Cannot restart order at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                return [];
+            }
         }
-
 
         // This is needed to ensure that the callbacks from Vipps have access to the customers' session which is important for some plugins.  IOK 2019-11-22
         $this->save_session_in_order($order);
@@ -1774,8 +1796,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
             // The requestid is actually for replaying the request, but I get 402 if I retry with the same Orderid.
             // Still, if we want to handle transient error conditions, then that needs to be extended here (timeouts, etc)
-            $requestid = $order->get_order_key();
-            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid);
+            // Update: replaced requestid with new idempotency key, moved this into epayment_initiate_payment. LP 2026-03-13
+            $content =  $this->api->epayment_initiate_payment($phone,$order,$returnurl,$authtoken);
         } catch (TemporaryVippsApiException $e) {
             $this->log(sprintf(__('Could not initiate %1$s payment','woo-vipps'), $this->get_payment_method_name()) . ' ' . $e->getMessage(), 'error');
             wc_add_notice(sprintf(__('Unfortunately, the %1$s payment method is temporarily unavailable. Please wait or choose another method.','woo-vipps'), $this->get_payment_method_name()),'error');
@@ -2424,7 +2446,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
-                $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+                $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+                if (!$cancel_on_fail) {
+                    /* translators: company name */
+                    $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                } else {
+                    /* translators: company name */
+                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                }
                 break;
         }
 
@@ -2518,10 +2547,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
                     throw $e;
                 }
-            } catch (Exception $e) {
-                $this->log(sprintf(__("Could not get order status from %1\$s using epayment api: ", 'woo-vipps'), Vipps::CompanyName()) . $e->getMessage(), "error");
-                $result = array('status'=>'CANCEL', 'state'=>'CANCEL'); 
-                return $result;
             }
         }
 
@@ -2767,7 +2792,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     // To handle this, we provide this utility that ensures we have userDetails no matter the input. For this we use the anonymous filters and "billingDetails" if present
     // if not, we use shippingDetails. IOK 2023-01-10
     // Also, epayment uses mobileNumber and checkout uses phoneNumber, so normalize.
-    private function ensure_userDetails($vippsdata, $order) {
+    public function ensure_userDetails($vippsdata, $order) {
         $userDetails = [];
 
         // If we have userDetails, use it (ecom API with user data requested - Express Checkout
@@ -2836,7 +2861,15 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Update the order with Vipps payment details, either passed or called using the API.
     public function update_vipps_payment_details ($order, $details = null) {
-       if (!$details) $details = $this->get_payment_details($order);
+        if (!$details) {
+            try {
+                $details = $this->get_payment_details($order);
+            } catch (Exception $e) {
+                // We'll try but if we fail, that's too bad. IOK 2026-03-18. No recovery is really possible here.
+                $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+                $this->log($e->getMessage());
+            }
+        }
 
        if ($details) {
            if (isset($details['transactionSummary'])) {
@@ -3482,9 +3515,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
             // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
             // we have added a scope of any kind. This is therefore probably dead code.
+            // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
             if (!isset($result['userDetails'])) {
                 // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
-                $result = $this->get_payment_details($order);
+                try {
+                   $details = $this->get_payment_details($order);
+                   $result = $details;
+                } catch (Exception $e) {
+                  $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+                  $this->log($e->getMessage());
+                }
             } 
 
             // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
@@ -3507,8 +3547,17 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $order->payment_complete();
           $this->update_vipps_payment_details($order);
         } else {
-            $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+            // Not ok status; set to failed/cancelled
+            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+            if (!$cancel_on_fail) {
+                /* translators: company name */
+                $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+            } else {
+                /* translators: company name */
+                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s (cannot set to failed because order is not finalized)', 'woo-vipps'), Vipps::CompanyName()));
+            }
         }
+
         $order->save();
         clean_post_cache($order->get_id());
 
@@ -3589,7 +3638,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             do_action('woo_vipps_payment_complete_at_shutdown', $order, $this);
         } catch (Exception $e) {
             // This is/should be non-critical so just log it.
-            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->getMessage()), "error");
+            $this->log(sprintf(__("Could not do all payment-complete actions on %1\$s order %2\$d: %3\$s ", 'woo-vipps'), Vipps::CompanyName(), $orderid,  $e->etMessage()), "error");
         }
     }
 
