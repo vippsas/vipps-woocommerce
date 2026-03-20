@@ -200,87 +200,102 @@ jQuery(document).ready(function () {
             wp_redirect(home_url());
         }
 
-        // Load session from cookies - it will not get loaded on admin-post.
-        WC()->initialize_session();
+        try {
+            // Load session from cookies - it will not get loaded on admin-post.
+            WC()->initialize_session();
 
-        if (WC()->session) { 
-            if (! WC()->session->has_session()) {
-                WC()->session->set_customer_session_cookie( true );
-            }
-            # There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. 
-            #Try to stop that.. IOK 2024-05-15
-            if ($gw != 'kco') {
+            if (WC()->session) { 
+                if (! WC()->session->has_session()) {
+                    WC()->session->set_customer_session_cookie( true );
+                }
+                // There is actually a bug here for KCO which will redirect to the normal checkout page with an error message. 
+                // Try to stop that.. IOK 2024-05-15
+                if ($gw != 'kco') {
                     WC()->session->set('chosen_payment_method', $gw); 
+                }
+                $addressdata = [];
+                $addressdata["billing_email"] =  $order->get_billing_email();
+                $addressdata["billing_address_1"] =  $order->get_billing_address_1();
+                $addressdata["billing_address_2"] =  $order->get_billing_address_2();
+                $addressdata["billing_postcode"] =  $order->get_billing_postcode();
+                $addressdata["billing_city"] =  $order->get_billing_city();
+                $addressdata["billing_country"] =  $order->get_billing_country();
+                $addressdata["billing_first_name"] =  $order->get_billing_first_name();
+                $addressdata["billing_last_name"] =  $order->get_billing_last_name();
+                $addressdata["billing_phone"] =  $order->get_billing_phone();
+                $addressdata["billing_city"] =  $order->get_billing_city();
+                $addressdata["shipping_address_1"] =  $order->get_shipping_address_1();
+                $addressdata["shipping_address_2"] =  $order->get_shipping_address_2();
+                $addressdata["shipping_city"] =  $order->get_shipping_city();
+                $addressdata["shipping_postcode"] =  $order->get_shipping_postcode();
+                $addressdata["shipping_country"] =  $order->get_shipping_country();
+                $addressdata["shipping_first_name"] =  $order->get_shipping_first_name();
+                $addressdata["shipping_last_name"] =  $order->get_shipping_last_name();
+                $addressdata["shipping_phone"] =  $order->get_shipping_phone();
+                $addressdata["shipping_city"] =  $order->get_shipping_city();
+                WC()->session->set('vc_address', $addressdata);
+                WC()->session->save_data();
+            } else {
+                $this->log(__("No session choosing other gateway from Vipps Checkout", 'woo-vipps'), 'error');
             }
-            $addressdata = [];
-            $addressdata["billing_email"] =  $order->get_billing_email();
-            $addressdata["billing_address_1"] =  $order->get_billing_address_1();
-            $addressdata["billing_address_2"] =  $order->get_billing_address_2();
-            $addressdata["billing_postcode"] =  $order->get_billing_postcode();
-            $addressdata["billing_city"] =  $order->get_billing_city();
-            $addressdata["billing_country"] =  $order->get_billing_country();
-            $addressdata["billing_first_name"] =  $order->get_billing_first_name();
-            $addressdata["billing_last_name"] =  $order->get_billing_last_name();
-            $addressdata["billing_phone"] =  $order->get_billing_phone();
-            $addressdata["billing_city"] =  $order->get_billing_city();
-            $addressdata["shipping_address_1"] =  $order->get_shipping_address_1();
-            $addressdata["shipping_address_2"] =  $order->get_shipping_address_2();
-            $addressdata["shipping_city"] =  $order->get_shipping_city();
-            $addressdata["shipping_postcode"] =  $order->get_shipping_postcode();
-            $addressdata["shipping_country"] =  $order->get_shipping_country();
-            $addressdata["shipping_first_name"] =  $order->get_shipping_first_name();
-            $addressdata["shipping_last_name"] =  $order->get_shipping_last_name();
-            $addressdata["shipping_phone"] =  $order->get_shipping_phone();
-            $addressdata["shipping_city"] =  $order->get_shipping_city();
-            WC()->session->set('vc_address', $addressdata);
-            WC()->session->save_data();
-        } else {
-            $this->log(__("No session choosing other gateway from Vipps Checkout", 'woo-vipps'), 'error');
-        }
 
-        $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
+            $current_pending = is_a(WC()->session, 'WC_Session') ? WC()->session->get('vipps_checkout_current_pending') : false;
 
-        # If we got here, we actually have shipping information already in place, so we can continue with the order directly!
-        $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+            // If we got here, we actually have shipping information already in place, so we can continue with the order directly!
+            $paymentdetails = WC_Gateway_Vipps::instance()->get_payment_details($order);
+            // As of writing, userDetails is not included in the return. LP 2026-03-13
+            $paymentdetails = WC_Gateway_Vipps::instance()->ensure_userDetails($paymentdetails, $order);
 
-        // Unless the order actually somehow doesn't exist anymore - this should not be possible but let's handle it
-        if ($paymentdetails && isset($paymentdetails['status']) && $paymentdetails['status'] == 'CANCEL') {
-            // IOK this cannot actually happen, but if it *does*, cancel the order 
+            // Unless the order actually somehow doesn't exist anymore - this should not be possible but let's handle it
+            if ($paymentdetails && isset($paymentdetails['status']) && $paymentdetails['status'] == 'CANCEL') {
+                // IOK this cannot actually happen, but if it *does*, cancel the order 
+                clean_post_cache($order->get_id());
+                if (WC()->session) {
+                    WC()->session->set('vipps_checkout_current_pending',0);
+                    WC()->session->set('vipps_address_hash', false);
+                }
+                $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+                // Also mark for deletion and remove stored session
+                $order->update_meta_data('_vipps_delendum',1);
+                $order->save();
+                $url = $order->get_checkout_payment_url();
+                wp_redirect($url);
+                exit();
+            }
+
+            $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
+# Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
+            $assignuser = is_user_logged_in();
+
+            WC_Gateway_Vipps::instance()->set_order_shipping_details($order,($paymentdetails['shippingDetails'] ?? []), $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
+
+# Now reset payment gateway and clear out the VC session
+            $order->set_payment_method($gw);
+            $order->update_meta_data('_vc_proceed', ($gw ? $gw : 'any'));
+            $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
+            $order->save();
+            // Should not be neccessary but we'll add this just so any caching does not cause other systems to return the wrong data here  IOK 2025-03-18
             clean_post_cache($order->get_id());
-            if (WC()->session) {
-                WC()->session->set('vipps_checkout_current_pending',0);
-                WC()->session->set('vipps_address_hash', false);
-            }
-            $order->set_status('cancelled', __("Session terminated with no payment", 'woo-vipps'), false);
+
+            $url = $order->get_checkout_payment_url();
+
+            // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
+            // Actually, don't do this because it will most likely just create more spurious orders while this remains unpayable. IOK 2024-06-04
+            // $this->abandonVippsCheckoutOrder(false);
+            wp_redirect($url);
+            exit();
+        } catch (Exception $e) {
+            $msg = sprintf(__("Could not select other payment gateway for order %1\$s", 'woo-vipps'), $order->get_id());
+            $this->log($msg, 'error');
+            $order->set_status('cancelled', $msg, false);
             // Also mark for deletion and remove stored session
             $order->update_meta_data('_vipps_delendum',1);
             $order->save();
+            $this->abandonVippsCheckoutOrder(false);
             $url = $order->get_checkout_payment_url();
             wp_redirect($url);
             exit();
         }
-
-        $billing = isset($paymentdetails['billingDetails']) ? $paymentdetails['billingDetails'] : false;
-        # Don't assign the order to its user if we are not logged in - we are not completing this order using Vipps IOK 2024-05-15
-        $assignuser = is_user_logged_in();
-
-        WC_Gateway_Vipps::instance()->set_order_shipping_details($order,($paymentdetails['shippingDetails'] ?? []), $paymentdetails['userDetails'], $billing, $paymentdetails, $assignuser);
-
-        # Now reset payment gateway and clear out the VC session
-        $order->set_payment_method($gw);
-        $order->update_meta_data('_vc_proceed', ($gw ? $gw : 'any'));
-        $order->add_order_note(sprintf(__('Alternative payment method "%1$s" chosen, customer returned from Checkout', 'woo-vipps'), $gw));
-        $order->save();
-        // Should not be neccessary but we'll add this just so any caching does not cause other systems to return the wrong data here  IOK 2025-03-18
-        clean_post_cache($order->get_id());
-
-        $url = $order->get_checkout_payment_url();
-
-        // This makes sure there is no "current vipps checkout" order, as this order is no longer payable at Vipps.
-        // Actually, don't do this because it will most likely just create more spurious orders while this remains unpayable. IOK 2024-06-04
-        // $this->abandonVippsCheckoutOrder(false);
-        wp_redirect($url);
-        exit();
     }
 
     public function template_redirect () {
@@ -489,7 +504,6 @@ jQuery(document).ready(function () {
             $phone = get_user_meta(get_current_user_id(), 'billing_phone', true);
         }
         $order_id = $order->get_id();
-        $requestid = 1;
         $returnurl = Vipps::instance()->payment_return_url();
         $returnurl = add_query_arg('ls',$limited_session,$returnurl);
         $returnurl = add_query_arg('id', $order_id, $returnurl);
@@ -532,7 +546,7 @@ jQuery(document).ready(function () {
         $customerinfo = apply_filters('woo_vipps_customerinfo', $customerinfo, $order);
 
         try {
-            $session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken,$requestid); 
+            $session = $this->gateway()->api->initiate_checkout($customerinfo,$order,$returnurl,$current_authtoken); 
             if ($session) {
                 $order = wc_get_order($current_pending);
                 $order->update_meta_data('_vipps_init_timestamp',time());
@@ -842,7 +856,8 @@ jQuery(document).ready(function () {
             $this->log(sprintf(__("%1\$s session %2\$d cancelled (pending session)", 'woo-vipps'), Vipps::CheckoutName(), $order->get_id()), 'debug');
             // This will mostly just wipe the session.
             $this->abandonVippsCheckoutOrder($order);
-            $redirect = home_url();
+            // Previously we redirected to home_page() here, but in this case with a cancelled session,
+            // we want to keep the user at the Checkout and start a new session instead. LP 2026-03-17
         }
         // Now if we don't have an order right now, we should not have a session either, so fix that
         if (!$order) {
@@ -863,6 +878,7 @@ jQuery(document).ready(function () {
         }
 
         // This will return either a valid vipps session, nothing, or  redirect. 
+        // From now on it could also return an order without a session. E.g. if the session was cancelled, we call abandonVippsCheckoutOrder and dont redirect anymore. LP 2026-03-17
         return(array('order'=>$order ? $order->get_id() : false, 'session'=>$session,  'redirect'=>$redirect));
     }
 
