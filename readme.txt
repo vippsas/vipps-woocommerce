@@ -3,10 +3,10 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.2.2
-Stable tag: 5.2.2
+Version: 5.3.0
+Stable tag: 5.3.0
 Requires at least: 6.3
-Tested up to: 6.9.3
+Tested up to: 6.9.4
 Requires PHP: 8.0
 Requires Plugins: woocommerce
 WC requires at least: 8.0.0
@@ -109,20 +109,9 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
-Version 5.2.2
-Fix CSS issues in the standard Checkout
-Version 5.2.1
-Fix crash when using Recurring Checkout in certain situations
-Version 5.2.0
-Fixed all blocks to be compatible with the new iframe based block editor
-Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
-Make the new interactivity based minicart work correctly with Checkout
-Version 5.1.6
-Support Tutor LMS in Express and Checkout
-Add block to support new interactivity-API based minicart for Express Checkout
-Handle swedish and finnish phone numbers correctly when canonicalizing
-Fix customer prefill in Checkout
-Show Express Checkout button in cart if the settings say so, even with Vipps Checkout active
+Version 5.3.0
+Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
+Error that occasionally sent the user to the homepage instead of Checkout fixed
 
 == Frequently Asked Questions ==
 
@@ -295,6 +284,10 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
+= 2026-03-xx Version 5.3.0 =
+Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
+Error that occasionally sent the user to the homepage instead of Checkout fixed
+
 = 2026-03-11 Version 5.2.2 =
 Fix CSS issues in the standard Checkout
 
