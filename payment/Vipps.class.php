@@ -4861,7 +4861,7 @@ else:
         if (!$variant) {
             $variant = $use_mini ? "default-mini" : "default";
         }
-        return $variant;
+        return apply_filters('woo_vipps_express_button_page_variant', $variant, $page);
     }
 
     // Get express banner logo based on payment method. LP 2025-09-03
