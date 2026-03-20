@@ -350,6 +350,7 @@ jQuery(document).ready(function () {
         add_action('woocommerce_thankyou_vipps', function () {
             WC()->session->set('vipps_checkout_current_pending',false);
             WC()->session->set('vipps_address_hash', false);
+            WC()->session->set('vipps_shipping_rate_id_map', false);
         });
 
         // For Vipps Checkout - we need to know any time and as soon as the cart changes, so fold all the events into a single one. IOK 2021-08-24
@@ -806,25 +807,39 @@ jQuery(document).ready(function () {
                 }
                 $old_shipping_rate_id = $old_shipping_methods[0]; // woo rate id like 'flat_rate:1'. LP 2026-03-19
 
-                // Retrieve the woo rate id for this new shipping selection, by deserializing from shipping table in order meta. LP 2026-03-19
-                $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-                if (!is_array($shipping_table) || !array_key_exists($new_shipping_key, $shipping_table)) {
-                    break;
-                }
-
-                $is_base64 = $shipping_table['_is_base64'] ?? false;
-                $serialized_rate = $is_base64 ? @base64_decode($shipping_table[$new_shipping_key]) : $shipping_table[$new_shipping_key];
-                $new_shipping_rate = $serialized_rate ? @unserialize($serialized_rate) : null;
-                if (!$new_shipping_rate) {
+                // Retreieve the woo rate id for new shipping selection, we have stored this in the session. LP 2026-03-20
+                $shipping_rate_id_map = WC()->session->get('vipps_shipping_rate_id_map');
+                $new_shipping_rate_id = $shipping_rate_id_map[$new_shipping_key] ?? null;
+error_log('LP shipping_rate_id_map: ' . print_r($shipping_rate_id_map, true));
+                // Fallback: attempt to find it by deserializing from shipping table in order meta. LP 2026-03-19
+                if (!$shipping_rate_id_map) {
                     /* translators: shipping rate key, order id */
-                    $this->gw->log(sprintf(__('Checkout poll: Could not deserialize the chosen shipping rate %1$s for order %2$d', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'error'); 
-                    $this->gw->log(sprintf(__('Serialized data was %1$s', 'woo-vipps'), $serialized_rate),  'error');
+                    $this->gw->log(sprintf(__('Checkout poll: could not find the new shipping rate "%1$s" in the session for order %2$d, attempting to find it from the shipping table order meta.', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'error'); 
+
+                    $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
+                    if (!is_array($shipping_table) || !array_key_exists($new_shipping_key, $shipping_table)) {
+                        break;
+                    }
+
+                    $is_base64 = $shipping_table['_is_base64'] ?? false;
+                    $serialized_rate = $is_base64 ? @base64_decode($shipping_table[$new_shipping_key]) : $shipping_table[$new_shipping_key];
+                    $new_shipping_rate = $serialized_rate ? @unserialize($serialized_rate) : null;
+                    if (!$new_shipping_rate || !is_a($new_shipping_rate, 'WC_Shipping_Rate')) {
+                        /* translators: shipping rate key, order id */
+                        $this->gw->log(sprintf(__('Checkout poll: Could not deserialize the new shipping rate "%1$s" for order %2$d', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'error'); 
+                        $this->gw->log(sprintf(__('Serialized data was %1$s', 'woo-vipps'), $serialized_rate),  'error');
+                        break;
+                    }
+                    $new_shipping_rate_id = $new_shipping_rate->get_id();
+                }
+
+                if (!$new_shipping_rate_id) {
+                    /* translators: order id, shipping rate key */
+                    $this->gw->log(sprintf(__('Checkout poll: did not find shipping rate id for the new shipping choice "%2$s" order %1$s.', 'woo-vipps'), $order->get_id(), $new_shipping_key), 'error'); 
                     break;
                 }
 
-                $new_shipping_rate_id = $new_shipping_rate->get_id();
-                // As of writing you don't get a new event by reclicking the already
-                // chosen shipping method, so this shouldn't happen but. LP 2026-03-19
+                // This shouldn't be possible but. LP 2026-03-20
                 if ($old_shipping_rate_id === $new_shipping_rate_id) {
                     break;
                 }
