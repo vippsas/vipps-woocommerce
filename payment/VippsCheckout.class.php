@@ -824,11 +824,11 @@ jQuery(document).ready(function () {
                 // Retreieve the woo rate id for new shipping selection, we have stored this in the session. LP 2026-03-20
                 $shipping_rate_id_map = WC()->session->get('vipps_shipping_rate_id_map');
                 $new_shipping_rate_id = $shipping_rate_id_map[$new_shipping_key] ?? null;
-error_log('LP shipping_rate_id_map: ' . print_r($shipping_rate_id_map, true));
+
                 // Fallback: attempt to find it by deserializing from shipping table in order meta. LP 2026-03-19
                 if (!$shipping_rate_id_map) {
                     /* translators: shipping rate key, order id */
-                    $this->gw->log(sprintf(__('Checkout poll: could not find the new shipping rate "%1$s" in the session for order %2$d, attempting to find it from the shipping table order meta.', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'error'); 
+                    $this->gw->log(sprintf(__('Checkout poll: could not find the new shipping rate "%1$s" in the session for order %2$d, attempting to find it from the shipping table order meta.', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'warning'); 
 
                     $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
                     if (!is_array($shipping_table) || !array_key_exists($new_shipping_key, $shipping_table)) {
