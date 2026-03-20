@@ -2617,7 +2617,8 @@ class WC_Gateway_Vipps_Recurring extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$supports = WC_Vipps_Recurring::get_instance()->gateway_should_be_active();
+		$supports = WC_Vipps_Recurring::get_instance()->gateway_should_be_active()
+					&& WC_Subscriptions_Cart::cart_contains_subscription();
 
 		return apply_filters( 'wc_vipps_recurring_cart_supports_checkout', $supports, $cart );
 	}

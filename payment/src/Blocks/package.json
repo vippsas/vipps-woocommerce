@@ -13,7 +13,7 @@
 		"@types/wordpress__block-editor": "^11.5.15",
 		"@types/wordpress__blocks": "^12.5.14",
 		"@wordpress/prettier-config": "^4.11.0",
-		"@wordpress/scripts": "^30.5.1",
+		"@wordpress/scripts": "^31.6.0",
 		"@wp-blocks/tsconfig": "^0.1.0",
 		"prettier": "^3.3.3",
 		"typescript": "^5.6.3"
