@@ -3493,7 +3493,8 @@ else:
         if (is_a(WC()->session, 'WC_Session')) {
             WC()->session->set('vipps_shipping_rate_id_map', $rate_id_map);
         } else {
-            $this->log(__('Could not store shipping rate id map in session, session was not ok', 'woo_vipps'), 'error');
+            /* translators: order id */
+            $this->log(sprintf(__('Could not store shipping rate id map in session for order %1$s, session was not ok', 'woo_vipps'), $order->get_id()), 'error');
         }
 
 
