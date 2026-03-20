@@ -489,7 +489,7 @@ class VippsApi {
 
     // Initiate payment via the epayment API; Express Checkout will still use Ecomm/v2 IOK 2023-12-13
     // Not any more: Express Checkout is started if the logistics parameters are set. IOK 2025-06-19
-    public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$requestid=1) {
+    public function epayment_initiate_payment($phone,$order,$returnurl,$authtoken,$idempotency_key=null) {
         $command = 'epayment/v1/payments';
         $msn = $this->get_merchant_serial();
         $subkey = $this->get_key($msn);
@@ -506,8 +506,21 @@ class VippsApi {
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
 
+        if (!$idempotency_key) $idempotency_key = $order->get_order_key();
+
+        // Make sure to clean up old metas, since we now support restarting order payment with Vipps retry sesssions,
+        // so these may be set and cause conflicts. LP 2026-03-11
+        if ($order->get_meta('_vipps_shipping_set')) {
+            $order->delete_meta_data('_vipps_checkout_session');
+            $order->delete_meta_data('_vipps_express_checkout'); // note: This is also set for Checkout. LP 2026-03-12
+            $order->delete_meta_data('_vipps_init_timestamp');
+            $order->delete_meta_data('_vipps_callback_timestamp');
+            $order->delete_meta_data('_vipps_capture_timestamp');
+            $order->delete_meta_data('_vipps_refund_timestamp');
+            $order->delete_meta_data('_vipps_cancel_timestamp');
+        }
+
         $headers = $this->get_headers($msn);
-        $headers['Idempotency-Key'] = $requestid;
 
         $express = $order->get_meta('_vipps_express_checkout');
 
@@ -528,6 +541,17 @@ class VippsApi {
             $woovippsid = $prefix . $paddedid;
         }
         $vippsorderid =  apply_filters('woo_vipps_orderid', $woovippsid, $prefix, $order);
+
+        // Retry sessions: add retry index to reference and idempotency key. Note: reusing idempotency key even 
+        // with a different reference will result in fail. We also dont want to regenerate the order key (which is used as idempotency key by default)
+        // since that may have unwanted effects (e.g. links in session/emails may stop working). LP 2026-03-13
+        // https://developer.vippsmobilepay.com/docs/knowledge-base/orderid/#handling-multiple-payment-attempts-for-the-same-order
+        $retrycount = intval($order->get_meta('_vipps_retry_count'));
+        if ($retrycount) {
+            $vippsorderid .= "-$retrycount";
+            $idempotency_key .= "-$retrycount";
+        }
+        $headers['Idempotency-Key'] = $idempotency_key;
 
         $order->update_meta_data('_vipps_api', 'epayment');
         $order->update_meta_data('_vipps_prefix',$prefix);
@@ -702,7 +726,7 @@ class VippsApi {
 
     // This is Vipps Checkout IOK 2021-06-19
     // Updated for V3 2023-01-09
-    public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$requestid) {
+    public function initiate_checkout($customerinfo,$order,$returnurl,$authtoken,$idempotency_key=null) {
         $command = 'checkout/v3/session';
         $static_shipping = $order->get_meta('_vipps_static_shipping');
         $needs_shipping = $order->get_meta('_vipps_needs_shipping');
@@ -721,6 +745,9 @@ class VippsApi {
             throw new VippsAPIConfigurationException(__('The Vipps gateway is not correctly configured.','woo-vipps'));
             $this->log(__('The Vipps gateway is not correctly configured.','woo-vipps'),'error');
         }
+        
+        if (!$idempotency_key) $idempotency_key = $order->get_order_key();
+
         // We will use this to retrieve the orders in the callback, since the prefix can change in the admin interface. IOK 2018-05-03
         // Pad orderid with 0 to the left so the entire vipps-orderid/reference is at least 8 chars long. IOk 2022-04-06
         $orderid = $order->get_id();
@@ -744,7 +771,8 @@ class VippsApi {
         // Required for Checkout
         $headers['client_id'] = $clientid;
         $headers['client_secret'] = $secret;
-//        $headers['Idempotency-Key'] = $requestid;
+
+        $headers['Idempotency-Key'] = $idempotency_key;
 
         // Object to send.
         $data = array();
