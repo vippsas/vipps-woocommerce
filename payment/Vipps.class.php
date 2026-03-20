@@ -956,7 +956,7 @@ jQuery('a.webhook-adder').click(function (e) {
                     'product' => @$button_options['express']['force-mini']['product'] ?? 'no',
                     'catalog' => @$button_options['express']['force-mini']['catalog'] ?? 'yes',
                     'cart' => @$button_options['express']['force-mini']['cart'] ?? 'no',
-                    'minicart' => @$button_options['express']['force-mini']['minicart'] ?? 'yes',
+                    'minicart' => @$button_options['express']['force-mini']['minicart'] ?? 'no',
                 ],
             ],
         ];
@@ -4846,7 +4846,7 @@ else:
         $options = get_option('vipps_button_options');
 
         // Init defaults, use mini version by default in below pages. LP 2025-12-17
-        $use_mini = in_array($page, ['catalog', 'minicart']);
+        $use_mini = in_array($page, ['catalog']);
         $variant = "";
 
         // Find correct variant from button settings. LP 2025-12-17
