@@ -131,16 +131,25 @@ class Vipps {
     }
 
     // Some different bits and pieces: If we are on the pay-for-order page, we cannot provide Vipps for an order that has been at Vipps. IOK 2024-05-17
+    // Since we now support Vipps restart sessions, we *may* now provide Vipps a payment option on this page even if the order has been at Vipps. LP 2026-03-10
     public function payment_gateway_filter ($gateways) {
         if (is_checkout_pay_page()) {
             $orderid = absint(get_query_var( 'order-pay')); 
             $order = $orderid ? wc_get_order($orderid) : null;
             if (is_a($order, 'WC_Order')) {
-               $isavipps = $order->get_meta('_vipps_init_timestamp');
-               // Existing override that allows repayment. IOK 2024-06-04
-               $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
-               $allow_repayment = $isavipps ? apply_filters('woo_vipps_allow_repayment', $allow_repayment, $order) : true;
-               if ($isavipps && !$allow_repayment) unset($gateways['vipps']);
+                // Existing override that allows repayment. IOK 2024-06-04
+                // i.e a third party plugin that implemented payment retrying for our plugin, we used to enable repayment only if this plugin was found.
+                // $allow_repayment = class_exists('\Site\Plugins\WooVipps\WooVippsPayForOrder');
+                // However, now we implement payment retrying ourselves. LP 2026-03-18
+
+                $vipps_status = $order->get_meta('_vipps_status');
+                $retry_count = $order->get_meta('_vipps_retry_count');
+                $retry_enabled = apply_filters('woo_vipps_enable_payment_retry', true, $order, $vipps_status, $retry_count);
+                $order_is_retryable = static::order_is_vipps_retryable($order->get_id());
+
+                // by default enable repayment if we can retry the order. LP 2026-03-18
+                $allow_repayment = apply_filters('woo_vipps_allow_repayment', $retry_enabled && $order_is_retryable, $order); // legacy filter
+                if (!$allow_repayment) unset($gateways['vipps']);
             }
         }
         return $gateways;
@@ -3897,7 +3906,7 @@ else:
         $pm = $order->get_payment_method();
         if ($pm != 'vipps') return $actions;
 
-        if ($order->get_meta('_vipps_express_checkout')) {
+        if (!static::order_is_vipps_retryable($order->get_id())) {
             unset($actions['pay']);
         }
         return $actions;
@@ -5417,10 +5426,16 @@ else:
             exit();
         }
 
+        // We are done, but in failure. Don't poll.
         $content = "";
         $failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
-        // We are done, but in failure. Don't poll.
+        // Status is failed; still send to return url (as of now /order-recieved), the text there will depend on the status.
+        // For failed it shows a "Retry payment" button that takes the customer to /pay-for-order where it will be retried. LP 2026-03-17
+        if ('failed' == $status) {
+            wp_redirect($failure_redirect ?: $gw->get_return_url($order));
+            exit();
+        }
         if ($status == 'cancelled' || $payment == 'cancelled') {
             $this->maybe_restore_cart($orderid,'failed');
             if ($failure_redirect){
@@ -5476,7 +5491,7 @@ else:
 
         $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woo-vipps') . '</p>';
         $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
-        $content .= "<a id='continueToOrderFailed' style='display:none' href='$failure_redirect'></a>";
+        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . ($failure_redirect ?: $gw->get_return_url($order)) . "'></a>";
         $content .= "</div>";
 
 
@@ -5598,5 +5613,17 @@ else:
                 'readonly'    => true,
             ),
         );
+    }
+
+    // Whether the order is possible to restart with a retry session at VMP. LP 2026-03-18
+    public static function order_is_vipps_retryable($order_id) {
+        $order = wc_get_order($order_id);
+        if (!$order) return false;
+        $api = $order->get_meta('_vipps_api');
+        $nonexpress_epayment = 'epayment' === $api && !$order->get_meta('_vipps_express_checkout');
+        $shipping_set = $order->get_meta('_vipps_shipping_set');
+
+        // Express or unfinalized Checkout orders do not have shipping available, so we cant retry these in particular. LP 2026-03-18
+        return $nonexpress_epayment || $shipping_set;
     }
 }
