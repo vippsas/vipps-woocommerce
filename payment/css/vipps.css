@@ -326,7 +326,7 @@ img.inline {
 }
 
 /* New express section for woo legacy (shortcode) checkout. LP 2026-03-23 */
-.legacy-checkout.vipps-express {
+.legacy-checkout.vipps-express-checkout {
     max-width: 20rem;
     border: 1px solid lightgrey;
     border-radius: 4px;
@@ -334,13 +334,9 @@ img.inline {
     margin: auto;
     text-align: center;
 }
-.legacy-checkout.vipps-express .express-title {
+.legacy-checkout.vipps-express-checkout .express-header {
     font-size: var(--wp--preset--font-size--medium);
     padding-bottom: .5rem;
-}
-.legacy-checkout.vipps-express img {
-    width: 100%;
-    height: auto;
 }
 
 .vipps_checkout_button_wrapper {

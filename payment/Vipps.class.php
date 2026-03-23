@@ -1555,29 +1555,19 @@ jQuery('a.webhook-adder').click(function (e) {
 
     // Show express button option on checkout form. LP 2026-03-23
     public function checkout_before_customer_details_express () {
-        $this->express_checkout_section();
-    }
-
-    public function express_checkout_section() {
         $gw = $this->gateway();
         if (!$gw->show_express_checkout()) return;
         $this->express_checkout_section_html();
     }
 
     public function express_checkout_section_html() {
-        $url = $this->express_checkout_url();
-        $url = wp_nonce_url($url, 'express', 'sec');
         $payment_method = $this->get_payment_method_name();
-        $logo = $this->get_payment_logo('checkout');
-        $alt = sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method);
-
-        $button = "<a href='$url'><img alt='$alt' src='$logo'/></a>";
-        $button = apply_filters('woo_vipps_legacy_checkout_express_button', $button, $url, $payment_method);
-        $div_classes = "legacy-checkout vipps-express $payment_method";
-
-        $title_text = __('Express Checkout', 'woo-vipps');
-        $title = "<div class='express-title'>$title_text</div>";
-        echo "<div class='$div_classes'>$title$button</div>";
+        $header_text = __('Express Checkout', 'woo-vipps');
+        $header = "<div class='express-header'>$header_text</div>";
+        $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
+        echo "<div class='$div_classes'>$header";
+        $this->cart_express_checkout_button_html('checkout');
+        echo '</div>';
     }
 
     // Banner replaced by checkout button section like Gutenberg, keep banner for shortcode. LP 2026-03-23
@@ -1619,14 +1609,14 @@ jQuery('a.webhook-adder').click(function (e) {
         $gw = $this->gateway();
 
         if ($gw->show_express_checkout()){
-            return $this->cart_express_checkout_button_html(true);
+            return $this->cart_express_checkout_button_html('minicart');
         }
     }
 
-    public function cart_express_checkout_button_html($minicart = false) {
+    // Cart as in express checkout the cart contents, not only shown in the cart. LP 2026-03-23
+    public function cart_express_checkout_button_html($page = 'cart') {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
-        $page = $minicart ? 'minicart' : 'cart';
         $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo($page));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
@@ -1647,7 +1637,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $gw = $this->gateway();
         if (!$gw->cart_supports_express_checkout()) return;
         ob_start();
-        $this->cart_express_checkout_button_html();
+        $this->cart_express_checkout_button_html('shortcode');
         return ob_get_clean();
     }
     // Show a banner normally shown for non-logged-in-users at the checkout page.  It does not need to check if we are to show the button, obviously, but needs to see if the cart works
