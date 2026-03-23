@@ -284,7 +284,7 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2026-03-xx Version 5.3.0 =
+= 2026-03-23 Version 5.3.0 =
 Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
 Error that occasionally sent the user to the homepage instead of Checkout fixed
 
