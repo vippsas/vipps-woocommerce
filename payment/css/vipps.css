@@ -325,6 +325,23 @@ img.inline {
  background-color: #161225;
 }
 
+/* New express section for woo legacy (shortcode) checkout. LP 2026-03-23 */
+.legacy-checkout.vipps-express {
+    max-width: 20rem;
+    border: 1px solid lightgrey;
+    border-radius: 4px;
+    padding: 1.2rem 1.8rem;
+    margin: auto;
+    text-align: center;
+}
+.legacy-checkout.vipps-express .express-title {
+    font-size: var(--wp--preset--font-size--medium);
+    padding-bottom: .5rem;
+}
+.legacy-checkout.vipps-express img {
+    width: 100%;
+    height: auto;
+}
 
 .vipps_checkout_button_wrapper {
     margin-top: 1rem;
