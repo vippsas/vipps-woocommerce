@@ -1566,7 +1566,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $header = "<div class='express-header'>$header_text</div>";
         $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
         echo "<div class='$div_classes'>$header";
-        $this->cart_express_checkout_button_html('checkout');
+        $this->cart_express_checkout_button_html();
         echo '</div>';
     }
 
@@ -1609,13 +1609,14 @@ jQuery('a.webhook-adder').click(function (e) {
         $gw = $this->gateway();
 
         if ($gw->show_express_checkout()){
-            return $this->cart_express_checkout_button_html('minicart');
+            return $this->cart_express_checkout_button_html(true);
         }
     }
 
-    public function cart_express_checkout_button_html($page = 'cart') {
+    public function cart_express_checkout_button_html($minicart = false) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
+        $page = $minicart ? 'minicart' : 'cart';
         $imgurl= apply_filters('woo_vipps_express_checkout_button', $this->get_payment_logo($page));
         $method = $this->get_payment_method_name();
         $title = sprintf(__('Buy now with %1$s!', 'woo-vipps'), $method);
