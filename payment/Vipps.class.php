@@ -1613,7 +1613,6 @@ jQuery('a.webhook-adder').click(function (e) {
         }
     }
 
-    // Cart as in express checkout the cart contents, not only shown in the cart. LP 2026-03-23
     public function cart_express_checkout_button_html($page = 'cart') {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url,'express','sec');
