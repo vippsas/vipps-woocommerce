@@ -966,6 +966,7 @@ jQuery('a.webhook-adder').click(function (e) {
                     'catalog' => @$button_options['express']['force-mini']['catalog'] ?? 'yes',
                     'cart' => @$button_options['express']['force-mini']['cart'] ?? 'no',
                     'minicart' => @$button_options['express']['force-mini']['minicart'] ?? 'no',
+                    'checkout' => @$button_options['express']['force-mini']['checkout'] ?? 'no',
                 ],
             ],
         ];
@@ -1036,6 +1037,12 @@ jQuery('a.webhook-adder').click(function (e) {
                   <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-minicart"><?php _e('Mini cart', 'woo-vipps'); ?></label>
                   <input name="express[force-mini][minicart]" type="hidden" value="no">
                   <input name="express[force-mini][minicart]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['minicart'] == "yes") echo "checked";?>>
+                </div>
+
+                <div class="vipps-button-settings-express-force-mini-container">
+                  <label class="vipps-button-settings-express-force-mini" id="vipps-button-settings-express-force-mini-checkout"><?php _e('Checkout', 'woo-vipps'); ?></label>
+                  <input name="express[force-mini][checkout]" type="hidden" value="no">
+                  <input name="express[force-mini][checkout]" type="checkbox" value="yes" <?php if ($init_states['express']['force-mini']['checkout'] == "yes") echo "checked";?>>
                 </div>
 
                 <!-- mini variant dropdown -->
@@ -1568,12 +1575,20 @@ jQuery('a.webhook-adder').click(function (e) {
         $url = $this->express_checkout_url();
         $url = wp_nonce_url($url, 'express', 'sec');
         $payment_method = $this->get_payment_method_name();
-        $logo = $this->get_payment_logo('checkout');
         $alt = sprintf(__('Buy now with %1$s', 'woo-vipps'), $payment_method);
 
-        $button = "<a href='$url'><img alt='$alt' src='$logo'/></a>";
+        // Get correct logo variant manually so we can add 'short' class or not. LP 2026-03-23
+        $page = 'checkout';
+        $logo_lang = $this->get_customer_language();
+        $logo_variant = $this->get_express_logo_page_variant($page);
+        $short = str_ends_with($logo_variant, 'mini');
+        $logo = $this->get_express_logo($payment_method, $logo_lang, $logo_variant);
+        $img_classes = '';
+        if ($short) $img_classes .= ' short';
+
+        $button = "<a href='$url'><img class='$img_classes' alt='$alt' src='$logo'/></a>";
         $button = apply_filters('woo_vipps_legacy_checkout_express_button', $button, $url, $payment_method);
-        $div_classes = "legacy-checkout vipps-express $payment_method";
+        $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
 
         $title_text = __('Express Checkout', 'woo-vipps');
         $title = "<div class='express-title'>$title_text</div>";
