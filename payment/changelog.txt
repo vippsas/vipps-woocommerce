@@ -1,4 +1,20 @@
 == Changelog ==
+= 2026-03-23 Version 5.3.0 =
+Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
+Error that occasionally sent the user to the homepage instead of Checkout fixed
+
+= 2026-03-11 Version 5.2.2 =
+Fix CSS issues in the standard Checkout
+
+= 2026-03-09 Version 5.2.1 =
+Fix: Only show the recurring Checkout when there's a recurring product in your shopping cart.
+
+= 2026-03-02 Version 5.2.0 =
+Bump required versions of php, WP and Woo to reasonably modern versions
+Fixed all blocks to be compatible with the new iframe based block editor
+Ensure Pickup Locations are editable if any are defined since these are available in Express and Checkout
+Make the new interactivity based minicart work correctly with Checkout
+
 = 2026-02-23 version 5.1.6 =
 Fix customer prefill in Checkout
 Add block to support new interactivity-API based minicart for Express Checkout

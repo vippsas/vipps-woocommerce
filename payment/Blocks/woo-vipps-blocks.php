@@ -15,8 +15,26 @@ add_action('init', function () {
     }
 });
 
+// Add scripts for web components to the block editor. You would expect this to work with block.json or enqueue_block_editor_assets, but no, 
+// that doesn't work at all. THIS works though.  IOK 2026-02-25
+// https://developer.wordpress.org/block-editor/how-to-guides/enqueueing-assets-in-the-editor/
+add_action('enqueue_block_assets', function () {
+    // CSS common for several blocks etc. Enqued both in admin and frontend. IOK 2025-02-25
+    wp_enqueue_style('vipps-block-editor-css', plugins_url('../css/blocks.css', __FILE__), [], filemtime(dirname(dirname(__FILE__)) . "/css/blocks.css"));
+
+    if (is_admin()) {
+        // Add the on-site-messaging web component if we are in the admin area. 
+        wp_enqueue_script('vipps-onsite-messageing');
+    }
+});
+
 // Inject block config variables to block editor assets
 add_action('enqueue_block_editor_assets', function () {
+
+
+
+
+
     // vipps-badge config
     $vipps = Vipps::instance();
     $badge_variants = [
