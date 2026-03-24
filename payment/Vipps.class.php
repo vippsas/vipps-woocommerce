@@ -1570,7 +1570,6 @@ jQuery('a.webhook-adder').click(function (e) {
         echo '</div>';
     }
 
-    // Banner replaced by checkout button section like Gutenberg, keep banner for shortcode. LP 2026-03-23
     public function express_checkout_banner() {
         $gw = $this->gateway();
         if (!$gw->show_express_checkout()) return;
