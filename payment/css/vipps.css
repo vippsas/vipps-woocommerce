@@ -76,7 +76,6 @@ width: 586px;
     display: none;
 }
 .vipps_checkout_widget_wrapper .vipps_checkout_widget .vipps_checkout_widget_input {
-    border-radius: 8px;
     height: 56px;
     width: 100%;
     padding: 12px 15px;
@@ -328,15 +327,22 @@ img.inline {
 /* New express section for woo legacy (shortcode) checkout. LP 2026-03-23 */
 .legacy-checkout.vipps-express-checkout {
     max-width: 20rem;
+    position: relative;
     border: 1px solid lightgrey;
     border-radius: 4px;
-    padding: 1.2rem 1.8rem;
-    margin: auto;
+    padding: 1.4rem 1.8rem 1rem;
+    margin: 1rem auto;
     text-align: center;
 }
 .legacy-checkout.vipps-express-checkout .express-header {
-    font-size: var(--wp--preset--font-size--medium);
-    padding-bottom: .5rem;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0 0.75rem;
+    background: #fff;
+    line-height: 1;
+    font-size: var(--wp--preset--font-size--small);
 }
 
 .vipps_checkout_button_wrapper {
