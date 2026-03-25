@@ -3939,14 +3939,14 @@ else:
                 $this->log(sprintf(__("Order %2\$d is 'pending' but its %1\$s order status is '%3\$s'  - this means that the order has been erroneously set to 'pending' after completion or cancellation. Will not process further, please check status of order at %1\$s and set to correct status in WooCommerce", 'woo-vipps'), $this->get_payment_method_name(), $o->get_id(), $currentstatus), 'debug');
                 return;
             }
-            $this->check_status_of_pending_order($o, false);
+            $this->check_status_of_pending_order($o, false, false);
         }
     }
 
     // Check and possibly update the status of a pending order at Vipps. We only restore session if we know this is called from a context with no session -
     // e.g. wp-cron. IOK 2021-06-21
     // Stop restoring session in wp-cron too. IOK 2021-08-23
-    public function check_status_of_pending_order($order, $maybe_restore_session=0) {
+    public function check_status_of_pending_order($order, $maybe_restore_session=0, $allow_retry=true) {
         $express = $order->get_meta('_vipps_express_checkout'); 
         $vippstatus = $order->get_meta('_vipps_status');
         if ($express && $maybe_restore_session) {
@@ -3958,7 +3958,7 @@ else:
         $order_status = null;
         try {
             $order->add_order_note(sprintf(__("Callback from %1\$s delayed or never happened; order status checked by periodic job", 'woo-vipps'), $this->get_payment_method_name()));
-            $order_status = $gw->callback_check_order_status($order);
+            $order_status = $gw->callback_check_order_status($order, $allow_retry);
             $this->log(sprintf(__("For order %2\$d order status at %1\$s is %3\$s", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id(), $order_status), 'debug');
         } catch (Exception $e) {
             $this->log(sprintf(__("Error getting order status at %1\$s for order %2\$d", 'woo-vipps'), $this->get_payment_method_name(), $order->get_id()), 'error'); 
