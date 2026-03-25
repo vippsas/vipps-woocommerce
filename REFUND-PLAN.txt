@@ -12,10 +12,11 @@
 
 * Manual refund *after* capture is ok
 ** This amount is not recorded as uncapturable, so it will remain captured, it cannot be cancelled, only refunded.
+* Gateway refund *before* capture is marked as "uncapturable". This is cancelled when order is complete.
 
 * Furthermore: Manual refunds can be deleted at any point in time.
 
-* Maybe disallow creating manual refunds before capture:
+* Maybe disallow creating manual refunds before (total!) capture:
 ** there is a hook before the refund is saved:
                 do_action( 'woocommerce_create_refund', $refund, $args );
 

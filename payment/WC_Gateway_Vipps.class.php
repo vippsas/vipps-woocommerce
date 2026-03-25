@@ -2298,7 +2298,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
     // Check status of order at Vipps, in case the callback has been delayed or failed.   
     // Should only be called if in status 'pending'; it will modify the order when status changes.
-    public function callback_check_order_status($order) {
+    public function callback_check_order_status($order, $allow_retry = true) {
         global $Vipps;
         $orderid = $order->get_id();
 
@@ -2428,8 +2428,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
+                $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
                 $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-                if (!$cancel_on_fail) {
+                if (!$cancel_on_fail && $order_is_retryable) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 } else {
@@ -3530,13 +3531,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->update_vipps_payment_details($order);
         } else {
             // Not ok status; set to failed/cancelled
+            $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
             $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-            if (!$cancel_on_fail) {
+            if (!$cancel_on_fail && $order_is_retryable) {
                 /* translators: company name */
                 $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
             } else {
                 /* translators: company name */
-                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s (cannot set to failed because order is not finalized)', 'woo-vipps'), Vipps::CompanyName()));
+                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
             }
         }
 
