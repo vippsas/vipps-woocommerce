@@ -2446,8 +2446,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order->payment_complete();
                 break;
             case 'cancelled':
+                $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
                 $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-                if (!$cancel_on_fail) {
+                if (!$cancel_on_fail && $order_is_retryable) {
                     /* translators: company name */
                     $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 } else {
@@ -3548,8 +3549,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
           $this->update_vipps_payment_details($order);
         } else {
             // Not ok status; set to failed/cancelled
+            $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
             $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-            if (!$cancel_on_fail) {
+            if (!$cancel_on_fail && $order_is_retryable) {
                 /* translators: company name */
                 $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
             } else {
