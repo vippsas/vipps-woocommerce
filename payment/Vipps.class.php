@@ -5603,7 +5603,7 @@ else:
                 'readonly'    => true,
             ),
             'cart_supports_checkout' => array(
-                'description' => sprintf(__( 'True if %1$s Checkout is active and the cart supports it', 'woo-vipps' ), $this->get_payment_method_name()),
+                'description' => sprintf(__( 'True if %1$s is active and the cart supports it', 'woo-vipps' ), $this->CheckoutName()),
                 'type'        => array( 'boolean', 'null' ),
                 'readonly'    => true,
             ),
