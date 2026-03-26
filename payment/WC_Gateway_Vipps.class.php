@@ -2467,17 +2467,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             case 'cancelled':
                 $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
                 $status_on_fail = $this->get_option('status_on_fail');
-                if (apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus)) {
+                $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+                if (!$order_is_retryable || $cancel_on_fail) {
                     $status_on_fail = 'cancelled';
                 }
-                    
-                if ($order_is_retryable && $status_on_fail === 'failed') {
-                    /* translators: company name */
-                    $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
-                } else {
-                    /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                    /* order status name. Cancelled is woocommerce status name */
+                    $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.'));
+                    $status_on_fail = 'cancelled';
                 }
+
+                /* translators: company name */
+                $order->update_status($status_on_fail, sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 break;
         }
 
@@ -3574,16 +3575,18 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // Not ok status; set to failed/cancelled
             $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
             $status_on_fail = $this->get_option('status_on_fail');
-            if (apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus)) {
+            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+            if (!$order_is_retryable || $cancel_on_fail) {
                 $status_on_fail = 'cancelled';
             }
-            if ($order_is_retryable && $status_on_fail === 'failed') {
-                /* translators: company name */
-                $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-            } else {
-                /* translators: company name */
-                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+            if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                /* order status name. Cancelled is woocommerce status name */
+                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.'));
+                $status_on_fail = 'cancelled';
             }
+
+            /* translators: company name */
+            $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
         }
 
         $order->save();
