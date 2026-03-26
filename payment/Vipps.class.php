@@ -5430,8 +5430,6 @@ else:
         $content = "";
         $failure_redirect = apply_filters('woo_vipps_order_failed_redirect', '', $orderid);
 
-error_log("Failure redirect is $failure_redirect");
-
         // Status is failed; still send to return url (as of now /order-recieved), the text there will depend on the status.
         // For failed it shows a "Retry payment" button that takes the customer to /pay-for-order where it will be retried. LP 2026-03-17
         if ('failed' == $status) {
