@@ -2468,12 +2468,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
                 $status_on_fail = $this->get_option('status_on_fail');
                 $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-                if (!$order_is_retryable || $cancel_on_fail) {
+                if ($cancel_on_fail || !$order_is_retryable) {
                     $status_on_fail = 'cancelled';
                 }
                 if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
                     /* order status name. Cancelled is woocommerce status name */
-                    $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.'));
+                    $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
                     $status_on_fail = 'cancelled';
                 }
 
@@ -3576,12 +3576,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
             $status_on_fail = $this->get_option('status_on_fail');
             $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-            if (!$order_is_retryable || $cancel_on_fail) {
+            if ($cancel_on_fail || !$order_is_retryable) {
                 $status_on_fail = 'cancelled';
             }
             if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
                 /* order status name. Cancelled is woocommerce status name */
-                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.'));
+                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
                 $status_on_fail = 'cancelled';
             }
 
