@@ -957,11 +957,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // New defaults based on old defaults
         $default_static_shipping_for_checkout = 'no';
         $default_ask_address_for_express = 'no';
+        $default_status_on_fail = 'failed';
         if ($current) {
             $default_static_shipping_for_checkout = (isset($current['enablestaticshipping'])) ? $current['enablestaticshipping'] : 'no';
             $default_ask_address_for_express = (isset($current['useExplicitCheckoutFlow']) && $current['useExplicitCheckoutFlow'] == "yes") ? "yes" : "no";
             // The old default used the same value as for Express Checkout. IOK 2023-07-27
             $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
+
+            // For existing installs: set failed payments order status to cancelled to keep same default behaviour.
+            // New installs will be set to failed instead of cancelled. LP 2026-03-26
+            $default_status_on_fail = 'cancelled';
         }
 
         // Get the already-set country code. For existing sites, this will guess the country based on the currency; for new sites, use 
@@ -1280,6 +1285,21 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ), 
                 'description' => __('By default, orders that are <b>reserved</b> but not <b>yet captured</b> will now have the order status \'Processing\'. You can capture the sum manually, or by changing the status to \'Complete\'. You should ensure that your workflow is such that the order is not shipped until after this capture.<br><br> The status \'On hold\' can be chosen instead for stores using a workflow where orders are shipped when the status is \'Processing\'. In this case, \'On hold\' will mean "order is reserved but not yet captured".  This is a slightly safer solution, and ensures that the order status will reflect the payment status. <br><br>However, in many stores \'On hold\' has the additional meaning "there is a problem with the order"; and an email is often sent to the customer about this problem. The default is \'Processing\' because of this, and because many plugins and integrations expect orders to be \'Processing\' when the customer has completed payment.', 'woo-vipps'),
                 'default'     => 'processing',
+            ),
+
+            'status_on_fail' => array(
+                'title'       => sprintf(__('Order status on failed payment (for restartable orders)', 'woo-vipps'), Vipps::CompanyName()),
+                'label'       => __('Choose default order status for failed payments', 'woo-vipps'),
+                'type'        => 'select',
+                'options' => array(
+                    /* woocommerce status name */
+                    'failed' => __('Failed', 'woo-vipps'),
+                    /* woocommerce status name */
+                    'cancelled' => __('Cancelled','woo-vipps'),
+                ), 
+                /* company name. cancelled and failed are woocommerce status names! */
+                'description' => sprintf(__('By default, orders where payment is started but not completed at %1$s will be set to failed if they can be restarted. This setting changes this behaviour, but does <strong>not</strong> affect orders that cannot be restarted as these will always be set to cancelled.<br><br>Cancelled orders will keep the customer\'s shopping cart intact.<br>Failed orders can be restarted, possibly with another payment method.', 'woo-vipps'), Vipps::CompanyName()),
+                'default'     => $default_status_on_fail,
             ),
 
 /*
@@ -2447,14 +2467,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 break;
             case 'cancelled':
                 $order_is_retryable = $allow_retry && Vipps::order_is_vipps_retryable($order->get_id());
+                $status_on_fail = $this->get_option('status_on_fail');
                 $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-                if (!$cancel_on_fail && $order_is_retryable) {
-                    /* translators: company name */
-                    $order->update_status('failed', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
-                } else {
-                    /* translators: company name */
-                    $order->update_status('cancelled', sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+                if ($cancel_on_fail || !$order_is_retryable) {
+                    $status_on_fail = 'cancelled';
                 }
+                if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                    /* order status name. Cancelled is woocommerce status name */
+                    $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+                    $status_on_fail = 'cancelled';
+                }
+
+                /* translators: company name */
+                $order->update_status($status_on_fail, sprintf(__('Order failed or rejected at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
                 break;
         }
 
@@ -3550,14 +3575,19 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         } else {
             // Not ok status; set to failed/cancelled
             $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
+            $status_on_fail = $this->get_option('status_on_fail');
             $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
-            if (!$cancel_on_fail && $order_is_retryable) {
-                /* translators: company name */
-                $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
-            } else {
-                /* translators: company name */
-                $order->update_status('cancelled', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+            if ($cancel_on_fail || !$order_is_retryable) {
+                $status_on_fail = 'cancelled';
             }
+            if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+                /* order status name. Cancelled is woocommerce status name */
+                $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+                $status_on_fail = 'cancelled';
+            }
+
+            /* translators: company name */
+            $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
         }
 
         $order->save();

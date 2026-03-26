@@ -5447,7 +5447,8 @@ else:
         // Status is failed; still send to return url (as of now /order-recieved), the text there will depend on the status.
         // For failed it shows a "Retry payment" button that takes the customer to /pay-for-order where it will be retried. LP 2026-03-17
         if ('failed' == $status) {
-            wp_redirect($failure_redirect ?: $gw->get_return_url($order));
+            $failure_redirect = $failure_redirect ?: $gw->get_return_url($order);
+            wp_redirect($failure_redirect);
             exit();
         }
         if ($status == 'cancelled' || $payment == 'cancelled') {
@@ -5505,7 +5506,7 @@ else:
 
         $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woo-vipps') . '</p>';
         $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
-        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . ($failure_redirect ?: $gw->get_return_url($order)) . "'></a>";
+        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . ($failure_redirect) . "'></a>";
         $content .= "</div>";
 
 
