@@ -964,7 +964,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // The old default used the same value as for Express Checkout. IOK 2023-07-27
             $vippscreateuserdefault = isset($current['expresscreateuser']) ? $current['expresscreateuser'] : $vippscreateuserdefault;
 
-            // For existing installs, cancel failed orders at VMP to keep same default behaviour. New installs will be set to failed instead of cancelled. LP 2026-03-26
+            // For existing installs: set failed payments order status to cancelled to keep same default behaviour.
+            // New installs will be set to failed instead of cancelled. LP 2026-03-26
             $default_status_on_fail = 'cancelled';
         }
 
