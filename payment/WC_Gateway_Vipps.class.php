@@ -3587,7 +3587,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             }
 
             /* translators: company name */
-            $order->update_status('failed', sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+            $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
         }
 
         $order->save();
