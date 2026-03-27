@@ -3,8 +3,8 @@ Contributors: wphostingdev, everydayas, iverok, perwilhelmsen, nikolaidev, lasse
 Author: WP Hosting, Everyday AS
 Author URI: https://www.wp-hosting.no/
 Tags: woocommerce, vipps, mobilepay, recurring payments, subscriptions
-Version: 5.3.0
-Stable tag: 5.3.0
+Version: 5.3.2
+Stable tag: 5.3.2
 Requires at least: 6.3
 Tested up to: 6.9.4
 Requires PHP: 8.0
@@ -109,6 +109,12 @@ Shareable links and QR codes can be generated from the Vipps/MobilePay tab on th
 This project is hosted on Github at: https://github.com/vippsas/vipps-woocommerce
 
 == Upgrade Notice ==
+Version 5.3.2
+Improve express checkout banner on legacy checkokut screens
+Add new setting for retryable orders so these can be set to "cancel" or "failed" as required
+Version 5.3.1
+Fix CSS issue with on-site messaging badges on small screens
+Ensure Express orders are always "cancelled", never "failed".
 Version 5.3.0
 Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
 Error that occasionally sent the user to the homepage instead of Checkout fixed
@@ -284,7 +290,15 @@ From version 1.1.13 you can also modify the javascript using the new WP hooks li
  * 'vippsStatusCheckErrorHandler' - A filter that should return function taking a statustext and an error object. It receives the default error handler, and is called when checking the order status with ajax for some reason ends up in an error.
 
 == Changelog ==
-= 2026-03-xx Version 5.3.0 =
+= 2026-03-26 Version 5.3.1 =
+Improve express checkout banner on legacy checkokut screens
+Add new setting for retryable orders
+
+= 2026-03-23 Version 5.3.1 =
+Fix CSS issue with on-site messaging badges on small screens
+Ensure Express orders are always "cancelled", never "failed".
+
+= 2026-03-23 Version 5.3.0 =
 Aborted Vipps MobilePay orders are now "failed" instead of "cancelled" and can be retried as a new Vipps MobilePay session
 Error that occasionally sent the user to the homepage instead of Checkout fixed
 
