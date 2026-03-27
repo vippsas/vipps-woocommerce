@@ -1292,12 +1292,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 'label'       => __('Choose default order status for failed payments', 'woo-vipps'),
                 'type'        => 'select',
                 'options' => array(
-                    /* woocommerce status name */
+                    /* translators: woocommerce status name */
                     'failed' => __('Failed', 'woo-vipps'),
-                    /* woocommerce status name */
+                    /* translators: woocommerce status name */
                     'cancelled' => __('Cancelled','woo-vipps'),
                 ), 
-                /* company name. cancelled and failed are woocommerce status names! */
+                /* translators: company name. cancelled and failed are woocommerce status names! */
                 'description' => sprintf(__('By default, orders where payment is started but not completed at %1$s will be set to failed if they can be restarted. This setting changes this behaviour, but does <strong>not</strong> affect orders that cannot be restarted as these will always be set to cancelled.<br><br>Cancelled orders will keep the customer\'s shopping cart intact.<br>Failed orders can be restarted, possibly with another payment method.', 'woo-vipps'), Vipps::CompanyName()),
                 'default'     => $default_status_on_fail,
             ),
@@ -2473,7 +2473,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     $status_on_fail = 'cancelled';
                 }
                 if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
-                    /* order status name. Cancelled is woocommerce status name */
+                    /* translators: order status name. Cancelled is woocommerce status name */
                     $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
                     $status_on_fail = 'cancelled';
                 }
@@ -3581,7 +3581,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $status_on_fail = 'cancelled';
             }
             if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
-                /* order status name. Cancelled is woocommerce status name */
+                /* translators: order status name. Cancelled is woocommerce status name */
                 $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
                 $status_on_fail = 'cancelled';
             }
