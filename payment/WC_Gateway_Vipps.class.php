@@ -218,6 +218,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // if so, we need to cancel this amount PMB 2024-11-21
         // nb: note very late priority - we must have captured before, please
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
+
+        // New handling for callbacks in the action scheduler. LP 2026-03-27
+        add_action('woo_vipps_callback_action', [$this, 'handle_callback_action'], 10, 4);
     }
 
     // this function is called after an order is changed to complete it checks if there is reserved money that is not captured
@@ -3501,82 +3504,166 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
-        // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
-        // when callbacks happen while we are polling for results. IOK 2018-05-30
-        if (!$Vipps->lockOrder($order)) {
-            clean_post_cache($order->get_id());
+        #// If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
+        #// We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
+        #// when callbacks happen while we are polling for results. IOK 2018-05-30
+        #if (!$Vipps->lockOrder($order)) {
+        #    clean_post_cache($order->get_id());
+        #    return false;
+        #}
+
+        #// Ensure we use the same session as for the original order from here on. IOK 2019-10-21
+        #// IOK 2023-07-18 but because of the race condition issue, we cannot guarantee that any changes
+        #// made to the session here will be saved. Sorry. 
+        #$Vipps->callback_restore_session($orderid);
+
+        #// Set Vipps metadata as early as possible
+        #$this->order_set_transaction_metadata($order, $transaction);
+
+        #$this->log(sprintf(__("%1\$s callback: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
+
+      
+        #// This order is ready to set order shipping details etc for IOK 2025-09-19
+        #$ready = false;
+        #if (in_array($newstatus, ['authorized', 'complete'])) {
+        #    $ready = true;
+        #}
+        #if ($ready) {
+        #    // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
+        #    // IOK 2024-01-09 ensure this is called only when order is complete/authorized
+        #    $this->reset_erroneous_payment_method($order);
+        #}
+
+        #if ($ready && ($express || $ischeckout)) {
+        #    // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
+        #    // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
+        #    $result = $this->ensure_userDetails($result, $order);
+
+        #    // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
+        #    // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
+        #    // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
+        #    // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
+        #    // we have added a scope of any kind. This is therefore probably dead code.
+        #    // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
+        #    if (!isset($result['userDetails'])) {
+        #        // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
+        #        try {
+        #           $details = $this->get_payment_details($order);
+        #           $result = $details;
+        #        } catch (Exception $e) {
+        #          $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
+        #          $this->log($e->getMessage());
+        #        }
+        #    } 
+
+        #    // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
+        #    $result = $this->normalizeShippingDetails($result, $order);
+
+        #    // We should now always have shipping details.
+        #    if (isset($result['shippingDetails'])) {
+        #        $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
+        #        $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
+        #    }
+        #}
+
+        #// the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
+        #if ($vippsstatus == 'AUTHORIZED') {
+        #    $this->payment_complete($order);
+        #} else if ($vippsstatus == 'SALE') {
+        #  // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
+        #  // Actually not supported anymore, but keep logic. IOK 2025-08-13
+        #  $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+        #  $order->payment_complete();
+        #  $this->update_vipps_payment_details($order);
+        #} else {
+        #    // Not ok status; set to failed/cancelled
+        #    $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
+        #    $status_on_fail = $this->get_option('status_on_fail');
+        #    $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+        #    if ($cancel_on_fail || !$order_is_retryable) {
+        #        $status_on_fail = 'cancelled';
+        #    }
+        #    if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
+        #        /* translators: order status name. Cancelled is woocommerce status name */
+        #        $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
+        #        $status_on_fail = 'cancelled';
+        #    }
+
+        #    /* translators: company name */
+        #    $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
+        #}
+
+        #$order->save();
+        #clean_post_cache($order->get_id());
+
+        #// Restore the session again so that we aren't causing issues with the customer-return branch, which may have to update the session concurrently. IOK 2023-018
+        #$Vipps->callback_restore_session($orderid);
+        #$Vipps->unlockOrder($order);
+
+        #// Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
+        #try {
+        #    $Vipps->createCallbackSignal($order,'ok');
+        #} catch (Exception $e) {
+        #        // Could not create a signal file, but that's ok.
+        #}
+
+        // New callback handling: store data in order meta and schedule an action to action sheduler. LP 2026-03-27
+        $now = time();
+        $order->update_meta_data('_vipps_callback_received_at', $now); // callback should contain a sent timestamp, but anyways. LP 2026-03-27
+        $order->save_meta_data();
+        $result['_received_at'] = $now; 
+        error_log('LP result: ' . print_r($result, true));
+
+        error_log('LP scheduling AS action in handle_callback');
+        $args = [
+            'order_id' => $order->get_id(),
+            'data' => $result,
+            'is_checkout' => $ischeckout,
+            'is_webhook' => $iswebhook,
+        ];
+        $as_id = as_schedule_single_action(time() + 60, 'woo_vipps_callback_action', $args, 'woo-vipps', false);
+        error_log('LP as_id: ' . print_r($as_id, true));
+        if (!$as_id) {
+            /* translators: order id */
+            $this->log(sprintf(__('Failed to schedule callback action for order %1$s', 'woo-vipps'), $order->get_id()), 'error');
+            // LP TODO: handle this. LP 2026-03-27
+        }
+
+        // Signal that we in fact handled the order.
+        return true;
+    }
+
+    public function handle_callback_action($order_id, $data, $is_checkout, $is_webhook) {
+        error_log('LP hello from action scheduler');
+        error_log('LP data: ' . print_r($data, true));
+        error_log('LP order_id: ' . print_r($order_id, true));
+        error_log('LP is_webhook: ' . print_r($is_webhook, true));
+        error_log('LP is_checkout: ' . print_r($is_checkout, true));
+
+        // Sync woo order status with Vipps status from callback. LP 2026-03-27
+        $order = wc_get_order($order_id);
+        if (!is_a($order, 'WC_Order')) {
+            /* translators: order id */
+            $this->log(sprintf(__('Callback action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
             return false;
         }
 
-        // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
-        // IOK 2023-07-18 but because of the race condition issue, we cannot guarantee that any changes
-        // made to the session here will be saved. Sorry. 
-        $Vipps->callback_restore_session($orderid);
-
-        // Set Vipps metadata as early as possible
-        $this->order_set_transaction_metadata($order, $transaction);
-
-        $this->log(sprintf(__("%1\$s callback: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
-
-      
-        // This order is ready to set order shipping details etc for IOK 2025-09-19
-        $ready = false;
-        if (in_array($newstatus, ['authorized', 'complete'])) {
-            $ready = true;
-        }
-        if ($ready) {
-            // Failsafe for rare bug when using Klarna Checkout with Vipps as an external payment method
-            // IOK 2024-01-09 ensure this is called only when order is complete/authorized
-            $this->reset_erroneous_payment_method($order);
-        }
-
-        if ($ready && ($express || $ischeckout)) {
-            // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
-            // This will also normalize userDetails, adding 'sub' where required and fields for backwards compatibility. 2025-08-12
-            $result = $this->ensure_userDetails($result, $order);
-
-            // Some Express Checkout orders aren't really express checkout orders, but normal orders to which we have 
-            // added scope name, email, phoneNumber. The reason is that we don't care about the address. But then
-            // we also get no user data in the callback, so we must replace the callback with a user info call. IOK 2023-03-10
-            // IOK 2025-09-29: This is probably *no longer true* - we now almost certainly *always* get a userDetails field if
-            // we have added a scope of any kind. This is therefore probably dead code.
-            // This being dead code, we'll not try to handle errors gracefully here. IOK 2026-03-18
-            if (!isset($result['userDetails'])) {
-                // This also calls ensure_userDetails and normalizeShippingDetails - but NB: it could fail, so call only when neccessary.
-                try {
-                   $details = $this->get_payment_details($order);
-                   $result = $details;
-                } catch (Exception $e) {
-                  $this->log(sprintf(__("Could not get payment results for order %1\$s", 'woo-vipps'), $order->get_id()));
-                  $this->log($e->getMessage());
-                }
-            } 
-
-            // Epayment Express Checkout is of course also significantly different from both the old Express and from Checkout in the formatting here. IOK 2025-08-12
-            $result = $this->normalizeShippingDetails($result, $order);
-
-            // We should now always have shipping details.
-            if (isset($result['shippingDetails'])) {
-                $billing = isset($result['billingDetails']) ? $result['billingDetails'] : false;
-                $this->set_order_shipping_details($order,$result['shippingDetails'], $result['userDetails'], $billing, $result);
-            }
-        }
-
+        $vipps_status = $data['status'];
+        error_log('LP vipps_status: ' . print_r($vipps_status, true));
         // the only status we now care about is AUTHORIZED. Previously we had AUTHORISED and RESERVED and RESERVE as well. And SALE.
-        if ($vippsstatus == 'AUTHORIZED') {
+        if ($vipps_status == 'AUTHORIZED') {
             $this->payment_complete($order);
-        } else if ($vippsstatus == 'SALE') {
-          // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
-          // Actually not supported anymore, but keep logic. IOK 2025-08-13
-          $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
-          $order->payment_complete();
-          $this->update_vipps_payment_details($order);
+        } else if ($vipps_status == 'SALE') {
+            // Direct capture needs special handling because most of the meta values we use are missing IOK 2019-02-26
+            // Actually not supported anymore, but keep logic. IOK 2025-08-13
+            $order->add_order_note(sprintf(__('Payment captured directly at %1$s', 'woo-vipps'), $this->get_payment_method_name()));
+            $order->payment_complete();
+            $this->update_vipps_payment_details($order);
         } else {
             // Not ok status; set to failed/cancelled
             $order_is_retryable = Vipps::order_is_vipps_retryable($order->get_id());
             $status_on_fail = $this->get_option('status_on_fail');
-            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vippsstatus);
+            $cancel_on_fail = apply_filters('woo_vipps_cancel_failed_orders', false, $order, $vipps_status);
             if ($cancel_on_fail || !$order_is_retryable) {
                 $status_on_fail = 'cancelled';
             }
@@ -3589,22 +3676,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             /* translators: company name */
             $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
         }
-
         $order->save();
         clean_post_cache($order->get_id());
-
-        // Restore the session again so that we aren't causing issues with the customer-return branch, which may have to update the session concurrently. IOK 2023-018
-        $Vipps->callback_restore_session($orderid);
-        $Vipps->unlockOrder($order);
-
-        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        try {
-            $Vipps->createCallbackSignal($order,'ok');
-        } catch (Exception $e) {
-                // Could not create a signal file, but that's ok.
-        }
-
-        // Signal that we in fact handled the order.
         return true;
     }
 

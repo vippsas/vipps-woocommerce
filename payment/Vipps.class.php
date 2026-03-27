@@ -2782,6 +2782,8 @@ else:
             $iswebhook = true;
         }
 
+error_log('LP ischeckout: ' . print_r($ischeckout, true));
+error_log('LP iswebhook: ' . print_r($iswebhook, true));
         $vippsorderid = ($result && isset($result['orderId'])) ? $result['orderId'] : "";
         // For checkout, the orderId has been renamed to "reference" IOK 2022-02-11
         // We set the orderId here very early so old filters and hooks will continue working - mostly used for debugging.
@@ -2835,7 +2837,9 @@ else:
             // If this is a payment event, we should have an order too so try to retrieve it. IOK 2023-12-21
             $order = null;
             $pending = false;
+error_log('LP vippsorderid: ' . print_r($vippsorderid, true));
             if ($vippsorderid && $msn && in_array($event, $payment_events)) {
+error_log('LP event in accepted payment_events');
                 // Then check if the reference/vippsorderid is a pending order
                 $order =  $this->get_pending_vipps_order($vippsorderid);
                 if ($order) {
@@ -2846,6 +2850,7 @@ else:
                         $polldata = $this->gateway()->api->epayment_get_payment($vippsorderid, $msn);
                         if ($polldata && isset($polldata['metadata'])) {
                             $orderid = $polldata['metadata']['orderid'];
+error_log('LP orderid: ' . print_r($orderid, true));
                             if ($orderid) {
                                 $order = wc_get_order($orderid);
                                 if (!$order || $vippsorderid != $order->get_meta('_vipps_orderid')) {
@@ -2877,6 +2882,7 @@ else:
                 return;
             }
 
+error_log('LP pending: ' . print_r(!!$pending, true));
             if (!$pending) {
                 // If the order is no longer pending, then we can safely ignore it. IOK 2023-12-21
                 $this->log(sprintf(__('Received webhook callback for order %1$s but this is no longer pending.', 'woo-vipps'), $vippsorderid), 'debug');
@@ -2885,6 +2891,7 @@ else:
             do_action('woo_vipps_callback_webhook', $result);
 
             $ok = $this->gateway()->handle_callback($result, $order, false, $iswebhook);
+error_log('LP ok: ' . print_r(!!$ok, true));
             if ($ok) {
                 // This runs only if the callback actually handled the order, if not, then the order was handled by poll.
                 do_action('woo_vipps_callback_handled_order', $order);
@@ -5411,7 +5418,7 @@ else:
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
-        $do_poll = true;
+        $do_poll = false;
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
