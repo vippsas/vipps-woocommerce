@@ -78,7 +78,7 @@ They then confirm the payment in the Vipps or MobilePay app.
 
 ## How to get started
 
-* Sign up to use [*Checkout*](https://vippsmobilepay.com/online/checkout) or [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
+* Sign up to use [*Payment Integration*](https://vippsmobilepay.com/online/payment-integration).
 * After 1–2 days, you will get an email with login details to the [business portal](https://portal.vippsmobilepay.com/), where you can get the API credentials.
 * Download and install the plugin.
 * Configure the plugin.
