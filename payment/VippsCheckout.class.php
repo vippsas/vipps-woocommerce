@@ -823,7 +823,7 @@ jQuery(document).ready(function () {
                 }
                 $old_shipping_rate_id = $old_shipping_methods[0]; // woo rate id like 'flat_rate:1'. LP 2026-03-19
 
-                // Retreieve the woo rate id for new shipping selection, we have stored this in the session. LP 2026-03-20
+                // Retrieve the woo rate id for new shipping selection, we have stored this in the session. LP 2026-03-20
                 $shipping_rate_id_map = WC()->session->get('vipps_shipping_rate_id_map');
                 $new_shipping_rate_id = $shipping_rate_id_map[$new_shipping_key] ?? null;
 
