@@ -4634,9 +4634,9 @@ else:
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
         }
-        if ($order_status == 'cancelled') {
+        if ($order_status == 'cancelled' || $order_status == 'failed') {
             $this->maybe_restore_cart($orderid,'failed');
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps'), 'order_status' => $order_status));
             return false;
         }
 
@@ -5506,7 +5506,8 @@ else:
 
         $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woo-vipps') . '</p>';
         $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
-        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . ($failure_redirect) . "'></a>";
+        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . $failure_redirect . "'></a>";
+        $content .= "<a id='continueToOrderFailedFallback' style='display:none' href='" . $gw->get_return_url($order) . "'></a>";
         $content .= "</div>";
 
 
