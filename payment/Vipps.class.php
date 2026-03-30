@@ -42,6 +42,9 @@ class Vipps {
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
     public static $installed_gateways = [];
 
+    /* REST api namespace. LP 2026-03-30 */
+    public static $rest_namespace = 'woo-vipps';
+
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
     private $countrymap = null;
@@ -239,7 +242,7 @@ class Vipps {
 
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
         add_action('rest_api_init', function() {
-                   register_rest_route('woo-vipps/v1', '/express-products', [
+                   register_rest_route(static::$rest_namespace . '/v1', '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
                         'permission_callback' => '__return_true',
