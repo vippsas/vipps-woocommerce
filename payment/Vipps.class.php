@@ -4636,6 +4636,7 @@ error_log('LP ok: ' . print_r(!!$ok, true));
             wp_send_json(array('status'=>'error', 'msg'=>__('Not an order','woo-vipps')));
         }
         $order_status = $this->check_order_status($order);
+error_log('LP order_status: ' . print_r($order_status, true));
         // No callback has occured yet. If this has been going on for a while, check directly with Vipps
         if ($order_status == 'pending') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
@@ -4651,6 +4652,7 @@ error_log('LP ok: ' . print_r(!!$ok, true));
         $order = wc_get_order($orderid); // Reload
         $gw = $this->gateway();
         $payment = $gw->check_payment_status($order);
+error_log('LP payment: ' . print_r($payment, true));
         if ($payment == 'initiated') {
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
