@@ -224,7 +224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
-                   register_rest_route(Vipps::get_rest_namespace(), '/order-finalize-shipping', [
+                   register_rest_route(Vipps::get_rest_namespace('v1'), '/order-finalize-shipping', [
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_finalize_shipping'],
                         'permission_callback' => '__return_true', // LP FIXME: add authentication. LP 2026-03-30
@@ -3777,7 +3777,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     '_nonce' => wp_create_nonce('woo_vipps_order_finalize_shipping'),
                 ],
             ];
-            $url = Vipps::get_rest_url('/order-finalize-shipping');
+            $url = Vipps::get_rest_url('v1', '/order-finalize-shipping');
             $response = wp_remote_post($url, $args);
             $response_code = $response['response']['code'] ?? -1;
             error_log('LP response code: ' . print_r($response['response']['code'], true));

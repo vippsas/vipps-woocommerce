@@ -37,14 +37,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {
+    /* immutable rest consts. LP 2026-03-30 */
+    public const REST_NAMESPACE_BASE = 'woo-vipps';
+    public const REST_CURRENT_VERSION = 'v1';
+
     private static $instance = null;
 
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
     public static $installed_gateways = [];
-
-    /* REST api vars. LP 2026-03-30 */
-    public static $rest_namespace_base = 'woo-vipps';
-    public static $rest_current_version = 'v1';
 
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
@@ -243,7 +243,7 @@ class Vipps {
 
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
         add_action('rest_api_init', function() {
-                   register_rest_route(static::get_rest_namespace(), '/express-products', [
+                   register_rest_route(self::get_rest_namespace('v1'), '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
                         'permission_callback' => '__return_true',
@@ -5656,15 +5656,15 @@ error_log('LP payment: ' . print_r($payment, true));
     }
 
     /** Returns the plugin's rest api namespace including the version.
-     * If $version is omitted, the current version is used. LP 2026-03-31 */
-    public static function get_rest_namespace($version = null) {
-        $version = is_null($version) ? static::$rest_current_version : $version;
-        return static::$rest_namespace_base . "/$version";
+     * Use latest version ($version = 'latest') with caution, we want to create backwards compatible endpoints. LP 2026-03-31 */
+    public static function get_rest_namespace($version = 'latest') {
+        $version = $version === 'latest' ? self::REST_CURRENT_VERSION : $version;
+        return self::REST_NAMESPACE_BASE . "/$version";
     }
 
     /** Returns the plugin's rest api url.
-     * Remember root '/' for $route. e.g $route = '/my-route' LP 2026-03-31 */
-    public static function get_rest_url($route, $version = null) {
+     * Remember root forward-slash for $route. e.g $route = '/my-route' LP 2026-03-31 */
+    public static function get_rest_url($version, $route) {
         return get_rest_url(null, static::get_rest_namespace($version) . $route, 'rest');
     }
 }
