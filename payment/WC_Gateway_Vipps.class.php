@@ -220,7 +220,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
 
         // New handling for callbacks in the action scheduler. LP 2026-03-27
-        add_action('woo_vipps_callback_action', [$this, 'handle_callback_action'], 10, 4);
+        add_action('woo_vipps_callback_handler_action', [$this, 'action_handle_callback'], 10, 4);
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
@@ -3633,7 +3633,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'is_webhook' => $iswebhook,
         ];
         $scheduled_at = time() + 60;
-        $as_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_action', $args, 'woo-vipps', false);
+        $as_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_handler_action', $args, 'woo-vipps', false);
         error_log('LP as_id: ' . print_r($as_id, true));
         if ($as_id) {
             /* translators: payment method name */
@@ -3651,7 +3651,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
-    public function handle_callback_action($order_id, $data, $is_checkout, $is_webhook) {
+    public function action_handle_callback($order_id, $data, $is_checkout, $is_webhook) {
         global $Vipps;
         error_log('LP hello from action scheduler');
         error_log('LP data: ' . print_r($data, true));
