@@ -227,7 +227,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                    register_rest_route(Vipps::get_rest_namespace('v1'), '/order-finalize-shipping', [
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_finalize_shipping'],
-                        'permission_callback' => '__return_true', // LP FIXME: add authentication. LP 2026-03-30
+                        'permission_callback' => function($request) {
+                            $nonce = $request->get_header('X-WooVipps-Nonce');
+                            error_log('LP nonce: ' . print_r($nonce, true));
+                            $valid = get_option('woo_vipps_rest_nonce');
+                            error_log('LP valid: ' . print_r($valid, true));
+                            delete_option('woo_vipps_rest_nonce');
+                            return $valid && $nonce && hash_equals($valid, $nonce);
+                        },
                         'args' => [
                             'order_id' => [
                                 'required' => true,
@@ -236,7 +243,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                             ],
                             /* Data from Vipps callback. LP 2026-03-30 */
                             'callback_data' => [
-                                'required' => true,
+                                // 'required' => true,
                                 'validate_callback' => fn($param, $request, $key) => is_array($param),
                                 'sanitize_callback' => fn($param, $request, $key) => map_deep($param, 'sanitize_text_field'),
                             ],
@@ -3688,7 +3695,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // depending on which one we are IOK 2025-08-13
         $details = [];
         // Checkout has this as a field, containing *some* of the neccessary data
-        error_log('LP data before checking paymentDetails: ' . print_r($data, true));
         if (isset($data['paymentDetails'])) {
             // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
             // -- we should only get callbacks for successful sessions actually.
@@ -3767,16 +3773,28 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express = $order->get_meta('_vipps_express_checkout');
+        $ready = 1;
+        error_log('LP ready: ' . print_r($ready, true));
         error_log('LP is_express: ' . print_r($is_express, true));
         if ($ready && ($is_express || $is_checkout)) {
             // Handle session and shipping stuff through http (LP TODO: write why, e.g we dont know if its safe to restore session in theaction scheduler job). LP 2026-03-30
+            error_log('LP user id at create nonce:' . get_current_user_id());
+
+            // LP FIXME: i get error using normal wp nonce (param/header): 'rest_cookie_invalid_nonce', probably because we are using http through action scheduler, so handle nonce by ourselves. LP 2026-03-31
+            $nonce = wp_generate_password();
+            error_log('LP nonce: ' . print_r($nonce, true));
+            $updated = update_option('woo_vipps_rest_nonce', $nonce);
+            error_log('LP updated: ' . print_r($updated, true));
             $args = [
                 'body' => [
                     'order_id' => $order_id,
                     'callback_data' => $data,
-                    '_nonce' => wp_create_nonce('woo_vipps_order_finalize_shipping'),
+                ],
+                'headers' => [
+                    'X-WooVipps-Nonce' => $nonce,
                 ],
             ];
+            error_log('LP sending to rest to finalize shipping');
             $url = Vipps::get_rest_url('v1', '/order-finalize-shipping');
             $response = wp_remote_post($url, $args);
             $response_code = $response['response']['code'] ?? -1;
@@ -3784,7 +3802,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             error_log('LP response body: ' . print_r($response['body'], true));
             if (is_wp_error($response) || 200 != $response_code) {
                 // LP FIXME: handle this somehow. LP 2026-03-30
-                error_log('LP error from rest finalization in callback handlen');
+                error_log('LP error from rest finalization in callback handler');
             }
         }
 
@@ -3835,14 +3853,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
-            return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['order_id' => $order_id]);
+            return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['status' => 404, 'order_id' => $order_id]);
         }
 
         $is_express_or_checkout = $order->get_meta('_vipps_express_checkout'); // should also bet set for Checkout orders. LP 2026-03-30
         error_log('LP is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
         if (!$is_express_or_checkout) {
             /* translators: Express and Checkout are brand names. Don't translate at least Checkout */
-            return new WP_Error('incorrect_order', __('Order is not Express/Checkout', 'woo-vipps'), ['order_id' => $order_id]);
+            return new WP_Error('incorrect_order', __('Order is not Express/Checkout', 'woo-vipps'), ['status' => 409, 'order_id' => $order_id]);
         }
 
         // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
