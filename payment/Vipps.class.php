@@ -42,8 +42,9 @@ class Vipps {
     /* Used to interact with other payment gateways if neccessary (for 'external payment gateways') IOK 2024-05-27 */
     public static $installed_gateways = [];
 
-    /* REST api namespace. LP 2026-03-30 */
-    public static $rest_namespace = 'woo-vipps';
+    /* REST api vars. LP 2026-03-30 */
+    public static $rest_namespace_base = 'woo-vipps';
+    public static $rest_current_version = 'v1';
 
     /* This directory stores the files used to speed up the callbacks checking the order status. IOK 2018-05-04 */
     private $callbackDirname = 'wc-vipps-status';
@@ -242,7 +243,7 @@ class Vipps {
 
         // Fetch wc products, but filter those only purchasable by VMP express checkout. LP 2026-01-22
         add_action('rest_api_init', function() {
-                   register_rest_route(static::$rest_namespace . '/v1', '/express-products', [
+                   register_rest_route(static::get_rest_namespace(), '/express-products', [
                         'methods' => 'GET',
                         'callback' => [$this, 'rest_express_checkout_products'],
                         'permission_callback' => '__return_true',
@@ -5652,5 +5653,18 @@ error_log('LP payment: ' . print_r($payment, true));
 
         // Express or unfinalized Checkout orders do not have shipping available, so we cant retry these in particular. LP 2026-03-18
         return $nonexpress_epayment || $shipping_set;
+    }
+
+    /** Returns the plugin's rest api namespace including the version.
+     * If $version is omitted, the current version is used. LP 2026-03-31 */
+    public static function get_rest_namespace($version = null) {
+        $version = is_null($version) ? static::$rest_current_version : $version;
+        return static::$rest_namespace_base . "/$version";
+    }
+
+    /** Returns the plugin's rest api url.
+     * Remember root '/' for $route. e.g $route = '/my-route' LP 2026-03-31 */
+    public static function get_rest_url($route, $version = null) {
+        return get_rest_url(null, static::get_rest_namespace($version) . $route, 'rest');
     }
 }

@@ -224,7 +224,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
-                   register_rest_route(Vipps::$rest_namespace . '/v1', '/order-finalize-shipping', [
+                   register_rest_route(Vipps::get_rest_namespace(), '/order-finalize-shipping', [
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_finalize_shipping'],
                         'permission_callback' => '__return_true', // LP FIXME: add authentication. LP 2026-03-30
@@ -3650,6 +3650,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         return true;
     }
 
+    /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
     public function handle_callback_action($order_id, $data, $is_checkout, $is_webhook) {
         global $Vipps;
         error_log('LP hello from action scheduler');
@@ -3658,7 +3659,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP is_webhook: ' . print_r($is_webhook, true));
         error_log('LP is_checkout: ' . print_r($is_checkout, true));
 
-        // Sync woo order status with Vipps status from callback. LP 2026-03-27
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
             /* translators: order id */
@@ -3688,9 +3688,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // depending on which one we are IOK 2025-08-13
         $details = [];
         // Checkout has this as a field, containing *some* of the neccessary data
+        error_log('LP data before checking paymentDetails: ' . print_r($data, true));
         if (isset($data['paymentDetails'])) {
             // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
             // -- we should only get callbacks for successful sessions actually.
+
+            // LP FIXME: get warning og nonexisting keys paymentDetails and sessionState. But i didnt get this before moving to action scheduler. Check if this still happens. LP 2026-03-31
             $details = $data['paymentDetails'];
             $data['state'] = $data['sessionState'] == 'PaymentSuccessful' ? 'AUTHORIZED' : ($data['sessionState'] == 'PaymentTerminated' ? 'TERMINATED' : 'CREATED');
             $details['state']  = $data['state'];
@@ -3766,7 +3769,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $is_express = $order->get_meta('_vipps_express_checkout');
         error_log('LP is_express: ' . print_r($is_express, true));
         if ($ready && ($is_express || $is_checkout)) {
-            // // Handle session and shipping stuff through http (TODO: write why). LP 2026-03-30
+            // Handle session and shipping stuff through http (LP TODO: write why, e.g we dont know if its safe to restore session in theaction scheduler job). LP 2026-03-30
             $args = [
                 'body' => [
                     'order_id' => $order_id,
@@ -3774,12 +3777,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                     '_nonce' => wp_create_nonce('woo_vipps_order_finalize_shipping'),
                 ],
             ];
-            $url = get_rest_url(null, Vipps::$rest_namespace . '/v1/order-finalize-shipping');
+            $url = Vipps::get_rest_url('/order-finalize-shipping');
             $response = wp_remote_post($url, $args);
-            error_log('LP response: ' . print_r($response['response']['code'], true));
-            if (is_wp_error($response) || 200 != $response['response']['code']) {
-                // LP FIXME: handle this. LP 2026-03-30
-                error_log('LP error from rest: in callback handlern, finalization shipping through rest http');
+            $response_code = $response['response']['code'] ?? -1;
+            error_log('LP response code: ' . print_r($response['response']['code'], true));
+            error_log('LP response body: ' . print_r($response['body'], true));
+            if (is_wp_error($response) || 200 != $response_code) {
+                // LP FIXME: handle this somehow. LP 2026-03-30
+                error_log('LP error from rest finalization in callback handlen');
             }
         }
 
@@ -3833,9 +3838,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return new WP_Error('order_not_found', __('Order not found', 'woo-vipps'), ['order_id' => $order_id]);
         }
 
-        $is_express = $order->get_meta('_vipps_express_checkout'); // should also bet set for Checkout orders. LP 2026-03-30
-        error_log('LP is_express: ' . print_r($is_express, true));
-        if (!$is_express) {
+        $is_express_or_checkout = $order->get_meta('_vipps_express_checkout'); // should also bet set for Checkout orders. LP 2026-03-30
+        error_log('LP is_express_or_checkout: ' . print_r($is_express_or_checkout, true));
+        if (!$is_express_or_checkout) {
             /* translators: Express and Checkout are brand names. Don't translate at least Checkout */
             return new WP_Error('incorrect_order', __('Order is not Express/Checkout', 'woo-vipps'), ['order_id' => $order_id]);
         }
@@ -3843,7 +3848,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // Ensure we use the same session as for the original order from here on. IOK 2019-10-21
         // IOK 2023-07-18 but because of the race condition issue, we cannot guarantee that any changes
         // made to the session here will be saved. Sorry. 
-        // No more race condition since we moved callback into the action scheduler, and this shipping finalization into rest api. LP 2026-03-30
+        // UPDATE: No more race condition since we moved callback into the action scheduler, and this shipping finalization into this rest endpoint. LP 2026-03-30
         Vipps::instance()->callback_restore_session($order_id);
 
         // For Vipps Checkout version 3 there are no more userDetails, so we will add it, including defaults for anonymous purchases IOK 2023-01-10
