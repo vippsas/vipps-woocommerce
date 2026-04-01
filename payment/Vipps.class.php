@@ -5424,7 +5424,7 @@ error_log('LP payment: ' . print_r($payment, true));
         $status = $deleted_order ? 'cancelled' : $order->get_status();
 
         // This is for debugging only - set to false to ensure we wait for the callback. IOK 2023-08-04
-        $do_poll = false;
+        $do_poll = false; // LP FIXME: reset this to true. LP 2026-04-01
 
         // Still pending, no callback. Make a call to the server as the order might not have been created. IOK 2018-05-16
         if ($do_poll && $status == 'pending') {
