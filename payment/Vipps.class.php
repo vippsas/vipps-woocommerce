@@ -37,9 +37,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once(dirname(__FILE__) . "/VippsAPIException.class.php");
 
 class Vipps {
-    /* immutable rest consts. LP 2026-03-30 */
-    public const REST_NAMESPACE_BASE = 'woo-vipps';
-    public const REST_CURRENT_VERSION = 'v1';
+    /* Rest api consts. LP 2026-03-30 */
+    private const REST_NAMESPACE_BASE = 'woo-vipps';
+    private const REST_CURRENT_VERSION = 'v1';
 
     private static $instance = null;
 
@@ -5656,13 +5656,14 @@ error_log('LP payment: ' . print_r($payment, true));
     }
 
     /** Returns the plugin's rest api namespace including the version.
-     * Use latest version ($version = 'latest') with caution, we want to create backwards compatible endpoints. LP 2026-03-31 */
+     * Use latest version ($version = 'latest') with caution, we want backwards compatible endpoints. LP 2026-03-31 */
     public static function get_rest_namespace($version = 'latest') {
         $version = $version === 'latest' ? self::REST_CURRENT_VERSION : $version;
         return self::REST_NAMESPACE_BASE . "/$version";
     }
 
     /** Returns the plugin's rest api url.
+     * $version accepts 'latest', but you probably don't want to do that.
      * Remember root forward-slash for $route. e.g $route = '/my-route' LP 2026-03-31 */
     public static function get_rest_url($version, $route) {
         return get_rest_url(null, static::get_rest_namespace($version) . $route, 'rest');

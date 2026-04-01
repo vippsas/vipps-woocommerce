@@ -228,12 +228,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_finalize_shipping'],
                         'permission_callback' => function($request) {
-                            $nonce = $request->get_header('X-WooVipps-Nonce');
-                            error_log('LP nonce: ' . print_r($nonce, true));
-                            $valid = get_option('woo_vipps_rest_nonce');
-                            error_log('LP valid: ' . print_r($valid, true));
-                            delete_option('woo_vipps_rest_nonce');
-                            return $valid && $nonce && hash_equals($valid, $nonce);
+                            // Note: permission callbacks run twice, on purpose. Still works with wiping the key in the first run. LP 2026-04-01
+                            // https://github.com/WP-API/WP-API/issues/2400
+                            $input_token = $request->get_header('X-WooVipps-Token');
+                            error_log('LP input_token: ' . print_r($input_token, true));
+                            $valid_token = get_option('woo_vipps_rest_token');
+                            error_log('LP valid_token: ' . print_r($valid_token, true));
+                            delete_option('woo_vipps_rest_token');
+                            return $valid_token && $input_token && hash_equals($valid_token, $input_token);
                         },
                         'args' => [
                             'order_id' => [
@@ -3773,25 +3775,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
 
         $is_express = $order->get_meta('_vipps_express_checkout');
-        $ready = 1;
         error_log('LP ready: ' . print_r($ready, true));
         error_log('LP is_express: ' . print_r($is_express, true));
         if ($ready && ($is_express || $is_checkout)) {
-            // Handle session and shipping stuff through http (LP TODO: write why, e.g we dont know if its safe to restore session in theaction scheduler job). LP 2026-03-30
+            // Handle session and shipping stuff through http (LP TODO: explain why). LP 2026-03-30
             error_log('LP user id at create nonce:' . get_current_user_id());
 
-            // LP FIXME: i get error using normal wp nonce (param/header): 'rest_cookie_invalid_nonce', probably because we are using http through action scheduler, so handle nonce by ourselves. LP 2026-03-31
-            $nonce = wp_generate_password();
-            error_log('LP nonce: ' . print_r($nonce, true));
-            $updated = update_option('woo_vipps_rest_nonce', $nonce);
-            error_log('LP updated: ' . print_r($updated, true));
+            // LP FIXME: i get error using normal wp nonce (param/header): 'rest_cookie_invalid_nonce', probably because we are using http through action scheduler, so handle auth by ourselves through db. LP 2026-03-31
+            $token = wp_generate_password(32, true, true);
+            error_log('LP token: ' . print_r($token, true));
+            update_option('woo_vipps_rest_token', $token); // LP TODO: maybe this should expire automatically. transient? LP 2026-04-01
             $args = [
                 'body' => [
                     'order_id' => $order_id,
                     'callback_data' => $data,
                 ],
                 'headers' => [
-                    'X-WooVipps-Nonce' => $nonce,
+                    'X-WooVipps-Token' => $token,
                 ],
             ];
             error_log('LP sending to rest to finalize shipping');
