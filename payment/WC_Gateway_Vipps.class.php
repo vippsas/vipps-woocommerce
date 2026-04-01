@@ -3472,59 +3472,68 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         //     $order->add_order_note(sprintf(__("Message from %1\$s: %2\$s",'woo-vipps'), $this->get_payment_method_name(), $errorInfo['errorMessage']));
         // }
 
-//         // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
-//         // depending on which one we are IOK 2025-08-13
-//         $details = [];
-//         // Checkout has this as a field, containing *some* of the neccessary data
-//         if (isset($result['paymentDetails'])) {
-//             // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
-//             // -- we should only get callbacks for successful sessions actually.
-//             $details = $result['paymentDetails'];
-//             $result['state'] = $result['sessionState'] == 'PaymentSuccessful' ? 'AUTHORIZED' : ($result['sessionState'] == 'PaymentTerminated' ? 'TERMINATED' : 'CREATED');
-//             $details['state']  = $result['state'];
-//             $details['paymentMethod'] = $result['paymentMethod'];
-//         } else {
-//             // This should be an ecom callback; which we need to add a lot of data for to get a valid "paymentDetails".
-//             $details = [];
-//             $result['state'] = $result['name'];  // The name of the callback - which should be AUTHORIZED, TERMINATED etc
-//             $details['state']  = $result['name'];
-//             $details['amount'] = $result['amount']; // currency, value
-//             $details['paymentMethod'] = 'epayment';
-//             $currency = $details['amount']['currency'];
-//             $nothing  = [ 'currency' => $currency, 'value' => 0];
-//         } 
+        // // The payment details field is passed in Checkout, not in Express, but none of them are complete, so we fill out the values 
+        // // depending on which one we are IOK 2025-08-13
+        // $details = [];
+        // // Checkout has this as a field, containing *some* of the neccessary data
+        // if (isset($result['paymentDetails'])) {
+        //     // Checkout. The sesssion states are # "SessionCreated" "PaymentInitiated" "SessionExpired" "PaymentSuccessful" "PaymentTerminated"
+        //     // -- we should only get callbacks for successful sessions actually.
+        //     $details = $result['paymentDetails'];
+        //     $result['state'] = $result['sessionState'] == 'PaymentSuccessful' ? 'AUTHORIZED' : ($result['sessionState'] == 'PaymentTerminated' ? 'TERMINATED' : 'CREATED');
+        //     $details['state']  = $result['state'];
+        //     $details['paymentMethod'] = $result['paymentMethod'];
+        // } else {
+        //     // This should be an ecom callback; which we need to add a lot of data for to get a valid "paymentDetails".
+        //     $details = [];
+        //     $result['state'] = $result['name'];  // The name of the callback - which should be AUTHORIZED, TERMINATED etc
+        //     $details['state']  = $result['name'];
+        //     $details['amount'] = $result['amount']; // currency, value
+        //     $details['paymentMethod'] = 'epayment';
+        //     $currency = $details['amount']['currency'];
+        //     $nothing  = [ 'currency' => $currency, 'value' => 0];
+        // } 
 
-//         // For both callbacks, set 'aggregate' 
-//         $currency = $details['amount']['currency'];
-//         $nothing  = [ 'currency' => $currency, 'value' => 0];
-//         $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
-//         if ($details['state'] == 'AUTHORIZED') {
-//            $aggregate['authorizedAmount'] = $details['amount'];
-//         }
-//         $details['aggregate'] = $aggregate;
-//         $result['paymentDetails'] = $details;
+        // // For both callbacks, set 'aggregate' 
+        // $currency = $details['amount']['currency'];
+        // $nothing  = [ 'currency' => $currency, 'value' => 0];
+        // $aggregate = ['authorizedAmount' => $nothing, 'cancelledAmount' => $nothing, 'capturedAmount' => $nothing, 'refundedAmount' => $nothing];
+        // if ($details['state'] == 'AUTHORIZED') {
+        //    $aggregate['authorizedAmount'] = $details['amount'];
+        // }
+        // $details['aggregate'] = $aggregate;
+        // $result['paymentDetails'] = $details;
 
-//         $result = $this->normalizePaymentDetails($result);
-//         $details = $result['paymentDetails'];
+        // $result = $this->normalizePaymentDetails($result);
+        // $details = $result['paymentDetails'];
 
-//         $vippsstatus = $result['status']; // Will exist now, because of the normalization IOK 2025-08-13
-//         $newstatus = $this->interpret_vipps_order_status($vippsstatus);
+        // $vippsstatus = $result['status']; // Will exist now, because of the normalization IOK 2025-08-13
+        // $newstatus = $this->interpret_vipps_order_status($vippsstatus);
 
-//         // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
-//         $transaction = array();
-//         $stamp = ($result['timestamp'] ?? false) ? strtotime($result['timestamp']) : time(); 
-//         $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
-//         $transaction['amount'] = $details['amount']['value'];
-//         $transaction['currency'] = $details['amount']['currency'];
-//         $transaction['status'] = ($result['state'] ?? $details['state']);
-//         $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
+        // // Extract order metadata from either Checkout or Epayment - set below IOK 2025-08-13
+        // $transaction = array();
+        // $stamp = ($result['timestamp'] ?? false) ? strtotime($result['timestamp']) : time(); 
+        // $transaction['timeStamp'] = date('Y-m-d H:i:s', $stamp);
+        // $transaction['amount'] = $details['amount']['value'];
+        // $transaction['currency'] = $details['amount']['currency'];
+        // $transaction['status'] = ($result['state'] ?? $details['state']);
+        // $transaction['paymentmethod'] = $details['paymentMethod'] ?? "";
 
-//         if (!$transaction) {
-//             $this->log(sprintf(__("Anomalous callback from %1\$s, handle errors and clean up",'woo-vipps'), $this->get_payment_method_name()),'warning');
-//             clean_post_cache($order->get_id());
-//             return false;
-//         }
+        // if (!$transaction) {
+        //     $this->log(sprintf(__("Anomalous callback from %1\$s, handle errors and clean up",'woo-vipps'), $this->get_payment_method_name()),'warning');
+        //     clean_post_cache($order->get_id());
+        //     return false;
+        // }
 
+        // $order->add_order_note(sprintf(__('%1$s callback received','woo-vipps'), $this->get_payment_method_name()));
+        // do_action('woo_vipps_callback_received', $order, $result, $transaction);
+
+        // $oldstatus = $order->get_status();
+        // if ($oldstatus != 'pending') {
+        //     // Actually, we are ok with this order, abort the callback. IOK 2018-05-30
+        //     clean_post_cache($order->get_id());
+        //     return false;
+        // }
 
         // // If  the callback is late, and we have called get order status, and this is in progress, we'll log it and just drop the callback.
         // // We do this because neither Woo nor WP has locking, and it isn't feasible to implement one portably. So this reduces somewhat the likelihood of race conditions
@@ -3545,10 +3554,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // $this->log(sprintf(__("%1\$s callback: Handling order: ", 'woo-vipps'), Vipps::CompanyName()) . " " .  $orderid, 'debug');
 
       
-        // if ($vippsorderid != $order->get_meta('_vipps_orderid')) {
-        //     $this->log(sprintf(__("Wrong %1\$s Orderid - possibly an attempt to fake a callback ", 'woo-vipps'), Vipps::CompanyName()), 'warning');
-        //     clean_post_cache($order->get_id());
-
         // // This order is ready to set order shipping details etc for IOK 2025-09-19
         // $ready = false;
         // if (in_array($newstatus, ['authorized', 'complete'])) {
@@ -3610,13 +3615,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         //         $status_on_fail = 'cancelled';
         //     }
         //     if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
-        //         /* translators: %1 = order status parameter. Cancelled is woocommerce status name */
+        //         /* translators: order status name. Cancelled is woocommerce status name */
         //         $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
         //         $status_on_fail = 'cancelled';
         //     }
 
         //     /* translators: company name */
-        //     $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s.', 'woo-vipps'), Vipps::CompanyName()));
+        //     $order->update_status($status_on_fail, sprintf(__('Callback: Payment cancelled at %1$s', 'woo-vipps'), Vipps::CompanyName()));
         // }
 
         // $order->save();
@@ -3646,9 +3651,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'is_webhook' => $iswebhook,
         ];
         $scheduled_at = time() + 60;
-        $as_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_handler_action', $args, 'woo-vipps', false);
-        error_log('LP as_id: ' . print_r($as_id, true));
-        if ($as_id) {
+        $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_handler_action', $args, 'woo-vipps', false);
+        error_log('LP action_id: ' . print_r($action_id, true));
+        if ($action_id) {
             /* translators: payment method name */
             $order->add_order_note(sprintf(__('%1$s callback handler scheduled','woo-vipps'), $this->get_payment_method_name()));
             /* translators: order id, scheduled time */
