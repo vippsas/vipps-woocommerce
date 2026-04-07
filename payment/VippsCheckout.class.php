@@ -822,28 +822,6 @@ jQuery(document).ready(function () {
                 $shipping_rate_id_map = WC()->session->get('vipps_shipping_rate_id_map');
                 $new_shipping_rate_id = $shipping_rate_id_map[$new_shipping_key] ?? null;
 
-                // Fallback: attempt to find it by deserializing from shipping table in order meta. LP 2026-03-19
-                if (!$shipping_rate_id_map) {
-                    /* translators: shipping rate key, order id */
-                    $this->gw->log(sprintf(__('Checkout ajax new shipping: could not find the new shipping rate "%1$s" in the session for order %2$d, attempting to find it from the shipping table order meta.', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'warning'); 
-
-                    $shipping_table = $order->get_meta('_vipps_express_checkout_shipping_method_table');
-                    if (is_array($shipping_table) && array_key_exists($new_shipping_key, $shipping_table)) {
-                        $is_base64 = $shipping_table['_is_base64'] ?? false;
-                        $serialized_rate = $is_base64 ? @base64_decode($shipping_table[$new_shipping_key]) : $shipping_table[$new_shipping_key];
-                        $new_shipping_rate = $serialized_rate ? @unserialize($serialized_rate) : null;
-
-                        if ($new_shipping_rate && is_a($new_shipping_rate, 'WC_Shipping_Rate')) {
-                            $new_shipping_rate_id = $new_shipping_rate->get_id();
-                        } else {
-                            /* translators: shipping rate key, order id */
-                            $this->gw->log(sprintf(__('Checkout ajax new shipping: Could not deserialize the new shipping rate "%1$s" for order %2$d', 'woo-vipps'), $new_shipping_key, $order->get_id()), 'error'); 
-                            $this->gw->log(sprintf(__('Serialized data was %1$s', 'woo-vipps'), $serialized_rate),  'error');
-                            break;
-                        }
-                    }
-                }
-
                 if (!$new_shipping_rate_id) {
                     /* translators: order id, shipping rate key */
                     $this->gw->log(sprintf(__('Checkout ajax new shipping: did not find shipping rate id for the new shipping choice "%2$s" order %1$s.', 'woo-vipps'), $order->get_id(), $new_shipping_key), 'error'); 
