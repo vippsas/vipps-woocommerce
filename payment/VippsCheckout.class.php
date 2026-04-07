@@ -817,11 +817,6 @@ jQuery(document).ready(function () {
                 if (!$new_shipping_key) {
                     break;
                 }
-                $old_shipping_methods = WC()->session->get('chosen_shipping_methods');
-                if (empty($old_shipping_methods)) {
-                    break;
-                }
-                $old_shipping_rate_id = $old_shipping_methods[0]; // woo rate id like 'flat_rate:1'. LP 2026-03-19
 
                 // Retrieve the woo rate id for new shipping selection, we have stored this in the session. LP 2026-03-20
                 $shipping_rate_id_map = WC()->session->get('vipps_shipping_rate_id_map');
@@ -852,11 +847,6 @@ jQuery(document).ready(function () {
                 if (!$new_shipping_rate_id) {
                     /* translators: order id, shipping rate key */
                     $this->gw->log(sprintf(__('Checkout ajax new shipping: did not find shipping rate id for the new shipping choice "%2$s" order %1$s.', 'woo-vipps'), $order->get_id(), $new_shipping_key), 'error'); 
-                    break;
-                }
-
-                // This shouldn't be possible but. LP 2026-03-20
-                if ($old_shipping_rate_id === $new_shipping_rate_id) {
                     break;
                 }
 
