@@ -365,6 +365,7 @@ jQuery(document).ready(function () {
         add_action('woocommerce_thankyou_vipps', function () {
             WC()->session->set('vipps_checkout_current_pending',false);
             WC()->session->set('vipps_address_hash', false);
+            WC()->session->set('vipps_shipping_rate_id_map', false);
         });
 
         // For Vipps Checkout - we need to know any time and as soon as the cart changes, so fold all the events into a single one. IOK 2021-08-24
@@ -668,6 +669,7 @@ jQuery(document).ready(function () {
         $orderid = intval($_REQUEST['orderid']??0); // Currently not used because we are using a single pending order in session
         $lock_held = intval($_REQUEST['lock_held'] ?? 0);
         $type = $_REQUEST['type'] ?? "unknown"; // Type of callback
+        $polldata = $_REQUEST['pollData'] ?? []; // the actual Checkout js event data. LP 2026-03-19
 
         Vipps::set_locale_if_in_header();
 
@@ -799,6 +801,37 @@ jQuery(document).ready(function () {
                     }
                 }
             }
+        }
+
+        switch ($type) {
+            // Store the newly selected shipping method in session. LP 2026-03-19
+            // NB: selecting a new pickup location option inside the same pickup location group does NOT trigger an event here. LP 2026-03-19
+            case 'shipping_selected':
+                if (!is_a(WC()->session, 'WC_Session') || !is_a($order, 'WC_Order')) {
+                    /* translators: order id */
+                    $this->gw->log(sprintf(__('Checkout ajax new shipping: session not ok for order %1$s.', 'woo-vipps'), $order->get_id()), 'error'); 
+                    break;
+                }
+
+                $new_shipping_key = $polldata['id'] ?? null; // our custom key like '$flat_rate$a1vkbszd221:index' used in shipping table, NOT the same as woo rate_id. LP 2026-03-19
+                if (!$new_shipping_key) {
+                    break;
+                }
+
+                // Retrieve the woo rate id for new shipping selection, we have stored this in the session. LP 2026-03-20
+                $shipping_rate_id_map = WC()->session->get('vipps_shipping_rate_id_map');
+                $new_shipping_rate_id = $shipping_rate_id_map[$new_shipping_key] ?? null;
+
+                if (!$new_shipping_rate_id) {
+                    /* translators: order id, shipping rate key */
+                    $this->gw->log(sprintf(__('Checkout ajax new shipping: did not find shipping rate id for the new shipping choice "%2$s" order %1$s.', 'woo-vipps'), $order->get_id(), $new_shipping_key), 'error'); 
+                    break;
+                }
+
+                $change = true;
+                WC()->session->set('chosen_shipping_methods', [$new_shipping_rate_id]);
+                WC()->session->save_data();
+                break;
         }
 
         if ($ok && $change) {

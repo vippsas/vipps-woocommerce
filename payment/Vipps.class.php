@@ -3449,6 +3449,10 @@ else:
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
         $methods_classes['pickup_location'] = 'Automattic\WooCommerce\Blocks\Shipping\PickupLocation'; // Loaded using the "load" hook, after the registered methods, so we need to add it specially.
 
+        // Store a table of ratemap key => WC_Shipping_Rate id in the session, so we don't have to load and deserialize the rates from the ratemap,
+        // e.g used in the Checkout ajax poll shipping-change event. LP 2026-03-20
+        $rate_id_map = [];
+
         $has_free_shipping = false;
         foreach($methods as $method) {
            $rate = $method['rate'];
@@ -3477,6 +3481,8 @@ else:
            $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
 
+           $rate_id_map[$key] = $rate->get_id();
+
            // It seems woo actually computes rounding of prices and taxes *separately* when computing
            // shipping costs, but we can't really assume this (or that all plugins do this, and so on.)
            // Therefore we compute shipping cost with rounding *both ways* and choose the more expensive one -
@@ -3497,6 +3503,14 @@ else:
            $ratemap[$key]=$rate;
            $methodmap[$key]=$shipping_method;
         }
+
+        if (is_a(WC()->session, 'WC_Session')) {
+            WC()->session->set('vipps_shipping_rate_id_map', $rate_id_map);
+        } else {
+            /* translators: order id */
+            $this->log(sprintf(__('Could not store shipping rate id map in session for order %1$s, session was not ok', 'woo_vipps'), $order->get_id()), 'error');
+        }
+
 
         // This then is the old Express Checkout format, which we have exposed in filters. IOK 2025-08-14 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
