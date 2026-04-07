@@ -125,6 +125,8 @@ jQuery(document).ready(function () {
        console.log("Failure result");
        done=1;
 
+       const orderStatus = result['order_status'] ?? '';
+
        // If provided, continue to custom 'order failed' page IOK 2018-12-04
        var next = jQuery("#continueToOrderFailed").attr("href");
        if (next != '') {
@@ -132,6 +134,19 @@ jQuery(document).ready(function () {
              console.log("Redirecting to  " +next );
              window.location.href = next;
           }, 500);
+       }
+
+       // Fallback redirect on failed status, unless already redirected above.
+       // added gw return url as a fallback here so we can separate redirect on status
+       // 'failed' vs 'cancelled', but still prioritize #continueToOrderFailed because it comes from a filter. LP 2026-03-27
+       if ('failed' === orderStatus) {
+         const fallbackRedirect = jQuery("#continueToOrderFailedFallback").attr("href");
+         if (fallbackRedirect != '') {
+            setTimeout(function () {
+               console.log("Redirecting to", fallbackRedirect);
+               window.location.href = fallbackRedirect;
+            }, 500);
+         }
        }
 
       jQuery("#waiting").hide();
