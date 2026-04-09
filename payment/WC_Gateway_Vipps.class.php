@@ -224,9 +224,9 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
-                   register_rest_route(Vipps::get_rest_namespace('v1'), '/order-finalize-shipping', [
+                   register_rest_route(Vipps::get_rest_namespace('v1'), '/order-set-shipping', [
                         'methods' => 'POST',
-                        'callback' => [$this, 'rest_order_finalize_shipping'],
+                        'callback' => [$this, 'rest_order_set_shipping'],
                         'permission_callback' => function($request) {
                             // Note: permission callbacks run twice, on purpose. Still works with wiping the key in the first run. LP 2026-04-01
                             // https://github.com/WP-API/WP-API/issues/2400
@@ -3786,7 +3786,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         error_log('LP ready: ' . print_r($ready, true));
         error_log('LP is_express: ' . print_r($is_express, true));
         if ($ready && ($is_express || $is_checkout)) {
-            // Handle session and shipping stuff through http (LP TODO: explain why). LP 2026-03-30
+            // Handle session and shipping through http (LP TODO: explain why). LP 2026-03-30
             error_log('LP user id at create nonce:' . get_current_user_id());
 
             // LP FIXME: i get error using normal wp nonce (param/header): 'rest_cookie_invalid_nonce', probably because we are using http through action scheduler, so handle auth by ourselves through db. LP 2026-03-31
@@ -3803,14 +3803,14 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 ],
             ];
             error_log('LP sending to rest to finalize shipping');
-            $url = Vipps::get_rest_url('v1', '/order-finalize-shipping');
+            $url = Vipps::get_rest_url('v1', '/order-set-shipping');
             $response = wp_remote_post($url, $args);
             $response_code = $response['response']['code'] ?? -1;
             error_log('LP response code: ' . print_r($response['response']['code'], true));
             error_log('LP response body: ' . print_r($response['body'], true));
             if (is_wp_error($response) || 200 != $response_code) {
                 // LP FIXME: handle this somehow. LP 2026-03-30
-                error_log('LP error from rest finalization in callback handler');
+                error_log('LP error from rest in callback handler');
             }
         }
 
@@ -3854,7 +3854,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     /* finalize shipping for express/checkout order. LP 2026-03-30 */
-    public function rest_order_finalize_shipping($request) {
+    public function rest_order_set_shipping($request) {
         $order_id = $request->get_param('order_id');
         error_log('LP rest order_id: ' . print_r($order_id, true));
         $data = $request->get_param('callback_data'); // data from vipps callback. LP 2026-03-30
