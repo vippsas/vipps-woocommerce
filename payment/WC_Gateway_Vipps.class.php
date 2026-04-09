@@ -3833,7 +3833,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $status_on_fail = 'cancelled';
             }
             if (!in_array($status_on_fail, ['cancelled', 'failed'])) {
-                /* translators: %1 = order status parameter. Cancelled is woocommerce status name */
+                /* translators: %1 = order status parameter. 'cancelled' is woocommerce order status name */
                 $this->log(__('Unsupported status for payment failure of \'%1$s\', falling back to cancelled.', 'woo-vipps'), 'warning');
                 $status_on_fail = 'cancelled';
             }
