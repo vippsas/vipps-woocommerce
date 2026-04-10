@@ -1,4 +1,8 @@
 == Changelog ==
+= 2026-03-26 Version 5.3.2 = 
+Improve express checkout banner on legacy checkokut screens
+Add new setting for retryable orders
+
 = 2026-03-23 Version 5.3.1 =
 Fix CSS issue with on-site messaging badges on small screens
 Ensure Express orders are always cancelled, not failed
