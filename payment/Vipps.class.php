@@ -1553,10 +1553,21 @@ jQuery('a.webhook-adder').click(function (e) {
         do_action('vipps_admin_notices');
     }
 
-    // Show express option on checkout form too
-    public function before_checkout_form_express () {
-        if (is_user_logged_in()) return;
-        $this->express_checkout_banner();
+    // Show express button option on checkout form. LP 2026-03-23
+    public function checkout_before_customer_details_express () {
+        $gw = $this->gateway();
+        if (!$gw->show_express_checkout()) return;
+        $this->express_checkout_section_html();
+    }
+
+    public function express_checkout_section_html() {
+        $payment_method = $this->get_payment_method_name();
+        $header_text = __('Express Checkout', 'woo-vipps');
+        $header = "<div class='express-header'>$header_text</div>";
+        $div_classes = "legacy-checkout vipps-express-checkout $payment_method";
+        echo "<div class='$div_classes'>$header";
+        $this->cart_express_checkout_button_html();
+        echo '</div>';
     }
 
     public function express_checkout_banner() {
@@ -1625,7 +1636,7 @@ jQuery('a.webhook-adder').click(function (e) {
         $gw = $this->gateway();
         if (!$gw->cart_supports_express_checkout()) return;
         ob_start();
-        $this->cart_express_checkout_button_html();
+        $this->cart_express_checkout_button_html('shortcode');
         return ob_get_clean();
     }
     // Show a banner normally shown for non-logged-in-users at the checkout page.  It does not need to check if we are to show the button, obviously, but needs to see if the cart works
@@ -2461,7 +2472,10 @@ else:
         // Template integrations
         add_action( 'woocommerce_cart_actions', array($this, 'cart_express_checkout_button'));
         add_action( 'woocommerce_widget_shopping_cart_buttons', array($this, 'minicart_express_checkout_button'), 30);
-        add_action('woocommerce_before_checkout_form', array($this, 'before_checkout_form_express'), 5);
+
+        // Previously we added an express html banner to the action 'woocommerce_before_checkout_form.',
+        // replaced by the new express buttons in manner more like Gutenberg. LP 2026-03-23
+        add_action('woocommerce_checkout_before_customer_details', array($this, 'checkout_before_customer_details_express'), 5);
 
         add_action('woocommerce_after_add_to_cart_button', array($this, 'single_product_buy_now_button'));
         add_action('woocommerce_after_shop_loop_item', array($this, 'loop_single_product_buy_now_button'), 20);
@@ -3405,6 +3419,10 @@ else:
         $methods_classes = WC()->shipping->get_shipping_method_class_names();
         $methods_classes['pickup_location'] = 'Automattic\WooCommerce\Blocks\Shipping\PickupLocation'; // Loaded using the "load" hook, after the registered methods, so we need to add it specially.
 
+        // Store a table of ratemap key => WC_Shipping_Rate id in the session, so we don't have to load and deserialize the rates from the ratemap,
+        // e.g used in the Checkout ajax poll shipping-change event. LP 2026-03-20
+        $rate_id_map = [];
+
         $has_free_shipping = false;
         foreach($methods as $method) {
            $rate = $method['rate'];
@@ -3433,6 +3451,8 @@ else:
            $vippsmethod['isDefault'] = @$method['default'] ? 'Y' :'N';
            $vippsmethod['priority'] = $method['priority'];
 
+           $rate_id_map[$key] = $rate->get_id();
+
            // It seems woo actually computes rounding of prices and taxes *separately* when computing
            // shipping costs, but we can't really assume this (or that all plugins do this, and so on.)
            // Therefore we compute shipping cost with rounding *both ways* and choose the more expensive one -
@@ -3453,6 +3473,14 @@ else:
            $ratemap[$key]=$rate;
            $methodmap[$key]=$shipping_method;
         }
+
+        if (is_a(WC()->session, 'WC_Session')) {
+            WC()->session->set('vipps_shipping_rate_id_map', $rate_id_map);
+        } else {
+            /* translators: order id */
+            $this->log(sprintf(__('Could not store shipping rate id map in session for order %1$s, session was not ok', 'woo_vipps'), $order->get_id()), 'error');
+        }
+
 
         // This then is the old Express Checkout format, which we have exposed in filters. IOK 2025-08-14 
         $return = array('addressId'=>intval($addressid), 'orderId'=>$vippsorderid, 'shippingDetails'=>$vippsmethods);
@@ -4590,9 +4618,9 @@ else:
             wp_send_json(array('status'=>'waiting', 'msg'=>__('Waiting on order', 'woo-vipps')));
             return false;
         }
-        if ($order_status == 'cancelled') {
+        if ($order_status == 'cancelled' || $order_status == 'failed') {
             $this->maybe_restore_cart($orderid,'failed');
-            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps')));
+            wp_send_json(array('status'=>'failed', 'msg'=>__('Order failed', 'woo-vipps'), 'order_status' => $order_status));
             return false;
         }
 
@@ -5403,7 +5431,8 @@ else:
         // Status is failed; still send to return url (as of now /order-recieved), the text there will depend on the status.
         // For failed it shows a "Retry payment" button that takes the customer to /pay-for-order where it will be retried. LP 2026-03-17
         if ('failed' == $status) {
-            wp_redirect($failure_redirect ?: $gw->get_return_url($order));
+            $failure_redirect = $failure_redirect ?: $gw->get_return_url($order);
+            wp_redirect($failure_redirect);
             exit();
         }
         if ($status == 'cancelled' || $payment == 'cancelled') {
@@ -5461,7 +5490,8 @@ else:
 
         $content .= "<div id=failure style='display:none'><p>". __('Order cancelled', 'woo-vipps') . '</p>';
         $content .= "<p><a href='" . home_url() . "' class='btn button'>" . __('Continue shopping','woo-vipps') . '</a></p>';
-        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . ($failure_redirect ?: $gw->get_return_url($order)) . "'></a>";
+        $content .= "<a id='continueToOrderFailed' style='display:none' href='" . $failure_redirect . "'></a>";
+        $content .= "<a id='continueToOrderFailedFallback' style='display:none' href='" . $gw->get_return_url($order) . "'></a>";
         $content .= "</div>";
 
 
