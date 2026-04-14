@@ -228,7 +228,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                         'methods' => 'POST',
                         'callback' => [$this, 'rest_order_set_shipping'],
                         'permission_callback' => function($request) {
-                            // Note: permission callbacks run twice, on purpose. Still works with wiping the key in the first run. LP 2026-04-01
+                            // Note: permission callbacks run twice, on purpose. LP 2026-04-01
                             // https://github.com/WP-API/WP-API/issues/2400
                             $input_token = $request->get_header('X-WooVipps-Token');
                             error_log('LP input_token: ' . print_r($input_token, true));
@@ -3723,7 +3723,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $details['paymentMethod'] = 'epayment';
             $currency = $details['amount']['currency'];
             $nothing  = [ 'currency' => $currency, 'value' => 0];
-        } 
+        }
 
         // For both callbacks, set 'aggregate' 
         $currency = $details['amount']['currency'];
