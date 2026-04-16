@@ -766,8 +766,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // This is ran in woocommerce_order_status_refunded *before* woos own  wc_order_fully_refunded (priority 9)
-    // so that we can create a through-the-gateway refund for this if neccessary. If not, we'll let the normal logic
-    // proceed, which should create a manual refund instead. IOK 2026-01-20
+    // so that we can create a through-the-gateway refund for this if neccessary. That way, *our* logic for refunds occur
+    // instead of the normal woo logic. IOK 2026-04-16
     public function wc_order_fully_refunded ($orderid) {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
@@ -787,47 +787,23 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        // We can only refund-through-the-gateway if we have captured something.
-        $vippsstatus = $order->get_meta('_vipps_status');
-
-        // FIXME Check that the vipps status is in a refundable state. Also, get vipps status first.
- 
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-
-        $refund_thru_gateway = true;
-        if (!$captured) $refund_thru_gateway = false;
-        if ($to_refund == 0) $refund_thru_gateway = false;
-
         $items = [];
         $data = [];
         $data['amount'] = $max_refund;
         $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
         $data['order_id'] = $orderid;
         $data['line_items'] = $items; // FIXME ADD ITEMS!
-        $data['restock_items'] = true; // should check filters here
+        $data['refund_payment'] = true; // This should call our "process_refund" instead of adding a manual refund
 
-        if ($refund_thru_gateway) {
-            $data['refund_payment'] = true; // This should call our "process_refund"
-            wc_switch_to_site_locale();            
-            $the_refund = wc_create_refund($data);
-            wc_restore_locale();
-            if (is_wp_error($the_refund)) {
-                $refund_thru_gateway = false;
-                $msg = $the_refund->get_error_message();
-                $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
-                $order->save();
-                $this->adminerr($msg);
-            } else {
-                return true;
-            }
-        }
-        if (!$refund_thru_gateway) {
-            // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
-            $data['refund_payment'] = false;
-            wc_switch_to_site_locale(); 
-            $the_refund = wc_create_refund($data);
-            wc_restore_locale();
+        wc_switch_to_site_locale();            
+        $the_refund = wc_create_refund($data);
+        wc_restore_locale();
+        if (is_wp_error($the_refund)) {
+            $refund_thru_gateway = false;
+            $msg = $the_refund->get_error_message();
+            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
+            $order->save();
+            $this->adminerr($msg);
         }
         return true;
     }
