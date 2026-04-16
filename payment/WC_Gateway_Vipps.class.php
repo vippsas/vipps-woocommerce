@@ -3631,27 +3631,33 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         // $Vipps->callback_restore_session($orderid);
         // $Vipps->unlockOrder($order);
 
-        // // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        // try {
-        //     $Vipps->createCallbackSignal($order,'ok');
-        // } catch (Exception $e) {
-        //         // Could not create a signal file, but that's ok.
-        // }
+        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
+        try {
+            $Vipps->createCallbackSignal($order,'ok');
+        } catch (Exception $e) {
+                // Could not create a signal file, but that's ok.
+        }
 
-        // New callback handling: schedule an Action Scheduler action to handle it. LP 2026-03-27
-        $order->update_meta_data('_vipps_callback_received', time()); // separate from meta '_vipps_callback_timestamp' which will be set upon handling. LP 2026-03-30
+        // New callback handling: schedule an Action Scheduler action to handle it. The purpose of processing callback
+        // is to set finalize the order (set order status, set shipping for express) in the case when customer does
+        // not return to the store, because then poll does not run. LP 2026-03-27
+
+        // below is separate from '_vipps_callback_timestamp' which is when callback is sent,
+        // but also that meta won't be stored until callback is actually handled. LP 2026-03-30
+        $order->update_meta_data('_vipps_callback_received_at', time());
+
         $order->save_meta_data();
         error_log('LP result: ' . print_r($result, true));
 
         error_log('LP scheduling AS action in handle_callback');
-        $args = [
+        $action_args = [
             'order_id' => $order->get_id(),
             'data' => $result,
             'is_checkout' => $ischeckout,
             'is_webhook' => $iswebhook,
         ];
         $scheduled_at = time() + 60;
-        $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_handler_action', $args, 'woo-vipps', false);
+        $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_handler_action', $action_args, 'woo-vipps', false);
         error_log('LP action_id: ' . print_r($action_id, true));
         if ($action_id) {
             /* translators: payment method name */
@@ -3844,13 +3850,6 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $order->save();
         clean_post_cache($order_id);
-
-        // Create a signal file (if possible) so the confirm screen knows to check status IOK 2018-05-04
-        try {
-            $Vipps->createCallbackSignal($order,'ok');
-        } catch (Exception $e) {
-                // Could not create a signal file, but that's ok.
-        }
     }
 
     /* finalize shipping for express/checkout order. LP 2026-03-30 */
