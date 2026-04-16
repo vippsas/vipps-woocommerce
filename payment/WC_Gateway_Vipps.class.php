@@ -228,7 +228,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
     }
 
-    // this function is called after an order is changed to complete or refunded. It checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete/refunded/cancelled. It checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     // Ensure we've updated the vipps status before calling this. IOK 2026-01-28
     public function maybe_cancel_reserved_amount ($orderid) {
@@ -875,7 +875,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This would be *per order line* in the fulfilment branch. IOK 2026-02-24 FIXME
             $captured = intval($order->get_meta('_vipps_captured'));
             if (!$captured) {
-                $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through  %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
+                $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
                 throw new Exception($msg);
             }
         }
