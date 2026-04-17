@@ -787,14 +787,16 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        $items = [];
         $data = [];
         $data['amount'] = $max_refund;
         $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
         $data['order_id'] = $orderid;
-        $data['line_items'] = $items; // FIXME ADD ITEMS!
         $data['refund_payment'] = true; // This should call our "process_refund" instead of adding a manual refund
-
+      
+        // IOK 2026-04-17 Should be all remaining un-refunded line items
+        $line_items = apply_filters('woo_vipps_order_fully_refunded_line_items', $this->get_remaining_refundable_line_items($order), $order);
+        $data['line_items'] = $line_items;
+       
         wc_switch_to_site_locale();            
         $the_refund = wc_create_refund($data);
         wc_restore_locale();
@@ -807,6 +809,62 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         }
         return true;
     }
+
+
+    // IOK 2026-04-16 Build wc_create_refund() line_items for all remaining refundable order items - used to provide line-item info for the refund to be processed when
+    // "fully refunded" is done.
+    //  [ $item_id => ['qty'          => 1, 'refund_total' => '100.00', 'refund_tax'   => [ 1 => '25.00' ], *   ], ... ]
+    //  Includes line items, fees and shipping. For fees/shipping, qty is set to 0.
+    private function get_remaining_refundable_line_items( WC_Order $order ) {
+        $items = $order->get_items( array( 'line_item', 'fee', 'shipping' ));
+
+        $new_refund_line_items = [];
+        foreach($items as $item_id => $item) {
+            $new_refund_line = [];
+
+            // Calculate remaining tax for this line item; by tax id. The shape is [ [total] => [tax_id => value_for_this_tax_id] ].
+            // We want the tax id and the value.
+            $tax_data = wc_tax_enabled() ? $item->get_taxes() : false;
+            $remaining_tax = [];
+            if ($tax_data) {
+                foreach($tax_data['total'] as $tax_id => $value) {
+                    $remaining_tax[$tax_id] = $value;
+                }
+            }
+            // We can then subtract the tax already refunded for each of these items.
+            foreach($remaining_tax as $tax_id => $current) {
+                $refunded = $order->get_tax_refunded_for_item($item_id, $tax_id,  $item->get_type());
+                $remaining = wc_format_decimal($current-$refunded);
+                if ($remaining > 0) {
+                    $remaining_tax[$tax_id] = wc_format_decimal($current-$refunded);
+                } else {
+                    unset($remaining_tax[$tax_id]);
+                }
+            }
+
+            // Then the quantity
+            $qty = (int) $item->get_quantity();
+            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            $remaining_quantity = $qty-$refunded_quantity;
+
+            $total = $item->get_total();
+            $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            $remaining_total = wc_format_decimal($total-$refunded_total);
+
+
+            if ($remaining_quantity>0 || !empty($remaining_tax) || $remaining_total > 0) {
+                $new_refund_line['qty'] = max(0,$remaining_quantity);
+                $new_refund_line['refund_tax'] = $remaining_tax;
+                $new_refund_line['refund_total']  = $remaining_total;
+                $new_refund_line_items[$item_id]  = $new_refund_line;
+            }
+
+        }
+
+        return $new_refund_line_items;
+
+    }
+
     
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
     // they don't require payment. So we try to capture. IOK 2020-09-22
