@@ -3798,7 +3798,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // LP FIXME: i get error using normal wp nonce (param/header): 'rest_cookie_invalid_nonce', probably because we are using http through action scheduler, so handle auth by ourselves through db. LP 2026-03-31
             $token = wp_generate_password(32, true, true);
             error_log('LP token: ' . print_r($token, true));
-            update_option('woo_vipps_rest_token', $token); // LP TODO: maybe this should expire automatically. transient? LP 2026-04-01
+            update_option('woo_vipps_rest_token', $token); // LP FIXME: maybe this should expire automatically. transient? LP 2026-04-01
             $args = [
                 'body' => [
                     'order_id' => $order_id,
