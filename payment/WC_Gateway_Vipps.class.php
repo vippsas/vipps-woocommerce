@@ -836,7 +836,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 $refunded = $order->get_tax_refunded_for_item($item_id, $tax_id,  $item->get_type());
                 $remaining = wc_format_decimal($current-$refunded);
                 if ($remaining > 0) {
-                    $remaining_tax[$tax_id] = wc_format_decimal($current-$refunded);
+                    $remaining_tax[$tax_id] = $remaining;
                 } else {
                     unset($remaining_tax[$tax_id]);
                 }
