@@ -220,7 +220,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_completed', array($this, 'maybe_cancel_reserved_amount'), 99);
 
         // New handling for callbacks in the action scheduler. LP 2026-03-27
-        add_action('woo_vipps_callback_handler_action', [$this, 'action_handle_callback'], 10, 4);
+        add_action('woo_vipps_action_process_callback', [$this, 'action_process_callback'], 10, 4);
 
         // Endpoint for setting shipping data for express checkout orders. LP 2026-03-30
         add_action('rest_api_init', function() {
@@ -3638,12 +3638,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
                 // Could not create a signal file, but that's ok.
         }
 
-        // New callback handling: schedule an Action Scheduler action to handle it. The purpose of processing callback
+        // New callback handling: schedule an Action Scheduler action to process it. The purpose of processing callback
         // is to set finalize the order (set order status, set shipping for express) in the case when customer does
         // not return to the store, because then poll does not run. LP 2026-03-27
 
-        // below is separate from '_vipps_callback_timestamp' which is when callback is sent,
-        // but also that meta won't be stored until callback is actually handled. LP 2026-03-30
+        // Below is separate from '_vipps_callback_timestamp' which is when callback is sent,
+        // but also that meta won't be stored until callback is actually processed. LP 2026-03-30
         $order->update_meta_data('_vipps_callback_received_at', time());
 
         $order->save_meta_data();
@@ -3657,13 +3657,13 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             'is_webhook' => $iswebhook,
         ];
         $scheduled_at = time() + 60;
-        $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_callback_handler_action', $action_args, 'woo-vipps', false);
+        $action_id = as_schedule_single_action($scheduled_at, 'woo_vipps_action_process_callback', $action_args, 'woo-vipps', false);
         error_log('LP action_id: ' . print_r($action_id, true));
         if ($action_id) {
             /* translators: payment method name */
-            $order->add_order_note(sprintf(__('%1$s callback handler scheduled','woo-vipps'), $this->get_payment_method_name()));
+            $order->add_order_note(sprintf(__('%1$s callback action scheduled','woo-vipps'), $this->get_payment_method_name()));
             /* translators: order id, scheduled time */
-            $this->log(sprintf(__('Callback handle action scheduled at %2$s for order %1$s', 'woo-vipps'), $order->get_id(), $scheduled_at), 'info');
+            $this->log(sprintf(__('Callback action scheduled at %2$s for order %1$s', 'woo-vipps'), $order->get_id(), $scheduled_at), 'info');
         } else {
             /* translators: order id */
             $this->log(sprintf(__('Failed to schedule callback handle action for order %1$s', 'woo-vipps'), $order->get_id()), 'error');
@@ -3675,7 +3675,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     /** Runs in action scheduler: sync woo status from Vipps callback data. Handle shipping etc. for Express. LP 2026-03-31 */
-    public function action_handle_callback($order_id, $data, $is_checkout, $is_webhook) {
+    public function action_process_callback($order_id, $data, $is_checkout, $is_webhook) {
         global $Vipps;
         error_log('LP hello from action scheduler');
         error_log('LP data: ' . print_r($data, true));
@@ -3686,12 +3686,12 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         $order = wc_get_order($order_id);
         if (!is_a($order, 'WC_Order')) {
             /* translators: order id */
-            $this->log(sprintf(__('Callback handle action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
+            $this->log(sprintf(__('Callback process action failed, could not find order %1$s','woo-vipps'), $order_id), 'error');
             return false;
         }
 
         /* translators: order id */
-        $this->log(sprintf(__('Callback handle action running for order %1$s.', 'woo-vipps'), $order_id));
+        $this->log(sprintf(__('Callback process action running for order %1$s.', 'woo-vipps'), $order_id));
 
         $vipps_ref = $data['orderId'];
         if ($vipps_ref != $order->get_meta('_vipps_orderid')) {
@@ -3762,7 +3762,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             return false;
         }
 
-        $order->add_order_note(sprintf(__('%1$s callback handled','woo-vipps'), $this->get_payment_method_name()));
+        $order->add_order_note(sprintf(__('%1$s callback processed','woo-vipps'), $this->get_payment_method_name()));
         do_action('woo_vipps_callback_received', $order, $data, $transaction);
 
         $oldstatus = $order->get_status();
@@ -3774,7 +3774,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
 
         $this->order_set_transaction_metadata($order, $transaction);
         /* translators: company name, order id */
-        $this->log(sprintf(__('%1$s callback: Handling order: %1$s', 'woo-vipps'), Vipps::CompanyName(), $order_id), 'debug');
+        $this->log(sprintf(__('%1$s callback: processing order %1$s', 'woo-vipps'), Vipps::CompanyName(), $order_id), 'debug');
 
         // This order is ready to set order shipping details etc for IOK 2025-09-19
         $ready = false;
