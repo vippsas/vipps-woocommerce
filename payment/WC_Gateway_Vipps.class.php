@@ -228,7 +228,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
         add_action('woocommerce_order_status_cancelled', array($this, 'maybe_cancel_reserved_amount'), 99, 1);
     }
 
-    // this function is called after an order is changed to complete or refunded. It checks if there is reserved money that is not captured
+    // this function is called after an order is changed to complete/refunded/cancelled. It checks if there is reserved money that is not captured
     // if there still is money reserved, then this amount is cancelled  PMB 2024-11-21
     // Ensure we've updated the vipps status before calling this. IOK 2026-01-28
     public function maybe_cancel_reserved_amount ($orderid) {
@@ -766,8 +766,8 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
     }
 
     // This is ran in woocommerce_order_status_refunded *before* woos own  wc_order_fully_refunded (priority 9)
-    // so that we can create a through-the-gateway refund for this if neccessary. If not, we'll let the normal logic
-    // proceed, which should create a manual refund instead. IOK 2026-01-20
+    // so that we can create a through-the-gateway refund for this if neccessary. That way, *our* logic for refunds occur
+    // instead of the normal woo logic. IOK 2026-04-16
     public function wc_order_fully_refunded ($orderid) {
         $order = wc_get_order($orderid);
         if ('vipps' != $order->get_payment_method()) return false;
@@ -787,50 +787,84 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             $this->log(__("Error getting payment details before doing refund: ", 'woo-vipps') . $e->getMessage(), 'warning');
         }
 
-        // We can only refund-through-the-gateway if we have captured something.
-        $vippsstatus = $order->get_meta('_vipps_status');
-
-        // FIXME Check that the vipps status is in a refundable state. Also, get vipps status first.
- 
-        $captured = intval($order->get_meta('_vipps_captured'));
-        $to_refund =  intval($order->get_meta('_vipps_refund_remaining'));
-
-        $refund_thru_gateway = true;
-        if (!$captured) $refund_thru_gateway = false;
-        if ($to_refund == 0) $refund_thru_gateway = false;
-
-        $items = [];
         $data = [];
         $data['amount'] = $max_refund;
         $data['reason'] = __( 'Order fully refunded.', 'woocommerce' );
         $data['order_id'] = $orderid;
-        $data['line_items'] = $items; // FIXME ADD ITEMS!
-        $data['restock_items'] = true; // should check filters here
-
-        if ($refund_thru_gateway) {
-            $data['refund_payment'] = true; // This should call our "process_refund"
-            wc_switch_to_site_locale();            
-            $the_refund = wc_create_refund($data);
-            wc_restore_locale();
-            if (is_wp_error($the_refund)) {
-                $refund_thru_gateway = false;
-                $msg = $the_refund->get_error_message();
-                $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
-                $order->save();
-                $this->adminerr($msg);
-            } else {
-                return true;
-            }
-        }
-        if (!$refund_thru_gateway) {
-            // If we get here, we either cannot refund thru the gateway, or we tried and failed. Add a refund *not* through the gateway, but add line items etc.
-            $data['refund_payment'] = false;
-            wc_switch_to_site_locale(); 
-            $the_refund = wc_create_refund($data);
-            wc_restore_locale();
+        $data['refund_payment'] = true; // This should call our "process_refund" instead of adding a manual refund
+      
+        // IOK 2026-04-17 Should be all remaining un-refunded line items
+        $line_items = apply_filters('woo_vipps_order_fully_refunded_line_items', $this->get_remaining_refundable_line_items($order), $order);
+        $data['line_items'] = $line_items;
+       
+        wc_switch_to_site_locale();            
+        $the_refund = wc_create_refund($data);
+        wc_restore_locale();
+        if (is_wp_error($the_refund)) {
+            $refund_thru_gateway = false;
+            $msg = $the_refund->get_error_message();
+            $order->add_order_note(sprintf(__("Error when refunding payment through %1\$s:", 'woo-vipps'), $this->get_payment_method_name()) . ' ' . $msg);
+            $order->save();
+            $this->adminerr($msg);
         }
         return true;
     }
+
+
+    // IOK 2026-04-16 Build wc_create_refund() line_items for all remaining refundable order items - used to provide line-item info for the refund to be processed when
+    // "fully refunded" is done.
+    //  [ $item_id => ['qty'          => 1, 'refund_total' => '100.00', 'refund_tax'   => [ 1 => '25.00' ], *   ], ... ]
+    //  Includes line items, fees and shipping. For fees/shipping, qty is set to 0.
+    private function get_remaining_refundable_line_items( WC_Order $order ) {
+        $items = $order->get_items( array( 'line_item', 'fee', 'shipping' ));
+
+        $new_refund_line_items = [];
+        foreach($items as $item_id => $item) {
+            $new_refund_line = [];
+
+            // Calculate remaining tax for this line item; by tax id. The shape is [ [total] => [tax_id => value_for_this_tax_id] ].
+            // We want the tax id and the value.
+            $tax_data = wc_tax_enabled() ? $item->get_taxes() : false;
+            $remaining_tax = [];
+            if ($tax_data) {
+                foreach($tax_data['total'] as $tax_id => $value) {
+                    $remaining_tax[$tax_id] = $value;
+                }
+            }
+            // We can then subtract the tax already refunded for each of these items.
+            foreach($remaining_tax as $tax_id => $current) {
+                $refunded = $order->get_tax_refunded_for_item($item_id, $tax_id,  $item->get_type());
+                $remaining = wc_format_decimal($current-$refunded);
+                if ($remaining > 0) {
+                    $remaining_tax[$tax_id] = wc_format_decimal($current-$refunded);
+                } else {
+                    unset($remaining_tax[$tax_id]);
+                }
+            }
+
+            // Then the quantity
+            $qty = (int) $item->get_quantity();
+            $refunded_quantity = abs((int) $order->get_qty_refunded_for_item($item_id)); // Documented to be positive since 3.0, seems to be actually negative. 
+            $remaining_quantity = $qty-$refunded_quantity;
+
+            $total = $item->get_total();
+            $refunded_total =  $order->get_total_refunded_for_item($item_id); // A positive value
+            $remaining_total = wc_format_decimal($total-$refunded_total);
+
+
+            if ($remaining_quantity>0 || !empty($remaining_tax) || $remaining_total > 0) {
+                $new_refund_line['qty'] = max(0,$remaining_quantity);
+                $new_refund_line['refund_tax'] = $remaining_tax;
+                $new_refund_line['refund_total']  = $remaining_total;
+                $new_refund_line_items[$item_id]  = $new_refund_line;
+            }
+
+        }
+
+        return $new_refund_line_items;
+
+    }
+
     
     // This is for orders that are 'reserved' at Vipps but could actually be captured at once because
     // they don't require payment. So we try to capture. IOK 2020-09-22
@@ -875,7 +909,7 @@ class WC_Gateway_Vipps extends WC_Payment_Gateway {
             // This would be *per order line* in the fulfilment branch. IOK 2026-02-24 FIXME
             $captured = intval($order->get_meta('_vipps_captured'));
             if (!$captured) {
-                $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through  %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
+                $msg = sprintf(__("Order %2\$d: It is not possible to create a manual refund for a %1\$s order before it has been captured - doing so makes it impossible to track how much to capture and how much to release. If you create the refund through %1\$s, a note will be made internally so that the amount to be refunded will *not* be captured - please do this instead if possible. Otherwise, capture the order then refund either manually or through %1\$s", 'woo-vipps'), $this->get_payment_method_name(), $order_id);
                 throw new Exception($msg);
             }
         }

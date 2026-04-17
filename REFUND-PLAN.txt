@@ -27,3 +27,6 @@ states
 
 which isn't grammatical, but in the code, any error is catched and transformed to a WP_Error. The/any refund is deleted.
 
+
+ALL REFUNDS NOW THRU GATEWAY if fully-refunded is called.
+If there is 1 product, captured, and we choose manual refund, please check that we do not call our own "fully refunded".
