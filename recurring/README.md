@@ -231,7 +231,7 @@ You can then refund or cancel the purchase afterward.
 This is because of the Norwegian law. You are not allowed to charge for a physical product before you ship it, without a valid reason to do so.
 
 For more information, see
-[Guidelines for the standard sales conditions for consumer purchases of goods over the internet](https://www.forbrukertilsynet.no/english/guidelines/guidelines-the-standard-sales-conditions-consumer-purchases-of-goods-the-internet#chapter-7).
+[Guidelines for the standard sales conditions for consumer purchases of goods over the internet (only available in Norwegian)](https://www.forbrukertilsynet.no/lov-og-rett/veiledninger-og-retningslinjer/veiledning-standard-salgsbetingelser-forbrukerkjop-varer-internett).
 
 If you have a valid reason to do so you can use the *Capture payment instantly* option from the *Vipps/MobilePay recurring payments* settings in your product's settings.
 
